@@ -103,6 +103,7 @@ public:
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
     // Internal
+    void OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

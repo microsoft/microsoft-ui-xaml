@@ -533,6 +533,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifyNumberBoxHeaderBehavior()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                var toggleHeaderButton = FindElement.ByName<Button>("ToggleHeaderValueButton");
+                var header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+
+                Log.Comment("Check header is null");
+                Verify.IsNull(header);
+
+                Log.Comment("Set header");
+                toggleHeaderButton.Invoke();
+                Wait.ForIdle();
+                
+                header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                Log.Comment("Check if header is present");
+                Verify.IsNotNull(header);
+                Log.Comment("Remove header");
+                toggleHeaderButton.Invoke();
+                Wait.ForIdle();
+                ElementCache.Clear();
+
+                Log.Comment("Check that header is null again");
+                header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                Verify.IsNull(header);
+            }
+        }
+
+
         Button FindButton(UIObject parent, string buttonName)
         {
             foreach (UIObject elem in parent.Children)

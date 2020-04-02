@@ -8,6 +8,8 @@
 
 #include "NavigationViewItemSeparator.properties.cpp"
 
+static constexpr auto c_rootGrid = L"NavigationViewItemSeparatorRootGrid"sv;
+
 NavigationViewItemSeparator::NavigationViewItemSeparator()
 {
     SetDefaultStyleKey(this);
@@ -30,11 +32,33 @@ void NavigationViewItemSeparator::OnApplyTemplate()
     m_appliedTemplate = false;
     NavigationViewItemBase::OnApplyTemplate();
 
+    if (auto rootGrid = GetTemplateChildT<winrt::Grid>(c_rootGrid, *this))
+    {
+        m_rootGrid.set(rootGrid);
+    }
+
     m_appliedTemplate = true;
     UpdateVisualState(false /*useTransition*/);
+    UpdateItemIndentation();
 }
 
 void NavigationViewItemSeparator::OnNavigationViewRepeaterPositionChanged()
 {
     UpdateVisualState(false /*useTransition*/);
+}
+
+void NavigationViewItemSeparator::OnNavigationViewItemBaseDepthChanged()
+{
+    UpdateItemIndentation();
+}
+
+void NavigationViewItemSeparator::UpdateItemIndentation()
+{
+    // Update item indentation based on its depth
+    if (auto const rootGrid = m_rootGrid.get())
+    {
+        auto const oldMargin = rootGrid.Margin();
+        auto newLeftMargin = Depth() * c_itemIndentation;
+        rootGrid.Margin({ static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom });
+    }
 }

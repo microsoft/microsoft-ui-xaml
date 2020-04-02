@@ -129,4 +129,12 @@
     <value>Fechar Guia</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
+    <value>Fechar guia</value>
+    <comment>Tooltip for the close button on each tab.</comment>
+  </data>
+  <data name="TabViewCloseButtonTooltipWithKA" xml:space="preserve">
+    <value>Fechar guia (Ctrl+F4)</value>
+    <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
+  </data>
 </root>

@@ -14,3 +14,15 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBa
 }
 
 }
+
+namespace MU_XAP_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.RangeBaseAutomationPeer
+{
+    ProgressRingAutomationPeer(MU_XC_NAMESPACE.ProgressRing owner);
+}
+
+}

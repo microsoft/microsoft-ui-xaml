@@ -132,19 +132,22 @@ if(Test-Path $visualTreeMasterFolder)
     {
         $filesToDelete = @()
         $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith("$prefix-") } | Sort-Object -Property Name -Descending
-        for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
+        if($versionedMasters.Count > 1)
         {
-            $v1 = Get-Content $versionedMasters[$i].FullName
-            $v2 = Get-Content $versionedMasters[$i+1].FullName
-            $diff = Compare-Object $v1 $v2
-            if($diff.Length -eq 0)
+            for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
             {
-                $filesToDelete += $versionedMasters[$i]
+                $v1 = Get-Content $versionedMasters[$i].FullName
+                $v2 = Get-Content $versionedMasters[$i+1].FullName
+                $diff = Compare-Object $v1 $v2
+                if($diff.Length -eq 0)
+                {
+                    $filesToDelete += $versionedMasters[$i]
+                }
             }
-        }
-        $filesToDelete | ForEach-Object {
-            Write-Host "Deleting $($_.Name)"
-            Remove-Item $_.FullName
+            $filesToDelete | ForEach-Object {
+                Write-Host "Deleting $($_.Name)"
+                Remove-Item $_.FullName
+            }
         }
 
         Write-Host "Renaming $($versionedMasters[-1].Name) to $prefix.xml"

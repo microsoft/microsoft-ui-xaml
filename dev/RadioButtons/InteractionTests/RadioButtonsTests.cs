@@ -436,6 +436,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled due to: RadioButtonsTests.GamepadCanEscapeAndDoesNotSelectWithFocus is unreliable. #2202
         public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))

@@ -6,6 +6,7 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="local:NavigationView">
@@ -271,7 +272,10 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OverflowButtonVisibility}">
 
                                         <Button.Flyout>
-                                            <Flyout Placement="Bottom" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
+                                            <Flyout
+                                                contract7NotPresent:Placement="Bottom"
+                                                contract7Present:Placement="BottomEdgeAlignedRight"
+                                                ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="0,8" />
@@ -516,26 +520,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItem">
-                    <primitives:NavigationViewItemPresenter
-                        x:Name="NavigationViewItemPresenter"
-                        Icon="{TemplateBinding Icon}"
-                        ContentTransitions="{TemplateBinding ContentTransitions}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Margin="{TemplateBinding Margin}"
-                        Padding="{TemplateBinding Padding}"
-                        Foreground="{TemplateBinding Foreground}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
-                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                        Content="{TemplateBinding Content}"
-                        primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        IsTabStop="False">
+                    <Grid x:Name="NVIRootGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
                                 <VisualState x:Name="OnLeftNavigation">
@@ -551,11 +541,15 @@
                                 <VisualState x:Name="OnTopNavigationPrimary">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
+                                        <contract7NotPresent:Setter Target="ChildrenFlyout.Placement" Value="Bottom"/>
+                                        <contract7Present:Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimaryReveal">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
+                                        <contract7NotPresent:Setter Target="ChildrenFlyout.Placement" Value="Bottom"/>
+                                        <contract7Present:Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationOverflow">
@@ -565,7 +559,54 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                    </primitives:NavigationViewItemPresenter>
+
+
+                        <primitives:NavigationViewItemPresenter
+                            x:Name="NavigationViewItemPresenter"
+                            Icon="{TemplateBinding Icon}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            Content="{TemplateBinding Content}"
+                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="False">
+                        </primitives:NavigationViewItemPresenter>
+                        <local:ItemsRepeater
+                                Grid.Row="1"
+                                Visibility="Collapsed"
+                                x:Name="NavigationViewItemMenuItemsHost">
+                            <local:ItemsRepeater.Layout>
+                                <local:StackLayout Orientation="Vertical"/>
+                            </local:ItemsRepeater.Layout>
+                        </local:ItemsRepeater>
+                        <FlyoutBase.AttachedFlyout>
+                            <Flyout x:Name="ChildrenFlyout"
+                                    contract7NotPresent:Placement="Right"
+                                    contract7Present:Placement="RightEdgeAlignedTop">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="Padding" Value="0,8" />
+                                        <!-- Set negative top margin to make the flyout align exactly with the button -->
+                                        <Setter Property="Margin" Value="0,-4,0,0" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Grid x:Name="FlyoutRootGrid">
+                                    <Grid x:Name="FlyoutContentGrid"/>
+                                </Grid>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -582,7 +623,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItemHeader">
-                    <Grid>
+                    <Grid x:Name="NavigationViewItemHeaderRootGrid">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PaneStates">
                                 <VisualStateGroup.Transitions>
@@ -660,7 +701,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
-                    <Grid>
+                    <Grid x:Name="NavigationViewItemSeparatorRootGrid">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="NavigationSeparatorLineStates">
                                 <VisualState x:Name="HorizontalLine" />
