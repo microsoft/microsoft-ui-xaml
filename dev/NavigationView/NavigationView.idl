@@ -176,6 +176,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     [WUXC_VERSION_PREVIEW]
     {
         Windows.Foundation.Collections.IVector<Object> FooterMenuItems{ get; };
+        Object FooterMenuItemsSource{ get; set; };
     }
     Windows.UI.Xaml.UIElement PaneFooter { get; set; };
     Object Header { get; set; };
@@ -214,6 +215,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty CompactModeThresholdWidthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ExpandedModeThresholdWidthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty FooterMenuItemsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty FooterMenuItemsSourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PaneFooterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HeaderProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };

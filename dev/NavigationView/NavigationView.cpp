@@ -491,6 +491,14 @@ void NavigationView::OnApplyTemplate()
     {
         m_leftNavFooterMenuRepeater.set(leftFooterMenuNavRepeater);
 
+        // API is currently in preview, so setting this via code.
+        // Disabling virtualization for now because of https://github.com/microsoft/microsoft-ui-xaml/issues/2095
+        if (auto stackLayout = leftFooterMenuNavRepeater.Layout().try_as<winrt::StackLayout>())
+        {
+            auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+            stackLayoutImpl->DisableVirtualization(true);
+        }
+
         m_leftNavFooterMenuItemsRepeaterElementPreparedRevoker = leftFooterMenuNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_leftNavFooterMenuItemsRepeaterElementClearingRevoker = leftFooterMenuNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
         m_leftNavFooterMenuRepeaterGettingFocusRevoker = leftFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
@@ -504,6 +512,14 @@ void NavigationView::OnApplyTemplate()
     if (auto topFooterMenuNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavFooterMenuItemsHost, controlProtected))
     {
         m_topNavFooterMenuRepeater.set(topFooterMenuNavRepeater);
+
+        // API is currently in preview, so setting this via code.
+        // Disabling virtualization for now because of https://github.com/microsoft/microsoft-ui-xaml/issues/2095
+        if (auto stackLayout = topFooterMenuNavRepeater.Layout().try_as<winrt::StackLayout>())
+        {
+            auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+            stackLayoutImpl->DisableVirtualization(true);
+        }
 
         m_topNavFooterMenuItemsRepeaterElementPreparedRevoker = topFooterMenuNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_topNavFooterMenuItemsRepeaterElementClearingRevoker = topFooterMenuNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
@@ -695,10 +711,16 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 
 void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpdate)
 {
-    if (!m_appliedTemplate)
-        return;
+    auto const itemsSource = [this]()
+    {
+        if (auto const menuItemsSource = FooterMenuItemsSource())
+        {
+            return menuItemsSource;
+        }
+        UpdateSelectionForMenuItems();
+        return FooterMenuItems().as<winrt::IInspectable>();
+    }();
 
-    auto footerItems = FooterMenuItems();
     auto dataSource = winrt::make<Vector<winrt::IInspectable>>();
 
     UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
@@ -710,24 +732,24 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
         m_settingsItem.get().Name(L"SettingsItem");
     }
 
-    auto settingsItem = m_settingsItem.get();
-
-    auto size = footerItems.Size();
-
-    for (uint32_t i = 0; i < size; i++)
+    if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
     {
-        auto item = footerItems.GetAt(i);
-        dataSource.Append(item);
-    }
+        auto settingsItem = m_settingsItem.get();
+        auto size = footerItems.Size();
 
-    if (IsSettingsVisible())
-    {
-        CreateAndHookEventsToSettings();
-        // add settings item to the end of footer
-        dataSource.Append(settingsItem);
-    }
+        for (uint32_t i = 0; i < size; i++)
+        {
+            auto item = footerItems.GetAt(i);
+            dataSource.Append(item);
+        }
 
-    UpdateSelectionForMenuItems();
+        if (IsSettingsVisible())
+        {
+            CreateAndHookEventsToSettings();
+            // add settings item to the end of footer
+            dataSource.Append(settingsItem);
+        }
+    }
 
     // Selection Model has same representation of data regardless
     // of pane mode, so only update if the ItemsSource data itself

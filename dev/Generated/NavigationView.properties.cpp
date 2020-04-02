@@ -21,6 +21,7 @@ GlobalDependencyProperty NavigationViewProperties::s_ContentOverlayProperty{ nul
 GlobalDependencyProperty NavigationViewProperties::s_DisplayModeProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_ExpandedModeThresholdWidthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemsProperty{ nullptr };
+GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemsSourceProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_IsBackButtonVisibleProperty{ nullptr };
@@ -154,6 +155,17 @@ void NavigationViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnFooterMenuItemsPropertyChanged));
+    }
+    if (!s_FooterMenuItemsSourceProperty)
+    {
+        s_FooterMenuItemsSourceProperty =
+            InitializeDependencyProperty(
+                L"FooterMenuItemsSource",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFooterMenuItemsSourcePropertyChanged));
     }
     if (!s_HeaderProperty)
     {
@@ -475,6 +487,7 @@ void NavigationViewProperties::ClearProperties()
     s_DisplayModeProperty = nullptr;
     s_ExpandedModeThresholdWidthProperty = nullptr;
     s_FooterMenuItemsProperty = nullptr;
+    s_FooterMenuItemsSourceProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_IsBackButtonVisibleProperty = nullptr;
@@ -584,6 +597,14 @@ void NavigationViewProperties::OnExpandedModeThresholdWidthPropertyChanged(
 }
 
 void NavigationViewProperties::OnFooterMenuItemsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::OnFooterMenuItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -885,6 +906,16 @@ void NavigationViewProperties::FooterMenuItems(winrt::IVector<winrt::IInspectabl
 winrt::IVector<winrt::IInspectable> NavigationViewProperties::FooterMenuItems()
 {
     return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemsProperty));
+}
+
+void NavigationViewProperties::FooterMenuItemsSource(winrt::IInspectable const& value)
+{
+    static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable NavigationViewProperties::FooterMenuItemsSource()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemsSourceProperty));
 }
 
 void NavigationViewProperties::Header(winrt::IInspectable const& value)
