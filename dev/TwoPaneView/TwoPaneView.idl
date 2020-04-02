@@ -78,6 +78,7 @@ unsealed runtimeclass TwoPaneView : Windows.UI.Xaml.Controls.Control
 }
 
 // TODO: Once IApplicationViewSpanningRects is available in the official SDK, remove this.
+#ifndef IApplicationViewSpanningRects
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
 [uuid(645737E4-A882-4E16-B289-FD860560106A)]
@@ -85,5 +86,6 @@ interface IApplicationViewSpanningRects : IInspectable
 {
     Windows.Foundation.Collections.IVectorView<Windows.Foundation.Rect> GetSpanningRects();
 }
+#endif
 
 }
