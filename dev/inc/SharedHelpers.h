@@ -309,7 +309,7 @@ public:
         }
     }
 
-    static winrt::float4 RgbaColor(winrt::Color color);
+    static winrt::float4 RgbaColor(winrt::Color const& color);
 
 private:
     SharedHelpers() = default;
