@@ -146,8 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
-        public void BasicKeyboardTestFirstBundle()
+        public void BasicKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
@@ -174,30 +173,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(3);
                         KeyboardHelper.PressKey(Key.Right);
                         VerifySelectedFocusedIndex(3);
-                    }
-                }
-            }
-        }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public void BasicKeyboardTestSecondBundle()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ keyboarding behavior");
-                return;
-            }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
-                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
-                    {
-                        bool useBackup = type == RadioButtonsSourceType.String;
-                        SetItemType(type);
                         TapOnItem(0, useBackup);
                         VerifySelectedFocusedIndex(0);
                         KeyboardHelper.PressKey(Key.Up);
@@ -213,10 +189,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public void MultiColumnKeyboardTestFirstBundle()
+        public void MultiColumnKeyboardTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            if(!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
                 Log.Warning("This test requires RS3+ keyboarding behavior");
                 return;
@@ -252,30 +227,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(2);
                         KeyboardHelper.PressKey(Key.Left);
                         VerifySelectedFocusedIndex(2);
-                    }
-                }
-            }
-        }
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public void MultiColumnKeyboardTestSecondBundle()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ keyboarding behavior");
-                return;
-            }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
-                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
-                    {
-                        SetItemType(type);
-                        bool useBackup = type == RadioButtonsSourceType.String;
-                        SetNumberOfColumns(3);
 
                         TapOnItem(0, useBackup);
                         VerifySelectedFocusedIndex(0);
@@ -300,8 +251,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public void DisabledItemsKeyboardTestFirstBundle()
+        public void DisabledItemsKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
@@ -338,31 +288,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     //VerifySelectedFocusedIndex(9);
                     //KeyboardHelper.PressKey(Key.Right);
                     //VerifySelectedFocusedIndex(9);
-                    ElementCache.Clear();
-                }
-            }
-        }
-        
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public void DisabledItemsKeyboardTestSecondBundle()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ keyboarding behavior");
-                return;
-            }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                SetItemType(RadioButtonsSourceType.RadioButton);
-                SetNumberOfColumns(3);
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
 
-                    SetNumberOfItems(10);
-                    InsertDisabledRadioButton(10);
                     InsertDisabledRadioButton(6);
                     InsertDisabledRadioButton(6);
 
@@ -396,8 +322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
-        public void DisabledItemsAtTopOfColumnKeyboardTestFirstBundle()
+        public void DisabledItemsAtTopOfColumnKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
@@ -438,34 +363,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifySelectedFocusedIndex(4);
                     KeyboardHelper.PressKey(Key.Right);
                     VerifySelectedFocusedIndex(8);
-                    ElementCache.Clear();
-                }
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public void DisabledItemsAtTopOfColumnKeyboardTestSecondBundle()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ keyboarding behavior");
-                return;
-            }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                SetItemType(RadioButtonsSourceType.RadioButton);
-                SetNumberOfColumns(3);
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
-
-                    SetNumberOfItems(10);
-                    InsertDisabledRadioButton(5);
-                    InsertDisabledRadioButton(5);
-                    InsertDisabledRadioButton(5);
-
                     TapOnItem(6);
                     VerifySelectedFocusedIndex(9);
                     KeyboardHelper.PressKey(Key.Left);
@@ -543,8 +440,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Ignore", "True")] // Disabled due to: RadioButtonsTests.GamepadCanEscapeAndDoesNotSelectWithFocus is unreliable. #2202
-        [TestProperty("TestSuite", "A")]
-        public void GamepadCanEscapeAndDoesNotSelectWithFocusFirstBundle()
+        public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
@@ -576,26 +472,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(0);
                         GamepadHelper.PressButton(null, GamepadButton.DPadUp);
                         VerifyRadioButtonsHasFocus(false);
-                    }
-                }
-            }
-        }
-        [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled due to: RadioButtonsTests.GamepadCanEscapeAndDoesNotSelectWithFocus is unreliable. #2202
-        [TestProperty("TestSuite", "B")]
-        public void GamepadCanEscapeAndDoesNotSelectWithFocusSecondBundle()
-        {
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
-                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
-                    {
-                        SetItemType(type);
-                        bool useBackup = type == RadioButtonsSourceType.String;
-                        SetNumberOfColumns(3);
 
                         TapOnItem(7, useBackup);
                         VerifySelectedFocusedIndex(7);
@@ -617,7 +493,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
         public void ControlKeyKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -648,7 +523,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
         public void ColumnsTest()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -695,7 +569,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
         public void UIAProperties()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -738,7 +611,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
         public void InsertedCheckedRadioButtonGetsSelection()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -756,7 +628,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
         public void ScrollViewerSettingSelectionDoesNotMoveFocus()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -789,8 +660,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
-        public void AccessKeysFirstBundle()
+        public void AccessKeys()
         { 
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
@@ -812,55 +682,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         UseAccessKey();
                         VerifyFocusedIndex(0);
                         VerifySelectedIndex(-1);
-                    }
-                }
-            }
-        }
-        [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public void AccessKeysSecondBundle()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ keyboarding behavior");
-                return;
-            }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
-                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
-                    {
+
                         SelectByIndex(3);
                         VerifySelectedIndex(3);
                         VerifyFocusedIndex(-1);
-                    }
-                }
-            }
-        }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
-        public void AccessKeysThirdBundle()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ keyboarding behavior");
-                return;
-            }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
-            {
-                elements = new RadioButtonsTestPageElements();
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
-                {
-                    SetSource(location);
-                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
-                    {
-                        SelectByIndex(3);
                         KeyboardHelper.PressKey(Key.Tab);
                         VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
                         UseAccessKey();
                         VerifySelectedFocusedIndex(3);
                     }
