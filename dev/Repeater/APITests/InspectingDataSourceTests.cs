@@ -115,6 +115,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void VerifyIndexOfBehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var collections = new List<IEnumerable>();
+                collections.Add(new ObservableVectorWithUniqueIds(Enumerable.Range(0, 10)));
+                collections.Add(new ObservableCollection<int>(Enumerable.Range(0,10)));
+
+                foreach(var collection in collections)
+                {
+                    var dataSource = new ItemsSourceView(collection);
+                    foreach(int i in collection)
+                    {
+                        Verify.AreEqual(i, dataSource.IndexOf(i));
+                    }
+
+                    Verify.AreEqual(-1, dataSource.IndexOf(11));
+                }
+
+                // Enumerabl.Range returns IEnumerable which does not provide IndexOf
+                var testingItemsSourceView = new ItemsSourceView(Enumerable.Range(0, 10));
+                var index = -1;
+                try
+                {
+                    index = testingItemsSourceView.IndexOf(0);
+                }catch(Exception){ }
+                Verify.AreEqual(-1, index);
+
+
+                var nullContainingEnumerable = new CustomEnumerable();
+                testingItemsSourceView = new ItemsSourceView(nullContainingEnumerable);
+
+                Verify.AreEqual(1,testingItemsSourceView.IndexOf(null));
+
+            });
+        }
+
         // Calling Reset multiple times before layout runs causes a crash
         // in unique ids. We end up thinking we have multiple elements with the same id.
         [TestMethod]
@@ -378,6 +416,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             public int IndexFromKey(string id)
             {
                 return int.Parse(id);
+            }
+        }
+
+        class CustomEnumerable : IEnumerable<object>
+        {
+            private List<string> myList = new List<string>();
+            
+            public CustomEnumerable()
+            {
+                myList.Add("text");
+                myList.Add(null);
+                myList.Add("foobar");
+                myList.Add("WinUI is awesome");
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return myList.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return myList.GetEnumerator();
             }
         }
     }
