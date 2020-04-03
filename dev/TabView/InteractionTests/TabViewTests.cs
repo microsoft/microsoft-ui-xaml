@@ -118,7 +118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
-                UIObject smallerTab = FindElement.ByName("FirstTab");
+                UIObject smallerTab = FindElement.ByName("SecondTab");
                 UIObject largerTab = FindElement.ByName("LongHeaderTab");
 
                 FindElement.ByName<Button>("SetTabViewWidth").InvokeAndWait();

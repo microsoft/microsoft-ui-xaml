@@ -619,23 +619,32 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Path x:Name="LeftRadiusRender"
+                        <!-- Paths are techincally content, but are not relevant to UIA in our case -->
+                        <!-- To circumenvent that, wrap them in  content controls and disable the tab stop -->
+                        <ContentControl
+                            x:Name="LeftRadiusRender"
                             Grid.Column="0"
-                            Canvas.ZIndex="20"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            AutomationProperties.AccessibilityView="Raw"
                             VerticalAlignment="Bottom"
-                            Stretch="Uniform"
-                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" />
+                            IsTabStop="False">
+                            <Path 
+                                Stretch="Uniform"
+                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" />
+                        </ContentControl>
 
-                        <Path x:Name="RightRadiusRender"
+                        <ContentControl x:Name="RightRadiusRender"
+                            AutomationProperties.AccessibilityView="Raw"
                             Grid.Column="2"
-                            Canvas.ZIndex="20"
-                            Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
-                            Stretch="Uniform"
-                            Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
+                            IsTabStop="False">
+                            <Path
+                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                                Stretch="Uniform"
+                                Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
+                        </ContentControl>
 
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
