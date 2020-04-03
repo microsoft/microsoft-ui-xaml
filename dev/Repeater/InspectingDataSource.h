@@ -14,15 +14,17 @@ public:
     InspectingDataSource(const winrt::IInspectable& source);
     ~InspectingDataSource();
 
-#pragma region IDataSourceOverrides
+#pragma region ItemsSourceViewOverrides
 
     int32_t GetSizeCore() override;
     winrt::IInspectable GetAtCore(int index) override;
     bool HasKeyIndexMappingCore() override;
     winrt::hstring KeyFromIndexCore(int index) override;
     int IndexFromKeyCore(winrt::hstring const& id) override;
+    int IndexOfCore(winrt::IInspectable const& value);
 #pragma endregion
 
+    // This line can be deleted as soon as the API of ItemsSourceView is public
     int IndexOf(winrt::IInspectable const& value);
 
 private:
