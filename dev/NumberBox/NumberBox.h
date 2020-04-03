@@ -83,7 +83,7 @@ private:
 
     bool IsInBounds(double value);
 
-    void UpdateTextBoxCornerRadius();
+    void UpdateTextBoxCornerRadiusForInlineMode();
 
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
