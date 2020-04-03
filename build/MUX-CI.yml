@@ -1,6 +1,7 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
+  rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Build
   pool:
@@ -41,6 +42,7 @@ jobs:
     dependsOn: Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -75,5 +77,5 @@ jobs:
     - RunTestsInHelix
     - RunNugetPkgTestsInHelix
     - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
