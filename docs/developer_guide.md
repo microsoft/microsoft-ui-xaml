@@ -1,4 +1,4 @@
-﻿# Developer Guide
+# Developer Guide
 
 This guide provides instructions on how to build the repo and implement 
 improvements.
@@ -51,7 +51,40 @@ select **MUXControlsTestApp** as your startup project in Visual Studio.
 
 ### Creating a NuGet package
 
-> More information will be coming on this soon
+To create a NuGet package for a given build flavor (release/debug) and build arch (x64/x86/ARM/ARM64), first you need to build the solution in that configuration.
+
+After building the solution in the desired configuration, you can run the `build-nupkg.ps1` script that will run the required steps.
+The script takes the following arguments:
+#### -BuildOutput
+The path to the microsoft-ui-xaml BuildOutput folder
+#### -BuildFlavor
+The flavor to use for nuget build (`debug` or `release`). Defaults to `release`.
+#### -BuildArch
+The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`. Defaults to `x86`.
+#### -OutputDir
+The folder where the nuget package will be generated in
+#### -SkipFrameworkPackage
+Can be specified to skip building a framework package. Defaults to `False`.
+In order to generate framework packages, you need to generate package appx files. 
+This can be done using the `MakeAllAppx.cmd` located in the same folder as `build-nupkg.ps1`.
+
+
+Example usage (running from root of repository folder):
+```
+// Builds a NuGet package with debug binaries and arch x64 into the folder "NuGetPackage"
+.\build\NuSpecs\build-nupkg.ps1 -BuildOutput "..\..\BuildOutput" -BuildFlavor "debug" -BuildArch "x64" -OutputDir "..\..\NugetPackage"
+```
+
+> Note: To use debug build outputs as nuget package, you need to change [this line](https://github.com/microsoft/microsoft-ui-xaml/blob/7d2cd793a0154580f1dd0c9685c461198e05f207/dev/dll/Microsoft.UI.Xaml.vcxproj#L35) in `microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.vcxproj` from
+> ```xml
+> <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf> 
+> ``` 
+> to 
+> ```xml
+> <DisableEmbeddedXbf>false</DisableEmbeddedXbf> 
+> ```
+> to allow building of .pri files in debug mode, which are needed for the NuGet package.
+
 
 ## Testing
 
