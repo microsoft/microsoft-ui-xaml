@@ -4264,13 +4264,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
                     Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 2");
                     Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
-                    // Verify that third menu item is in tree
-                    var secondChildItem = FindElement.ByName("Menu Item 3");
+                    // Verify that third child menu item is in tree
+                    var secondChildItem = FindElement.ByName("Menu Item 4");
                     Verify.IsNotNull(secondChildItem, "Child item should be visible after expanding parent item.");
 
                     Log.Comment("Collapse child of first menu item.");
-                    childItem = FindElement.ByName("Menu Item 2");
-                    InputHelper.LeftClick(childItem);
+                    InputHelper.LeftClick(childItem, 5, 5);
                     Wait.ForIdle();
 
                     Log.Comment("Verify that child of first menu item was collapsed correctly.");
@@ -4282,7 +4281,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
                     Log.Comment("Collapse first menu item.");
-                    InputHelper.LeftClick(firstItem);
+                    InputHelper.LeftClick(firstItem, 5, 5);
                     Wait.ForIdle();
 
                     Log.Comment("Verify that first menu item was collapsed correctly.");
