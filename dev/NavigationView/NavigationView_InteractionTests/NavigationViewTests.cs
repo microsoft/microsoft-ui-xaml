@@ -4269,6 +4269,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsNotNull(secondChildItem, "Child item should be visible after expanding parent item.");
 
                     Log.Comment("Collapse child of first menu item.");
+                    childItem = FindElement.ByName("Menu Item 2");
                     InputHelper.LeftClick(childItem);
                     Wait.ForIdle();
 

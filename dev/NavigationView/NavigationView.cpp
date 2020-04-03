@@ -2911,10 +2911,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     {
         if (ip.GetSize() > 1)
         {
-            auto indexOfParentInOverflow = m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0));
-            // We want to make sure that container is collapsed before movement
-            CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
-            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), indexOfParentInOverflow);
+            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0)));
         }
         return item;
     }();
