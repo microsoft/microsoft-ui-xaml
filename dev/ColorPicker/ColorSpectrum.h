@@ -118,18 +118,18 @@ private:
     std::vector<Hsv> m_hsvValues;
 
     // XAML elements
-    winrt::Grid m_layoutRoot{ nullptr };
-    winrt::Grid m_sizingGrid{ nullptr };
+    tracker_ref<winrt::Grid> m_layoutRoot{ this };
+    tracker_ref<winrt::Grid> m_sizingGrid{ this };
 
-    winrt::Rectangle m_spectrumRectangle{ nullptr };
-    winrt::Ellipse m_spectrumEllipse{ nullptr };
-    winrt::Rectangle m_spectrumOverlayRectangle{ nullptr };
-    winrt::Ellipse m_spectrumOverlayEllipse{ nullptr };
+    tracker_ref<winrt::Rectangle> m_spectrumRectangle{ this };
+    tracker_ref<winrt::Ellipse> m_spectrumEllipse{ this };
+    tracker_ref<winrt::Rectangle> m_spectrumOverlayRectangle{ this };
+    tracker_ref<winrt::Ellipse> m_spectrumOverlayEllipse{ this };
 
-    winrt::FrameworkElement m_inputTarget{ nullptr };
-    winrt::Panel m_selectionEllipsePanel{ nullptr };
+    tracker_ref<winrt::FrameworkElement> m_inputTarget{ this };
+    tracker_ref<winrt::Panel> m_selectionEllipsePanel{ this };
 
-    winrt::ToolTip m_colorNameToolTip{ nullptr };
+    tracker_ref<winrt::ToolTip> m_colorNameToolTip{ this };
 
     winrt::IAsyncAction m_createImageBitmapAction{ nullptr };
 
