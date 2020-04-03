@@ -8,108 +8,25 @@
     <Style TargetType="local:ProgressRing">
         <Setter Property="Foreground" Value="{ThemeResource ProgressRingForegroundThemeBrush}" />
         <Setter Property="Background" Value="{ThemeResource ProgressRingBackgroundThemeBrush}" />
-        <Setter Property="Maximum" Value="100" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="MinHeight" Value="20" />
+        <Setter Property="MinWidth" Value="20" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
                     <Grid x:Name="LayoutRoot" Background="Transparent">
-
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualStateGroup.Transitions>
-                                    <VisualTransition From="Indeterminate" To="Determinate">
-                                        <Storyboard>
-                                            <DoubleAnimation
-                                                Storyboard.TargetName="DeterminateProgressRingRoot"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="1"
-                                                Duration="0:0:0.15" />
-                                            <DoubleAnimation
-                                                Storyboard.TargetName="LottiePlayer"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="0"
-                                                Duration="0:0:0.15" />
-                                        </Storyboard>
-                                    </VisualTransition>
-                                </VisualStateGroup.Transitions>
-                                <VisualState x:Name="Determinate" />
-                                <VisualState x:Name="Indeterminate">
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="LottiePlayer"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0:0:0.25" />
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="DeterminateProgressRingRoot"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.25" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Active" />
+                                <VisualState x:Name="Inactive" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-
                         <!-- AnimatedVisualPlayer for Lottie -->
-                        <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="false" Stretch="fill" Opacity="0"/>
+                        <local:AnimatedVisualPlayer x:Name="IndeterminateAnimatedVisualPlayer" AutoPlay="false" Stretch="fill"/>
 
-                        <!--ProgressRing-->
-                        <Grid x:Name="DeterminateProgressRingRoot">
-                            <!-- Progress Ring Track-->
-                            <Path
-                                x:Name="OutlinePathPart"
-                                Fill="Transparent"
-                                Stroke="{TemplateBinding Background}"
-                                StrokeThickness="{StaticResource ProgressRingStrokeThickness}"
-                                StrokeStartLineCap="Round"
-                                StrokeEndLineCap="Round">
-                                <Path.Data>
-                                    <PathGeometry>
-                                        <PathGeometry.Figures>
-                                            <PathFigureCollection>
-                                                <PathFigure x:Name="OutlineFigurePart">
-                                                    <PathFigure.Segments>
-                                                        <PathSegmentCollection>
-                                                            <ArcSegment
-                                                                x:Name="OutlineArcPart"
-                                                                IsLargeArc="True"
-                                                                SweepDirection="Clockwise"/>
-                                                        </PathSegmentCollection>
-                                                    </PathFigure.Segments>
-                                                </PathFigure>
-                                            </PathFigureCollection>
-                                        </PathGeometry.Figures>
-                                    </PathGeometry>
-                                </Path.Data>
-                            </Path>
-                            <!-- Progress Ring Indicator-->
-                            <Path
-                                x:Name="RingPathPart"
-                                Fill="Transparent"
-                                Stroke="{TemplateBinding Foreground}"
-                                StrokeThickness="{StaticResource ProgressRingStrokeThickness}"
-                                StrokeStartLineCap="Round"
-                                StrokeEndLineCap="Round">
-                                <Path.Data>
-                                    <PathGeometry>
-                                        <PathGeometry.Figures>
-                                            <PathFigureCollection>
-                                                <PathFigure x:Name="RingFigurePart">
-                                                    <PathFigure.Segments>
-                                                        <PathSegmentCollection>
-                                                            <ArcSegment
-                                                                x:Name="RingArcPart"
-                                                                IsLargeArc="False"
-                                                                SweepDirection="Clockwise" />
-                                                        </PathSegmentCollection>
-                                                    </PathFigure.Segments>
-                                                </PathFigure>
-                                            </PathFigureCollection>
-                                        </PathGeometry.Figures>
-                                    </PathGeometry>
-                                </Path.Data>
-                            </Path>
-                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

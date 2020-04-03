@@ -13,7 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "ProgressRing.g.cpp"
 
-GlobalDependencyProperty ProgressRingProperties::s_IsIndeterminateProperty{ nullptr };
+GlobalDependencyProperty ProgressRingProperties::s_IsActiveProperty{ nullptr };
 
 ProgressRingProperties::ProgressRingProperties()
 {
@@ -22,38 +22,38 @@ ProgressRingProperties::ProgressRingProperties()
 
 void ProgressRingProperties::EnsureProperties()
 {
-    if (!s_IsIndeterminateProperty)
+    if (!s_IsActiveProperty)
     {
-        s_IsIndeterminateProperty =
+        s_IsActiveProperty =
             InitializeDependencyProperty(
-                L"IsIndeterminate",
+                L"IsActive",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::ProgressRing>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnIsIndeterminatePropertyChanged));
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsActivePropertyChanged));
     }
 }
 
 void ProgressRingProperties::ClearProperties()
 {
-    s_IsIndeterminateProperty = nullptr;
+    s_IsActiveProperty = nullptr;
 }
 
-void ProgressRingProperties::OnIsIndeterminatePropertyChanged(
+void ProgressRingProperties::OnIsActivePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::ProgressRing>();
-    winrt::get_self<ProgressRing>(owner)->OnIsIndeterminatePropertyChanged(args);
+    winrt::get_self<ProgressRing>(owner)->OnIsActivePropertyChanged(args);
 }
 
-void ProgressRingProperties::IsIndeterminate(bool value)
+void ProgressRingProperties::IsActive(bool value)
 {
-    static_cast<ProgressRing*>(this)->SetValue(s_IsIndeterminateProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<ProgressRing*>(this)->SetValue(s_IsActiveProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool ProgressRingProperties::IsIndeterminate()
+bool ProgressRingProperties::IsActive()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_IsIndeterminateProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_IsActiveProperty));
 }
