@@ -26,6 +26,26 @@ namespace HelixTestHelpers
 
         public List<string> Screenshots { get; private set; }
         public List<TestResult> RerunResults { get; private set; }
+
+        // Returns true if the test pass rate is sufficient to avoid being counted as a failure.
+        public bool PassedOrUnreliable(int requiredNumberOfPasses)
+        {
+            if(Passed)
+            {
+                return true;
+            }
+            else
+            {
+                if(RerunResults.Count == 1)
+                {
+                    return RerunResults[0].Passed;
+                }
+                else
+                {
+                    return RerunResults.Where(r => r.Passed).Count() >= requiredNumberOfPasses;
+                }
+            }
+        }
     }
     
     //
@@ -478,7 +498,7 @@ namespace HelixTestHelpers
             return subResultsJsonByMethod;
         }
 
-        public void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath)
+        public void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath, int requiredPassRateThreshold)
         {
             TestPass testPass = TestPass.ParseTestWttFileWithReruns(wttInputPath, wttSingleRerunInputPath, wttMultipleRerunInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
             var results = testPass.TestResults;
@@ -489,7 +509,9 @@ namespace HelixTestHelpers
             // Since we re-run tests on failure, we'll mark every test that failed at least once as "skipped" rather than "failed".
             // If the test failed sufficiently often enough for it to count as a failed test (determined by a property on the
             // Azure DevOps job), we'll later mark it as failed during test results processing.
-            int skippedCount = resultCount - passedCount;
+
+            int failedCount = results.Where(r => !r.PassedOrUnreliable(requiredPassRateThreshold)).Count();
+            int skippedCount = results.Where(r => !r.Passed && r.PassedOrUnreliable(requiredPassRateThreshold)).Count();
 
             var root = new XElement("assemblies");
 
@@ -505,7 +527,7 @@ namespace HelixTestHelpers
             
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
-            assembly.SetAttributeValue("failed", 0);
+            assembly.SetAttributeValue("failed", failedCount);
             assembly.SetAttributeValue("skipped", skippedCount);
             
             assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
@@ -515,7 +537,7 @@ namespace HelixTestHelpers
             var collection = new XElement("collection");
             collection.SetAttributeValue("total", resultCount);
             collection.SetAttributeValue("passed", passedCount);
-            collection.SetAttributeValue("failed", 0);
+            collection.SetAttributeValue("failed", failedCount);
             collection.SetAttributeValue("skipped", skippedCount);
             collection.SetAttributeValue("name", "Test collection");
             collection.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
@@ -539,10 +561,15 @@ namespace HelixTestHelpers
                 {
                     resultString = "Pass";
                 }
-                else
+                else if(result.PassedOrUnreliable(requiredPassRateThreshold))
                 {
                     resultString = "Skip";
                 }
+                else
+                {
+                    resultString = "Fail";
+                }
+
                 
                 test.SetAttributeValue("result", resultString);
 
@@ -553,10 +580,21 @@ namespace HelixTestHelpers
                     // this allows it to be as long as we want, whereas the reason field in Azure DevOps has a 4000 character limit.
                     string subResultsFileName = methodName + "_subresults.json";
                     string subResultsFilePath = Path.Combine(Path.GetDirectoryName(wttInputPath), subResultsFileName);
-
-                    var reason = new XElement("reason");
-                    reason.Add(new XCData(GetUploadedFileUrl(subResultsFileName, helixResultsContainerUri, helixResultsContainerRsas)));
-                    test.Add(reason);
+					
+                    if (result.PassedOrUnreliable(requiredPassRateThreshold))
+                    {
+                        var reason = new XElement("reason");
+                        reason.Add(new XCData(GetUploadedFileUrl(subResultsFileName, helixResultsContainerUri, helixResultsContainerRsas)));
+                        test.Add(reason);
+                    }
+                    else
+                    {
+                        var failure = new XElement("failure");
+                        var message = new XElement("message");
+						message.Add(new XCData(GetUploadedFileUrl(subResultsFileName, helixResultsContainerUri, helixResultsContainerRsas)));
+                        failure.Add(message);
+                        test.Add(failure);
+                    }
                 }
                 collection.Add(test);
             }
