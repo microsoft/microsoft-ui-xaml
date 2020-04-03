@@ -27,7 +27,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="DownSpinButton.Visibility" Value="Visible" />
                                         <Setter Target="UpSpinButton.Visibility" Value="Visible" />
-                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                 </VisualState>
 

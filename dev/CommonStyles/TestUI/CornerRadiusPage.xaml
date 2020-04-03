@@ -127,6 +127,7 @@
                         <RowDefinition/>
                         <RowDefinition/>
                         <RowDefinition/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Normal" Grid.Column="1" Style="{StaticResource BaseTextBlockStyle}"/>
@@ -938,6 +939,17 @@
                     </Grid>
                     <Grid Grid.Row="53" Style="{StaticResource RightColumn}">
                         <controls:NumberBox muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}" SpinButtonPlacementMode="Inline"/>
+                    </Grid>
+                    <TextBlock Grid.Row="54" Text="NumberBox (compact)" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="54" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:NumberBox SpinButtonPlacementMode="Compact"/>
+                    </Grid>
+                    <Grid Grid.Row="54" Style="{StaticResource RightColumn}">
+                        <controls:NumberBox muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}" SpinButtonPlacementMode="Compact"/>
                     </Grid>
                 </Grid>
 

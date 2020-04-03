@@ -68,6 +68,7 @@ private:
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 
     void ValidateInput();
     void CoerceMinimum();
@@ -82,8 +83,11 @@ private:
 
     bool IsInBounds(double value);
 
+    void UpdateTextBoxCornerRadius();
+
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
+    bool m_isControlCornerRadiusAvailable{ false };
 
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
@@ -98,4 +102,6 @@ private:
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
+
+    PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
 };
