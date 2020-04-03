@@ -346,18 +346,57 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
         auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
+        m_scrollDecreaseButton.set(decreaseButton);
         m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
 
         auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
+        m_scrollIncreaseButton.set(increaseButton);
         m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
+
+        m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
     }
 
     UpdateTabWidths();
 }
 
+void TabView::OnScrollViewerViewChanged(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args)
+{
+    UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+}
+
+void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
+{
+    if (auto&& scrollViewer = m_scrollViewer.get())
+    {
+        auto&& decreaseButton = m_scrollDecreaseButton.get();
+        auto&& increaseButton = m_scrollIncreaseButton.get();
+
+        constexpr auto minThreshold = 0.1;
+        auto horizontalOffset = scrollViewer.HorizontalOffset();
+        auto scrollableWidth = scrollViewer.ScrollableWidth();
+
+        if (abs(horizontalOffset - scrollableWidth) < minThreshold)
+        {
+            decreaseButton.IsEnabled(true);
+            increaseButton.IsEnabled(false);
+        }
+        else if (abs(horizontalOffset) < minThreshold)
+        {
+            decreaseButton.IsEnabled(false);
+            increaseButton.IsEnabled(true);
+        }
+        else
+        {
+            decreaseButton.IsEnabled(true);
+            increaseButton.IsEnabled(true);
+        }
+    }
+}
+
 void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdateTabWidths();
+    UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
 }
 
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
@@ -636,6 +675,7 @@ void TabView::UpdateTabWidths()
                         if (auto listview = m_listView.get())
                         {
                             winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
+                            UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
                         }
                     }
                     else
@@ -659,9 +699,14 @@ void TabView::UpdateTabWidths()
                         // Calculate if the scroll buttons should be visible.
                         if (auto itemsPresenter = m_itemsPresenter.get())
                         {
-                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, itemsPresenter.ActualWidth() > availableWidth
+                            auto visible = itemsPresenter.ActualWidth() > availableWidth;
+                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, visible
                                 ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
                                 : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                            if (visible)
+                            {
+                                UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+                            }
                         }
                     }
                 }

@@ -359,6 +359,36 @@ namespace MUXControlsTestApp
             }
         }
 
+        public void TabViewScrollToTheLeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            scrollViewer.ChangeView(0, null, null, true);
+        }
+
+        public void TabViewScrollToTheMiddleButton_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            scrollViewer.ChangeView(scrollViewer.ScrollableWidth / 2.0f, null, null, true);
+        }
+
+        public void TabViewScrollToTheRightButton_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            scrollViewer.ChangeView(double.MaxValue, null, null, true);
+        }
+
+        public void GetScrollDecreaseButtonEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollDecreaseButton = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButton") as RepeatButton;
+            ScrollDecreaseButtonEnabled.Text = scrollDecreaseButton.IsEnabled ? "True" : "False";
+        }
+
+        public void GetScrollIncreaseButtonEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollIncreaseButton = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") as RepeatButton;
+            ScrollIncreaseButtonEnabled.Text = scrollIncreaseButton.IsEnabled ? "True" : "False";
+        }
+
         private void TabViewSizingPageButton_Click(object sender, RoutedEventArgs e)
         {
             this.Frame.Navigate(typeof(TabViewSizingPage));
