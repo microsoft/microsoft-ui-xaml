@@ -240,6 +240,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // #2219 Unreliable test: TeachingTipTests.TipFollowsTargetOnWindowResize 
         public void TipFollowsTargetOnWindowResize()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
