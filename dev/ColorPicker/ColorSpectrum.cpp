@@ -575,7 +575,7 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
 void ColorSpectrum::UpdateEllipse()
 {
     auto&& selectionEllipsePanel = m_selectionEllipsePanel.get();
-	
+
     if (!selectionEllipsePanel)
     {
         return;
