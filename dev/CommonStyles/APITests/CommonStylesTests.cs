@@ -135,6 +135,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled due to #2210: Unreliable test: CommonStylesApiTests.VerifyVisualTreeForCommandBarOverflowMenu
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
