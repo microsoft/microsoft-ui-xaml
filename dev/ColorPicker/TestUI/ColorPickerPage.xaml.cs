@@ -91,7 +91,7 @@ namespace MUXControlsTestApp
             {
                 selectionEllipsePanel.RegisterPropertyChangedCallback(Canvas.LeftProperty, new DependencyPropertyChangedCallback(SelectionEllipsePositionChanged));
                 selectionEllipsePanel.RegisterPropertyChangedCallback(Canvas.TopProperty, new DependencyPropertyChangedCallback(SelectionEllipsePositionChanged));
-                
+
                 UpdateSelectionEllipsePosition();
             }
 

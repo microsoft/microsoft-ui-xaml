@@ -24,7 +24,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\UpdateUnreliableTests.ps1
-      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
 
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
