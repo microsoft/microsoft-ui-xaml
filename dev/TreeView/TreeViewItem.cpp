@@ -414,7 +414,7 @@ void TreeViewItem::OnCheckToggle(winrt::IInspectable const& sender, winrt::Route
         auto listControl = treeView->ListControl();
         int index = listControl->IndexFromContainer(*this);
         auto selectionState = CheckBoxSelectionState(sender.as<winrt::CheckBox>());
-        listControl->ListViewModel()->ModifySelectByIndex(index, selectionState);
+        listControl->ListViewModel()->SelectByIndex(index, selectionState);
         UpdateTreeViewItemVisualState(selectionState);
         RaiseSelectionChangeEvents(selectionState == TreeNodeSelectionState::Selected);
     }
