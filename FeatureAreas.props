@@ -193,6 +193,8 @@
   </PropertyGroup>  
   <!-- Dependencies for ProgressRing -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureProgressRingEnabled) == 'true'">
+    <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
+    <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
   </PropertyGroup>  
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
