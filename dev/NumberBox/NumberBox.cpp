@@ -161,14 +161,12 @@ void NumberBox::OnApplyTemplate()
 
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
 
-            // Listen to NumberBox::CornerRadius changes so we can change the corner radius of the textbox in code-behind.
-            // Based on corner radius tests, we cannot do this in Visual States as we need to filter some specific corner radii
-            // for the texbox based on the SpinButtonPlacementMode. For example, with SpinButtonPlacementMode::Inline, the T-rule
-            // applies and we should only set the TopLeft and BottomLeft corner radii of the textbox to values > 0. In all other
-            // SpinButtonPlacementModes, we apply NumberBox's corner radius to all textbox corners. Visual States, however, only
-            // set the property when entering the state. Since NumberBox's corner radius can change while in a Visual State
-            // this could potentially lead to incorrect textbox corner radii updates (rounding all four corners with inlined spin buttons
-            // -> breaking T-rule)
+            // Listen to NumberBox::CornerRadius changes so that we can enfore the T-rule for the textbox in SpinButtonPlacementMode::Inline.
+            // We need to explicitly go to the corresponding visual state each time the NumberBox' CornerRadius is changed in order for the new
+            // corner radius values to be filtered correctly.
+            // If we only go to the SpinButtonsVisible visual state whenever the SpinButtonPlacementMode is changed to Inline, all subsequent
+            // corner radius changes would apply to all four textbox corners (this can be easily seen in the CornerRadius test page of the MUXControlsTestApp).
+            // This will break the T-rule in the Inline SpinButtonPlacementMode.
             if (m_isControlCornerRadiusAvailable)
             {
                 m_cornerRadiusChangedRevoker = RegisterPropertyChanged(*this,
@@ -228,7 +226,8 @@ void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*s
 {
     if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
-        UpdateTextBoxCornerRadiusForInlineMode();
+        // Enforce T-rule for the textbox in Inline SpinButtonPlacementMode.
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
 }
 
@@ -619,8 +618,6 @@ void NumberBox::UpdateSpinButtonPlacement()
     if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
-
-        UpdateTextBoxCornerRadiusForInlineMode();
     }
     else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Compact)
     {
@@ -666,21 +663,5 @@ void NumberBox::UpdateSpinButtonEnabled()
 bool NumberBox::IsInBounds(double value)
 {
     return (value >= Minimum() && value <= Maximum());
-}
-
-void NumberBox::UpdateTextBoxCornerRadiusForInlineMode()
-{
-    if (m_isControlCornerRadiusAvailable)
-    {
-        if (auto && textBox = m_textBox.get())
-        {
-            auto value = this->CornerRadius();
-
-            // Respect T-rule in inline mode. Since a spin button borders the textbox to the right
-            // we are not allowed to round the right corners of the textbox.
-            value.BottomRight = value.TopRight = 0;
-            textBox.CornerRadius(value);
-        }
-    }
 }
 
