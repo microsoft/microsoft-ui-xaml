@@ -13,8 +13,9 @@ class ProgressRingAutomationPeer :
 public:
     ProgressRingAutomationPeer(winrt::ProgressRing const& owner);
 
-    hstring GetClassNameCore();
+    winrt::hstring GetClassNameCore();
     winrt::hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    winrt::hstring GetLocalizedControlTypeCore();
 };
 

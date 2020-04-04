@@ -121,4 +121,8 @@
     <value>Busy</value>
     <comment>This is used to announce Indeterminate state.</comment>
   </data>
+  <data name="ProgressRingName" xml:space="preserve">
+    <value>ProgressRing</value>
+    <comment>This is used to announce Progress Ring Name.</comment>
+  </data>
 </root>
