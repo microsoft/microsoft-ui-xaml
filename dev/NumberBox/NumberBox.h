@@ -85,7 +85,6 @@ private:
 
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
-    bool m_isControlCornerRadiusAvailable{ false };
 
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 

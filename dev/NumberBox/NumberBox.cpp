@@ -44,8 +44,6 @@ NumberBox::NumberBox()
     GotFocus({ this, &NumberBox::OnNumberBoxGotFocus });
     LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
-    m_isControlCornerRadiusAvailable = SharedHelpers::IsControlCornerRadiusAvailable();
-
     SetDefaultStyleKey(this);
 }
 
@@ -167,7 +165,7 @@ void NumberBox::OnApplyTemplate()
             // If we only go to the SpinButtonsVisible visual state whenever the SpinButtonPlacementMode is changed to Inline, all subsequent
             // corner radius changes would apply to all four textbox corners (this can be easily seen in the CornerRadius test page of the MUXControlsTestApp).
             // This will break the T-rule in the Inline SpinButtonPlacementMode.
-            if (m_isControlCornerRadiusAvailable)
+            if (SharedHelpers::IsControlCornerRadiusAvailable())
             {
                 m_cornerRadiusChangedRevoker = RegisterPropertyChanged(*this,
                     winrt::Control::CornerRadiusProperty(), { this, &NumberBox::OnCornerRadiusPropertyChanged });
