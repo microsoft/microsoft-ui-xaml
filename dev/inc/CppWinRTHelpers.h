@@ -55,7 +55,10 @@ struct ValueHelper
 {
     static T GetDefaultValue()
     {
-        return T{};
+#pragma warning(push)
+#pragma warning(disable : 26444) 
+        return T{};    
+#pragma warning(pop)
     }
 
     static winrt::IInspectable BoxValueIfNecessary(T const& value)
