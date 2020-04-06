@@ -38,10 +38,11 @@ https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 Building the solution **MUXControls.sln** will build all projects. 
 Generally you will want to set your configuration to **Debug**, **x64**, and 
 select **MUXControlsTestApp** as your startup project in Visual Studio.
-If you want to work on a single control/project instead of using the **MUXControls.sln** you can open the **MUXControlsInnerLoop.sln**.
+
+If you want to work on a single control/project, instead of using the **MUXControls.sln**, you can open the **MUXControlsInnerLoop.sln**.
 
 #### Working with the MUXControlsInnerLoop solution
-To work on a specific feature or control using the **MUXControlInnerLoop.sln** you will need to modify **InnerLoopAreas.props** to include the desired controls and projects. For example, to work in the ItemsRepeater using the InnerLoop, you will need to add
+To work on a specific feature or control using the **MUXControlInnerLoop.sln** you will need to modify the **InnerLoopAreas.props** file to include the desired controls and projects. For example, to work in the ItemsRepeater using the InnerLoop, you will need to add
 ```xml
 <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
 ```
