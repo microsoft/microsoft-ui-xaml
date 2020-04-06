@@ -34,7 +34,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            var numberBox = SetupNumberBoxBox();
+            var numberBox = SetupNumberBox();
 
             // first test: Uniform corner radius of '2' with no spin buttons shown
             RunOnUIThread.Execute(() =>
@@ -83,7 +83,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        private NumberBox SetupNumberBoxBox()
+        private NumberBox SetupNumberBox()
         {
             NumberBox numberBox = null;
             RunOnUIThread.Execute(() =>
