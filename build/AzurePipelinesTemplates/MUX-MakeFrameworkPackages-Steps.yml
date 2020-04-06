@@ -3,13 +3,25 @@ parameters:
 
 steps:
   - powershell: |
-      # MakeAllAppx.cmd creates all appx files
-      # Default parameters
-      $env:BUILDOUTPUT_OVERRIDE = "${{parameters.buildOutputDir}}\$env:BUILDCONFIGURATION\$env:BUILDPLATFORM"
-      & $env:Build_SourcesDirectory\build\NuSpecs\MakeAllAppx.cmd -builddate_yymm $env:BUILDDATE_YYMM -builddate_dd $env:BUILDDATE_DD -subversion $env:BUILDREVISION -verbose
-      if ($lastexitcode -ne 0) {
-          Write-Host "##vso[task.logissue type=error;] Make AppxHelper $platform $config failed with exit code $lastexitcode"
-          Write-Host "##vso[task.complete result=Failed;]"
-          Exit 1
+      $platforms = @("x86", "x64", "arm", "arm64")
+      $configs = @("debug", "release")
+      foreach ($platform in $platforms)
+      {
+        foreach ($config in $configs)
+        {
+          $rootPath = "${{ parameters.buildOutputDir }}\$config\$platform"
+          Write-Host ""
+          Write-Host "Checking for $rootPath\Microsoft.UI.Xaml"
+          Write-Host ""
+          if (Test-Path "$rootPath\Microsoft.UI.Xaml")
+          {
+            $env:BUILDOUTPUT_OVERRIDE = $rootPath
+            & $env:Build_SourcesDirectory\tools\MakeAppxHelper.cmd $platform $config -builddate_yymm $env:BUILDDATE_YYMM -builddate_dd $env:BUILDDATE_DD -subversion $env:BUILDREVISION -verbose
+            if ($lastexitcode -ne 0) {
+                Write-Host ##vso[task.logissue type=error;] Make AppxHelper $platform $config failed with exit code $lastexitcode
+                Exit 1
+            }
+          }
+        }
       }
     displayName: 'Make FrameworkPackages'
