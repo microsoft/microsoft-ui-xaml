@@ -158,6 +158,7 @@ header.masthead h1 {
   .showcase .showcase-text {
     padding: 7rem;
   }
+
 }
 
 .features-icons {
@@ -370,4 +371,101 @@ a:hover {
 
 #uhf-footer{
   margin-top: 0px;
+}
+
+.wrapper {
+  display: flex;
+  align-items: stretch;
+}
+
+#sidebar {
+  min-width: 300px;
+  max-width: 300px;
+  min-height: 100vh;
+  padding: 30px;
+  margin-right: 1rem;
+  margin-left: 70px;
+  background: #e1e6eb;
+  color: #fff;
+  transition: all 0.3s;
+  overflow: wrap;
+}
+
+td {
+  text-align: center;
+}
+
+.table thead th {
+  text-align: center;
+}
+
+#path-dropdown, #about-dropdown {
+  font-size: 1.3em;
+  color: black;
+  font-weight: 600;
+}
+
+#about-winui, #path-forward{
+  text-decoration: none;
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+#about-winui li, #path-forward li {
+  font-size: 1em;
+  margin-top: 5px;
+}
+
+#path-group {
+  margin-top: 15px;
+}
+
+.dropdown-list a:hover {
+  color: #02213b;
+}
+
+#sidebar.active {
+  margin-left: -300px;
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+}
+
+#uwp li {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#page-content {
+  margin-left: 2rem;
+  max-width: 50%;
+}
+
+#page-content p{
+  font-size: 1.1em;
+}
+
+.content-section {
+  margin-bottom: 20px;
+}
+
+.subject-header {
+  margin-bottom: 20px;
+}
+
+.content-subhead {
+  color:#0E53BD;
+  font-size: 2em;
+  margin-top:10px;
+  margin-bottom: 10px;
+}
+
+#about-section {
+  margin-top: 20px;
 }
