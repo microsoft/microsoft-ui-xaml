@@ -163,6 +163,10 @@ void RadialGradientBrush::UpdateCompositionGradientEllipseCenter()
     {
         const auto ellipseCenter = EllipseCenter();
         compositionGradientBrush.EllipseCenter(winrt::float2(ellipseCenter.X, ellipseCenter.Y));
+
+        // Changing the center affects the origin in the comp brush because we are translating from
+        // Origin to offset.
+        UpdateCompositionGradientOrigin();
     }
 }
 
@@ -204,9 +208,18 @@ void RadialGradientBrush::UpdateCompositionGradientOrigin()
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
         const auto gradientOrigin = GradientOrigin();
-        // This sets the gradient offset center to the top left corner
-        // Top Left is (-0.5,-0.5), center is (0,0)
-        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - 0.5f, gradientOrigin.Y - 0.5f));
+        const auto ellipseCenter = EllipseCenter();
+        // Comp uses offset, WinUI will follow WPF and use bounds relative to the element in all mapping modes.
+        // If ElementWidth=100 ElementHeight=100
+        // Relative mode
+        //     TopLeft of element = 0,0
+        //     Center of element = .5,.5
+        //     BottomRight of element = 1,1
+        // Absolute mode
+        //     TopLeft of element = 0,0
+        //     Center of element = 50,50
+        //     BottomRight of element = 100,100
+        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - ellipseCenter.X, gradientOrigin.Y - ellipseCenter.Y));
     }
 }
 
