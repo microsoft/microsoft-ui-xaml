@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using MUXControlsTestApp;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -40,6 +41,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 scroller = new Scroller();
                 Verify.IsNotNull(scroller);
 
@@ -91,6 +95,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
                 horizontalScrollController = new CompositionScrollController();
@@ -195,6 +202,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
                 horizontalScrollController = new CompositionScrollController();
@@ -320,6 +330,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
                 horizontalScrollController = new CompositionScrollController();
@@ -461,6 +474,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
                 biDirectionalScrollController = new BiDirectionalScrollController();
@@ -552,6 +568,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
                 biDirectionalScrollController = new BiDirectionalScrollController();
@@ -647,6 +666,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // We need the styles of the CompositionScrollController, so lets load it
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
                 rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
                 biDirectionalScrollController = new BiDirectionalScrollController();
