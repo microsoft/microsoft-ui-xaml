@@ -716,21 +716,27 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="NavigationSeparatorLineStates">
                                 <VisualState x:Name="HorizontalLine" />
+                                <VisualState x:Name="HorizontalLineCompact">
+                                    <VisualState.Setters>
+                                        <Setter Target="SeparatorLine.Margin" Value="{ThemeResource NavigationViewCompactItemSeparatorMargin}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="VerticalLine">
                                     <VisualState.Setters>
                                         <Setter Target="SeparatorLine.Height" Value="20" />
-                                        <Setter Target="SeparatorLine.Width" Value="1" />
-                                        <Setter Target="SeparatorLine.Margin" Value="10,0" />
+                                        <Setter Target="SeparatorLine.Width" Value="{ThemeResource TopNavigationViewItemSeparatorWidth}" />
+                                        <Setter Target="SeparatorLine.Margin" Value="{ThemeResource TopNavigationViewItemSeparatorMargin}" />
                                         <Setter Target="SeparatorLine.VerticalAlignment" Value="Center" />
+                                        <Setter Target="SeparatorLine.Fill" Value="{ThemeResource TopNavigationViewItemSeparatorForeground}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle 
                             x:Name="SeparatorLine"
-                            Height="1"
-                            Margin="16,10"
-                            Fill="{ThemeResource SystemControlForegroundBaseLowBrush}" />
+                            Height="{ThemeResource NavigationViewItemSeparatorHeight}"
+                            Margin="{ThemeResource NavigationViewItemSeparatorMargin}"
+                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}" /> 
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
