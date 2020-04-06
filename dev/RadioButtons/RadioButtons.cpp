@@ -8,7 +8,6 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "RadioButtonsTestHooks.h"
-#include <InspectingDataSource.h>
 
 RadioButtons::RadioButtons()
 {
@@ -537,10 +536,7 @@ void RadioButtons::UpdateSelectedItem()
         {
             if (auto const itemsSourceView = repeater.ItemsSourceView())
             {
-                if (auto const inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView)))
-                {
-                    Select(inspectingDataSource->IndexOf(SelectedItem()));
-                }
+                Select(itemsSourceView.IndexOf(SelectedItem()));
             }
         }
     }
