@@ -1906,7 +1906,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
 
-        if (auto nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
+        if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
         }    
