@@ -156,6 +156,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        public void VerifyPaneIsClosedAfterSelectingItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Test PaneDisplayMode=LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                TextBlock selectionRaisedIndicator = new TextBlock(FindElement.ById("SelectionChangedRaised"));
+
+                Log.Comment("Select Apps");
+                ComboBox selectedItem = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                selectedItem.SelectItemByName("Apps");
+                Verify.AreEqual("True", selectionRaisedIndicator.GetText());
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void PaneDisplayModeLeftLeftCompactLeftMinimalTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
