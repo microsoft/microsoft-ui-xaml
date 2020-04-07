@@ -1905,6 +1905,11 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
+
+        if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
+        {
+            ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+        }    
     }
 }
 
