@@ -439,6 +439,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadialGradientBrush_TestUI"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadialGradientBrush_InteractionTests", "dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.shproj", "{74D18B1B-5F6B-4534-945B-131E8E3206FB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C3201CCE-4A1E-492A-BFCF-273F8C2991EC}"
+	ProjectSection(SolutionItems) = preProject
+		InnerLoopAreas.props = InnerLoopAreas.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
