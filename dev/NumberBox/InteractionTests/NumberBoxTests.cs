@@ -316,14 +316,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 FindTextBox(numBox).SetFocus();
 
-                InputHelper.RotateWheel(numBox, 1);
-                InputHelper.RotateWheel(numBox, 1);
+                InputHelper.RotateWheel(FindTextBox(numBox), 1);
+                InputHelper.RotateWheel(FindTextBox(numBox), 1);
                 Wait.ForIdle();
                 Verify.AreEqual(2, numBox.Value);
 
-                InputHelper.RotateWheel(numBox, -1);
-                InputHelper.RotateWheel(numBox, -1);
-                InputHelper.RotateWheel(numBox, -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
                 Wait.ForIdle();
                 Verify.AreEqual(-1, numBox.Value);
 
