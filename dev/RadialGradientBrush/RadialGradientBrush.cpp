@@ -64,19 +64,27 @@ void RadialGradientBrush::OnDisconnected()
     }
 }
 
-void RadialGradientBrush::OnEllipseCenterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void RadialGradientBrush::OnCenterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
-        UpdateCompositionGradientEllipseCenter();
+        UpdateCompositionGradientCenter();
     }
 }
 
-void RadialGradientBrush::OnEllipseRadiusPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void RadialGradientBrush::OnRadiusXPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
-        UpdateCompositionGradientEllipseRadius();
+        UpdateCompositionGradientRadius();
+    }
+}
+
+void RadialGradientBrush::OnRadiusYPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
+    {
+        UpdateCompositionGradientRadius();
     }
 }
 
@@ -136,8 +144,8 @@ void RadialGradientBrush::EnsureCompositionBrush()
             // If CompositionRadialGradientBrush is available then use it to render a gradient.
             m_brush = compositor.CreateRadialGradientBrush();
 
-            UpdateCompositionGradientEllipseCenter();
-            UpdateCompositionGradientEllipseRadius();
+            UpdateCompositionGradientCenter();
+            UpdateCompositionGradientRadius();
             UpdateCompositionGradientOrigin();
             UpdateCompositionGradientStops();
             UpdateCompositionGradientMappingMode();
@@ -155,14 +163,14 @@ void RadialGradientBrush::EnsureCompositionBrush()
     }
 }
 
-void RadialGradientBrush::UpdateCompositionGradientEllipseCenter()
+void RadialGradientBrush::UpdateCompositionGradientCenter()
 {
     MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto ellipseCenter = EllipseCenter();
-        compositionGradientBrush.EllipseCenter(winrt::float2(ellipseCenter.X, ellipseCenter.Y));
+        const auto center = Center();
+        compositionGradientBrush.EllipseCenter(winrt::float2(center.X, center.Y));
 
         // Changing the center affects the origin in the comp brush because we are translating from
         // Origin to offset.
@@ -170,14 +178,13 @@ void RadialGradientBrush::UpdateCompositionGradientEllipseCenter()
     }
 }
 
-void RadialGradientBrush::UpdateCompositionGradientEllipseRadius()
+void RadialGradientBrush::UpdateCompositionGradientRadius()
 {
     MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto ellipseRadius = EllipseRadius();
-        compositionGradientBrush.EllipseRadius(winrt::float2(ellipseRadius.X, ellipseRadius.Y));
+        compositionGradientBrush.EllipseRadius(winrt::float2(static_cast<float>(RadiusX()), static_cast<float>(RadiusY())));
     }
 }
 
@@ -208,7 +215,7 @@ void RadialGradientBrush::UpdateCompositionGradientOrigin()
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
         const auto gradientOrigin = GradientOrigin();
-        const auto ellipseCenter = EllipseCenter();
+        const auto center = Center();
         // Comp uses offset, WinUI will follow WPF and use bounds relative to the element in all mapping modes.
         // If ElementWidth=100 ElementHeight=100
         // Relative mode
@@ -219,7 +226,7 @@ void RadialGradientBrush::UpdateCompositionGradientOrigin()
         //     TopLeft of element = 0,0
         //     Center of element = 50,50
         //     BottomRight of element = 100,100
-        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - ellipseCenter.X, gradientOrigin.Y - ellipseCenter.Y));
+        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - center.X, gradientOrigin.Y - center.Y));
     }
 }
 

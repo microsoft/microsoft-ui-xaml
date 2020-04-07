@@ -92,8 +92,8 @@
 
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="RandomizeGradientOriginButton" AutomationProperties.Name="RandomizeGradientOriginButton" Content="Randomize origin" Click="RandomizeGradientOriginButton_Click" />
-                            <Button x:Name="RandomizeEllipseCenterButton" AutomationProperties.Name="RandomizeEllipseCenterButton" Content="Randomize center" Click="RandomizeEllipseCenterButton_Click" />
-                            <Button x:Name="RandomizeEllipseRadiusButton" AutomationProperties.Name="RandomizeEllipseRadiusButton" Content="Randomize radius" Click="RandomizeEllipseRadiusButton_Click" />
+                            <Button x:Name="RandomizeCenterButton" AutomationProperties.Name="RandomizeCenterButton" Content="Randomize center" Click="RandomizeCenterButton_Click" />
+                            <Button x:Name="RandomizeRadiusButton" AutomationProperties.Name="RandomizeRadiusButton" Content="Randomize radius" Click="RandomizeRadiusButton_Click" />
                             <Button x:Name="ToggleMappingModeButton" AutomationProperties.Name="ToggleMappingModeButton" Content="Toggle mapping mode" Click="ToggleMappingModeButton_Click" />
                         </StackPanel>
 
@@ -111,6 +111,7 @@
                                 <RowDefinition />
                                 <RowDefinition />
                                 <RowDefinition />
+                                <RowDefinition />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />
@@ -122,10 +123,11 @@
                             <TextBlock Text="{x:Bind DynamicGradientBrush.GradientStops.Count}" Grid.Row="1" Grid.Column="1" x:Name="GradientStopCountText" AutomationProperties.Name="GradientStopCountText" />
                             <TextBlock Text="GradientOrigin: " Grid.Row="2" />
                             <TextBlock Text="{x:Bind DynamicGradientBrush.GradientOrigin}" Grid.Row="2" Grid.Column="1" />
-                            <TextBlock Text="EllipseCenter: " Grid.Row="3" />
-                            <TextBlock Text="{x:Bind DynamicGradientBrush.EllipseCenter}" Grid.Row="3" Grid.Column="1" />
-                            <TextBlock Text="EllipseRadius: " Grid.Row="4" />
-                            <TextBlock Text="{x:Bind DynamicGradientBrush.EllipseRadius}" Grid.Row="4" Grid.Column="1" />
+                            <TextBlock Text="Center: " Grid.Row="3" />
+                            <TextBlock Text="{x:Bind DynamicGradientBrush.Center}" Grid.Row="3" Grid.Column="1" />
+                            <TextBlock Text="Radius: " Grid.Row="4" />
+                            <TextBlock Text="{x:Bind DynamicGradientBrush.RadiusX}" Grid.Row="4" Grid.Column="1" />
+                            <TextBlock Text="{x:Bind DynamicGradientBrush.RadiusY}" Grid.Row="5" Grid.Column="1" />
                         </Grid>
 
                         <!-- Samples described in spec document -->
@@ -151,8 +153,8 @@
                                     <media:RadialGradientBrush
                                                         MappingMode="RelativeToBoundingBox"
                                                         GradientOrigin="0.5,0.5"
-                                                        EllipseCenter="0.5,0.5"
-                                                        EllipseRadius="0.5,0.5">
+                                                        Center="0.5,0.5"
+                                                        RadiusX="0.5" RadiusY="0.5">
                                         <GradientStop Color="Blue" Offset="0.0" />
                                         <GradientStop Color="Yellow" Offset="0.2" />
                                         <GradientStop Color="LimeGreen" Offset="0.4" />
@@ -168,8 +170,8 @@
                                     <media:RadialGradientBrush
                                                         MappingMode="Absolute"
                                                         GradientOrigin="100,100"
-                                                        EllipseCenter="100,100"
-                                                        EllipseRadius="100,100">
+                                                        Center="100,100"
+                                                        RadiusX="100" RadiusY="100">
                                         <GradientStop Color="Blue" Offset="0.0" />
                                         <GradientStop Color="Yellow" Offset="0.2" />
                                         <GradientStop Color="LimeGreen" Offset="0.4" />
@@ -187,8 +189,8 @@
                                 <Rectangle.Fill>
                                     <media:RadialGradientBrush
                                                     MappingMode="RelativeToBoundingBox"
-                                                    EllipseCenter="0.25,0.25"
-                                                    EllipseRadius=".5,.5"
+                                                    Center="0.25,0.25"
+                                                    RadiusX=".5" RadiusY=".5"
                                                     GradientOrigin="0.5,.25">
                                         <GradientStop Color="Yellow" Offset="0.0" />
                                         <GradientStop Color="Blue" Offset="1" />
@@ -200,8 +202,8 @@
                                 <Rectangle.Fill>
                                     <media:RadialGradientBrush
                                                     MappingMode="Absolute"
-                                                    EllipseCenter="50,50"
-                                                    EllipseRadius="100,100"
+                                                    Center="50,50"
+                                                    RadiusX="100" RadiusY="100"
                                                     GradientOrigin="100,50">
                                         <GradientStop Color="Yellow" Offset="0.0" />
                                         <GradientStop Color="Blue" Offset="1" />
