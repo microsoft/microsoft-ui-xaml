@@ -585,33 +585,18 @@ void SelectionModel::OnSelectionChanged()
 
 void SelectionModel::SelectImpl(int index, bool select)
 {
-    if (m_singleSelect)
+    if (!m_rootNode->IsSelected(index))
     {
-        // Check if new index is different to current one
-        if (m_rootNode->SelectedIndex() != index)
+        if (m_singleSelect)
         {
             ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
-            auto selected = m_rootNode->Select(index, select);
-            if (selected)
-            {
-                AnchorIndex(winrt::make<IndexPath>(index));
-            }
-            OnSelectionChanged();
         }
-    }
-    else
-    {
-        bool alreadySelected = m_rootNode->IsSelected(index);
         auto selected = m_rootNode->Select(index, select);
         if (selected)
         {
             AnchorIndex(winrt::make<IndexPath>(index));
         }
-        // Only raise event if it was not already selected
-        if (!alreadySelected)
-        {
-            OnSelectionChanged();
-        }
+        OnSelectionChanged();
     }
 }
 
@@ -635,7 +620,9 @@ void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool sel
 void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool select, bool raiseSelectionChanged)
 {
     bool selected = false;
-    bool selectionChanged = true;
+    bool newSelection = true;
+
+    // Handle single select differently as comparing indexpaths is faster
     if (m_singleSelect)
     {
         if (auto const selectedIndex = SelectedIndex())
@@ -643,15 +630,15 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             // If paths are equal, skip everything and do nothing
             if (selectedIndex.CompareTo(index) == 0)
             {
-                selectionChanged = false;
+                newSelection = false;
             }
         }
     }
 
     // Selection is actually different from previous one, so update.
-    if (selectionChanged)
+    if (newSelection)
     {
-        selectionChanged = false;
+        bool changedSelection = false;
 
         if (m_singleSelect)
         {
@@ -662,14 +649,14 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             m_rootNode,
             index,
             true, /* realizeChildren */
-            [&selected, &select, &selectionChanged](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+            [&selected, &select, &changedSelection](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
             {
                 if (depth == path.GetSize() - 1)
                 {
-                    // Node already selected, so we need to raise selection changed
                     if (!currentNode->IsSelected(childIndex))
                     {
-                        selectionChanged = true;
+                        // Node is not already selected, so we need to raise event
+                        changedSelection = true;
                     }
                     selected = currentNode->Select(childIndex, select);
                 }
@@ -681,7 +668,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             AnchorIndex(index);
         }
 
-        if (raiseSelectionChanged && selectionChanged)
+        if (raiseSelectionChanged && changedSelection)
         {
             OnSelectionChanged();
         }
