@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -585,7 +585,7 @@ void SelectionModel::OnSelectionChanged()
 
 void SelectionModel::SelectImpl(int index, bool select)
 {
-    if (!m_rootNode->IsSelected(index))
+    if (m_rootNode->IsSelected(index) != select)
     {
         if (m_singleSelect)
         {
@@ -627,8 +627,8 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
     {
         if (auto const selectedIndex = SelectedIndex())
         {
-            // If paths are equal, skip everything and do nothing
-            if (selectedIndex.CompareTo(index) == 0)
+            // If paths are equal and we want to select, skip everything and do nothing
+            if (selectedIndex.CompareTo(index) == 0 && select)
             {
                 newSelection = false;
             }
@@ -638,7 +638,8 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
     // Selection is actually different from previous one, so update.
     if (newSelection)
     {
-        bool changedSelection = false;
+        // If we unselect something, raise event any way, otherwise changedSelection is false
+        bool changedSelection = !select;
 
         if (m_singleSelect)
         {
@@ -655,7 +656,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
                 {
                     if (!currentNode->IsSelected(childIndex))
                     {
-                        // Node is not already selected, so we need to raise event
+                        // Node has different value then we want to set, so lets update!
                         changedSelection = true;
                     }
                     selected = currentNode->Select(childIndex, select);
