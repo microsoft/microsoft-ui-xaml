@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -978,6 +978,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     12);
 
             });
+        }
+
+        [TestMethod]
+        public void AlreadySelectedDoesNotRaiseEvent()
+        {
+            var testName = "Select(int32 index)";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var list = Enumerable.Range(0, 10).ToList();
+
+                var selectionModel = new SelectionModel() { 
+                    Source = list,
+                    SingleSelect = true
+                };
+
+                // Single select index
+                selectionModel.Select(0);
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.Select(0);
+
+                selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+                // Single select indexpath
+                testName = "SelectAt(IndexPath index)";
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+            });
+
+            void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+            {
+                throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
+            }
         }
 
         private void Select(SelectionModel manager, int index, bool select)

@@ -585,18 +585,29 @@ void SelectionModel::OnSelectionChanged()
 
 void SelectionModel::SelectImpl(int index, bool select)
 {
+    // New index is same as already selected
     if (m_singleSelect)
     {
-        ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
+        if (m_rootNode->SelectedIndex() != index)
+        {
+            ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
+            auto selected = m_rootNode->Select(index, select);
+            if (selected)
+            {
+                AnchorIndex(winrt::make<IndexPath>(index));
+            }
+            OnSelectionChanged();
+        }
     }
-
-    auto selected = m_rootNode->Select(index, select);
-    if (selected)
+    else
     {
-        AnchorIndex(winrt::make<IndexPath>(index));
+        auto selected = m_rootNode->Select(index, select);
+        if (selected)
+        {
+            AnchorIndex(winrt::make<IndexPath>(index));
+        }
+        OnSelectionChanged();
     }
-
-    OnSelectionChanged();
 }
 
 void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool select)
@@ -619,32 +630,48 @@ void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool sel
 void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool select, bool raiseSelectionChanged)
 {
     bool selected = false;
+    bool selectionChanged = true;
     if (m_singleSelect)
     {
-        ClearSelection(true /*restAnchor*/, false /* raiseSelectionChanged */);
-    }
-
-    SelectionTreeHelper::TraverseIndexPath(
-        m_rootNode,
-        index,
-        true, /* realizeChildren */
-        [&selected, &select](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+        if (auto const selectedIndex = SelectedIndex())
         {
-            if (depth == path.GetSize() - 1)
+            // If paths are equal, skip everything and do nothing
+            if (selectedIndex.CompareTo(index) == 0)
             {
-                selected = currentNode->Select(childIndex, select);
+                selectionChanged = false;
             }
         }
-    );
-
-    if (selected)
-    {
-        AnchorIndex(index);
     }
-
-    if (raiseSelectionChanged)
+    // Selection is actually different from previous one, so run code.
+    if (selectionChanged)
     {
-        OnSelectionChanged();
+        if (m_singleSelect)
+        {
+            ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
+        }
+
+        SelectionTreeHelper::TraverseIndexPath(
+            m_rootNode,
+            index,
+            true, /* realizeChildren */
+            [&selected, &select](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+            {
+                if (depth == path.GetSize() - 1)
+                {
+                    selected = currentNode->Select(childIndex, select);
+                }
+            }
+        );
+
+        if (selected)
+        {
+            AnchorIndex(index);
+        }
+
+        if (raiseSelectionChanged)
+        {
+            OnSelectionChanged();
+        }
     }
 }
 
