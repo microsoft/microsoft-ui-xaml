@@ -15,25 +15,6 @@ ProgressRingAutomationPeer::ProgressRingAutomationPeer(winrt::ProgressRing const
 {
 }
 
-// IAutomationPeerOverrides
-winrt::IInspectable ProgressRingAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
-{
-    if (patternInterface == winrt::PatternInterface::RangeValue)
-    {
-        if (auto progressRing = Owner().try_as<winrt::ProgressRing>())
-        {
-            if (progressRing.IsIndeterminate())
-            {
-                return nullptr;
-            }
-        }
-
-        return *this;
-    }
-
-     return __super::GetPatternCore(patternInterface);
-}
-
 winrt::hstring ProgressRingAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::ProgressRing>();
@@ -46,7 +27,7 @@ winrt::hstring ProgressRingAutomationPeer::GetNameCore()
 
     if (auto progressRing = Owner().try_as<winrt::ProgressRing>())
     {
-        if (progressRing.IsIndeterminate())
+        if (progressRing.IsActive())
         {
             return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressRingIndeterminateStatus) + name };
         }
@@ -59,45 +40,7 @@ winrt::AutomationControlType ProgressRingAutomationPeer::GetAutomationControlTyp
     return winrt::AutomationControlType::ProgressBar;
 }
 
-com_ptr<ProgressRing> ProgressRingAutomationPeer::GetImpl()
+winrt::hstring ProgressRingAutomationPeer::GetLocalizedControlTypeCore()
 {
-    com_ptr<ProgressRing> impl = nullptr;
-
-    if (auto progressRing = Owner().try_as<winrt::ProgressRing>())
-    {
-        impl = winrt::get_self<ProgressRing>(progressRing)->get_strong();
-    }
-
-    return impl;
-}
-
-// IRangeValueProvider	
-double ProgressRingAutomationPeer::Value()
-{
-    return GetImpl()->Value();
-}
-
-double ProgressRingAutomationPeer::SmallChange()
-{
-    return std::numeric_limits<double>::quiet_NaN();
-}
-
-double ProgressRingAutomationPeer::LargeChange()
-{
-    return std::numeric_limits<double>::quiet_NaN();
-}
-
-double ProgressRingAutomationPeer::Minimum()
-{
-    return GetImpl()->Minimum();
-}
-
-double ProgressRingAutomationPeer::Maximum()
-{
-    return GetImpl()->Maximum();
-}
-
-void ProgressRingAutomationPeer::SetValue(double value)
-{
-    GetImpl()->Value(value);
+    return ResourceAccessor::GetLocalizedStringResource(SR_ProgressRingName);
 }

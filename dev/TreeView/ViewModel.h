@@ -31,7 +31,9 @@ public:
     winrt::event_token NodeCollapsed(const winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>& handler);
     void NodeCollapsed(const winrt::event_token token);
     void SelectAll();
-    void ModifySelectByIndex(int index, TreeNodeSelectionState const& state);
+    void SelectSingleItem(winrt::IInspectable const& item);
+    void SelectNode(const winrt::TreeViewNode& node, bool isSelected);
+    void SelectByIndex(int index, TreeNodeSelectionState const& state);
     winrt::TreeViewNode GetNodeAt(uint32_t index);
     bool IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& index);
     void IsContentMode(const bool value);
@@ -62,7 +64,7 @@ public:
 
     // Helper functions
     void PrepareView(winrt::TreeViewNode const& originNode);
-    void SetOwningList(winrt::TreeViewList const& owningList);
+    void SetOwners(winrt::TreeViewList const& owningList, winrt::TreeView const& owningTreeView);
     winrt::TreeViewList ListControl();
     bool IsInSingleSelectionMode();
     bool IsNodeSelected(winrt::TreeViewNode const& targetNode);
@@ -70,6 +72,8 @@ public:
     void UpdateSelection(winrt::TreeViewNode const& selectNode, TreeNodeSelectionState const& selectionState);
     winrt::IVector<winrt::TreeViewNode> GetSelectedNodes();
     winrt::IVector<winrt::IInspectable> GetSelectedItems();
+    void TrackItemSelected(winrt::IInspectable item);
+    void TrackItemUnselected(winrt::IInspectable item);
     void NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
 
     winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
@@ -83,10 +87,14 @@ private:
     std::vector<winrt::event_token> m_IsExpandedChangedEventTokenVector;
     winrt::event_token m_rootNodeChildrenChangedEventToken;
     winrt::weak_ref<winrt::TreeViewList> m_TreeViewList{ nullptr };
+    winrt::weak_ref<winrt::TreeView> m_TreeView{ nullptr };
     tracker_ref<winrt::TreeViewNode> m_originNode{ this };
     bool m_isContentMode{ false };
     tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{ this };
+    std::vector<winrt::weak_ref<winrt::IInspectable>> m_addedSelectedItems;
+    std::vector<winrt::IInspectable> m_removedSelectedItems;
     tracker_ref<winrt::IMap<winrt::IInspectable, winrt::TreeViewNode>> m_itemToNodeMap{ this };
+    uint32_t m_selectionTrackingCounter{ 0 };
 
     // Methods
     winrt::TreeViewNode GetRemovedChildTreeViewNodeByIndex(winrt::TreeViewNode const& node, unsigned int childIndex);
@@ -103,4 +111,6 @@ private:
     void UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState SelectionStateBasedOnChildren(winrt::TreeViewNode const& node);
     void ClearEventTokenVectors();
+    void BeginSelectionChanges();
+    void EndSelectionChanges();
 };

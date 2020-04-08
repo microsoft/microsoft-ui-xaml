@@ -172,6 +172,12 @@ void NavigationViewItem::UpdateCompactPaneLength()
     if (auto splitView = GetSplitView())
     {
         SetValue(s_CompactPaneLengthProperty, winrt::PropertyValue::CreateDouble(splitView.CompactPaneLength()));
+
+        // Only update when on left
+        if (auto presenter = GetPresenter())
+        {
+            presenter->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
+        }
     }
 }
 
