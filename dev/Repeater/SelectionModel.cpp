@@ -585,9 +585,9 @@ void SelectionModel::OnSelectionChanged()
 
 void SelectionModel::SelectImpl(int index, bool select)
 {
-    // New index is same as already selected
     if (m_singleSelect)
     {
+        // Check if new index is different to current one
         if (m_rootNode->SelectedIndex() != index)
         {
             ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
@@ -642,7 +642,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             }
         }
     }
-    // Selection is actually different from previous one, so run code.
+    // Selection is actually different from previous one, so update.
     if (selectionChanged)
     {
         if (m_singleSelect)
