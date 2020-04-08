@@ -983,13 +983,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void AlreadySelectedDoesNotRaiseEvent()
         {
-            var testName = "Select(int32 index)";
+            var testName = "Select(int32 index), single select";
 
             RunOnUIThread.Execute(() =>
             {
                 var list = Enumerable.Range(0, 10).ToList();
 
-                var selectionModel = new SelectionModel() { 
+                var selectionModel = new SelectionModel() {
                     Source = list,
                     SingleSelect = true
                 };
@@ -1004,10 +1004,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     SingleSelect = true
                 };
                 // Single select indexpath
-                testName = "SelectAt(IndexPath index)";
+                testName = "SelectAt(IndexPath index), single select";
                 selectionModel.SelectAt(IndexPath.CreateFrom(1));
                 selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
                 selectionModel.SelectAt(IndexPath.CreateFrom(1));
+
+                // multi select index
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+                selectionModel.Select(1);
+                selectionModel.Select(2);
+                testName = "Select(int32 index), multiselect";
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.Select(1);
+                selectionModel.Select(2);
+
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+
+                // multi select indexpath
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+                selectionModel.SelectAt(IndexPath.CreateFrom(2));
+                testName = "SelectAt(IndexPath index), multiselect";
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+                selectionModel.SelectAt(IndexPath.CreateFrom(2));
             });
 
             void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -601,12 +601,17 @@ void SelectionModel::SelectImpl(int index, bool select)
     }
     else
     {
+        bool alreadySelected = m_rootNode->IsSelected(index);
         auto selected = m_rootNode->Select(index, select);
         if (selected)
         {
             AnchorIndex(winrt::make<IndexPath>(index));
         }
-        OnSelectionChanged();
+        // Only raise event if it was not already selected
+        if (!alreadySelected)
+        {
+            OnSelectionChanged();
+        }
     }
 }
 
@@ -642,9 +647,12 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             }
         }
     }
+
     // Selection is actually different from previous one, so update.
     if (selectionChanged)
     {
+        selectionChanged = false;
+
         if (m_singleSelect)
         {
             ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
@@ -654,10 +662,15 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             m_rootNode,
             index,
             true, /* realizeChildren */
-            [&selected, &select](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+            [&selected, &select, &selectionChanged](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
             {
                 if (depth == path.GetSize() - 1)
                 {
+                    // Node already selected, so we need to raise selection changed
+                    if (!currentNode->IsSelected(childIndex))
+                    {
+                        selectionChanged = true;
+                    }
                     selected = currentNode->Select(childIndex, select);
                 }
             }
@@ -668,7 +681,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             AnchorIndex(index);
         }
 
-        if (raiseSelectionChanged)
+        if (raiseSelectionChanged && selectionChanged)
         {
             OnSelectionChanged();
         }
