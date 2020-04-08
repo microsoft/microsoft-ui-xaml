@@ -251,8 +251,12 @@ void ProgressRing::UpdateLottieProgress()
 {
     if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        const double normalizedValue = Value() / (Maximum() - Minimum());
-        determinatePlayer.SetProgress(normalizedValue);
+        const double range = Maximum() - Minimum();
+        const double fromProgress = m_oldValue / range;
+        const double toProgress = Value() / range;
+
+        determinatePlayer.PlayAsync(fromProgress, toProgress, false);
+        m_oldValue = Value();
     }
 }
 
