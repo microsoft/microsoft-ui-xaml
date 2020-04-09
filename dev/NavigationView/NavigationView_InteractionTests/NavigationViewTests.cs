@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -4551,6 +4551,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // check visual state
                 result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
                 Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "E")]
+        public void VerifyHoldingKeyOnlyInvokesOnce()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
+            {
+                Verify.AreEqual("0", GetInvokeCount());
+                var homeItem = FindElement.ByName("NavViewInvokeItem");
+                FocusHelper.SetFocus(homeItem);
+
+                KeyboardHelper.PressKey(Key.Enter);
+
+                Verify.AreEqual("1", GetInvokeCount());
+
+                // Figure out to hold a key ...
+            }
+
+            string GetInvokeCount()
+            {
+                var textBlock = new TextBlock(FindElement.ByName("HomeItemInvokedCount"));
+                return textBlock.GetText();
             }
         }
 

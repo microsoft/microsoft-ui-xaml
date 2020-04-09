@@ -11,10 +11,10 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <muxc:NavigationView x:Name="NavView">
+        <muxc:NavigationView x:Name="NavView" ItemInvoked="NavView_ItemInvoked">
 
             <muxc:NavigationView.MenuItems>
-                <muxc:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
+                <muxc:NavigationViewItem x:Name="HomeItem" AutomationProperties.Name="NavViewInvokeItem" Content="Home" Icon="Home"/>
                 <muxc:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
                 <muxc:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxc:NavigationViewItemSeparator />
@@ -103,7 +103,11 @@
                             <CheckBox x:Name="MenuItemsCorrectOffset" AutomationProperties.Name="MenuItemsCorrectOffset"
                                 Content="MenuItems correct offset"/>
                         </StackPanel>
-                        
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Home item invoked count"/>
+                            <TextBlock x:Name="HomeItemInvokedCount" AutomationProperties.Name="HomeItemInvokedCount" Text="0"/>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
                 

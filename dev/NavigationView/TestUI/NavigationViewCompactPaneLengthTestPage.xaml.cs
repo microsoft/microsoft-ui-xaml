@@ -90,6 +90,16 @@ namespace MUXControlsTestApp
 
         }
 
+        private void NavView_ItemInvoked(object sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs e)
+        {
+            if(e.InvokedItem as string == "Home")
+            {
+                int invokeCount = int.Parse(HomeItemInvokedCount.Text);
+                invokeCount++;
+                HomeItemInvokedCount.Text = invokeCount.ToString();
+            }
+        }
+
 
         /* Helper functions */
         private UIElement GetContentBox(NavigationViewItem element)

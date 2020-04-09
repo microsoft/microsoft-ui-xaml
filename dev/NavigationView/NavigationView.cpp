@@ -2161,8 +2161,12 @@ void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sende
 
 void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    // Because ListViewItem eats the events, we only get these keys on KeyUp.
-    if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
+    // Because ListViewItem eats the events, we only get these keys on KeyUp AND
+    // If we handle space and enter upon initial key down, user can hold down and items get invoked rapidly
+    // That creates stuttering and we don't want that to happen
+    if (args.OriginalKey() == winrt::VirtualKey::GamepadA
+        || args.Key() == winrt::VirtualKey::Space
+        || args.Key() == winrt::VirtualKey::Enter)
     {
         if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
         {
@@ -2173,9 +2177,12 @@ void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender
 
 void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    if (args.Key() != winrt::VirtualKey::Enter && args.Key() != winrt::VirtualKey::Space)
     {
-        HandleKeyEventForNavigationViewItem(nvi, args);
+        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+        {
+            HandleKeyEventForNavigationViewItem(nvi, args);
+        }
     }
 }
 
@@ -2303,7 +2310,7 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
         }
     }
 }
-
+ 
 void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
