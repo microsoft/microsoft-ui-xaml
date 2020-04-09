@@ -101,26 +101,26 @@ private:
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
-    void UpdateSelectionModelSelection(const winrt::IndexPath& ip, const winrt::SelectionModel& selectionModel);
+    void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
 
     // Item/container info functions
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
-    std::tuple<winrt::IndexPath, bool> GetIndexPathOfItem(const winrt::IInspectable& data);
-    std::tuple<winrt::IndexPath, bool> GetIndexPathForContainerAndCheckIfItInFooter(const winrt::NavigationViewItemBase& nvib);
+    winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
+    winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::UIElement GetContainerForIndex(int index, bool inFooter);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool inFooter);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
-    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false, bool inFooter = false);
-    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false, bool inFooter = false);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
-    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
+    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data, bool isFooterRepeater);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
 
-    winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip, bool inFooter);
+    winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
-    bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib, const winrt::SelectionModel& selectionModel);
+    bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
     bool DoesRepeaterHaveRealizedContainers(const winrt::ItemsRepeater& ir);
@@ -135,8 +135,8 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
-    void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected, bool inFooter);
-    void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP, bool inFooter);
+    void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
     void CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
@@ -158,7 +158,7 @@ private:
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
     void OnFooterItemsVectorChanged(winrt::Collections::IObservableVector<winrt::IInspectable> const& sender, winrt::Collections::IVectorChangedEventArgs const& e);
-    void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item, bool inFooter);
+    void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
     void UndoSelectionAndRevertSelectionTo(winrt::IInspectable const& prevSelectedItem, winrt::IInspectable const& nextItem);
@@ -422,7 +422,6 @@ private:
     winrt::SelectionModel::ChildrenRequested_revoker m_childrenRequestedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
-    winrt::SelectionModel::SelectionChanged_revoker m_footerSelectionChangedEventToken{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
@@ -432,7 +431,7 @@ private:
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
     winrt::SelectionModel m_selectionModel{};
-    winrt::SelectionModel m_footerSelectionModel{};
+    winrt::IVector<winrt::IInspectable> m_selectionModelSource{};
 
     bool m_appliedTemplate{ false };
 
