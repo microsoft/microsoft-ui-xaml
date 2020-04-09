@@ -1039,6 +1039,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        [TestMethod]
+        public void AlreadyDeselectedDoesNotRaiseEvent()
+        {
+            var testName = "Deselect(int32 index), single select";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var list = Enumerable.Range(0, 10).ToList();
+
+                var selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+
+                // Single select index
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.Deselect(0);
+
+                selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+                // Single select indexpath
+                testName = "DeselectAt(IndexPath index), single select";
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.DeselectAt(IndexPath.CreateFrom(1));
+
+                // multi select index
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+                testName = "Deselect(int32 index), multiselect";
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.Deselect(1);
+                selectionModel.Deselect(2);
+
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+
+                // multi select indexpath
+                testName = "DeselectAt(IndexPath index), multiselect";
+                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.DeselectAt(IndexPath.CreateFrom(1));
+                selectionModel.DeselectAt(IndexPath.CreateFrom(2));
+            });
+
+            void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+            {
+                throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
+            }
+        }
+
         private void Select(SelectionModel manager, int index, bool select)
         {
             Log.Comment((select ? "Selecting " : "DeSelecting ") + index);

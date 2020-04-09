@@ -633,13 +633,19 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
                 newSelection = false;
             }
         }
+        else
+        {
+            // If we are in single select and selectedIndex is null, deselecting is not a new change.
+            // Selecting something is a new change, so set flag to appropriate value here.
+            newSelection = select;
+        }
     }
 
     // Selection is actually different from previous one, so update.
     if (newSelection)
     {
         // If we unselect something, raise event any way, otherwise changedSelection is false
-        bool changedSelection = !select;
+        bool changedSelection = false;
 
         if (m_singleSelect)
         {
@@ -654,7 +660,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
             {
                 if (depth == path.GetSize() - 1)
                 {
-                    if (!currentNode->IsSelected(childIndex))
+                    if (currentNode->IsSelected(childIndex) != select)
                     {
                         // Node has different value then we want to set, so lets update!
                         changedSelection = true;
@@ -668,6 +674,11 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
         {
             AnchorIndex(index);
         }
+
+        // The walk tree operation can change the indices, and the next time it get's read,
+        // we would throw an exception. That's what we are preventing with next two lines
+        m_selectedIndicesCached = nullptr;
+        m_selectedItemsCached = nullptr;
 
         if (raiseSelectionChanged && changedSelection)
         {
