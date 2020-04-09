@@ -27,6 +27,19 @@ unsealed runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyOb
 
     Windows.UI.Xaml.Media.RectangleGeometry ClipRect;
     static Windows.UI.Xaml.DependencyProperty ClipRectProperty{ get; };
+
+    // TemplateSetting properties from WUXC for backwards compatibility.
+    Double EllipseAnimationEndPosition;
+    static Windows.UI.Xaml.DependencyProperty EllipseAnimationEndPositionProperty{ get; };
+
+    Double EllipseAnimationWellPosition;
+    static Windows.UI.Xaml.DependencyProperty EllipseAnimationWellPositionProperty{ get; };
+
+    Double EllipseDiameter;
+    static Windows.UI.Xaml.DependencyProperty EllipseDiameterProperty{ get; };
+
+    Double EllipseOffset;
+    static Windows.UI.Xaml.DependencyProperty EllipseOffsetProperty{ get; };
 }
 
 [WUXC_VERSION_MUXONLY]
