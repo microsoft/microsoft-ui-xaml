@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="RetargetCopyLocalFiles" AfterTargets="GetCopyToOutputDirectoryItems" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
+    <!-- Microsoft.UI.Xaml lists its CopyToOutputDirectory files as the ones from the IntDir, since that's where
+         *it* copies to *its* output directory. However, the IncrementalClean target will clean up those files
+         if they weren't rebuilt, so anything including Microsoft.UI.Xaml will need to retarget the files' sources
+         to the project's OutDir instead. -->
+    <PropertyGroup>
+      <_ThemesSuffix>Themes\</_ThemesSuffix>
+      <_DensityStylesSuffix>DensityStyles\</_DensityStylesSuffix>
+      <_MuxIntDir>$([System.IO.Path]::GetFullPath('$(IntDir)..\..\Microsoft.UI.Xaml\obj\Generated Files\'))</_MuxIntDir>
+      <_MuxIntDirThemes>$(_MuxIntDir)$(_ThemesSuffix)</_MuxIntDirThemes>
+      <_MuxIntDirDensityStyles>$(_MuxIntDir)$(_DensityStylesSuffix)</_MuxIntDirDensityStyles>
+      <_MuxOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)..\Microsoft.UI.Xaml\Microsoft.UI.Xaml\'))</_MuxOutDir>
+      <_MuxOutDirThemes>$(_MuxOutDir)$(_ThemesSuffix)</_MuxOutDirThemes>
+      <_MuxOutDirDensityStyles>$(_MuxOutDir)$(_DensityStylesSuffix)</_MuxOutDirDensityStyles>
+    </PropertyGroup>
+    <ItemGroup>
+      <_MuxCopyLocalXamlThemesFiles Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="'%(RootDir)%(Directory)' == '$(_MuxIntDirThemes)'" />
+      <_MuxCopyLocalXamlDensityStylesFiles Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="'%(RootDir)%(Directory)' == '$(_MuxIntDirDensityStyles)'" />
+      <_SourceItemsToCopyToOutputDirectory Remove="@(_MuxCopyLocalXamlThemesFiles)" />
+      <_SourceItemsToCopyToOutputDirectory Remove="@(_MuxCopyLocalXamlDensityStylesFiles)" />
+      <_SourceItemsToCopyToOutputDirectory Include="@(_MuxCopyLocalXamlThemesFiles -> '$(_MuxOutDirThemes)%(Filename)%(Extension)')" />
+      <_SourceItemsToCopyToOutputDirectory Include="@(_MuxCopyLocalXamlDensityStylesFiles -> '$(_MuxOutDirDensityStyles)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Message Text="_SourceItemsToCopyToOutputDirectory = @(_SourceItemsToCopyToOutputDirectory -> '%(RootDir)%(Directory)')" />
+  </Target>
+</Project>
