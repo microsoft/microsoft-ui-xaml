@@ -619,7 +619,6 @@ void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool sel
 
 void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool select, bool raiseSelectionChanged)
 {
-    bool selected = false;
     bool newSelection = true;
 
     // Handle single select differently as comparing indexpaths is faster
@@ -628,7 +627,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
         if (auto const selectedIndex = SelectedIndex())
         {
             // If paths are equal and we want to select, skip everything and do nothing
-            if (selectedIndex.CompareTo(index) == 0 && select)
+            if (select && selectedIndex.CompareTo(index) == 0)
             {
                 newSelection = false;
             }
@@ -644,6 +643,7 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
     // Selection is actually different from previous one, so update.
     if (newSelection)
     {
+        bool selected = false;
         // If we unselect something, raise event any way, otherwise changedSelection is false
         bool changedSelection = false;
 

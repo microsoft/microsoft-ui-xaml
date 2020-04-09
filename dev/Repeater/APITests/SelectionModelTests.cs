@@ -996,7 +996,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 // Single select index
                 selectionModel.Select(0);
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.Select(0);
 
                 selectionModel = new SelectionModel() {
@@ -1006,7 +1006,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Single select indexpath
                 testName = "SelectAt(IndexPath index), single select";
                 selectionModel.SelectAt(IndexPath.CreateFrom(1));
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.SelectAt(IndexPath.CreateFrom(1));
 
                 // multi select index
@@ -1016,7 +1016,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 selectionModel.Select(1);
                 selectionModel.Select(2);
                 testName = "Select(int32 index), multiselect";
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.Select(1);
                 selectionModel.Select(2);
 
@@ -1028,12 +1028,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 selectionModel.SelectAt(IndexPath.CreateFrom(1));
                 selectionModel.SelectAt(IndexPath.CreateFrom(2));
                 testName = "SelectAt(IndexPath index), multiselect";
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.SelectAt(IndexPath.CreateFrom(1));
                 selectionModel.SelectAt(IndexPath.CreateFrom(2));
             });
 
-            void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+            void ThrowIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
             {
                 throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
             }
@@ -1054,7 +1054,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 };
 
                 // Single select index
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.Deselect(0);
 
                 selectionModel = new SelectionModel() {
@@ -1063,7 +1063,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 };
                 // Single select indexpath
                 testName = "DeselectAt(IndexPath index), single select";
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.DeselectAt(IndexPath.CreateFrom(1));
 
                 // multi select index
@@ -1071,7 +1071,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Source = list
                 };
                 testName = "Deselect(int32 index), multiselect";
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.Deselect(1);
                 selectionModel.Deselect(2);
 
@@ -1081,12 +1081,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 // multi select indexpath
                 testName = "DeselectAt(IndexPath index), multiselect";
-                selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
                 selectionModel.DeselectAt(IndexPath.CreateFrom(1));
                 selectionModel.DeselectAt(IndexPath.CreateFrom(2));
             });
 
-            void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+            void ThrowIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
             {
                 throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
             }
