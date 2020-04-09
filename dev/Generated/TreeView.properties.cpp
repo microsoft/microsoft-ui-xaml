@@ -29,6 +29,7 @@ TreeViewProperties::TreeViewProperties()
     , m_dragItemsStartingEventSource{static_cast<TreeView*>(this)}
     , m_expandingEventSource{static_cast<TreeView*>(this)}
     , m_itemInvokedEventSource{static_cast<TreeView*>(this)}
+    , m_selectionChangedEventSource{static_cast<TreeView*>(this)}
 {
     EnsureProperties();
 }
@@ -303,4 +304,14 @@ winrt::event_token TreeViewProperties::ItemInvoked(winrt::TypedEventHandler<winr
 void TreeViewProperties::ItemInvoked(winrt::event_token const& token)
 {
     m_itemInvokedEventSource.remove(token);
+}
+
+winrt::event_token TreeViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewSelectionChangedEventArgs> const& value)
+{
+    return m_selectionChangedEventSource.add(value);
+}
+
+void TreeViewProperties::SelectionChanged(winrt::event_token const& token)
+{
+    m_selectionChangedEventSource.remove(token);
 }

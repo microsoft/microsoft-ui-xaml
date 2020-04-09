@@ -431,7 +431,7 @@ winrt::Rect ColorSpectrum::GetBoundingRectangle()
 {
     winrt::Rect localRect{ 0, 0, 0, 0 };
 
-    if (auto inputTarget = m_inputTarget.get())
+    if (auto&& inputTarget = m_inputTarget.get())
     {
         localRect.Width = static_cast<float>(inputTarget.ActualWidth());
         localRect.Height = static_cast<float>(inputTarget.ActualHeight());
@@ -574,7 +574,8 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
 
 void ColorSpectrum::UpdateEllipse()
 {
-    auto selectionEllipsePanel = m_selectionEllipsePanel.get();
+    auto&& selectionEllipsePanel = m_selectionEllipsePanel.get();
+
     if (!selectionEllipsePanel)
     {
         return;
@@ -746,7 +747,7 @@ void ColorSpectrum::UpdateEllipse()
     // We only want to bother with the color name tool tip if we can provide color names.
     if (DownlevelHelper::ToDisplayNameExists())
     {
-        if (auto colorNameToolTip = m_colorNameToolTip.get())
+        if (auto&& colorNameToolTip = m_colorNameToolTip.get())
         {
             // ToolTip doesn't currently provide any way to re-run its placement logic if its placement target moves,
             // so toggling IsEnabled induces it to do that without incurring any visual glitches.
@@ -781,7 +782,7 @@ void ColorSpectrum::OnInputTargetPointerExited(winrt::IInspectable const& /*send
 
 void ColorSpectrum::OnInputTargetPointerPressed(winrt::IInspectable const& /*sender*/, winrt::PointerRoutedEventArgs const& args)
 {
-    auto inputTarget = m_inputTarget.get();
+    auto&& inputTarget = m_inputTarget.get();
 
     Focus(winrt::FocusState::Pointer);
 
@@ -828,13 +829,13 @@ void ColorSpectrum::OnSelectionEllipseFlowDirectionChanged(winrt::DependencyObje
 
 void ColorSpectrum::CreateBitmapsAndColorMap()
 {
-    auto layoutRoot = m_layoutRoot.get();
-    auto sizingGrid = m_sizingGrid.get();
-    auto inputTarget = m_inputTarget.get();
-    auto spectrumRectangle = m_spectrumRectangle.get();
-    auto spectrumEllipse = m_spectrumEllipse.get();
-    auto spectrumOverlayRectangle = m_spectrumOverlayRectangle.get();
-    auto spectrumOverlayEllipse = m_spectrumOverlayEllipse.get();
+    auto&& layoutRoot = m_layoutRoot.get();
+    auto&& sizingGrid = m_sizingGrid.get();
+    auto&& inputTarget = m_inputTarget.get();
+    auto&& spectrumRectangle = m_spectrumRectangle.get();
+    auto&& spectrumEllipse = m_spectrumEllipse.get();
+    auto&& spectrumOverlayRectangle = m_spectrumOverlayRectangle.get();
+    auto&& spectrumOverlayEllipse = m_spectrumOverlayEllipse.get();
 
     if (!m_layoutRoot ||
         !m_sizingGrid ||
@@ -1435,8 +1436,8 @@ void ColorSpectrum::FillPixelForRing(
 
 void ColorSpectrum::UpdateBitmapSources()
 {
-    auto spectrumOverlayRectangle = m_spectrumOverlayRectangle.get();
-    auto spectrumOverlayEllipse = m_spectrumOverlayEllipse.get();
+    auto&& spectrumOverlayRectangle = m_spectrumOverlayRectangle.get();
+    auto&& spectrumOverlayEllipse = m_spectrumOverlayEllipse.get();
 
     if (!spectrumOverlayRectangle ||
         !spectrumOverlayEllipse)
@@ -1444,8 +1445,8 @@ void ColorSpectrum::UpdateBitmapSources()
         return;
     }
 
-    auto spectrumRectangle = m_spectrumRectangle.get();
-    auto spectrumEllipse = m_spectrumEllipse.get();
+    auto&& spectrumRectangle = m_spectrumRectangle.get();
+    auto&& spectrumEllipse = m_spectrumEllipse.get();
 
     winrt::float4 hsvColor = HsvColor();
     winrt::ColorSpectrumComponents components = Components();

@@ -1210,7 +1210,7 @@ void NavigationViewProperties::BackRequested(winrt::event_token const& token)
     m_backRequestedEventSource.remove(token);
 }
 
-winrt::event_token NavigationViewProperties::Collapsed(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewCollapsedEventArgs> const& value)
+winrt::event_token NavigationViewProperties::Collapsed(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemCollapsedEventArgs> const& value)
 {
     return m_collapsedEventSource.add(value);
 }
@@ -1230,7 +1230,7 @@ void NavigationViewProperties::DisplayModeChanged(winrt::event_token const& toke
     m_displayModeChangedEventSource.remove(token);
 }
 
-winrt::event_token NavigationViewProperties::Expanding(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewExpandingEventArgs> const& value)
+winrt::event_token NavigationViewProperties::Expanding(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemExpandingEventArgs> const& value)
 {
     return m_expandingEventSource.add(value);
 }

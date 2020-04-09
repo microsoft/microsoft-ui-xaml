@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ViewModel.h"
+#include "TreeView.h"
 #include "TreeViewItem.h"
 #include "VectorChangedEventArgs.h"
 #include "TreeViewList.h"
@@ -71,7 +72,7 @@ public:
     {
         auto inner = GetVectorInnerImpl();
         auto oldNode = winrt::get_self<TreeViewNode>(inner->GetAt(index));
-        // UpdateNodeSelection will call RemoveAtCore
+        // UpdateSelection will call RemoveAtCore
         UpdateSelection(*oldNode, TreeNodeSelectionState::UnSelected);
     }
 
@@ -121,6 +122,7 @@ public:
                     if (auto item = winrt::get_self<TreeViewList>(listControl)->ItemFromNode(node))
                     {
                         selectedItems.InsertAt(index, item);
+                        viewModel->TrackItemSelected(item);
                     }
                 }
             }
@@ -135,9 +137,11 @@ public:
         if (auto viewModel = m_viewModel.get())
         {
             auto selectedItems = viewModel->GetSelectedItems();
-            if (Size() != selectedItems.Size())
+            if (selectedItems.Size() != Size())
             {
+                const auto item = selectedItems.GetAt(index);
                 selectedItems.RemoveAt(index);
+                viewModel->TrackItemUnselected(item);
             }
         }
     }
@@ -310,13 +314,94 @@ void ViewModel::NodeCollapsed(const winrt::event_token token)
 
 void ViewModel::SelectAll()
 {
+    auto trackSelection = gsl::finally([this]() { EndSelectionChanges(); });
+    BeginSelectionChanges();
+
     UpdateSelection(m_originNode.get(), TreeNodeSelectionState::Selected);
 }
 
-void ViewModel::ModifySelectByIndex(int index, TreeNodeSelectionState const& state)
+void ViewModel::SelectSingleItem(winrt::IInspectable const& item)
 {
+    auto trackSelection = gsl::finally([this]() { EndSelectionChanges(); });
+    BeginSelectionChanges();
+
+    auto selectedItems = GetSelectedItems();
+    if (selectedItems.Size() > 0)
+    {
+        selectedItems.Clear();
+    }
+    if (item)
+    {
+        selectedItems.Append(item);
+    }
+}
+
+void ViewModel::SelectNode(const winrt::TreeViewNode& node, bool isSelected)
+{
+    auto trackSelection = gsl::finally([this]() { EndSelectionChanges(); });
+    BeginSelectionChanges();
+
+    auto selectedNodes = GetSelectedNodes();
+    if (isSelected)
+    {
+        if (IsInSingleSelectionMode() && selectedNodes.Size() > 0)
+        {
+            selectedNodes.Clear();
+        }
+        selectedNodes.Append(node);
+    }
+    else
+    {
+        unsigned int index;
+        if (selectedNodes.IndexOf(node, index))
+        {
+            selectedNodes.RemoveAt(index);
+        }
+    }
+}
+
+void ViewModel::SelectByIndex(int index, TreeNodeSelectionState const& state)
+{
+    auto trackSelection = gsl::finally([this]() { EndSelectionChanges(); });
+    BeginSelectionChanges();
+
     auto targetNode = GetNodeAt(index);
     UpdateSelection(targetNode, state);
+}
+
+void ViewModel::BeginSelectionChanges()
+{
+    if (!IsInSingleSelectionMode())
+    {
+        m_selectionTrackingCounter++;
+        if (m_selectionTrackingCounter == 1) {
+            m_addedSelectedItems.clear();
+            m_removedSelectedItems.clear();
+        }
+    }
+}
+
+void ViewModel::EndSelectionChanges()
+{
+    if (!IsInSingleSelectionMode())
+    {
+        m_selectionTrackingCounter--;
+        if (m_selectionTrackingCounter == 0 && (m_addedSelectedItems.size() > 0 || m_removedSelectedItems.size() > 0)) {
+            auto treeView = winrt::get_self<TreeView>(m_TreeView.get());
+
+            auto added = winrt::make<Vector<winrt::IInspectable>>();
+            for (unsigned int i = 0; i < m_addedSelectedItems.size(); i++)
+            {
+                added.Append(m_addedSelectedItems.at(i).get());
+            }
+            auto removed = winrt::make<Vector<winrt::IInspectable>>();
+            for (unsigned int i = 0; i < m_removedSelectedItems.size(); i++)
+            {
+                removed.Append(m_removedSelectedItems.at(i));
+            }
+            treeView->RaiseSelectionChanged(added, removed);
+        }
+    }
 }
 
 uint32_t ViewModel::Size()
@@ -394,7 +479,7 @@ void ViewModel::InsertAt(uint32_t index, winrt::IInspectable const& value)
     GetVectorInnerImpl()->InsertAt(index, value);
     winrt::TreeViewNode newNode = value.as<winrt::TreeViewNode>();
 
-    //Hook up events and save tokens
+    // Hook up events and save tokens
     auto tvnNewNode = winrt::get_self<TreeViewNode>(newNode);
     m_collectionChangedEventTokenVector.insert(m_collectionChangedEventTokenVector.begin() + index, tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged }));
     m_IsExpandedChangedEventTokenVector.insert(m_IsExpandedChangedEventTokenVector.begin() + index, tvnNewNode->AddExpandedChanged({ this, &ViewModel::TreeViewNodePropertyChanged }));
@@ -433,12 +518,12 @@ void ViewModel::RemoveAtEnd()
     auto current = inner->GetAt(Size() - 1).as<winrt::TreeViewNode>();
     inner->RemoveAtEnd();
 
-    // unhook events
+    // Unhook events
     auto tvnCurrent = winrt::get_self<TreeViewNode>(current);
     tvnCurrent->ChildrenChanged(m_collectionChangedEventTokenVector.back());
     tvnCurrent->RemoveExpandedChanged(m_IsExpandedChangedEventTokenVector.back());
 
-    // remove tokens
+    // Remove tokens
     m_collectionChangedEventTokenVector.pop_back();
     m_IsExpandedChangedEventTokenVector.pop_back();
 }
@@ -492,9 +577,10 @@ void ViewModel::PrepareView(const winrt::TreeViewNode& originNode)
     }
 }
 
-void ViewModel::SetOwningList(winrt::TreeViewList const& owningList)
+void ViewModel::SetOwners(winrt::TreeViewList const& owningList, winrt::TreeView const& owningTreeView)
 {
     m_TreeViewList = winrt::make_weak(owningList);
+    m_TreeView = winrt::make_weak(owningTreeView);
 }
 
 winrt::TreeViewList ViewModel::ListControl()
@@ -802,6 +888,22 @@ winrt::IVector<winrt::IInspectable> ViewModel::GetSelectedItems()
     return m_selectedItems.get();
 }
 
+void ViewModel::TrackItemSelected(winrt::IInspectable item)
+{
+    if (m_selectionTrackingCounter > 0 && item != m_originNode.safe_get())
+    {
+        m_addedSelectedItems.push_back(winrt::make_weak(item));
+    }
+}
+
+void ViewModel::TrackItemUnselected(winrt::IInspectable item)
+{
+    if (m_selectionTrackingCounter > 0 && item != m_originNode.safe_get())
+    {
+        m_removedSelectedItems.push_back(item);
+    }
+}
+
 winrt::TreeViewNode ViewModel::GetAssociatedNode(winrt::IInspectable item)
 {
     return m_itemToNodeMap.get().Lookup(item);
@@ -1045,7 +1147,7 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
             RemoveNodeAndDescendantsFromView(childNode);
         }
 
-        //Notife TreeView that a node is being collapsed
+        //Notify TreeView that a node is being collapsed
         m_nodeCollapsedEventSource(targetNode, nullptr);
     }
 }
@@ -1088,7 +1190,7 @@ void ViewModel::ClearEventTokenVectors()
         }
     }
 
-    // Remove SelectedNodeChildrenChangtedEvent
+    // Remove SelectedNodeChildrenChangedEvent
     if (auto selectedNodes = m_selectedNodes.safe_get())
     {
         for (uint32_t i = 0; i < selectedNodes.Size(); i++)

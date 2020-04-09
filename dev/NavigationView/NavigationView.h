@@ -223,6 +223,7 @@ private:
 
     void CreateAndHookEventsToSettings();
     void OnIsPaneOpenChanged();
+    void UpdatePaneButtonsWidths();
     void UpdateHeaderVisibility();
     void UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode);
     void UpdatePaneToggleButtonVisibility();
@@ -330,6 +331,7 @@ private:
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
     tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
+    tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{ this };
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
