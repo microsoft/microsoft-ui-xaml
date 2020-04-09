@@ -23,6 +23,8 @@ ProgressRing::ProgressRing()
 
     RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
+
+    SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
 }
 
 winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()

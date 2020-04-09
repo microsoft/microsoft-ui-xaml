@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "ProgressRingIndeterminate.h"
+#include "ProgressRingTemplateSettings.h"
 
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
