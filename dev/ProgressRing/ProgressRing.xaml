@@ -20,6 +20,11 @@
                     <Grid x:Name="LayoutRoot" Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="Active" To="Inactive">
+                                        
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
                                 <VisualState x:Name="Active">
                                     <Storyboard>
                                         <DoubleAnimation
