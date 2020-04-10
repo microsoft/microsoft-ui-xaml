@@ -49,7 +49,7 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
     // TemplateSetting properties from WUXC for backwards compatibility.
     const auto templateSettings = winrt::get_self<::ProgressRingTemplateSettings>(TemplateSettings());
 
-    const auto [width, diameterAdditive, diameterValue, anchorPoint] = [progressRingPlayer = m_player.get()]()
+    const auto [width, diameterValue, anchorPoint] = [progressRingPlayer = m_player.get()]()
     {
         if (progressRingPlayer)
         {
@@ -66,10 +66,10 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
 
             const float diamaterValue = (width * 0.1f) + diameterAdditive;
             const float anchorPoint = (width * 0.5f) - diamaterValue;
-            return std::make_tuple(width, diameterAdditive, diamaterValue, anchorPoint);
+            return std::make_tuple(width, diamaterValue, anchorPoint);
         }
 
-        return std::make_tuple(0.0f, 0.0f, 0.0f, 0.0f);
+        return std::make_tuple(0.0f, 0.0f, 0.0f);
     }();
 
     templateSettings->MaxSideLength(width);
