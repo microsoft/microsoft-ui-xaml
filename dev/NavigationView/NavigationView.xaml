@@ -441,6 +441,7 @@
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Top">
                                             <ScrollViewer
+                                                TabNavigation="Once"
                                                 VerticalScrollBarVisibility="Auto">
                                                 <local:ItemsRepeater 
                                                         x:Name="MenuItemsHost"
@@ -531,6 +532,8 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="TabNavigation" Value="Once"/>
+        <Setter Property="IsTabStop" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -595,7 +598,7 @@
                             ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                             Content="{TemplateBinding Content}"
                             primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            IsTabStop="False">
+                            Control.IsTemplateFocusTarget="True">
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
                                 Grid.Row="1"
