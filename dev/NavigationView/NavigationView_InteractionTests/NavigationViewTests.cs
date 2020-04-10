@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -148,6 +148,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Click on SelectedItem Apps");
                 appsItem.Click();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyPaneIsClosedAfterSelectingItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Test PaneDisplayMode=LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                TextBlock selectionRaisedIndicator = new TextBlock(FindElement.ById("SelectionChangedRaised"));
+
+                Log.Comment("Select Apps");
+                ComboBox selectedItem = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                selectedItem.SelectItemByName("Apps");
+                Verify.AreEqual("True", selectionRaisedIndicator.GetText());
                 Wait.ForIdle();
 
                 WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
@@ -4211,6 +4245,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify that selection changed event returns expected parameters");
                 Verify.IsTrue(selectionChangedItemtype.Value == stringType);
                 Verify.IsTrue(selectionChangedItemContainerType.Value == navigationViewItemType);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite","D")]
+        public void VerifyIconsRespectCompactPaneLength()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
+            {
+                var checkMenuItemsButton = FindElement.ByName("CheckMenuItemsOffset");
+                var compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox"));
+                var displayModeToggle = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                var currentStatus = new CheckBox(FindElement.ByName("MenuItemsCorrectOffset"));
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+
+                compactpaneCheckbox.SelectItemByName("96");
+                Wait.ForIdle();
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+
+                // Check if changing displaymode to top and then changing length gets used correctly
+                displayModeToggle.SelectItemByName("Top");
+                compactpaneCheckbox.SelectItemByName("48");
+                Wait.ForIdle();
+
+                displayModeToggle.SelectItemByName("Left");
+                Wait.ForIdle();
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
             }
         }
 

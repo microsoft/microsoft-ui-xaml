@@ -12,6 +12,8 @@ static constexpr auto c_expandCollapseChevron = L"ExpandCollapseChevron"sv;
 static constexpr auto c_expandCollapseRotateExpandedStoryboard = L"ExpandCollapseRotateExpandedStoryboard"sv;
 static constexpr auto c_expandCollapseRotateCollapsedStoryboard = L"ExpandCollapseRotateCollapsedStoryboard"sv;
 
+static constexpr auto c_iconBoxColumnDefinitionName = L"IconColumn"sv;
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
     SetDefaultStyleKey(this);
@@ -19,6 +21,8 @@ NavigationViewItemPresenter::NavigationViewItemPresenter()
 
 void NavigationViewItemPresenter::OnApplyTemplate()
 {
+    winrt::IControlProtected controlProtected = *this;
+
     // Retrieve pointers to stable controls 
     m_helper.Init(*this);
 
@@ -36,6 +40,13 @@ void NavigationViewItemPresenter::OnApplyTemplate()
         }
 
         navigationViewItem->UpdateVisualStateNoTransition();
+
+
+        // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
+        if (navigationViewItem->GetNavigationView().PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
+        {
+            UpdateCompactPaneLength(m_compactPaneLengthValue, true);
+        }
     }
 
     m_chevronExpandedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateExpandedStoryboard, *this));
@@ -108,5 +119,20 @@ void NavigationViewItemPresenter::UpdateMargin()
     {
         auto const oldGridMargin = grid.Margin();
         grid.Margin({ m_leftIndentation, oldGridMargin.Top, oldGridMargin.Right, oldGridMargin.Bottom });
+    }
+}
+
+
+void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLength, bool shouldUpdate)
+{
+    m_compactPaneLengthValue = compactPaneLength;
+    if (shouldUpdate)
+    {
+        if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
+        {
+            auto gridLength = iconGridColumn.Width();
+            gridLength.Value = compactPaneLength;
+            iconGridColumn.Width(gridLength);
+        }
     }
 }

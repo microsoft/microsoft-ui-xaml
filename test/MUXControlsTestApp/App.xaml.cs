@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -201,8 +201,10 @@ namespace MUXControlsTestApp
         {
             _isRootCreated = false;
             // Load the resource dictionary now
-            Application.LoadComponent(AdditionStylesXaml, new Uri(
-                            "ms-appx:///Themes/AdditionalStyles.xaml"), ComponentResourceLocation.Nested);
+            // Since the resource is only availble with ScrollViewer feature enabled, try this but expect it to fail sometimes
+#if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
+            AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
 
             // For test purposes, add styles that disable long animations.
             DisableLongAnimations = true;
