@@ -40,10 +40,10 @@ void ProgressRingTemplateSettingsProperties::EnsureProperties()
         s_EllipseOffsetProperty =
             InitializeDependencyProperty(
                 L"EllipseOffset",
-                winrt::name_of<double>(),
+                winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::ProgressRingTemplateSettings>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
+                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_MaxSideLengthProperty)
@@ -76,14 +76,14 @@ double ProgressRingTemplateSettingsProperties::EllipseDiameter()
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressRingTemplateSettings*>(this)->GetValue(s_EllipseDiameterProperty));
 }
 
-void ProgressRingTemplateSettingsProperties::EllipseOffset(double value)
+void ProgressRingTemplateSettingsProperties::EllipseOffset(winrt::Thickness const& value)
 {
-    static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_EllipseOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_EllipseOffsetProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
 }
 
-double ProgressRingTemplateSettingsProperties::EllipseOffset()
+winrt::Thickness ProgressRingTemplateSettingsProperties::EllipseOffset()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressRingTemplateSettings*>(this)->GetValue(s_EllipseOffsetProperty));
+    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<ProgressRingTemplateSettings*>(this)->GetValue(s_EllipseOffsetProperty));
 }
 
 void ProgressRingTemplateSettingsProperties::MaxSideLength(double value)

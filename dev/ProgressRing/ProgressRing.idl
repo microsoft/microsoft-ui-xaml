@@ -11,7 +11,7 @@ unsealed runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyO
     Double EllipseDiameter;
     static Windows.UI.Xaml.DependencyProperty EllipseDiameterProperty{ get; };
 
-    Double EllipseOffset;
+    Windows.UI.Xaml.Thickness EllipseOffset;
     static Windows.UI.Xaml.DependencyProperty EllipseOffsetProperty{ get; };
 
     Double MaxSideLength;

@@ -23,8 +23,10 @@ ProgressRing::ProgressRing()
 
     RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
-
+    
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
+
+    SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
 winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
@@ -40,6 +42,42 @@ void ProgressRing::OnApplyTemplate()
 
     SetAnimatedVisualPlayerSource();
     ChangeVisualState();
+}
+
+void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    // TemplateSetting properties from WUXC for backwards compatibility.
+    const auto templateSettings = winrt::get_self<::ProgressRingTemplateSettings>(TemplateSettings());
+
+    const auto [width, diameterAdditive, diameterValue, anchorPoint] = [progressRingPlayer = m_player.get()]()
+    {
+        if (progressRingPlayer)
+        {
+            const float width = static_cast<float>(progressRingPlayer.ActualWidth());
+
+            const auto diameterAdditive = [width]()
+            {
+                if (width <= 40.0f)
+                {
+                    return 1.0f;
+                }
+                return 0.0f;
+            }();
+
+            const float diamaterValue = (width * 0.1f) + diameterAdditive;
+            const float anchorPoint = (width * 0.5f) - diamaterValue;
+            return std::make_tuple(width, diameterAdditive, diamaterValue, anchorPoint);
+        }
+
+        return std::make_tuple(0.0f, 0.0f, 0.0f, 0.0f);
+    }();
+
+    templateSettings->MaxSideLength(width);
+    templateSettings->EllipseDiameter(diameterValue);
+
+    const winrt::Thickness thicknessEllipseOffset = { 0, anchorPoint, 0, 0 };
+
+    templateSettings->EllipseOffset(thicknessEllipseOffset);
 }
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)

@@ -12,8 +12,8 @@ public:
     void EllipseDiameter(double value);
     double EllipseDiameter();
 
-    void EllipseOffset(double value);
-    double EllipseOffset();
+    void EllipseOffset(winrt::Thickness const& value);
+    winrt::Thickness EllipseOffset();
 
     void MaxSideLength(double value);
     double MaxSideLength();
