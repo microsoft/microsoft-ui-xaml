@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "ProgressRingTemplateSettings.g.cpp"
 
+GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
 GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_EllipseDiameterProperty{ nullptr };
 GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_EllipseOffsetProperty{ nullptr };
 GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_MaxSideLengthProperty{ nullptr };
@@ -24,6 +25,17 @@ ProgressRingTemplateSettingsProperties::ProgressRingTemplateSettingsProperties()
 
 void ProgressRingTemplateSettingsProperties::EnsureProperties()
 {
+    if (!s_DispatcherProperty)
+    {
+        s_DispatcherProperty =
+            InitializeDependencyProperty(
+                L"Dispatcher",
+                winrt::name_of<winrt::CoreDispatcher>(),
+                winrt::name_of<winrt::ProgressRingTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::CoreDispatcher>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_EllipseDiameterProperty)
     {
         s_EllipseDiameterProperty =
@@ -61,9 +73,20 @@ void ProgressRingTemplateSettingsProperties::EnsureProperties()
 
 void ProgressRingTemplateSettingsProperties::ClearProperties()
 {
+    s_DispatcherProperty = nullptr;
     s_EllipseDiameterProperty = nullptr;
     s_EllipseOffsetProperty = nullptr;
     s_MaxSideLengthProperty = nullptr;
+}
+
+void ProgressRingTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
+{
+    static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+}
+
+winrt::CoreDispatcher ProgressRingTemplateSettingsProperties::Dispatcher()
+{
+    return ValueHelper<winrt::CoreDispatcher>::CastOrUnbox(static_cast<ProgressRingTemplateSettings*>(this)->GetValue(s_DispatcherProperty));
 }
 
 void ProgressRingTemplateSettingsProperties::EllipseDiameter(double value)

@@ -9,6 +9,9 @@ class ProgressRingTemplateSettingsProperties
 public:
     ProgressRingTemplateSettingsProperties();
 
+    void Dispatcher(winrt::CoreDispatcher const& value);
+    winrt::CoreDispatcher Dispatcher();
+
     void EllipseDiameter(double value);
     double EllipseDiameter();
 
@@ -18,10 +21,12 @@ public:
     void MaxSideLength(double value);
     double MaxSideLength();
 
+    static winrt::DependencyProperty DispatcherProperty() { return s_DispatcherProperty; }
     static winrt::DependencyProperty EllipseDiameterProperty() { return s_EllipseDiameterProperty; }
     static winrt::DependencyProperty EllipseOffsetProperty() { return s_EllipseOffsetProperty; }
     static winrt::DependencyProperty MaxSideLengthProperty() { return s_MaxSideLengthProperty; }
 
+    static GlobalDependencyProperty s_DispatcherProperty;
     static GlobalDependencyProperty s_EllipseDiameterProperty;
     static GlobalDependencyProperty s_EllipseOffsetProperty;
     static GlobalDependencyProperty s_MaxSideLengthProperty;

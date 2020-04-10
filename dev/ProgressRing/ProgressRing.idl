@@ -3,19 +3,15 @@
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
     ProgressRingTemplateSettings();
 
     // TemplateSetting properties from WUXC for backwards compatibility.
     Double EllipseDiameter;
-    static Windows.UI.Xaml.DependencyProperty EllipseDiameterProperty{ get; };
-
     Windows.UI.Xaml.Thickness EllipseOffset;
-    static Windows.UI.Xaml.DependencyProperty EllipseOffsetProperty{ get; };
-
     Double MaxSideLength;
-    static Windows.UI.Xaml.DependencyProperty MaxSideLengthProperty{ get; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -28,10 +24,10 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsActive{ get; set; };
 
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
     ProgressRingTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 }
 
 }

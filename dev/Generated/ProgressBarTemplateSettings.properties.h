@@ -27,6 +27,9 @@ public:
     void ContainerAnimationStartPosition2(double value);
     double ContainerAnimationStartPosition2();
 
+    void Dispatcher(winrt::CoreDispatcher const& value);
+    winrt::CoreDispatcher Dispatcher();
+
     void EllipseAnimationEndPosition(double value);
     double EllipseAnimationEndPosition();
 
@@ -48,6 +51,7 @@ public:
     static winrt::DependencyProperty ContainerAnimationMidPositionProperty() { return s_ContainerAnimationMidPositionProperty; }
     static winrt::DependencyProperty ContainerAnimationStartPositionProperty() { return s_ContainerAnimationStartPositionProperty; }
     static winrt::DependencyProperty ContainerAnimationStartPosition2Property() { return s_ContainerAnimationStartPosition2Property; }
+    static winrt::DependencyProperty DispatcherProperty() { return s_DispatcherProperty; }
     static winrt::DependencyProperty EllipseAnimationEndPositionProperty() { return s_EllipseAnimationEndPositionProperty; }
     static winrt::DependencyProperty EllipseAnimationWellPositionProperty() { return s_EllipseAnimationWellPositionProperty; }
     static winrt::DependencyProperty EllipseDiameterProperty() { return s_EllipseDiameterProperty; }
@@ -60,6 +64,7 @@ public:
     static GlobalDependencyProperty s_ContainerAnimationMidPositionProperty;
     static GlobalDependencyProperty s_ContainerAnimationStartPositionProperty;
     static GlobalDependencyProperty s_ContainerAnimationStartPosition2Property;
+    static GlobalDependencyProperty s_DispatcherProperty;
     static GlobalDependencyProperty s_EllipseAnimationEndPositionProperty;
     static GlobalDependencyProperty s_EllipseAnimationWellPositionProperty;
     static GlobalDependencyProperty s_EllipseDiameterProperty;
