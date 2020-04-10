@@ -607,9 +607,16 @@
 
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
-                                <VisualState x:Name="ChevronVisible">
+                                <VisualState x:Name="ChevronVisibleOpen">
                                     <VisualState.Setters>
                                         <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="180"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ChevronVisibleClosed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -759,9 +766,16 @@
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
-                                <VisualState x:Name="ChevronVisible">
+                                <VisualState x:Name="ChevronVisibleOpen">
                                     <VisualState.Setters>
                                         <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="180"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ChevronVisibleClosed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1061,9 +1075,16 @@
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
-                                <VisualState x:Name="ChevronVisible">
+                                <VisualState x:Name="ChevronVisibleOpen">
                                     <VisualState.Setters>
                                         <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="180"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ChevronVisibleClosed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1213,9 +1234,16 @@
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
-                                <VisualState x:Name="ChevronVisible">
+                                <VisualState x:Name="ChevronVisibleOpen">
                                     <VisualState.Setters>
                                         <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="180"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ChevronVisibleClosed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1380,9 +1408,16 @@
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="ChevronStates">
                                 <VisualState x:Name="ChevronHidden"/>
-                                <VisualState x:Name="ChevronVisible">
+                                <VisualState x:Name="ChevronVisibleOpen">
                                     <VisualState.Setters>
                                         <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="180"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ChevronVisibleClosed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                        <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

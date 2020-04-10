@@ -24,8 +24,8 @@ static constexpr auto c_disabled = L"Disabled"sv;
 static constexpr auto c_enabled = L"Enabled"sv;
 static constexpr auto c_normal = L"Normal"sv;
 static constexpr auto c_chevronHidden = L"ChevronHidden"sv;
-static constexpr auto c_chevronVisible = L"ChevronVisible"sv;
-
+static constexpr auto c_chevronVisibleOpen = L"ChevronVisibleOpen"sv;
+static constexpr auto c_chevronVisibleClosed = L"ChevronVisibleClosed"sv;
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
@@ -121,9 +121,13 @@ void NavigationViewItem::OnApplyTemplate()
 
     m_appliedTemplate = true;
     UpdateItemIndentation();
-    ShowChildren(IsExpanded());
     UpdateVisualStateNoTransition();
     ReparentRepeater();
+    // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
+    if (!ShouldRepeaterShowInFlyout())
+    {
+        ShowChildren(IsExpanded());
+    }
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
@@ -469,7 +473,7 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? c_chevronVisible : c_chevronHidden;
+        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? ( IsExpanded() ? c_chevronVisibleOpen : c_chevronVisibleClosed) : c_chevronHidden;
         winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), chevronState, true);
     }
 }
