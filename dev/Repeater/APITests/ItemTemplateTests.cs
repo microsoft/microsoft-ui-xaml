@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using Microsoft.UI.Xaml.Controls;
+using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -597,6 +598,85 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void VerifySelectTemplateLayoutFallback()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplateOdd = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='static' Height='30' />
+                        </DataTemplate>");
+                var dataTemplateEven = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='30' />
+                        </DataTemplate>");
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+                var selector = new MyContainerSelector() {
+                    TemplateOdd = dataTemplateOdd,
+                    TemplateEven = dataTemplateEven
+                };
+
+                Content = CreateAndInitializeRepeater
+                (
+                   itemsSource: Enumerable.Range(0, numItems),
+                   elementFactory: selector,
+                   layout: new StackLayout(),
+                   repeater: ref repeater
+                );
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (TextBlock)repeater.TryGetElement(i);
+                    if (i % 2 == 0)
+                    {
+                        // Text is bound to the data for even indices
+                        Verify.AreEqual(i.ToString(), element.Text);
+                        Verify.AreEqual(i, element.DataContext);
+                    }
+                    else
+                    {
+                        // Text explicitly set on the element only for odd indices
+                        Verify.AreEqual("static", element.Text);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNullTemplateGivesMeaningfullError()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+
+                Content = CreateAndInitializeRepeater
+                (
+                    itemsSource: Enumerable.Range(0, numItems),
+                    // DataTemplateSelector always returns null, but throws hresult_invalid_argument when container is null
+                    elementFactory: new DataTemplateSelector(),
+                    layout: new StackLayout(),
+                    repeater: ref repeater
+                );
+                bool threwException = false;
+                try
+                {
+                    Content.UpdateLayout();
+                } catch(Exception e)
+                {
+                    threwException = true;
+                    Verify.IsTrue(e.Message.Contains("Null encountered as data template. That is not a valid value for a data template, and can not be used."));
+                }
+                Verify.IsTrue(threwException);
+                // Set content to null so testapp does not try to update layout again
+                Content = null;
+            });
+        }
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
             object itemsSource,
             Layout layout,
@@ -650,5 +730,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             return (((int)item) % 2 == 0) ? TemplateEven : TemplateOdd;
         }
+    }
+
+    public class MyContainerSelector : DataTemplateSelector
+    {
+        public DataTemplate TemplateOdd { get; set; }
+
+        public DataTemplate TemplateEven { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+        {
+            return (((int)item) % 2 == 0) ? TemplateEven : TemplateOdd;
+        }
+
     }
 }
