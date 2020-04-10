@@ -129,13 +129,11 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavRepeaterLoadedRevoker.revoke();
-    m_leftNavRepeaterGettingFocusRevoker.revoke();
     m_leftNavRepeater.set(nullptr);
 
     m_topNavItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterLoadedRevoker.revoke();
-    m_topNavRepeaterGettingFocusRevoker.revoke();
     m_topNavRepeater.set(nullptr);
 
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
@@ -395,7 +393,6 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
-        m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -416,7 +413,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
-        m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -2255,54 +2251,10 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
     }
 }
 
-void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
-{
-    if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
-    {
-        if (auto const oldFocusedElement = args.OldFocusedElement())
-        {
-            auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-            auto const rootRepeater = [this]()
-            {
-                if (IsTopNavigationView())
-                {
-                    return m_topNavRepeater.get();
-                }
-                return m_leftNavRepeater.get();
-            }();
-            // If focus is coming from outside the root repeater, put focus on last focused item
-            if (rootRepeater != oldElementParent)
-            {
-                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
-                {
-                    if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
-                    {
-                        if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(lastFocusedNvi))
-                        {
-                            args.Handled(true);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
     {
-        // Store index of last focused item in order to get proper focus behavior.
-        // No need to keep track of last focused item if the item is in the overflow menu.
-        m_indexOfLastFocusedItem = [this, nvi]()
-        {
-            if (IsTopNavigationView())
-            {
-                return m_topNavRepeater.get().GetElementIndex(nvi);;
-            }
-            return m_leftNavRepeater.get().GetElementIndex(nvi);
-        }();
-
         // Achieve selection follows focus behavior
         if (IsNavigationViewListSingleSelectionFollowsFocus())
         {
