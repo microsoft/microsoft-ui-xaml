@@ -69,25 +69,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                ToggleSplitButton toggleSplitButton = SetupToggleSplitButton();
+                ToggleSplitButton toggleSplitButton = new ToggleSplitButton();
 
                 Verify.IsFalse(toggleSplitButton.IsChecked, "ToggleSplitButton is not unchecked");
 
                 toggleSplitButton.SetValue(ToggleSplitButton.IsCheckedProperty, true);
 
-                Content.UpdateLayout();
-
                 bool isChecked = (bool)toggleSplitButton.GetValue(ToggleSplitButton.IsCheckedProperty);
                 Verify.IsTrue(isChecked, "ToggleSplitButton is not checked");
             });
-        }
-
-        private ToggleSplitButton SetupToggleSplitButton()
-        {
-            ToggleSplitButton toggleSplitButton = new ToggleSplitButton();
-            Content = toggleSplitButton;
-
-            return toggleSplitButton;
         }
     }
 
