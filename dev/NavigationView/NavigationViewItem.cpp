@@ -121,6 +121,7 @@ void NavigationViewItem::OnApplyTemplate()
 
     m_appliedTemplate = true;
     UpdateItemIndentation();
+    ShowChildren(IsExpanded());
     UpdateVisualStateNoTransition();
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
@@ -515,26 +516,29 @@ NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
 
 void NavigationViewItem::ShowChildren(bool shouldShowChildren)
 {
-    auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
-    m_repeater.get().Visibility(visibility);
-
-    if (ShouldRepeaterShowInFlyout())
+    if (auto const repeater = m_repeater.get())
     {
-        if (shouldShowChildren)
+        auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+        repeater.Visibility(visibility);
+
+        if (ShouldRepeaterShowInFlyout())
         {
-            // There seems to be a race condition happening which sometimes
-            // prevents the opening of the flyout. Queue callback as a workaround.
-            SharedHelpers::QueueCallbackForCompositionRendering(
-                [strongThis = get_strong()]()
+            if (shouldShowChildren)
             {
-                winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
-            });
-        }
-        else
-        {
-            if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+                // There seems to be a race condition happening which sometimes
+                // prevents the opening of the flyout. Queue callback as a workaround.
+                SharedHelpers::QueueCallbackForCompositionRendering(
+                    [strongThis = get_strong()]()
+                {
+                    winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
+                });
+            }
+            else
             {
-                flyout.Hide();
+                if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+                {
+                    flyout.Hide();
+                }
             }
         }
     }
