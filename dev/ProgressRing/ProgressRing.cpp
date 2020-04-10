@@ -131,7 +131,10 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 {
     if (auto&& player = m_player.get())
     {
-        player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+        if (!player.Source())
+        {
+            player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+        }
 
         if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
