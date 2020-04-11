@@ -653,13 +653,14 @@
 
                                 <ContentPresenter x:Name="ContentPresenter"
                                     Grid.Column="1"
+                                    Margin="0,0,16,0"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     Content="{TemplateBinding Content}"
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                    Margin="{TemplateBinding Padding}"
+                                    Padding="{TemplateBinding Padding}"
                                     AutomationProperties.AccessibilityView="Raw"/>
 
                                 <Grid x:Name="ExpandCollapseChevron"
@@ -667,7 +668,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
-                                    Padding="12,0,12,0"
+                                    Margin="-16,0,0,0"
                                     Background="Transparent">
                                     <TextBlock
                                             Width="12" Height="12"
@@ -813,7 +814,8 @@
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                    Margin="{TemplateBinding Padding}"
+                                    Margin="0,0,16,0"
+                                    Padding="{TemplateBinding Padding}"
                                     AutomationProperties.AccessibilityView="Raw"/>
 
                                 <Grid x:Name="ExpandCollapseChevron"
@@ -821,7 +823,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
-                                    Padding="12,0,12,0"
+                                    Margin="-16,0,0,0"
                                     Background="Transparent">
                                     <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
                                             RenderTransformOrigin="0.5, 0.5"

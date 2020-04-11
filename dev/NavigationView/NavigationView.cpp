@@ -274,8 +274,9 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
 }
 
 // We only need to close the flyout if the selected item is a leaf node
-void NavigationView::CloseFlyoutIfRequired()
+void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem)
 {
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
     bool isInModeWithFlyout = [this]()
     {
         if (auto splitView = m_rootSplitView.get())
@@ -288,31 +289,18 @@ void NavigationView::CloseFlyoutIfRequired()
         return false;
     }();
 
-    if (isInModeWithFlyout)
+    if (isInModeWithFlyout && selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
     {
-        if (auto const selectedIndex = m_selectionModel.SelectedIndex())
+        // Item selected is a leaf node, find top level parent and close flyout
+        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
         {
-            if (auto const selectedItem = GetContainerForIndexPath(selectedIndex))
+            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
             {
-                if (auto const selectedNVI = selectedItem.try_as<winrt::NavigationViewItem>())
+                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                if (nviImpl->ShouldRepeaterShowInFlyout())
                 {
-                    if (!DoesNavigationViewItemHaveChildren(selectedNVI))
-                    {
-                        // Item selected is a leaf node, find top level parent and close flyout
-                        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
-                        {
-                            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
-                            {
-                                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                                if (nviImpl->ShouldRepeaterShowInFlyout())
-                                {
-                                    nviImpl->ShowChildren(false);
-                                }
-                            }
-                        }
-                    }
+                    nvi.IsExpanded(false);
                 }
-
             }
         }
     }
@@ -769,7 +757,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 
     if (updateSelection)
     {
-        CloseFlyoutIfRequired();
+        CloseFlyoutIfRequired(nvi);
     }
 }
 
@@ -4639,7 +4627,7 @@ void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewIt
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
 
-    nviImpl->ShowChildren(nvi.IsExpanded());
+    nviImpl->ShowHideChildren();
 
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
