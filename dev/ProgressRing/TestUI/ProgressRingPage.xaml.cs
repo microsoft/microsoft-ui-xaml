@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.UI.Xaml.Controls;
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
-using ProgressRing = Microsoft.UI.Xaml.Controls.ProgressRing;
 
 namespace MUXControlsTestApp
 {
@@ -23,22 +21,21 @@ namespace MUXControlsTestApp
         {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
 
-            VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
-            VisualStateText.Text = VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentState.Name;
+            var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
+            commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
+            VisualStateText.Text = commonStatesGroup.CurrentState.Name;
+            foreach (var state in commonStatesGroup.States)
+            {
+                // Change the animation to 0 duration to avoid timing issues in the test.
+                state.Storyboard.Children[0].Duration = new Duration(TimeSpan.FromSeconds(0));
+            }
 
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
-            animatedVisualPlayer.RegisterPropertyChangedCallback(UIElement.OpacityProperty, new DependencyPropertyChangedCallback(OnAnimatedVisualPlayerOpacityChanged));
             
             Loaded -= ProgressRingPage_Loaded;
-        }
-
-        private void OnAnimatedVisualPlayerOpacityChanged(DependencyObject sender, DependencyProperty property)
-        {
-            var player = (AnimatedVisualPlayer)sender;
-            OpacityText.Text = player.Opacity.ToString();
         }
 
         private void ProgressRingPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
@@ -48,6 +45,7 @@ namespace MUXControlsTestApp
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
+            OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
         }
 
         public void UpdateWidth_Click(object sender, RoutedEventArgs e)

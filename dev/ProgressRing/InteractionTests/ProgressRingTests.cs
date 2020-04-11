@@ -80,6 +80,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify Lottie animation is not playing when in Inactive state");
                 Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
 
+                Wait.ForIdle();
                 Log.Comment("Verity that opacity is 0 when Inactive");
                 Verify.AreEqual("0", opacityText.DocumentText);
 
