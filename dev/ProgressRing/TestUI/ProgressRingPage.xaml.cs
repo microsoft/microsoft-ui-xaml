@@ -1,15 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Controls;
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Markup;
-using Windows.UI;
-using System.Windows.Input;
-
 using ProgressRing = Microsoft.UI.Xaml.Controls.ProgressRing;
 
 namespace MUXControlsTestApp
@@ -33,8 +29,16 @@ namespace MUXControlsTestApp
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
-
+            OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
+            animatedVisualPlayer.RegisterPropertyChangedCallback(UIElement.OpacityProperty, new DependencyPropertyChangedCallback(OnAnimatedVisualPlayerOpacityChanged));
+            
             Loaded -= ProgressRingPage_Loaded;
+        }
+
+        private void OnAnimatedVisualPlayerOpacityChanged(DependencyObject sender, DependencyProperty property)
+        {
+            var player = (AnimatedVisualPlayer)sender;
+            OpacityText.Text = player.Opacity.ToString();
         }
 
         private void ProgressRingPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)

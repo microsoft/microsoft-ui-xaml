@@ -54,12 +54,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+                TextBlock opacityText = FindElement.ByName<TextBlock>("OpacityText");
 
                 Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
 
                 Log.Comment("IsActive set to true updates ProgressRing to Active state");
 
-                Verify.AreEqual(visualStateText.DocumentText, "Active");
+                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Log.Comment("Verity that opacity is 1 when Active");
+                Verify.AreEqual("1", opacityText.DocumentText);
 
                 // Lottie animations only support Windows versions rs5 and above
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -72,12 +75,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 isActiveCheckBox.ToggleAndWait();
 
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
-
-                Verify.AreEqual(visualStateText.DocumentText, "Inactive");
+                Verify.AreEqual("Inactive", visualStateText.DocumentText);
 
                 Log.Comment("Verify Lottie animation is not playing when in Inactive state");
-
                 Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
+
+                Log.Comment("Verity that opacity is 0 when Inactive");
+                Verify.AreEqual("0", opacityText.DocumentText);
+
             }
         }
     }
