@@ -20,6 +20,7 @@
                 <muxc:NavigationViewItemSeparator />
                 <muxc:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
                 <muxc:NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio"/>
+                <muxc:NavigationViewItem Content="Should be green" Foreground="Green" Icon="Emoji"/>
                 <muxc:NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
                 <muxc:NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
                 <muxc:NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
