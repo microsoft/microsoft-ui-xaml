@@ -4568,7 +4568,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual("1", GetInvokeCount());
 
-                // Figure out to hold a key ...
+                KeyboardHelper.HoldKeyMilliSeconds(Key.Enter, 2000);
+                Wait.ForIdle();
+                // Should have invoked once, not multiple times
+                Verify.AreEqual("2", GetInvokeCount());
             }
 
             string GetInvokeCount()
