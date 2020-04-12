@@ -145,12 +145,12 @@ private:
 
     double LineSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
+        return GetScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
     }
 
     double MinItemSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
+        return GetScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
     }
 
     // Fields
