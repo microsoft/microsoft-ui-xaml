@@ -122,6 +122,7 @@ void NavigationViewItem::OnApplyTemplate()
     m_appliedTemplate = true;
     UpdateItemIndentation();
     UpdateVisualStateNoTransition();
+    ReparentRepeater();
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
@@ -172,6 +173,12 @@ void NavigationViewItem::UpdateCompactPaneLength()
     if (auto splitView = GetSplitView())
     {
         SetValue(s_CompactPaneLengthProperty, winrt::PropertyValue::CreateDouble(splitView.CompactPaneLength()));
+
+        // Only update when on left
+        if (auto presenter = GetPresenter())
+        {
+            presenter->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
+        }
     }
 }
 
@@ -507,8 +514,9 @@ NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
     return presenter;
 }
 
-void NavigationViewItem::ShowChildren(bool shouldShowChildren)
+void NavigationViewItem::ShowHideChildren()
 {
+    bool shouldShowChildren = IsExpanded();
     auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     m_repeater.get().Visibility(visibility);
 
@@ -516,6 +524,12 @@ void NavigationViewItem::ShowChildren(bool shouldShowChildren)
     {
         if (shouldShowChildren)
         {
+            // Verify that repeater is parented correctly
+            if (!m_isRepeaterParentedToFlyout)
+            {
+                ReparentRepeater();
+            }
+
             // There seems to be a race condition happening which sometimes
             // prevents the opening of the flyout. Queue callback as a workaround.
             SharedHelpers::QueueCallbackForCompositionRendering(

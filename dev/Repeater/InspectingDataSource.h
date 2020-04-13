@@ -24,9 +24,6 @@ public:
     int IndexOfCore(winrt::IInspectable const& value);
 #pragma endregion
 
-    // This line can be deleted as soon as the API of ItemsSourceView is public
-    int IndexOf(winrt::IInspectable const& value);
-
 private:
     winrt::Collections::IVector<winrt::IInspectable>
     WrapIterable(const winrt::Collections::IIterable<winrt::IInspectable>& iterable);

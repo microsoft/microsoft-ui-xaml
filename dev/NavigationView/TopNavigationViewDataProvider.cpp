@@ -6,7 +6,6 @@
 #include "Vector.h"
 #include "SplitDataSourceBase.h"
 #include "TopNavigationViewDataProvider.h"
-#include "InspectingDataSource.h"
 #include "NavigationViewItem.h"
 
 TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner)
@@ -69,9 +68,7 @@ int TopNavigationViewDataProvider::IndexOf(const winrt::IInspectable& value)
 {
     if (auto dataSource = m_dataSource.get())
     {
-        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
-
-        return inspectingDataSource->IndexOf(value);
+        return dataSource.IndexOf(value);
     }
     return -1;
 }

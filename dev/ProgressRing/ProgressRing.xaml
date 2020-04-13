@@ -11,8 +11,8 @@
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="MinHeight" Value="20" />
-        <Setter Property="MinWidth" Value="20" />
+        <Setter Property="MinHeight" Value="16" />
+        <Setter Property="MinWidth" Value="16" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
@@ -20,8 +20,24 @@
                     <Grid x:Name="LayoutRoot" Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Active" />
-                                <VisualState x:Name="Inactive" />
+                                <VisualState x:Name="Active">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="IndeterminateAnimatedVisualPlayer"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Inactive">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="IndeterminateAnimatedVisualPlayer"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <!-- AnimatedVisualPlayer for Lottie -->

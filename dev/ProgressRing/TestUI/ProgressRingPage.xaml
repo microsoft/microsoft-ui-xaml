@@ -17,14 +17,14 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
 
-            <Grid Width="40px">
+            <Grid Width="32px">
                 <controls:ProgressRing />
             </Grid>
 
             <controls:ProgressRing
                 x:Name="TestProgressRing"
                 IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-                Width="40px"
+                Width="32px"
             />
 
             <Grid Width="200px" HorizontalAlignment="Left">
@@ -49,6 +49,9 @@
             <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind ShowIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowIsActiveCheckBox" AutomationProperties.Name="ShowIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
 
+            <TextBlock Text="Animated Visual Player Opacity:"/>
+            <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
+            
             <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
         </StackPanel>
     </Grid>

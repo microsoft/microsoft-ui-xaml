@@ -111,18 +111,20 @@ runtimeclass NavigationViewBackRequestedEventArgs
 {
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-runtimeclass NavigationViewExpandingEventArgs
+runtimeclass NavigationViewItemExpandingEventArgs
 {
     NavigationViewItemBase ExpandingItemContainer { get; };
+    Object ExpandingItem{ get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-runtimeclass NavigationViewCollapsedEventArgs
+runtimeclass NavigationViewItemCollapsedEventArgs
 {
     NavigationViewItemBase CollapsedItemContainer { get; };
+    Object CollapsedItem{ get; };
 }
 
 [WUXC_VERSION_RS5]
@@ -284,11 +286,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     Boolean IsTitleBarAutoPaddingEnabled { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty IsTitleBarAutoPaddingEnabledProperty { get; };
-
-    [WUXC_VERSION_PREVIEW]
+    
+    [WUXC_VERSION_MUXONLY]
     {
-        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewExpandingEventArgs> Expanding;
-        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewCollapsedEventArgs> Collapsed;
+        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemExpandingEventArgs> Expanding;
+        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemCollapsedEventArgs> Collapsed;
 
         void Expand(NavigationViewItem item);
         void Collapse(NavigationViewItem item);
@@ -302,7 +304,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
 [default_interface]
 unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ContentControl
 {
-    [WUXC_VERSION_PREVIEW]
+    [WUXC_VERSION_MUXONLY]
     {
         Boolean IsSelected{ get; set; };
         static Windows.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
@@ -334,7 +336,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         static Windows.UI.Xaml.DependencyProperty SelectsOnInvokedProperty { get; };
     }
 
-    [WUXC_VERSION_PREVIEW]
+    [WUXC_VERSION_MUXONLY]
     {
         [MUX_DEFAULT_VALUE("false")]
         Boolean IsExpanded{ get; set; };

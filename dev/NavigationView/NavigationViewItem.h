@@ -57,7 +57,7 @@ public:
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
 
-    void ShowChildren(bool shouldShowChildren);
+    void ShowHideChildren();
     bool ShouldRepeaterShowInFlyout();
 
     winrt::ItemsRepeater GetRepeater() { return m_repeater.get(); };

@@ -39,3 +39,8 @@ winrt::AutomationControlType ProgressRingAutomationPeer::GetAutomationControlTyp
 {
     return winrt::AutomationControlType::ProgressBar;
 }
+
+winrt::hstring ProgressRingAutomationPeer::GetLocalizedControlTypeCore()
+{
+    return ResourceAccessor::GetLocalizedStringResource(SR_ProgressRingName);
+}
