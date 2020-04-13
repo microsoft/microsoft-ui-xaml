@@ -278,8 +278,9 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
 }
 
 // We only need to close the flyout if the selected item is a leaf node
-void NavigationView::CloseFlyoutIfRequired()
+void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem)
 {
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
     bool isInModeWithFlyout = [this]()
     {
         if (auto splitView = m_rootSplitView.get())
@@ -292,31 +293,18 @@ void NavigationView::CloseFlyoutIfRequired()
         return false;
     }();
 
-    if (isInModeWithFlyout)
+    if (isInModeWithFlyout && selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
     {
-        if (auto const selectedIndex = m_selectionModel.SelectedIndex())
+        // Item selected is a leaf node, find top level parent and close flyout
+        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
         {
-            if (auto const selectedItem = GetContainerForIndexPath(selectedIndex))
+            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
             {
-                if (auto const selectedNVI = selectedItem.try_as<winrt::NavigationViewItem>())
+                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                if (nviImpl->ShouldRepeaterShowInFlyout())
                 {
-                    if (!DoesNavigationViewItemHaveChildren(selectedNVI))
-                    {
-                        // Item selected is a leaf node, find top level parent and close flyout
-                        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
-                        {
-                            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
-                            {
-                                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                                if (nviImpl->ShouldRepeaterShowInFlyout())
-                                {
-                                    nviImpl->ShowChildren(false);
-                                }
-                            }
-                        }
-                    }
+                    nvi.IsExpanded(false);
                 }
-
             }
         }
     }
@@ -773,7 +761,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 
     if (updateSelection)
     {
-        CloseFlyoutIfRequired();
+        CloseFlyoutIfRequired(nvi);
     }
 }
 
@@ -1231,7 +1219,7 @@ void NavigationView::OpenPane()
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
-    CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+    CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     auto scopeGuard = gsl::finally([this]()
         {
             m_isOpenPaneForInteraction = false;
@@ -3371,7 +3359,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
-        CollapseAllMenuItems(auto_unbox(args.OldValue()));
+        CollapseTopLevelMenuItems(auto_unbox(args.OldValue()));
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
@@ -4678,7 +4666,7 @@ void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewIt
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
 
-    nviImpl->ShowChildren(nvi.IsExpanded());
+    nviImpl->ShowHideChildren();
 
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
@@ -4820,21 +4808,21 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     return nullptr;
 }
 
-void NavigationView::CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
+void NavigationView::CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
 {
     // We want to make sure only top level items are visible when switching pane modes
     if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::Top)
     {
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeater.get());
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeaterOverflowView.get());
     }
     else
     {
-        CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     }
 }
 
-void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir)
+void NavigationView::CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir)
 {
     for (int index = 0; index < GetContainerCountInRepeater(ir); index++)
     {
@@ -4842,7 +4830,6 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
         {
             if (auto const nvi = element.try_as<winrt::NavigationViewItem>())
             {
-                CollapseAllMenuItemsUnderRepeater(winrt::get_self<NavigationViewItem>(nvi)->GetRepeater());
                 ChangeIsExpandedNavigationViewItem(nvi, false /*isExpanded*/);
             }
         }

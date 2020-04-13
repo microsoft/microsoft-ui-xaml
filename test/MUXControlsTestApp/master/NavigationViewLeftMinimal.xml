@@ -1040,13 +1040,13 @@
                                             BorderBrush=[NULL]
                                             Background=[NULL]
                                             Name=ContentPresenter
-                                            Margin=0,0,0,0
+                                            Margin=0,0,16,0
                                             FocusVisualSecondaryThickness=1,1,1,1
                                             FocusVisualSecondaryBrush=#99FFFFFF
                                             FocusVisualPrimaryThickness=2,2,2,2
                                             FocusVisualPrimaryBrush=#FF000000
                                             Visibility=Visible
-                                            RenderSize=80,20
+                                            RenderSize=64,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
                                               Padding=0,0,0,0
                                               Foreground=#FF000000
@@ -1058,14 +1058,14 @@
                                               Visibility=Visible
                                               RenderSize=37,20
                                         [Windows.UI.Xaml.Controls.Grid]
-                                            Padding=12,0,12,0
+                                            Padding=0,0,0,0
                                             CornerRadius=0,0,0,0
                                             BorderThickness=0,0,0,0
                                             BorderBrush=[NULL]
                                             Background=#00FFFFFF
                                             Width=40
                                             Name=ExpandCollapseChevron
-                                            Margin=0,0,0,0
+                                            Margin=-16,0,0,0
                                             FocusVisualSecondaryThickness=1,1,1,1
                                             FocusVisualSecondaryBrush=#99FFFFFF
                                             FocusVisualPrimaryThickness=2,2,2,2
@@ -1296,13 +1296,13 @@
                                             BorderBrush=[NULL]
                                             Background=[NULL]
                                             Name=ContentPresenter
-                                            Margin=0,0,0,0
+                                            Margin=0,0,16,0
                                             FocusVisualSecondaryThickness=1,1,1,1
                                             FocusVisualSecondaryBrush=#99FFFFFF
                                             FocusVisualPrimaryThickness=2,2,2,2
                                             FocusVisualPrimaryBrush=#FF000000
                                             Visibility=Visible
-                                            RenderSize=80,20
+                                            RenderSize=64,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
                                               Padding=0,0,0,0
                                               Foreground=#FF000000
@@ -1314,14 +1314,14 @@
                                               Visibility=Visible
                                               RenderSize=23,20
                                         [Windows.UI.Xaml.Controls.Grid]
-                                            Padding=12,0,12,0
+                                            Padding=0,0,0,0
                                             CornerRadius=0,0,0,0
                                             BorderThickness=0,0,0,0
                                             BorderBrush=[NULL]
                                             Background=#00FFFFFF
                                             Width=40
                                             Name=ExpandCollapseChevron
-                                            Margin=0,0,0,0
+                                            Margin=-16,0,0,0
                                             FocusVisualSecondaryThickness=1,1,1,1
                                             FocusVisualSecondaryBrush=#99FFFFFF
                                             FocusVisualPrimaryThickness=2,2,2,2
@@ -1653,13 +1653,13 @@
                                   BorderBrush=[NULL]
                                   Background=[NULL]
                                   Name=ContentPresenter
-                                  Margin=0,0,0,0
+                                  Margin=0,0,16,0
                                   FocusVisualSecondaryThickness=1,1,1,1
                                   FocusVisualSecondaryBrush=#99FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2
                                   FocusVisualPrimaryBrush=#FF000000
                                   Visibility=Visible
-                                  RenderSize=80,20
+                                  RenderSize=64,20
                                 [Windows.UI.Xaml.Controls.TextBlock]
                                     Padding=0,0,0,0
                                     Foreground=#FF000000
@@ -1671,14 +1671,14 @@
                                     Visibility=Visible
                                     RenderSize=54,20
                               [Windows.UI.Xaml.Controls.Grid]
-                                  Padding=12,0,12,0
+                                  Padding=0,0,0,0
                                   CornerRadius=0,0,0,0
                                   BorderThickness=0,0,0,0
                                   BorderBrush=[NULL]
                                   Background=#00FFFFFF
                                   Width=40
                                   Name=ExpandCollapseChevron
-                                  Margin=0,0,0,0
+                                  Margin=-16,0,0,0
                                   FocusVisualSecondaryThickness=1,1,1,1
                                   FocusVisualSecondaryBrush=#99FFFFFF
                                   FocusVisualPrimaryThickness=2,2,2,2

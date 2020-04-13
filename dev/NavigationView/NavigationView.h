@@ -137,11 +137,11 @@ private:
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
-    void CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
-    void CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir);
+    void CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
+    void CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
-    void CloseFlyoutIfRequired();
+    void CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem);
 
     // Force realization functions
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
