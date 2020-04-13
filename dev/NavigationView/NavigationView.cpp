@@ -1215,7 +1215,7 @@ void NavigationView::OpenPane()
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
-    CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+    CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     auto scopeGuard = gsl::finally([this]()
         {
             m_isOpenPaneForInteraction = false;
@@ -3325,7 +3325,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
-        CollapseAllMenuItems(auto_unbox(args.OldValue()));
+        CollapseTopLevelMenuItems(auto_unbox(args.OldValue()));
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
@@ -4769,21 +4769,21 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     return nullptr;
 }
 
-void NavigationView::CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
+void NavigationView::CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
 {
     // We want to make sure only top level items are visible when switching pane modes
     if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::Top)
     {
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeater.get());
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeaterOverflowView.get());
     }
     else
     {
-        CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     }
 }
 
-void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir)
+void NavigationView::CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir)
 {
     for (int index = 0; index < GetContainerCountInRepeater(ir); index++)
     {
@@ -4791,7 +4791,6 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
         {
             if (auto const nvi = element.try_as<winrt::NavigationViewItem>())
             {
-                CollapseAllMenuItemsUnderRepeater(winrt::get_self<NavigationViewItem>(nvi)->GetRepeater());
                 ChangeIsExpandedNavigationViewItem(nvi, false /*isExpanded*/);
             }
         }
