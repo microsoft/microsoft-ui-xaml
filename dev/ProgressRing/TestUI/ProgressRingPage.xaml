@@ -17,10 +17,6 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
 
-            <Grid Width="32px">
-                <controls:ProgressRing />
-            </Grid>
-
             <controls:ProgressRing
                 x:Name="TestProgressRing"
                 IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
