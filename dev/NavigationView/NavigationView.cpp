@@ -222,7 +222,7 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
     }
     else
     {
-        e.Children(m_selectionModelSource.GetAt(e.SourceIndex().GetAt(0)));
+        e.Children(e.Source());
     }
 }
 
@@ -720,6 +720,8 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 
 void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpdate)
 {
+    if (!m_appliedTemplate) return;
+
     auto const itemsSource = [this]()
     {
         if (auto const menuItemsSource = FooterMenuItemsSource())
@@ -739,6 +741,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
     {
         m_settingsItem.set(winrt::make < ::NavigationViewItem>());
         m_settingsItem.get().Name(L"SettingsItem");
+        forceSelectionModelUpdate = true;
     }
 
     if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
@@ -2017,7 +2020,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // otherwise if prevItem is on left side of nextActualItem, transition is from left
         //           if prevItem is on right side of nextActualItem, transition is from right
         // click on Settings item is considered Default
-        auto recommendedDirection = [this, prevItem, nextItem, isSettingsItem]()
+        auto recommendedDirection = [this, prevItem, nextItem]()
         {
             if (IsTopNavigationView())
             {
@@ -4351,14 +4354,6 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
     if (auto nvi = data.try_as<T>())
     {
         return nvi;
-    }
-
-    if (auto settingsItem = m_settingsItem.get())
-    {
-        if (settingsItem == data || settingsItem.Content() == data)
-        {
-            return settingsItem.try_as<T>();
-        }
     }
 
     // First conduct a basic top level search, which should succeed for a lot of scenarios.
