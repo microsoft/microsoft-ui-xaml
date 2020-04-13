@@ -462,5 +462,7 @@ private:
     int32_t m_indexOfLastFocusedItemInFooterMenu{ -1 };
 
     bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
+
+    bool m_OrientationChangedPendingAnimation{ false };
 };
 

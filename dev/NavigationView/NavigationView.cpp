@@ -1216,6 +1216,12 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
         m_lastSelectedItemPendingAnimationInTopNav.set(nullptr);
         AnimateSelectionChanged(lastSelectedItemInTopNav);
     }
+
+    if (m_OrientationChangedPendingAnimation)
+    {
+        m_OrientationChangedPendingAnimation = false;
+        AnimateSelectionChanged(SelectedItem());
+    }
 }
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
@@ -3717,6 +3723,10 @@ void NavigationView::UpdatePaneDisplayMode()
     UpdateContentBindingsForPaneDisplayMode();
     UpdateRepeaterItemsSource(false /*forceSelectionModelUpdate*/);
     UpdateFooterRepeaterItemsSource(false /*forceSelectionModelUpdate*/);
+    if (auto selectedItem = SelectedItem())
+    {
+        m_OrientationChangedPendingAnimation = true;
+    }
 }
 
 void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode)
