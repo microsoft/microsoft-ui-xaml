@@ -732,51 +732,49 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
         return FooterMenuItems().as<winrt::IInspectable>();
     }();
 
-    auto dataSource = winrt::make<Vector<winrt::IInspectable>>();
 
     UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
     UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), nullptr);
 
-    if (!m_settingsItem)
+    if (!m_settingsItem || forceSelectionModelUpdate)
     {
-        m_settingsItem.set(winrt::make < ::NavigationViewItem>());
-        m_settingsItem.get().Name(L"SettingsItem");
-        forceSelectionModelUpdate = true;
-    }
+        auto dataSource = winrt::make<Vector<winrt::IInspectable>>();
 
-    if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
-    {
-        auto settingsItem = m_settingsItem.get();
-        auto size = footerItems.Size();
-
-        for (uint32_t i = 0; i < size; i++)
+        if (!m_settingsItem)
         {
-            auto item = footerItems.GetAt(i);
-            dataSource.Append(item);
+            m_settingsItem.set(winrt::make < ::NavigationViewItem>());
+            m_settingsItem.get().Name(L"SettingsItem");
         }
 
-        if (IsSettingsVisible())
+        if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
         {
-            CreateAndHookEventsToSettings();
-            // add settings item to the end of footer
-            dataSource.Append(settingsItem);
-        }
-    }
+            auto settingsItem = m_settingsItem.get();
+            auto size = footerItems.Size();
 
-    // Selection Model has same representation of data regardless
-    // of pane mode, so only update if the ItemsSource data itself
-    // has changed.
-    if (forceSelectionModelUpdate) {
+            for (uint32_t i = 0; i < size; i++)
+            {
+                auto item = footerItems.GetAt(i);
+                dataSource.Append(item);
+            }
+
+            if (IsSettingsVisible())
+            {
+                CreateAndHookEventsToSettings();
+                // add settings item to the end of footer
+                dataSource.Append(settingsItem);
+            }
+        }
+
         m_selectionModelSource.SetAt(1, dataSource);
     }
 
     if (IsTopNavigationView())
     {
-        UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), dataSource);
+        UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
     }
     else
     {
-        UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), dataSource);
+        UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
     }
 }
 
