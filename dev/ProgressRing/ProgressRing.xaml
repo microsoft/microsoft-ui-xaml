@@ -20,8 +20,24 @@
                     <Grid x:Name="LayoutRoot" Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Active" />
-                                <VisualState x:Name="Inactive" />
+                                <VisualState x:Name="Active">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="IndeterminateAnimatedVisualPlayer"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Inactive">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="IndeterminateAnimatedVisualPlayer"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <!-- AnimatedVisualPlayer for Lottie -->

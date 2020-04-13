@@ -4,13 +4,7 @@
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Markup;
-using Windows.UI;
-using System.Windows.Input;
-
-using ProgressRing = Microsoft.UI.Xaml.Controls.ProgressRing;
 
 namespace MUXControlsTestApp
 {
@@ -27,13 +21,20 @@ namespace MUXControlsTestApp
         {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
 
-            VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
-            VisualStateText.Text = VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentState.Name;
+            var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
+            commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
+            VisualStateText.Text = commonStatesGroup.CurrentState.Name;
+            foreach (var state in commonStatesGroup.States)
+            {
+                // Change the animation to 0 duration to avoid timing issues in the test.
+                state.Storyboard.Children[0].Duration = new Duration(TimeSpan.FromSeconds(0));
+            }
 
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
-
+            OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
+            
             Loaded -= ProgressRingPage_Loaded;
         }
 
@@ -44,6 +45,7 @@ namespace MUXControlsTestApp
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
+            OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
         }
 
         public void UpdateWidth_Click(object sender, RoutedEventArgs e)
