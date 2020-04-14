@@ -443,7 +443,7 @@
                                             <ScrollViewer
                                                 TabNavigation="Once"
                                                 VerticalScrollBarVisibility="Auto">
-                                                <local:ItemsRepeater 
+                                                <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                         AutomationProperties.AccessibilityView = "Content">
@@ -533,7 +533,6 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="TabNavigation" Value="Once"/>
-        <Setter Property="IsTabStop" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
