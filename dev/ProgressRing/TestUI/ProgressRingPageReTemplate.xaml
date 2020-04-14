@@ -10,6 +10,7 @@
     xmlns:animatedvisuals="using:AnimatedVisuals">
 
     <Page.Resources>
+        <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
         <Style TargetType="controls:ProgressRing">
             <Setter Property="Template">
                 <Setter.Value>
@@ -52,10 +53,40 @@
     
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
+
             <controls:ProgressRing
-                x:Name="TestProgressRing"
-                IsActive="True"
+                x:Name="TestReTemplateProgressRing"
+                IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
             />
+
+            <Grid Width="200px" HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBox x:Name="WidthInput" AutomationProperties.Name="WidthInput" Header="Width" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="2" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="WidthInputText" AutomationProperties.Name="WidthInputText" Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Width, Mode=TwoWay}"/>
+            </Grid>
+
+            <TextBlock x:Name="VisualStateText" AutomationProperties.Name="VisualStateText" Margin="0, 20, 0, 20"/>
+
+            <TextBlock Text="Animated Visual Player IsPlaying:"/>
+            <TextBlock x:Name="IsPlayingText" AutomationProperties.Name="IsPlayingText" Margin="0, 0, 0, 20"/>
+
+            <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind ReTemplatePageIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="ReTemplatePageIsActiveCheckBox" AutomationProperties.Name="ReTemplatePageIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
+
+            <TextBlock Text="Animated Visual Player Opacity:"/>
+            <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
+
+            <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
         </StackPanel>
+
+        <Button x:Name="NavigateToMainPage" AutomationProperties.Name="NavigateToMainPage" Margin="2" HorizontalAlignment="Stretch">Progress Ring Main Page</Button>
     </Grid>
 </local:TestPage>

@@ -47,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Verify all IsActive property is set to true by default for testing");
+                Log.Comment("Verify IsActive property is set to true by default for testing");
 
                 ToggleButton isActiveCheckBox = FindElement.ByName<ToggleButton>("ShowIsActiveCheckBox");
 
@@ -73,6 +73,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 isActiveCheckBox.ToggleAndWait();
+
+                Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+                Verify.AreEqual("Inactive", visualStateText.DocumentText);
+
+                Log.Comment("Verify Lottie animation is not playing when in Inactive state");
+                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
+
+                Wait.ForIdle();
+                Log.Comment("Verity that opacity is 0 when Inactive");
+                Verify.AreEqual("0", opacityText.DocumentText);
+
+            }
+        }
+
+        [TestMethod]
+        public void LottieCustomSourceTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                Log.Comment("Navigate to Progress Ring Re-template Page");
+
+                Button navigateToReTemplate = FindElement.ByName<Button>("NavigateToReTemplate");
+
+                navigateToReTemplate.InvokeAndWait();
+
+                Log.Comment("Verify IsActive property is set to true by default for testing");
+
+                ToggleButton reTemplatePageIsActiveCheckBox = FindElement.ByName<ToggleButton>("ReTemplatePageIsActiveCheckBox");
+
+                TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
+                TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
+                TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+                TextBlock opacityText = FindElement.ByName<TextBlock>("OpacityText");
+
+                Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
+
+                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+
+                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Log.Comment("Verity that opacity is 1 when Active");
+                Verify.AreEqual("1", opacityText.DocumentText);
+
+                // Lottie animations only support Windows versions rs5 and above
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Verify Lottie animation is playing whith custom Lottie source and in Active state");
+
+                    Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
+                }
+
+                reTemplatePageIsActiveCheckBox.ToggleAndWait();
 
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
                 Verify.AreEqual("Inactive", visualStateText.DocumentText);

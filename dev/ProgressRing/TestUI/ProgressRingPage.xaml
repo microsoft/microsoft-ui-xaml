@@ -15,8 +15,7 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button x:Name="NavigateToReTemplate" AutomationProperties.Name="NavigateToReTemplate" Margin="2" HorizontalAlignment="Stretch">Progress Ring ReTemplate</Button>
-        
+
         <StackPanel Orientation="Vertical">
 
             <controls:ProgressRing
@@ -51,5 +50,7 @@
 
             <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
         </StackPanel>
+
+        <Button x:Name="NavigateToReTemplate" AutomationProperties.Name="NavigateToReTemplate" Margin="2" HorizontalAlignment="Stretch">Progress Ring ReTemplate</Button>
     </Grid>
 </local:TestPage>
