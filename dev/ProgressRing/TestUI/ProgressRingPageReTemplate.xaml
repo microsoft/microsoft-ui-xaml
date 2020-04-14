@@ -54,7 +54,7 @@
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
                 x:Name="TestProgressRing"
-                IsActive="False"
+                IsActive="True"
             />
         </StackPanel>
     </Grid>

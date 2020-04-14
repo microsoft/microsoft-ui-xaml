@@ -6,8 +6,6 @@
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    ProgressRingTemplateSettings();
-
     // TemplateSetting properties from WUXC for backwards compatibility.
     Double EllipseDiameter;
     Windows.UI.Xaml.Thickness EllipseOffset;

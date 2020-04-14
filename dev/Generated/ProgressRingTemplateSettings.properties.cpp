@@ -6,13 +6,6 @@
 #include "common.h"
 #include "ProgressRingTemplateSettings.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithDPFactory(ProgressRingTemplateSettings)
-}
-
-#include "ProgressRingTemplateSettings.g.cpp"
-
 GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
 GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_EllipseDiameterProperty{ nullptr };
 GlobalDependencyProperty ProgressRingTemplateSettingsProperties::s_EllipseOffsetProperty{ nullptr };
