@@ -1,0 +1,60 @@
+﻿<Page
+    x:Class="ItemsRepeaterExperiments.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ItemsRepeaterExperiments"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:common="using:ItemsRepeaterExperiments.Common" 
+    xmlns:container="using:ItemsRepeaterExperiments.Container" 
+    xmlns:behaviors="using:ItemsRepeaterExperiments.AttachedBehaviors" 
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Padding="8"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <AcrylicBrush x:Key="TabViewHeaderBackground"/>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock 
+            Margin="8"
+            Text="This app is a demo on how to implement different behaviors of common layouts using ItemsRepeater"/>
+        <muxc:TabView 
+            Grid.Row="1"
+            TabWidthMode="Equal"
+            IsAddTabButtonVisible="False">
+            <muxc:TabView.TabItems>
+                <muxc:TabViewItem Header="GridView" IsClosable="False">
+                    <GridView x:Name="TeamPresenter" ItemTemplate="{StaticResource StandardTeamTemplate}"
+                              Margin="8">
+                    </GridView>
+                </muxc:TabViewItem>
+                <muxc:TabViewItem Header="HandleContainer Selection demo" IsClosable="False">
+                    <container:SelectionModelPage Margin="8"/>
+                </muxc:TabViewItem>
+
+                <muxc:TabViewItem Header="HandleContainer Focus demo" IsClosable="False">
+                    <container:FocusBehaviorPage Margin="8"/>
+                </muxc:TabViewItem>
+
+                <muxc:TabViewItem Header="HandleContainer Dragging demo" IsClosable="False">
+                    <container:DragDropPage Margin="8" />
+                </muxc:TabViewItem>
+
+                <muxc:TabViewItem Header="HandleContainer different templates" IsClosable="False">
+                    <container:DifferentTemplateTests Margin="8" />
+                </muxc:TabViewItem>
+                
+                <muxc:TabViewItem Header="Attached behaviors Selection demo" IsClosable="False">
+                    <behaviors:SelectionModelPage Margin="8" />
+                </muxc:TabViewItem>
+            </muxc:TabView.TabItems>
+        </muxc:TabView>
+    </Grid>
+</Page>

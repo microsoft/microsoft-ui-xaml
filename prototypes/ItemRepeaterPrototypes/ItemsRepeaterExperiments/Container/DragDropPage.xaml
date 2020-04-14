@@ -1,0 +1,136 @@
+﻿<Page
+    x:Class="ItemsRepeaterExperiments.Container.DragDropPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ItemsRepeaterExperiments.Container"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:common="using:ItemsRepeaterExperiments.Common"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="This page tests you can handle the focus behavior using the Handle container and display the focused element"/>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <StackPanel Padding="8">
+                <TextBlock Text="Currently focused element:" FontSize="18"/>
+                <TextBlock x:Name="focusedElementName" Text="N/A"/>
+            </StackPanel>
+        </StackPanel>
+        
+        <muxc:ItemsRepeaterScrollHost Grid.Row="2" AllowDrop="True">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                BorderBrush="{ThemeResource SystemAccentColor}" BorderThickness="1" Margin="4"
+                Drop="FirstTeamPresenter_Drop"
+                DragOver="FirstTeamPresenter_DragOver"
+                VerticalScrollBarVisibility="Auto" x:Name="FirstTeamPresenterScroller">
+                <muxc:ItemsRepeater x:Name="FirstTeamPresenter" Grid.Row="2" 
+                    Drop="FirstTeamPresenter_Drop"
+                    DragOver="FirstTeamPresenter_DragOver"
+                    AllowDrop="True">
+                    <muxc:ItemsRepeater.Layout>
+                        <muxc:StackLayout Orientation="Horizontal"/>
+                    </muxc:ItemsRepeater.Layout>
+                    
+                    <muxc:ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="common:Team" >
+
+                            <!-- Handles managing visual states, such as pressing, handling clicks etc -->
+                            <local:HandleContainer CanDrag="True" AllowDrop="True">
+
+                                <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
+                                    Padding="8"
+                                    BorderThickness="1" MinHeight="200" MinWidth="200">
+
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="DragStates">
+                                            <VisualState x:Name="NoDrag"/>
+                                            <VisualState x:Name="Dragging">
+                                                <VisualState.Setters>
+                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+
+
+                                    <TextBlock Text="{x:Bind Name}" FontSize="24"/>
+                                    <TextBlock Text="{x:Bind MembersString}"/>
+                                </StackPanel>
+
+                            </local:HandleContainer>
+                        </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                </muxc:ItemsRepeater>
+
+            </ScrollViewer>
+        </muxc:ItemsRepeaterScrollHost>
+
+        <muxc:ItemsRepeaterScrollHost Grid.Row="3" AllowDrop="True">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
+                BorderBrush="{ThemeResource SystemAccentColor}" BorderThickness="1" Margin="4"
+                Drop="SecondTeamPresenter_Drop"
+                DragOver="SecondTeamPresenter_DragOver"
+                x:Name="SecondTeamPresenterScroller">
+                <muxc:ItemsRepeater x:Name="SecondTeamPresenter" 
+                    Drop="SecondTeamPresenter_Drop"
+                    DragOver="SecondTeamPresenter_DragOver"
+                    AllowDrop="True">
+                    <muxc:ItemsRepeater.Layout>
+                        <muxc:StackLayout Orientation="Horizontal" />
+                    </muxc:ItemsRepeater.Layout>
+                    
+                    <muxc:ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="common:Team" >
+
+                            <!-- Handles managing visual states, such as pressing, handling clicks etc -->
+                            <local:HandleContainer CanDrag="True" AllowDrop="True">
+
+                                <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
+                                    Padding="8"
+                                    BorderThickness="1" MinHeight="200" MinWidth="200">
+
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="DragStates">
+                                            <VisualState x:Name="NoDrag"/>
+                                            <VisualState x:Name="Dragging">
+                                                <VisualState.Setters>
+                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+
+
+                                    <TextBlock Text="{x:Bind Name}" FontSize="24"/>
+                                    <TextBlock Text="{x:Bind MembersString}"/>
+                                </StackPanel>
+
+                            </local:HandleContainer>
+                        </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                </muxc:ItemsRepeater>
+
+            </ScrollViewer>
+        </muxc:ItemsRepeaterScrollHost>
+
+    </Grid>
+</Page>

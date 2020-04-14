@@ -1,0 +1,78 @@
+﻿<Page
+    x:Class="ItemsRepeaterExperiments.Container.FocusBehaviorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ItemsRepeaterExperiments.Container"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:common="using:ItemsRepeaterExperiments.Common"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Text="This page tests you can handle the focus behavior using the Handle container and display the focused element"/>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <StackPanel Padding="8">
+                <TextBlock Text="Currently focused element:" FontSize="18"/>
+                <TextBlock x:Name="focusedElementName" Text="N/A"/>
+            </StackPanel>
+
+            <muxc:RadioButtons x:Name="LayoutChooser"
+                    SelectionChanged="LayoutChooser_SelectionChanged" SelectedIndex="0">
+                <!-- UniformGridLayout is flaky -->
+                <!--<x:String>UniformGridLayout horizontal</x:String>
+                <x:String>UniformGridLayout vertical</x:String>-->
+                <x:String>Stacklayout vertical</x:String>
+                <x:String>Stacklayout horizontal</x:String>
+            </muxc:RadioButtons>
+        </StackPanel>
+        
+        <muxc:ItemsRepeaterScrollHost Grid.Row="2" x:Name="TeamPresenterScrollHost">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TeamPresenterScroller">
+                <muxc:ItemsRepeater x:Name="TeamPresenter" Grid.Row="2">
+
+                    <muxc:ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="common:Team" >
+
+                            <!-- Handles managing visual states, such as pressing, handling clicks etc -->
+                            <local:HandleContainer 
+                                GotFocus="HandleContainer_GotFocus"
+                                KeyDown="HandleContainer_KeyDown" IsTabStop="True" TabFocusNavigation="Once">
+                                
+                                <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
+                                    Padding="8"
+                                    BorderThickness="1" MinHeight="200" MinWidth="200">
+
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="FocusStates">
+                                            <VisualState x:Name="Focused">
+                                                <VisualState.Setters>
+                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="Unfocused"/>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+
+                                    
+                                    <TextBlock Text="{x:Bind Name}" FontSize="24"/>
+                                    <TextBlock Text="{x:Bind MembersString}"/>
+                                </StackPanel>
+
+                            </local:HandleContainer>
+                        </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                </muxc:ItemsRepeater>
+
+            </ScrollViewer>
+        </muxc:ItemsRepeaterScrollHost>
+    </Grid>
+</Page>

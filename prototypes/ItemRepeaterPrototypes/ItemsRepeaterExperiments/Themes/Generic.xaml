@@ -1,0 +1,38 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local2="using:ItemsRepeaterExperiments.Container"
+    xmlns:local="using:ItemsRepeaterExperiments"
+    xmlns:common="using:ItemsRepeaterExperiments.Common"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Style TargetType="local2:HandleContainer"/>
+
+    <Style TargetType="common:TeamPresenterTemplatedControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="common:TeamPresenterTemplatedControl">
+                    <StackPanel x:Name="RootPanel">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <TextBlock x:Name="TeamName" FontSize="24"/>
+                        <TextBlock x:Name="TeamMembers" />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
