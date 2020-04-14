@@ -50,18 +50,6 @@
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
-
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="FocusStates">
-                                            <VisualState x:Name="Focused">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="Unfocused"/>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-
                                     
                                     <TextBlock Text="{x:Bind Name}" FontSize="24"/>
                                     <TextBlock Text="{x:Bind MembersString}"/>

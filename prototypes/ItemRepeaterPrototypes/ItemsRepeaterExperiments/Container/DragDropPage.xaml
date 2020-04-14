@@ -52,22 +52,6 @@
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
 
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="DragStates">
-                                            <VisualState x:Name="NoDrag"/>
-                                            <VisualState x:Name="Dragging">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal"/>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-
-
                                     <TextBlock Text="{x:Bind Name}" FontSize="24"/>
                                     <TextBlock Text="{x:Bind MembersString}"/>
                                 </StackPanel>

@@ -1,4 +1,4 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local2="using:ItemsRepeaterExperiments.Container"
@@ -6,7 +6,63 @@
     xmlns:common="using:ItemsRepeaterExperiments.Common"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
-    <Style TargetType="local2:HandleContainer"/>
+    <Style TargetType="local2:HandleContainer">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local2:HandleContainer">
+                    <Grid x:Name="RootGrid" BorderBrush="Transparent" BorderThickness="1">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="SelectionStates">
+                                <VisualState x:Name="Deselected"/>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="FocusStates">
+                                <VisualState x:Name="Focused">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Unfocused"/>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="DragStates">
+                                <VisualState x:Name="NoDrag"/>
+                                <VisualState x:Name="Dragging">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
 
     <Style TargetType="common:TeamPresenterTemplatedControl">
         <Setter Property="Template">

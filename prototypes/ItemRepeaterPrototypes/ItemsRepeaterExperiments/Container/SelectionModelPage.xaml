@@ -44,34 +44,9 @@
                             
                             <!-- Handles managing visual states, such as pressing, handling clicks etc -->
                             <local:HandleContainer Click="HandleContainer_Click">
-
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal"/>
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-
-                                        <VisualStateGroup x:Name="SelectionStates">
-                                            <VisualState x:Name="Deselected"/>
-                                            <VisualState x:Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
                                     
                                     <TextBlock Text="{x:Bind Name}" FontSize="24"/>
                                     <TextBlock Text="{x:Bind MembersString}"/>
