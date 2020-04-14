@@ -126,7 +126,7 @@ void NavigationViewItem::OnApplyTemplate()
     // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
     if (!ShouldRepeaterShowInFlyout())
     {
-        ShowChildren(IsExpanded());
+        ShowHideChildren();
     }
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
