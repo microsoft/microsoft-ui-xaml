@@ -15,6 +15,8 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Button x:Name="NavigateToReTemplate" AutomationProperties.Name="NavigateToReTemplate" Margin="2" HorizontalAlignment="Stretch">Progress Ring ReTemplate</Button>
+        
         <StackPanel Orientation="Vertical">
 
             <controls:ProgressRing
@@ -46,7 +48,7 @@
 
             <TextBlock Text="Animated Visual Player Opacity:"/>
             <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
-            
+
             <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
         </StackPanel>
     </Grid>

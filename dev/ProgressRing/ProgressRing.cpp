@@ -134,12 +134,12 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
         if (!player.Source())
         {
             player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
-        }
 
-        if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-        {
-            SetLottieForegroundColor(progressRingIndeterminate);
-            SetLottieBackgroundColor(progressRingIndeterminate);
+            if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+            {
+                SetLottieForegroundColor(progressRingIndeterminate);
+                SetLottieBackgroundColor(progressRingIndeterminate);
+            }
         }
     }
 }

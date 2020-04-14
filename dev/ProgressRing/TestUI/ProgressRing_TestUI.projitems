@@ -20,6 +20,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressRingDeterminate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProgressRingPage.xaml.cs">
       <DependentUpon>ProgressRingPage.xaml</DependentUpon>
     </Compile>

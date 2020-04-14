@@ -1,13 +1,13 @@
-﻿<Page
-    x:Class="ProgressRing_TestUI.ProgressRingPageReTemplate"
-    x:Name="ProgressRingReTemplateTestPage"
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.ProgressRingPageReTemplate"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:animatedvisuals="using:AnimatedVisuals">
 
     <Page.Resources>
         <Style TargetType="controls:ProgressRing">
@@ -38,7 +38,10 @@
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
                             <!-- AnimatedVisualPlayer for Lottie -->
-                            <controls:AnimatedVisualPlayer x:Name="IndeterminateAnimatedVisualPlayer" AutoPlay="false" Stretch="fill"/>
+                            <controls:AnimatedVisualPlayer x:Name="IndeterminateAnimatedVisualPlayer" AutoPlay="false" Stretch="fill" >
+                                <!--Define custom Lottie animation-->
+                                <animatedvisuals:ProgressRingDeterminate />
+                            </controls:AnimatedVisualPlayer>
 
                         </Grid>
                     </ControlTemplate>
@@ -50,9 +53,9 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
-            x:Name="TestProgressRing"
-            IsActive="True"
-        />
+                x:Name="TestProgressRing"
+                IsActive="False"
+            />
         </StackPanel>
     </Grid>
-</Page>
+</local:TestPage>

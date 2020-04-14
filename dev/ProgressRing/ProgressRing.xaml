@@ -31,9 +31,13 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Inactive">
-                                    <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Opacity" Value="0"/>
-                                    </VisualState.Setters>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="LayoutRoot"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0" />
+                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>

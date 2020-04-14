@@ -15,6 +15,8 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
             Loaded += ProgressRingPage_Loaded;
+
+            NavigateToReTemplate.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressRingPageReTemplate), 0); };
         }
 
         private void ProgressRingPage_Loaded(object sender, RoutedEventArgs e)
