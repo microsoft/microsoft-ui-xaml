@@ -18,6 +18,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRingStoryboardAnimationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ProgressRingDeterminate.cs" />
@@ -25,5 +29,8 @@
       <DependentUpon>ProgressRingPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ProgressRingCustomLottieSourcePage.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressRingStoryboardAnimationPage.xaml.cs">
+      <DependentUpon>ProgressRingStoryboardAnimationPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -5,9 +5,9 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:animatedvisuals="using:AnimatedVisuals">
+    xmlns:animatedvisuals="using:AnimatedVisuals"
+     mc:Ignorable="d">
 
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
@@ -84,8 +84,8 @@
             <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
 
             <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+
+            <Button x:Name="NavigateToMainPage" AutomationProperties.Name="NavigateToMainPage">Progress Ring Main Page</Button>
         </StackPanel>
-        
-        <Button x:Name="NavigateToMainPage" AutomationProperties.Name="NavigateToMainPage" Margin="2" HorizontalAlignment="Stretch">Progress Ring Main Page</Button>
     </Grid>
 </local:TestPage>

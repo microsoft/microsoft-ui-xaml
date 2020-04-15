@@ -94,9 +94,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Navigate to Progress Ring Re-template Page");
 
-                Button navigateToReTemplate = FindElement.ByName<Button>("NavigateToReTemplate");
+                Button navigateToCustomLottieSourcePage = FindElement.ByName<Button>("NavigateToCustomLottieSourcePage");
 
-                navigateToReTemplate.InvokeAndWait();
+                navigateToCustomLottieSourcePage.InvokeAndWait();
 
                 Log.Comment("Verify IsActive property is set to true by default for testing");
 

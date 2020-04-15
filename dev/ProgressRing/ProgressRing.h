@@ -34,8 +34,10 @@ private:
     void SetAnimatedVisualPlayerSource();
     void SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
     void SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
-    void ChangeVisualState();
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void ChangeVisualState();
+    void ApplyTemplateSettings();
 
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
+    tracker_ref<winrt::Grid> m_layoutRoot{ this };
 };

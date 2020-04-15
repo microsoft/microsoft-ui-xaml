@@ -10,6 +10,7 @@
 #include "math.h"
 
 static constexpr wstring_view s_IndeterminateAnimatedVisualPlayerName{ L"IndeterminateAnimatedVisualPlayer"sv };
+static constexpr wstring_view s_LayoutRootName { L"LayoutRoot"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
@@ -39,6 +40,7 @@ void ProgressRing::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateAnimatedVisualPlayerName, controlProtected));
+    m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
 
     SetAnimatedVisualPlayerSource();
     ChangeVisualState();
@@ -46,38 +48,7 @@ void ProgressRing::OnApplyTemplate()
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    // TemplateSetting properties from WUXC for backwards compatibility.
-    const auto templateSettings = winrt::get_self<::ProgressRingTemplateSettings>(TemplateSettings());
-
-    const auto [width, diameterValue, anchorPoint] = [progressRingPlayer = m_player.get()]()
-    {
-        if (progressRingPlayer)
-        {
-            const float width = static_cast<float>(progressRingPlayer.ActualWidth());
-
-            const auto diameterAdditive = [width]()
-            {
-                if (width <= 40.0f)
-                {
-                    return 1.0f;
-                }
-                return 0.0f;
-            }();
-
-            const float diamaterValue = (width * 0.1f) + diameterAdditive;
-            const float anchorPoint = (width * 0.5f) - diamaterValue;
-            return std::make_tuple(width, diamaterValue, anchorPoint);
-        }
-
-        return std::make_tuple(0.0f, 0.0f, 0.0f);
-    }();
-
-    templateSettings->MaxSideLength(width);
-    templateSettings->EllipseDiameter(diameterValue);
-
-    const winrt::Thickness thicknessEllipseOffset = { 0, anchorPoint, 0, 0 };
-
-    templateSettings->EllipseOffset(thicknessEllipseOffset);
+    ApplyTemplateSettings();
 }
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -204,4 +175,40 @@ void ProgressRing::ChangeVisualState()
             player.Stop();
         }
     }
+}
+
+void ProgressRing::ApplyTemplateSettings()
+{
+    // TemplateSetting properties from WUXC for backwards compatibility.
+    const auto templateSettings = winrt::get_self<::ProgressRingTemplateSettings>(TemplateSettings());
+
+    const auto [width, diameterValue, anchorPoint] = [this]()
+    {
+        if (this->ActualWidth())
+        {
+            const float width = static_cast<float>(this->ActualWidth());
+
+            const auto diameterAdditive = [width]()
+            {
+                if (width <= 40.0f)
+                {
+                    return 1.0f;
+                }
+                return 0.0f;
+            }();
+
+            const float diamaterValue = (width * 0.1f) + diameterAdditive;
+            const float anchorPoint = (width * 0.5f) - diamaterValue;
+            return std::make_tuple(width, diamaterValue, anchorPoint);
+        }
+
+        return std::make_tuple(0.0f, 0.0f, 0.0f);
+    }();
+  
+    templateSettings->EllipseDiameter(diameterValue);
+
+    const winrt::Thickness thicknessEllipseOffset = { 0, anchorPoint, 0, 0 };
+
+    templateSettings->EllipseOffset(thicknessEllipseOffset);
+    templateSettings->MaxSideLength(width);
 }

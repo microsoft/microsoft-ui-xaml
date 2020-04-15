@@ -17,7 +17,6 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <StackPanel Orientation="Vertical">
-
             <controls:ProgressRing
                 x:Name="TestProgressRing"
                 IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
@@ -49,8 +48,10 @@
             <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
 
             <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+
+            <Button x:Name="NavigateToCustomLottieSourcePage" AutomationProperties.Name="NavigateToCustomLottieSourcePage">Progress Ring Custom Lottie Source</Button>
+            <Button x:Name="NavigateToStoryboardAnimationPage" AutomationProperties.Name="NavigateToStoryBoardAnimationPage">Progress Ring Storyboard Animation</Button>
         </StackPanel>
 
-        <Button x:Name="NavigateToReTemplate" AutomationProperties.Name="NavigateToReTemplate" Margin="2" HorizontalAlignment="Stretch">Progress Ring ReTemplate</Button>
     </Grid>
 </local:TestPage>
