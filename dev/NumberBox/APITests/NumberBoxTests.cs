@@ -36,50 +36,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             var numberBox = SetupNumberBox();
 
-            // first test: Uniform corner radius of '2' with no spin buttons shown
+            RepeatButton spinButtonDown = null;
+            TextBox textBox = null;
             RunOnUIThread.Execute(() =>
             {
+                // first test: Uniform corner radius of '2' with no spin buttons shown
                 numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden;
                 numberBox.CornerRadius = new CornerRadius(2);
-            });
-            IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() =>
-            {
-                var textBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
+                Content.UpdateLayout();
+
+                textBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
                 Verify.AreEqual(new CornerRadius(2, 2, 2, 2), textBox.CornerRadius);
-            });
 
-            // second test: Uniform corner radius of '2' with spin buttons in inline mode
-            RunOnUIThread.Execute(() =>
-            {
+                // second test: Uniform corner radius of '2' with spin buttons in inline mode (T-rule applies now)
                 numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
-            });
-            IdleSynchronizer.Wait();
+                Content.UpdateLayout();
 
-            RunOnUIThread.Execute(() =>
-            {
-                var textBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
-                var spinButtonDown = TestUtilities.FindDescendents<RepeatButton>(numberBox).Where(e => e.Name == "DownSpinButton").Single();
+                spinButtonDown = TestUtilities.FindDescendents<RepeatButton>(numberBox).Where(e => e.Name == "DownSpinButton").Single();
 
                 Verify.AreEqual(new CornerRadius(2, 0, 0, 2), textBox.CornerRadius);
                 Verify.AreEqual(new CornerRadius(0, 2, 2, 0), spinButtonDown.CornerRadius);
-            });
 
-            // third test: Uniform corner radius of '0' with spin buttons in inline mode
-            RunOnUIThread.Execute(() =>
-            {
-                numberBox.CornerRadius = new CornerRadius(0);
+                // third test: Set uniform corner radius to '4' with spin buttons in inline mode
+                numberBox.CornerRadius = new CornerRadius(4);
             });
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                var textBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
-                var spinButtonDown = TestUtilities.FindDescendents<RepeatButton>(numberBox).Where(e => e.Name == "DownSpinButton").Single();
+                // This check makes sure that updating the CornerRadius values of the numberbox in inline mode
+                // does not break the T-rule.
+                Verify.AreEqual(new CornerRadius(4, 0, 0, 4), textBox.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 4, 4, 0), spinButtonDown.CornerRadius);
+
+                // fourth test: Update the spin button placement mode to 'compact' and verify that all corners
+                // of the textbox are now rounded again
+                numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(new CornerRadius(4), textBox.CornerRadius);
+
+                // fifth test: Check corner radius of 0 in compact mode.
+                numberBox.CornerRadius = new CornerRadius(0);
+                Content.UpdateLayout();
 
                 Verify.AreEqual(new CornerRadius(0), textBox.CornerRadius);
-                Verify.AreEqual(new CornerRadius(0), spinButtonDown.CornerRadius);
             });
         }
 
@@ -89,10 +91,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 numberBox = new NumberBox();
+                Content = numberBox;
             });
 
-            TestUtilities.SetAsVisualTreeRoot(numberBox);
-            Verify.IsNotNull(numberBox);
             return numberBox;
         }
     }
