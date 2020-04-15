@@ -100,7 +100,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Verify IsActive property is set to true by default for testing");
 
-                ToggleButton reTemplatePageIsActiveCheckBox = FindElement.ByName<ToggleButton>("ReTemplatePageIsActiveCheckBox");
+                ToggleButton customLottieSourceIsActiveCheckBox = FindElement.ByName<ToggleButton>("CustomLottieSourceIsActiveCheckBox");
 
                 TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
@@ -123,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
 
-                reTemplatePageIsActiveCheckBox.ToggleAndWait();
+                customLottieSourceIsActiveCheckBox.ToggleAndWait();
 
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
                 Verify.AreEqual("Inactive", visualStateText.DocumentText);

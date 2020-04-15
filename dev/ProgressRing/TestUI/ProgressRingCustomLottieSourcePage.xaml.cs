@@ -5,9 +5,9 @@ using Windows.UI.Xaml.Media;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ProgressRingPageReTemplate : TestPage
+    public sealed partial class ProgressRingCustomLottieSourcePage : TestPage
     {
-        public ProgressRingPageReTemplate()
+        public ProgressRingCustomLottieSourcePage()
         {
             this.InitializeComponent();
             Loaded += ProgressRingPage_Loaded;
@@ -17,7 +17,7 @@ namespace MUXControlsTestApp
 
         private void ProgressRingPage_Loaded(object sender, RoutedEventArgs e)
         {
-            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestReTemplateProgressRing, 0);
+            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestCustomLottieSourceProgressRing, 0);
 
             var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
             commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
@@ -40,7 +40,7 @@ namespace MUXControlsTestApp
         {
             VisualStateText.Text = e.NewState.Name;
 
-            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestReTemplateProgressRing, 0);
+            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestCustomLottieSourceProgressRing, 0);
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
@@ -48,8 +48,8 @@ namespace MUXControlsTestApp
 
         public void UpdateWidth_Click(object sender, RoutedEventArgs e)
         {
-            TestReTemplateProgressRing.Width = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
-            TestReTemplateProgressRing.Height = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
+            TestCustomLottieSourceProgressRing.Width = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
+            TestCustomLottieSourceProgressRing.Height = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
         }
     }
 }
