@@ -10,23 +10,23 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 {
     public class SelectionBehavior : DependencyObject
     {
-        public static bool GetEnabled(DependencyObject obj)
+        public static bool GetIsEnabled(DependencyObject obj)
         {
-            return (bool)obj.GetValue(EnabledProperty);
+            return (bool)obj.GetValue(IsEnabledProperty);
         }
 
-        public static void SetEnabled(DependencyObject obj, bool value)
+        public static void SetIsEnabled(DependencyObject obj, bool value)
         {
-            obj.SetValue(EnabledProperty, value);
+            obj.SetValue(IsEnabledProperty, value);
         }
 
-        public static readonly DependencyProperty EnabledProperty =
-            DependencyProperty.RegisterAttached("Enabled", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(false,
-                new PropertyChangedCallback(OnEnabledChanged)));
+        public static readonly DependencyProperty IsEnabledProperty =
+            DependencyProperty.RegisterAttached("IsEnabled", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(false,
+                new PropertyChangedCallback(OnIsEnabledChanged)));
 
-        private static void OnEnabledChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        private static void OnIsEnabledChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            SetIsSelected(sender, GetEnabled(sender));
+            SetIsSelected(sender, GetIsEnabled(sender));
         }
 
         public static bool GetIsSelected(DependencyObject obj)
