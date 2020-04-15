@@ -10,46 +10,38 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 {
     public class SelectionBehavior : DependencyObject
     {
-
-
-
-        public bool IsSelected
+        public static bool GetEnabled(DependencyObject obj)
         {
-            get { return (bool)GetValue(IsSelectedProperty); }
-            set { 
-                SetValue(IsSelectedProperty, value);
-                IsSelectedChanged(value);
-            }
+            return (bool)obj.GetValue(EnabledProperty);
+        }
+
+        public static void SetEnabled(DependencyObject obj, bool value)
+        {
+            obj.SetValue(EnabledProperty, value);
+        }
+
+        public static readonly DependencyProperty EnabledProperty =
+            DependencyProperty.RegisterAttached("Enabled", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(false,
+                new PropertyChangedCallback(OnEnabledChanged)));
+
+        private static void OnEnabledChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        {
+            SetIsSelected(sender, GetEnabled(sender));
+        }
+
+        public static bool GetIsSelected(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(IsSelectedProperty);
+        }
+
+        public static void SetIsSelected(DependencyObject obj, bool value)
+        {
+            obj.SetValue(IsSelectedProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsSelectedProperty =
-            DependencyProperty.Register("IsSelected", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(false));
-
-
-
-        private readonly Control element;
-
-        public SelectionBehavior(Control element)
-        {
-            if(element == null)
-            {
-                return;
-            }
-            this.element = element;
-            VisualStateManager.GoToState(element, "Deselected", true);
-        }
-        private void IsSelectedChanged(bool value)
-        {
-            if(value)
-            {
-                VisualStateManager.GoToState(element, "Selected", true);
-            }
-            else
-            {
-                VisualStateManager.GoToState(element, "Deselected", true);
-            }
-        }
+            DependencyProperty.RegisterAttached("IsSelected", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(false));
 
     }
 }

@@ -13,7 +13,7 @@ namespace ItemsRepeaterExperiments.Common
             "Jerry","Ranjesh","Steven","Jevan","Savoy","Yulia","Stephen","Karen",
             "Ana","Kai","Stephen","Kiki","Ryan","Michael","Miguel","Mike","Jesse",
             "Keith","Dilip","Tammy","Chigusa","Marcel","Luke","Régis","Chris","Canhua",
-            "Bill","Claire","Jen","Sergio","Jay","Matt","Jeremy","Sebastion","Fons",
+            "Bill","Claire","Jen","Sergio","Jay","Matt","Jeremy","Sebastian","Fons",
             "David","Immo","Jerome","Neil","Dustin","Kayla"
         };
 

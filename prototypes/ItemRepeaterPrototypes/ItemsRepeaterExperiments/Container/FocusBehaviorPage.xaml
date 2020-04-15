@@ -37,7 +37,7 @@
         
         <muxc:ItemsRepeaterScrollHost Grid.Row="2" x:Name="TeamPresenterScrollHost">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TeamPresenterScroller">
-                <muxc:ItemsRepeater x:Name="TeamPresenter" Grid.Row="2">
+                <muxc:ItemsRepeater x:Name="TeamPresenter">
 
                     <muxc:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="common:Team" >

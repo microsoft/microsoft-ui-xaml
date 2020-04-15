@@ -9,56 +9,97 @@ using Windows.UI.Xaml.Input;
 
 namespace ItemsRepeaterExperiments.AttachedBehaviors
 {
-    public class PointerBehaviors
+    public class PointerBehaviors : DependencyObject
     {
-        public bool IsPointerOver { get; private set;} = false;
-        private Control element;
 
-        public event RoutedEventHandler Click;
-        
-        public PointerBehaviors(Control element)
+        public static event RoutedEventHandler Click;
+
+        public static void AttachProperty(FrameworkElement dp)
         {
-            if(element == null)
+            if (dp == null)
             {
                 return;
             }
-            this.element = element;
 
-            element.PointerReleased += Element_PointerReleased;
-            element.PointerEntered += Element_PointerEntered;
-            element.PointerPressed += Element_PointerPressed;
-            element.PointerExited += Element_PointerExited;
+            dp.PointerPressed += Dp_PointerPressed;
+            dp.PointerReleased += Dp_PointerReleased;
+            dp.PointerEntered += Dp_PointerEntered;
+            dp.PointerExited += Dp_PointerExited;
+
+            dp.Tapped += Dp_Tapped;
         }
 
-
-        private void Element_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private static void Dp_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (IsPointerOver)
-            {
-                VisualStateManager.GoToState(element, "PointerOver", true);
-            }
-            else
-            {
-                VisualStateManager.GoToState(element, "Normal", true);
-            }
-            Click?.Invoke(element, new RoutedEventArgs());
+            Click?.Invoke(sender, new RoutedEventArgs());
         }
 
-        private void Element_PointerEntered(object sender, PointerRoutedEventArgs e)
+        private static void Dp_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            IsPointerOver = true;
-            VisualStateManager.GoToState(element, "PointerOver", false);
+            SetIsPointerOverNotPressed(sender as DependencyObject, false);
+            SetIsPointerOver(sender as DependencyObject, false);
         }
 
-        private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private static void Dp_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            VisualStateManager.GoToState(element, "Pressed", true);
+            SetIsPointerOver(sender as DependencyObject, true);
+            SetIsPointerOverNotPressed(sender as DependencyObject, true);
         }
 
-        private void Element_PointerExited(object sender, PointerRoutedEventArgs e)
+        private static void Dp_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            IsPointerOver = false;
-            VisualStateManager.GoToState(element, "Normal", true);
+            SetIsPressed(sender as DependencyObject, false);
+            Click?.Invoke(sender, new RoutedEventArgs());
         }
+
+        private static void Dp_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SetIsPointerOverNotPressed(sender as DependencyObject, false);
+            SetIsPressed(sender as DependencyObject, true);
+        }
+
+
+        public static bool GetIsPointerOver(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(IsPointerOverProperty);
+        }
+
+        public static void SetIsPointerOver(DependencyObject obj, bool value)
+        {
+            obj.SetValue(IsPointerOverProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsPointerOverProperty =
+            DependencyProperty.RegisterAttached("IsPointerOver", typeof(bool), typeof(PointerBehaviors), new PropertyMetadata(false));
+
+
+        public static bool GetIsPressed(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(IsPressedProperty);
+        }
+
+        public static void SetIsPressed(DependencyObject obj, bool value)
+        {
+            obj.SetValue(IsPressedProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsPressedProperty =
+            DependencyProperty.RegisterAttached("IsPressed", typeof(bool), typeof(PointerBehaviors), new PropertyMetadata(false));
+        
+        public static bool GetIsPointerOverNotPressed(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(IsPointerOverNotPressedProperty);
+        }
+
+        public static void SetIsPointerOverNotPressed(DependencyObject obj, bool value)
+        {
+            obj.SetValue(IsPointerOverNotPressedProperty, value);
+        }
+        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsPointerOverNotPressedProperty =
+            DependencyProperty.RegisterAttached("IsPointerOverNotPressed", typeof(bool), typeof(PointerBehaviors), new PropertyMetadata(false));
+
     }
 }

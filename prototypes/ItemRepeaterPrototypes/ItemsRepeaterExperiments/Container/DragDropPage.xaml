@@ -34,7 +34,7 @@
                 Drop="FirstTeamPresenter_Drop"
                 DragOver="FirstTeamPresenter_DragOver"
                 VerticalScrollBarVisibility="Auto" x:Name="FirstTeamPresenterScroller">
-                <muxc:ItemsRepeater x:Name="FirstTeamPresenter" Grid.Row="2" 
+                <muxc:ItemsRepeater x:Name="FirstTeamPresenter"
                     Drop="FirstTeamPresenter_Drop"
                     DragOver="FirstTeamPresenter_DragOver"
                     AllowDrop="True">

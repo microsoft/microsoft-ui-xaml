@@ -11,9 +11,9 @@
     <StackPanel>
 
         <TextBlock Text="Standard template"/>
-        <muxc:ItemsRepeaterScrollHost Grid.Row="2">
+        <muxc:ItemsRepeaterScrollHost>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <muxc:ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind teams,Mode=OneWay}">
+                <muxc:ItemsRepeater ItemsSource="{x:Bind teams,Mode=OneWay}">
 
                     <muxc:ItemsRepeater.Layout>
                         <muxc:StackLayout Orientation="Horizontal"/>
@@ -29,31 +29,6 @@
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal"/>
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-
-                                        <VisualStateGroup x:Name="SelectionStates">
-                                            <VisualState x:Name="Deselected"/>
-                                            <VisualState x:Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-
                                     <TextBlock Text="{x:Bind Name}" FontSize="24"/>
                                     <TextBlock Text="{x:Bind MembersString}"/>
                                 </StackPanel>
@@ -67,9 +42,9 @@
 
         <TextBlock Text="Usercontrol"/>
 
-        <muxc:ItemsRepeaterScrollHost Grid.Row="2">
+        <muxc:ItemsRepeaterScrollHost>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <muxc:ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind teams,Mode=OneWay}">
+                <muxc:ItemsRepeater ItemsSource="{x:Bind teams,Mode=OneWay}">
 
                     <muxc:ItemsRepeater.Layout>
                         <muxc:StackLayout Orientation="Horizontal"/>
@@ -84,30 +59,6 @@
                                 <UserControl x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal"/>
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-
-                                        <VisualStateGroup x:Name="SelectionStates">
-                                            <VisualState x:Name="Deselected"/>
-                                            <VisualState x:Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
                                     <StackPanel>
                                         <TextBlock Text="{x:Bind Name}" FontSize="24"/>
                                         <TextBlock Text="{x:Bind MembersString}"/>
@@ -122,9 +73,9 @@
         </muxc:ItemsRepeaterScrollHost>
 
         <TextBlock Text="Templated control"/>
-        <muxc:ItemsRepeaterScrollHost Grid.Row="2">
+        <muxc:ItemsRepeaterScrollHost>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <muxc:ItemsRepeater x:Name="TemplatedControlRender" Grid.Row="2" ItemsSource="{x:Bind teams,Mode=OneWay}">
+                <muxc:ItemsRepeater x:Name="TemplatedControlRender" ItemsSource="{x:Bind teams,Mode=OneWay}">
 
                     <muxc:ItemsRepeater.Layout>
                         <muxc:StackLayout Orientation="Horizontal"/>

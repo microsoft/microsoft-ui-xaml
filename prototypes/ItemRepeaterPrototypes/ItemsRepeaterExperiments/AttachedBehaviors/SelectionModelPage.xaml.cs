@@ -43,18 +43,22 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
         /// <param name="args"></param>
         private void ItemsRepeater_ElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
         {
-            new PointerBehaviors(args.Element as Control).Click += Item_Click;
-            var selectionbehavior = new SelectionBehavior(args.Element as Control);
+            var control = args.Element as FrameworkElement;
 
-            if(selectionModel.SelectedIndex != null && selectionModel.SelectedIndex.GetAt(0) == args.Index)
-            {
-                selectionbehavior.IsSelected = true;
-            }
-            else
-            {
-                selectionbehavior.IsSelected = false;
-            }
+            PointerBehaviors.AttachProperty(control);
+            PointerBehaviors.Click += PointerBehaviors_Click;
+
+            SelectionBehavior.SetIsSelected(control,
+                    selectionModel.SelectedIndex != null && selectionModel.SelectedIndex.GetAt(0) == args.Index);
         }
+
+        private void Control_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            selectionModel.Select(TeamPresenter.GetElementIndex(sender as Control));
+        }
+
+
+
 
         /// <summary>
         /// This event gets raised when an item gets selected
@@ -67,36 +71,27 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
             // Having the deselected items would really be handy here ...
             foreach (var item in teams)
             {
-                var control = TeamPresenter.TryGetElement(teams.IndexOf(item as Team)) as Control;
+                var control = TeamPresenter.TryGetElement(teams.IndexOf(item as Team)) as DependencyObject;
                 // Container not realized ... , so skip
                 if (control == null)
                 {
-                    Debug.WriteLine(item.Name);
+                    //Debug.WriteLine("Not found: " + item.Name);
                     continue;
                 }
-                var container = new SelectionBehavior(control);
                 if (selectionModel.SelectedItems.Contains(item))
                 {
-                    container.IsSelected = true;
+                    SelectionBehavior.SetIsSelected(control,true);
                 }
                 else
-
                 {
-                    container.IsSelected = false;
+                    SelectionBehavior.SetIsSelected(control,false);
                 }
             }
         }
 
-
-        /// <summary>
-        /// This event get's raised when an item gets clicked.
-        /// @WINUI This could either be ItemsRepeater.ItemInvoked or we ship the container as separate control
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Item_Click(object sender, RoutedEventArgs e)
+        private void PointerBehaviors_Click(object sender, RoutedEventArgs e)
         {
-            selectionModel.Select(TeamPresenter.GetElementIndex(sender as Control));
+            selectionModel.Select(TeamPresenter.GetElementIndex(sender as FrameworkElement));
         }
     }
 }

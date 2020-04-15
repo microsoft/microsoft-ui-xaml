@@ -25,8 +25,8 @@
                     <muxc:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="common:Team">
 
-                                <!-- Inline UserControl -->
-                            <UserControl>
+                            <!-- Inline UserControl -->
+                            <UserControl x:Name="RootControl" local:SelectionBehavior.Enabled="True">
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
@@ -34,27 +34,38 @@
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal"/>
                                             <VisualState x:Name="PointerOver">
+                                                <VisualState.StateTriggers>
+                                                    <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:PointerBehaviors.IsPointerOverNotPressed),Mode=OneWay}"/>
+                                                </VisualState.StateTriggers>
                                                 <VisualState.Setters>
                                                     <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
                                                 </VisualState.Setters>
                                             </VisualState>
                                             <VisualState x:Name="Pressed">
+                                                <VisualState.StateTriggers>
+                                                    <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:PointerBehaviors.IsPressed),Mode=OneWay}"/>
+                                                </VisualState.StateTriggers>
                                                 <VisualState.Setters>
                                                     <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
-
+                                        
                                         <VisualStateGroup x:Name="SelectionStates">
-                                            <VisualState x:Name="Deselected"/>
+                                            <VisualState x:Name="Deselected">
+                                            </VisualState>
                                             <VisualState x:Name="Selected">
+                                                <VisualState.StateTriggers>
+                                                    <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
+                                                </VisualState.StateTriggers>
                                                 <VisualState.Setters>
                                                     <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-
+                                    <!-- The following bind is marked as valid, but does not update ... -->
+                                    <CheckBox IsChecked="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
                                     <TextBlock Text="{x:Bind Name}" FontSize="24"/>
                                     <TextBlock Text="{x:Bind MembersString}"/>
                                 </StackPanel>
