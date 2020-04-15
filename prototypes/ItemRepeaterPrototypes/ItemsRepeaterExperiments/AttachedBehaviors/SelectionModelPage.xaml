@@ -18,10 +18,6 @@
                     ElementPrepared="ItemsRepeater_ElementPrepared"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
 
-                    <muxc:ItemsRepeater.Layout>
-                        <muxc:StackLayout Orientation="Horizontal"/>
-                    </muxc:ItemsRepeater.Layout>
-
                     <muxc:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="common:Team">
 
