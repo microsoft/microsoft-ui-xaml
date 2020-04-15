@@ -22,7 +22,7 @@
                         <DataTemplate x:DataType="common:Team">
 
                             <!-- Inline UserControl -->
-                            <UserControl x:Name="RootControl" local:SelectionBehavior.Enabled="True">
+                            <UserControl x:Name="RootControl" local:SelectionBehavior.Enabled="True" local:PointerBehaviors.Enabled="True">
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">

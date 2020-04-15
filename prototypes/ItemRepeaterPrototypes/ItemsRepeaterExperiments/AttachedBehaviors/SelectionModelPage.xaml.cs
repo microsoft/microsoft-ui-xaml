@@ -33,6 +33,8 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
             selectionModel.Source = teams;
             selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
             selectionModel.SingleSelect = true;
+            
+            PointerBehaviors.Click += PointerBehaviors_Click;
         }
 
 
@@ -45,8 +47,6 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
         {
             var control = args.Element as FrameworkElement;
 
-            PointerBehaviors.AttachProperty(control);
-            PointerBehaviors.Click += PointerBehaviors_Click;
 
             SelectionBehavior.SetIsSelected(control,
                     selectionModel.SelectedIndex != null && selectionModel.SelectedIndex.GetAt(0) == args.Index);

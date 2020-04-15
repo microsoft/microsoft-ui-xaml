@@ -14,20 +14,39 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 
         public static event RoutedEventHandler Click;
 
-        public static void AttachProperty(FrameworkElement dp)
+        public static bool GetEnabled(DependencyObject obj)
         {
-            if (dp == null)
-            {
-                return;
-            }
-
-            dp.PointerPressed += Dp_PointerPressed;
-            dp.PointerReleased += Dp_PointerReleased;
-            dp.PointerEntered += Dp_PointerEntered;
-            dp.PointerExited += Dp_PointerExited;
-
-            dp.Tapped += Dp_Tapped;
+            return (bool)obj.GetValue(EnabledProperty);
         }
+
+        public static void SetEnabled(DependencyObject obj, bool value)
+        {
+            obj.SetValue(EnabledProperty, value);
+            var dp = obj as FrameworkElement;
+            if(value)
+            {
+                dp.PointerPressed += Dp_PointerPressed;
+                dp.PointerReleased += Dp_PointerReleased;
+                dp.PointerEntered += Dp_PointerEntered;
+                dp.PointerExited += Dp_PointerExited;
+
+                dp.Tapped += Dp_Tapped;
+            }
+            else
+            {
+                dp.PointerPressed -= Dp_PointerPressed;
+                dp.PointerReleased -= Dp_PointerReleased;
+                dp.PointerEntered -= Dp_PointerEntered;
+                dp.PointerExited -= Dp_PointerExited;
+
+                dp.Tapped -= Dp_Tapped;
+            }
+        }
+
+        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EnabledProperty =
+            DependencyProperty.RegisterAttached("Enabled", typeof(bool), typeof(PointerBehaviors), new PropertyMetadata(false));
+
 
         private static void Dp_Tapped(object sender, TappedRoutedEventArgs e)
         {
