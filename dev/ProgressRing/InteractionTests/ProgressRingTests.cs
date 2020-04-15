@@ -92,7 +92,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Navigate to Progress Ring Re-template Page");
+                Log.Comment("Navigate to Progress Ring Custom Lottie Source Page");
 
                 Button navigateToCustomLottieSourcePage = FindElement.ByName<Button>("NavigateToCustomLottieSourcePage");
 
@@ -135,6 +135,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verity that opacity is 0 when Inactive");
                 Verify.AreEqual("0", opacityText.DocumentText);
 
+            }
+        }
+
+        [TestMethod]
+        public void StoryboardAnimationRetemplateTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                Log.Comment("Navigate to Progress Ring Storyboard Animation Page");
+
+                Button navigateToStoryBoardAnimationPage = FindElement.ByName<Button>("NavigateToStoryBoardAnimationPage");
+
+                navigateToStoryBoardAnimationPage.InvokeAndWait();
+
+                Log.Comment("Verify IsActive property is set to true by default for testing");
+
+                ToggleButton storyboardAnimationIsActiveCheckBox = FindElement.ByName<ToggleButton>("StoryboardAnimationIsActiveCheckBox");
+                TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
+                TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+
+                Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
+
+                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+
+                Verify.AreEqual("Active", visualStateText.DocumentText);
+
+                storyboardAnimationIsActiveCheckBox.ToggleAndWait();
+
+                Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+                Verify.AreEqual("Inactive", visualStateText.DocumentText);
             }
         }
     }

@@ -233,7 +233,7 @@
                 x:Name="TestStoryboardAnimationProgressRing"
                 Height="32"
                 Width="32"
-                IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                IsActive="{x:Bind StoryboardAnimationIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 />
 
             <Grid Width="200px" HorizontalAlignment="Left">
@@ -255,8 +255,8 @@
             <TextBlock Text="Animated Visual Player IsPlaying:" Foreground="LightGray"/>
             <TextBlock x:Name="IsPlayingText" AutomationProperties.Name="IsPlayingText" Margin="0, 0, 0, 20"/>
 
-            <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind ShowIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
-            <CheckBox x:Name="ShowIsActiveCheckBox" AutomationProperties.Name="ShowIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
+            <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind StoryboardAnimationIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="StoryboardAnimationIsActiveCheckBox" AutomationProperties.Name="StoryboardAnimationIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
 
             <TextBlock Text="Animated Visual Player Opacity:" Foreground="LightGray"/>
             <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
