@@ -2152,7 +2152,6 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
     auto key = args.Key();
     if (IsSettingsItem(nvi))
     {
-        // Because ListViewItem eats the events, we only get these keys on KeyDown.
         if (key == winrt::VirtualKey::Space ||
             key == winrt::VirtualKey::Enter)
         {
@@ -2178,88 +2177,88 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
             KeyboardFocusLastItemFromItem(nvi);
             break;
         case winrt::VirtualKey::Down:
-            KeyboardFocusNextDownItem(nvi, args);
+            FocusNextDownItem(nvi, args);
             break;
         case winrt::VirtualKey::Up:
-            KeyboardFocusNextUpItem(nvi, args);
+            FocusNextUpItem(nvi, args);
             break;
         }
     }
 }
 
-void NavigationView::KeyboardFocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+void NavigationView::FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
 {
-    if (args.OriginalSource() == nvi)
+    if (args.OriginalSource() != nvi)
     {
-        bool shouldHandleFocus = true;
-        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-        auto const nextFocusableElement = winrt::FocusManager::FindNextFocusableElement(winrt::FocusNavigationDirection::Up);
+        return;
+    }
 
-        if (auto const nextFocusableNVI = nextFocusableElement.try_as<winrt::NavigationViewItem>())
+    bool shouldHandleFocus = true;
+    auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+    auto const nextFocusableElement = winrt::FocusManager::FindNextFocusableElement(winrt::FocusNavigationDirection::Up);
+
+    if (auto const nextFocusableNVI = nextFocusableElement.try_as<winrt::NavigationViewItem>())
+    {
+
+        auto const nextFocusableNVIImpl = winrt::get_self<NavigationViewItem>(nextFocusableNVI);
+
+        if (nextFocusableNVIImpl->Depth() == nviImpl->Depth())
         {
-
-            auto nameCurrent = nvi.Name();
-            auto nameNext = nextFocusableNVI.Name();
-
-            auto const nextFocusableNVIImpl = winrt::get_self<NavigationViewItem>(nextFocusableNVI);
-
-            if (nextFocusableNVIImpl->Depth() == nviImpl->Depth())
+            // If we not at the top of the list for our current depth and the item above us has children, check whether we should move focus onto a child
+            if (DoesNavigationViewItemHaveChildren(nextFocusableNVI))
             {
-                // If we not at the top of the list for our current depth and the item above us has children, check whether we should move focus onto a child
-                if (DoesNavigationViewItemHaveChildren(nextFocusableNVI))
+                // Focus on last lowest level visible container
+                if (auto const childRepeater = nextFocusableNVIImpl->GetRepeater())
                 {
-                    // Focus on last lowest level visible container
-                    if (auto const childRepeater = nextFocusableNVIImpl->GetRepeater())
+                    if (auto const lastFocusableElement = winrt::FocusManager::FindLastFocusableElement(childRepeater))
                     {
-                        if (auto const lastFocusableElement = winrt::FocusManager::FindLastFocusableElement(childRepeater))
+                        if (auto lastFocusableNVI = lastFocusableElement.try_as<winrt::Control>())
                         {
-                            if (auto lastFocusableNVI = lastFocusableElement.try_as<winrt::Control>())
-                            {
-                                args.Handled(lastFocusableNVI.Focus(winrt::FocusState::Keyboard));
-                            }
+                            args.Handled(lastFocusableNVI.Focus(winrt::FocusState::Keyboard));
                         }
-                        else
-                        {
-                            args.Handled(nextFocusableNVIImpl->Focus(winrt::FocusState::Keyboard));
-                        }
-
                     }
-                }
-                else
-                {
-                    // Traversing up a list where XYKeyboardFocus will result in correct behavior
-                    shouldHandleFocus = false;
+                    else
+                    {
+                        args.Handled(nextFocusableNVIImpl->Focus(winrt::FocusState::Keyboard));
+                    }
+
                 }
             }
-        }
-
-        // We are at the top of the list, focus on parent
-        if (shouldHandleFocus && !args.Handled() && nviImpl->Depth() > 0)
-        {
-            if (auto const parentContainer = GetParentNavigationViewItemForContainer(nvi))
+            else
             {
-                args.Handled(parentContainer.Focus(winrt::FocusState::Keyboard));
+                // Traversing up a list where XYKeyboardFocus will result in correct behavior
+                shouldHandleFocus = false;
             }
         }
+    }
 
+    // We are at the top of the list, focus on parent
+    if (shouldHandleFocus && !args.Handled() && nviImpl->Depth() > 0)
+    {
+        if (auto const parentContainer = GetParentNavigationViewItemForContainer(nvi))
+        {
+            args.Handled(parentContainer.Focus(winrt::FocusState::Keyboard));
+        }
     }
 }
 
 // If item has focusable children, move focus to first focusable child, otherise just defer to default XYKeyboardFocus behavior
-void NavigationView::KeyboardFocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+void NavigationView::FocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
 {
-    if (args.OriginalSource() == nvi)
+    if (args.OriginalSource() != nvi)
     {
-        if (DoesNavigationViewItemHaveChildren(nvi))
+        return;
+    }
+
+    if (DoesNavigationViewItemHaveChildren(nvi))
+    {
+        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        if (auto const childRepeater = nviImpl->GetRepeater())
         {
-            auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-            if (auto const childRepeater = nviImpl->GetRepeater())
+            auto const firstFocusableElement = winrt::FocusManager::FindFirstFocusableElement(childRepeater);
+            if (auto controlFirst = firstFocusableElement.try_as<winrt::Control>())
             {
-                auto const firstFocusableElement = winrt::FocusManager::FindFirstFocusableElement(childRepeater);
-                if (auto controlFirst = firstFocusableElement.try_as<winrt::Control>())
-                {
-                    args.Handled(controlFirst.Focus(winrt::FocusState::Keyboard));
-                }
+                args.Handled(controlFirst.Focus(winrt::FocusState::Keyboard));
             }
         }
     }
