@@ -658,7 +658,7 @@
 
                                 <ContentPresenter x:Name="ContentPresenter"
                                     Grid.Column="1"
-                                    Margin="0,0,16,0"
+                                    Margin="0,0,20,0"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     Content="{TemplateBinding Content}"
@@ -672,7 +672,7 @@
                                     Grid.Column="2"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
-                                    Margin="0,0,16,0"                >
+                                    Margin="0,0,20,0">
                                     <TextBlock
                                         Width="12" Height="12"
                                         RenderTransformOrigin="0.5, 0.5"
