@@ -597,6 +597,7 @@
                             ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                             Content="{TemplateBinding Content}"
                             primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="false"
                             Control.IsTemplateFocusTarget="True">
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
