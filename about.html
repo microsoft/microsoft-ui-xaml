@@ -125,10 +125,10 @@
                           </tr>
                           <tr>
                             <th scope="row">Downlevel support</th>
-                            <td>Windows 10.x</td>
-                            <td>Windows 10.x</td>
-                            <td>Windows 7</td>
-                            <td>Windows XP</td>
+                            <td>WinUI 3: Windows 1803+ <br/><br/>WinUI 2: Windows 15063+</td>
+                            <td>Windows 1507+</td>
+                            <td>Windows XP?</td>
+                            <td>Windows XP?</td>
                           </tr>
                           <tr>
                             <th scope="row">Runtime library</th>
@@ -167,7 +167,7 @@
                           </tr>
                           <tr>
                             <th scope="row">Runs natively on Windows 10X</th>
-                            <td><i class="icon-check m-auto text-icon"></i></td>
+                            <td><i class="icon-check m-auto text-icon"></i> <br/>(C++/C#/UWP app bases only)</td>
                             <td><i class="icon-check m-auto text-icon"></i</td>
                             <td> </td>
                             <td> </td>
@@ -184,14 +184,14 @@
                             <td><i class="icon-check m-auto text-icon"></i></td>
                             <td><i class="icon-check m-auto text-icon"></i></td>
                             <td><i class="icon-check m-auto text-icon"></i></td>
-                            <td><i class="icon-check m-auto text-icon"></i></td>
+                            <td> </td>
                           </tr>
                           <tr>
                             <th scope="row">Input Validation</th>
                             <td><i class="icon-check m-auto text-icon"></i></td>
                             <td> </td>
-                            <td> </td>
-                            <td> </td>
+                            <td><i class="icon-check m-auto text-icon"></i> </td>
+                            <td><i class="icon-check m-auto text-icon"></i> </td>
                           </tr>
                           <tr>
                             <th scope="row">Chromium-based WebView control</th>
@@ -226,7 +226,11 @@
                         <li><span style="font-weight: bold;">Downlevel support:</span> Your customers and users don't have to be running the latest version of Windows 10 for your app to work and be fully interactive.</li>
                         <li><span style="font-weight: bold;">New controls:</span> WinUI is packed with exciting new controls that you can't use with a standalone UWP app. These controls provide high flexibility, intuitive animations, customizability, as well as visible performance improvements. <a href="https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt">You can browse our controls in the Xaml Controls Gallery app.</a> </li>
                     </ul>
-                    <p>Adding WinUI to your UWP project mostly consists of changing a few namespaces and making minor adjustments to existing controls - but it varies by app. For detailed instructions, see our documentation on integrating WinUI with a UWP app. </p>
+                    <p>For detailed instructions on how to use WinUI in your UWP app, see:</p>
+                    <ul>
+                        <li> <a href="https://docs.microsoft.com/uwp/toolkits/winui3/">Docs on integrating the WinUI 3 Alpha with a UWP app</a> </li>
+                        <li> <a href="https://docs.microsoft.com/en-us/uwp/toolkits/winui/getting-started">Docs on using WinUI 2 in your UWP app</a> </li>
+                    </ul>
                 </div>
 
                 <!-- Win32 apps -->
@@ -234,7 +238,8 @@
                     <h2 class="content-subhead">Path for Win32 apps</h2>
                     <p>Win32 apps are powerful, feature-rich, and can be used with WinUI in two different ways.<br/><br/>
                        <span style="font-weight:bold;"> Consuming WinUI directly:</span> You can use WinUI as your entire UI layer, which would mean replacing any existing controls (i.e. WPF, Winforms) with WinUI controls. Although this requires a large code refactor, it also makes sure your entire app is modern and consistent in that each component of the app has the same rich functionality and capability. <br/><br/>
-                       <span style="font-weight:bold;"> Using XAML Islands:</span> With Xaml Islands, you can modernize certain parts of your app without having to refactor the entire thing. You can host any built-in UWP control or custom-created control inside of your desktop app, along with UWP functionality such as WebView, Inking and modern input support. Xaml Islands allows you to upgrade your performance and interface where it would be most impactful in your application. To learn more about getting started with Xaml Islands, you can refer to the <a href="https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands">documentation.</a> </p>
+                       We have documentation coming soon on how to integrate WinUI 3 directly into your desktop app. Check back mid-May for updates.<br/><br/>
+                       <span style="font-weight:bold;"> Using XAML Islands:</span> With Xaml Islands, you can modernize certain parts of your app without having to refactor the entire thing. You can host any built-in UWP control or custom-created control inside of your desktop app, along with UWP functionality such as WebView, Inking and modern input support. Xaml Islands allows you to upgrade your performance and interface where it would be most impactful in your application.<br/> <br/> To learn more about getting started with Xaml Islands, you can refer to the <a href="https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands">modernization docs.</a> </p>
                 </div>
         
             </div> 
