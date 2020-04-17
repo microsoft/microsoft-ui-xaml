@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -649,16 +649,16 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Viewbox x:Name="IconBox"
-                                Height="16"
-                                Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
+                                    Height="16"
+                                    Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                     <ContentPresenter 
-                                    x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}" />
+                                        x:Name="Icon" 
+                                        Content="{TemplateBinding Icon}" />
                                 </Viewbox>
 
                                 <ContentPresenter x:Name="ContentPresenter"
                                     Grid.Column="1"
-                                    Margin="0,0,16,0"
+                                    Margin="0,0,20,0"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     Content="{TemplateBinding Content}"
@@ -672,19 +672,17 @@
                                     Grid.Column="2"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
-                                    Width="40"
-                                    Margin="-16,0,0,0"
-                                    Background="Transparent">
+                                    Margin="0,0,20,0">
                                     <TextBlock
-                                            Width="12" Height="12"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            FontSize="12.0"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                                        Width="12" Height="12"
+                                        RenderTransformOrigin="0.5, 0.5"
+                                        Foreground="{ThemeResource NavigationViewItemForeground}"
+                                        FontSize="12.0"
+                                        Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        IsTextScaleFactorEnabled="False">
                                         <TextBlock.RenderTransform>
                                             <RotateTransform x:Name="ExpandCollapseChevronRotateTransform" Angle="0"/>
                                         </TextBlock.RenderTransform>
