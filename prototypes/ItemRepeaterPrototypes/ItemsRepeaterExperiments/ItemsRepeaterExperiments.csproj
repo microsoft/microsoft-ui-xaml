@@ -121,6 +121,7 @@
     </Compile>
     <Compile Include="AttachedBehaviors\PointerBehaviors.cs" />
     <Compile Include="AttachedBehaviors\SelectionBehavior.cs" />
+    <Compile Include="AttachedBehaviors\SelectionBehaviorItemPeer.cs" />
     <Compile Include="AttachedBehaviors\SelectionModelPage.xaml.cs">
       <DependentUpon>SelectionModelPage.xaml</DependentUpon>
     </Compile>

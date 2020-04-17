@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 
 namespace ItemsRepeaterExperiments.AttachedBehaviors
@@ -26,7 +27,10 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 
         private static void OnIsEnabledChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            SetIsSelected(sender, GetIsEnabled(sender));
+            if((bool)args.NewValue)
+            {
+                SetIsSelected(sender, GetIsEnabled(sender));
+            }
         }
 
         public static bool GetIsSelected(DependencyObject obj)
