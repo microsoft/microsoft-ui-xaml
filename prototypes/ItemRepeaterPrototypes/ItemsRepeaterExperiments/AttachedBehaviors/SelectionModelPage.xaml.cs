@@ -26,14 +26,9 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
     public sealed partial class SelectionModelPage : Page
     {
         private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(100);
-        private SelectionModel selectionModel = new SelectionModel();
         public SelectionModelPage()
         {
             this.InitializeComponent();
-            selectionModel.Source = teams;
-            selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
-            selectionModel.SingleSelect = true;
-            
             PointerBehaviors.Click += PointerBehaviors_Click;
         }
 

@@ -18,6 +18,13 @@
                     ElementPrepared="ItemsRepeater_ElementPrepared"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
 
+                    <muxc:ItemsRepeater.Resources>
+                        <muxc:SelectionModel x:Key="selectionModel" x:Name="selectionModel"
+                            SingleSelect="True"
+                            Source="{x:Bind TeamPresenter.ItemsSource}"
+                            SelectionChanged="SelectionModel_SelectionChanged"/>
+                    </muxc:ItemsRepeater.Resources>
+                    
                     <muxc:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="common:Team">
 
