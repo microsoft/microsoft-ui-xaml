@@ -957,7 +957,7 @@ void ColorPicker::OnHexTextChanging(winrt::TextBox const& /*sender*/, winrt::Tex
         return;
     }
 
-    auto hexTextBox = m_hexTextBox.get();
+    auto&& hexTextBox = m_hexTextBox.get();
 
     // If the user hasn't entered a #, we'll do that for them, keeping the cursor
     // where it was before.
@@ -1028,8 +1028,8 @@ void ColorPicker::UpdateThirdDimensionSlider()
         return;
     }
 
-    auto thirdDimensionSlider = m_thirdDimensionSlider.get();
-    auto thirdDimensionSliderGradientBrush = m_thirdDimensionSliderGradientBrush.get();
+    auto&& thirdDimensionSlider = m_thirdDimensionSlider.get();
+    auto&& thirdDimensionSliderGradientBrush = m_thirdDimensionSliderGradientBrush.get();
 
     // Since the slider changes only one color dimension, we can use a LinearGradientBrush
     // for its background instead of needing to manually set pixels ourselves.
@@ -1161,8 +1161,8 @@ void ColorPicker::UpdateAlphaSlider()
         return;
     }
 
-    auto alphaSlider = m_alphaSlider.get();
-    auto alphaSliderGradientBrush = m_alphaSliderGradientBrush.get();
+    auto&& alphaSlider = m_alphaSlider.get();
+    auto&& alphaSliderGradientBrush = m_alphaSliderGradientBrush.get();
 
     // Since the slider changes only one color dimension, we can use a LinearGradientBrush
     // for its background instead of needing to manually set pixels ourselves.

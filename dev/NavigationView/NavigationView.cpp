@@ -27,9 +27,10 @@
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
 #include <ItemsRepeater.common.h>
-#include "NavigationViewExpandingEventArgs.h"
-#include "NavigationViewCollapsedEventArgs.h"
+#include "NavigationViewItemExpandingEventArgs.h"
+#include "NavigationViewItemCollapsedEventArgs.h"
 
+// General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
 static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
@@ -42,6 +43,7 @@ static constexpr auto c_paneContentGridName = L"PaneContentGrid"sv;
 static constexpr auto c_rootGridName = L"RootGrid"sv;
 static constexpr auto c_contentGridName = L"ContentGrid"sv;
 static constexpr auto c_searchButtonName = L"PaneAutoSuggestButton"sv;
+static constexpr auto c_paneToggleButtonIconGridColumnName = L"PaneToggleButtonIconWidthColumn"sv;
 static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
 static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
@@ -52,6 +54,7 @@ static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonT
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
 
+// DisplayMode Top specific items
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
 static constexpr auto c_topNavMenuItemsOverflowHost = L"TopNavMenuItemsOverflowHost"sv;
@@ -61,6 +64,7 @@ static constexpr auto c_leftNavPaneAutoSuggestBoxPresenter = L"PaneAutoSuggestBo
 static constexpr auto c_topNavPaneAutoSuggestBoxPresenter = L"TopPaneAutoSuggestBoxPresenter"sv;
 static constexpr auto c_paneTitlePresenter = L"PaneTitlePresenter"sv;
 
+// DisplayMode Left specific items
 static constexpr auto c_leftNavFooterContentBorder = L"FooterContentBorder"sv;
 static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBorder"sv;
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
@@ -274,8 +278,9 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
 }
 
 // We only need to close the flyout if the selected item is a leaf node
-void NavigationView::CloseFlyoutIfRequired()
+void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem)
 {
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
     bool isInModeWithFlyout = [this]()
     {
         if (auto splitView = m_rootSplitView.get())
@@ -288,31 +293,18 @@ void NavigationView::CloseFlyoutIfRequired()
         return false;
     }();
 
-    if (isInModeWithFlyout)
+    if (isInModeWithFlyout && selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
     {
-        if (auto const selectedIndex = m_selectionModel.SelectedIndex())
+        // Item selected is a leaf node, find top level parent and close flyout
+        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
         {
-            if (auto const selectedItem = GetContainerForIndexPath(selectedIndex))
+            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
             {
-                if (auto const selectedNVI = selectedItem.try_as<winrt::NavigationViewItem>())
+                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                if (nviImpl->ShouldRepeaterShowInFlyout())
                 {
-                    if (!DoesNavigationViewItemHaveChildren(selectedNVI))
-                    {
-                        // Item selected is a leaf node, find top level parent and close flyout
-                        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
-                        {
-                            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
-                            {
-                                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                                if (nviImpl->ShouldRepeaterShowInFlyout())
-                                {
-                                    nviImpl->ShowChildren(false);
-                                }
-                            }
-                        }
-                    }
+                    nvi.IsExpanded(false);
                 }
-
             }
         }
     }
@@ -769,7 +761,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 
     if (updateSelection)
     {
-        CloseFlyoutIfRequired();
+        CloseFlyoutIfRequired(nvi);
     }
 }
 
@@ -1227,7 +1219,7 @@ void NavigationView::OpenPane()
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
-    CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+    CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     auto scopeGuard = gsl::finally([this]()
         {
             m_isOpenPaneForInteraction = false;
@@ -1297,7 +1289,7 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
         {
             if (auto paneList = m_leftNavRepeater.get())
             {
-                if (!splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline))
+                if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline)
                 {
                     // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
                     winrt::VisualStateManager::GoToState(*this, L"ListSizeCompact", true /*useTransitions*/);
@@ -1355,6 +1347,36 @@ void NavigationView::UpdateIsClosedCompact()
         UpdateBackAndCloseButtonsVisibility();
         UpdatePaneTitleMargins();
         UpdatePaneToggleSize();
+    }
+}
+
+void NavigationView::UpdatePaneButtonsWidths()
+{
+    auto newButtonWidths = [this]()
+    {
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
+        {
+            return static_cast<double>(c_paneToggleButtonWidth);
+        }
+        return CompactPaneLength();
+    }();
+
+    if (auto&& backButton = m_backButton.get())
+    {
+        backButton.Width(newButtonWidths);
+    }
+    if (auto&& paneToggleButton = m_paneToggleButton.get())
+    {
+        paneToggleButton.MinWidth(newButtonWidths);
+        if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
+        {
+            if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
+            {
+                auto width = paneToggleButtonIconColumn.Width();
+                width.Value = newButtonWidths;
+                paneToggleButtonIconColumn.Width(width);
+            }
+        }
     }
 }
 
@@ -1905,6 +1927,11 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
+
+        if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
+        {
+            ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+        }    
     }
 }
 
@@ -2434,44 +2461,14 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 {
     if (container)
     {
-        if (IsTopNavigationView())
+        if (auto const nvib = container.try_as<winrt::NavigationViewItemBase>())
         {
-            // Search topnav first, if not found, search overflow
-            if (auto ir = m_topNavRepeater.get())
+            if (auto const parentRepeater = GetParentItemsRepeaterForContainer(nvib))
             {
-                if (auto element = container.try_as<winrt::UIElement>())
+                auto const containerIndex = parentRepeater.GetElementIndex(nvib);
+                if (containerIndex >= 0)
                 {
-                    auto index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
-                }
-            }
-
-            if (auto ir = m_topNavRepeaterOverflowView.get())
-            {
-                if (auto element = container.try_as<winrt::UIElement>())
-                {
-                    auto index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (auto ir = m_leftNavRepeater.get())
-            {
-                if (auto element = container.try_as<winrt::UIElement>())
-                {
-                    int index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
+                    return GetItemFromIndex(parentRepeater, containerIndex);
                 }
             }
         }
@@ -2941,10 +2938,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     {
         if (ip.GetSize() > 1)
         {
-            auto indexOfParentInOverflow = m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0));
-            // We want to make sure that container is collapsed before movement
-            CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
-            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), indexOfParentInOverflow);
+            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0)));
         }
         return item;
     }();
@@ -3365,12 +3359,13 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
-        CollapseAllMenuItems(auto_unbox(args.OldValue()));
+        CollapseTopLevelMenuItems(auto_unbox(args.OldValue()));
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
         UpdatePaneVisibility();
         UpdateVisualState();
+        UpdatePaneButtonsWidths();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -3421,6 +3416,9 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // Need to update receiver margins when CompactPaneLength changes
         UpdatePaneShadow();
+
+        // Update pane-button-grid width when pane is closed and we are not in minimal
+        UpdatePaneButtonsWidths();
     }
     else if (property == s_IsTitleBarAutoPaddingEnabledProperty)
     {
@@ -3500,6 +3498,7 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
+
     SetPaneToggleButtonAutomationName();
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
@@ -3519,6 +3518,7 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
+    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
@@ -4428,8 +4428,7 @@ int NavigationView::GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt
     {
         if (auto itemsSourceView = ir.ItemsSourceView())
         {
-            auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
-            return inspectingDataSource->IndexOf(data);
+            return itemsSourceView.IndexOf(data);
         }
     }
     return -1;
@@ -4667,7 +4666,7 @@ void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewIt
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
 
-    nviImpl->ShowChildren(nvi.IsExpanded());
+    nviImpl->ShowHideChildren();
 
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
@@ -4809,21 +4808,21 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     return nullptr;
 }
 
-void NavigationView::CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
+void NavigationView::CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
 {
     // We want to make sure only top level items are visible when switching pane modes
     if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::Top)
     {
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeater.get());
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeaterOverflowView.get());
     }
     else
     {
-        CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     }
 }
 
-void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir)
+void NavigationView::CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir)
 {
     for (int index = 0; index < GetContainerCountInRepeater(ir); index++)
     {
@@ -4831,7 +4830,6 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
         {
             if (auto const nvi = element.try_as<winrt::NavigationViewItem>())
             {
-                CollapseAllMenuItemsUnderRepeater(winrt::get_self<NavigationViewItem>(nvi)->GetRepeater());
                 ChangeIsExpandedNavigationViewItem(nvi, false /*isExpanded*/);
             }
         }
@@ -4840,14 +4838,14 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
 
 void NavigationView::RaiseExpandingEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewExpandingEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemExpandingEventArgs>(*this);
     eventArgs->ExpandingItemContainer(container);
     m_expandingEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemCollapsedEventArgs>(*this);
     eventArgs->CollapsedItemContainer(container);
     m_collapsedEventSource(*this, *eventArgs);
 }

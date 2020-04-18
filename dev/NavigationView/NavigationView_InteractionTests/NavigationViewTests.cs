@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -148,6 +148,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Click on SelectedItem Apps");
                 appsItem.Click();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyPaneIsClosedAfterSelectingItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Test PaneDisplayMode=LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                TextBlock selectionRaisedIndicator = new TextBlock(FindElement.ById("SelectionChangedRaised"));
+
+                Log.Comment("Select Apps");
+                ComboBox selectedItem = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                selectedItem.SelectItemByName("Apps");
+                Verify.AreEqual("True", selectionRaisedIndicator.GetText());
                 Wait.ForIdle();
 
                 WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
@@ -4215,6 +4249,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite","D")]
+        public void VerifyIconsRespectCompactPaneLength()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
+            {
+                var checkMenuItemsButton = FindElement.ByName("CheckMenuItemsOffset");
+                var compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox"));
+                var displayModeToggle = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                var currentStatus = new CheckBox(FindElement.ByName("MenuItemsCorrectOffset"));
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+
+                compactpaneCheckbox.SelectItemByName("96");
+                Wait.ForIdle();
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+
+                // Check if changing displaymode to top and then changing length gets used correctly
+                displayModeToggle.SelectItemByName("Top");
+                compactpaneCheckbox.SelectItemByName("48");
+                Wait.ForIdle();
+
+                displayModeToggle.SelectItemByName("Left");
+                Wait.ForIdle();
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+            }
+        }
+
+        [TestMethod]
         [TestProperty("TestSuite", "D")]
         public void VerifyExpandCollpaseFunctionality()
         {
@@ -4223,7 +4293,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
+                    
+                    TextBlock textblockExpandingItemAndContainerMatch = new TextBlock(FindElement.ByName("TextblockExpandingItemAndContainerMatch"));
+                    TextBlock textblockCollapsedItemAndContainerMatch = new TextBlock(FindElement.ByName("TextblockCollapsedItemAndContainerMatch"));
+                    TextBlock textBlockExpandingItem = new TextBlock(FindElement.ByName("TextBlockExpandingItem"));
+                    TextBlock textBlockCollapsedItem = new TextBlock(FindElement.ByName("TextBlockCollapsedItem"));
+
                     Log.Comment("Verify that first menu item is not expanded.");
+                    // Verify through test page elements
+                    Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "N/A");
+                    Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
+                    Verify.AreEqual(textBlockExpandingItem.DocumentText, "N/A");
+                    Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
+                    // Verify that second menu item is not in tree
                     var firstItem = FindElement.ByName("Menu Item 1");
                     var childItem = FindElement.ByName("Menu Item 2");
                     Verify.IsNull(childItem);
@@ -4232,9 +4314,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     InputHelper.LeftClick(firstItem);
                     Wait.ForIdle();
 
+                    Log.Comment("Verify that first menu item was expanded correctly.");
+                    // Verify through test page elements
+                    Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                    Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
+                    Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 1");
+                    Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
+                    // Verify that second menu item is in tree
                     childItem = FindElement.ByName("Menu Item 2");
                     Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
 
+                    Log.Comment("Expand child of first menu item.");
+                    InputHelper.LeftClick(childItem);
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify that child of first menu item was expanded correctly.");
+                    // Verify through test page elements
+                    Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                    Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
+                    Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 2");
+                    Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
+                    // Verify that third child menu item is in tree
+                    var secondChildItem = FindElement.ByName("Menu Item 4");
+                    Verify.IsNotNull(secondChildItem, "Child item should be visible after expanding parent item.");
+
+                    Log.Comment("Collapse child of first menu item.");
+                    InputHelper.LeftClick(childItem, 5, 5);
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify that child of first menu item was collapsed correctly.");
+                    // Verify through test page elements
+                    Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                    Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "true");
+                    Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 2");
+                    Verify.AreEqual(textBlockCollapsedItem.DocumentText, "Menu Item 2");
+
+
+                    Log.Comment("Collapse first menu item.");
+                    InputHelper.LeftClick(firstItem, 5, 5);
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify that first menu item was collapsed correctly.");
+                    // Verify through test page elements
+                    Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                    Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "true");
+                    Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 2");
+                    Verify.AreEqual(textBlockCollapsedItem.DocumentText, "Menu Item 1");
                 }
             }
         }
@@ -4315,8 +4440,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 14");
 
                 Log.Comment("Verify that parent has been collapsed");
-                TextBlock collapsedItemLabel = new TextBlock(FindElement.ByName("CollapsedItemLabel"));
-                Verify.AreEqual(collapsedItemLabel.DocumentText, "Last Collapsed: Menu Item 11");
+                TextBlock textBlockCollapsedItem = new TextBlock(FindElement.ByName("TextBlockCollapsedItem"));
+                Verify.AreEqual(textBlockCollapsedItem.DocumentText, "Menu Item 11");
             }
         }
 
@@ -4355,6 +4480,77 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 getSelectItemButton.Invoke();
                 Wait.ForIdle();
                 Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 31");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyCorrectVisualStateWhenClosingPaneInLeftDisplayMode()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                // Test for explicit pane close
+
+                // make sure the NavigationView is in left mode with pane expanded
+                Log.Comment("Change display mode to left expanded");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("Left");
+                Wait.ForIdle();
+
+                TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                Verify.AreEqual(expanded, displayModeTextBox.DocumentText);
+
+                Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
+
+                // manually close pane
+                Log.Comment("Close NavView pane explicitly");
+                togglePaneButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Get NavView Active VisualStates");
+                var getNavViewActiveVisualStatesButton = new Button(FindElement.ByName("GetNavViewActiveVisualStates"));
+                getNavViewActiveVisualStatesButton.Invoke();
+                Wait.ForIdle();
+
+                // check visual state
+                var visualStateName = "ListSizeCompact";
+                var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
+
+                // Test for light dismiss pane close
+
+                Log.Comment("Change display mode to left compact");
+                panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                Wait.ForIdle();
+
+                displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                Verify.AreEqual(compact, displayModeTextBox.DocumentText);
+
+                // expand pane
+                Log.Comment("Expand NavView pane");
+                togglePaneButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                // light dismiss pane
+                Log.Comment("Light dismiss NavView pane");
+                getNavViewActiveVisualStatesButton.Click(); // NOTE: Must be Click because this is verifying that the mouse light dismiss behavior closes the nav view
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Get NavView Active VisualStates");
+                getNavViewActiveVisualStatesButton.Invoke();
+                Wait.ForIdle();
+
+                // check visual state
+                result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
             }
         }
 

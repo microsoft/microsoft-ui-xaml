@@ -719,3 +719,9 @@ winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspe
     
     return returnHString;
 }
+
+/* static */
+winrt::float4 SharedHelpers::RgbaColor(const winrt::Color& color)
+{
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
+}
