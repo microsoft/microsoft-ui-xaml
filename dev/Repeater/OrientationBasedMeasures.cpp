@@ -6,7 +6,7 @@
 
 float& OrientationBasedMeasures::Major(const winrt::Size &size)
 {
-    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Size&)size).Height : ((winrt::Size&)size).Height;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Size&)size).Height : ((winrt::Size&)size).Width;
 }
 
 float& OrientationBasedMeasures::Minor(const winrt::Size& size)
