@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-
-using System;
+﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -10,15 +7,12 @@ using Windows.UI.Xaml.Shapes;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "ProgressBar")]
-    public sealed partial class ProgressBarPage : TestPage
+    public sealed partial class ProgressBarReTemplatePage : TestPage
     {
-        public ProgressBarPage()
+        public ProgressBarReTemplatePage()
         {
             this.InitializeComponent();
             Loaded += ProgressBarPage_Loaded;
-
-            NavigateToReTemplatePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressBarReTemplatePage), 0); };
         }
 
         private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
@@ -31,10 +25,9 @@ namespace MUXControlsTestApp
             var progressBarRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
             var clip = VisualTreeHelper.GetChild(progressBarRoot, 0);
             var stackPanel = VisualTreeHelper.GetChild(clip, 0);
-            var indicator = (Rectangle)VisualTreeHelper.GetChild(stackPanel, 0);
 
-            indicator.SizeChanged += this.Indicator_SizeChanged;
-            IndicatorWidthText.Text = indicator.ActualWidth.ToString();
+            //indicator.SizeChanged += this.Indicator_SizeChanged;
+            //IndicatorWidthText.Text = indicator.ActualWidth.ToString();
 
             Loaded -= ProgressBarPage_Loaded;
         }
@@ -83,19 +76,6 @@ namespace MUXControlsTestApp
             double paddingRight = String.IsNullOrEmpty(PaddingRightInput.Text) ? Double.Parse(PaddingRightInput.PlaceholderText) : Double.Parse(PaddingRightInput.Text);
 
             TestProgressBar.Padding = new Thickness(paddingLeft, 0, paddingRight, 0);
-        }
-    }
-
-    public class NullableBooleanToBooleanConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            return value is bool ? (bool)value : (object)false;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return value is bool ? (bool)value : (object)false;
         }
     }
 }
