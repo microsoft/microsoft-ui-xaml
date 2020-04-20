@@ -1552,7 +1552,8 @@ void TeachingTip::CreateContractAnimation()
     m_contractElevationAnimation.set([this, compositor, contractEasingFunction]()
     {
         auto const contractElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
-        contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.0f)", contractEasingFunction);
+        // animating to 0.01f instead of 0.0f as work around to internal issue 26001712 which was causing text clipping.
+        contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.01f)", contractEasingFunction);
         contractElevationAnimation.Duration(m_contractAnimationDuration);
         contractElevationAnimation.Target(s_translationTargetName);
         return contractElevationAnimation;
