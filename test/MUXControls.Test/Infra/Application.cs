@@ -68,10 +68,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public UIObject ApplicationFrameWindow { get; private set; }
         public Process Process { get; private set; }
 
-        private const int SW_SHOWMAXIMIZED = 3;
-        [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
         public IntPtr Hwnd
         {
             get
@@ -108,9 +104,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
                 else
                 {
-                    // Maxmize window to ensure we can find the corewindow
-                    ShowWindow(Hwnd, SW_SHOWMAXIMIZED);
-                    
+                    // Maxmize window to ensure we can find UIA elements
+                    var appFrameWindow = new Window(CoreWindow);
+                    if (appFrameWindow.CanMaximize)
+                    {
+                        appFrameWindow.SetWindowVisualState(WindowVisualState.Maximized);
+                    }
+
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
                     ApplicationFrameWindow = topWindowObj;
 
@@ -392,9 +392,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             UIObject closeAppInvoker;
             if (!topWindowObj.Descendants.TryFind(UICondition.Create("@AutomationId='__CloseAppInvoker'"), out closeAppInvoker))
             {
-                Log.Comment("Application.CloseAppWindowWithCloseButton: Failed to find close app invoker. Terminating app through process id.");
-                EnsureApplicationProcessHasExited(CoreWindow.ProcessId);
-                return true;
+                Log.Comment("Application.CloseAppWindowWithCloseButton: Failed to find close app invoker.");
+                return false;
             }
 
             Log.Comment("Invoking CloseAppInvoker {0}", closeAppInvoker);
