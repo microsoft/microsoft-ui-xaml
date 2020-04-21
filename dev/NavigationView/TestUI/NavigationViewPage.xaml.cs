@@ -347,6 +347,15 @@ namespace MUXControlsTestApp
             {
                 ItemInvokedItemContainerType.Text = args.InvokedItemContainer.GetType().ToString();
             }
+
+            var curSelected = sender.SelectedItem as NavigationViewItem;
+            if (curSelected != null && (string)curSelected.Content == (string)args.InvokedItem)
+            {
+                InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+            } else
+            {
+                InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
+            }
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

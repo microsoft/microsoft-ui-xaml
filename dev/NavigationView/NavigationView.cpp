@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -714,6 +714,7 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
         auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
         auto itemIndex = parentIR.GetElementIndex(nvi);
         nextItem = inspectingDataSource->GetAt(itemIndex);
+        SelectedItem(nextItem);
     }
 
     // Determine the recommeded transition direction.
