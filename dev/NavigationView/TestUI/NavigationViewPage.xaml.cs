@@ -352,7 +352,8 @@ namespace MUXControlsTestApp
             if (curSelected != null && (string)curSelected.Content == (string)args.InvokedItem)
             {
                 InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
-            } else
+            } 
+            else
             {
                 InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
             }
