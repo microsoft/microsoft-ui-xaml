@@ -1317,6 +1317,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
+
+                //TODO: Re-enable for RS2 once arrow key behavior is matched with above versions
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+                {
+                    Log.Warning("Test is disabled because the repeater arrow behavior is currently different for rs2.");
+                    return;
+                }
+
                 // Set up tree and get references to all required elements
                 UIObject item1 = FindElement.ByName("Menu Item 1");
 
