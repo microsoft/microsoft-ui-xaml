@@ -295,5 +295,123 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is offset by Padding");
             }
         }
+
+        [TestMethod]
+        public void RetemplateUpdateIndicatorWidthTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressBar Tests"))
+            {
+                Log.Comment("Navigate to Progress Bar Re-template Page");
+
+                Button navigateToReTemplatePage = FindElement.ByName<Button>("NavigateToReTemplatePage");
+
+                Log.Comment("Set Re-template ProgressBar settings to default for testing");
+
+                RangeValueSpinner progressBar = FindElement.ByName<RangeValueSpinner>("TestProgressBar");
+
+                Edit minimumInput = FindElement.ByName<Edit>("MinimumInput");
+                Edit maximumInput = FindElement.ByName<Edit>("MaximumInput");
+                Edit widthInput = FindElement.ByName<Edit>("WidthInput");
+
+                TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
+                TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");
+
+                Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
+                Button updateWidthButton = FindElement.ByName<Button>("UpdateWidthButton");
+
+                minimumInput.SetValue("0");
+                maximumInput.SetValue("100");
+                widthInput.SetValue("100");
+
+                Verify.AreEqual(progressBar.Minimum, 0);
+                Verify.AreEqual(progressBar.Maximum, 100);
+                Verify.AreEqual(Convert.ToDouble(widthInputText.DocumentText), 100);
+
+                Log.Comment("Changing value of Re-template ProgressBar updates Indicator Width");
+
+                changeValueButton.Invoke();
+
+                Verify.AreEqual(progressBar.Value, Convert.ToDouble(indicatorWidthText.DocumentText));
+
+                Log.Comment("Updating width of Re-template ProgressBar also updates Indicator Width");
+
+                widthInput.SetValue("200");
+                updateWidthButton.InvokeAndWait();
+
+                Verify.AreEqual((progressBar.Value * 2), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to Re-template ProgressBar width");
+
+                Log.Comment("Changing value of ProgressBar of different width updates Indicator width");
+
+                changeValueButton.InvokeAndWait();
+
+                Verify.AreEqual((progressBar.Value * 2), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+
+                Log.Comment("Updating Maximum and Minimum also updates Indicator Width");
+
+                minimumInput.SetValue("10");
+                maximumInput.SetValue("16");
+
+                changeValueButton.InvokeAndWait();
+
+                double range = progressBar.Maximum - progressBar.Minimum;
+                double adjustedValueFromRange = progressBar.Value - progressBar.Minimum;
+                double calculatedValue = (adjustedValueFromRange / range) * Convert.ToDouble(widthInputText.DocumentText);
+
+                Verify.AreEqual(calculatedValue, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and Re-template ProgressBar width");
+            }
+        }
+
+        [TestMethod]
+        public void ReTemplateChangeStateTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressBar Tests"))
+            {
+                Log.Comment("Navigate to Progress Bar Re-template Page");
+
+                Button navigateToReTemplatePage = FindElement.ByName<Button>("NavigateToReTemplatePage");
+
+                Log.Comment("Verify all properties are set to false by default for testing");
+
+                ToggleButton showPausedCheckBox = FindElement.ByName<ToggleButton>("ShowPausedCheckBox");
+                ToggleButton showErrorCheckBox = FindElement.ByName<ToggleButton>("ShowErrorCheckBox");
+                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
+                TextBlock showPausedText = FindElement.ByName<TextBlock>("ShowPausedText");
+                TextBlock showErrorText = FindElement.ByName<TextBlock>("ShowErrorText");
+                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
+                TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+
+                Verify.IsFalse(Convert.ToBoolean(showPausedText.DocumentText));
+                Verify.IsFalse(Convert.ToBoolean(showErrorText.DocumentText));
+                Verify.IsFalse(Convert.ToBoolean(isIndeterminateText.DocumentText));
+
+                Log.Comment("All properties to false updates Re-template ProgressBar to Determinate");
+
+                Verify.AreEqual(visualStateText.DocumentText, "Determinate");
+
+                Log.Comment("ShowPaused = true updates Re-template ProgressBar to Paused visual state");
+
+                showPausedCheckBox.ToggleAndWait();
+
+                Verify.IsTrue(Convert.ToBoolean(showPausedText.DocumentText));
+                Verify.AreEqual(visualStateText.DocumentText, "Paused");
+
+                Log.Comment("IsIndeterminate = true updates Re-template ProgressBar to Indeterminate visual state");
+
+                showPausedCheckBox.ToggleAndWait();
+                isIndeterminateCheckBox.ToggleAndWait();
+
+                Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
+                Verify.AreEqual(visualStateText.DocumentText, "Indeterminate");
+
+                Log.Comment("ShowError = true updates Re-template ProgressBar to Error visual state for Determinate");
+
+                isIndeterminateCheckBox.ToggleAndWait();
+                showErrorCheckBox.ToggleAndWait();
+
+                Verify.IsFalse(Convert.ToBoolean(isIndeterminateText.DocumentText));
+                Verify.IsTrue(Convert.ToBoolean(showErrorText.DocumentText));
+                Verify.AreEqual(visualStateText.DocumentText, "Error");
+            }
+        }
     }
 }

@@ -15,6 +15,9 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
             Loaded += ProgressRingPage_Loaded;
+
+            NavigateToCustomLottieSourcePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressRingCustomLottieSourcePage), 0); };
+            NavigateToStoryboardAnimationPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressRingStoryboardAnimationPage), 0); };
         }
 
         private void ProgressRingPage_Loaded(object sender, RoutedEventArgs e)
@@ -33,7 +36,7 @@ namespace MUXControlsTestApp
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
-            OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
+            OpacityText.Text = layoutRoot.Opacity.ToString();
             
             Loaded -= ProgressRingPage_Loaded;
         }
@@ -45,7 +48,7 @@ namespace MUXControlsTestApp
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
-            OpacityText.Text = animatedVisualPlayer.Opacity.ToString();
+            OpacityText.Text = layoutRoot.Opacity.ToString();
         }
 
         public void UpdateWidth_Click(object sender, RoutedEventArgs e)
