@@ -10,17 +10,17 @@ namespace MUXControlsTestApp
         public ProgressRingCustomLottieSourcePage()
         {
             this.InitializeComponent();
-            Loaded += ProgressRingPage_Loaded;
+            Loaded += ProgressRingCustomLottieSourcePage_Loaded;
 
             NavigateToMainPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressRingPage), 0); };
         }
 
-        private void ProgressRingPage_Loaded(object sender, RoutedEventArgs e)
+        private void ProgressRingCustomLottieSourcePage_Loaded(object sender, RoutedEventArgs e)
         {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestCustomLottieSourceProgressRing, 0);
 
             var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
-            commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
+            commonStatesGroup.CurrentStateChanged += this.ProgressRingCustomLottieSourcePage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
             foreach (var state in commonStatesGroup.States)
             {
@@ -33,10 +33,10 @@ namespace MUXControlsTestApp
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
 
-            Loaded -= ProgressRingPage_Loaded;
+            Loaded -= ProgressRingCustomLottieSourcePage_Loaded;
         }
 
-        private void ProgressRingPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+        private void ProgressRingCustomLottieSourcePage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
         {
             VisualStateText.Text = e.NewState.Name;
 

@@ -12,24 +12,21 @@ namespace MUXControlsTestApp
         public ProgressBarReTemplatePage()
         {
             this.InitializeComponent();
-            Loaded += ProgressBarPage_Loaded;
+            Loaded += ProgressBarReTemplatePage_Loaded;
         }
 
-        private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
+        private void ProgressBarReTemplatePage_Loaded(object sender, RoutedEventArgs e)
         {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressBar, 0);
 
-            VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressBarPage_CurrentStateChanged;
+            VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressBarReTemplatePage_CurrentStateChanged;
             VisualStateText.Text = VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentState.Name;
 
             var progressBarRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
             var clip = VisualTreeHelper.GetChild(progressBarRoot, 0);
             var stackPanel = VisualTreeHelper.GetChild(clip, 0);
 
-            //indicator.SizeChanged += this.Indicator_SizeChanged;
-            //IndicatorWidthText.Text = indicator.ActualWidth.ToString();
-
-            Loaded -= ProgressBarPage_Loaded;
+            Loaded -= ProgressBarReTemplatePage_Loaded;
         }
 
         private void Indicator_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -37,7 +34,7 @@ namespace MUXControlsTestApp
             IndicatorWidthText.Text = ((Rectangle)sender).ActualWidth.ToString();
         }
 
-        private void ProgressBarPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+        private void ProgressBarReTemplatePage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
         {
             VisualStateText.Text = e.NewState.Name;
         }

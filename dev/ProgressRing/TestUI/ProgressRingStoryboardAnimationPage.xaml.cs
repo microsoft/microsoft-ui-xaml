@@ -10,23 +10,23 @@ namespace MUXControlsTestApp
         public ProgressRingStoryboardAnimationPage()
         {
             this.InitializeComponent();
-            Loaded += ProgressRingPage_Loaded;
+            Loaded += ProgressRingStoryboardAnimationPage_Loaded;
 
             NavigateToMainPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressRingPage), 0); };
         }
 
-        private void ProgressRingPage_Loaded(object sender, RoutedEventArgs e)
+        private void ProgressRingStoryboardAnimationPage_Loaded(object sender, RoutedEventArgs e)
         {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestStoryboardAnimationProgressRing, 0);
 
             var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[1];
-            commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
+            commonStatesGroup.CurrentStateChanged += this.ProgressRingStoryboardAnimationPage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
 
-            Loaded -= ProgressRingPage_Loaded;
+            Loaded -= ProgressRingStoryboardAnimationPage_Loaded;
         }
 
-        private void ProgressRingPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+        private void ProgressRingStoryboardAnimationPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
         {
             VisualStateText.Text = e.NewState.Name;
         }
