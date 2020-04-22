@@ -252,6 +252,8 @@
     <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,0,16,0</Thickness>
     <Thickness x:Key="NavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandPresenterMargin">12,0,16,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
     
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
@@ -1465,7 +1467,7 @@
                                 <ContentPresenter
                                     x:Name="ContentPresenter"
                                     Grid.Column="1"
-                                    Margin="12,0,16,0"
+                                    Margin="{ThemeResource TopNavigationViewItemOnOverflowExpandPresenterMargin}"
                                     Foreground="{TemplateBinding Foreground}"
                                     TextWrapping="NoWrap"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -1480,7 +1482,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
-                                    Padding="12,0,12,0"
+                                    Padding="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronPadding}"
                                     Background="Transparent">
                                     <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
                                             Width="12" Height="12"
