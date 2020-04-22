@@ -349,9 +349,17 @@ namespace MUXControlsTestApp
             }
 
             var curSelected = sender.SelectedItem as NavigationViewItem;
-            if (curSelected != null && (string)curSelected.Content == (string)args.InvokedItem)
+            var text = args.InvokedItem as string;
+            if (curSelected != null && (string)curSelected.Content == text)
             {
-                InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                if(InvokedItemState.Text == "ItemWasSelectedInItemInvoked")
+                {
+                    InvokedItemState.Text = "ItemWasInvokedSecomdTimeWithCorrectSelection";
+                }
+                else
+                {
+                    InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                }
             } 
             else
             {

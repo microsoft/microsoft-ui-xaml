@@ -4569,6 +4569,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var result = new TextBlock(FindElement.ByName("InvokedItemState"));
                 Log.Comment("Verify item is selected when Invoked event got raised");
                 Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
+            
+                invokedItem.Click();
+
+                Wait.ForIdle();
+
+                Log.Comment("Verify item invoked was raised despite item already selected");
+                result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
             }
         }
 

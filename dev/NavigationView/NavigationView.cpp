@@ -740,19 +740,31 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
 {
+    m_shouldRaiseItemInvokedAfterSelection = true;
+
+    auto scopeGuard = gsl::finally([this]()
+    {
+        m_shouldRaiseItemInvokedAfterSelection = false;
+    });
+
+    auto selectedItem = SelectedItem();
     bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
     {
         auto ip = GetIndexPathForContainer(nvi);
         UpdateSelectionModelSelection(ip);
     }
-    auto selectedItem = SelectedItem();
 
-    RaiseItemInvokedForNavigationViewItem(nvi);
-    // User changed selectionstate in the ItemInvoked callback
-    if (selectedItem != SelectedItem())
+    // Item was invoked but already selected, so raise event here.
+    if (selectedItem == nvi)
     {
-        return;
+        selectedItem = SelectedItem();
+        RaiseItemInvokedForNavigationViewItem(nvi);
+        // User changed selectionstate in the ItemInvoked callback
+        if (selectedItem != SelectedItem())
+        {
+            return;
+        }
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
@@ -1924,6 +1936,11 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // And SelectionChanged is after we selected the new item.
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
+        if (m_shouldRaiseItemInvokedAfterSelection)
+        {
+            RaiseItemInvokedForNavigationViewItem(nextItem.try_as<winrt::NavigationViewItem>());
+        }
+
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
 
