@@ -108,7 +108,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_settingsItemTappedRevoker.revoke();
     m_settingsItemKeyDownRevoker.revoke();
-    m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
 
     m_paneSearchButtonClickRevoker.revoke();
@@ -130,13 +129,11 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavRepeaterLoadedRevoker.revoke();
-    m_leftNavRepeaterGettingFocusRevoker.revoke();
     m_leftNavRepeater.set(nullptr);
 
     m_topNavItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterLoadedRevoker.revoke();
-    m_topNavRepeaterGettingFocusRevoker.revoke();
     m_topNavRepeater.set(nullptr);
 
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
@@ -384,7 +381,6 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
-        m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -405,7 +401,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
-        m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -943,7 +938,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
             nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
             nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-            nviRevokers->keyUpRevoker = nvi.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
             nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
             nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
             nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
@@ -1011,12 +1005,10 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         m_settingsItemTappedRevoker.revoke();
         m_settingsItemKeyDownRevoker.revoke();
-        m_settingsItemKeyUpRevoker.revoke();
 
         m_settingsItem.set(settingsItem);
         m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
         m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
 
         auto nvibImpl = winrt::get_self<NavigationViewItem>(settingsItem);
         nvibImpl->SetNavigationViewParent(*this);
@@ -2147,18 +2139,6 @@ void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sende
     }
 }
 
-void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
-{
-    // Because ListViewItem eats the events, we only get these keys on KeyUp.
-    if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
-    {
-        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
-        {
-            HandleKeyEventForNavigationViewItem(nvi, args);
-        }
-    }
-}
-
 void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
@@ -2172,7 +2152,6 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
     auto key = args.Key();
     if (IsSettingsItem(nvi))
     {
-        // Because ListViewItem eats the events, we only get these keys on KeyDown.
         if (key == winrt::VirtualKey::Space ||
             key == winrt::VirtualKey::Enter)
         {
@@ -2197,6 +2176,90 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
             args.Handled(true);
             KeyboardFocusLastItemFromItem(nvi);
             break;
+        case winrt::VirtualKey::Down:
+            FocusNextDownItem(nvi, args);
+            break;
+        case winrt::VirtualKey::Up:
+            FocusNextUpItem(nvi, args);
+            break;
+        }
+    }
+}
+
+void NavigationView::FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.OriginalSource() != nvi)
+    {
+        return;
+    }
+
+    bool shouldHandleFocus = true;
+    auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+    auto const nextFocusableElement = winrt::FocusManager::FindNextFocusableElement(winrt::FocusNavigationDirection::Up);
+
+    if (auto const nextFocusableNVI = nextFocusableElement.try_as<winrt::NavigationViewItem>())
+    {
+
+        auto const nextFocusableNVIImpl = winrt::get_self<NavigationViewItem>(nextFocusableNVI);
+
+        if (nextFocusableNVIImpl->Depth() == nviImpl->Depth())
+        {
+            // If we not at the top of the list for our current depth and the item above us has children, check whether we should move focus onto a child
+            if (DoesNavigationViewItemHaveChildren(nextFocusableNVI))
+            {
+                // Focus on last lowest level visible container
+                if (auto const childRepeater = nextFocusableNVIImpl->GetRepeater())
+                {
+                    if (auto const lastFocusableElement = winrt::FocusManager::FindLastFocusableElement(childRepeater))
+                    {
+                        if (auto lastFocusableNVI = lastFocusableElement.try_as<winrt::Control>())
+                        {
+                            args.Handled(lastFocusableNVI.Focus(winrt::FocusState::Keyboard));
+                        }
+                    }
+                    else
+                    {
+                        args.Handled(nextFocusableNVIImpl->Focus(winrt::FocusState::Keyboard));
+                    }
+
+                }
+            }
+            else
+            {
+                // Traversing up a list where XYKeyboardFocus will result in correct behavior
+                shouldHandleFocus = false;
+            }
+        }
+    }
+
+    // We are at the top of the list, focus on parent
+    if (shouldHandleFocus && !args.Handled() && nviImpl->Depth() > 0)
+    {
+        if (auto const parentContainer = GetParentNavigationViewItemForContainer(nvi))
+        {
+            args.Handled(parentContainer.Focus(winrt::FocusState::Keyboard));
+        }
+    }
+}
+
+// If item has focusable children, move focus to first focusable child, otherise just defer to default XYKeyboardFocus behavior
+void NavigationView::FocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.OriginalSource() != nvi)
+    {
+        return;
+    }
+
+    if (DoesNavigationViewItemHaveChildren(nvi))
+    {
+        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        if (auto const childRepeater = nviImpl->GetRepeater())
+        {
+            auto const firstFocusableElement = winrt::FocusManager::FindFirstFocusableElement(childRepeater);
+            if (auto controlFirst = firstFocusableElement.try_as<winrt::Control>())
+            {
+                args.Handled(controlFirst.Focus(winrt::FocusState::Keyboard));
+            }
         }
     }
 }
@@ -2259,54 +2322,10 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
     }
 }
 
-void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
-{
-    if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
-    {
-        if (auto const oldFocusedElement = args.OldFocusedElement())
-        {
-            auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-            auto const rootRepeater = [this]()
-            {
-                if (IsTopNavigationView())
-                {
-                    return m_topNavRepeater.get();
-                }
-                return m_leftNavRepeater.get();
-            }();
-            // If focus is coming from outside the root repeater, put focus on last focused item
-            if (rootRepeater != oldElementParent)
-            {
-                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
-                {
-                    if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
-                    {
-                        if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(lastFocusedNvi))
-                        {
-                            args.Handled(true);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
     {
-        // Store index of last focused item in order to get proper focus behavior.
-        // No need to keep track of last focused item if the item is in the overflow menu.
-        m_indexOfLastFocusedItem = [this, nvi]()
-        {
-            if (IsTopNavigationView())
-            {
-                return m_topNavRepeater.get().GetElementIndex(nvi);;
-            }
-            return m_leftNavRepeater.get().GetElementIndex(nvi);
-        }();
-
         // Achieve selection follows focus behavior
         if (IsNavigationViewListSingleSelectionFollowsFocus())
         {

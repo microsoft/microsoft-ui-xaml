@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "ProgressRingIndeterminate.h"
+#include "ProgressRingTemplateSettings.h"
 
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
@@ -33,7 +34,10 @@ private:
     void SetAnimatedVisualPlayerSource();
     void SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
     void SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
+    void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void ChangeVisualState();
+    void ApplyTemplateSettings();
 
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
+    tracker_ref<winrt::Grid> m_layoutRoot{ this };
 };

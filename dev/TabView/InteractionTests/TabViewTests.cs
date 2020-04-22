@@ -446,7 +446,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using(var setup = new TestSetupHelper("TabView Tests"))
             {
                 ComboBox closeButtonOverlayModeComboBox = FindElement.ByName<ComboBox>("CloseButtonOverlayModeCombobox");
-                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                closeButtonOverlayModeComboBox.SelectItemByName("OnPointerOver");
                 Wait.ForIdle();
 
                 Button closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
@@ -463,8 +463,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
 
-                // Verifiying "OnHover" works correctly
-                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                // Verifiying "OnPointerOver" works correctly
+                closeButtonOverlayModeComboBox.SelectItemByName("OnPointerOver");
                 Wait.ForIdle();
 
                 closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));

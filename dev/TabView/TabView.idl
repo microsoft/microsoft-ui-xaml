@@ -15,7 +15,7 @@ enum TabViewWidthMode
 enum TabViewCloseButtonOverlayMode
 {
     Auto = 0,
-    OnHover = 1,
+    OnPointerOver = 1,
     Always = 2,
 };
 

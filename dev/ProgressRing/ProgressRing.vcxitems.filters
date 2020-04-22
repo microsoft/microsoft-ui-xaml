@@ -5,12 +5,17 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IThemedAnimatedVisualSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />

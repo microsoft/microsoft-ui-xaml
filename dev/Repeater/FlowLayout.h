@@ -140,7 +140,7 @@ private:
 
     bool DoesRealizationWindowOverlapExtent(const winrt::Rect& realizationWindow, const winrt::Rect& extent)
     {
-        return MajorEnd(realizationWindow) >= extent.*MajorStart() && realizationWindow.*MajorStart() <= MajorEnd(extent);
+        return MajorEnd(realizationWindow) >= MajorStart(extent) && MajorStart(realizationWindow) <= MajorEnd(extent);
     }
 
     double LineSpacing()
