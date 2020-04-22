@@ -27,9 +27,13 @@ public:
 
     void RotateExpandCollapseChevron(bool isExpanded);
 
+    void UpdateCompactPaneLength(double compactPaneLength,bool shouldUpdate);
+
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();
+
+    double m_compactPaneLengthValue { 40 };
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
     tracker_ref<winrt::Grid> m_contentGrid{ this };

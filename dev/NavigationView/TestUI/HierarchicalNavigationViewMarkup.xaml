@@ -11,7 +11,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}" Expanding="ExpandingItem" Collapsed="CollapsedItem" PaneDisplayMode="Left" IsSettingsVisible="False">
+        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}" Expanding="OnItemExpanding" Collapsed="OnItemCollapsed" PaneDisplayMode="Left" IsSettingsVisible="False">
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem Content="Menu Item 1" x:Name="MI1" SelectsOnInvoked="False"  Icon="Home">
                     <muxcontrols:NavigationViewItem.MenuItems>
@@ -53,12 +53,9 @@
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 15" x:Name="MI15" SelectsOnInvoked="False" Icon="Shuffle">
                     <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem Content="Menu Item 16 (Selectable)" Icon="Save" x:Name="MI16">
-                            <muxcontrols:NavigationViewItem.MenuItems>
-                                <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
-                                <muxcontrols:NavigationViewItem Content="Menu Item 18" Icon="Paste" x:Name="MI18" />
-                            </muxcontrols:NavigationViewItem.MenuItems>
-                        </muxcontrols:NavigationViewItem>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 16" Icon="Save" x:Name="MI16" />
+                        <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
+                        <muxcontrols:NavigationViewItem Content="Menu Item 18" Icon="Paste" x:Name="MI18" />
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 19" x:Name="MI19" SelectsOnInvoked="True"/>
@@ -91,8 +88,34 @@
                 <TextBlock x:Name="IsChildSelectedLabel" AutomationProperties.Name="IsChildSelectedLabel" Text="uninitialized"/>
                 <Button AutomationProperties.Name="PrintTopLevelIsChildSelectedItemsButton" Content="Print TopLevel IsChildSelected Items" Click="PrintTopLevelIsChildSelectedItems"/>
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
-                <TextBlock Margin="0,10,0,0" x:Name="ExpandingItemLabel" Text="Last Expanding: N/A"/>
-                <TextBlock x:Name="CollapsedItemLabel" AutomationProperties.Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
+                <!-- Components that get updated when item is expanded or collapsed -->
+                <StackPanel x:Name="ExpandCollapseRelatedComponents" Margin="0,10,0,10">
+                    <Grid x:Name="ExpandingEventStates">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Expanding:</TextBlock>
+                        <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockExpandingItem"  AutomationProperties.Name="TextBlockExpandingItem" Text="N/A"/>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Center">Expanding Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="3" x:Name="TextblockExpandingItemAndContainerMatch"  AutomationProperties.Name="TextblockExpandingItemAndContainerMatch" Text="N/A"/>
+                    </Grid>
+                    <Grid x:Name="CollapsedEventStates">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center">Last Collapsed:</TextBlock>
+                        <TextBlock Grid.Column="1" Margin="0,0,10,0" x:Name="TextBlockCollapsedItem" AutomationProperties.Name="TextBlockCollapsedItem" Text="N/A"/>
+                        <TextBlock Grid.Column="2" Margin="0,0,5,0"  VerticalAlignment="Center">Collapsed Item and Container match:</TextBlock>
+                        <TextBlock Grid.Column="3" x:Name="TextblockCollapsedItemAndContainerMatch" AutomationProperties.Name="TextblockCollapsedItemAndContainerMatch" Text="N/A"/>
+                    </Grid>
+                </StackPanel>
+                <!-- Combobox used to switch pane display modes -->
                 <ComboBox x:Name="PaneDisplayModeCombobox"
                                 AutomationProperties.Name="PaneDisplayModeCombobox"
                                 Header="PaneDisplayMode"

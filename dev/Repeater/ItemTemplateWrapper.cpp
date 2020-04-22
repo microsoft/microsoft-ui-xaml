@@ -41,6 +41,30 @@ void ItemTemplateWrapper::TemplateSelector(winrt::DataTemplateSelector const& va
 winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs const& args)
 {
     auto selectedTemplate = m_dataTemplate ? m_dataTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
+    // Check if selected template we got is valid
+    if (selectedTemplate == nullptr)
+    {
+        // Null template, use other SelectTemplate method
+        try
+        {
+            selectedTemplate = m_dataTemplateSelector.SelectTemplate(args.Data(), nullptr);
+        }
+        catch (winrt::hresult_error e)
+        {
+            // The default implementation of SelectTemplate(IInspectable item, ILayout container) throws invalid arg for null container
+            // To not force everbody to provide an implementation of that, catch that here
+            if (e.code().value != E_INVALIDARG)
+            {
+                throw e;
+            }
+        }
+
+        if (selectedTemplate == nullptr)
+        {
+            // Still nullptr, fail with a reasonable message now.
+            throw winrt::hresult_invalid_argument(L"Null encountered as data template. That is not a valid value for a data template, and can not be used.");
+        }
+    }
     auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     winrt::UIElement element = nullptr;
 

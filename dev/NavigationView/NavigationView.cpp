@@ -27,9 +27,10 @@
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
 #include <ItemsRepeater.common.h>
-#include "NavigationViewExpandingEventArgs.h"
-#include "NavigationViewCollapsedEventArgs.h"
+#include "NavigationViewItemExpandingEventArgs.h"
+#include "NavigationViewItemCollapsedEventArgs.h"
 
+// General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
 static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
@@ -42,6 +43,7 @@ static constexpr auto c_paneContentGridName = L"PaneContentGrid"sv;
 static constexpr auto c_rootGridName = L"RootGrid"sv;
 static constexpr auto c_contentGridName = L"ContentGrid"sv;
 static constexpr auto c_searchButtonName = L"PaneAutoSuggestButton"sv;
+static constexpr auto c_paneToggleButtonIconGridColumnName = L"PaneToggleButtonIconWidthColumn"sv;
 static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
 static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
@@ -52,6 +54,7 @@ static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonT
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
 
+// DisplayMode Top specific items
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
 static constexpr auto c_topNavMenuItemsOverflowHost = L"TopNavMenuItemsOverflowHost"sv;
@@ -61,6 +64,7 @@ static constexpr auto c_leftNavPaneAutoSuggestBoxPresenter = L"PaneAutoSuggestBo
 static constexpr auto c_topNavPaneAutoSuggestBoxPresenter = L"TopPaneAutoSuggestBoxPresenter"sv;
 static constexpr auto c_paneTitlePresenter = L"PaneTitlePresenter"sv;
 
+// DisplayMode Left specific items
 static constexpr auto c_leftNavFooterContentBorder = L"FooterContentBorder"sv;
 static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBorder"sv;
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
@@ -104,7 +108,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_settingsItemTappedRevoker.revoke();
     m_settingsItemKeyDownRevoker.revoke();
-    m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
 
     m_paneSearchButtonClickRevoker.revoke();
@@ -126,13 +129,11 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavRepeaterLoadedRevoker.revoke();
-    m_leftNavRepeaterGettingFocusRevoker.revoke();
     m_leftNavRepeater.set(nullptr);
 
     m_topNavItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterLoadedRevoker.revoke();
-    m_topNavRepeaterGettingFocusRevoker.revoke();
     m_topNavRepeater.set(nullptr);
 
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
@@ -274,8 +275,9 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
 }
 
 // We only need to close the flyout if the selected item is a leaf node
-void NavigationView::CloseFlyoutIfRequired()
+void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem)
 {
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
     bool isInModeWithFlyout = [this]()
     {
         if (auto splitView = m_rootSplitView.get())
@@ -288,31 +290,18 @@ void NavigationView::CloseFlyoutIfRequired()
         return false;
     }();
 
-    if (isInModeWithFlyout)
+    if (isInModeWithFlyout && selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
     {
-        if (auto const selectedIndex = m_selectionModel.SelectedIndex())
+        // Item selected is a leaf node, find top level parent and close flyout
+        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
         {
-            if (auto const selectedItem = GetContainerForIndexPath(selectedIndex))
+            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
             {
-                if (auto const selectedNVI = selectedItem.try_as<winrt::NavigationViewItem>())
+                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                if (nviImpl->ShouldRepeaterShowInFlyout())
                 {
-                    if (!DoesNavigationViewItemHaveChildren(selectedNVI))
-                    {
-                        // Item selected is a leaf node, find top level parent and close flyout
-                        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
-                        {
-                            if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
-                            {
-                                auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                                if (nviImpl->ShouldRepeaterShowInFlyout())
-                                {
-                                    nviImpl->ShowChildren(false);
-                                }
-                            }
-                        }
-                    }
+                    nvi.IsExpanded(false);
                 }
-
             }
         }
     }
@@ -392,7 +381,6 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
-        m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -413,7 +401,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
-        m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -769,7 +756,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 
     if (updateSelection)
     {
-        CloseFlyoutIfRequired();
+        CloseFlyoutIfRequired(nvi);
     }
 }
 
@@ -951,7 +938,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
             nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
             nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-            nviRevokers->keyUpRevoker = nvi.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
             nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
             nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
             nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
@@ -1019,12 +1005,10 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         m_settingsItemTappedRevoker.revoke();
         m_settingsItemKeyDownRevoker.revoke();
-        m_settingsItemKeyUpRevoker.revoke();
 
         m_settingsItem.set(settingsItem);
         m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
         m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
 
         auto nvibImpl = winrt::get_self<NavigationViewItem>(settingsItem);
         nvibImpl->SetNavigationViewParent(*this);
@@ -1227,7 +1211,7 @@ void NavigationView::OpenPane()
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
-    CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+    CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     auto scopeGuard = gsl::finally([this]()
         {
             m_isOpenPaneForInteraction = false;
@@ -1297,7 +1281,7 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
         {
             if (auto paneList = m_leftNavRepeater.get())
             {
-                if (!splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline))
+                if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline)
                 {
                     // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
                     winrt::VisualStateManager::GoToState(*this, L"ListSizeCompact", true /*useTransitions*/);
@@ -1355,6 +1339,36 @@ void NavigationView::UpdateIsClosedCompact()
         UpdateBackAndCloseButtonsVisibility();
         UpdatePaneTitleMargins();
         UpdatePaneToggleSize();
+    }
+}
+
+void NavigationView::UpdatePaneButtonsWidths()
+{
+    auto newButtonWidths = [this]()
+    {
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
+        {
+            return static_cast<double>(c_paneToggleButtonWidth);
+        }
+        return CompactPaneLength();
+    }();
+
+    if (auto&& backButton = m_backButton.get())
+    {
+        backButton.Width(newButtonWidths);
+    }
+    if (auto&& paneToggleButton = m_paneToggleButton.get())
+    {
+        paneToggleButton.MinWidth(newButtonWidths);
+        if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
+        {
+            if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
+            {
+                auto width = paneToggleButtonIconColumn.Width();
+                width.Value = newButtonWidths;
+                paneToggleButtonIconColumn.Width(width);
+            }
+        }
     }
 }
 
@@ -1905,6 +1919,11 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
+
+        if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
+        {
+            ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+        }    
     }
 }
 
@@ -2120,18 +2139,6 @@ void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sende
     }
 }
 
-void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
-{
-    // Because ListViewItem eats the events, we only get these keys on KeyUp.
-    if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
-    {
-        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
-        {
-            HandleKeyEventForNavigationViewItem(nvi, args);
-        }
-    }
-}
-
 void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
@@ -2145,7 +2152,6 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
     auto key = args.Key();
     if (IsSettingsItem(nvi))
     {
-        // Because ListViewItem eats the events, we only get these keys on KeyDown.
         if (key == winrt::VirtualKey::Space ||
             key == winrt::VirtualKey::Enter)
         {
@@ -2170,6 +2176,90 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
             args.Handled(true);
             KeyboardFocusLastItemFromItem(nvi);
             break;
+        case winrt::VirtualKey::Down:
+            FocusNextDownItem(nvi, args);
+            break;
+        case winrt::VirtualKey::Up:
+            FocusNextUpItem(nvi, args);
+            break;
+        }
+    }
+}
+
+void NavigationView::FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.OriginalSource() != nvi)
+    {
+        return;
+    }
+
+    bool shouldHandleFocus = true;
+    auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+    auto const nextFocusableElement = winrt::FocusManager::FindNextFocusableElement(winrt::FocusNavigationDirection::Up);
+
+    if (auto const nextFocusableNVI = nextFocusableElement.try_as<winrt::NavigationViewItem>())
+    {
+
+        auto const nextFocusableNVIImpl = winrt::get_self<NavigationViewItem>(nextFocusableNVI);
+
+        if (nextFocusableNVIImpl->Depth() == nviImpl->Depth())
+        {
+            // If we not at the top of the list for our current depth and the item above us has children, check whether we should move focus onto a child
+            if (DoesNavigationViewItemHaveChildren(nextFocusableNVI))
+            {
+                // Focus on last lowest level visible container
+                if (auto const childRepeater = nextFocusableNVIImpl->GetRepeater())
+                {
+                    if (auto const lastFocusableElement = winrt::FocusManager::FindLastFocusableElement(childRepeater))
+                    {
+                        if (auto lastFocusableNVI = lastFocusableElement.try_as<winrt::Control>())
+                        {
+                            args.Handled(lastFocusableNVI.Focus(winrt::FocusState::Keyboard));
+                        }
+                    }
+                    else
+                    {
+                        args.Handled(nextFocusableNVIImpl->Focus(winrt::FocusState::Keyboard));
+                    }
+
+                }
+            }
+            else
+            {
+                // Traversing up a list where XYKeyboardFocus will result in correct behavior
+                shouldHandleFocus = false;
+            }
+        }
+    }
+
+    // We are at the top of the list, focus on parent
+    if (shouldHandleFocus && !args.Handled() && nviImpl->Depth() > 0)
+    {
+        if (auto const parentContainer = GetParentNavigationViewItemForContainer(nvi))
+        {
+            args.Handled(parentContainer.Focus(winrt::FocusState::Keyboard));
+        }
+    }
+}
+
+// If item has focusable children, move focus to first focusable child, otherise just defer to default XYKeyboardFocus behavior
+void NavigationView::FocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.OriginalSource() != nvi)
+    {
+        return;
+    }
+
+    if (DoesNavigationViewItemHaveChildren(nvi))
+    {
+        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        if (auto const childRepeater = nviImpl->GetRepeater())
+        {
+            auto const firstFocusableElement = winrt::FocusManager::FindFirstFocusableElement(childRepeater);
+            if (auto controlFirst = firstFocusableElement.try_as<winrt::Control>())
+            {
+                args.Handled(controlFirst.Focus(winrt::FocusState::Keyboard));
+            }
         }
     }
 }
@@ -2232,54 +2322,10 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
     }
 }
 
-void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
-{
-    if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
-    {
-        if (auto const oldFocusedElement = args.OldFocusedElement())
-        {
-            auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-            auto const rootRepeater = [this]()
-            {
-                if (IsTopNavigationView())
-                {
-                    return m_topNavRepeater.get();
-                }
-                return m_leftNavRepeater.get();
-            }();
-            // If focus is coming from outside the root repeater, put focus on last focused item
-            if (rootRepeater != oldElementParent)
-            {
-                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
-                {
-                    if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
-                    {
-                        if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(lastFocusedNvi))
-                        {
-                            args.Handled(true);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
     {
-        // Store index of last focused item in order to get proper focus behavior.
-        // No need to keep track of last focused item if the item is in the overflow menu.
-        m_indexOfLastFocusedItem = [this, nvi]()
-        {
-            if (IsTopNavigationView())
-            {
-                return m_topNavRepeater.get().GetElementIndex(nvi);;
-            }
-            return m_leftNavRepeater.get().GetElementIndex(nvi);
-        }();
-
         // Achieve selection follows focus behavior
         if (IsNavigationViewListSingleSelectionFollowsFocus())
         {
@@ -2434,44 +2480,14 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 {
     if (container)
     {
-        if (IsTopNavigationView())
+        if (auto const nvib = container.try_as<winrt::NavigationViewItemBase>())
         {
-            // Search topnav first, if not found, search overflow
-            if (auto ir = m_topNavRepeater.get())
+            if (auto const parentRepeater = GetParentItemsRepeaterForContainer(nvib))
             {
-                if (auto element = container.try_as<winrt::UIElement>())
+                auto const containerIndex = parentRepeater.GetElementIndex(nvib);
+                if (containerIndex >= 0)
                 {
-                    auto index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
-                }
-            }
-
-            if (auto ir = m_topNavRepeaterOverflowView.get())
-            {
-                if (auto element = container.try_as<winrt::UIElement>())
-                {
-                    auto index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (auto ir = m_leftNavRepeater.get())
-            {
-                if (auto element = container.try_as<winrt::UIElement>())
-                {
-                    int index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
+                    return GetItemFromIndex(parentRepeater, containerIndex);
                 }
             }
         }
@@ -2941,10 +2957,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     {
         if (ip.GetSize() > 1)
         {
-            auto indexOfParentInOverflow = m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0));
-            // We want to make sure that container is collapsed before movement
-            CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
-            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), indexOfParentInOverflow);
+            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0)));
         }
         return item;
     }();
@@ -3365,12 +3378,13 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
-        CollapseAllMenuItems(auto_unbox(args.OldValue()));
+        CollapseTopLevelMenuItems(auto_unbox(args.OldValue()));
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
         UpdatePaneVisibility();
         UpdateVisualState();
+        UpdatePaneButtonsWidths();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -3421,6 +3435,9 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // Need to update receiver margins when CompactPaneLength changes
         UpdatePaneShadow();
+
+        // Update pane-button-grid width when pane is closed and we are not in minimal
+        UpdatePaneButtonsWidths();
     }
     else if (property == s_IsTitleBarAutoPaddingEnabledProperty)
     {
@@ -3500,6 +3517,7 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
+
     SetPaneToggleButtonAutomationName();
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
@@ -3519,6 +3537,7 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
+    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
@@ -4428,8 +4447,7 @@ int NavigationView::GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt
     {
         if (auto itemsSourceView = ir.ItemsSourceView())
         {
-            auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
-            return inspectingDataSource->IndexOf(data);
+            return itemsSourceView.IndexOf(data);
         }
     }
     return -1;
@@ -4667,7 +4685,7 @@ void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewIt
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
 
-    nviImpl->ShowChildren(nvi.IsExpanded());
+    nviImpl->ShowHideChildren();
 
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
@@ -4809,21 +4827,21 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     return nullptr;
 }
 
-void NavigationView::CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
+void NavigationView::CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
 {
     // We want to make sure only top level items are visible when switching pane modes
     if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::Top)
     {
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeater.get());
-        CollapseAllMenuItemsUnderRepeater(m_topNavRepeaterOverflowView.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_topNavRepeaterOverflowView.get());
     }
     else
     {
-        CollapseAllMenuItemsUnderRepeater(m_leftNavRepeater.get());
+        CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     }
 }
 
-void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir)
+void NavigationView::CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir)
 {
     for (int index = 0; index < GetContainerCountInRepeater(ir); index++)
     {
@@ -4831,7 +4849,6 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
         {
             if (auto const nvi = element.try_as<winrt::NavigationViewItem>())
             {
-                CollapseAllMenuItemsUnderRepeater(winrt::get_self<NavigationViewItem>(nvi)->GetRepeater());
                 ChangeIsExpandedNavigationViewItem(nvi, false /*isExpanded*/);
             }
         }
@@ -4840,14 +4857,14 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
 
 void NavigationView::RaiseExpandingEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewExpandingEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemExpandingEventArgs>(*this);
     eventArgs->ExpandingItemContainer(container);
     m_expandingEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemCollapsedEventArgs>(*this);
     eventArgs->CollapsedItemContainer(container);
     m_collapsedEventSource(*this, *eventArgs);
 }

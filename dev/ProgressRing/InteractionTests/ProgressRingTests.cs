@@ -43,132 +43,128 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void ChangeValueTest()
-        {
-            using (var setup = new TestSetupHelper("ProgressRing Tests"))
-            {
-                Log.Comment("Changing Value of ProgressRing");
-
-                UIObject testProgressRing = FindElement.ByName("TestProgressRing");
-                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
-
-                double oldValue = Convert.ToDouble(valueText.DocumentText);
-
-                Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
-                changeValueButton.InvokeAndWait();
-
-                double newValue = Convert.ToDouble(valueText.DocumentText);
-                double diff = Math.Abs(oldValue - newValue);
-
-                Log.Comment("ProgressRing value changed");
-                Verify.IsGreaterThan(diff, Convert.ToDouble(0));
-            }
-        }
-
-        [TestMethod]
-        public void UpdateMinMaxTest()
-        {
-            using (var setup = new TestSetupHelper("ProgressRing Tests"))
-            {
-                Log.Comment("Updating Minimum and Maximum value of ProgressRing");
-
-                UIObject testProgressRing = FindElement.ByName("TestProgressRing");
-
-                TextBlock minimumInputText = FindElement.ByName<TextBlock>("MinimumInputText");
-                TextBlock maximumInputText = FindElement.ByName<TextBlock>("MaximumInputText");
-                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
-
-                double oldMinimumInputText = Convert.ToDouble(minimumInputText.DocumentText);
-                double oldMaximumInputText = Convert.ToDouble(minimumInputText.DocumentText);
-
-                Edit minimumInput = FindElement.ByName<Edit>("MinimumInput");
-                Edit maximumInput = FindElement.ByName<Edit>("MaximumInput");
-
-                minimumInput.SetValue("10");
-                maximumInput.SetValue("15");
-
-                Button updateMinMaxButton = FindElement.ByName<Button>("UpdateMinMaxButton");
-                updateMinMaxButton.InvokeAndWait();
-
-                double newMinimumInputText = Convert.ToDouble(minimumInputText.DocumentText);
-                double newMaximumInputText = Convert.ToDouble(maximumInputText.DocumentText);
-
-                Verify.AreNotSame(oldMinimumInputText, newMinimumInputText, "Minimum updated");
-                Verify.AreNotSame(oldMaximumInputText, newMaximumInputText, "Maximum updated");
-
-                // Below edge cases are handled by Rangebase
-
-                Log.Comment("Updating Minimum and Maximum when Maximum < Minimum");
-
-                maximumInput.SetValue("5");
-                updateMinMaxButton.InvokeAndWait();
-
-                Verify.AreEqual(Convert.ToDouble(minimumInputText.DocumentText), Convert.ToDouble(maximumInputText.DocumentText), "Maximum updates to equal Minimum");
-
-                Log.Comment("Updating Minimum and Maximum when Minimum > Value");
-
-                minimumInput.SetValue("15");
-                updateMinMaxButton.InvokeAndWait();
-
-                Verify.AreEqual(Convert.ToDouble(valueText.DocumentText), Convert.ToDouble(minimumInputText.DocumentText), "Value updates to equal Minimum");
-                Verify.AreEqual(Convert.ToDouble(maximumInputText.DocumentText), Convert.ToDouble(minimumInputText.DocumentText), "Maximum also updates to equal Minimum");
-
-                Log.Comment("Updating Minimum and Maximum to be a decimal number");
-
-                minimumInput.SetValue("0.1");
-                maximumInput.SetValue("1.1");
-
-                updateMinMaxButton.InvokeAndWait();
-
-                double oldValue = Convert.ToDouble(valueText.DocumentText);
-
-                Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
-                changeValueButton.InvokeAndWait();
-
-                double newValue = Convert.ToDouble(valueText.DocumentText);
-                double diff = Math.Abs(oldValue - newValue);
-
-                Verify.IsGreaterThan(diff, Convert.ToDouble(0), "Value of ProgressRing increments properly within range with decimal Minimum and Maximum");
-            }
-        }
-
-        [TestMethod]
         public void ChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Verify all properties are set to false by default for testing");
+                Log.Comment("Verify IsActive property is set to true by default for testing");
 
-                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
+                ToggleButton isActiveCheckBox = FindElement.ByName<ToggleButton>("ShowIsActiveCheckBox");
 
-                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
+                TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+                TextBlock opacityText = FindElement.ByName<TextBlock>("OpacityText");
 
-                Verify.IsFalse(Convert.ToBoolean(isIndeterminateText.DocumentText));
+                Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
 
-                Log.Comment("All properties to false updates ProgressBar to Determinate");
+                Log.Comment("IsActive set to true updates ProgressRing to Active state");
 
-                Verify.AreEqual(visualStateText.DocumentText, "Determinate");
-
-                Log.Comment("Verify Lottie animation is inactive when in Determinate state (LottieRoot is hidden)");
-
-                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
-
-                Log.Comment("IsIndeterminate = true updates ProgressBar to Indeterminate visual state");
-
-                isIndeterminateCheckBox.ToggleAndWait();
-
-                Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
-                Verify.AreEqual(visualStateText.DocumentText, "Indeterminate");
+                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Log.Comment("Verity that opacity is 1 when Active");
+                Verify.AreEqual("1", opacityText.DocumentText);
 
                 // Lottie animations only support Windows versions rs5 and above
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    Log.Comment("Verify Lottie animation is active when in Indeterminate state");
+                    Log.Comment("Verify Lottie animation is playing when in Active state");
 
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
+
+                isActiveCheckBox.ToggleAndWait();
+
+                Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+                Verify.AreEqual("Inactive", visualStateText.DocumentText);
+
+                Log.Comment("Verify Lottie animation is not playing when in Inactive state");
+                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
+
+                Wait.ForIdle();
+                Log.Comment("Verity that opacity is 0 when Inactive");
+                Verify.AreEqual("0", opacityText.DocumentText);
+
+            }
+        }
+
+        [TestMethod]
+        public void LottieCustomSourceTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                Log.Comment("Navigate to Progress Ring Custom Lottie Source Page");
+
+                Button navigateToCustomLottieSourcePage = FindElement.ByName<Button>("NavigateToCustomLottieSourcePage");
+
+                navigateToCustomLottieSourcePage.InvokeAndWait();
+
+                Log.Comment("Verify IsActive property is set to true by default for testing");
+
+                ToggleButton customLottieSourceIsActiveCheckBox = FindElement.ByName<ToggleButton>("CustomLottieSourceIsActiveCheckBox");
+
+                TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
+                TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
+                TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+                TextBlock opacityText = FindElement.ByName<TextBlock>("OpacityText");
+
+                Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
+
+                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+
+                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Log.Comment("Verity that opacity is 1 when Active");
+                Verify.AreEqual("1", opacityText.DocumentText);
+
+                // Lottie animations only support Windows versions rs5 and above
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Verify Lottie animation is playing whith custom Lottie source and in Active state");
+
+                    Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
+                }
+
+                customLottieSourceIsActiveCheckBox.ToggleAndWait();
+
+                Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+                Verify.AreEqual("Inactive", visualStateText.DocumentText);
+
+                Log.Comment("Verify Lottie animation is not playing when in Inactive state");
+                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
+
+                Wait.ForIdle();
+                Log.Comment("Verity that opacity is 0 when Inactive");
+                Verify.AreEqual("0", opacityText.DocumentText);
+
+            }
+        }
+
+        [TestMethod]
+        public void StoryboardAnimationRetemplateTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                Log.Comment("Navigate to Progress Ring Storyboard Animation Page");
+
+                Button navigateToStoryBoardAnimationPage = FindElement.ByName<Button>("NavigateToStoryBoardAnimationPage");
+
+                navigateToStoryBoardAnimationPage.InvokeAndWait();
+
+                Log.Comment("Verify IsActive property is set to true by default for testing");
+
+                ToggleButton storyboardAnimationIsActiveCheckBox = FindElement.ByName<ToggleButton>("StoryboardAnimationIsActiveCheckBox");
+                TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
+                TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
+
+                Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
+
+                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+
+                Verify.AreEqual("Active", visualStateText.DocumentText);
+
+                storyboardAnimationIsActiveCheckBox.ToggleAndWait();
+
+                Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+                Verify.AreEqual("Inactive", visualStateText.DocumentText);
             }
         }
     }

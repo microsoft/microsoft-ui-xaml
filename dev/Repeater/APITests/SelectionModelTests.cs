@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -978,6 +978,118 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     12);
 
             });
+        }
+
+        [TestMethod]
+        public void AlreadySelectedDoesNotRaiseEvent()
+        {
+            var testName = "Select(int32 index), single select";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var list = Enumerable.Range(0, 10).ToList();
+
+                var selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+
+                // Single select index
+                selectionModel.Select(0);
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.Select(0);
+
+                selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+                // Single select indexpath
+                testName = "SelectAt(IndexPath index), single select";
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+
+                // multi select index
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+                selectionModel.Select(1);
+                selectionModel.Select(2);
+                testName = "Select(int32 index), multiselect";
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.Select(1);
+                selectionModel.Select(2);
+
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+
+                // multi select indexpath
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+                selectionModel.SelectAt(IndexPath.CreateFrom(2));
+                testName = "SelectAt(IndexPath index), multiselect";
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.SelectAt(IndexPath.CreateFrom(1));
+                selectionModel.SelectAt(IndexPath.CreateFrom(2));
+            });
+
+            void ThrowIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+            {
+                throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
+            }
+        }
+
+        [TestMethod]
+        public void AlreadyDeselectedDoesNotRaiseEvent()
+        {
+            var testName = "Deselect(int32 index), single select";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var list = Enumerable.Range(0, 10).ToList();
+
+                var selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+
+                // Single select index
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.Deselect(0);
+
+                selectionModel = new SelectionModel() {
+                    Source = list,
+                    SingleSelect = true
+                };
+                // Single select indexpath
+                testName = "DeselectAt(IndexPath index), single select";
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.DeselectAt(IndexPath.CreateFrom(1));
+
+                // multi select index
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+                testName = "Deselect(int32 index), multiselect";
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.Deselect(1);
+                selectionModel.Deselect(2);
+
+                selectionModel = new SelectionModel() {
+                    Source = list
+                };
+
+                // multi select indexpath
+                testName = "DeselectAt(IndexPath index), multiselect";
+                selectionModel.SelectionChanged += ThrowIfRaisedSelectionChanged;
+                selectionModel.DeselectAt(IndexPath.CreateFrom(1));
+                selectionModel.DeselectAt(IndexPath.CreateFrom(2));
+            });
+
+            void ThrowIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+            {
+                throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
+            }
         }
 
         private void Select(SelectionModel manager, int index, bool select)

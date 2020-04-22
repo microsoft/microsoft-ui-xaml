@@ -8,8 +8,8 @@ using Windows.UI.Xaml.Controls;
 
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
-using NavigationViewItemExpandingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewExpandingEventArgs;
-using NavigationViewCollapsedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewCollapsedEventArgs;
+using NavigationViewItemExpandingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemExpandingEventArgs;
+using NavigationViewItemCollapsedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemCollapsedEventArgs;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 
 namespace MUXControlsTestApp
@@ -85,32 +85,34 @@ namespace MUXControlsTestApp
 
         }
 
-        private void ExpandingItem(object sender, NavigationViewItemExpandingEventArgs e)
+        private void OnItemExpanding(object sender, NavigationViewItemExpandingEventArgs e)
         {
-            var nvib = e.ExpandingItemContainer;
-            if (nvib != null)
+            var expandingItemContainerContent = (string)(e.ExpandingItemContainer.Content);
+            TextBlockExpandingItem.Text = expandingItemContainerContent;
+
+            // Verify that returned item corresponds to the returned container
+            var item = (NavigationViewItem)e.ExpandingItem;
+            var areItemAndContainerTheSame = "false";
+            if ((string)(item.Content) == expandingItemContainerContent)
             {
-                var name = "Last Expanding: " + nvib.Content;
-                ExpandingItemLabel.Text = name;
+                areItemAndContainerTheSame = "true";
             }
-            else
-            {
-                ExpandingItemLabel.Text = "Last Expanding: ERROR - No container returned!";
-            }
+            TextblockExpandingItemAndContainerMatch.Text = areItemAndContainerTheSame;
         }
 
-        private void CollapsedItem(object sender, NavigationViewCollapsedEventArgs e)
+        private void OnItemCollapsed(object sender, NavigationViewItemCollapsedEventArgs e)
         {
-            var nvib = e.CollapsedItemContainer;
-            if (nvib != null)
+            var collapsedItemContainerContent = (string)(e.CollapsedItemContainer.Content);
+            TextBlockCollapsedItem.Text = collapsedItemContainerContent;
+
+            // Verify that returned item corresponds to the returned container
+            var item = (NavigationViewItem)e.CollapsedItem;
+            var areItemAndContainerTheSame = "false";
+            if ((string)(item.Content) == collapsedItemContainerContent)
             {
-                var name = "Last Collapsed: " + nvib.Content;
-                CollapsedItemLabel.Text = name;
+                areItemAndContainerTheSame = "true";
             }
-            else
-            {
-                CollapsedItemLabel.Text = "Last Collapsed: ERROR - No container returned!";
-            }
+            TextblockCollapsedItemAndContainerMatch.Text = areItemAndContainerTheSame;
         }
 
         private void PaneDisplayModeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)

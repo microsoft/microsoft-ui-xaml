@@ -3,30 +3,22 @@
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    ProgressBarTemplateSettings();
-
     Double ContainerAnimationStartPosition;
-    static Windows.UI.Xaml.DependencyProperty ContainerAnimationStartPositionProperty{ get; };
-
     Double ContainerAnimationEndPosition;
-    static Windows.UI.Xaml.DependencyProperty ContainerAnimationEndPositionProperty{ get; };
-
     Double ContainerAnimationStartPosition2;
-    static Windows.UI.Xaml.DependencyProperty ContainerAnimationStartPosition2Property{ get; };
-
-    Double ContainerAnimationEndPosition2;
-    static Windows.UI.Xaml.DependencyProperty ContainerAnimationEndPosition2Property{ get; };
-
-    Double ContainerAnimationMidPosition;
-    static Windows.UI.Xaml.DependencyProperty ContainerAnimationMidPositionProperty{ get; };
-
+    Double ContainerAnimationEndPosition2; 
+    Double ContainerAnimationMidPosition; 
     Double IndicatorLengthDelta;
-    static Windows.UI.Xaml.DependencyProperty IndicatorLengthDeltaProperty{ get; };
-
     Windows.UI.Xaml.Media.RectangleGeometry ClipRect;
-    static Windows.UI.Xaml.DependencyProperty ClipRectProperty{ get; };
+   
+    // TemplateSetting properties from WUXC for backwards compatibility.
+    Double EllipseAnimationEndPosition;
+    Double EllipseAnimationWellPosition;
+    Double EllipseDiameter;
+    Double EllipseOffset;
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -44,12 +36,12 @@ unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBas
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean ShowPaused{ get; set; };
 
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
     ProgressBarTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ShowErrorProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ShowPausedProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 }
 
 }

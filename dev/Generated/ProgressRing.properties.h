@@ -9,17 +9,22 @@ class ProgressRingProperties
 public:
     ProgressRingProperties();
 
-    void IsIndeterminate(bool value);
-    bool IsIndeterminate();
+    void IsActive(bool value);
+    bool IsActive();
 
-    static winrt::DependencyProperty IsIndeterminateProperty() { return s_IsIndeterminateProperty; }
+    void TemplateSettings(winrt::ProgressRingTemplateSettings const& value);
+    winrt::ProgressRingTemplateSettings TemplateSettings();
 
-    static GlobalDependencyProperty s_IsIndeterminateProperty;
+    static winrt::DependencyProperty IsActiveProperty() { return s_IsActiveProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
+
+    static GlobalDependencyProperty s_IsActiveProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnIsIndeterminatePropertyChanged(
+    static void OnIsActivePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };
