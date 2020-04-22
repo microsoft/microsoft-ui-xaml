@@ -4366,17 +4366,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var currentStatus = new CheckBox(FindElement.ByName("MenuItemsCorrectOffset"));
 
                 checkMenuItemsButton.Click();
+                Log.Comment("Verifying compact pane length set before loading working");
                 Wait.ForIdle();
+                compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox")); 
                 Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
 
+                Log.Comment("Verifying changing compact pane length in left mode working");
                 compactpaneCheckbox.SelectItemByName("96");
                 Wait.ForIdle();
 
                 checkMenuItemsButton.Click();
                 Wait.ForIdle();
+                compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox")); 
                 Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
 
                 // Check if changing displaymode to top and then changing length gets used correctly
+                Log.Comment("Verifying changing compact pane length during top mode working");
                 displayModeToggle.SelectItemByName("Top");
                 compactpaneCheckbox.SelectItemByName("48");
                 Wait.ForIdle();
@@ -4386,6 +4391,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 checkMenuItemsButton.Click();
                 Wait.ForIdle();
+                compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox")); 
                 Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
             }
         }
