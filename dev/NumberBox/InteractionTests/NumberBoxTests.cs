@@ -315,6 +315,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(0, numBox.Value);
 
                 FindTextBox(numBox).SetFocus();
+                Wait.ForIdle();
 
                 InputHelper.RotateWheel(FindTextBox(numBox), 1);
                 InputHelper.RotateWheel(FindTextBox(numBox), 1);
