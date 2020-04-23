@@ -20,7 +20,7 @@ bool IsStateAnimated(const RevealHoverSpotlightStateDesc& state)
             (!IsIgnored(state.OuterConeColor) && IsAnimated(state.OuterConeColor));
     }
 
-    bool isOuterAngleScaleAnimated = !IsIgnored(state.OuterAngleScale) && IsAnimated(state.OuterAngleScale);
+    const bool isOuterAngleScaleAnimated = !IsIgnored(state.OuterAngleScale) && IsAnimated(state.OuterAngleScale);
 
     return isColorOrIntensityAnimated || isOuterAngleScaleAnimated;
 }
@@ -37,7 +37,7 @@ bool IsStateIgnored(const RevealHoverSpotlightStateDesc& state)
         isColorOrIntensityIgnored = IsIgnored(state.InnerConeColor) && IsIgnored(state.OuterConeColor);
     }
 
-    bool isOuterAngleScaleIgnored = IsIgnored(state.OuterAngleScale);
+    const bool isOuterAngleScaleIgnored = IsIgnored(state.OuterAngleScale);
 
     return isColorOrIntensityIgnored && isOuterAngleScaleIgnored;
 }
@@ -95,7 +95,7 @@ void PlaySpotLightStateAnimation(
 
             if (onComplete)
             {
-                auto completedEventToken = scopedBatch.Completed([onComplete = std::move(onComplete)](auto&, auto&)
+                const auto completedEventToken = scopedBatch.Completed([onComplete = std::move(onComplete)](auto&, auto&)
                 {
                     onComplete();
                 });

@@ -181,11 +181,11 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
         {
             unsigned int currentIndex = 0;
             winrt::IInspectable item{ nullptr };
-            for (auto& info : infos)
+            for (const auto& info : infos)
             {
-                if (auto node = info.Node.lock())
+                if (const auto node = info.Node.lock())
                 {
-                    unsigned int currentCount = node->SelectedCount();
+                    const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
                         int targetIndex = node->SelectedIndices().at(index - currentIndex);
@@ -236,11 +236,11 @@ winrt::IVectorView<winrt::IndexPath> SelectionModel::SelectedIndices()
         {
             unsigned int currentIndex = 0;
             winrt::IndexPath path{ nullptr };
-            for (auto& info : infos)
+            for (const auto info : infos)
             {
-                if (auto node = info.Node.lock())
+                if (const auto node = info.Node.lock())
                 {
-                    unsigned int currentCount = node->SelectedCount();
+                    const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
                         int targetIndex = node->SelectedIndices().at(index - currentIndex);
@@ -326,13 +326,13 @@ winrt::IReference<bool> SelectionModel::IsSelected(int groupIndex, int itemIndex
 
 winrt::IReference<bool> SelectionModel::IsSelectedAt(winrt::IndexPath const& index)
 {
-    auto path = index;
+    const auto path = index;
     MUX_ASSERT(winrt::get_self<IndexPath>(path)->IsValid());
     bool isRealized = true;
     auto node = m_rootNode;
     for (int i = 0; i < path.GetSize() - 1; i++)
     {
-        auto childIndex = path.GetAt(i);
+        const auto childIndex = path.GetAt(i);
         node = node->GetAt(childIndex, false /* realizeChild */);
         if (!node)
         {
@@ -344,7 +344,7 @@ winrt::IReference<bool> SelectionModel::IsSelectedAt(winrt::IndexPath const& ind
     winrt::IReference<bool> isSelected = false;
     if (isRealized)
     {
-        auto size = path.GetSize();
+        const auto size = path.GetSize();
         if (size == 0)
         {
             isSelected = SelectionNode::ConvertToNullableBool(node->EvaluateIsSelectedBasedOnChildrenNodes());
@@ -591,7 +591,7 @@ void SelectionModel::SelectImpl(int index, bool select)
         {
             ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
         }
-        auto selected = m_rootNode->Select(index, select);
+        const auto selected = m_rootNode->Select(index, select);
         if (selected)
         {
             AnchorIndex(winrt::make<IndexPath>(index));
@@ -607,8 +607,8 @@ void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool sel
         ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
     }
 
-    auto childNode = m_rootNode->GetAt(groupIndex, true /* realize */);
-    auto selected = childNode->Select(itemIndex, select);
+    const auto childNode = m_rootNode->GetAt(groupIndex, true /* realize */);
+    const auto selected = childNode->Select(itemIndex, select);
     if (selected)
     {
         AnchorIndex(winrt::make<IndexPath>(groupIndex, itemIndex));
@@ -690,14 +690,14 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
 void SelectionModel::SelectRangeFromAnchorImpl(int index, bool select)
 {
     int anchorIndex = 0;
-    auto anchor = AnchorIndex();
+    const auto anchor = AnchorIndex();
     if (anchor)
     {
         MUX_ASSERT(anchor.GetSize() == 1);
         anchorIndex = anchor.GetAt(0);
     }
 
-    bool selected = m_rootNode->SelectRange(IndexRange(anchorIndex, index), select);
+    const bool selected = m_rootNode->SelectRange(IndexRange(anchorIndex, index), select);
     if (selected)
     {
         OnSelectionChanged();
@@ -731,9 +731,9 @@ void SelectionModel::SelectRangeFromAnchorWithGroupImpl(int endGroupIndex, int e
     bool selected = false;
     for (int groupIdx = startGroupIndex; groupIdx <= endGroupIndex; groupIdx++)
     {
-        auto groupNode = m_rootNode->GetAt(groupIdx, true /* realizeChild */);
-        int startIndex = groupIdx == startGroupIndex ? startItemIndex : 0;
-        int endIndex = groupIdx == endGroupIndex ? endItemIndex : groupNode->DataCount() - 1;
+        const auto groupNode = m_rootNode->GetAt(groupIdx, true /* realizeChild */);
+        const int startIndex = groupIdx == startGroupIndex ? startItemIndex : 0;
+        const int endIndex = groupIdx == endGroupIndex ? endItemIndex : groupNode->DataCount() - 1;
         selected |= groupNode->SelectRange(IndexRange(startIndex, endIndex), select);
     }
 

@@ -287,7 +287,7 @@ void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt:
 
 void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    winrt::VirtualKey key = args.Key();
+    const winrt::VirtualKey key = args.Key();
     if (key == winrt::VirtualKey::Space || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::GamepadA)
     {
         m_isKeyDown = true;
@@ -297,7 +297,7 @@ void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const 
 
 void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    winrt::VirtualKey key = args.Key();
+    const winrt::VirtualKey key = args.Key();
     if (key == winrt::VirtualKey::Space || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::GamepadA)
     {
         m_isKeyDown = false;
@@ -313,7 +313,7 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
     else if (key == winrt::VirtualKey::Down)
     {
         winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
-        bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        const bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (IsEnabled() && menuKeyDown)
         {

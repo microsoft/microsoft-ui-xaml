@@ -366,7 +366,7 @@ void RevealBrush::RemoveTargetBrush(const wstring_view& lightID)
     {
         winrt::XamlLight::RemoveTargetBrush(lightID, *this);
     }
-    catch (winrt::hresult_error& e)
+    catch (const winrt::hresult_error& e)
     {
         // RemoveTargetBrush can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown, 
         // and there is evidence from Watson that such calls are made in real apps.
@@ -651,7 +651,7 @@ void RevealBrush::CreateRevealBrush()
     winrt::Compositor compositor = winrt::Window::Current().Compositor();
     if (!IsInFallbackMode())
     {
-        auto color = Color();
+        const auto color = Color();
         // If the color is ever not transparent black then start using the base color version of the effect.
         if (color.A != 0 || color.R != 0 || color.G != 0 || color.B != 0)
         {
@@ -660,9 +660,9 @@ void RevealBrush::CreateRevealBrush()
 
         EnsureNoiseBrush();
 
-        bool isInverted = m_isBorder && (TargetTheme() == winrt::ApplicationTheme::Light);
-        auto effectFactory = GetOrCreateRevealBrushCompositionEffectFactory(m_isBorder, isInverted, m_hasBaseColor, compositor);
-        winrt::CompositionEffectBrush revealBrush = effectFactory.CreateBrush();
+        const bool isInverted = m_isBorder && (TargetTheme() == winrt::ApplicationTheme::Light);
+        const auto effectFactory = GetOrCreateRevealBrushCompositionEffectFactory(m_isBorder, isInverted, m_hasBaseColor, compositor);
+        const winrt::CompositionEffectBrush revealBrush = effectFactory.CreateBrush();
 
         if (m_hasBaseColor)
         {
@@ -686,7 +686,7 @@ void RevealBrush::CreateRevealBrush()
     }
     else
     {
-        auto fallbackColor = FallbackColor();
+        const auto fallbackColor = FallbackColor();
 
         if (fallbackColor.A == 0)
         {

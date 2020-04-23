@@ -42,7 +42,7 @@ RefreshInfoProviderImpl::RefreshInfoProviderImpl(const winrt::RefreshPullDirecti
 void RefreshInfoProviderImpl::UpdateIsInteractingForRefresh(bool value)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    bool isInteractingForRefresh = value && !m_peeking;
+    const bool isInteractingForRefresh = value && !m_peeking;
     if (isInteractingForRefresh != m_isInteractingForRefresh)
     {
         m_isInteractingForRefresh = isInteractingForRefresh;

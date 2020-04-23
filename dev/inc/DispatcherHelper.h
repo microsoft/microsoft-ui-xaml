@@ -53,8 +53,8 @@ public:
         // We could call winrt::CoreApplication::GetCurrentView() here, but that can throw in some cases. Even if we catch, it will still
         // generate exception noise in the debugger.
         winrt::CoreApplicationView view{ nullptr };
-        auto coreApplication = winrt::get_activation_factory<winrt::CoreApplication, ABI::Windows::ApplicationModel::Core::ICoreApplication>();
-        auto ignorehr = coreApplication->GetCurrentView(winrt::put_abi(view));
+        const auto coreApplication = winrt::get_activation_factory<winrt::CoreApplication, ABI::Windows::ApplicationModel::Core::ICoreApplication>();
+        const auto ignorehr = coreApplication->GetCurrentView(winrt::put_abi(view));
 
         return view;
     }

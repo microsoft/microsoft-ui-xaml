@@ -429,7 +429,7 @@ void ScrollViewer::OnApplyTemplate()
 
         if (rootVisualStateGroups)
         {
-            uint32_t groupCount = rootVisualStateGroups.Size();
+            const uint32_t groupCount = rootVisualStateGroups.Size();
 
             for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
             {
@@ -441,7 +441,7 @@ void ScrollViewer::OnApplyTemplate()
 
                     if (visualStates)
                     {
-                        uint32_t stateCount = visualStates.Size();
+                        const uint32_t stateCount = visualStates.Size();
 
                         for (uint32_t stateIndex = 0; stateIndex < stateCount; ++stateIndex)
                         {
@@ -456,12 +456,12 @@ void ScrollViewer::OnApplyTemplate()
                                 {
                                     if (stateName == s_noIndicatorStateName)
                                     {
-                                        winrt::event_token noIndicatorStateStoryboardCompletedToken = stateStoryboard.Completed({ this, &ScrollViewer::OnNoIndicatorStateStoryboardCompleted });
+                                        const winrt::event_token noIndicatorStateStoryboardCompletedToken = stateStoryboard.Completed({ this, &ScrollViewer::OnNoIndicatorStateStoryboardCompleted });
                                         m_hasNoIndicatorStateStoryboardCompletedHandler = true;
                                     }
                                     else if (stateName == s_touchIndicatorStateName || stateName == s_mouseIndicatorStateName)
                                     {
-                                        winrt::event_token indicatorStateStoryboardCompletedToken = stateStoryboard.Completed({ this, &ScrollViewer::OnIndicatorStateStoryboardCompleted });
+                                        const winrt::event_token indicatorStateStoryboardCompletedToken = stateStoryboard.Completed({ this, &ScrollViewer::OnIndicatorStateStoryboardCompleted });
                                     }
                                 }
                             }
@@ -671,7 +671,7 @@ void ScrollViewer::OnScrollViewerPointerReleased(
     {
         SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_METH, METH_NAME, this, L"Focus");
 
-        bool tookFocus = Focus(winrt::FocusState::Pointer);
+        const bool tookFocus = Focus(winrt::FocusState::Pointer);
         args.Handled(tookFocus);
     }
 }
@@ -817,7 +817,7 @@ void ScrollViewer::OnScrollControllerInteractionInfoChanged(
     const winrt::IScrollController& sender,
     const winrt::IInspectable& /*args*/)
 {
-    bool isScrollControllerInteracting = sender.IsInteracting();
+    const bool isScrollControllerInteracting = sender.IsInteracting();
     bool showIndicators = false;
     bool hideIndicators = false;
 
@@ -1580,7 +1580,7 @@ void ScrollViewer::UpdateScrollControllersVisibility(
 
     if (horizontalChange)
     {
-        winrt::ScrollBarVisibility scrollBarVisibility = HorizontalScrollBarVisibility();
+        const auto scrollBarVisibility = HorizontalScrollBarVisibility();
 
         if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
             m_horizontalScrollController &&
@@ -1604,7 +1604,7 @@ void ScrollViewer::UpdateScrollControllersVisibility(
 
     if (verticalChange)
     {
-        winrt::ScrollBarVisibility scrollBarVisibility = VerticalScrollBarVisibility();
+        const auto scrollBarVisibility = VerticalScrollBarVisibility();
 
         if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
             m_verticalScrollController &&
@@ -1754,8 +1754,8 @@ void ScrollViewer::UpdateScrollControllersAutoHiding(
     {
         m_autoHideScrollControllersValid = false;
 
-        bool oldAutoHideScrollControllers = m_autoHideScrollControllers;
-        bool newAutoHideScrollControllers = AreScrollControllersAutoHiding();
+        const bool oldAutoHideScrollControllers = m_autoHideScrollControllers;
+        const bool newAutoHideScrollControllers = AreScrollControllersAutoHiding();
 
         if (oldAutoHideScrollControllers != newAutoHideScrollControllers)
         {
@@ -1801,7 +1801,7 @@ void ScrollViewer::UpdateScrollControllersVisualState(
 
     MUX_ASSERT(!(showIndicators && hideIndicators));
 
-    bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
+    const bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
 
     MUX_ASSERT(!(!areScrollControllersAutoHiding && hideIndicators));
 
@@ -1853,8 +1853,8 @@ void ScrollViewer::UpdateScrollControllersSeparatorVisualState(
         return;
     }
 
-    bool isEnabled = IsEnabled();
-    bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
+    const bool isEnabled = IsEnabled();
+    const bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
     bool showScrollControllersSeparator = !areScrollControllersAutoHiding;
 
     if (!showScrollControllersSeparator &&
@@ -1924,8 +1924,8 @@ void ScrollViewer::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         winrt::KeyRoutedEventArgs eventArgs = e.as<winrt::KeyRoutedEventArgs>();
         if (!eventArgs.Handled())
         {
-            auto originalKey = eventArgs.OriginalKey();
-            bool isGamepadKey = FocusHelper::IsGamepadNavigationDirection(originalKey) || FocusHelper::IsGamepadPageNavigationDirection(originalKey);
+            const auto originalKey = eventArgs.OriginalKey();
+            const bool isGamepadKey = FocusHelper::IsGamepadNavigationDirection(originalKey) || FocusHelper::IsGamepadPageNavigationDirection(originalKey);
 
             if (isGamepadKey)
             {
@@ -1942,8 +1942,8 @@ void ScrollViewer::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
                 }
             }
 
-            bool isXYFocusEnabledForKeyboard = XYFocusKeyboardNavigation() == winrt::XYFocusKeyboardNavigationMode::Enabled;
-            bool doXYFocusScrolling = isGamepadKey || isXYFocusEnabledForKeyboard;
+            const bool isXYFocusEnabledForKeyboard = XYFocusKeyboardNavigation() == winrt::XYFocusKeyboardNavigationMode::Enabled;
+            const bool doXYFocusScrolling = isGamepadKey || isXYFocusEnabledForKeyboard;
 
             if (doXYFocusScrolling)
             {
@@ -1967,7 +1967,7 @@ void ScrollViewer::HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs args
     MUX_ASSERT(!args.Handled());
     MUX_ASSERT(m_scroller != nullptr);
 
-    bool isHandled = DoScrollForKey(args.Key(), smallScrollProportion);
+    const bool isHandled = DoScrollForKey(args.Key(), smallScrollProportion);
 
     args.Handled(isHandled);
 }
@@ -1980,10 +1980,10 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
     MUX_ASSERT(m_scroller != nullptr);
 
     bool isHandled = false;
-    auto originalKey = args.OriginalKey();
-    auto scroller = m_scroller.get().as<winrt::Scroller>();
-    bool isPageNavigation = FocusHelper::IsGamepadPageNavigationDirection(originalKey);
-    double scrollAmountProportion = isPageNavigation ? 1.0 : 0.5;
+    const auto originalKey = args.OriginalKey();
+    const auto scroller = m_scroller.get().as<winrt::Scroller>();
+    const bool isPageNavigation = FocusHelper::IsGamepadPageNavigationDirection(originalKey);
+    const double scrollAmountProportion = isPageNavigation ? 1.0 : 0.5;
     bool shouldProcessKeyEvent = true;
     winrt::FocusNavigationDirection navigationDirection;
 
@@ -2016,10 +2016,10 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
             winrt::UIElement nextElementAsUIE = FocusHelper::GetUIElementForFocusCandidate(nextElement);
             MUX_ASSERT(nextElementAsUIE != nullptr);
 
-            auto nextElementAsFe = nextElementAsUIE.as<winrt::FrameworkElement>();
-            auto rect = winrt::Rect{ 0, 0, static_cast<float>(nextElementAsFe.ActualWidth()), static_cast<float>(nextElementAsFe.ActualHeight()) };
-            auto elementBounds = nextElementAsUIE.TransformToVisual(scroller).TransformBounds(rect);
-            auto viewport = winrt::Rect{ 0, 0, static_cast<float>(scroller.ActualWidth()), static_cast<float>(scroller.ActualHeight()) };
+            const auto nextElementAsFe = nextElementAsUIE.as<winrt::FrameworkElement>();
+            const auto rect = winrt::Rect{ 0, 0, static_cast<float>(nextElementAsFe.ActualWidth()), static_cast<float>(nextElementAsFe.ActualHeight()) };
+            const auto elementBounds = nextElementAsUIE.TransformToVisual(scroller).TransformBounds(rect);
+            const auto viewport = winrt::Rect{ 0, 0, static_cast<float>(scroller.ActualWidth()), static_cast<float>(scroller.ActualHeight()) };
 
             // Extend the viewport in the direction we are moving:
             winrt::Rect extendedViewport = viewport;
@@ -2041,8 +2041,8 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
                 break;
             }
 
-            bool isElementInExtendedViewport = winrt::RectHelper::Intersect(elementBounds, extendedViewport) != winrt::RectHelper::Empty();
-            bool isElementFullyInExtendedViewport = winrt::RectHelper::Union(elementBounds, extendedViewport) == extendedViewport;
+            const bool isElementInExtendedViewport = winrt::RectHelper::Intersect(elementBounds, extendedViewport) != winrt::RectHelper::Empty();
+            const bool isElementFullyInExtendedViewport = winrt::RectHelper::Union(elementBounds, extendedViewport) == extendedViewport;
 
             if (isElementInExtendedViewport)
             {
@@ -2153,8 +2153,8 @@ winrt::DependencyObject ScrollViewer::GetNextFocusCandidate(winrt::FocusNavigati
 
     if (isPageNavigation)
     {
-        auto localBounds = winrt::Rect{ 0, 0, static_cast<float>(scroller.ActualWidth()), static_cast<float>(scroller.ActualHeight()) };
-        auto globalBounds = scroller.TransformToVisual(nullptr).TransformBounds(localBounds);
+        const auto localBounds = winrt::Rect{ 0, 0, static_cast<float>(scroller.ActualWidth()), static_cast<float>(scroller.ActualHeight()) };
+        const auto globalBounds = scroller.TransformToVisual(nullptr).TransformBounds(localBounds);
         const int numPagesLookAhead = 2;
 
         auto hintRect = globalBounds;
@@ -2235,18 +2235,18 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
     }
     else if (key == winrt::VirtualKey::Home)
     {
-        bool canScrollUp = CanScrollUp();
+        const bool canScrollUp = CanScrollUp();
 #ifdef USE_SCROLLMODE_AUTO
         winrt::ScrollMode verticalScrollMode = ComputedVerticalScrollMode();
 #else
-        winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
+        const auto verticalScrollMode = VerticalScrollMode();
 #endif
 
         if (canScrollUp || (verticalScrollMode == winrt::ScrollMode::Disabled && CanScrollLeft()))
         {
             isScrollTriggered = true;
             auto horizontalOffset = canScrollUp ? scroller.HorizontalOffset() : 0.0;
-            auto verticalOffset = canScrollUp ? 0.0 : scroller.VerticalOffset();
+            const auto verticalOffset = canScrollUp ? 0.0 : scroller.VerticalOffset();
 
             if (!canScrollUp && FlowDirection() == winrt::FlowDirection::RightToLeft)
             {
@@ -2258,19 +2258,19 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
     }
     else if (key == winrt::VirtualKey::End)
     {
-        bool canScrollDown = CanScrollDown();
+        const bool canScrollDown = CanScrollDown();
 #ifdef USE_SCROLLMODE_AUTO
         winrt::ScrollMode verticalScrollMode = ComputedVerticalScrollMode();
 #else
-        winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
+        const auto verticalScrollMode = VerticalScrollMode();
 #endif
 
         if (canScrollDown || (verticalScrollMode == winrt::ScrollMode::Disabled && CanScrollRight()))
         {
             isScrollTriggered = true;
-            auto zoomedExtent = (canScrollDown ? scroller.ExtentHeight() : scroller.ExtentWidth()) * scroller.ZoomFactor();
+            const auto zoomedExtent = (canScrollDown ? scroller.ExtentHeight() : scroller.ExtentWidth()) * scroller.ZoomFactor();
             auto horizontalOffset = canScrollDown ? scroller.HorizontalOffset() : zoomedExtent - scroller.ActualWidth();
-            auto verticalOffset = canScrollDown ? zoomedExtent - scroller.ActualHeight() : scroller.VerticalOffset();
+            const auto verticalOffset = canScrollDown ? zoomedExtent - scroller.ActualHeight() : scroller.VerticalOffset();
 
             if (!canScrollDown && FlowDirection() == winrt::FlowDirection::RightToLeft)
             {
@@ -2288,7 +2288,7 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_INT, METH_NAME, this, offset, static_cast<int>(orientation));
 
-    bool isVertical = orientation == winrt::Orientation::Vertical;
+    const bool isVertical = orientation == winrt::Orientation::Vertical;
 
     if (auto scroller = m_scroller.get().as<winrt::Scroller>())
     {
@@ -2302,17 +2302,17 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
             // We need to add this much velocity over minVelocity per pixel we want to move:
             static constexpr double s_velocityNeededPerPixel{ 7.600855902349023 };
 
-            int scrollDir = offset > 0 ? 1 : -1;
+            const auto scrollDir = offset > 0 ? 1 : -1;
 
             // The minimum velocity required to move in the given direction.
             double baselineVelocity = minVelocity * scrollDir;
 
             // If there is already a scroll animation running for a previous key press, we want to take that into account
             // for calculating the baseline velocity. 
-            auto previousScrollViewChangeId = isVertical ? m_verticalScrollFromOffsetChangeId : m_horizontalScrollFromOffsetChangeId;
+            const auto previousScrollViewChangeId = isVertical ? m_verticalScrollFromOffsetChangeId : m_horizontalScrollFromOffsetChangeId;
             if (previousScrollViewChangeId != -1)
             {
-                auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollFromDirection : m_horizontalScrollFromDirection;
+                const auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollFromDirection : m_horizontalScrollFromDirection;
                 if (directionOfPreviousScrollOperation == 1)
                 {
                     baselineVelocity -= minVelocity;
@@ -2323,17 +2323,17 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
                 }
             }
 
-            float velocity = static_cast<float>(baselineVelocity + (offset * s_velocityNeededPerPixel));
+            const auto velocity = static_cast<float>(baselineVelocity + (offset * s_velocityNeededPerPixel));
 
             if (isVertical)
             {
-                winrt::float2 offsetsVelocity(0.0f, velocity);
+                const winrt::float2 offsetsVelocity(0.0f, velocity);
                 m_verticalScrollFromOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
                 m_verticalScrollFromDirection = scrollDir;
             }
             else
             {
-                winrt::float2 offsetsVelocity(velocity, 0.0f);
+                const winrt::float2 offsetsVelocity(velocity, 0.0f);
                 m_horizontalScrollFromOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
                 m_horizontalScrollFromDirection = scrollDir;
             }
@@ -2409,18 +2409,18 @@ bool ScrollViewer::CanScrollVerticallyInDirection(bool inPositiveDirection)
 #ifdef USE_SCROLLMODE_AUTO
         winrt::ScrollMode verticalScrollMode = ComputedVerticalScrollMode();
 #else
-        winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
+        const auto verticalScrollMode = VerticalScrollMode();
 #endif
 
         if (verticalScrollMode == winrt::ScrollMode::Enabled)
         {
-            auto zoomedExtentHeight = scroller.ExtentHeight() * scroller.ZoomFactor();
-            auto viewportHeight = scroller.ActualHeight();
+            const auto zoomedExtentHeight = scroller.ExtentHeight() * scroller.ZoomFactor();
+            const auto viewportHeight = scroller.ActualHeight();
             if (zoomedExtentHeight > viewportHeight)
             {
                 if (inPositiveDirection)
                 {
-                    auto maxVerticalOffset = zoomedExtentHeight - viewportHeight;
+                    const auto maxVerticalOffset = zoomedExtentHeight - viewportHeight;
                     if (scroller.VerticalOffset() < maxVerticalOffset)
                     {
                         canScrollInDirection = true;
@@ -2457,18 +2457,18 @@ bool ScrollViewer::CanScrollHorizontallyInDirection(bool inPositiveDirection)
 #ifdef USE_SCROLLMODE_AUTO
         winrt::ScrollMode horizontalScrollMode = ComputedHorizontalScrollMode();
 #else
-        winrt::ScrollMode horizontalScrollMode = HorizontalScrollMode();
+        const auto horizontalScrollMode = HorizontalScrollMode();
 #endif
 
         if (horizontalScrollMode == winrt::ScrollMode::Enabled)
         {
-            auto zoomedExtentWidth = scroller.ExtentWidth() * scroller.ZoomFactor();
-            auto viewportWidth = scroller.ActualWidth();
+            const auto zoomedExtentWidth = scroller.ExtentWidth() * scroller.ZoomFactor();
+            const auto viewportWidth = scroller.ActualWidth();
             if (zoomedExtentWidth > viewportWidth)
             {
                 if (inPositiveDirection)
                 {
-                    auto maxHorizontalOffset = zoomedExtentWidth - viewportWidth;
+                    const auto maxHorizontalOffset = zoomedExtentWidth - viewportWidth;
                     if (scroller.HorizontalOffset() < maxHorizontalOffset)
                     {
                         canScrollInDirection = true;

@@ -28,8 +28,8 @@ static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupS
 const std::wstring c_whitespace = L" \n\r\t\f\v";
 std::wstring trim(const std::wstring& s)
 {
-    size_t start = s.find_first_not_of(c_whitespace);
-    size_t end = s.find_last_not_of(c_whitespace);
+    const size_t start = s.find_first_not_of(c_whitespace);
+    const size_t end = s.find_last_not_of(c_whitespace);
     return (start == std::wstring::npos || end == std::wstring::npos) ? L"" : s.substr(start, end - start + 1);
 }
 
@@ -171,7 +171,7 @@ void NumberBox::OnApplyTemplate()
             if (!popupRoot.Shadow())
             {
                 popupRoot.Shadow(winrt::ThemeShadow{});
-                auto&& translation = popupRoot.Translation();
+                const auto translation = popupRoot.Translation();
 
                 const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_numberBoxPopupShadowDepthName, box_value(c_popupShadowDepth)));
 

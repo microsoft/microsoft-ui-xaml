@@ -49,11 +49,11 @@ void ScrollerAutomationPeer::Scroll(winrt::ScrollAmount const& horizontalAmount,
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
 
-    bool scrollHorizontally = horizontalAmount != winrt::ScrollAmount::NoAmount;
-    bool scrollVertically = verticalAmount != winrt::ScrollAmount::NoAmount;
+    const bool scrollHorizontally = horizontalAmount != winrt::ScrollAmount::NoAmount;
+    const bool scrollVertically = verticalAmount != winrt::ScrollAmount::NoAmount;
 
-    bool isHorizontallyScrollable = HorizontallyScrollable();
-    bool isVerticallyScrollable = VerticallyScrollable();
+    const bool isHorizontallyScrollable = HorizontallyScrollable();
+    const bool isVerticallyScrollable = VerticallyScrollable();
 
     if (!(scrollHorizontally && !isHorizontallyScrollable) && !(scrollVertically && !isVerticallyScrollable))
     {
@@ -119,16 +119,16 @@ void ScrollerAutomationPeer::SetScrollPercent(double horizontalPercent, double v
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
 
-    bool scrollHorizontally = horizontalPercent != s_noScroll;
-    bool scrollVertically = verticalPercent != s_noScroll;
+    const bool scrollHorizontally = horizontalPercent != s_noScroll;
+    const bool scrollVertically = verticalPercent != s_noScroll;
 
     if (!scrollHorizontally && !scrollVertically)
     {
         return;
     }
 
-    bool isHorizontallyScrollable = HorizontallyScrollable();
-    bool isVerticallyScrollable = VerticallyScrollable();
+    const bool isHorizontallyScrollable = HorizontallyScrollable();
+    const bool isVerticallyScrollable = VerticallyScrollable();
 
     if ((scrollHorizontally && !isHorizontallyScrollable) || (scrollVertically && !isVerticallyScrollable))
     {
@@ -145,20 +145,20 @@ void ScrollerAutomationPeer::SetScrollPercent(double horizontalPercent, double v
 
     if (scrollHorizontally && !scrollVertically)
     {
-        double maxOffset = scroller->ScrollableWidth();
+        const double maxOffset = scroller->ScrollableWidth();
 
         scroller->ScrollToHorizontalOffset(maxOffset * horizontalPercent / s_maximumPercent);
     }
     else if (scrollVertically && !scrollHorizontally)
     {
-        double maxOffset = scroller->ScrollableHeight();
+        const double maxOffset = scroller->ScrollableHeight();
 
         scroller->ScrollToVerticalOffset(maxOffset * verticalPercent / s_maximumPercent);
     }
     else
     {
-        double maxHorizontalOffset = scroller->ScrollableWidth();
-        double maxVerticalOffset = scroller->ScrollableHeight();
+        const double maxHorizontalOffset = scroller->ScrollableWidth();
+        const double maxVerticalOffset = scroller->ScrollableHeight();
 
         scroller->ScrollToOffsets(
             maxHorizontalOffset * horizontalPercent / s_maximumPercent, maxVerticalOffset * verticalPercent / s_maximumPercent);
@@ -214,16 +214,16 @@ void ScrollerAutomationPeer::UpdateScrollPatternProperties()
 {
     SCROLLER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH, METH_NAME, this);
 
-    double newHorizontalScrollPercent = get_HorizontalScrollPercentImpl();
-    double newVerticalScrollPercent = get_VerticalScrollPercentImpl();
-    double newHorizontalViewSize = get_HorizontalViewSizeImpl();
-    double newVerticalViewSize = get_VerticalViewSizeImpl();
-    bool newHorizontallyScrollable = get_HorizontallyScrollableImpl();
-    bool newVerticallyScrollable = get_VerticallyScrollableImpl();
+    const double newHorizontalScrollPercent = get_HorizontalScrollPercentImpl();
+    const double newVerticalScrollPercent = get_VerticalScrollPercentImpl();
+    const double newHorizontalViewSize = get_HorizontalViewSizeImpl();
+    const double newVerticalViewSize = get_VerticalViewSizeImpl();
+    const bool newHorizontallyScrollable = get_HorizontallyScrollableImpl();
+    const bool newVerticallyScrollable = get_VerticallyScrollableImpl();
 
     if (newHorizontallyScrollable != m_horizontallyScrollable)
     {
-        bool oldHorizontallyScrollable = m_horizontallyScrollable;
+        const bool oldHorizontallyScrollable = m_horizontallyScrollable;
         m_horizontallyScrollable = newHorizontallyScrollable;
         RaisePropertyChangedEvent(
             winrt::ScrollPatternIdentifiers::HorizontallyScrollableProperty(),
@@ -233,7 +233,7 @@ void ScrollerAutomationPeer::UpdateScrollPatternProperties()
 
     if (newVerticallyScrollable != m_verticallyScrollable)
     {
-        bool oldVerticallyScrollable = m_verticallyScrollable;
+        const bool oldVerticallyScrollable = m_verticallyScrollable;
         m_verticallyScrollable = newVerticallyScrollable;
         RaisePropertyChangedEvent(
             winrt::ScrollPatternIdentifiers::HorizontallyScrollableProperty(),
@@ -243,7 +243,7 @@ void ScrollerAutomationPeer::UpdateScrollPatternProperties()
 
     if (newHorizontalViewSize != m_horizontalViewSize)
     {
-        double oldHorizontalViewSize = m_horizontalViewSize;
+        const double oldHorizontalViewSize = m_horizontalViewSize;
         m_horizontalViewSize = newHorizontalViewSize;
         RaisePropertyChangedEvent(
             winrt::ScrollPatternIdentifiers::HorizontalViewSizeProperty(),
@@ -253,7 +253,7 @@ void ScrollerAutomationPeer::UpdateScrollPatternProperties()
 
     if (newVerticalViewSize != m_verticalViewSize)
     {
-        double oldVerticalViewSize = m_verticalViewSize;
+        const double oldVerticalViewSize = m_verticalViewSize;
         m_verticalViewSize = newVerticalViewSize;
         RaisePropertyChangedEvent(
             winrt::ScrollPatternIdentifiers::VerticalViewSizeProperty(),
@@ -263,7 +263,7 @@ void ScrollerAutomationPeer::UpdateScrollPatternProperties()
 
     if (newHorizontalScrollPercent != m_horizontalScrollPercent)
     {
-        double oldHorizontalScrollPercent = m_horizontalScrollPercent;
+        const double oldHorizontalScrollPercent = m_horizontalScrollPercent;
         m_horizontalScrollPercent = newHorizontalScrollPercent;
         RaisePropertyChangedEvent(
             winrt::ScrollPatternIdentifiers::HorizontalScrollPercentProperty(),
@@ -273,7 +273,7 @@ void ScrollerAutomationPeer::UpdateScrollPatternProperties()
 
     if (newVerticalScrollPercent != m_verticalScrollPercent)
     {
-        double oldVerticalScrollPercent = m_verticalScrollPercent;
+        const double oldVerticalScrollPercent = m_verticalScrollPercent;
         m_verticalScrollPercent = newVerticalScrollPercent;
         RaisePropertyChangedEvent(
             winrt::ScrollPatternIdentifiers::VerticalScrollPercentProperty(),

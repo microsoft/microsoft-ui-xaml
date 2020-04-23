@@ -233,7 +233,7 @@ winrt::ScrollerViewChangeResult ScrollerTestHooks::GetScrollCompletedResult(cons
 {
     if (scrollCompletedEventArgs)
     {
-        ScrollerViewChangeResult result = winrt::get_self<ScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
+        const ScrollerViewChangeResult result = winrt::get_self<ScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
         return TestHooksViewChangeResult(result);
     }
     return winrt::ScrollerViewChangeResult::Completed;
@@ -243,7 +243,7 @@ winrt::ScrollerViewChangeResult ScrollerTestHooks::GetZoomCompletedResult(const 
 {
     if (zoomCompletedEventArgs)
     {
-        ScrollerViewChangeResult result = winrt::get_self<ZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
+        const ScrollerViewChangeResult result = winrt::get_self<ZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
         return TestHooksViewChangeResult(result);
     }
     return winrt::ScrollerViewChangeResult::Completed;
@@ -414,7 +414,7 @@ winrt::float2 ScrollerTestHooks::GetHorizontalSnapPointActualApplicableZone(
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
+        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -431,7 +431,7 @@ winrt::float2 ScrollerTestHooks::GetVerticalSnapPointActualApplicableZone(
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetVerticalSnapPointWrapper(scrollSnapPoint);
+        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetVerticalSnapPointWrapper(scrollSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -448,7 +448,7 @@ winrt::float2 ScrollerTestHooks::GetZoomSnapPointActualApplicableZone(
 {
     if (zoomSnapPoint)
     {
-        SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetZoomSnapPointWrapper(zoomSnapPoint);
+        const SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetZoomSnapPointWrapper(zoomSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -465,7 +465,7 @@ int ScrollerTestHooks::GetHorizontalSnapPointCombinationCount(
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
+        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -481,7 +481,7 @@ int ScrollerTestHooks::GetVerticalSnapPointCombinationCount(
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetVerticalSnapPointWrapper(scrollSnapPoint);
+        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetVerticalSnapPointWrapper(scrollSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -497,7 +497,7 @@ int ScrollerTestHooks::GetZoomSnapPointCombinationCount(
 {
     if (zoomSnapPoint)
     {
-        SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetZoomSnapPointWrapper(zoomSnapPoint);
+        const SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<Scroller>(scroller)->GetZoomSnapPointWrapper(zoomSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }

@@ -96,7 +96,7 @@ winrt::ExpressionAnimation SnapPointWrapper<T>::CreateConditionalExpression(
 template<typename T>
 std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> SnapPointWrapper<T>::GetUpdatedExpressionAnimationsForImpulse()
 {
-    SnapPointBase* snapPoint = GetSnapPointFromWrapper(this);
+    const SnapPointBase* snapPoint = GetSnapPointFromWrapper(this);
 
     snapPoint->UpdateConditionalExpressionAnimationForImpulse(
         m_conditionExpressionAnimation,
@@ -117,7 +117,7 @@ std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> SnapPointWrap
 {
     MUX_ASSERT(!SharedHelpers::IsRS5OrHigher());
 
-    SnapPointBase* snapPoint = GetSnapPointFromWrapper(this);
+    const SnapPointBase* snapPoint = GetSnapPointFromWrapper(this);
 
     snapPoint->UpdateExpressionAnimationForImpulse(
         m_conditionExpressionAnimation,
@@ -131,15 +131,15 @@ std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> SnapPointWrap
 
 template<typename T>
 void SnapPointWrapper<T>::DetermineActualApplicableZone(
-    SnapPointWrapper<T>* previousSnapPointWrapper,
-    SnapPointWrapper<T>* nextSnapPointWrapper,
+    const SnapPointWrapper<T>* previousSnapPointWrapper,
+    const SnapPointWrapper<T>* nextSnapPointWrapper,
     bool forImpulseOnly)
 {
     SnapPointBase* snapPoint = GetSnapPointFromWrapper(this);
-    SnapPointBase* previousSnapPoint = GetSnapPointFromWrapper(previousSnapPointWrapper);
-    SnapPointBase* nextSnapPoint = GetSnapPointFromWrapper(nextSnapPointWrapper);
-    double previousIgnoredValue = previousSnapPointWrapper ? previousSnapPointWrapper->m_ignoredValue : NAN;
-    double nextIgnoredValue = nextSnapPointWrapper ? nextSnapPointWrapper->m_ignoredValue : NAN;
+    const SnapPointBase* previousSnapPoint = GetSnapPointFromWrapper(previousSnapPointWrapper);
+    const SnapPointBase* nextSnapPoint = GetSnapPointFromWrapper(nextSnapPointWrapper);
+    const double previousIgnoredValue = previousSnapPointWrapper ? previousSnapPointWrapper->m_ignoredValue : NAN;
+    const double nextIgnoredValue = nextSnapPointWrapper ? nextSnapPointWrapper->m_ignoredValue : NAN;
 
     if (!forImpulseOnly)
     {
@@ -157,7 +157,7 @@ void SnapPointWrapper<T>::DetermineActualApplicableZone(
 }
 
 template<typename T>
-void SnapPointWrapper<T>::Combine(SnapPointWrapper<T>* snapPointWrapper)
+void SnapPointWrapper<T>::Combine(const SnapPointWrapper<T>* snapPointWrapper)
 {
     GetSnapPointFromWrapper(this)->Combine(m_combinationCount, snapPointWrapper->SnapPoint());
 }
@@ -244,16 +244,16 @@ template std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> Snap
     bool isInertiaFromImpulse);
 
 template void SnapPointWrapper<winrt::ScrollSnapPointBase>::DetermineActualApplicableZone(
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* previousSnapPoint,
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* nextSnapPoint,
+    const SnapPointWrapper<winrt::ScrollSnapPointBase>* previousSnapPoint,
+    const SnapPointWrapper<winrt::ScrollSnapPointBase>* nextSnapPoint,
     bool forImpulseOnly);
 template void SnapPointWrapper<winrt::ZoomSnapPointBase>::DetermineActualApplicableZone(
-    SnapPointWrapper<winrt::ZoomSnapPointBase>* previousSnapPoint,
-    SnapPointWrapper<winrt::ZoomSnapPointBase>* nextSnapPoint,
+    const SnapPointWrapper<winrt::ZoomSnapPointBase>* previousSnapPoint,
+    const SnapPointWrapper<winrt::ZoomSnapPointBase>* nextSnapPoint,
     bool forImpulseOnly);
 
-template void SnapPointWrapper<winrt::ScrollSnapPointBase>::Combine(SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper);
-template void SnapPointWrapper<winrt::ZoomSnapPointBase>::Combine(SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper);
+template void SnapPointWrapper<winrt::ScrollSnapPointBase>::Combine(const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper);
+template void SnapPointWrapper<winrt::ZoomSnapPointBase>::Combine(const SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper);
 
 template double SnapPointWrapper<winrt::ScrollSnapPointBase>::Evaluate(double value) const;
 template double SnapPointWrapper<winrt::ZoomSnapPointBase>::Evaluate(double value) const;

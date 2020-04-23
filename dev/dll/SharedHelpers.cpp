@@ -409,7 +409,7 @@ void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> c
             callback();
         });
     }
-    catch (winrt::hresult_error &e)
+    catch (const winrt::hresult_error &e)
     {
         // DirectUI::CompositionTarget::add_Rendering can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown,
         // and there is evidence from Watson that such calls are made in real apps (see Bug 13554197).
@@ -426,7 +426,7 @@ bool SharedHelpers::DoRectsIntersect(
     const winrt::Rect& rect1,
     const winrt::Rect& rect2)
 {
-    auto doIntersect =
+    const auto doIntersect =
         !(rect1.Width <= 0 || rect1.Height <= 0 || rect2.Width <= 0 || rect2.Height <= 0) &&
         (rect2.X <= rect1.X + rect1.Width) &&
         (rect2.X + rect2.Width >= rect1.X) &&

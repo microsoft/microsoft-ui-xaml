@@ -262,7 +262,7 @@ public:
         winrt::IObservableVector<ElementType> const& destination,
         winrt::IVectorChangedEventArgs const& args)
     {
-        uint32_t index = args.Index();
+        const uint32_t index = args.Index();
 
         switch (args.CollectionChange())
         {

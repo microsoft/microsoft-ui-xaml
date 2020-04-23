@@ -254,7 +254,7 @@ winrt::CompositionAnimation AcrylicBrush::MakeFloatAnimation(
 
 void AcrylicBrush::PlayCrossFadeAnimation(const winrt::CompositionBrush& brush, float acrylicStart, float acrylicEnd)
 {
-    auto switchDuration = 167ms;
+    const auto switchDuration = 167ms;
     auto compositor = brush.Compositor();
     auto easing = compositor.CreateCubicBezierEasingFunction({ 0.5f, 0.0f }, { 0.0f, 0.9f });
 
@@ -292,7 +292,7 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         property == s_TintOpacityProperty ||
         property == s_TintLuminosityOpacityProperty)
     {
-        bool shouldUseOpaqueBrush = GetEffectiveTintColor().A == 255;
+        const bool shouldUseOpaqueBrush = GetEffectiveTintColor().A == 255;
 
         // If tint transparency status changed, we need to update the effect chain
         if (m_isUsingOpaqueBrush != shouldUseOpaqueBrush)
@@ -305,14 +305,14 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             if (property != s_TintLuminosityOpacityProperty)
             {
                 // This only needs to update if TintColor or TintOpacity changed
-                auto newColor = GetEffectiveTintColor();
+                const auto newColor = GetEffectiveTintColor();
                 m_brush.StartAnimation(TintColorColor, MakeColorAnimation(newColor, TintTransitionDuration(), m_brush.Compositor()));
             }
 
             if (SharedHelpers::Is19H1OrHigher() && !shouldUseOpaqueBrush)
             {
                 // Update luminosity any time any of the three properties change
-                auto newLuminosityColor = GetEffectiveLuminosityColor();
+                const auto newLuminosityColor = GetEffectiveLuminosityColor();
                 m_brush.StartAnimation(LuminosityColorColor, MakeColorAnimation(newLuminosityColor, TintTransitionDuration(), m_brush.Compositor()));
             }
         }
@@ -332,7 +332,7 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
 winrt::Color AcrylicBrush::GetEffectiveTintColor()
 {
     winrt::Color tintColor = TintColor();
-    double tintOpacity = TintOpacity();
+    const double tintOpacity = TintOpacity();
 
     // Update tintColor's alpha with the combined opacity value
     // If LuminosityOpacity was specified, we don't intervene into users parameters
@@ -342,7 +342,7 @@ winrt::Color AcrylicBrush::GetEffectiveTintColor()
     }
     else
     {
-        double tintOpacityModifier = GetTintOpacityModifier(tintColor);
+        const double tintOpacityModifier = GetTintOpacityModifier(tintColor);
         tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity * tintOpacityModifier));
     }
 
@@ -369,8 +369,8 @@ double GetTintOpacityModifier(winrt::Color tintColor)
     const double midPointMaxOpacity = 0.90; // 50% luminosity
     const double blackMaxOpacity = 0.85; // 0% luminosity
 
-    Rgb rgb = RgbFromColor(tintColor);
-    Hsv hsv = RgbToHsv(rgb);
+    const Rgb rgb = RgbFromColor(tintColor);
+    const Hsv hsv = RgbToHsv(rgb);
 
     double opacityModifier = midPointMaxOpacity;
 
@@ -393,8 +393,8 @@ double GetTintOpacityModifier(winrt::Color tintColor)
         double maxOpacitySuppression = midPointMaxOpacity - lowestMaxOpacity;
 
         // Determine normalized deviation from the midpoint
-        double deviation = abs(hsv.v - midPoint);
-        double normalizedDeviation = deviation / maxDeviation;
+        const double deviation = abs(hsv.v - midPoint);
+        const double normalizedDeviation = deviation / maxDeviation;
 
         // If we have saturation, reduce opacity suppression to allow that color to come through more
         if (hsv.s > 0)
@@ -403,7 +403,7 @@ double GetTintOpacityModifier(winrt::Color tintColor)
             maxOpacitySuppression *= std::max(1 - (hsv.s * 2), 0.0);
         }
 
-        double opacitySuppression = maxOpacitySuppression * normalizedDeviation;
+        const double opacitySuppression = maxOpacitySuppression * normalizedDeviation;
 
         opacityModifier = midPointMaxOpacity - opacitySuppression;
     }
@@ -414,7 +414,7 @@ double GetTintOpacityModifier(winrt::Color tintColor)
 winrt::Color AcrylicBrush::GetEffectiveLuminosityColor()
 {
     winrt::Color tintColor = TintColor();
-    double tintOpacity = TintOpacity();
+    const double tintOpacity = TintOpacity();
 
     // Purposely leaving out tint opacity modifier here because GetLuminosityColor needs the *original* tint opacity set by the user.
     tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity));
@@ -427,7 +427,7 @@ winrt::Color AcrylicBrush::GetEffectiveLuminosityColor()
 // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
 winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double> luminosityOpacity)
 {
-    Rgb rgbTintColor = RgbFromColor(tintColor);
+    const Rgb rgbTintColor = RgbFromColor(tintColor);
 
     // If luminosity opacity is specified, just use the values as is
     if (luminosityOpacity != nullptr)
@@ -441,20 +441,20 @@ winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double
         const double minHsvV = 0.125;
         const double maxHsvV = 0.965;
 
-        Hsv hsvTintColor = RgbToHsv(rgbTintColor);
+        const Hsv hsvTintColor = RgbToHsv(rgbTintColor);
 
-        auto clampedHsvV = std::clamp(hsvTintColor.v, minHsvV, maxHsvV);
+        const auto clampedHsvV = std::clamp(hsvTintColor.v, minHsvV, maxHsvV);
 
-        Hsv hsvLuminosityColor = Hsv(hsvTintColor.h, hsvTintColor.s, clampedHsvV);
-        Rgb rgbLuminosityColor = HsvToRgb(hsvLuminosityColor);
+        const Hsv hsvLuminosityColor = Hsv(hsvTintColor.h, hsvTintColor.s, clampedHsvV);
+        const Rgb rgbLuminosityColor = HsvToRgb(hsvLuminosityColor);
 
         // Now figure out luminosity opacity
         // Map original *tint* opacity to this range
         const double minLuminosityOpacity = 0.15;
         const double maxLuminosityOpacity = 1.03;
 
-        double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
-        double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
+        const double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
+        const double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
 
         // Finally, combine the luminosity opacity and the HsvV-clamped tint color
         return ColorFromRgba(rgbLuminosityColor, std::min(mappedTintOpacity, 1.0));
@@ -545,7 +545,7 @@ void AcrylicBrush::OnCurrentWindowActivated(const winrt::IInspectable& sender, c
 
 bool AcrylicBrush::IsWindowActive(const winrt::CoreWindow& coreWindow)
 {
-    winrt::CoreWindowActivationMode activationMode = coreWindow.ActivationMode();
+    const winrt::CoreWindowActivationMode activationMode = coreWindow.ActivationMode();
 
     return activationMode == winrt::CoreWindowActivationMode::ActivatedNotForeground ||
         activationMode == winrt::CoreWindowActivationMode::ActivatedInForeground;
@@ -930,21 +930,21 @@ void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateA
     // Forget about any pending animation state when recreating the brush.
     CancelFallbackAnimationCompleteWait();
 
-    winrt::Compositor compositor = winrt::Window::Current().Compositor();
+    const auto compositor = winrt::Window::Current().Compositor();
 
-    auto fallbackColor = FallbackColor();
+    const auto fallbackColor = FallbackColor();
     //if forceCreateAcrylicBrush=true, m_isUsingAcrylicBrush is ignored.
     if (forceCreateAcrylicBrush || m_isUsingAcrylicBrush)
     {
         EnsureNoiseBrush();
 
-        winrt::Color tintColor = GetEffectiveTintColor();
-        winrt::Color luminosityColor = GetEffectiveLuminosityColor();
+        const winrt::Color tintColor = GetEffectiveTintColor();
+        const winrt::Color luminosityColor = GetEffectiveLuminosityColor();
 
         m_isUsingOpaqueBrush = tintColor.A == 255;
 
         // use cache for AcrylicBrushEffectFactory
-        auto acrylicBrush = CreateAcrylicBrushWorker(
+        const auto acrylicBrush = CreateAcrylicBrushWorker(
             compositor,
             m_isUsingWindowAcrylic,
             useCrossFadeEffect,
@@ -1016,15 +1016,15 @@ void AcrylicBrush::UpdateAcrylicBrush()
         // * On Phone primary display (no special check as IsTabletMode is true in this case)
 
         bool isUsingAcrylicBrush = true;
-        bool alwaysUseFallback = AlwaysUseFallback();
-        bool isUsingWindowAcrylic = BackgroundSource() == winrt::AcrylicBackgroundSource::HostBackdrop;
-        bool shouldUseOpaqueBrush = GetEffectiveTintColor().A == 255;
+        const bool alwaysUseFallback = AlwaysUseFallback();
+        const bool isUsingWindowAcrylic = BackgroundSource() == winrt::AcrylicBackgroundSource::HostBackdrop;
+        const bool shouldUseOpaqueBrush = GetEffectiveTintColor().A == 255;
 
 #if BUILD_WINDOWS
         // TODO_FluentIslands: For now the IgnoreAreEffectsFast test hook will override all MaterialProperties policy 
         //                     and enable fluent effects, since MP aggregates all policy compoenents and does not allow 
         //                     us to ignore AreEffectsFast piece only.
-        bool isDisabledByMaterialPropertiesPolicy = (!isUsingWindowAcrylic && m_isDisabledByBackdropPolicy) ||
+        const bool isDisabledByMaterialPropertiesPolicy = (!isUsingWindowAcrylic && m_isDisabledByBackdropPolicy) ||
             (isUsingWindowAcrylic && m_isDisabledByHostBackdropPolicy);
 
         if (isDisabledByMaterialPropertiesPolicy || alwaysUseFallback || m_isInterIsland)
@@ -1109,7 +1109,7 @@ void AcrylicBrush::CreateAnimation(
     float acrylicEnd,
     const winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs>& handler)
 {
-    auto newScopedBatch = brush.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+    const auto newScopedBatch = brush.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
     PlayCrossFadeAnimation(brush, acrylicStart, acrylicEnd);
     newScopedBatch.End();
 

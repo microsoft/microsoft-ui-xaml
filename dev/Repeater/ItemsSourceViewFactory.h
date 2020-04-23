@@ -22,7 +22,7 @@ public:
     }
 
     // ItemsSourceView's ctor creates an instance of the derived type InspectingDataSource.
-    winrt::ItemsSourceView CreateInstance(winrt::IInspectable const& source, winrt::IInspectable const& baseInterface, winrt::IInspectable& innerInterface)
+    winrt::ItemsSourceView CreateInstance(winrt::IInspectable const& source, winrt::IInspectable const& baseInterface, winrt::IInspectable const& innerInterface)
     {
         assert(!baseInterface);
         assert(!innerInterface);

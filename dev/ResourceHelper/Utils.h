@@ -51,7 +51,7 @@ namespace LayoutUtils
 
 namespace Util
 {
-    inline winrt::Visibility VisibilityFromBool(bool visible) 
+    inline winrt::Visibility constexpr VisibilityFromBool(bool visible) 
     { 
         return visible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     }

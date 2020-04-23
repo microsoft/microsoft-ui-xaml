@@ -67,8 +67,8 @@ void TabViewItem::OnApplyTemplate()
 
                 double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
-                auto currentTranslation = Translation();
-                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+                const auto currentTranslation = Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
                 Translation(translation);
 
                 UpdateShadow();
@@ -279,7 +279,7 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
     {
         if (args.GetCurrentPoint(nullptr).Properties().PointerUpdateKind() == winrt::PointerUpdateKind::MiddleButtonReleased)
         {
-            bool wasPressed = m_isMiddlePointerButtonPressed;
+            const bool wasPressed = m_isMiddlePointerButtonPressed;
             m_isMiddlePointerButtonPressed = false;
             ReleasePointerCapture(args.Pointer());
 

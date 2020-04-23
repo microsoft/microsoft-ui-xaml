@@ -59,7 +59,7 @@ TabView::TabView()
         ctrlTabAccel.ScopeOwner(*this);
         KeyboardAccelerators().Append(ctrlTabAccel);
 
-        winrt::KeyboardAccelerator ctrlShiftTabAccel;
+        const winrt::KeyboardAccelerator ctrlShiftTabAccel;
         ctrlShiftTabAccel.Key(winrt::VirtualKey::Tab);
         ctrlShiftTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control | winrt::VirtualKeyModifiers::Shift);
         ctrlShiftTabAccel.Invoked({ this, &TabView::OnCtrlShiftTabInvoked });
@@ -134,8 +134,8 @@ void TabView::OnApplyTemplate()
 
             double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
-            auto currentTranslation = shadowCaster.Translation();
-            auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+            const auto currentTranslation = shadowCaster.Translation();
+            const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
             shadowCaster.Translation(translation);
 
             shadowCaster.Shadow(shadow);
@@ -155,7 +155,7 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
     // For GamePad, we want to move focus to something in the direction of movement (other than the overlapping item)
     // For Keyboard, we cancel the focus movement.
 
-    auto direction = args.Direction();
+    const auto direction = args.Direction();
     if (direction == winrt::FocusNavigationDirection::Up || direction == winrt::FocusNavigationDirection::Down)
     {
         auto oldItem = args.OldFocusedElement().try_as<winrt::TabViewItem>();
@@ -168,15 +168,15 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                 bool newItemIsFromThisTabView = listView.IndexFromContainer(newItem) != -1;
                 if (oldItemIsFromThisTabView && newItemIsFromThisTabView)
                 {
-                    auto inputDevice = args.InputDevice();
+                    const auto inputDevice = args.InputDevice();
                     if (inputDevice == winrt::FocusInputDeviceKind::GameController)
                     {
-                        auto listViewBoundsLocal = winrt::Rect{ 0, 0, static_cast<float>(listView.ActualWidth()), static_cast<float>(listView.ActualHeight()) };
-                        auto listViewBounds = listView.TransformToVisual(nullptr).TransformBounds(listViewBoundsLocal);
-                        winrt::FindNextElementOptions options;
+                        const auto listViewBoundsLocal = winrt::Rect{ 0, 0, static_cast<float>(listView.ActualWidth()), static_cast<float>(listView.ActualHeight()) };
+                        const auto listViewBounds = listView.TransformToVisual(nullptr).TransformBounds(listViewBoundsLocal);
+                        const winrt::FindNextElementOptions options;
                         options.ExclusionRect(listViewBounds);
-                        auto next = winrt::FocusManager::FindNextElement(direction, options);
-                        if(auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        const auto next = winrt::FocusManager::FindNextElement(direction, options);
+                        if(const auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                         {
                             args2.TrySetNewFocusedElement(next);
                         }
@@ -372,8 +372,8 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
         auto&& increaseButton = m_scrollIncreaseButton.get();
 
         constexpr auto minThreshold = 0.1;
-        auto horizontalOffset = scrollViewer.HorizontalOffset();
-        auto scrollableWidth = scrollViewer.ScrollableWidth();
+        const auto horizontalOffset = scrollViewer.HorizontalOffset();
+        const auto scrollableWidth = scrollViewer.ScrollableWidth();
 
         if (abs(horizontalOffset - scrollableWidth) < minThreshold)
         {
@@ -409,7 +409,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
         {
             // SelectedIndex might also already be -1
-            auto selectedIndex = SelectedIndex();
+            const auto selectedIndex = SelectedIndex();
             if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.Index()))
             {
                 // Find the closest tab to select instead.
@@ -641,7 +641,7 @@ void TabView::UpdateTabWidths()
         {
             if (auto rightContentPresenter = m_rightContentPresenter.get())
             {
-                winrt::Size rightContentSize = rightContentPresenter.DesiredSize();
+                const winrt::Size rightContentSize = rightContentPresenter.DesiredSize();
                 rightContentColumn.MinWidth(rightContentSize.Width);
                 widthTaken += rightContentSize.Width;
             }
@@ -650,7 +650,7 @@ void TabView::UpdateTabWidths()
         if (auto tabColumn = m_tabColumn.get())
         {
             // Note: can be infinite
-            auto availableWidth = previousAvailableSize.Width - widthTaken;
+            const auto availableWidth = previousAvailableSize.Width - widthTaken;
 
             // Size can be 0 when window is first created; in that case, skip calculations; we'll get a new size soon
             if (availableWidth > 0)
@@ -697,9 +697,9 @@ void TabView::UpdateTabWidths()
                         listview.MaxWidth(availableWidth);
 
                         // Calculate if the scroll buttons should be visible.
-                        if (auto itemsPresenter = m_itemsPresenter.get())
+                        if (auto&& itemsPresenter = m_itemsPresenter.get())
                         {
-                            auto visible = itemsPresenter.ActualWidth() > availableWidth;
+                            const auto visible = itemsPresenter.ActualWidth() > availableWidth;
                             winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, visible
                                 ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
                                 : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
@@ -848,7 +848,7 @@ void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
             // On RS3+, it is handled by a KeyboardAccelerator
             if (!SharedHelpers::IsRS3OrHigher())
             {
-                auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                const auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
                 if (isCtrlDown)
                 {
                     args.Handled(RequestCloseCurrentTab());
@@ -861,8 +861,8 @@ void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
             // On 19H1+, it is handled by a KeyboardAccelerator
             if (!SharedHelpers::Is19H1OrHigher())
             {
-                auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-                auto isShiftDown = (coreWindow.GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                const auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                const auto isShiftDown = (coreWindow.GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
                 if (isCtrlDown && !isShiftDown)
                 {

@@ -4,7 +4,7 @@
 // This is a header-only implementation of Win2D-like effects descriptions,
 // which can be use to describe effects graph in the Windows::UI::Composition API.
 
-#pragma once
+#pragma
 
 #include <cstring>
 #include <wrl.h>
@@ -12,7 +12,7 @@
 #include <d2d1effects_2.h>
 
 #pragma warning(push)
-#pragma warning(disable : 28285 28196 6387 6319 26812)
+#pragma warning(disable : 28285 28196 6387 6319 26812 26496)
 
 #include "AlphaMaskEffect.g.h"
 #include "ArithmeticCompositeEffect.g.h"

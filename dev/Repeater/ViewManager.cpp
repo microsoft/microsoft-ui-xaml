@@ -58,9 +58,9 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
 
 void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange)
 {
-    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
     const int index = virtInfo->Index();
-    bool cleared =
+    const bool cleared =
         ClearElementToUniqueIdResetPool(element, virtInfo) ||
         ClearElementToAnimator(element, virtInfo) ||
         ClearElementToPinnedPool(element, virtInfo, isClearedDueToCollectionChange);
@@ -121,9 +121,9 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     else
     {
         // No ItemTemplate to recycle to, remove the element from the children collection.
-        auto children = m_owner->Children();
+        const auto children = m_owner->Children();
         unsigned int childIndex = 0;
-        bool found = children.IndexOf(element, childIndex);
+        const bool found = children.IndexOf(element, childIndex);
         if (!found)
         {
             throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
@@ -321,19 +321,19 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     {
     case winrt::NotifyCollectionChangedAction::Add:
     {
-        auto newIndex = args.NewStartingIndex();
-        auto newCount = args.NewItems().Size();
+        const auto newIndex = args.NewStartingIndex();
+        const auto newCount = args.NewItems().Size();
         EnsureFirstLastRealizedIndices();
         if (newIndex <= m_lastRealizedElementIndexHeldByLayout)
         {
             m_lastRealizedElementIndexHeldByLayout += newCount;
             auto children = m_owner->Children();
-            auto childCount = children.Size();
+            const auto childCount = children.Size();
             for (unsigned i = 0u; i < childCount; ++i)
             {
-                auto element = children.GetAt(i);
-                auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-                auto dataIndex = virtInfo->Index();
+                const auto element = children.GetAt(i);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                const auto dataIndex = virtInfo->Index();
 
                 if (virtInfo->IsRealized() && dataIndex >= newIndex)
                 {
@@ -347,9 +347,9 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             // We could still have items in the pinned elements that need updates. This is usually a very small vector.
             for (size_t i = 0; i < m_pinnedPool.size(); ++i)
             {
-                auto elementInfo = m_pinnedPool[i];
-                auto virtInfo = elementInfo.VirtualizationInfo();
-                auto dataIndex = virtInfo->Index();
+                const auto elementInfo = m_pinnedPool[i];
+                const auto virtInfo = elementInfo.VirtualizationInfo();
+                const auto dataIndex = virtInfo->Index();
 
                 if (virtInfo->IsRealized() && dataIndex >= newIndex)
                 {
@@ -370,10 +370,10 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         // case 2: oldCount != newCount
         //         Replaced with less or more items. This is like an insert or remove
         //         depending on the counts.
-        auto oldStartIndex = args.OldStartingIndex();
-        auto newStartingIndex = args.NewStartingIndex();
-        auto oldCount = static_cast<int>(args.OldItems().Size());
-        auto newCount = static_cast<int>(args.NewItems().Size());
+        const auto oldStartIndex = args.OldStartingIndex();
+        const auto newStartingIndex = args.NewStartingIndex();
+        const auto oldCount = static_cast<int>(args.OldItems().Size());
+        const auto newCount = static_cast<int>(args.NewItems().Size());
         if (oldStartIndex != newStartingIndex)
         {
             throw winrt::hresult_error(E_FAIL, L"Replace is only allowed with OldStartingIndex equals to NewStartingIndex.");
@@ -389,17 +389,17 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             throw winrt::hresult_error(E_FAIL, L"Replace notification with args.NewItemCount value of 0 is not allowed. Use Remove action instead.");
         }
 
-        int countChange = newCount - oldCount;
+        const int countChange = newCount - oldCount;
         if (countChange != 0)
         {
             // countChange > 0 : countChange items were added
             // countChange < 0 : -countChange  items were removed
-            auto children = m_owner->Children();
+            const auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
-                auto element = children.GetAt(i);
-                auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-                auto dataIndex = virtInfo->Index();
+                const auto element = children.GetAt(i);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                const auto dataIndex = virtInfo->Index();
 
                 if (virtInfo->IsRealized())
                 {
@@ -418,14 +418,14 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
     case winrt::NotifyCollectionChangedAction::Remove:
     {
-        auto oldStartIndex = args.OldStartingIndex();
-        auto oldCount = static_cast<int>(args.OldItems().Size());
-        auto children = m_owner->Children();
+        const auto oldStartIndex = args.OldStartingIndex();
+        const auto oldCount = static_cast<int>(args.OldItems().Size());
+        const auto children = m_owner->Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
         {
-            auto element = children.GetAt(i);
-            auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-            auto dataIndex = virtInfo->Index();
+            const auto element = children.GetAt(i);
+            const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+            const auto dataIndex = virtInfo->Index();
 
             if (virtInfo->IsRealized())
             {
@@ -809,7 +809,7 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
 
 bool ViewManager::ClearElementToPinnedPool(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, bool isClearedDueToCollectionChange)
 {
-    bool moveToPinnedPool =
+    const bool moveToPinnedPool =
         !isClearedDueToCollectionChange && virtInfo->IsPinned();
 
     if (moveToPinnedPool)
@@ -896,7 +896,7 @@ void ViewManager::EnsureEventSubscriptions()
 
 void ViewManager::UpdateElementIndex(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int index)
 {
-    auto oldIndex = virtInfo->Index();
+    const auto oldIndex = virtInfo->Index();
     if (oldIndex != index)
     {
         virtInfo->UpdateIndex(index);

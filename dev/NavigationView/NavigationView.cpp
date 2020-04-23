@@ -220,7 +220,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
     if (IsTopNavigationView())
     {
         // If selectedIndex does not exist, means item is being deselected through API
-        auto isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
+        const auto isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
         if (isInOverflow)
         {
             // We only want to close the overflow flyout and move the item on selection if it is a leaf node
@@ -281,12 +281,12 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
 void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem)
 {
     auto const selectedIndex = m_selectionModel.SelectedIndex();
-    bool isInModeWithFlyout = [this]()
+    const bool isInModeWithFlyout = [this]()
     {
         if (auto splitView = m_rootSplitView.get())
         {
             // Check if the pane is closed and if the splitview is in either compact mode.
-            auto splitViewDisplayMode = splitView.DisplayMode();
+            const auto splitViewDisplayMode = splitView.DisplayMode();
             return (!splitView.IsPaneOpen() && (splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactOverlay || splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactInline)) ||
                     PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top;
         }
@@ -659,8 +659,8 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
     if (auto const nvi = sender.try_as<winrt::NavigationViewItem>())
     {
         // Check whether the container that triggered this call back is the selected container
-        bool isContainerSelectedInModel = IsContainerTheSelectedItemInTheSelectionModel(nvi);
-        bool isSelectedInContainer = nvi.IsSelected();
+        const bool isContainerSelectedInModel = IsContainerTheSelectedItemInTheSelectionModel(nvi);
+        const bool isSelectedInContainer = nvi.IsSelected();
 
         if (isSelectedInContainer && !isContainerSelectedInModel)
         {
@@ -722,7 +722,7 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
     {
         if (IsTopNavigationView() && nvi.SelectsOnInvoked())
         {
-            bool isInOverflow = parentIR == m_topNavRepeaterOverflowView.get();
+            const bool isInOverflow = parentIR == m_topNavRepeaterOverflowView.get();
             if (isInOverflow)
             {
                 return NavigationRecommendedTransitionDirection::FromOverflow;
@@ -740,7 +740,7 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
 {
-    auto selectedItem = SelectedItem();
+    const auto selectedItem = SelectedItem();
     RaiseItemInvokedForNavigationViewItem(nvi);
 
     // User changed selectionstate in the ItemInvoked callback
@@ -749,10 +749,10 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         return;
     }
 
-    bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
+    const bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
     {
-        auto ip = GetIndexPathForContainer(nvi);
+        const auto ip = GetIndexPathForContainer(nvi);
         UpdateSelectionModelSelection(ip);
     }
 
@@ -855,17 +855,17 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
     if (parent == m_topNavRepeaterOverflowView.get())
     {
         // Convert index of selected item in overflow to index in datasource
-        auto containerIndex = m_topNavRepeaterOverflowView.get().GetElementIndex(child.try_as<winrt::UIElement>());
-        auto item = m_topDataProvider.GetOverflowItems().GetAt(containerIndex);
-        auto indexAtRoot = m_topDataProvider.IndexOf(item);
+        const auto containerIndex = m_topNavRepeaterOverflowView.get().GetElementIndex(child.try_as<winrt::UIElement>());
+        const auto item = m_topDataProvider.GetOverflowItems().GetAt(containerIndex);
+        const auto indexAtRoot = m_topDataProvider.IndexOf(item);
         path.insert(path.begin(), indexAtRoot);
     }
     else if (parent == m_topNavRepeater.get())
     {
         // Convert index of selected item in overflow to index in datasource
-        auto containerIndex = m_topNavRepeater.get().GetElementIndex(child.try_as<winrt::UIElement>());
-        auto item = m_topDataProvider.GetPrimaryItems().GetAt(containerIndex);
-        auto indexAtRoot = m_topDataProvider.IndexOf(item);
+        const auto containerIndex = m_topNavRepeater.get().GetElementIndex(child.try_as<winrt::UIElement>());
+        const auto item = m_topDataProvider.GetPrimaryItems().GetAt(containerIndex);
+        const auto indexAtRoot = m_topDataProvider.IndexOf(item);
         path.insert(path.begin(), indexAtRoot);
     }
     else if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
@@ -909,7 +909,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         if (auto const parentNVI = GetParentNavigationViewItemForContainer(nvib))
         {
             auto const parentNVIImpl = winrt::get_self<NavigationViewItem>(parentNVI);
-            auto itemDepth = parentNVIImpl->ShouldRepeaterShowInFlyout() ? 0 : parentNVIImpl->Depth() + 1;
+            const auto itemDepth = parentNVIImpl->ShouldRepeaterShowInFlyout() ? 0 : parentNVIImpl->Depth() + 1;
             nvibImpl->Depth(itemDepth);
         }
         else
@@ -923,7 +923,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
             // Propagate depth to children items if they exist
-            auto childDepth = [position, nvibImpl]()
+            const auto childDepth = [position, nvibImpl]()
             {
                 if (position == NavigationViewRepeaterPosition::TopPrimary)
                 {
@@ -997,7 +997,7 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
     {
         // If the old settings item is selected, move the selection to the new one.
         auto selectedItem = SelectedItem();
-        bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
+        const bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
 
         if (shouldSelectSetting)
         {
@@ -1093,7 +1093,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
 {
-    auto width = args.NewSize().Width;
+    const auto width = args.NewSize().Width;
     UpdateAdaptiveLayout(width);
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
@@ -1120,7 +1120,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
 
     winrt::NavigationViewDisplayMode displayMode = winrt::NavigationViewDisplayMode::Compact;
 
-    auto paneDisplayMode = PaneDisplayMode();
+    const auto paneDisplayMode = PaneDisplayMode();
     if (paneDisplayMode == winrt::NavigationViewPaneDisplayMode::Auto)
     {
         if (width >= ExpandedModeThresholdWidth())
@@ -1157,7 +1157,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         m_InitialNonForcedModeUpdate = false;
     }
 
-    auto previousMode = DisplayMode();
+    const auto previousMode = DisplayMode();
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
     if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
@@ -1321,7 +1321,7 @@ void NavigationView::UpdateIsClosedCompact()
     if (auto splitView = m_rootSplitView.get())
     {
         // Check if the pane is closed and if the splitview is in either compact mode.
-        auto splitViewDisplayMode = splitView.DisplayMode();
+        const auto splitViewDisplayMode = splitView.DisplayMode();
         m_isClosedCompact = !splitView.IsPaneOpen() && (splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactOverlay || splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactInline);
         winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ClosedCompact" : L"NotClosedCompact", true /*useTransitions*/);
 
@@ -1352,7 +1352,7 @@ void NavigationView::UpdateIsClosedCompact()
 
 void NavigationView::UpdatePaneButtonsWidths()
 {
-    auto newButtonWidths = [this]()
+    const auto newButtonWidths = [this]()
     {
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
         {
@@ -1434,7 +1434,7 @@ bool NavigationView::ShouldShowCloseButton()
             return false;
         }
 
-        auto paneDisplayMode = PaneDisplayMode();
+        const auto paneDisplayMode = PaneDisplayMode();
 
         if (paneDisplayMode != winrt::NavigationViewPaneDisplayMode::LeftMinimal &&
             (paneDisplayMode != winrt::NavigationViewPaneDisplayMode::Auto || DisplayMode() != winrt::NavigationViewDisplayMode::Minimal))
@@ -1450,7 +1450,7 @@ bool NavigationView::ShouldShowCloseButton()
 
 bool NavigationView::ShouldShowBackOrCloseButton()
 {
-    auto visibility = IsBackButtonVisible();
+    const auto visibility = IsBackButtonVisible();
     return (visibility == winrt::NavigationViewBackButtonVisible::Visible || (visibility == winrt::NavigationViewBackButtonVisible::Auto && !SharedHelpers::IsOnXbox()));
 }
 
@@ -1500,8 +1500,8 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
 {
     if (auto&& paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
     {
-        auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
-        auto isTopNavigationView = IsTopNavigationView();
+        const auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
+        const auto isTopNavigationView = IsTopNavigationView();
 
         paneTitleHolderFrameworkElement.Visibility(
             (isPaneToggleButtonVisible ||
@@ -1597,14 +1597,14 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
             ResetElementAnimationProperties(nextIndicator, 1.0f);
 
             // get the item positions in the pane
-            winrt::Point point = winrt::Point(0, 0);
+            const winrt::Point point = winrt::Point(0, 0);
             float prevPos;
             float nextPos;
 
-            winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
-            winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
-            winrt::Size prevSize = prevIndicator.RenderSize();
-            winrt::Size nextSize = nextIndicator.RenderSize();
+            const winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
+            const winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
+            const winrt::Size prevSize = prevIndicator.RenderSize();
+            const winrt::Size nextSize = nextIndicator.RenderSize();
 
             bool areElementsAtSameDepth = false;
             if (IsTopNavigationView())
@@ -1625,7 +1625,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
 
             if (!areElementsAtSameDepth)
             {
-                bool isNextBelow = prevPosPoint.Y < nextPosPoint.Y;
+                const bool isNextBelow = prevPosPoint.Y < nextPosPoint.Y;
                 prevIndicator.RenderSize().Height > prevIndicator.RenderSize().Width ?
                     PlayIndicatorNonSameLevelAnimations(prevIndicator, true, isNextBelow ? false : true) :
                     PlayIndicatorNonSameLevelTopPrimaryAnimation(prevIndicator, true);
@@ -1638,8 +1638,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
             else
             {
 
-                float outgoingEndPosition = static_cast<float>(nextPos - prevPos);
-                float incomingStartPosition = static_cast<float>(prevPos - nextPos);
+                const float outgoingEndPosition = static_cast<float>(nextPos - prevPos);
+                const float incomingStartPosition = static_cast<float>(prevPos - nextPos);
 
                 // Play the animation on both the previous and next indicators
                 PlayIndicatorAnimations(prevIndicator,
@@ -1684,17 +1684,17 @@ void NavigationView::PlayIndicatorNonSameLevelAnimations(const winrt::UIElement&
     winrt::Compositor comp = visual.Compositor();
 
     // Determine scaling of indicator (whether it is appearing or dissapearing)
-    float beginScale = isOutgoing ? 1.0f : 0.0f;
-    float endScale = isOutgoing ? 0.0f : 1.0f;
-    winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
+    const float beginScale = isOutgoing ? 1.0f : 0.0f;
+    const float endScale = isOutgoing ? 0.0f : 1.0f;
+    const winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
     scaleAnim.InsertKeyFrame(0.0f, beginScale);
     scaleAnim.InsertKeyFrame(1.0f, endScale);
     scaleAnim.Duration(600ms);
 
     // Determine where the indicator is animating from/to
-    winrt::Size size = indicator.RenderSize();
-    float dimension = IsTopNavigationView() ? size.Width : size.Height;
-    float newCenter = fromTop ? 0.0f : dimension;
+    const winrt::Size size = indicator.RenderSize();
+    const float dimension = IsTopNavigationView() ? size.Width : size.Height;
+    const float newCenter = fromTop ? 0.0f : dimension;
     auto indicatorCenterPoint = visual.CenterPoint();
     indicatorCenterPoint.y = newCenter;
     visual.CenterPoint(indicatorCenterPoint);
@@ -1709,16 +1709,16 @@ void NavigationView::PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::U
     winrt::Compositor comp = visual.Compositor();
 
     // Determine scaling of indicator (whether it is appearing or dissapearing)
-    float beginScale = isOutgoing ? 1.0f : 0.0f;
-    float endScale = isOutgoing ? 0.0f : 1.0f;
-    winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
+    const float beginScale = isOutgoing ? 1.0f : 0.0f;
+    const float endScale = isOutgoing ? 0.0f : 1.0f;
+    const winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
     scaleAnim.InsertKeyFrame(0.0f, beginScale);
     scaleAnim.InsertKeyFrame(1.0f, endScale);
     scaleAnim.Duration(600ms);
 
     // Determine where the indicator is animating from/to
-    winrt::Size size = indicator.RenderSize();
-    float newCenter = size.Width /2;
+    const winrt::Size size = indicator.RenderSize();
+    const float newCenter = size.Width /2;
     auto indicatorCenterPoint = visual.CenterPoint();
     indicatorCenterPoint.y = newCenter;
     visual.CenterPoint(indicatorCenterPoint);
@@ -1728,11 +1728,11 @@ void NavigationView::PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::U
 
 void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing)
 {
-    winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
-    winrt::Compositor comp = visual.Compositor();
+    const winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
+    const winrt::Compositor comp = visual.Compositor();
 
-    winrt::Size size = indicator.RenderSize();
-    float dimension = IsTopNavigationView() ? size.Width : size.Height;
+    const winrt::Size size = indicator.RenderSize();
+    const float dimension = IsTopNavigationView() ? size.Width : size.Height;
 
     float beginScale = 1.0f;
     float endScale = 1.0f;
@@ -1881,7 +1881,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         return;
     }
 
-    bool isSettingsItem = IsSettingsItem(nextItem);
+    const bool isSettingsItem = IsSettingsItem(nextItem);
 
     if (IsSelectionSuppressed(nextItem))
     {
@@ -2048,7 +2048,7 @@ void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& disp
 //    Map others to Minimal or MinimalWithBackButton 
 NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode)
 {
-    auto paneDisplayMode = PaneDisplayMode();
+    const auto paneDisplayMode = PaneDisplayMode();
 
     if (IsTopNavigationView())
     {
@@ -2085,10 +2085,10 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
 {
     if (auto splitView = m_rootSplitView.get())
     {
-        auto visualStateDisplayMode = GetVisualStateDisplayMode(displayMode);
+        const auto visualStateDisplayMode = GetVisualStateDisplayMode(displayMode);
         auto visualStateName = L"";
         auto splitViewDisplayMode = winrt::SplitViewDisplayMode::Overlay;
-        auto visualStateNameMinimal = L"Minimal";
+        const auto visualStateNameMinimal = L"Minimal";
 
         switch (visualStateDisplayMode)
         {
@@ -2169,7 +2169,7 @@ void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& send
 
 void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
 {
-    auto key = args.Key();
+    const auto key = args.Key();
     if (IsSettingsItem(nvi))
     {
         // Because ListViewItem eats the events, we only get these keys on KeyDown.
@@ -2246,12 +2246,12 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
         }
     }();
 
-    if (auto itemsSourceView = ir.ItemsSourceView())
+    if (const auto itemsSourceView = ir.ItemsSourceView())
     {
-        auto lastIndex = itemsSourceView.Count() - 1;
-        if (auto lastElement = ir.TryGetElement(lastIndex))
+        const auto lastIndex = itemsSourceView.Count() - 1;
+        if (const auto lastElement = ir.TryGetElement(lastIndex))
         {
-            if (auto controlLast = lastElement.try_as<winrt::Control>())
+            if (const auto controlLast = lastElement.try_as<winrt::Control>())
             {
                 controlLast.Focus(winrt::FocusState::Programmatic);
             }
@@ -2348,7 +2348,7 @@ void NavigationView::OnSettingsInvoked()
 void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 {
     const auto& eventArgs = e;
-    auto key = eventArgs.Key();
+    const auto key = eventArgs.Key();
 
     bool handled = false;
 
@@ -2376,7 +2376,7 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         break;
     case winrt::VirtualKey::Left:
         auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
-        bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        const bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (isAltPressed && IsPaneOpen() && IsLightDismissible())
         {
@@ -2398,8 +2398,8 @@ bool NavigationView::BumperNavigation(int offset)
     // work on left navigation, only dealing with the top primary list here and only with items that don't have
     // !SelectsOnInvoked set to true. If !SelectsOnInvoked is true, we'll skip the item and try focusing on the next one
     // that meets the conditions, in the same direction.
-    auto shoulderNavigationEnabledParamValue = ShoulderNavigationEnabled();
-    auto shoulderNavigationForcedDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::Never);
+    const auto shoulderNavigationEnabledParamValue = ShoulderNavigationEnabled();
+    const auto shoulderNavigationForcedDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::Never);
 
     if (!IsTopNavigationView()
         || !IsNavigationViewListSingleSelectionFollowsFocus()
@@ -2408,10 +2408,10 @@ bool NavigationView::BumperNavigation(int offset)
         return false;
     }
 
-    auto shoulderNavigationSelectionFollowsFocusEnabled = (SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Enabled
+    const auto shoulderNavigationSelectionFollowsFocusEnabled = (SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Enabled
         && shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::WhenSelectionFollowsFocus);
 
-    auto shoulderNavigationEnabled = (shoulderNavigationSelectionFollowsFocusEnabled
+    const auto shoulderNavigationEnabled = (shoulderNavigationSelectionFollowsFocusEnabled
         || shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::Always);
 
     if (!shoulderNavigationEnabled)
@@ -2431,7 +2431,7 @@ bool NavigationView::BumperNavigation(int offset)
             {
                 if (auto&& topNavRepeater = m_topNavRepeater.get())
                 {
-                    auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
+                    const auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
                     index += offset;
 
                     while (index > -1 && index < topPrimaryListSize)
@@ -2559,7 +2559,7 @@ winrt::NavigationTransitionInfo NavigationView::CreateNavigationTransitionInfo(N
         && SharedHelpers::IsRS5OrHigher())
     {
         winrt::SlideNavigationTransitionInfo sliderNav;
-        winrt::SlideNavigationTransitionEffect effect =
+        const winrt::SlideNavigationTransitionEffect effect =
             recommendedTransitionDirection == NavigationRecommendedTransitionDirection::FromRight ?
             winrt::SlideNavigationTransitionEffect::FromRight :
             winrt::SlideNavigationTransitionEffect::FromLeft;
@@ -2749,10 +2749,10 @@ void NavigationView::UpdateVisualState(bool useTransitions)
 {
     if (m_appliedTemplate)
     {
-        auto box = AutoSuggestBox();
+        const auto box = AutoSuggestBox();
         winrt::VisualStateManager::GoToState(*this, box ? L"AutoSuggestBoxVisible" : L"AutoSuggestBoxCollapsed", false /*useTransitions*/);
 
-        bool isVisible = IsSettingsVisible();
+        const bool isVisible = IsSettingsVisible();
         winrt::VisualStateManager::GoToState(*this, isVisible ? L"SettingsVisible" : L"SettingsCollapsed", false /*useTransitions*/);
 
         if (IsTopNavigationView())
@@ -2776,7 +2776,7 @@ void NavigationView::UpdateVisualStateForOverflowButton()
 
 void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
 {
-    bool isToggleButtonVisible = IsPaneToggleButtonVisible();
+    const bool isToggleButtonVisible = IsPaneToggleButtonVisible();
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
@@ -2800,7 +2800,7 @@ void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(
     {
         if (auto itemsSourceView = ir.ItemsSourceView())
         {
-            auto numberOfItems = itemsSourceView.Count();
+            const auto numberOfItems = itemsSourceView.Count();
             for (int i = 0; i < numberOfItems; i++)
             {
                 if (auto nvib = ir.TryGetElement(i))
@@ -2837,7 +2837,7 @@ float NavigationView::MeasureTopNavMenuItemsHostDesiredWidth(winrt::Size const& 
 
 float NavigationView::GetTopNavigationViewActualWidth()
 {
-    double width = LayoutUtils::GetActualWidthFor(m_topNavGrid.get());
+    const double width = LayoutUtils::GetActualWidthFor(m_topNavGrid.get());
     MUX_ASSERT(width < std::numeric_limits<float>::max());
     return static_cast<float>(width);
 }
@@ -2876,7 +2876,7 @@ void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& avail
 
 void NavigationView::HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size& availableSize)
 {
-    auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
     if (desiredWidth > availableSize.Width)
     {
         ResetAndRearrangeTopNavItems(availableSize);
@@ -2885,14 +2885,14 @@ void NavigationView::HandleTopNavigationMeasureOverrideNormal(const winrt::Windo
 
 void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size& availableSize)
 {
-    auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
     if (desiredWidth > availableSize.Width)
     {
         ShrinkTopNavigationSize(desiredWidth, availableSize);
     }
     else if (desiredWidth < availableSize.Width)
     {
-        auto fullyRecoverWidth = m_topDataProvider.WidthRequiredToRecoveryAllItemsToPrimary();
+        const auto fullyRecoverWidth = m_topDataProvider.WidthRequiredToRecoveryAllItemsToPrimary();
         if (availableSize.Width >= desiredWidth + fullyRecoverWidth + m_topNavigationRecoveryGracePeriodWidth)
         {
             // It's possible to recover from Overflow to Normal state, so we restart the MeasureOverride from first step
@@ -2909,12 +2909,12 @@ void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Win
 void NavigationView::ArrangeTopNavItems(winrt::Size const& availableSize)
 {
     SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
-    auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
     if (!(desiredWidth < availableSize.Width))
     {
         // overflow
         SetOverflowButtonVisibility(winrt::Visibility::Visible);
-        auto desiredWidthForOverflowButton = MeasureTopNavigationViewDesiredWidth(c_infSize);
+        const auto desiredWidthForOverflowButton = MeasureTopNavigationViewDesiredWidth(c_infSize);
 
         MUX_ASSERT(desiredWidthForOverflowButton >= desiredWidth);
         m_topDataProvider.OverflowButtonWidth(desiredWidthForOverflowButton - desiredWidth);
@@ -2946,14 +2946,14 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     // Calculate selected overflow item size.
     auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(itemBeingMoved);
     MUX_ASSERT(selectedOverflowItemIndex != s_itemNotFound);
-    auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
+    const auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
 
     bool needInvalidMeasure = !m_topDataProvider.IsValidWidthForItem(selectedOverflowItemIndex);
 
     if (!needInvalidMeasure)
     {
-        auto actualWidth = GetTopNavigationViewActualWidth();
-        auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+        const auto actualWidth = GetTopNavigationViewActualWidth();
+        const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
         MUX_ASSERT(desiredWidth <= actualWidth);
 
         // Calculate selected item size
@@ -2968,16 +2968,16 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
             }
         }
 
-        auto widthAtLeastToBeRemoved = desiredWidth + selectedOverflowItemWidth - actualWidth;
+        const auto widthAtLeastToBeRemoved = desiredWidth + selectedOverflowItemWidth - actualWidth;
 
         // calculate items to be removed from primary because a overflow item is selected. 
         // SelectedItem is assumed to be removed from primary first, then added it back if it should not be removed
         auto itemsToBeRemoved = FindMovableItemsToBeRemovedFromPrimaryList(widthAtLeastToBeRemoved, { } /*excludeItems*/);
 
         // calculate the size to be removed
-        auto toBeRemovedItemWidth = m_topDataProvider.CalculateWidthForItems(itemsToBeRemoved);
+        const auto toBeRemovedItemWidth = m_topDataProvider.CalculateWidthForItems(itemsToBeRemoved);
 
-        auto widthAvailableToRecover = toBeRemovedItemWidth - widthAtLeastToBeRemoved;
+        const auto widthAvailableToRecover = toBeRemovedItemWidth - widthAtLeastToBeRemoved;
         auto itemsToBeAdded = FindMovableItemsRecoverToPrimaryList(widthAvailableToRecover, { selectedOverflowItemIndex }/*includeItems*/);
 
         CollectionHelper::unique_push_back(itemsToBeAdded, selectedOverflowItemIndex);
@@ -3040,9 +3040,9 @@ bool NavigationView::NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int
 {
     bool needRearrange = false;
 
-    auto primaryList = m_topDataProvider.GetPrimaryItems();
-    auto primaryListSize = primaryList.Size();
-    auto indexInPrimary = m_topDataProvider.ConvertOriginalIndexToIndex(selectedOriginalIndex);
+    const auto primaryList = m_topDataProvider.GetPrimaryItems();
+    const auto primaryListSize = primaryList.Size();
+    const auto indexInPrimary = m_topDataProvider.ConvertOriginalIndexToIndex(selectedOriginalIndex);
     // We need to verify that through various overflow selection combinations, the primary
     // items have not been put into a state of non-logical item layout (aka not in proper sequence).
     // To verify this, if the newly selected item has items following it in the primary items:
@@ -3053,7 +3053,7 @@ bool NavigationView::NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int
     {
         auto nextIndexInPrimary = indexInPrimary + 1;
         auto nextIndexInOriginal = selectedOriginalIndex + 1;
-        auto prevIndexInOriginal = selectedOriginalIndex - 1;
+        const auto prevIndexInOriginal = selectedOriginalIndex - 1;
 
         // Check whether item preceding the selected is not directly preceding
         // in the original.
@@ -3092,9 +3092,9 @@ void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size con
 {
     UpdateTopNavigationWidthCache();
 
-    auto selectedItemIndex = GetSelectedItemIndex();
+    const auto selectedItemIndex = GetSelectedItemIndex();
 
-    auto possibleWidthForPrimaryList = MeasureTopNavMenuItemsHostDesiredWidth(c_infSize) - (desiredWidth - availableSize.Width);
+    const auto possibleWidthForPrimaryList = MeasureTopNavMenuItemsHostDesiredWidth(c_infSize) - (desiredWidth - availableSize.Width);
     if (possibleWidthForPrimaryList >= 0)
     {
         // Remove all items which is not visible except first item and selected item.
@@ -3107,7 +3107,7 @@ void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size con
     // measure again to make sure SelectedItem is realized
     desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
 
-    auto widthAtLeastToBeRemoved = desiredWidth - availableSize.Width;
+    const auto widthAtLeastToBeRemoved = desiredWidth - availableSize.Width;
     if (widthAtLeastToBeRemoved > 0)
     {
         auto itemToBeRemoved = FindMovableItemsToBeRemovedFromPrimaryList(widthAtLeastToBeRemoved, { selectedItemIndex });
@@ -3125,12 +3125,12 @@ std::vector<int> NavigationView::FindMovableItemsRecoverToPrimaryList(float avai
 {
     std::vector<int> toBeMoved;
 
-    auto size = m_topDataProvider.Size();
+    const auto size = m_topDataProvider.Size();
 
     // Included Items take high priority, all of them are included in recovery list
-    for (auto index : includeItems)
+    for (const auto index : includeItems)
     {
-        auto width = m_topDataProvider.GetWidthForItem(index);
+        const auto width = m_topDataProvider.GetWidthForItem(index);
         toBeMoved.push_back(index);
         availableWidth -= width;
     }
@@ -3140,7 +3140,7 @@ std::vector<int> NavigationView::FindMovableItemsRecoverToPrimaryList(float avai
     {
         if (!m_topDataProvider.IsItemInPrimaryList(i) && !CollectionHelper::contains(includeItems, i))
         {
-            auto width = m_topDataProvider.GetWidthForItem(i);
+            const auto width = m_topDataProvider.GetWidthForItem(i);
             if (availableWidth >= width)
             {
                 toBeMoved.push_back(i);
@@ -3174,7 +3174,7 @@ std::vector<int> NavigationView::FindMovableItemsToBeRemovedFromPrimaryList(floa
         {
             if (!CollectionHelper::contains(excludeItems, i))
             {
-                auto width = m_topDataProvider.GetWidthForItem(i);
+                const auto width = m_topDataProvider.GetWidthForItem(i);
                 toBeMoved.push_back(i);
                 widthAtLeastToBeRemoved -= width;
             }
@@ -3190,8 +3190,8 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
     std::vector<int> toBeMoved;
     if (auto ir = m_topNavRepeater.get())
     {
-        int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), NavigationViewSplitVectorID::PrimaryList);
-        int size = m_topDataProvider.GetPrimaryListSize();
+        const int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), NavigationViewSplitVectorID::PrimaryList);
+        const int size = m_topDataProvider.GetPrimaryListSize();
 
         float requiredWidth = 0;
 
@@ -3202,12 +3202,12 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
                 bool shouldMove = true;
                 if (requiredWidth <= availableWidth)
                 {
-                    auto container = ir.TryGetElement(i);
+                    const auto container = ir.TryGetElement(i);
                     if (container)
                     {
-                        if (auto containerAsUIElement = container.try_as<winrt::UIElement>())
+                        if (const auto containerAsUIElement = container.try_as<winrt::UIElement>())
                         {
-                            auto width = containerAsUIElement.DesiredSize().Width;
+                            const auto width = containerAsUIElement.DesiredSize().Width;
                             requiredWidth += width;
                             shouldMove = requiredWidth > availableWidth;
                         }
@@ -3261,17 +3261,16 @@ double NavigationView::GetPaneToggleButtonHeight()
 
 void NavigationView::UpdateTopNavigationWidthCache()
 {
-    int size = m_topDataProvider.GetPrimaryListSize();
-    if (auto ir = m_topNavRepeater.get())
+    const int size = m_topDataProvider.GetPrimaryListSize();
+    if (auto&& ir = m_topNavRepeater.get())
     {
         for (int i = 0; i < size; i++)
         {
-            auto container = ir.TryGetElement(i);
-            if (container)
+            if (const auto container = ir.TryGetElement(i))
             {
-                if (auto containerAsUIElement = container.try_as<winrt::UIElement>())
+                if (const auto containerAsUIElement = container.try_as<winrt::UIElement>())
                 {
-                    auto width = containerAsUIElement.DesiredSize().Width;
+                    const auto width = containerAsUIElement.DesiredSize().Width;
                     m_topDataProvider.UpdateWidthForPrimaryItem(i, width);
                 }
             }
@@ -3339,7 +3338,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         if (g_IsTelemetryProviderEnabled && IsBackButtonVisible() == winrt::NavigationViewBackButtonVisible::Collapsed)
         {
             //  Explicitly disabling BackUI on NavigationView
-            TraceLoggingWrite(
+            [[gsl::suppress(con.4)]] TraceLoggingWrite(
                 g_hTelemetryProvider,
                 "NavigationView_DisableBackUI",
                 TraceLoggingDescription("Developer explicitly disables the BackUI on NavigationView"));
@@ -3481,7 +3480,7 @@ void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEv
 
 void NavigationView::OnIsPaneOpenChanged()
 {
-    auto isPaneOpen = IsPaneOpen();
+    const auto isPaneOpen = IsPaneOpen();
     if (isPaneOpen && m_wasForceClosed)
     {
         m_wasForceClosed = false; // remove the pane open flag since Pane is opened.
@@ -3506,14 +3505,14 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        if (auto splitView = m_rootSplitView.get())
+        if (auto&& splitView = m_rootSplitView.get())
         {
-            auto displayMode = splitView.DisplayMode();
-            auto isOverlay = displayMode == winrt::SplitViewDisplayMode::Overlay || displayMode == winrt::SplitViewDisplayMode::CompactOverlay;
-            if (auto paneRoot = splitView.Pane())
+            const auto displayMode = splitView.DisplayMode();
+            const auto isOverlay = displayMode == winrt::SplitViewDisplayMode::Overlay || displayMode == winrt::SplitViewDisplayMode::CompactOverlay;
+            if (const auto paneRoot = splitView.Pane())
             {
-                auto currentTranslation = paneRoot.Translation();
-                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() && isOverlay ? c_paneElevationTranslationZ : 0.0f };
+                const auto currentTranslation = paneRoot.Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() && isOverlay ? c_paneElevationTranslationZ : 0.0f };
                 paneRoot.Translation(translation);
             }
         }
@@ -3523,7 +3522,7 @@ void NavigationView::OnIsPaneOpenChanged()
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
 {
-    auto visible = IsPaneToggleButtonVisible() && !IsTopNavigationView();
+    const auto visible = IsPaneToggleButtonVisible() && !IsTopNavigationView();
     GetTemplateSettings()->PaneToggleButtonVisibility(Util::VisibilityFromBool(visible));
 }
 
@@ -3778,10 +3777,10 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         return;
     }
 
-    auto shouldShowBackButton = ShouldShowBackButton();
-    auto backButtonVisibility = Util::VisibilityFromBool(shouldShowBackButton);
-    auto visualStateDisplayMode = GetVisualStateDisplayMode(DisplayMode());
-    bool useLeftPaddingForBackOrCloseButton =
+    const auto shouldShowBackButton = ShouldShowBackButton();
+    const auto backButtonVisibility = Util::VisibilityFromBool(shouldShowBackButton);
+    const auto visualStateDisplayMode = GetVisualStateDisplayMode(DisplayMode());
+    const bool useLeftPaddingForBackOrCloseButton =
         (visualStateDisplayMode == NavigationViewVisualStateDisplayMode::Minimal && !IsTopNavigationView()) ||
         visualStateDisplayMode == NavigationViewVisualStateDisplayMode::MinimalWithBackButton;
     double leftPaddingForBackOrCloseButton = 0.0;
@@ -3817,7 +3816,7 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
 
     if (auto closeButton = m_closeButton.get())
     {
-        auto closeButtonVisibility = Util::VisibilityFromBool(ShouldShowCloseButton());
+        const auto closeButtonVisibility = Util::VisibilityFromBool(ShouldShowCloseButton());
 
         closeButton.Visibility(closeButtonVisibility);
 
@@ -3885,7 +3884,7 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
                     backButtonRowHeight = c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior;
                 }
 
-                auto length = winrt::GridLengthHelper::FromPixels(backButtonRowHeight);
+                const auto length = winrt::GridLengthHelper::FromPixels(backButtonRowHeight);
                 rowDef.Height(length);
             }
         }
@@ -4019,9 +4018,9 @@ void NavigationView::UpdateTitleBarPadding()
         {
             // Only add extra padding if the NavView is the "root" of the app,
             // but not if the app is expanding into the titlebar
-            winrt::UIElement root = winrt::Window::Current().Content();
-            winrt::GeneralTransform gt = TransformToVisual(root);
-            winrt::Point pos = gt.TransformPoint(winrt::Point());
+            const winrt::UIElement root = winrt::Window::Current().Content();
+            const winrt::GeneralTransform gt = TransformToVisual(root);
+            const winrt::Point pos = gt.TransformPoint(winrt::Point());
 
             if (pos.Y == 0.0f)
             {
@@ -4042,11 +4041,11 @@ void NavigationView::UpdateTitleBarPadding()
             }
         }
 
-        auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get();
-        auto paneToggleButton = m_paneToggleButton.get();
+        const auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get();
+        const auto paneToggleButton = m_paneToggleButton.get();
 
-        bool setPaneTitleHolderFrameworkElementMargin = paneTitleHolderFrameworkElement && paneTitleHolderFrameworkElement.Visibility() == winrt::Visibility::Visible;
-        bool setPaneToggleButtonMargin = !setPaneTitleHolderFrameworkElementMargin && paneToggleButton && paneToggleButton.Visibility() == winrt::Visibility::Visible;
+        const bool setPaneTitleHolderFrameworkElementMargin = paneTitleHolderFrameworkElement && paneTitleHolderFrameworkElement.Visibility() == winrt::Visibility::Visible;
+        const bool setPaneToggleButtonMargin = !setPaneTitleHolderFrameworkElementMargin && paneToggleButton && paneToggleButton.Visibility() == winrt::Visibility::Visible;
 
         if (setPaneTitleHolderFrameworkElementMargin || setPaneToggleButtonMargin)
         {
@@ -4139,8 +4138,8 @@ bool NavigationView::IsFullScreenOrTabletMode()
         m_uiViewSettings = winrt::ViewManagement::UIViewSettings::GetForCurrentView();
     }
 
-    bool isFullScreenMode = m_applicationView.IsFullScreenMode();
-    bool isTabletMode = m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
+    const bool isFullScreenMode = m_applicationView.IsFullScreenMode();
+    const bool isTabletMode = m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
 
     return isFullScreenMode || isTabletMode;
 }
@@ -4217,7 +4216,7 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
 
     // First conduct a basic top level search, which should succeed for a lot of scenarios.
     auto ir = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
-    auto itemIndex = GetIndexFromItem(ir, data);
+    const auto itemIndex = GetIndexFromItem(ir, data);
     if (ir && itemIndex >= 0)
     {
         if (auto container = ir.TryGetElement(itemIndex))
@@ -4241,7 +4240,7 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
 winrt::UIElement NavigationView::SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data)
 {
     // TODO: Temporary inefficient solution that results in unnecessary time complexity, fix.
-    auto index = GetIndexFromItem(rootRepeater, data);
+    const auto index = GetIndexFromItem(rootRepeater, data);
     if (index != -1)
     {
         return rootRepeater.TryGetElement(index);
@@ -4488,7 +4487,7 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index)
         auto ir = m_topDataProvider.IsItemInPrimaryList(index) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
 
         // Get the index of the first item in the repeater
-        auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
+        const auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
 
         // Get the container of the first item
         if (auto const container = ir.TryGetElement(irIndex))

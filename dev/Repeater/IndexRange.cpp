@@ -9,7 +9,7 @@ IndexRange::IndexRange(int begin, int end)
     // Accept out of order begin/end pairs, just swap them.
     if (begin > end)
     {
-        int temp = begin;
+        const int temp = begin;
         begin = end;
         end = temp;
     }

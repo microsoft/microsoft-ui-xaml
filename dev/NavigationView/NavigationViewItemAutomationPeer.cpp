@@ -132,7 +132,7 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 
 int32_t NavigationViewItemAutomationPeer::GetLevelCore()
 {
-    int32_t level = 0;
+    const int32_t level = 0;
     if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
     {
         return winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Depth();
@@ -201,7 +201,7 @@ void NavigationViewItemAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt:
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
+        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
             winrt::ExpandCollapseState::Collapsed :
             winrt::ExpandCollapseState::Expanded;
 

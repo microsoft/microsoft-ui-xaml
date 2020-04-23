@@ -16,8 +16,7 @@ winrt::ButtonInteractionInvokeMode ButtonInteraction::InvokeMode()
 
 void ButtonInteraction::InvokeMode(winrt::ButtonInteractionInvokeMode const& value)
 {
-
-    auto invokeMode = value;
+    const auto invokeMode = value;
     if (invokeMode != m_invokeMode)
     {
         m_invokeMode = value;
@@ -153,10 +152,10 @@ void ButtonInteraction::OnPointerPressed(winrt::UIElement const& sender, winrt::
 
 void ButtonInteraction::OnPointerReleased(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    auto target = sender;
-    auto pointerArgs = args;
+    const auto target = sender;
+    const auto pointerArgs = args;
 
-    bool wasPressing = m_isPressing;
+    const bool wasPressing = m_isPressing;
 
     UpdateIsPressing(false);
 
