@@ -145,7 +145,7 @@ void TabViewItem::UpdateCloseButton()
     {
         switch (m_closeButtonOverlayMode)
         {
-            case winrt::TabViewCloseButtonOverlayMode::OnHover:
+            case winrt::TabViewCloseButtonOverlayMode::OnPointerOver:
             {
                 // If we only want to show the button on hover, we also show it when we are selected, otherwise hide it
                 if (IsSelected() || m_isPointerOver)

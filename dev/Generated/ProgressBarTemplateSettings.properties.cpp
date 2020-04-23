@@ -6,19 +6,17 @@
 #include "common.h"
 #include "ProgressBarTemplateSettings.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithDPFactory(ProgressBarTemplateSettings)
-}
-
-#include "ProgressBarTemplateSettings.g.cpp"
-
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ClipRectProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPositionProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPosition2Property{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationMidPositionProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationStartPositionProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationStartPosition2Property{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_EllipseAnimationEndPositionProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_EllipseAnimationWellPositionProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_EllipseDiameterProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_EllipseOffsetProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_IndicatorLengthDeltaProperty{ nullptr };
 
 ProgressBarTemplateSettingsProperties::ProgressBarTemplateSettingsProperties()
@@ -94,6 +92,61 @@ void ProgressBarTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_DispatcherProperty)
+    {
+        s_DispatcherProperty =
+            InitializeDependencyProperty(
+                L"Dispatcher",
+                winrt::name_of<winrt::CoreDispatcher>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::CoreDispatcher>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_EllipseAnimationEndPositionProperty)
+    {
+        s_EllipseAnimationEndPositionProperty =
+            InitializeDependencyProperty(
+                L"EllipseAnimationEndPosition",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_EllipseAnimationWellPositionProperty)
+    {
+        s_EllipseAnimationWellPositionProperty =
+            InitializeDependencyProperty(
+                L"EllipseAnimationWellPosition",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_EllipseDiameterProperty)
+    {
+        s_EllipseDiameterProperty =
+            InitializeDependencyProperty(
+                L"EllipseDiameter",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_EllipseOffsetProperty)
+    {
+        s_EllipseOffsetProperty =
+            InitializeDependencyProperty(
+                L"EllipseOffset",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_IndicatorLengthDeltaProperty)
     {
         s_IndicatorLengthDeltaProperty =
@@ -115,6 +168,11 @@ void ProgressBarTemplateSettingsProperties::ClearProperties()
     s_ContainerAnimationMidPositionProperty = nullptr;
     s_ContainerAnimationStartPositionProperty = nullptr;
     s_ContainerAnimationStartPosition2Property = nullptr;
+    s_DispatcherProperty = nullptr;
+    s_EllipseAnimationEndPositionProperty = nullptr;
+    s_EllipseAnimationWellPositionProperty = nullptr;
+    s_EllipseDiameterProperty = nullptr;
+    s_EllipseOffsetProperty = nullptr;
     s_IndicatorLengthDeltaProperty = nullptr;
 }
 
@@ -176,6 +234,56 @@ void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition2(dou
 double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition2()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationStartPosition2Property));
+}
+
+void ProgressBarTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+}
+
+winrt::CoreDispatcher ProgressBarTemplateSettingsProperties::Dispatcher()
+{
+    return ValueHelper<winrt::CoreDispatcher>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_DispatcherProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::EllipseAnimationEndPosition(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::EllipseAnimationEndPosition()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_EllipseAnimationEndPositionProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::EllipseAnimationWellPosition(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseAnimationWellPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::EllipseAnimationWellPosition()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_EllipseAnimationWellPositionProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::EllipseDiameter(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseDiameterProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::EllipseDiameter()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_EllipseDiameterProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::EllipseOffset(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::EllipseOffset()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_EllipseOffsetProperty));
 }
 
 void ProgressBarTemplateSettingsProperties::IndicatorLengthDelta(double value)
