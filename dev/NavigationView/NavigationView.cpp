@@ -1931,7 +1931,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         const auto selectedItem = SelectedItem();
         if (m_shouldRaiseItemInvokedAfterSelection)
         {
-            RaiseItemInvoked(NavigationViewItemOrSettingsContentFromData(nextItem), isSettingsItem);
+            RaiseItemInvoked(nextItem, isSettingsItem, NavigationViewItemOrSettingsContentFromData(nextItem), recommendedDirection);
         }
         // Selection was modified inside ItemInvoked, skip everything here!
         if (selectedItem != SelectedItem())
