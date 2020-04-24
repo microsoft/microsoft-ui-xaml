@@ -71,7 +71,7 @@
         <Grid Grid.Column="1">
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Orientation="Horizontal" contract5Present:Spacing="4">
+                        Orientation="Vertical" contract5Present:Spacing="4">
                 <!--Standard NumberBox test UI -->
                 <StackPanel>
                     <controls:NumberBox
