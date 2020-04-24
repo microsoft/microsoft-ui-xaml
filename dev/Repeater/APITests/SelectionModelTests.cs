@@ -61,7 +61,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        public void ValidateSelectionChangedEvent()
+        public void ValidateSelectionChangedEventSingleSelection()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                int selectionChangedFiredCount = 0;
+                selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args) {
+                    selectionChangedFiredCount++;
+                };
+
+                Select(selectionModel, Path(4), true);
+                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+                Verify.AreEqual(1, selectionChangedFiredCount);
+
+                Select(selectionModel, Path(4), false);
+                ValidateSelection(selectionModel, new List<IndexPath>());
+                Verify.AreEqual(2, selectionChangedFiredCount);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateSelectionChangedEventMultipleSelection()
         {
             RunOnUIThread.Execute(() =>
             {
