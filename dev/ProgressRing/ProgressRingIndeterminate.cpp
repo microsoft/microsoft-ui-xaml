@@ -64,7 +64,7 @@ namespace
         CompositionContainerShape ContainerShape_0()
         {
             const auto result = _c.CreateContainerShape();
-            result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
+            result.TransformMatrix({ 1.76999998F, 0.0F, 0.0F, 1.76999998F, 16.0F, 16.0F });
             // Transforms: Radial
             result.Shapes().Append(ContainerShape_1());
             return result;
@@ -95,7 +95,7 @@ namespace
         CompositionEllipseGeometry Ellipse_9_0()
         {
             const auto result = _c.CreateEllipseGeometry();
-            result.Radius({ 9, 9 });
+            result.Radius({ 8, 8 });
             return result;
         }
 
@@ -107,7 +107,7 @@ namespace
         {
             const auto result = _c.CreateEllipseGeometry();
             result.TrimEnd(0.5F);
-            result.Radius({ 9, 9 });
+            result.Radius({ 8, 8 });
             StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_0p5(), RootProgress());
             return result;
         }
@@ -119,7 +119,7 @@ namespace
         CompositionEllipseGeometry Ellipse_9_2()
         {
             const auto result = _c.CreateEllipseGeometry();
-            result.Radius({ 9, 9 });
+            result.Radius({ 8, 8 });
             StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_0p5(), _rootProgress);
             return result;
         }
@@ -184,7 +184,7 @@ namespace
         ShapeVisual ShapeVisual_0()
         {
             const auto result = _c.CreateShapeVisual();
-            result.Size({ 100, 100 });
+            result.Size({ 32, 32 });
             const auto shapes = result.Shapes();
             // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
             // BG
@@ -198,7 +198,7 @@ namespace
         CompositionSpriteShape SpriteShape_0()
         {
             const auto result = _c.CreateSpriteShape(Ellipse_9_0());
-            result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
+            result.TransformMatrix({ 1.76999998F, 0.0F, 0.0F, 1.76999998F, 16.0F, 16.0F });
             result.StrokeBrush(ThemeColor_Background());
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -356,7 +356,7 @@ namespace
 
         float2 Size() const
         {
-            return { 100, 100 };
+            return { 32, 32 };
         }
 
         static bool IsRuntimeCompatible()

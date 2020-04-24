@@ -205,7 +205,7 @@ namespace MUXControlsTestApp
                 switch (CloseButtonOverlayModeCombobox.SelectedIndex)
                 {
                     case 0: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.Auto; break;
-                    case 1: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.OnHover; break;
+                    case 1: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.OnPointerOver; break;
                     case 2: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.Always; break;
                 }
             }
@@ -357,6 +357,36 @@ namespace MUXControlsTestApp
             {
                 ScrollButtonsVisible.Text = "Unexpected";
             }
+        }
+
+        public void TabViewScrollToTheLeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            scrollViewer.ChangeView(0, null, null, true);
+        }
+
+        public void TabViewScrollToTheMiddleButton_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            scrollViewer.ChangeView(scrollViewer.ScrollableWidth / 2.0f, null, null, true);
+        }
+
+        public void TabViewScrollToTheRightButton_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
+            scrollViewer.ChangeView(double.MaxValue, null, null, true);
+        }
+
+        public void GetScrollDecreaseButtonEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollDecreaseButton = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButton") as RepeatButton;
+            ScrollDecreaseButtonEnabled.Text = scrollDecreaseButton.IsEnabled ? "True" : "False";
+        }
+
+        public void GetScrollIncreaseButtonEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollIncreaseButton = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") as RepeatButton;
+            ScrollIncreaseButtonEnabled.Text = scrollIncreaseButton.IsEnabled ? "True" : "False";
         }
 
         private void TabViewSizingPageButton_Click(object sender, RoutedEventArgs e)

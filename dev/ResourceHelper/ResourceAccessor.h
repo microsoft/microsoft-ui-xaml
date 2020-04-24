@@ -112,6 +112,7 @@ public:
 #define SR_PlaceAfterString L"PlaceAfterString"
 #define SR_PlaceBeforeString L"PlaceBeforeString"
 #define SR_PlaceBetweenString L"PlaceBetweenString"
+#define SR_ProgressRingName L"ProgressRingName"
 #define SR_ProgressRingIndeterminateStatus L"ProgressRingIndeterminateStatus"
 #define SR_ProgressBarIndeterminateStatus L"ProgressBarIndeterminateStatus"
 #define SR_ProgressBarPausedStatus L"ProgressBarPausedStatus"

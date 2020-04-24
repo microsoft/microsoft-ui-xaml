@@ -140,6 +140,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // With largerTab now rendering wider, the scroll buttons should appear:
                 Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
 
+                // Scroll all the way to the left and verify decrease/increase button visual state
+                FindElement.ByName<Button>("ScrollTabViewToTheLeft").InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsFalse(IsScrollDecreaseButtonEnabled(), "Scroll decrease button should be disabled");
+                Verify.IsTrue(IsScrollIncreaseButtonEnabled(), "Scroll increase button should be enabled");
+
+                // Scroll to the middle position and verify decrease/increase button visual state
+                FindElement.ByName<Button>("ScrollTabViewToTheMiddle").InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsTrue(IsScrollDecreaseButtonEnabled(), "Scroll decrease button should be enabled");
+                Verify.IsTrue(IsScrollIncreaseButtonEnabled(), "Scroll increase button should be enabled");
+
+                // Scroll all the way to the right and verify decrease/increase button visual state
+                FindElement.ByName<Button>("ScrollTabViewToTheRight").InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsTrue(IsScrollDecreaseButtonEnabled(), "Scroll decrease button should be enabled");
+                Verify.IsFalse(IsScrollIncreaseButtonEnabled(), "Scroll increase button should be disabled");
+
                 // Close a tab to make room. The scroll buttons should disappear:
                 Log.Comment("Closing a tab:");
                 Button closeButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
@@ -184,6 +202,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.Fail(string.Format("Unexpected value for ScrollButtonsVisible: '{0}'", scrollButtonsVisible));
                 return false;
             }
+        }
+
+        private bool IsScrollIncreaseButtonEnabled()
+        {
+            FindElement.ByName<Button>("GetScrollIncreaseButtonEnabled").InvokeAndWait();
+            var scrollIncreaseButtonEnabled = FindElement.ByName<TextBlock>("ScrollIncreaseButtonEnabled").DocumentText;
+            return scrollIncreaseButtonEnabled == "True";
+        }
+
+        private bool IsScrollDecreaseButtonEnabled()
+        {
+            FindElement.ByName<Button>("GetScrollDecreaseButtonEnabled").InvokeAndWait();
+            var scrollDecreaseButtonEnabled = FindElement.ByName<TextBlock>("ScrollDecreaseButtonEnabled").DocumentText;
+            return scrollDecreaseButtonEnabled == "True";
         }
 
         [TestMethod]
@@ -414,7 +446,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using(var setup = new TestSetupHelper("TabView Tests"))
             {
                 ComboBox closeButtonOverlayModeComboBox = FindElement.ByName<ComboBox>("CloseButtonOverlayModeCombobox");
-                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                closeButtonOverlayModeComboBox.SelectItemByName("OnPointerOver");
                 Wait.ForIdle();
 
                 Button closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
@@ -431,8 +463,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
 
-                // Verifiying "OnHover" works correctly
-                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                // Verifiying "OnPointerOver" works correctly
+                closeButtonOverlayModeComboBox.SelectItemByName("OnPointerOver");
                 Wait.ForIdle();
 
                 closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));

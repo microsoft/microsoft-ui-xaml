@@ -37,14 +37,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     [TestClass]
     public class TestEnvironment
     {
-        private const string _testAppPackageName = "MUXControlsTestApp";
 
 #if USING_TAEF
+        private const string _testAppPackageName = "MUXControlsTestApp";
         private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
-#else
-        private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
-#endif
         private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
+#elif !INNERLOOP_BUILD
+        private const string _testAppPackageName = "MUXControlsTestApp";
+        private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
+        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
+#else
+        private const string _testAppPackageName = "MUXControlsInnerLoopTestApp";
+        private const string _testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
+        private const string _testAppPackageFamilyName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe";
+#endif
 
         public const string _nugetTestAppPackageName = "NugetPackageTestApp";
         private const string _nugetTestAppName = "NugetPackageTestApp_8wekyb3d8bbwe!App";

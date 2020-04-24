@@ -66,12 +66,15 @@ public:
     void Expanding(winrt::event_token const& token);
     winrt::event_token ItemInvoked(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewItemInvokedEventArgs> const& value);
     void ItemInvoked(winrt::event_token const& token);
+    winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewSelectionChangedEventArgs> const& value);
+    void SelectionChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewCollapsedEventArgs>> m_collapsedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewDragItemsCompletedEventArgs>> m_dragItemsCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewDragItemsStartingEventArgs>> m_dragItemsStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewExpandingEventArgs>> m_expandingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewItemInvokedEventArgs>> m_itemInvokedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewSelectionChangedEventArgs>> m_selectionChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
