@@ -756,15 +756,9 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     }
 
     // Item was invoked but already selected, so raise event here.
-    if (selectedItem == nvi)
+    if (selectedItem == SelectedItem())
     {
-        selectedItem = SelectedItem();
         RaiseItemInvokedForNavigationViewItem(nvi);
-        // User changed selectionstate in the ItemInvoked callback
-        if (selectedItem != SelectedItem())
-        {
-            return;
-        }
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
@@ -1934,12 +1928,18 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
         // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
         // And SelectionChanged is after we selected the new item.
-        UnselectPrevItem(prevItem, nextItem);
-        ChangeSelectStatusForItem(nextItem, true /*selected*/);
+        const auto selectedItem = SelectedItem();
         if (m_shouldRaiseItemInvokedAfterSelection)
         {
-            RaiseItemInvokedForNavigationViewItem(nextItem.try_as<winrt::NavigationViewItem>());
+            RaiseItemInvoked(NavigationViewItemOrSettingsContentFromData(nextItem), isSettingsItem);
         }
+        // Selection was modified inside ItemInvoked, skip everything here!
+        if (selectedItem != SelectedItem())
+        {
+            return;
+        }
+        UnselectPrevItem(prevItem, nextItem);
+        ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
