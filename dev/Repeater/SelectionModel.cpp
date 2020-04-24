@@ -647,8 +647,9 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
         // If we unselect something, raise event any way, otherwise changedSelection is false
         bool changedSelection = false;
 
-        // We only need to clear selection by walking the data structure from the beginning when we are in single selection mode
-        // and want to select something.
+        // We only need to clear selection by walking the data structure from the beginning when:
+        // - we are in single selection mode and 
+        // - want to select something.
         // If we want to unselect something we unselect it directly in TraverseIndexPath below and raise the SelectionChanged event
         // if required.
         if (m_singleSelect && select)
