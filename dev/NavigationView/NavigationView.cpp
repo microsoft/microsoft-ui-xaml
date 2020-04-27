@@ -2143,8 +2143,7 @@ void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender
 {
     // If we handle space and enter upon initial key down, user can hold down and items get invoked rapidly
     // That creates stuttering and we don't want that to happen
-    if (args.OriginalKey() == winrt::VirtualKey::GamepadA
-        || args.Key() == winrt::VirtualKey::Space
+    if (args.Key() == winrt::VirtualKey::Space
         || args.Key() == winrt::VirtualKey::Enter)
     {
         if (auto nvi = sender.try_as<winrt::NavigationViewItem>())

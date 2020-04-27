@@ -256,6 +256,7 @@ private:
     void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
     void OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
+    void OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
     void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
