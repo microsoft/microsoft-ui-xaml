@@ -142,7 +142,10 @@
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
+                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab (in green)" IsClosable="True">
+                        <controls:TabViewItem.Resources>
+                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="Green" />
+                        </controls:TabViewItem.Resources>
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>
