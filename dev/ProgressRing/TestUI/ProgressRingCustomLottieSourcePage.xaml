@@ -1,0 +1,91 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.ProgressRingCustomLottieSourcePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:animatedvisuals="using:AnimatedVisuals"
+     mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
+        <Style TargetType="controls:ProgressRing">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="controls:ProgressRing">
+                        <Grid x:Name="LayoutRoot" Background="Transparent">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Active">
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                            Storyboard.TargetName="LayoutRoot"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0:0:0.15" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Inactive">
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                            Storyboard.TargetName="LayoutRoot"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.15" />
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                             <!--AnimatedVisualPlayer for Lottie--> 
+                            <controls:AnimatedVisualPlayer x:Name="IndeterminateAnimatedVisualPlayer" AutoPlay="false" Stretch="fill" >
+                                <!--Define custom Lottie animation-->
+                                <animatedvisuals:ProgressRingDeterminate />
+                            </controls:AnimatedVisualPlayer>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+    
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Orientation="Vertical">
+
+            <controls:ProgressRing
+                x:Name="TestCustomLottieSourceProgressRing"
+                IsActive="{x:Bind CustomLottieSourceIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+            />
+
+            <Grid Width="200px" HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBox x:Name="WidthInput" AutomationProperties.Name="WidthInput" Header="Width" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="2" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="WidthInputText" AutomationProperties.Name="WidthInputText" Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Width, Mode=TwoWay}"/>
+            </Grid>
+
+            <TextBlock x:Name="VisualStateText" AutomationProperties.Name="VisualStateText" Margin="0, 20, 0, 20"/>
+
+            <TextBlock Text="Animated Visual Player IsPlaying:"/>
+            <TextBlock x:Name="IsPlayingText" AutomationProperties.Name="IsPlayingText" Margin="0, 0, 0, 20"/>
+
+            <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind CustomLottieSourceIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="CustomLottieSourceIsActiveCheckBox" AutomationProperties.Name="CustomLottieSourceIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
+
+            <TextBlock Text="Animated Visual Player Opacity:"/>
+            <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
+
+            <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+
+            <Button x:Name="NavigateToMainPage" AutomationProperties.Name="NavigateToMainPage">Progress Ring Main Page</Button>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

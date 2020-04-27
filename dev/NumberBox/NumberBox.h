@@ -68,6 +68,7 @@ private:
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 
     void ValidateInput();
     void CoerceMinimum();
@@ -98,4 +99,6 @@ private:
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
+
+    PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
 };
