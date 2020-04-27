@@ -24,8 +24,8 @@ static constexpr auto c_disabled = L"Disabled"sv;
 static constexpr auto c_enabled = L"Enabled"sv;
 static constexpr auto c_normal = L"Normal"sv;
 static constexpr auto c_chevronHidden = L"ChevronHidden"sv;
-static constexpr auto c_chevronVisible = L"ChevronVisible"sv;
-
+static constexpr auto c_chevronVisibleOpen = L"ChevronVisibleOpen"sv;
+static constexpr auto c_chevronVisibleClosed = L"ChevronVisibleClosed"sv;
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
@@ -122,6 +122,12 @@ void NavigationViewItem::OnApplyTemplate()
     m_appliedTemplate = true;
     UpdateItemIndentation();
     UpdateVisualStateNoTransition();
+    ReparentRepeater();
+    // We dont want to update the repeater visibilty during OnApplyTemplate if NavigationView is in a mode when items are shown in a flyout
+    if (!ShouldRepeaterShowInFlyout())
+    {
+        ShowHideChildren();
+    }
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
@@ -172,6 +178,12 @@ void NavigationViewItem::UpdateCompactPaneLength()
     if (auto splitView = GetSplitView())
     {
         SetValue(s_CompactPaneLengthProperty, winrt::PropertyValue::CreateDouble(splitView.CompactPaneLength()));
+
+        // Only update when on left
+        if (auto presenter = GetPresenter())
+        {
+            presenter->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
+        }
     }
 }
 
@@ -461,7 +473,7 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? c_chevronVisible : c_chevronHidden;
+        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? ( IsExpanded() ? c_chevronVisibleOpen : c_chevronVisibleClosed) : c_chevronHidden;
         winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), chevronState, true);
     }
 }
@@ -507,28 +519,38 @@ NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
     return presenter;
 }
 
-void NavigationViewItem::ShowChildren(bool shouldShowChildren)
+void NavigationViewItem::ShowHideChildren()
 {
-    auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
-    m_repeater.get().Visibility(visibility);
-
-    if (ShouldRepeaterShowInFlyout())
+    if (auto const repeater = m_repeater.get())
     {
-        if (shouldShowChildren)
+        bool shouldShowChildren = IsExpanded();
+        auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+        repeater.Visibility(visibility);
+
+        if (ShouldRepeaterShowInFlyout())
         {
-            // There seems to be a race condition happening which sometimes
-            // prevents the opening of the flyout. Queue callback as a workaround.
-            SharedHelpers::QueueCallbackForCompositionRendering(
-                [strongThis = get_strong()]()
+            if (shouldShowChildren)
             {
-                winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
-            });
-        }
-        else
-        {
-            if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+                // Verify that repeater is parented correctly
+                if (!m_isRepeaterParentedToFlyout)
+                {
+                    ReparentRepeater();
+                }
+
+                // There seems to be a race condition happening which sometimes
+                // prevents the opening of the flyout. Queue callback as a workaround.
+                SharedHelpers::QueueCallbackForCompositionRendering(
+                    [strongThis = get_strong()]()
+                {
+                    winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
+                });
+            }
+            else
             {
-                flyout.Hide();
+                if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+                {
+                    flyout.Hide();
+                }
             }
         }
     }

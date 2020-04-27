@@ -196,6 +196,7 @@
     <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(CSharpTargetsFilePath)" />
+  <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\CustomInlineTasks.targets" />
   <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage" Condition="$(BuildingWithBuildExe) != 'true'">
     <RunPowershellScript Path="$(MSBuildThisFileDirectory)\..\..\tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" />

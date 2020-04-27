@@ -44,10 +44,11 @@ unsealed runtimeclass ToggleSplitButton : SplitButton
 {
     ToggleSplitButton();
 
-    [MUX_PROPERTY_NEEDS_DP_FIELD]
     Boolean IsChecked{ get; set; };
 
     event Windows.Foundation.TypedEventHandler<ToggleSplitButton, ToggleSplitButtonIsCheckedChangedEventArgs> IsCheckedChanged;
+
+    static Windows.UI.Xaml.DependencyProperty IsCheckedProperty{ get; };
 }
 
 }

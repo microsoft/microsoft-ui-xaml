@@ -141,6 +141,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <!-- Button grid -->
                         <Grid
                             x:Name="PaneToggleButtonGrid"
                             Margin="0,0,0,8"
@@ -178,7 +179,7 @@
                                 <Button
                                     x:Name="TogglePaneButton"
                                     Style="{TemplateBinding PaneToggleButtonStyle}"
-                                    AutomationProperties.LandmarkType="Navigation"
+                                    AutomationProperties.LandmarkType="Navigation" HorizontalAlignment="Center"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonVisibility}"
                                     VerticalAlignment="Top">
                                     <TextBlock
@@ -201,13 +202,15 @@
                                 </Grid>
                             </Grid>
                         </Grid>
-
+                        
+                        <!-- Content layouts -->
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
+                            <!-- DisplayMode top -->
                             <StackPanel
                                 x:Name="TopNavArea"
                                 Background="{ThemeResource NavigationViewTopPaneBackground}"
@@ -351,6 +354,7 @@
                                     Child="{TemplateBinding ContentOverlay}" />
                             </StackPanel>
 
+                            <!-- Displaymode (compact/minimal/normal) left -->
                             <SplitView
                                 x:Name="RootSplitView"
                                 Background="{TemplateBinding Background}"
@@ -437,8 +441,9 @@
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Top">
                                             <ScrollViewer
+                                                TabNavigation="Once"
                                                 VerticalScrollBarVisibility="Auto">
-                                                <local:ItemsRepeater 
+                                                <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                         AutomationProperties.AccessibilityView = "Content">
@@ -527,6 +532,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="TabNavigation" Value="Once"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -591,7 +597,8 @@
                             ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                             Content="{TemplateBinding Content}"
                             primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            IsTabStop="False">
+                            IsTabStop="false"
+                            Control.IsTemplateFocusTarget="True">
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
                                 Grid.Row="1"

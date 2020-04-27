@@ -13,11 +13,12 @@ namespace winrt::Microsoft::UI::Xaml::Media
 
 #include "RadialGradientBrush.g.cpp"
 
-GlobalDependencyProperty RadialGradientBrushProperties::s_EllipseCenterProperty{ nullptr };
-GlobalDependencyProperty RadialGradientBrushProperties::s_EllipseRadiusProperty{ nullptr };
+GlobalDependencyProperty RadialGradientBrushProperties::s_CenterProperty{ nullptr };
 GlobalDependencyProperty RadialGradientBrushProperties::s_GradientOriginProperty{ nullptr };
 GlobalDependencyProperty RadialGradientBrushProperties::s_InterpolationSpaceProperty{ nullptr };
 GlobalDependencyProperty RadialGradientBrushProperties::s_MappingModeProperty{ nullptr };
+GlobalDependencyProperty RadialGradientBrushProperties::s_RadiusXProperty{ nullptr };
+GlobalDependencyProperty RadialGradientBrushProperties::s_RadiusYProperty{ nullptr };
 GlobalDependencyProperty RadialGradientBrushProperties::s_SpreadMethodProperty{ nullptr };
 
 RadialGradientBrushProperties::RadialGradientBrushProperties()
@@ -27,27 +28,16 @@ RadialGradientBrushProperties::RadialGradientBrushProperties()
 
 void RadialGradientBrushProperties::EnsureProperties()
 {
-    if (!s_EllipseCenterProperty)
+    if (!s_CenterProperty)
     {
-        s_EllipseCenterProperty =
+        s_CenterProperty =
             InitializeDependencyProperty(
-                L"EllipseCenter",
+                L"Center",
                 winrt::name_of<winrt::Point>(),
                 winrt::name_of<winrt::RadialGradientBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Point>::BoxValueIfNecessary(winrt::Point(0.5,0.5)),
-                winrt::PropertyChangedCallback(&OnEllipseCenterPropertyChanged));
-    }
-    if (!s_EllipseRadiusProperty)
-    {
-        s_EllipseRadiusProperty =
-            InitializeDependencyProperty(
-                L"EllipseRadius",
-                winrt::name_of<winrt::Point>(),
-                winrt::name_of<winrt::RadialGradientBrush>(),
-                false /* isAttached */,
-                ValueHelper<winrt::Point>::BoxValueIfNecessary(winrt::Point(0.5,0.5)),
-                winrt::PropertyChangedCallback(&OnEllipseRadiusPropertyChanged));
+                winrt::PropertyChangedCallback(&OnCenterPropertyChanged));
     }
     if (!s_GradientOriginProperty)
     {
@@ -82,6 +72,28 @@ void RadialGradientBrushProperties::EnsureProperties()
                 ValueHelper<winrt::BrushMappingMode>::BoxValueIfNecessary(winrt::BrushMappingMode::RelativeToBoundingBox),
                 winrt::PropertyChangedCallback(&OnMappingModePropertyChanged));
     }
+    if (!s_RadiusXProperty)
+    {
+        s_RadiusXProperty =
+            InitializeDependencyProperty(
+                L"RadiusX",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::RadialGradientBrush>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(0.5),
+                winrt::PropertyChangedCallback(&OnRadiusXPropertyChanged));
+    }
+    if (!s_RadiusYProperty)
+    {
+        s_RadiusYProperty =
+            InitializeDependencyProperty(
+                L"RadiusY",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::RadialGradientBrush>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(0.5),
+                winrt::PropertyChangedCallback(&OnRadiusYPropertyChanged));
+    }
     if (!s_SpreadMethodProperty)
     {
         s_SpreadMethodProperty =
@@ -97,28 +109,21 @@ void RadialGradientBrushProperties::EnsureProperties()
 
 void RadialGradientBrushProperties::ClearProperties()
 {
-    s_EllipseCenterProperty = nullptr;
-    s_EllipseRadiusProperty = nullptr;
+    s_CenterProperty = nullptr;
     s_GradientOriginProperty = nullptr;
     s_InterpolationSpaceProperty = nullptr;
     s_MappingModeProperty = nullptr;
+    s_RadiusXProperty = nullptr;
+    s_RadiusYProperty = nullptr;
     s_SpreadMethodProperty = nullptr;
 }
 
-void RadialGradientBrushProperties::OnEllipseCenterPropertyChanged(
+void RadialGradientBrushProperties::OnCenterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnEllipseCenterPropertyChanged(args);
-}
-
-void RadialGradientBrushProperties::OnEllipseRadiusPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnEllipseRadiusPropertyChanged(args);
+    winrt::get_self<RadialGradientBrush>(owner)->OnCenterPropertyChanged(args);
 }
 
 void RadialGradientBrushProperties::OnGradientOriginPropertyChanged(
@@ -145,6 +150,22 @@ void RadialGradientBrushProperties::OnMappingModePropertyChanged(
     winrt::get_self<RadialGradientBrush>(owner)->OnMappingModePropertyChanged(args);
 }
 
+void RadialGradientBrushProperties::OnRadiusXPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadialGradientBrush>();
+    winrt::get_self<RadialGradientBrush>(owner)->OnRadiusXPropertyChanged(args);
+}
+
+void RadialGradientBrushProperties::OnRadiusYPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadialGradientBrush>();
+    winrt::get_self<RadialGradientBrush>(owner)->OnRadiusYPropertyChanged(args);
+}
+
 void RadialGradientBrushProperties::OnSpreadMethodPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -153,24 +174,14 @@ void RadialGradientBrushProperties::OnSpreadMethodPropertyChanged(
     winrt::get_self<RadialGradientBrush>(owner)->OnSpreadMethodPropertyChanged(args);
 }
 
-void RadialGradientBrushProperties::EllipseCenter(winrt::Point const& value)
+void RadialGradientBrushProperties::Center(winrt::Point const& value)
 {
-    static_cast<RadialGradientBrush*>(this)->SetValue(s_EllipseCenterProperty, ValueHelper<winrt::Point>::BoxValueIfNecessary(value));
+    static_cast<RadialGradientBrush*>(this)->SetValue(s_CenterProperty, ValueHelper<winrt::Point>::BoxValueIfNecessary(value));
 }
 
-winrt::Point RadialGradientBrushProperties::EllipseCenter()
+winrt::Point RadialGradientBrushProperties::Center()
 {
-    return ValueHelper<winrt::Point>::CastOrUnbox(static_cast<RadialGradientBrush*>(this)->GetValue(s_EllipseCenterProperty));
-}
-
-void RadialGradientBrushProperties::EllipseRadius(winrt::Point const& value)
-{
-    static_cast<RadialGradientBrush*>(this)->SetValue(s_EllipseRadiusProperty, ValueHelper<winrt::Point>::BoxValueIfNecessary(value));
-}
-
-winrt::Point RadialGradientBrushProperties::EllipseRadius()
-{
-    return ValueHelper<winrt::Point>::CastOrUnbox(static_cast<RadialGradientBrush*>(this)->GetValue(s_EllipseRadiusProperty));
+    return ValueHelper<winrt::Point>::CastOrUnbox(static_cast<RadialGradientBrush*>(this)->GetValue(s_CenterProperty));
 }
 
 void RadialGradientBrushProperties::GradientOrigin(winrt::Point const& value)
@@ -201,6 +212,26 @@ void RadialGradientBrushProperties::MappingMode(winrt::BrushMappingMode const& v
 winrt::BrushMappingMode RadialGradientBrushProperties::MappingMode()
 {
     return ValueHelper<winrt::BrushMappingMode>::CastOrUnbox(static_cast<RadialGradientBrush*>(this)->GetValue(s_MappingModeProperty));
+}
+
+void RadialGradientBrushProperties::RadiusX(double value)
+{
+    static_cast<RadialGradientBrush*>(this)->SetValue(s_RadiusXProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double RadialGradientBrushProperties::RadiusX()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<RadialGradientBrush*>(this)->GetValue(s_RadiusXProperty));
+}
+
+void RadialGradientBrushProperties::RadiusY(double value)
+{
+    static_cast<RadialGradientBrush*>(this)->SetValue(s_RadiusYProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double RadialGradientBrushProperties::RadiusY()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<RadialGradientBrush*>(this)->GetValue(s_RadiusYProperty));
 }
 
 void RadialGradientBrushProperties::SpreadMethod(winrt::GradientSpreadMethod const& value)
