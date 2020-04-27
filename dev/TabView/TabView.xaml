@@ -619,36 +619,28 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Paths are techincally content, but are not relevant to UIA in our case -->
-                        <!-- To circumenvent that, wrap them in  content controls and disable the tab stop -->
-                        <ContentControl
+                        <Path 
                             x:Name="LeftRadiusRender"
+                            x:Load="False"
                             Grid.Column="0"
-                            Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
-                            AutomationProperties.AccessibilityView="Raw"
                             Visibility="Collapsed"
+                            VerticalAlignment="Bottom"
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomLeft}"
                             Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"
-                            VerticalAlignment="Bottom"
-                            IsTabStop="False">
-                            <Path 
-                                Stretch="Uniform"
-                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                                Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" />
-                        </ContentControl>
-
-                        <ContentControl x:Name="RightRadiusRender"
-                            AutomationProperties.AccessibilityView="Raw"
-                            Visibility="Collapsed"
-                            Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"
+                            Stretch="Uniform"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" /> 
+                        <Path
+                            x:Name="RightRadiusRender"
+                            x:Load="False"
                             Grid.Column="2"
+                            Visibility="Collapsed"
                             VerticalAlignment="Bottom"
-                            Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
-                            IsTabStop="False">
-                            <Path
-                                Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
-                                Stretch="Uniform"
-                                Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
-                        </ContentControl>
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomRight}"
+                            Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"
+                            Stretch="Uniform"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
 
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
