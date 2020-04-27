@@ -430,8 +430,8 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
-                                        <Setter Target="LeftRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"/>
-                                        <Setter Target="RightRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"/>
+                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -444,8 +444,8 @@
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"/>
-                                        <Setter Target="RightRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"/>
+                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -457,8 +457,8 @@
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"/>
-                                        <Setter Target="RightRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"/>
+                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -626,6 +626,8 @@
                             Grid.Column="0"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
                             AutomationProperties.AccessibilityView="Raw"
+                            Visibility="Collapsed"
+                            Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"
                             VerticalAlignment="Bottom"
                             IsTabStop="False">
                             <Path 
@@ -636,6 +638,8 @@
 
                         <ContentControl x:Name="RightRadiusRender"
                             AutomationProperties.AccessibilityView="Raw"
+                            Visibility="Collapsed"
+                            Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"
                             Grid.Column="2"
                             VerticalAlignment="Bottom"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
