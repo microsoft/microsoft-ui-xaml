@@ -40,7 +40,7 @@
                         </muxcontrols:NavigationViewItem>
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Menu Item 10 with a very long name to show the added padding" Icon="Save" x:Name="MI10"/>
+                <muxcontrols:NavigationViewItem Content="Menu Item 10" Icon="Save" x:Name="MI10"/>
                 <muxcontrols:NavigationViewItem Content="Menu Item 11" x:Name="MI11" SelectsOnInvoked="False" Icon="Paste">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem Content="Menu Item 12" Icon="Save" x:Name="MI12" SelectsOnInvoked="False">
