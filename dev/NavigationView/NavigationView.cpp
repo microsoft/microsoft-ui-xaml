@@ -742,11 +742,6 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 {
     m_shouldRaiseItemInvokedAfterSelection = true;
 
-    auto scopeGuard = gsl::finally([this]()
-    {
-        m_shouldRaiseItemInvokedAfterSelection = false;
-    });
-
     auto selectedItem = SelectedItem();
     bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
@@ -1931,6 +1926,8 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         const auto selectedItem = SelectedItem();
         if (m_shouldRaiseItemInvokedAfterSelection)
         {
+            // If selection changed inside ItemInvoked, the flag does not get said to false and the event get's raised again,so we need to set it to false now!
+            m_shouldRaiseItemInvokedAfterSelection = false;
             RaiseItemInvoked(nextItem, isSettingsItem, NavigationViewItemOrSettingsContentFromData(nextItem), recommendedDirection);
         }
         // Selection was modified inside ItemInvoked, skip everything here!
