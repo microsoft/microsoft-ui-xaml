@@ -130,6 +130,8 @@
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Content="{TemplateBinding Content}"
+                                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}"
                                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                                 FontSize="{ThemeResource AutoSuggestBoxIconFontSize}"
@@ -341,6 +343,7 @@
                             VerticalAlignment="Stretch" />
                         <Button x:Name="QueryButton"
                             Grid.Row="1"
+                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
                             Style="{StaticResource QueryButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             IsTabStop="False"
