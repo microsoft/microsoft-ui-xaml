@@ -4560,7 +4560,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
-                var invokedItem = FindElement.ByName("MusicItem");
+                var invokedItem = FindElement.ByName("Music");
 
                 invokedItem.Click();
 
