@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml.Controls;
@@ -20,6 +20,8 @@ namespace MUXControlsTestApp
         public NavigationViewCompactPaneLengthTestPage()
         {
             this.InitializeComponent();
+
+            NavView.CompactPaneLength = 96;
         }
         
         private void CompactPaneLength_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -74,7 +76,8 @@ namespace MUXControlsTestApp
         private void CheckMenuItemsOffset_Click(object sender, RoutedEventArgs e)
         {
             bool allCorrect = true;
-            foreach(var item in NavView.MenuItems)
+
+            foreach (var item in NavView.MenuItems)
             {
                 if(item as NavigationViewItem == null)
                 {
@@ -86,6 +89,23 @@ namespace MUXControlsTestApp
                     allCorrect = false;
                 }
             }
+
+            var rootgrid = VisualTreeHelper.GetChild(NavView, 0);
+            var paneToggleButtonGrid = VisualTreeHelper.GetChild(rootgrid, 0);
+            var buttonHolderGrid = VisualTreeHelper.GetChild(paneToggleButtonGrid, 1);
+            var backButton = VisualTreeHelper.GetChild(buttonHolderGrid, 0) as Button;
+            var togglePaneButton = VisualTreeHelper.GetChild(buttonHolderGrid, 2) as Button;
+
+            if (Math.Abs(backButton.ActualWidth - NavView.CompactPaneLength) > double.Epsilon)
+            {
+                allCorrect = false;
+            }
+
+            if (Math.Abs(togglePaneButton.ActualWidth - NavView.CompactPaneLength) > double.Epsilon)
+            {
+                allCorrect = false;
+            }
+
             MenuItemsCorrectOffset.IsChecked = allCorrect;
 
         }

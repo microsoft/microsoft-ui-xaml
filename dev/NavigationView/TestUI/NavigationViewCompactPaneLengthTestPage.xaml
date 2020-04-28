@@ -55,8 +55,8 @@
                             Content="IsPaneVisible"
                             IsChecked="{Binding IsPaneVisible, ElementName=NavView, Mode=TwoWay}"
                             Margin="5"/>
-                        
-                        <ComboBox x:Name="CompactPaneLength" Header="Compact Pane Length" AutomationProperties.Name="CompactPaneLenghtComboBox"
+
+                        <ComboBox x:Name="CompactPaneLength" Header="Compact Pane Length" AutomationProperties.Name="CompactPaneLengthComboBox"
                             SelectionChanged="CompactPaneLength_SelectionChanged"  Margin="5">
                             <ComboBoxItem Content="0" Tag="0"/>
                             <ComboBoxItem Content="40" Tag="40" IsSelected="True"/>

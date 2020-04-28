@@ -1344,7 +1344,7 @@ void NavigationView::UpdateIsClosedCompact()
 
 void NavigationView::UpdatePaneButtonsWidths()
 {
-    auto newButtonWidths = [this]()
+    const auto newButtonWidths = [this]()
     {
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
         {
@@ -3496,6 +3496,8 @@ void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEv
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
         m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
     }
+    // Update pane buttons now since we the CompactPaneLength is actually known now.
+    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::OnIsPaneOpenChanged()
