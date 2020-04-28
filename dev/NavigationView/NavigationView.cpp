@@ -2155,9 +2155,9 @@ void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender
 
 void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    if (args.OriginalKey() != winrt::VirtualKey::GamepadA
-        && args.Key() != winrt::VirtualKey::Enter
-        && args.Key() != winrt::VirtualKey::Space)
+    if (args.OriginalKey() == winrt::VirtualKey::GamepadA || 
+        (args.Key() != winrt::VirtualKey::Enter
+        && args.Key() != winrt::VirtualKey::Space))
     {
         if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
         {
