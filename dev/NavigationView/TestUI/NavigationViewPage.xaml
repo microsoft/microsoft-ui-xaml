@@ -42,7 +42,7 @@
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
-                <muxcontrols:NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio"/>
+                <muxcontrols:NavigationViewItem x:Name="MusicItem" AutomationProperties.Name="Music" Content="Music" Icon="Audio"/>
                 <muxcontrols:NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
                 <muxcontrols:NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
@@ -128,6 +128,8 @@
                             <ComboBoxItem Content="320" Tag="320"/>
                             <ComboBoxItem Content="648" Tag="648"/>
                         </ComboBox>
+
+                        <TextBlock x:Name="InvokedItemState" AutomationProperties.Name="InvokedItemState" Text="NoItemInvoked"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">

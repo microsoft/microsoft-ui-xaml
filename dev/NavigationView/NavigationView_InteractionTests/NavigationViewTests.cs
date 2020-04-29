@@ -4665,6 +4665,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
             }
         }
+        
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifySelectedItemInInvokedItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var invokedItem = FindElement.ByName("Music");
+
+                invokedItem.Click();
+
+                Wait.ForIdle();
+
+                var result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Log.Comment("Verify item is selected when Invoked event got raised");
+                Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
+            
+                invokedItem.Click();
+
+                Wait.ForIdle();
+
+                Log.Comment("Verify item invoked was raised despite item already selected");
+                result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
+            }
+        }
 
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
