@@ -25,11 +25,10 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
     /// </summary>
     public sealed partial class SelectionModelPage : Page
     {
-        private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(100);
+        private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(10);
         public SelectionModelPage()
         {
             this.InitializeComponent();
-            PointerBehaviors.Click += PointerBehaviors_Click;
         }
 
 
@@ -44,16 +43,45 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 
 
             SelectionBehavior.SetIsSelected(control,
-                    selectionModel.SelectedIndex != null && selectionModel.SelectedIndex.GetAt(0) == args.Index);
+                selectionModel.SelectedItems.Contains(teams[TeamPresenter.GetElementIndex(control)]));
         }
 
         private void Control_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            selectionModel.Select(TeamPresenter.GetElementIndex(sender as Control));
+            var elementIndex = TeamPresenter.GetElementIndex(sender as UIElement);
+            if (selectionModel.SingleSelect)
+            {
+                if (e.KeyModifiers == Windows.System.VirtualKeyModifiers.Control)
+                {
+                    selectionModel.Deselect(elementIndex);
+                }
+                else
+                {
+                    selectionModel.Select(elementIndex);
+                }
+            }
+            else
+            {
+                switch (e.KeyModifiers)
+                {
+                    case Windows.System.VirtualKeyModifiers.Shift:
+                        if (PointerBehaviors.LastFocused != null)
+                        {
+                            var lastFocused = TeamPresenter.GetElementIndex(PointerBehaviors.LastFocused as UIElement);
+                            selectionModel.SetAnchorIndex(lastFocused);
+                        }
+                        selectionModel.SelectRangeFromAnchor(elementIndex);
+                        break;
+                    case Windows.System.VirtualKeyModifiers.Control:
+                        selectionModel.Deselect(elementIndex);
+                        break;
+                    default:
+                        selectionModel.Select(elementIndex);
+                        break;
+                }
+            }
+            PointerBehaviors.LastFocused = sender as UIElement;
         }
-
-
-
 
         /// <summary>
         /// This event gets raised when an item gets selected
@@ -75,18 +103,32 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
                 }
                 if (selectionModel.SelectedItems.Contains(item))
                 {
-                    SelectionBehavior.SetIsSelected(control,true);
+                    SelectionBehavior.SetIsSelected(control, true);
                 }
                 else
                 {
-                    SelectionBehavior.SetIsSelected(control,false);
+                    SelectionBehavior.SetIsSelected(control, false);
                 }
             }
         }
 
-        private void PointerBehaviors_Click(object sender, RoutedEventArgs e)
+        private void SingleSelectCheckbox_Checked(object sender, RoutedEventArgs e)
         {
-            selectionModel.Select(TeamPresenter.GetElementIndex(sender as FrameworkElement));
+            if (selectionModel != null)
+            {
+                selectionModel.SingleSelect = true;
+                selectionModel.ClearSelection();
+            }
+        }
+
+        private void SingleSelectCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+
+            if (selectionModel != null)
+            {
+                selectionModel.SingleSelect = false;
+                selectionModel.ClearSelection();
+            }
         }
     }
 }

@@ -13,6 +13,8 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
     {
 
         public static event RoutedEventHandler Click;
+        public static DependencyObject LastFocused;
+
 
         public static bool GetIsEnabled(DependencyObject obj)
         {
@@ -31,6 +33,7 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
                 dp.PointerExited += Dp_PointerExited;
 
                 dp.Tapped += Dp_Tapped;
+                dp.GotFocus += Dp_GotFocus;
             }
             else
             {
@@ -40,7 +43,13 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
                 dp.PointerExited -= Dp_PointerExited;
 
                 dp.Tapped -= Dp_Tapped;
+                dp.GotFocus -= Dp_GotFocus;
             }
+        }
+
+        private static void Dp_GotFocus(object sender, RoutedEventArgs e)
+        {
+            LastFocused = (DependencyObject)sender;
         }
 
         // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...

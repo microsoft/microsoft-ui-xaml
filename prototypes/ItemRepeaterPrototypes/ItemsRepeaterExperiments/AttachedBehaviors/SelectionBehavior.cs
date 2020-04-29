@@ -46,6 +46,5 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
         // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsSelectedProperty =
             DependencyProperty.RegisterAttached("IsSelected", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(false));
-
     }
 }

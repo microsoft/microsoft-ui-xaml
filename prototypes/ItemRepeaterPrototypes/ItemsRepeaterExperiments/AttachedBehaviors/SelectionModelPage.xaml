@@ -7,14 +7,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:common="using:ItemsRepeaterExperiments.Common"
+    xmlns:windows="using:System.Windows"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <CheckBox Content="Is single select" x:Name="SingleSelectCheckbox"
+                Checked="SingleSelectCheckbox_Checked" Unchecked="SingleSelectCheckbox_Unchecked"
+                      IsChecked="True"/>
+        </StackPanel>
+        
         <muxc:ItemsRepeaterScrollHost Grid.Row="2">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <muxc:ItemsRepeater Grid.Row="2" 
-                                    x:Name="TeamPresenter"
+                    x:Name="TeamPresenter"
                     ElementPrepared="ItemsRepeater_ElementPrepared"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
 
@@ -29,7 +41,10 @@
                         <DataTemplate x:DataType="common:Team">
 
                             <!-- Inline UserControl -->
-                            <UserControl x:Name="RootControl" local:SelectionBehavior.IsEnabled="True" local:PointerBehaviors.IsEnabled="True">
+                            <UserControl x:Name="RootControl" AutomationProperties.Name="{x:Bind Name}"
+                                    PointerReleased="Control_PointerReleased"
+                                    local:SelectionBehavior.IsEnabled="True"
+                                    local:PointerBehaviors.IsEnabled="True">
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
                                     BorderThickness="1" MinHeight="200" MinWidth="200">
