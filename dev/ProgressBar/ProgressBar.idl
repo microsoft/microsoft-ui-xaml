@@ -6,19 +6,19 @@
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    Double ContainerAnimationStartPosition;
-    Double ContainerAnimationEndPosition;
-    Double ContainerAnimationStartPosition2;
-    Double ContainerAnimationEndPosition2; 
-    Double ContainerAnimationMidPosition; 
-    Double IndicatorLengthDelta;
-    Windows.UI.Xaml.Media.RectangleGeometry ClipRect;
+    Double ContainerAnimationStartPosition{ get; };
+    Double ContainerAnimationEndPosition{ get; };
+    Double ContainerAnimationStartPosition2{ get; };
+    Double ContainerAnimationEndPosition2{ get; };
+    Double ContainerAnimationMidPosition{ get; };
+    Double IndicatorLengthDelta{ get; };
+    Windows.UI.Xaml.Media.RectangleGeometry ClipRect{ get; };
    
     // TemplateSetting properties from WUXC for backwards compatibility.
-    Double EllipseAnimationEndPosition;
-    Double EllipseAnimationWellPosition;
-    Double EllipseDiameter;
-    Double EllipseOffset;
+    Double EllipseAnimationEndPosition{ get; };
+    Double EllipseAnimationWellPosition{ get; };
+    Double EllipseDiameter{ get; };
+    Double EllipseOffset{ get; };
 }
 
 [WUXC_VERSION_MUXONLY]

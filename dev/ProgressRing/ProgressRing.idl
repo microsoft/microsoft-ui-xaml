@@ -7,9 +7,9 @@
 runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
     // TemplateSetting properties from WUXC for backwards compatibility.
-    Double EllipseDiameter;
-    Windows.UI.Xaml.Thickness EllipseOffset;
-    Double MaxSideLength;
+    Double EllipseDiameter{ get; };
+    Windows.UI.Xaml.Thickness EllipseOffset{ get; };
+    Double MaxSideLength{ get; };
 }
 
 [WUXC_VERSION_MUXONLY]

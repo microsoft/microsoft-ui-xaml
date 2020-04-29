@@ -53,15 +53,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
                 Log.Comment("Set the source to 10 items");
                 selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                // Check index selection
                 Select(selectionModel, 3, true);
                 ValidateSelection(selectionModel, new List<IndexPath>() { Path(3) }, new List<IndexPath>() { Path() });
                 Select(selectionModel, 3, false);
+                ValidateSelection(selectionModel, new List<IndexPath>() { });
+
+                // Check index path selection
+                Select(selectionModel, Path(4), true);
+                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+                Select(selectionModel, Path(4), false);
                 ValidateSelection(selectionModel, new List<IndexPath>() { });
             });
         }
 
         [TestMethod]
-        public void ValidateSelectionChangedEvent()
+        public void ValidateSelectionChangedEventSingleSelection()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                bool select = true;
+                int selectionChangedFiredCount = 0;
+                selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args) {
+                    selectionChangedFiredCount++;
+
+                    // Verify SelectionChanged was raised after selection state was changed in the SelectionModel
+                    if (select)
+                    {
+                        ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+                    }
+                    else
+                    {
+                        ValidateSelection(selectionModel, new List<IndexPath>() { });
+                    }
+                };
+
+                Select(selectionModel, Path(4), select);
+                Verify.AreEqual(1, selectionChangedFiredCount);
+
+                select = false;
+                Select(selectionModel, Path(4), select);
+                Verify.AreEqual(2, selectionChangedFiredCount);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateSelectionChangedEventMultipleSelection()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -72,11 +113,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args) 
                 {
                     selectionChangedFiredCount++;
+
+                    // Verify SelectionChanged was raised after selection state was changed in the SelectionModel
                     ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
                 };
 
                 Select(selectionModel, 4, true);
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
                 Verify.AreEqual(1, selectionChangedFiredCount);
             });
         }
