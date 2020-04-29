@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "ProgressRing.g.cpp"
 
 GlobalDependencyProperty ProgressRingProperties::s_IsActiveProperty{ nullptr };
+GlobalDependencyProperty ProgressRingProperties::s_TemplateSettingsProperty{ nullptr };
 
 ProgressRingProperties::ProgressRingProperties()
 {
@@ -33,11 +34,23 @@ void ProgressRingProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnIsActivePropertyChanged));
     }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::ProgressRingTemplateSettings>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ProgressRingTemplateSettings>::BoxedDefaultValue(),
+                nullptr);
+    }
 }
 
 void ProgressRingProperties::ClearProperties()
 {
     s_IsActiveProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
 void ProgressRingProperties::OnIsActivePropertyChanged(
@@ -56,4 +69,14 @@ void ProgressRingProperties::IsActive(bool value)
 bool ProgressRingProperties::IsActive()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_IsActiveProperty));
+}
+
+void ProgressRingProperties::TemplateSettings(winrt::ProgressRingTemplateSettings const& value)
+{
+    static_cast<ProgressRing*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressRingTemplateSettings>::BoxValueIfNecessary(value));
+}
+
+winrt::ProgressRingTemplateSettings ProgressRingProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::ProgressRingTemplateSettings>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_TemplateSettingsProperty));
 }

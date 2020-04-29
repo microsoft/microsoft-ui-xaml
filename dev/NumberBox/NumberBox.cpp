@@ -136,11 +136,7 @@ void NumberBox::OnApplyTemplate()
         }
     }
 
-    if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, controlProtected))
-    {
-        // Set presenter to enable lightweight styling of the headers margin
-        m_headerPresenter.set(headerPresenter);
-    }
+    UpdateHeaderPresenterState();
 
     m_textBox.set([this, controlProtected]() {
         const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
@@ -158,6 +154,18 @@ void NumberBox::OnApplyTemplate()
             }
 
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
+
+            // Listen to NumberBox::CornerRadius changes so that we can enfore the T-rule for the textbox in SpinButtonPlacementMode::Inline.
+            // We need to explicitly go to the corresponding visual state each time the NumberBox' CornerRadius is changed in order for the new
+            // corner radius values to be filtered correctly.
+            // If we only go to the SpinButtonsVisible visual state whenever the SpinButtonPlacementMode is changed to Inline, all subsequent
+            // corner radius changes would apply to all four textbox corners (this can be easily seen in the CornerRadius test page of the MUXControlsTestApp).
+            // This will break the T-rule in the Inline SpinButtonPlacementMode.
+            if (SharedHelpers::IsControlCornerRadiusAvailable())
+            {
+                m_cornerRadiusChangedRevoker = RegisterPropertyChanged(*this,
+                    winrt::Control::CornerRadiusProperty(), { this, &NumberBox::OnCornerRadiusPropertyChanged });
+            }  
         }
         return textBox;
     }());
@@ -205,6 +213,15 @@ void NumberBox::OnApplyTemplate()
     else
     {
         UpdateTextToValue();
+    }
+}
+
+void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+{
+    if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
+    {
+        // Enforce T-rule for the textbox in Inline SpinButtonPlacementMode.
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
 }
 
@@ -307,36 +324,12 @@ void NumberBox::UpdateValueToText()
 
 void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // To enable lightweight styling, collapse header presenter if there is no header specified
-    if (const auto headerPresenter = m_headerPresenter.get())
-    {
-        if (const auto header = Header())
-        {
-            // Check if header is string or not
-            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
-            {
-                if (headerAsString.Value().empty())
-                {
-                    // String is the empty string, hide presenter
-                    headerPresenter.Visibility(winrt::Visibility::Collapsed);
-                }
-                else
-                {
-                    // String is not an empty string
-                    headerPresenter.Visibility(winrt::Visibility::Visible);
-                }
-            }
-            else
-            {
-                // Header is not a string, so let's show header presenter
-                headerPresenter.Visibility(winrt::Visibility::Visible);
-            }
-        }
-        else
-        {
-            headerPresenter.Visibility(winrt::Visibility::Collapsed);
-        }
-    }
+    UpdateHeaderPresenterState();
+}
+
+void NumberBox::OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateHeaderPresenterState();
 }
 
 void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -642,3 +635,46 @@ bool NumberBox::IsInBounds(double value)
     return (value >= Minimum() && value <= Maximum());
 }
 
+void NumberBox::UpdateHeaderPresenterState()
+{
+    bool shouldShowHeader = false;
+
+    // Load header presenter as late as possible
+
+    // To enable lightweight styling, collapse header presenter if there is no header specified
+    if (const auto header = Header())
+    {
+        // Check if header is string or not
+        if (const auto headerAsString = header.try_as<winrt::IReference<winrt::hstring>>())
+        {
+            if (!headerAsString.Value().empty())
+            {
+                // Header is not empty string
+                shouldShowHeader = true;
+            }
+        }
+        else
+        {
+            // Header is not a string, so let's show header presenter
+            shouldShowHeader = true;
+        }
+    }
+    if(const auto headerTemplate = HeaderTemplate())
+    {
+        shouldShowHeader = true;
+    }
+
+    if(shouldShowHeader && m_headerPresenter == nullptr)
+    {
+        if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, (winrt::IControlProtected)*this))
+        {
+            // Set presenter to enable lightweight styling of the headers margin
+            m_headerPresenter.set(headerPresenter);
+        }
+    }
+
+    if (auto&& headerPresenter = m_headerPresenter.get())
+    {
+        headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    }
+}

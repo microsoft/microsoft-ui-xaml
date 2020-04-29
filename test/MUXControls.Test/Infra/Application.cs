@@ -28,6 +28,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using System.Runtime.InteropServices;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
@@ -103,6 +104,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
                 else
                 {
+                    // Maxmize window to ensure we can find UIA elements
+                    var appFrameWindow = new Window(CoreWindow);
+                    if (appFrameWindow.CanMaximize)
+                    {
+                        appFrameWindow.SetWindowVisualState(WindowVisualState.Maximized);
+                    }
+
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
                     ApplicationFrameWindow = topWindowObj;
 
@@ -384,7 +392,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             UIObject closeAppInvoker;
             if (!topWindowObj.Descendants.TryFind(UICondition.Create("@AutomationId='__CloseAppInvoker'"), out closeAppInvoker))
             {
-                Log.Comment("Application.CloseAppWindowWithCloseButton: Failed to find close app invoker");
+                Log.Comment("Application.CloseAppWindowWithCloseButton: Failed to find close app invoker.");
                 return false;
             }
 

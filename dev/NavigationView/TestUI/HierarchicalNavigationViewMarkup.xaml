@@ -53,12 +53,9 @@
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 15" x:Name="MI15" SelectsOnInvoked="False" Icon="Shuffle">
                     <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem Content="Menu Item 16 (Selectable)" Icon="Save" x:Name="MI16">
-                            <muxcontrols:NavigationViewItem.MenuItems>
-                                <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
-                                <muxcontrols:NavigationViewItem Content="Menu Item 18" Icon="Paste" x:Name="MI18" />
-                            </muxcontrols:NavigationViewItem.MenuItems>
-                        </muxcontrols:NavigationViewItem>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 16" Icon="Save" x:Name="MI16" />
+                        <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
+                        <muxcontrols:NavigationViewItem Content="Menu Item 18" Icon="Paste" x:Name="MI18" />
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 19" x:Name="MI19" SelectsOnInvoked="True"/>

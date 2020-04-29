@@ -585,18 +585,19 @@ void SelectionModel::OnSelectionChanged()
 
 void SelectionModel::SelectImpl(int index, bool select)
 {
-    if (m_singleSelect)
+    if (m_rootNode->IsSelected(index) != select)
     {
-        ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
+        if (m_singleSelect)
+        {
+            ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
+        }
+        auto selected = m_rootNode->Select(index, select);
+        if (selected)
+        {
+            AnchorIndex(winrt::make<IndexPath>(index));
+        }
+        OnSelectionChanged();
     }
-
-    auto selected = m_rootNode->Select(index, select);
-    if (selected)
-    {
-        AnchorIndex(winrt::make<IndexPath>(index));
-    }
-
-    OnSelectionChanged();
 }
 
 void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool select)
@@ -618,33 +619,77 @@ void SelectionModel::SelectWithGroupImpl(int groupIndex, int itemIndex, bool sel
 
 void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool select, bool raiseSelectionChanged)
 {
-    bool selected = false;
+    bool newSelection = true;
+
+    // Handle single select differently as comparing indexpaths is faster
     if (m_singleSelect)
     {
-        ClearSelection(true /*restAnchor*/, false /* raiseSelectionChanged */);
-    }
-
-    SelectionTreeHelper::TraverseIndexPath(
-        m_rootNode,
-        index,
-        true, /* realizeChildren */
-        [&selected, &select](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+        if (auto const selectedIndex = SelectedIndex())
         {
-            if (depth == path.GetSize() - 1)
+            // If paths are equal and we want to select, skip everything and do nothing
+            if (select && selectedIndex.CompareTo(index) == 0)
             {
-                selected = currentNode->Select(childIndex, select);
+                newSelection = false;
             }
         }
-    );
-
-    if (selected)
-    {
-        AnchorIndex(index);
+        else
+        {
+            // If we are in single select and selectedIndex is null, deselecting is not a new change.
+            // Selecting something is a new change, so set flag to appropriate value here.
+            newSelection = select;
+        }
     }
 
-    if (raiseSelectionChanged)
+    // Selection is actually different from previous one, so update.
+    if (newSelection)
     {
-        OnSelectionChanged();
+        bool selected = false;
+        // If we unselect something, raise event any way, otherwise changedSelection is false
+        bool changedSelection = false;
+
+        // We only need to clear selection by walking the data structure from the beginning when:
+        // - we are in single selection mode and 
+        // - want to select something.
+        // 
+        // If we want to unselect something we unselect it directly in TraverseIndexPath below and raise the SelectionChanged event
+        // if required.
+        if (m_singleSelect && select)
+        {
+            ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
+        }
+
+        SelectionTreeHelper::TraverseIndexPath(
+            m_rootNode,
+            index,
+            true, /* realizeChildren */
+            [&selected, &select, &changedSelection](std::shared_ptr<SelectionNode> currentNode, const winrt::IndexPath& path, int depth, int childIndex)
+            {
+                if (depth == path.GetSize() - 1)
+                {
+                    if (currentNode->IsSelected(childIndex) != select)
+                    {
+                        // Node has different value then we want to set, so lets update!
+                        changedSelection = true;
+                    }
+                    selected = currentNode->Select(childIndex, select);
+                }
+            }
+        );
+
+        if (selected)
+        {
+            AnchorIndex(index);
+        }
+
+        // The walk tree operation can change the indices, and the next time it get's read,
+        // we would throw an exception. That's what we are preventing with next two lines
+        m_selectedIndicesCached = nullptr;
+        m_selectedItemsCached = nullptr;
+
+        if (raiseSelectionChanged && changedSelection)
+        {
+            OnSelectionChanged();
+        }
     }
 }
 

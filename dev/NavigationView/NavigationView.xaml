@@ -423,6 +423,7 @@
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch">
                                             <ScrollViewer
+                                                TabNavigation="Once"
                                                 VerticalScrollBarVisibility="Auto">
                                                 <Grid x:Name="ScrollingContentGrid">
                                                     <Grid.RowDefinitions>
@@ -520,6 +521,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="TabNavigation" Value="Once"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -584,7 +586,8 @@
                             ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                             Content="{TemplateBinding Content}"
                             primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            IsTabStop="False">
+                            IsTabStop="false"
+                            Control.IsTemplateFocusTarget="True">
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
                                 Grid.Row="1"

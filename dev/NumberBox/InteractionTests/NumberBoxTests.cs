@@ -315,15 +315,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(0, numBox.Value);
 
                 FindTextBox(numBox).SetFocus();
+                Wait.ForIdle();
 
-                InputHelper.RotateWheel(numBox, 1);
-                InputHelper.RotateWheel(numBox, 1);
+                InputHelper.RotateWheel(FindTextBox(numBox), 1);
+                InputHelper.RotateWheel(FindTextBox(numBox), 1);
                 Wait.ForIdle();
                 Verify.AreEqual(2, numBox.Value);
 
-                InputHelper.RotateWheel(numBox, -1);
-                InputHelper.RotateWheel(numBox, -1);
-                InputHelper.RotateWheel(numBox, -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
                 Wait.ForIdle();
                 Verify.AreEqual(-1, numBox.Value);
 
@@ -538,9 +539,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
+                var headerBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderBeforeApplyTemplateTest");
+                Verify.IsNotNull(headerBeforeApplyTemplate); 
+                
+                var headerTemplateBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderTemplateBeforeApplayTemplateTest");
+                Verify.IsNotNull(headerBeforeApplyTemplate);
+
                 var toggleHeaderButton = FindElement.ByName<Button>("ToggleHeaderValueButton");
                 var header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
-
+                
                 Log.Comment("Check header is null");
                 Verify.IsNull(header);
 
@@ -559,6 +566,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Check that header is null again");
                 header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
                 Verify.IsNull(header);
+
+
+                var toggleHeaderTemplateButton = FindElement.ByName<Button>("ToggleHeaderTemplateValueButton");
+                var headerTemplate = FindElement.ByName<TextBlock>("HeaderTemplateTestingBlock");
+
+                Verify.IsNull(headerTemplate);
+
+                toggleHeaderTemplateButton.Invoke();
+                Wait.ForIdle();
+
+                headerTemplate = FindElement.ByName<TextBlock>("HeaderTemplateTestingBlock");
+                Verify.IsNotNull(headerTemplate);
             }
         }
 

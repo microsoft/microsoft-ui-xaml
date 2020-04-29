@@ -93,8 +93,6 @@ public:
 
 private:
 
-    void OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
-
     // Selection handling functions
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
@@ -137,11 +135,11 @@ private:
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
-    void CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
-    void CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir);
+    void CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
+    void CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
-    void CloseFlyoutIfRequired();
+    void CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem);
 
     // Force realization functions
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
@@ -260,7 +258,6 @@ private:
 
     void OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     void OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-    void OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
     void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
@@ -322,6 +319,8 @@ private:
     bool ShouldShowFocusVisual();
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
+    void FocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
+    void FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
@@ -381,7 +380,6 @@ private:
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
     winrt::UIElement::Tapped_revoker m_settingsItemTappedRevoker{};
     winrt::UIElement::KeyDown_revoker m_settingsItemKeyDownRevoker{};
-    winrt::UIElement::KeyUp_revoker m_settingsItemKeyUpRevoker{};
     winrt::Button::Click_revoker m_paneSearchButtonClickRevoker{};
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
@@ -400,22 +398,18 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_leftNavRepeaterLoadedRevoker{};
-    winrt::ItemsRepeater::GettingFocus_revoker m_leftNavRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_topNavRepeaterLoadedRevoker{};
-    winrt::ItemsRepeater::GettingFocus_revoker m_topNavRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavFooterMenuItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavFooterMenuItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_leftNavFooterMenuRepeaterLoadedRevoker{};
-    winrt::ItemsRepeater::GettingFocus_revoker m_leftNavFooterMenuRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavFooterMenuItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavFooterMenuItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_topNavFooterMenuRepeaterLoadedRevoker{};
-    winrt::ItemsRepeater::GettingFocus_revoker m_topNavFooterMenuRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavOverflowItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
@@ -457,9 +451,6 @@ private:
     // 3, customer changed PaneDisplayMode.
     // 2 and 3 are internal implementation and will call by ClosePane/OpenPane. the flag is to indicate 1 if it's false
     bool m_isOpenPaneForInteraction{ false };
-
-    int32_t m_indexOfLastFocusedItemInMainMenu{ -1 };
-    int32_t m_indexOfLastFocusedItemInFooterMenu{ -1 };
 
     bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
 
