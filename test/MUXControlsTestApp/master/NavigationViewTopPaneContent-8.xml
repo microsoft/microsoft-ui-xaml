@@ -1098,9 +1098,9 @@
                 [Windows.UI.Xaml.Controls.AutoSuggestBox]
                     Padding=0,0,0,0
                     Foreground=#FF000000
-                    BorderThickness=0,0,0,0
-                    BorderBrush=[NULL]
-                    Background=[NULL]
+                    BorderThickness=1,1,1,1
+                    BorderBrush=#99000000
+                    Background=#66FFFFFF
                     CornerRadius=2,2,2,2
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
