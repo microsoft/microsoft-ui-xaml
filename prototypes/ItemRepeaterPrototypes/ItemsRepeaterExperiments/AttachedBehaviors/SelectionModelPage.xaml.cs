@@ -25,7 +25,7 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
     /// </summary>
     public sealed partial class SelectionModelPage : Page
     {
-        private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(10);
+        private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(100);
         public SelectionModelPage()
         {
             this.InitializeComponent();
@@ -37,50 +37,16 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void ItemsRepeater_ElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
+        private void ItemsRepeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
         {
             var control = args.Element as FrameworkElement;
 
+            // Attach repeater and selectionmodel properties for handling of selection
+            SelectionBehavior.SetParentItemsRepeater(control, TeamPresenter);
+            SelectionBehavior.SetSelectionModel(control, selectionModel);
 
             SelectionBehavior.SetIsSelected(control,
                 selectionModel.SelectedItems.Contains(teams[TeamPresenter.GetElementIndex(control)]));
-        }
-
-        private void Control_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            var elementIndex = TeamPresenter.GetElementIndex(sender as UIElement);
-            if (selectionModel.SingleSelect)
-            {
-                if (e.KeyModifiers == Windows.System.VirtualKeyModifiers.Control)
-                {
-                    selectionModel.Deselect(elementIndex);
-                }
-                else
-                {
-                    selectionModel.Select(elementIndex);
-                }
-            }
-            else
-            {
-                switch (e.KeyModifiers)
-                {
-                    case Windows.System.VirtualKeyModifiers.Shift:
-                        if (PointerBehaviors.LastFocused != null)
-                        {
-                            var lastFocused = TeamPresenter.GetElementIndex(PointerBehaviors.LastFocused as UIElement);
-                            selectionModel.SetAnchorIndex(lastFocused);
-                        }
-                        selectionModel.SelectRangeFromAnchor(elementIndex);
-                        break;
-                    case Windows.System.VirtualKeyModifiers.Control:
-                        selectionModel.Deselect(elementIndex);
-                        break;
-                    default:
-                        selectionModel.Select(elementIndex);
-                        break;
-                }
-            }
-            PointerBehaviors.LastFocused = sender as UIElement;
         }
 
         /// <summary>
@@ -94,6 +60,7 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
             // Having the deselected items would really be handy here ...
             foreach (var item in teams)
             {
+                // Since we don't get the sender from a given object, we need to handle this here!
                 var control = TeamPresenter.TryGetElement(teams.IndexOf(item as Team)) as DependencyObject;
                 // Container not realized ... , so skip
                 if (control == null)
