@@ -32,56 +32,25 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 
         private static void OnIsEnabledChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            if((bool)args.NewValue)
+            var repeater = sender as ItemsRepeater;
+            repeater.ElementPrepared -= Repeater_ElementPrepared;
+            repeater.ElementClearing -= Repeater_ElementClearing;
+            var selectionModel = GetSelectionModel(repeater);
+            if (selectionModel != null)
             {
-                SetIsSelected(sender, GetIsEnabled(sender));
-                (sender as UIElement).PointerPressed += SelectionBehavior_PointerPressed;
+                selectionModel.SelectionChanged -= SelectionModel_SelectionChanged;
             }
-            else
+
+            if ((bool)args.NewValue)
             {
-                (sender as UIElement).PointerPressed -= SelectionBehavior_PointerPressed;
+                repeater.ElementPrepared += Repeater_ElementPrepared;
+                repeater.ElementClearing += Repeater_ElementClearing;
+                if (selectionModel != null)
+                    //{
+                    selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
             }
         }
 
-
-        private static void SelectionBehavior_PointerPressed(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            var repeater = GetParentItemsRepeater(sender as DependencyObject);
-            var selectionModel = GetSelectionModel(sender as DependencyObject);
-            var elementIndex = repeater.GetElementIndex(sender as UIElement);
-            if (selectionModel.SingleSelect)
-            {
-                if (e.KeyModifiers == Windows.System.VirtualKeyModifiers.Control)
-                {
-                    selectionModel.Deselect(elementIndex);
-                }
-                else
-                {
-                    selectionModel.Select(elementIndex);
-                }
-            }
-            else
-            {
-                switch (e.KeyModifiers)
-                {
-                    case Windows.System.VirtualKeyModifiers.Shift:
-                        if (PointerBehaviors.LastFocused != null)
-                        {
-                            var lastFocused = repeater.GetElementIndex(PointerBehaviors.LastFocused as UIElement);
-                            selectionModel.SetAnchorIndex(lastFocused);
-                        }
-                        selectionModel.SelectRangeFromAnchor(elementIndex);
-                        break;
-                    case Windows.System.VirtualKeyModifiers.Control:
-                        selectionModel.Deselect(elementIndex);
-                        break;
-                    default:
-                        selectionModel.Select(elementIndex);
-                        break;
-                }
-            }
-            LastFocused = sender as UIElement;
-        }
 
         public static bool GetIsSelected(DependencyObject obj)
         {
@@ -115,18 +84,100 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 
         public static SelectionModel GetSelectionModel(DependencyObject obj)
         {
-            return (SelectionModel)obj.GetValue(SelectionModelProperty);
+            try
+            {
+                return (SelectionModel)obj.GetValue(SelectionModelProperty);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static void SetSelectionModel(DependencyObject obj, SelectionModel value)
         {
             obj.SetValue(SelectionModelProperty, value);
+            if (GetIsEnabled(obj))
+            {
+                value.SelectionChanged -= SelectionModel_SelectionChanged;
+                value.SelectionChanged += SelectionModel_SelectionChanged;
+            }
         }
 
         // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectionModelProperty =
             DependencyProperty.RegisterAttached("SelectionModel", typeof(bool), typeof(SelectionBehavior), new PropertyMetadata(default(SelectionModel)));
 
+        // ******** Event handler **********//
 
+        private static void Repeater_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+        {
+            var item = args.Element;
+            item.PointerPressed -= SelectionBehavior_PointerPressed;
+        }
+
+        private static void Repeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            var item = args.Element;
+            var selectionModel = GetSelectionModel(sender);
+
+            item.PointerPressed += SelectionBehavior_PointerPressed;
+
+            SetParentItemsRepeater(item, sender);
+            SetSelectionModel(item, selectionModel);
+
+            if (selectionModel != null)
+            {
+                SetIsSelected(item,
+                    selectionModel.SelectedItems.Contains(
+                        sender.ItemsSourceView.GetAt(sender.GetElementIndex(item))
+                    )
+                );
+            }
+
+        }
+
+        private static void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+        {
+            // Figure out if we can do anything here ...
+        }
+
+        private static void SelectionBehavior_PointerPressed(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var repeater = GetParentItemsRepeater(sender as DependencyObject);
+            var selectionModel = GetSelectionModel(sender as DependencyObject);
+            var elementIndex = repeater.GetElementIndex(sender as UIElement);
+            if (selectionModel != null)
+            {
+
+                if (selectionModel.SingleSelect)
+                {
+                    if (e.KeyModifiers == Windows.System.VirtualKeyModifiers.Control)
+                    {
+                        selectionModel.Deselect(elementIndex);
+                    }
+                    else
+                    {
+                        selectionModel.Select(elementIndex);
+                    }
+                }
+                else
+                {
+                    switch (e.KeyModifiers)
+                    {
+                        case Windows.System.VirtualKeyModifiers.Shift:
+                            selectionModel.SelectRangeFromAnchor(elementIndex);
+                            break;
+                        case Windows.System.VirtualKeyModifiers.Control:
+                            selectionModel.Deselect(elementIndex);
+                            break;
+                        default:
+                            selectionModel.Select(elementIndex);
+                            break;
+                    }
+                }
+                selectionModel.SetAnchorIndex(elementIndex);
+            }
+        }
     }
 }

@@ -33,23 +33,6 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
 
 
         /// <summary>
-        /// Attach properties to virtualized items and update containers
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void ItemsRepeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
-        {
-            var control = args.Element as FrameworkElement;
-
-            // Attach repeater and selectionmodel properties for handling of selection
-            SelectionBehavior.SetParentItemsRepeater(control, TeamPresenter);
-            SelectionBehavior.SetSelectionModel(control, selectionModel);
-
-            SelectionBehavior.SetIsSelected(control,
-                selectionModel.SelectedItems.Contains(teams[TeamPresenter.GetElementIndex(control)]));
-        }
-
-        /// <summary>
         /// This event gets raised when an item gets selected
         /// @WINUI This event definitely needs a list of selected and deselected items
         /// </summary>

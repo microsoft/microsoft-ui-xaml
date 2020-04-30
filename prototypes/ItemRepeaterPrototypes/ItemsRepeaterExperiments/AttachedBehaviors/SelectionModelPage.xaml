@@ -27,9 +27,9 @@
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <muxc:ItemsRepeater Grid.Row="2" 
                     x:Name="TeamPresenter"
-                    ElementPrepared="ItemsRepeater_ElementPrepared"
+                    local:SelectionBehavior.IsEnabled="True"
+                    local:SelectionBehavior.SelectionModel="{x:Bind selectionModel}"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
-
                     <muxc:ItemsRepeater.Resources>
                         <muxc:SelectionModel x:Key="selectionModel" x:Name="selectionModel"
                             SingleSelect="True"
@@ -42,8 +42,6 @@
 
                             <!-- Inline UserControl -->
                             <UserControl x:Name="RootControl" AutomationProperties.Name="{x:Bind Name}"
-                                    PointerReleased="Control_PointerReleased"
-                                    local:SelectionBehavior.IsEnabled="True"
                                     local:PointerBehaviors.IsEnabled="True">
                                 <StackPanel x:Name="RootPanel" BorderBrush="Transparent" 
                                     Padding="8"
