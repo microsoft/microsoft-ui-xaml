@@ -1147,7 +1147,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 selectionModel.SingleSelect = true;
 
-                // Verify that the item at IndexPath 4 is still selected 
+                // Verify that the item at index 4 is still selected 
                 Verify.IsTrue(selectionModel.SelectedIndex.CompareTo(Path(4)) == 0, "Item at index 4 should have still been selected");
 
                 // Second test: this time switching from multiple to single selection mode with more than one selected item
@@ -1160,7 +1160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 // Verify that 
                 // - only one item is currently selected
-                // - the currently selected item was among the previously selected items
+                // - the currently selected item was among the previously selected items in multiple selection mode
                 Verify.AreEqual(1, selectionModel.SelectedIndices.Count,
                     "Exactly one item should have been selected now after we switched from Multiple to Single selection mode");
                 Verify.IsTrue(selectionModel.SelectedIndices[0].CompareTo(selectionModel.SelectedIndex) == 0);
@@ -1201,7 +1201,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Now switch to single selection mode
                 selectionModel.SingleSelect = true;
 
-                // Verify that the SelectionChanged was raised 
+                // Verify that the SelectionChanged event was raised 
                 Verify.AreEqual(1, selectionChangedFiredCount, "SelectionChanged event should have been raised as the selection changed");
 
                 void IncreaseCountIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
