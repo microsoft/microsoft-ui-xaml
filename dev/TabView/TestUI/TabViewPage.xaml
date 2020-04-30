@@ -99,6 +99,11 @@
                     <Button x:Name="GetFirstTabLocationButton" AutomationProperties.Name="GetFirstTabLocationButton" Content="FirstTab" Click="GetFirstTabLocationButton_Click"/>
                     <TextBlock x:Name="FirstTabLocationTextBlock" AutomationProperties.Name="FirstTabLocationTextBlock" Margin="4,0,0,0" Text=""/>
                 </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetSecondTabHeaderForegroundButton" AutomationProperties.Name="GetSecondTabHeaderForegroundButton" Content="SecondTabHeaderForeground" Click="GetSecondTabHeaderForegroundButton_Click" />
+                    <TextBlock x:Name="SecondTabHeaderForegroundTextBlock" AutomationProperties.Name="SecondTabHeaderForegroundTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
             </StackPanel>
 
             <Grid Grid.Column="1">
@@ -142,9 +147,10 @@
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab (in green)" IsClosable="True">
+                    <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
                         <controls:TabViewItem.Resources>
-                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="Green" />
+                            <!-- Do not remove or change this! We are verifying this resource in a TabView InteractionTest. -->
+                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="#FF008000" />
                         </controls:TabViewItem.Resources>
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>

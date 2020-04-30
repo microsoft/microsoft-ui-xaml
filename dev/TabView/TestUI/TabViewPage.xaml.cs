@@ -399,5 +399,14 @@ namespace MUXControlsTestApp
             FirstTab.Header = "s";
             LongHeaderTab.Header = "long long long long long long long long";
         }
+
+        private void GetSecondTabHeaderForegroundButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (FindVisualChildByName(SecondTab, "ContentPresenter") is ContentPresenter presenter
+                && presenter.Foreground is SolidColorBrush brush)
+            {
+                SecondTabHeaderForegroundTextBlock.Text = brush.Color.ToString();
+            }
+        }
     }
 }
