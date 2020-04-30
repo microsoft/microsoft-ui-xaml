@@ -49,6 +49,12 @@ header.masthead h1 {
   color: #FFFFFF;
 }
 
+#sidebar-btn, #sidebar-btn:active {
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
 .navbar-brand {
   color: #FFFFFF;
   font-size: 1.5em;
@@ -143,6 +149,44 @@ header.masthead h1 {
   }
 }
 
+@media (max-width: 1085px){
+  #sidebar {
+    margin-left: 0px;
+  }
+}
+
+@media (min-width: 1086px){
+  #sidebar {
+    margin-left: 70px;
+  }
+}
+
+@media (max-width: 860px){
+  #sidebar {
+    display: none;
+  }
+  #page-content {
+    max-width: 80%;
+  }
+}
+
+@media (min-width: 860px){
+  #page-content {
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 1351px){
+  #page-content {
+    margin-left: 2rem;
+  }
+}
+@media (max-width: 1350px){
+  #page-content {
+    margin-left: 6rem;
+  }
+}
+
 .showcase .showcase-text {
   padding: 3rem;
 }
@@ -214,13 +258,12 @@ header.masthead h1 {
 .paths, .video-spotlight {
   padding-top: 3rem;
   padding-bottom: 3rem;
-  background-color: white;
+  background-color: #e1e6eb;
 }
 .paths .path-item {
   padding: 10px;
   text-align: left;
   color: black;
-  margin-bottom: 20px;
 }
 
 .paths .path-item h5 {
@@ -338,7 +381,7 @@ footer.footer a{
 } 
 
 .our-partners {
-  background-color: #e1e6eb;
+  background-color: #FFFFFF;
 }
 
 .call-to-action h2 {
@@ -382,17 +425,32 @@ a:hover {
   min-width: 300px;
   max-width: 300px;
   min-height: 100vh;
-  padding: 30px;
   margin-right: 1rem;
-  margin-left: 70px;
   background: #e1e6eb;
   color: #fff;
   transition: all 0.3s;
   overflow: wrap;
+  position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 }
 
-td {
+.sidebar-list {
+  position: -webkit-sticky;
+	position: sticky;
+  top: 0;
+  padding: 30px;
+}
+
+#hide-sidebar {
+  text-align: right;
+}
+
+.table td {
   text-align: center;
+  vertical-align: middle;
 }
 
 .table thead th {
@@ -443,8 +501,7 @@ td {
 }
 
 #page-content {
-  margin-left: 2rem;
-  max-width: 50%;
+  min-height: 2000px;
 }
 
 #page-content p{
