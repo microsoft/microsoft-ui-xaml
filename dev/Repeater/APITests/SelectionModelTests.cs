@@ -1163,7 +1163,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // - the currently selected item is the item with the lowest index in the Multiple selection list
                 Verify.AreEqual(1, selectionModel.SelectedIndices.Count,
                     "Exactly one item should have been selected now after we switched from Multiple to Single selection mode");
-                Verify.IsTrue(selectionModel.SelectedIndices[0].CompareTo(selectionModel.SelectedIndex) == 0);
+                Verify.IsTrue(selectionModel.SelectedIndices[0].CompareTo(selectionModel.SelectedIndex) == 0,
+                    "SelectedIndex and SelectedIndices should have been identical");
                 Verify.IsTrue(selectionModel.SelectedIndex.CompareTo(Path(4)) == 0, "The currently selected item should have been the first item in the Multiple selection list");
             });
         }
