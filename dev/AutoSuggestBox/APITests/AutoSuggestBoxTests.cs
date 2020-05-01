@@ -60,7 +60,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
+        // Disabling flaky test
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/2363
+        //[TestMethod]
         public void VerifyVisualTree()
         {
             var autoSuggestBox = SetupAutoSuggestBox();
