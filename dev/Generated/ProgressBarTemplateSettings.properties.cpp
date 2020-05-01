@@ -7,11 +7,11 @@
 #include "ProgressBarTemplateSettings.h"
 
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ClipRectProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_Container2AnimationEndPositionProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_Container2AnimationStartPositionProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPositionProperty{ nullptr };
-GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPosition2Property{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationMidPositionProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationStartPositionProperty{ nullptr };
-GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationStartPosition2Property{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_EllipseAnimationEndPositionProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_EllipseAnimationWellPositionProperty{ nullptr };
@@ -37,22 +37,33 @@ void ProgressBarTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<winrt::RectangleGeometry>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_ContainerAnimationEndPositionProperty)
+    if (!s_Container2AnimationEndPositionProperty)
     {
-        s_ContainerAnimationEndPositionProperty =
+        s_Container2AnimationEndPositionProperty =
             InitializeDependencyProperty(
-                L"ContainerAnimationEndPosition",
+                L"Container2AnimationEndPosition",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ProgressBarTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_ContainerAnimationEndPosition2Property)
+    if (!s_Container2AnimationStartPositionProperty)
     {
-        s_ContainerAnimationEndPosition2Property =
+        s_Container2AnimationStartPositionProperty =
             InitializeDependencyProperty(
-                L"ContainerAnimationEndPosition2",
+                L"Container2AnimationStartPosition",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ContainerAnimationEndPositionProperty)
+    {
+        s_ContainerAnimationEndPositionProperty =
+            InitializeDependencyProperty(
+                L"ContainerAnimationEndPosition",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ProgressBarTemplateSettings>(),
                 false /* isAttached */,
@@ -75,17 +86,6 @@ void ProgressBarTemplateSettingsProperties::EnsureProperties()
         s_ContainerAnimationStartPositionProperty =
             InitializeDependencyProperty(
                 L"ContainerAnimationStartPosition",
-                winrt::name_of<double>(),
-                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
-                false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ContainerAnimationStartPosition2Property)
-    {
-        s_ContainerAnimationStartPosition2Property =
-            InitializeDependencyProperty(
-                L"ContainerAnimationStartPosition2",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ProgressBarTemplateSettings>(),
                 false /* isAttached */,
@@ -163,11 +163,11 @@ void ProgressBarTemplateSettingsProperties::EnsureProperties()
 void ProgressBarTemplateSettingsProperties::ClearProperties()
 {
     s_ClipRectProperty = nullptr;
+    s_Container2AnimationEndPositionProperty = nullptr;
+    s_Container2AnimationStartPositionProperty = nullptr;
     s_ContainerAnimationEndPositionProperty = nullptr;
-    s_ContainerAnimationEndPosition2Property = nullptr;
     s_ContainerAnimationMidPositionProperty = nullptr;
     s_ContainerAnimationStartPositionProperty = nullptr;
-    s_ContainerAnimationStartPosition2Property = nullptr;
     s_DispatcherProperty = nullptr;
     s_EllipseAnimationEndPositionProperty = nullptr;
     s_EllipseAnimationWellPositionProperty = nullptr;
@@ -186,6 +186,26 @@ winrt::RectangleGeometry ProgressBarTemplateSettingsProperties::ClipRect()
     return ValueHelper<winrt::RectangleGeometry>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ClipRectProperty));
 }
 
+void ProgressBarTemplateSettingsProperties::Container2AnimationEndPosition(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_Container2AnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::Container2AnimationEndPosition()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_Container2AnimationEndPositionProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::Container2AnimationStartPosition(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_Container2AnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::Container2AnimationStartPosition()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_Container2AnimationStartPositionProperty));
+}
+
 void ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition(double value)
 {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
@@ -194,16 +214,6 @@ void ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition(double
 double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationEndPositionProperty));
-}
-
-void ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition2(double value)
-{
-    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationEndPosition2Property, ValueHelper<double>::BoxValueIfNecessary(value));
-}
-
-double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition2()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationEndPosition2Property));
 }
 
 void ProgressBarTemplateSettingsProperties::ContainerAnimationMidPosition(double value)
@@ -224,16 +234,6 @@ void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition(doub
 double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationStartPositionProperty));
-}
-
-void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition2(double value)
-{
-    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationStartPosition2Property, ValueHelper<double>::BoxValueIfNecessary(value));
-}
-
-double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition2()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationStartPosition2Property));
 }
 
 void ProgressBarTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
