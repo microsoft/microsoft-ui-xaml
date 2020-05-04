@@ -630,7 +630,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 PressButtonAndVerifyText("GetScrollDecreaseButtonToolTipButton", "ScrollDecreaseButtonToolTipTextBlock", "Scroll tab list backward");
                 PressButtonAndVerifyText("GetScrollIncreaseButtonToolTipButton", "ScrollIncreaseButtonToolTipTextBlock", "Scroll tab list forward");
-
             }
         }
 
