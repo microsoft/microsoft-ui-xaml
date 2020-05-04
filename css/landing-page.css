@@ -192,6 +192,17 @@ header.masthead h1 {
   }
 }
 
+@media (max-width: 480px) {
+  /* Fit table into screen size */
+  #compare-table {
+      overflow-x: auto;
+      display: block;
+  }
+  #page-content {
+    max-width: 95%;
+  }
+}
+
 .showcase .showcase-text {
   padding: 3rem;
 }
@@ -419,6 +430,10 @@ a:hover {
 
 #uhf-footer{
   margin-top: 0px;
+}
+
+#UHF-header {
+  width: 100%;
 }
 
 .wrapper {
