@@ -186,6 +186,11 @@ header.masthead h1 {
     margin-left: 6rem;
   }
 }
+@media (min-width: 0px) and (max-width: 860px){
+  #page-content {
+    margin-left: 1rem;
+  }
+}
 
 .showcase .showcase-text {
   padding: 3rem;
