@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+﻿using System.Collections.Generic;
 
 namespace ItemsRepeaterExperiments.Common
 {
@@ -14,7 +9,10 @@ namespace ItemsRepeaterExperiments.Common
 
         public IList<Person> Members { get; private set; }
 
+        public IList<Team> SubTeams { get; private set; }
+
         public string MembersString { get; private set; }
+        
         public void CreateRandomInstance(int index)
         {
             Name = "Team #" + index;
@@ -24,6 +22,25 @@ namespace ItemsRepeaterExperiments.Common
             { 
                 MembersString += member.FirstName + "\n"; 
             }
+
+            SubTeams = new List<Team>();
+
+            for(int i = 0; i < 10; i++)
+            {
+                var newTeam = new Team();
+                newTeam.CreateRandomInstance(index, i);
+                SubTeams.Add(newTeam);
+            }
         }
+
+        public void CreateRandomInstance(int ownerIndex,int index)
+        {
+            Name = "Owner #" + ownerIndex + ", Team #" + index;
+
+            Members = DataSourceCreator<Person>.CreateRandomizedList(10);
+
+            SubTeams = new List<Team>();
+        }
+
     }
 }

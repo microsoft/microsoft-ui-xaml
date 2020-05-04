@@ -27,7 +27,6 @@ namespace ItemsRepeaterExperiments
         public MainPage()
         {
             this.InitializeComponent();
-            TeamPresenter.ItemsSource = DataSourceCreator<Team>.CreateRandomizedList(100);
         }
     }
 }

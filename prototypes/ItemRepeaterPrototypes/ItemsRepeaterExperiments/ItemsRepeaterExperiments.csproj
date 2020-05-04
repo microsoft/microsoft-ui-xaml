@@ -119,6 +119,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AttachedBehaviors\NestedCollectionsPage.xaml.cs">
+      <DependentUpon>NestedCollectionsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AttachedBehaviors\PointerBehaviors.cs" />
     <Compile Include="AttachedBehaviors\SelectionBehavior.cs" />
     <Compile Include="AttachedBehaviors\SelectionBehaviorItemPeer.cs" />
@@ -171,6 +174,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AttachedBehaviors\NestedCollectionsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="AttachedBehaviors\SelectionModelPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

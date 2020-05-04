@@ -1,12 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Controls;
 
 namespace ItemsRepeaterExperiments.AttachedBehaviors
 {
@@ -14,7 +8,7 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
     {
         // Should we store this as an attached property on the repeater?
         // What would happen with to repeaters and shift click?
-        private static UIElement LastFocused;
+        //private static UIElement LastFocused;
 
         public static bool GetIsEnabled(DependencyObject obj)
         {

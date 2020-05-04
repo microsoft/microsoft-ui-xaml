@@ -30,11 +30,14 @@
             TabWidthMode="Equal"
             IsAddTabButtonVisible="False">
             <muxc:TabView.TabItems>
-                <muxc:TabViewItem Header="GridView" IsClosable="False">
-                    <GridView x:Name="TeamPresenter" ItemTemplate="{StaticResource StandardTeamTemplate}"
-                              Margin="8">
-                    </GridView>
+                <muxc:TabViewItem Header="Attached behaviors Selection demo" IsClosable="False">
+                    <behaviors:SelectionModelPage Margin="8" />
                 </muxc:TabViewItem>
+                
+                <muxc:TabViewItem Header="Nested collections selection demo" IsClosable="False">
+                    <behaviors:NestedCollectionsPage Margin="8" />
+                </muxc:TabViewItem>
+
                 <muxc:TabViewItem Header="HandleContainer Selection demo" IsClosable="False">
                     <container:SelectionModelPage Margin="8"/>
                 </muxc:TabViewItem>
@@ -50,10 +53,7 @@
                 <muxc:TabViewItem Header="HandleContainer different templates" IsClosable="False">
                     <container:DifferentTemplateTests Margin="8" />
                 </muxc:TabViewItem>
-                
-                <muxc:TabViewItem Header="Attached behaviors Selection demo" IsClosable="False">
-                    <behaviors:SelectionModelPage Margin="8" />
-                </muxc:TabViewItem>
+
             </muxc:TabView.TabItems>
         </muxc:TabView>
     </Grid>
