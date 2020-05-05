@@ -9,11 +9,15 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <muxc:SelectionModel x:Key="selectionModel" x:Name="selectionModel"
+            SingleSelect="True"
+            Source="{x:Bind TeamPresenter.ItemsSource}"/>
+
         <local:TeamTemplateSelector x:Key="TeamTemplateSelector" GroupTemplate="{StaticResource GroupTeamTemplate}" ItemTemplate="{StaticResource ItemTeamTemplate}" />
 
         <DataTemplate x:Key="GroupTeamTemplate" x:DataType="common:Team">
             <StackPanel x:Name="RootPanel" BorderBrush="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}" 
-                    Padding="8"  BorderThickness="1"
+                    Padding="8" BorderThickness="1"
                     local:PointerBehaviors.IsEnabled="True">
                 <VisualStateManager.VisualStateGroups>
                     <VisualStateGroup x:Name="SelectionStates">
@@ -21,7 +25,7 @@
                         </VisualState>
                         <VisualState x:Name="Selected">
                             <VisualState.StateTriggers>
-                                <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
+                                <StateTrigger IsActive="{Binding ElementName=RootPanel, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
                             </VisualState.StateTriggers>
                             <VisualState.Setters>
                                 <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
@@ -31,12 +35,16 @@
                 </VisualStateManager.VisualStateGroups>
                 <Grid x:Name="MainContentPanel">
                     <StackPanel Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=TwoWay}" IsHitTestVisible="False"/>
+                        <CheckBox IsChecked="{Binding ElementName=RootPanel, Path=(local:SelectionBehavior.IsSelected),Mode=TwoWay}" IsHitTestVisible="False"/>
                         <TextBlock Text="{Binding Name}" FontSize="24"/>
                     </StackPanel>
                 </Grid>
 
-                <muxc:ItemsRepeater ItemsSource="{Binding SubTeams}" Margin="20,0,0,0" ItemTemplate="{StaticResource TeamTemplateSelector}"/>
+                <muxc:ItemsRepeater ItemsSource="{Binding SubTeams}"
+                    local:SelectionBehavior.SelectionModel="{StaticResource selectionModel}"
+                    Margin="20,0,0,0"
+                    local:SelectionBehavior.ParentContainer="{Binding ElementName=RootPanel}"
+                    ItemTemplate="{StaticResource TeamTemplateSelector}"/>
             </StackPanel>
         </DataTemplate>
 
@@ -88,11 +96,6 @@
                     ItemTemplate="{ThemeResource TeamTemplateSelector}"
                     local:SelectionBehavior.SelectionModel="{x:Bind selectionModel}"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
-                    <muxc:ItemsRepeater.Resources>
-                        <muxc:SelectionModel x:Key="selectionModel" x:Name="selectionModel"
-                            SingleSelect="True"
-                            Source="{x:Bind TeamPresenter.ItemsSource}"/>
-                    </muxc:ItemsRepeater.Resources>
                 </muxc:ItemsRepeater>
             </ScrollViewer>
         </muxc:ItemsRepeaterScrollHost>
