@@ -29,30 +29,20 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
         public NestedCollectionsPage()
         {
             this.InitializeComponent();
+
+            selectionModel.SelectionChanged += SelectionModel_SelectionChanged;
+            selectionModel.ChildrenRequested += SelectionModel_ChildrenRequested;
+        }
+
+        private void SelectionModel_ChildrenRequested(SelectionModel sender, SelectionModelChildrenRequestedEventArgs args)
+        {
+            // This function does NOT get raised
+            throw new NotImplementedException();
         }
 
         private void SelectionModel_SelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
         {
-            // Having the deselected items would really be handy here ...
-            foreach (var item in teams)
-            {
-                // Since we don't get the sender from a given object, we need to handle this here!
-                var control = TeamPresenter.TryGetElement(teams.IndexOf(item as Team)) as DependencyObject;
-                // Container not realized ... , so skip
-                if (control == null)
-                {
-                    //Debug.WriteLine("Not found: " + item.Name);
-                    continue;
-                }
-                if (selectionModel.SelectedItems.Contains(item))
-                {
-                    SelectionBehavior.SetIsSelected(control, true);
-                }
-                else
-                {
-                    SelectionBehavior.SetIsSelected(control, false);
-                }
-            }
+            // This function gets raised
         }
 
         private void SingleSelectCheckbox_Checked(object sender, RoutedEventArgs e)
