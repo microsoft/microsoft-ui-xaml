@@ -26,5 +26,10 @@ namespace ItemsRepeaterExperiments.Common
         {
             FirstName = names[new Random().Next(0,names.Length)];
         }
+
+        public void CreateRandomNestedInstance(int index, int nestingLevel, int leafs)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

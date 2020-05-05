@@ -9,59 +9,64 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <Style x:Key="NestedTeamView" TargetType="ContentControl">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <StackPanel x:Name="RootPanel" BorderBrush="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}" 
-                                    Padding="8"  BorderThickness="1" local:PointerBehaviors.IsEnabled="True">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="SelectionStates">
-                                    <VisualState x:Name="Deselected">
-                                    </VisualState>
-                                    <VisualState x:Name="Selected">
-                                        <VisualState.StateTriggers>
-                                            <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                            <StackPanel x:Name="MainContentPanel">
-                                <StackPanel Orientation="Horizontal">
-                                    <CheckBox IsChecked="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
-                                    <TextBlock Text="{Binding Name}" FontSize="24"/>
-                                </StackPanel>
-                                <TextBlock Text="{Binding MembersString}"/>
+        <local:TeamTemplateSelector x:Key="TeamTemplateSelector" GroupTemplate="{StaticResource GroupTeamTemplate}" ItemTemplate="{StaticResource ItemTeamTemplate}" />
 
-                                <TextBlock Text="Sub teams" FontSize="20"/>
-                            </StackPanel>
+        <DataTemplate x:Key="GroupTeamTemplate" x:DataType="common:Team">
+            <StackPanel x:Name="RootPanel" BorderBrush="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}" 
+                    Padding="8"  BorderThickness="1"
+                    local:PointerBehaviors.IsEnabled="True">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="SelectionStates">
+                        <VisualState x:Name="Deselected">
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.StateTriggers>
+                                <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Grid x:Name="MainContentPanel">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=TwoWay}" IsHitTestVisible="False"/>
+                        <TextBlock Text="{Binding Name}" FontSize="24"/>
+                    </StackPanel>
+                </Grid>
 
-                            <muxc:ItemsRepeater ItemsSource="{Binding SubTeams}" Margin="20,0,0,0">
-                                <muxc:ItemsRepeater.ItemTemplate>
-                                    <DataTemplate>
-                                        <ContentControl local:PointerBehaviors.IsEnabled="True"
-                                            Content="{Binding}" Style="{StaticResource NestedTeamView}"/>
-                                    </DataTemplate>
-                                </muxc:ItemsRepeater.ItemTemplate>
-                            </muxc:ItemsRepeater>
-                        </StackPanel>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-
-        <DataTemplate x:Key="NestedTeamTemplate">
-            <!-- Inline UserControl -->
-            <ContentControl x:Name="RootControl" AutomationProperties.Name="{Binding Name}"
-                Content="{Binding}"
-                Style="{StaticResource NestedTeamView}">
-            </ContentControl>
+                <muxc:ItemsRepeater ItemsSource="{Binding SubTeams}" Margin="20,0,0,0" ItemTemplate="{StaticResource TeamTemplateSelector}"/>
+            </StackPanel>
         </DataTemplate>
 
+        <DataTemplate x:Key="ItemTeamTemplate" x:DataType="common:Team">
+            <StackPanel x:Name="RootPanel" BorderBrush="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}" 
+                        Padding="8"  BorderThickness="1"
+                        local:PointerBehaviors.IsEnabled="True">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="SelectionStates">
+                        <VisualState x:Name="Deselected">
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.StateTriggers>
+                                <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Grid x:Name="MainContentPanel">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=TwoWay}" IsHitTestVisible="False"/>
+                        <TextBlock Text="{Binding Name}" FontSize="24"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+        
     </Page.Resources>
 
     <Grid>
@@ -80,15 +85,13 @@
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <muxc:ItemsRepeater Grid.Row="2" 
                     x:Name="TeamPresenter"
-                    ItemTemplate="{StaticResource NestedTeamTemplate}"
-                    local:SelectionBehavior.IsEnabled="True"
+                    ItemTemplate="{ThemeResource TeamTemplateSelector}"
                     local:SelectionBehavior.SelectionModel="{x:Bind selectionModel}"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
                     <muxc:ItemsRepeater.Resources>
                         <muxc:SelectionModel x:Key="selectionModel" x:Name="selectionModel"
                             SingleSelect="True"
-                            Source="{x:Bind TeamPresenter.ItemsSource}"
-                            SelectionChanged="SelectionModel_SelectionChanged"/>
+                            Source="{x:Bind TeamPresenter.ItemsSource}"/>
                     </muxc:ItemsRepeater.Resources>
                 </muxc:ItemsRepeater>
             </ScrollViewer>

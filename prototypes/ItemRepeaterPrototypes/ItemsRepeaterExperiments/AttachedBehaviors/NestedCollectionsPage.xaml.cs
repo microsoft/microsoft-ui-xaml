@@ -24,7 +24,7 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
     /// </summary>
     public sealed partial class NestedCollectionsPage : Page
     {
-        private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(100);
+        private List<Team> teams = DataSourceCreator<Team>.CreateRandomizedList(10, 2, 10);
 
         public NestedCollectionsPage()
         {
@@ -74,4 +74,20 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
             }
         }
     }
+
+
+    public class TeamTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate GroupTemplate { get; set; }
+
+        public DataTemplate ItemTemplate { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item)
+        {
+            var team = item as Team;
+
+            return team.SubTeams.Count > 0? GroupTemplate : ItemTemplate;
+        }
+    }
+
 }

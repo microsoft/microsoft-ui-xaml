@@ -27,15 +27,19 @@
             Text="This app is a demo on how to implement different behaviors of common layouts using ItemsRepeater"/>
         <muxc:TabView 
             Grid.Row="1"
-            TabWidthMode="Equal"
+            TabWidthMode="SizeToContent"
             IsAddTabButtonVisible="False">
             <muxc:TabView.TabItems>
                 <muxc:TabViewItem Header="Attached behaviors Selection demo" IsClosable="False">
                     <behaviors:SelectionModelPage Margin="8" />
                 </muxc:TabViewItem>
-                
+
                 <muxc:TabViewItem Header="Nested collections selection demo" IsClosable="False">
                     <behaviors:NestedCollectionsPage Margin="8" />
+                </muxc:TabViewItem>
+                
+                <muxc:TabViewItem Header="Nested collections selection demo - TWO" IsClosable="False">
+                    <behaviors:NestedCollectionsPageTwo Margin="8" />
                 </muxc:TabViewItem>
 
                 <muxc:TabViewItem Header="HandleContainer Selection demo" IsClosable="False">

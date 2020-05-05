@@ -24,22 +24,41 @@ namespace ItemsRepeaterExperiments.Common
             }
 
             SubTeams = new List<Team>();
+        }
 
-            for(int i = 0; i < 10; i++)
+        public void CreateRandomNestedInstance(int index, int nestingLevel, int leafCount)
+        {
+            Name = "Team #" + index;
+            Members = DataSourceCreator<Person>.CreateRandomizedList(10);
+
+            foreach (var member in Members)
             {
-                var newTeam = new Team();
-                newTeam.CreateRandomInstance(index, i);
-                SubTeams.Add(newTeam);
+                MembersString += member.FirstName + "\n";
+            }
+
+            if(nestingLevel > 0)
+            {
+                SubTeams = DataSourceCreator<Team>.CreateRandomizedList(10, nestingLevel - 1,leafCount);
+            }
+            else
+            {
+                SubTeams = new List<Team>();
+                for(int i=0;i<leafCount;i++)
+                {
+                    var newTeam = new Team();
+                    newTeam.CreateRandomInstance(i);
+                    SubTeams.Add(newTeam);
+                }
             }
         }
 
-        public void CreateRandomInstance(int ownerIndex,int index)
+        public void CreateRandomNestedInstance(int ownerIndex,int index,int nestingLevel,int leafCount)
         {
-            Name = "Owner #" + ownerIndex + ", Team #" + index;
+            Name ="Owner #" + ownerIndex + ",Team #" + index;
 
             Members = DataSourceCreator<Person>.CreateRandomizedList(10);
 
-            SubTeams = new List<Team>();
+            SubTeams = DataSourceCreator<Team>.CreateRandomizedList(10, nestingLevel - 1, leafCount);
         }
 
     }

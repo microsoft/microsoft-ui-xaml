@@ -22,6 +22,19 @@ namespace ItemsRepeaterExperiments.Common
             return items;
         }
 
+        public static List<T> CreateRandomizedList(int itemCount,int nestingLevel,int leafCount)
+        {
+
+            List<T> items = new List<T>(itemCount);
+            for (int i = 0; i < itemCount; i++)
+            {
+                var obj = new T();
+                obj.CreateRandomNestedInstance(i,nestingLevel,leafCount);
+                items.Add(obj);
+            }
+            return items;
+        }
+
         public static ObservableCollection<T> CreateRandomizedObservableCollection(int itemCount)
         {
             ObservableCollection<T> items = new ObservableCollection<T>();
@@ -29,6 +42,18 @@ namespace ItemsRepeaterExperiments.Common
             {
                 var obj = new T();
                 obj.CreateRandomInstance(i);
+                items.Add(obj);
+            }
+            return items;
+        }
+
+        public static ObservableCollection<T> CreateRandomizedObservableCollection(int itemCount, int nestingLevel, int leafCount)
+        {
+            ObservableCollection<T> items = new ObservableCollection<T>();
+            for (int i = 0; i < itemCount; i++)
+            {
+                var obj = new T();
+                obj.CreateRandomNestedInstance(i, nestingLevel, leafCount);
                 items.Add(obj);
             }
             return items;

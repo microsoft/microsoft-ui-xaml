@@ -34,11 +34,14 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
             SelectionBehavior.SetIsSelected(item, true);
         }
 
-        public bool IsSelected 
-        { 
-            get {
-                return SelectionBehavior.GetIsSelected(item);
-            } 
+        public bool IsSelected
+        {
+            get
+            {
+                var isSelected = SelectionBehavior.GetIsSelected(item);
+                return isSelected.HasValue && isSelected.Value;
+            }
+
             set
             {
                 SelectionBehavior.SetIsSelected(item, value);

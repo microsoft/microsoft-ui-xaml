@@ -1,0 +1,112 @@
+﻿<Page
+    x:Class="ItemsRepeaterExperiments.AttachedBehaviors.NestedCollectionsPageTwo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ItemsRepeaterExperiments.AttachedBehaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:common="using:ItemsRepeaterExperiments.Common"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Orientation="Horizontal" Spacing="20">
+
+            <muxc:ItemsRepeaterScrollHost Width="200" Height="400">
+                <ScrollViewer>
+                    <muxc:ItemsRepeater 
+                        x:Name="repeater2"
+                        ItemsSource="{x:Bind Teams,Mode=OneWay}">
+                        <local:SelectionBehavior.SelectionModel>
+                            <muxc:SelectionModel
+                                x:Name="repeaterSelectionModel"
+                                Source="{x:Bind repeater2.ItemsSource}" />
+                        </local:SelectionBehavior.SelectionModel>
+
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="x:Int32">
+                                <UserControl x:Name="RootControl"
+                                             local:PointerBehaviors.IsEnabled="True">
+                                    <StackPanel x:Name="RootPanel"
+                                                BorderThickness="1" BorderBrush="Transparent" Spacing="5" Orientation="Horizontal">
+                                        <VisualStateManager.VisualStateGroups>
+
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="PointerOver">
+                                                    <VisualState.StateTriggers>
+                                                        <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:PointerBehaviors.IsPointerOverNotPressed),Mode=OneWay}"/>
+                                                    </VisualState.StateTriggers>
+                                                    <VisualState.Setters>
+                                                        <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Pressed">
+                                                    <VisualState.StateTriggers>
+                                                        <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:PointerBehaviors.IsPressed),Mode=OneWay}"/>
+                                                    </VisualState.StateTriggers>
+                                                    <VisualState.Setters>
+                                                        <Setter Target="RootPanel.Background" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+
+                                            <VisualStateGroup x:Name="SelectionStates">
+                                                <VisualState x:Name="Deselected" />
+                                                <VisualState x:Name="Selected">
+                                                    <VisualState.StateTriggers>
+                                                        <StateTrigger IsActive="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"/>
+                                                    </VisualState.StateTriggers>
+                                                    <VisualState.Setters>
+                                                        <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource SystemControlBackgroundAccentBrush}"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+
+                                        </VisualStateManager.VisualStateGroups>
+
+                                        <CheckBox IsChecked="{Binding ElementName=RootControl, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}" IsHitTestVisible="False"/>
+                                        <TextBlock Text="{x:Bind}"/>
+                                    </StackPanel>
+                                </UserControl>
+
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
+                </ScrollViewer>
+            </muxc:ItemsRepeaterScrollHost>
+
+            <muxc:ItemsRepeaterScrollHost >
+                <muxc:ItemsRepeaterScrollHost.Resources>
+                    <muxc:SelectionModel Source="{x:Bind TreeData}" x:Name="treeSelectionModel"/>
+                    <DataTemplate x:Key="groupTemplate">
+                        <StackPanel x:Name="root" PointerMoved="OnPointerMoved" Background="Transparent">
+                            <TextBlock Text="{Binding}"/>
+                            <muxc:ItemsRepeater Margin="10,0,0,0" ItemsSource="{Binding}"
+                                                ItemTemplate="{StaticResource templateSelector}"
+                                                local:SelectionBehavior.SelectionModel ="{StaticResource treeSelectionModel}"
+                                                local:SelectionBehavior.ParentContainer="{Binding ElementName=root}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                    <DataTemplate x:Key="itemTemplate">
+                        <StackPanel x:Name="root" Orientation="Horizontal" Spacing="5" PointerMoved="OnPointerMoved" Background="Transparent">
+                            <CheckBox
+                                IsChecked="{Binding ElementName=root, Path=(local:SelectionBehavior.IsSelected),Mode=OneWay}"
+                                IsHitTestVisible="False" />
+                            <TextBlock Text="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                    <local:TreeTemplateSelector x:Key="templateSelector" GroupTemplate="{StaticResource groupTemplate}" ItemTemplate="{StaticResource itemTemplate}" />
+                </muxc:ItemsRepeaterScrollHost.Resources>
+                <ScrollViewer>
+                    <muxc:ItemsRepeater 
+                        x:Name="treeRepeter"
+                        ItemsSource="{x:Bind TreeData,Mode=OneWay}"
+                        ItemTemplate="{StaticResource templateSelector}"
+                        local:SelectionBehavior.SelectionModel ="{StaticResource treeSelectionModel}" />
+                </ScrollViewer>
+            </muxc:ItemsRepeaterScrollHost>
+
+            <TextBlock x:Name="indexPath" />
+            <TextBlock x:Name="isSelected" />
+        </StackPanel>
+    </Grid>
+</Page>

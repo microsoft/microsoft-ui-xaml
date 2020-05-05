@@ -27,7 +27,6 @@
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <muxc:ItemsRepeater Grid.Row="2" 
                     x:Name="TeamPresenter"
-                    local:SelectionBehavior.IsEnabled="True"
                     local:SelectionBehavior.SelectionModel="{x:Bind selectionModel}"
                     ItemsSource="{x:Bind teams,Mode=OneWay}">
                     <muxc:ItemsRepeater.Resources>
