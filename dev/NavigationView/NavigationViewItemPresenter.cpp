@@ -38,14 +38,16 @@ void NavigationViewItemPresenter::OnApplyTemplate()
             m_expandCollapseChevron.set(expandCollapseChevron);
             m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
         }
-
         navigationViewItem->UpdateVisualStateNoTransition();
 
 
         // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
-        if (navigationViewItem->GetNavigationView().PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
+        if(auto&& navigationView = navigationViewItem->GetNavigationView())
         {
-            UpdateCompactPaneLength(m_compactPaneLengthValue, true);
+            if (navigationViewItem->GetNavigationView().PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
+            {
+                UpdateCompactPaneLength(m_compactPaneLengthValue, true);
+            }
         }
     }
 
