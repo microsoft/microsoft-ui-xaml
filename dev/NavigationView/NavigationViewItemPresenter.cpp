@@ -44,7 +44,7 @@ void NavigationViewItemPresenter::OnApplyTemplate()
         // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
         if(auto&& navigationView = navigationViewItem->GetNavigationView())
         {
-            if (navigationViewItem->GetNavigationView().PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
+            if (navigationView.PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
             {
                 UpdateCompactPaneLength(m_compactPaneLengthValue, true);
             }
