@@ -36,6 +36,9 @@
                 <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="PaneAutoSuggestBox"/>
             </muxc:NavigationView.AutoSuggestBox>
 
+            <muxc:NavigationView.PaneFooter>
+                <muxc:NavigationViewItem Content="Footer item"/>
+            </muxc:NavigationView.PaneFooter>
             
             <muxc:NavigationView.Content>
                 <StackPanel Padding="50" Orientation="Horizontal">
