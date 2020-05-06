@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -199,10 +199,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ToggleButton showPausedCheckBox = FindElement.ByName<ToggleButton>("ShowPausedCheckBox");
                 ToggleButton showErrorCheckBox = FindElement.ByName<ToggleButton>("ShowErrorCheckBox");
-                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
+                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsIndeterminateCheckBox");
                 TextBlock showPausedText = FindElement.ByName<TextBlock>("ShowPausedText");
                 TextBlock showErrorText = FindElement.ByName<TextBlock>("ShowErrorText");
-                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
+                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsIndeterminateText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
 
                 Verify.IsFalse(Convert.ToBoolean(showPausedText.DocumentText));
@@ -374,10 +374,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ToggleButton showPausedCheckBox = FindElement.ByName<ToggleButton>("ShowPausedCheckBox");
                 ToggleButton showErrorCheckBox = FindElement.ByName<ToggleButton>("ShowErrorCheckBox");
-                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
+                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsIndeterminateCheckBox");
                 TextBlock showPausedText = FindElement.ByName<TextBlock>("ShowPausedText");
                 TextBlock showErrorText = FindElement.ByName<TextBlock>("ShowErrorText");
-                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
+                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsIndeterminateText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
 
                 Verify.IsFalse(Convert.ToBoolean(showPausedText.DocumentText));
