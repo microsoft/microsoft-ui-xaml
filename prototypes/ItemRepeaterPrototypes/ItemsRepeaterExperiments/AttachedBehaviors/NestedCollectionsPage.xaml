@@ -10,7 +10,7 @@
 
     <Page.Resources>
         <muxc:SelectionModel x:Key="selectionModel" x:Name="selectionModel"
-            SingleSelect="True"
+            SingleSelect="{x:Bind (x:Boolean)SingleSelectCheckbox.IsChecked,Mode=OneWay}"
             Source="{x:Bind TeamPresenter.ItemsSource}"/>
 
         <local:TeamTemplateSelector x:Key="TeamTemplateSelector" GroupTemplate="{StaticResource GroupTeamTemplate}" ItemTemplate="{StaticResource ItemTeamTemplate}" />
@@ -85,7 +85,6 @@
 
         <StackPanel>
             <CheckBox Content="Is single select" x:Name="SingleSelectCheckbox"
-                Checked="SingleSelectCheckbox_Checked" Unchecked="SingleSelectCheckbox_Unchecked"
                       IsChecked="True"/>
         </StackPanel>
 

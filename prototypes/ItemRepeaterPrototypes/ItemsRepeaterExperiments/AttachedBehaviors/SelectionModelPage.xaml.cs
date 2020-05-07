@@ -61,24 +61,5 @@ namespace ItemsRepeaterExperiments.AttachedBehaviors
                 }
             }
         }
-
-        private void SingleSelectCheckbox_Checked(object sender, RoutedEventArgs e)
-        {
-            if (selectionModel != null)
-            {
-                selectionModel.SingleSelect = true;
-                selectionModel.ClearSelection();
-            }
-        }
-
-        private void SingleSelectCheckbox_Unchecked(object sender, RoutedEventArgs e)
-        {
-
-            if (selectionModel != null)
-            {
-                selectionModel.SingleSelect = false;
-                selectionModel.ClearSelection();
-            }
-        }
     }
 }
