@@ -2151,7 +2151,7 @@ void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender
         || args.Key() == winrt::VirtualKey::Enter
         || args.Key() == winrt::VirtualKey::Space))
     {
-        m_keyWasReleased = true;
+        m_invokeKeyWasReleased = true;
     }
 }
 
@@ -2161,10 +2161,10 @@ void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& send
         || args.Key() == winrt::VirtualKey::Enter
         || args.Key() == winrt::VirtualKey::Space))
     {
-        // Only handle those keys if m_keyWasReleased is true!
-        if (m_keyWasReleased)
+        // Only handle those keys if m_invokeKeyWasReleased is true!
+        if (m_invokeKeyWasReleased)
         {
-            m_keyWasReleased = false;
+            m_invokeKeyWasReleased = false;
             if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
             {
                 HandleKeyEventForNavigationViewItem(nvi, args);

@@ -445,7 +445,7 @@ private:
 
     // To prevent a space and enter invoking an item multiple times, we need to detect whether it is being held down or just pressed.
     // If a key was released, we know the next keydown event is a single press, if it is false, the key is being held down when we are in keydown
-    bool m_keyWasReleased{ true };
+    bool m_invokeKeyWasReleased{ true };
 
     bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
 };
