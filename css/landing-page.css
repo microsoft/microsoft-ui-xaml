@@ -186,9 +186,20 @@ header.masthead h1 {
     margin-left: 6rem;
   }
 }
-@media (min-width: 0px) and (max-width: 860px){
+@media (max-width: 860px){
   #page-content {
     margin-left: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Fit table into screen size */
+  #compare-table {
+      overflow-x: auto;
+      display: block;
+  }
+  #page-content {
+    max-width: 95%;
   }
 }
 
@@ -419,6 +430,10 @@ a:hover {
 
 #uhf-footer{
   margin-top: 0px;
+}
+
+#UHF-header {
+  width: 100%;
 }
 
 .wrapper {
