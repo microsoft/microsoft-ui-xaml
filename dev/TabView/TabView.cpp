@@ -345,13 +345,41 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
-        m_scrollDecreaseButton.set(decreaseButton);
-        m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
+        m_scrollDecreaseButton.set([this, scrollViewer]() {
+            const auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
+            if (decreaseButton)
+            {
+                // Do localization for the scroll decrease button
+                const auto toolTip = winrt::ToolTipService::GetToolTip(decreaseButton);
+                if (!toolTip)
+                {
+                    const auto tooltip = winrt::ToolTip();
+                    tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewScrollDecreaseButtonTooltip)));
+                    winrt::ToolTipService::SetToolTip(decreaseButton, tooltip);
+                }
 
-        auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
-        m_scrollIncreaseButton.set(increaseButton);
-        m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
+                m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
+            }
+            return decreaseButton;
+        }());
+
+        m_scrollIncreaseButton.set([this, scrollViewer]() {
+            const auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
+            if (increaseButton)
+            {
+                // Do localization for the scroll increase button
+                const auto toolTip = winrt::ToolTipService::GetToolTip(increaseButton);
+                if (!toolTip)
+                {
+                    const auto tooltip = winrt::ToolTip();
+                    tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewScrollIncreaseButtonTooltip)));
+                    winrt::ToolTipService::SetToolTip(increaseButton, tooltip);
+                }
+
+                m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
+            }
+            return increaseButton;
+        }());
 
         m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
     }

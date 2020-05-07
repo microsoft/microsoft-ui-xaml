@@ -99,6 +99,16 @@
                     <Button x:Name="GetFirstTabLocationButton" AutomationProperties.Name="GetFirstTabLocationButton" Content="FirstTab" Click="GetFirstTabLocationButton_Click"/>
                     <TextBlock x:Name="FirstTabLocationTextBlock" AutomationProperties.Name="FirstTabLocationTextBlock" Margin="4,0,0,0" Text=""/>
                 </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetScrollDecreaseButtonToolTipButton" AutomationProperties.Name="GetScrollDecreaseButtonToolTipButton" Content="TooltipScrollDecreaseButton" Click="GetScrollDecreaseButtonToolTipButton_Click"/>
+                    <TextBlock x:Name="ScrollDecreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollDecreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
+                    <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
             </StackPanel>
 
             <Grid Grid.Column="1">
