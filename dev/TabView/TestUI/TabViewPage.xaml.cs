@@ -142,15 +142,15 @@ namespace MUXControlsTestApp
 
         public void GetTab0ToolTipButton_Click(object sender, RoutedEventArgs e)
         {
-            GetToolTipStringForTab(FirstTab, Tab0ToolTipTextBlock);
+            GetToolTipStringForUIElement(FirstTab, Tab0ToolTipTextBlock);
         }
 
         public void GetTab1ToolTipButton_Click(object sender, RoutedEventArgs e)
         {
-            GetToolTipStringForTab(SecondTab, Tab1ToolTipTextBlock);
+            GetToolTipStringForUIElement(SecondTab, Tab1ToolTipTextBlock);
         }
 
-        public void GetToolTipStringForTab(TabViewItem item, TextBlock textBlock)
+        public void GetToolTipStringForUIElement(UIElement item, TextBlock textBlock)
         {
             var tooltip = ToolTipService.GetToolTip(item);
             if (tooltip is ToolTip)
@@ -398,6 +398,22 @@ namespace MUXControlsTestApp
         {
             FirstTab.Header = "s";
             LongHeaderTab.Header = "long long long long long long long long";
+        }
+
+        private void GetScrollDecreaseButtonToolTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButton") is RepeatButton scrollDecreaseButton)
+            {
+                GetToolTipStringForUIElement(scrollDecreaseButton, ScrollDecreaseButtonToolTipTextBlock);
+            }
+        }
+
+        private void GetScrollIncreaseButtonToolTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") is RepeatButton scrollIncreaseButton)
+            {
+                GetToolTipStringForUIElement(scrollIncreaseButton, ScrollIncreaseButtonToolTipTextBlock);
+            }
         }
 
         private void GetSecondTabHeaderForegroundButton_Click(object sender, RoutedEventArgs e)

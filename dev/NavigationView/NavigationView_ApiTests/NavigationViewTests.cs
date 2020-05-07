@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -651,6 +651,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(returnedItemForNonExistentContainer == null, "Returned item should be null.");
 
                 MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
+        [TestMethod]
+        public void VerifySelectedItemIsNullWhenNoItemIsSelected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                Content = navView;
+
+                var menuItem1 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+
+                navView.MenuItems.Add(menuItem1);
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                Verify.IsFalse(menuItem1.IsSelected);
+                Verify.AreEqual(null, navView.SelectedItem);
+
+                menuItem1.IsSelected = true;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(menuItem1.IsSelected);
+                Verify.AreEqual(menuItem1, navView.SelectedItem);
+
+                menuItem1.IsSelected = false;
+                Content.UpdateLayout();
+
+                Verify.IsFalse(menuItem1.IsSelected);
+                Verify.AreEqual(null, navView.SelectedItem, "SelectedItem should have been [null] as no item is selected");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInFooterDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+
+                Content = navView;
+
+                var navViewItem = new NavigationViewItem() { Content = "Footer item" };
+
+                navView.PaneFooter = navViewItem;
+
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                // If we don't get here, app has crashed. This verify is just making sure code got run
+                Verify.IsTrue(true);
             });
         }
     }

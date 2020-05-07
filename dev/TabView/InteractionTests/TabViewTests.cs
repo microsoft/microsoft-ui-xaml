@@ -624,6 +624,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ScrollButtonToolTipTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                PressButtonAndVerifyText("GetScrollDecreaseButtonToolTipButton", "ScrollDecreaseButtonToolTipTextBlock", "Scroll tab list backward");
+                PressButtonAndVerifyText("GetScrollIncreaseButtonToolTipButton", "ScrollIncreaseButtonToolTipTextBlock", "Scroll tab list forward");
+            }
+        }
+
+        [TestMethod]
         public void VerifyTabViewItemHeaderForegroundResource()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -643,7 +653,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             button.InvokeAndWait();
 
             TextBlock textBlock = FindElement.ByName<TextBlock>(textBlockName);
-            Verify.AreEqual(textBlock.DocumentText, expectedText);
+            Verify.AreEqual(expectedText, textBlock.DocumentText);
         }
 
         Button FindCloseButton(UIObject tabItem)

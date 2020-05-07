@@ -735,20 +735,20 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
 {
+    m_shouldRaiseItemInvokedAfterSelection = true;
+
     auto selectedItem = SelectedItem();
-    RaiseItemInvokedForNavigationViewItem(nvi);
-
-    // User changed selectionstate in the ItemInvoked callback
-    if (selectedItem != SelectedItem())
-    {
-        return;
-    }
-
     bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
     {
         auto ip = GetIndexPathForContainer(nvi);
         UpdateSelectionModelSelection(ip);
+    }
+
+    // Item was invoked but already selected, so raise event here.
+    if (selectedItem == SelectedItem())
+    {
+        RaiseItemInvokedForNavigationViewItem(nvi);
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
@@ -1344,7 +1344,7 @@ void NavigationView::UpdateIsClosedCompact()
 
 void NavigationView::UpdatePaneButtonsWidths()
 {
-    auto newButtonWidths = [this]()
+    const auto newButtonWidths = [this]()
     {
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
         {
@@ -1915,8 +1915,21 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
         // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
         // And SelectionChanged is after we selected the new item.
+        const auto selectedItem = SelectedItem();
+        if (m_shouldRaiseItemInvokedAfterSelection)
+        {
+            // If selection changed inside ItemInvoked, the flag does not get said to false and the event get's raised again,so we need to set it to false now!
+            m_shouldRaiseItemInvokedAfterSelection = false;
+            RaiseItemInvoked(nextItem, isSettingsItem, NavigationViewItemOrSettingsContentFromData(nextItem), recommendedDirection);
+        }
+        // Selection was modified inside ItemInvoked, skip everything here!
+        if (selectedItem != SelectedItem())
+        {
+            return;
+        }
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
+
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
 
@@ -3496,6 +3509,8 @@ void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEv
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
         m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
     }
+    // Update pane buttons now since we the CompactPaneLength is actually known now.
+    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::OnIsPaneOpenChanged()

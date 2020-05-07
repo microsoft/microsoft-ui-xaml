@@ -176,8 +176,8 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
     templateSettings->ContainerAnimationStartPosition(indeterminateProgressBarIndicatorWidth * -1.0); // Position at -100%
     templateSettings->ContainerAnimationEndPosition(indeterminateProgressBarIndicatorWidth * 3.0); // Position at 300%
 
-    templateSettings->ContainerAnimationStartPosition2(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
-    templateSettings->ContainerAnimationEndPosition2(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
+    templateSettings->Container2AnimationStartPosition(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
+    templateSettings->Container2AnimationEndPosition(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
 
     templateSettings->ContainerAnimationMidPosition(width * 0.2);
 

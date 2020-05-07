@@ -4361,22 +4361,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
             {
                 var checkMenuItemsButton = FindElement.ByName("CheckMenuItemsOffset");
-                var compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox"));
+                var compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox"));
                 var displayModeToggle = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
                 var currentStatus = new CheckBox(FindElement.ByName("MenuItemsCorrectOffset"));
 
                 checkMenuItemsButton.Click();
+                Log.Comment("Verifying compact pane length set before loading working");
                 Wait.ForIdle();
+                compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox")); 
                 Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
 
+                Log.Comment("Verifying changing compact pane length in left mode working");
                 compactpaneCheckbox.SelectItemByName("96");
                 Wait.ForIdle();
 
                 checkMenuItemsButton.Click();
                 Wait.ForIdle();
+                compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox")); 
                 Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
 
                 // Check if changing displaymode to top and then changing length gets used correctly
+                Log.Comment("Verifying changing compact pane length during top mode working");
                 displayModeToggle.SelectItemByName("Top");
                 compactpaneCheckbox.SelectItemByName("48");
                 Wait.ForIdle();
@@ -4386,6 +4391,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 checkMenuItemsButton.Click();
                 Wait.ForIdle();
+                compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox")); 
                 Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
             }
         }
@@ -4657,6 +4663,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // check visual state
                 result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
                 Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
+            }
+        }
+        
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifySelectedItemInInvokedItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var invokedItem = FindElement.ByName("Music");
+
+                invokedItem.Click();
+
+                Wait.ForIdle();
+
+                var result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Log.Comment("Verify item is selected when Invoked event got raised");
+                Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
+            
+                invokedItem.Click();
+
+                Wait.ForIdle();
+
+                Log.Comment("Verify item invoked was raised despite item already selected");
+                result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
             }
         }
 
