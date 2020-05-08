@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -21,6 +21,7 @@ ProgressBar::ProgressBar()
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
     RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
     RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 }
@@ -62,7 +63,7 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 {
     // NOTE: This hits when IsIndeterminate changes because we set MUX_PROPERTY_CHANGED_CALLBACK to true in the idl.
     SetProgressBarIndicatorWidth();
-    UpdateStates(); 
+    UpdateStates();
 }
 
 void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -120,7 +121,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition
             // in ProgressBar.xaml when reverting back to previous state
-            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true); 
+            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
 
             if (IsIndeterminate())
             {
@@ -149,7 +150,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             {
                 determinateProgressBarIndicator.Width(0); // Error
             }
-           
+
             UpdateStates(); // Reverts back to previous state
         }
     }
