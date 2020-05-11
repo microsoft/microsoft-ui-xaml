@@ -67,13 +67,20 @@ header.masthead h1 {
 .nav-item {
   font-size: 1.25em;
 }
-#learn-more {
+#learn-more, #download {
   padding: 12px;
   font-size: 1.25rem;
   font-weight: 500;
   display: inline-block;
 }
 
+#download {
+  background-color: #eb7200;
+}
+
+#download:hover {
+  background-color: #c25e00;
+}
 @media (min-width: 768px) {
   header.masthead {
     padding-top: 7rem;
@@ -87,7 +94,7 @@ header.masthead h1 {
     text-align: left;
   }
 
-  #learn-more {
+  #learn-more, #download {
     float:left;
   }
 
@@ -217,6 +224,10 @@ header.masthead h1 {
 @media (min-width: 768px) {
   .showcase .showcase-text {
     padding: 7rem;
+  }
+
+  #download-div {
+    margin-top: 40px;
   }
 
 }
@@ -513,6 +524,9 @@ a:hover {
     #sidebar.active {
         margin-left: 0;
     }
+    #download-div {
+      margin-top: 0px;
+    }
 }
 
 #uwp li {
@@ -540,9 +554,21 @@ a:hover {
   color:#0E53BD;
   font-size: 2em;
   margin-top:10px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 #about-section {
   margin-top: 20px;
+}
+
+.example-content {
+  max-width: 80%;
+  margin-left: 70px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+
+.card {
+  margin-bottom: 20px;
 }
