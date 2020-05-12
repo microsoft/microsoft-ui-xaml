@@ -381,7 +381,7 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
 {
     assert(!m_managingViewportDisabled);
     REPEATER_TRACE_INFO(L"%ls: \tEffectiveViewportChanged event callback \n", GetLayoutId().data());
-    UpdateViewport(args.EffectiveViewport());
+    UpdateViewport(args.MaxViewport());
 
     m_pendingViewportShift = {};
     m_unshiftableShift = {};
