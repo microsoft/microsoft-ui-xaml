@@ -742,7 +742,7 @@ $@"void {ownerType.Name}Properties::{prop.GetClassFuncName()}(
                         }
                         sb.AppendLine(String.Format(@"
     auto value = winrt::unbox_value<{2}>(args.NewValue());
-    auto coercedValue = value;
+    const auto coercedValue = value;
     winrt::get_self<{0}>(owner)->{1}(coercedValue);
     {3}
     {{
@@ -776,7 +776,7 @@ $@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);");
                     if (prop.PropertyValidationCallback != null)
                     {
                         localName = "coercedValue";
-                        sb.AppendLine($@"    {prop.PropertyCppName} {localName} = value;");
+                        sb.AppendLine($@"    const {prop.PropertyCppName} {localName} = value;");
                         sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->{prop.PropertyValidationCallback}({localName});");
                     }
                     sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->SetValue(s_{prop.Name}Property, ValueHelper<{prop.PropertyCppName}>::BoxValueIfNecessary({localName}));

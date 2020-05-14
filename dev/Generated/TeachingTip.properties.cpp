@@ -87,7 +87,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::Style>(),
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Style>::BoxedDefaultValue(),
+                ValueHelper<winrt::Style>::BoxValueIfNecessary(unbox_value<winrt::Style>(winrt::Application::Current().Resources().Lookup(box_value(L\\\"DefaultButtonStyle\")))),
                 winrt::PropertyChangedCallback(&OnActionButtonStylePropertyChanged));
     }
     if (!s_CloseButtonCommandProperty)
@@ -131,7 +131,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::Style>(),
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Style>::BoxedDefaultValue(),
+                ValueHelper<winrt::Style>::BoxValueIfNecessary(unbox_value<winrt::Style>(winrt::Application::Current().Resources().Lookup(box_value(L\"DefaultButtonStyle\")))),
                 winrt::PropertyChangedCallback(&OnCloseButtonStylePropertyChanged));
     }
     if (!s_HeroContentProperty)

@@ -66,7 +66,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     if (isWrapping && IsReflowRequired())
     {
         REPEATER_TRACE_INFO(L"%*s: \tReflow Pass \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
-        auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
+        const auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
         MinorStart(firstElementBounds) = 0;
         m_elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
         Generate(GenerateDirection::Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
@@ -301,8 +301,8 @@ void FlowLayoutAlgorithm::Generate(
         int previousIndex = anchorIndex;
         int currentIndex = anchorIndex + step;
         const auto anchorBounds = m_elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
-        const float lineOffset = MajorStart(anchorBounds);
-        const float lineMajorSize = MajorSize(anchorBounds);
+        float lineOffset = MajorStart(anchorBounds);
+        float lineMajorSize = MajorSize(anchorBounds);
         unsigned int countInLine = 1;
         bool lineNeedsReposition = false;
 
@@ -311,13 +311,13 @@ void FlowLayoutAlgorithm::Generate(
         {
             // Ensure layout element.
             m_elementManager.EnsureElementRealized(direction == GenerateDirection::Forward, currentIndex, layoutId);
-            auto currentElement = m_elementManager.GetRealizedElement(currentIndex);
-            auto desiredSize = MeasureElement(currentElement, currentIndex, availableSize, m_context.get());
+            const auto currentElement = m_elementManager.GetRealizedElement(currentIndex);
+            const auto desiredSize = MeasureElement(currentElement, currentIndex, availableSize, m_context.get());
 
             // Lay it out.
-            auto previousElement = m_elementManager.GetRealizedElement(previousIndex);
-            winrt::Rect currentBounds = winrt::Rect{ 0, 0, desiredSize.Width, desiredSize.Height };
-            auto previousElementBounds = m_elementManager.GetLayoutBoundsForDataIndex(previousIndex);
+            const auto previousElement = m_elementManager.GetRealizedElement(previousIndex);
+            const winrt::Rect currentBounds = winrt::Rect{ 0, 0, desiredSize.Width, desiredSize.Height };
+            const auto previousElementBounds = m_elementManager.GetLayoutBoundsForDataIndex(previousIndex);
 
             if (direction == GenerateDirection::Forward)
             {
@@ -334,7 +334,7 @@ void FlowLayoutAlgorithm::Generate(
                         for (unsigned int i = 0; i < countInLine; i++)
                         {
                             const auto dataIndex = currentIndex - 1 - i;
-                            auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                            const auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
                             MajorSize(bounds) = lineMajorSize;
                             m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
                         }
@@ -376,7 +376,7 @@ void FlowLayoutAlgorithm::Generate(
                             const auto dataIndex = currentIndex + 1 + (int)i;
                             if (dataIndex != anchorIndex)
                             {
-                                auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                                const auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
                                 MajorStart(bounds) = previousLineOffset - lineMajorSize - static_cast<float>(lineSpacing);
                                 MajorSize(bounds) = lineMajorSize;
                                 m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
@@ -532,7 +532,7 @@ void FlowLayoutAlgorithm::RaiseLineArranged()
             auto currentLineSize = MajorSize(previousElementBounds);
             for (int currentDataIndex = m_firstRealizedDataIndexInsideRealizationWindow; currentDataIndex <= m_lastRealizedDataIndexInsideRealizationWindow; currentDataIndex++)
             {
-                auto currentBounds = m_elementManager.GetLayoutBoundsForDataIndex(currentDataIndex);
+                const auto currentBounds = m_elementManager.GetLayoutBoundsForDataIndex(currentDataIndex);
                 if (MajorStart(currentBounds) != currentLineOffset)
                 {
                     // Staring a new line
