@@ -423,7 +423,7 @@
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch">
                                             <ScrollViewer
-                                                TabNavigation="Once"
+                                                TabNavigation="Local"
                                                 VerticalScrollBarVisibility="Auto">
                                                 <Grid x:Name="ScrollingContentGrid">
                                                     <Grid.RowDefinitions>

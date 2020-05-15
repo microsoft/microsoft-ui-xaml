@@ -722,7 +722,9 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
         if (!m_settingsItem)
         {
             m_settingsItem.set(winrt::make < ::NavigationViewItem>());
-            m_settingsItem.get().Name(L"SettingsItem");
+            auto settingsItem = m_settingsItem.get();
+            settingsItem.Name(L"SettingsItem");
+            m_navigationViewItemsFactory.get()->SettingsItem(settingsItem);
         }
 
         if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())

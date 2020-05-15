@@ -25,9 +25,21 @@ void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable const& n
     }
 }
 
+void NavigationViewItemsFactory::SettingsItem(winrt::NavigationViewItemBase const& settingsItem)
+{
+    m_settingsItem = settingsItem;
+}
+
+
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, settingsItem = m_settingsItem, args]() {
+        // Do not template SettingsItem
+        if (settingsItem && settingsItem == args.Data())
+        {
+            return args.Data();
+        }
+
         if (itemTemplateWrapper)
         {
             return itemTemplateWrapper.GetElement(args).as<winrt::IInspectable>();
@@ -48,7 +60,10 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
 
 void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycleArgs const& args)
 {
-    if (m_itemTemplateWrapper)
+    // Do not recycle SettingsItem
+    bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
+
+    if (m_itemTemplateWrapper && !isSettingsItem)
     {
         m_itemTemplateWrapper.RecycleElement(args);
     }
