@@ -402,6 +402,15 @@ void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
             source.RemoveAt(index);
         }
     }
+
+    // No children, so close parent
+    if (inner->Size() == 0)
+    {
+        if (auto&& ownerNode = m_parent.get())
+        {
+            ownerNode.IsExpanded(false);
+        }
+    }
 }
 
 void TreeViewNodeVector::RemoveAtEnd(bool updateItemsSource)
@@ -457,6 +466,11 @@ void TreeViewNodeVector::Clear(bool updateItemsSource)
                 itemsSource.Clear();
             }
         }
+    }
+
+    if (auto&& ownerNode = m_parent.get())
+    {
+        ownerNode.IsExpanded(false);
     }
 }
 
