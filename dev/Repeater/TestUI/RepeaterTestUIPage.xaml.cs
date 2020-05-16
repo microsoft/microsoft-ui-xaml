@@ -34,6 +34,10 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(BasicDemo));
             };
 
+            nestedTreeDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(NestedTreeSample));
+            };
+
             itemsSourceDemo.Click += delegate 
             {
                 Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));

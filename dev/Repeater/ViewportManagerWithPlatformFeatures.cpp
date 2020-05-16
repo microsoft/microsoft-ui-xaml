@@ -381,6 +381,27 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
 {
     assert(!m_managingViewportDisabled);
     REPEATER_TRACE_INFO(L"%ls: \tEffectiveViewportChanged event callback \n", GetLayoutId().data());
+    const auto effective = args.EffectiveViewport();
+    const float effectiveWidth = effective.Width;
+    const float effectiveHeigh = effective.Height;
+    const auto max = args.MaxViewport();
+    const auto distanceInX = args.BringIntoViewDistanceX();
+    const auto distanceInY = args.BringIntoViewDistanceY();
+
+    OutputDebugStringA("\nEffViewPort:");
+    OutputDebugStringA(std::to_string(effective.Width).c_str());
+    OutputDebugStringA("  ");
+    OutputDebugStringA(std::to_string(effective.Height).c_str());
+    OutputDebugStringA("\nMaxViewPort:");
+    OutputDebugStringA(std::to_string(max.Width).c_str());
+    OutputDebugStringA("  ");
+    OutputDebugStringA(std::to_string(max.Height).c_str());
+    OutputDebugStringA("\nDistance to view:");
+    OutputDebugStringA(std::to_string(distanceInX).c_str());
+    OutputDebugStringA("  ");
+    OutputDebugStringA(std::to_string(distanceInY).c_str());
+
+
     UpdateViewport(args.MaxViewport());
 
     m_pendingViewportShift = {};

@@ -69,6 +69,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\NestedTreeSample.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\SelectionSample\Flat\FlatSample.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -163,6 +167,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\DataModel\RecipeGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\DataModel\Year.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\RecipeViewGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\NestedTreeSample.xaml.cs">
+      <DependentUpon>NestedTreeSample.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\SelectionSample\Common\BoolToBrushConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\SelectionSample\Common\BoolToVisibilityConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\SelectionSample\Common\Data.cs" />

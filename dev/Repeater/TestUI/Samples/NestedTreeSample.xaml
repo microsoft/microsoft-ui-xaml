@@ -1,0 +1,63 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.NestedTreeSample"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Orientation="Horizontal">
+            <muxc:ItemsRepeaterScrollHost Width="200" Height="400">
+                <ScrollViewer>
+                    <muxc:ItemsRepeater 
+                        x:Name="repeater2"
+                        ItemsSource="{x:Bind Teams}">
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="x:Int32">
+                                <UserControl x:Name="RootControl">
+                                    <StackPanel x:Name="RootPanel"
+                                                BorderThickness="1" BorderBrush="Transparent" Orientation="Horizontal">
+                                        <TextBlock Text="{x:Bind}"/>
+                                    </StackPanel>
+                                </UserControl>
+
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
+                </ScrollViewer>
+            </muxc:ItemsRepeaterScrollHost>
+
+            <muxc:ItemsRepeaterScrollHost >
+                <muxc:ItemsRepeaterScrollHost.Resources>
+                    <muxc:SelectionModel Source="{x:Bind TreeData}" x:Name="treeSelectionModel"/>
+                    <DataTemplate x:Key="groupTemplate">
+                        <StackPanel x:Name="root" Margin="10" Background="Transparent">
+                            <TextBlock Text="{Binding}"/>
+                            <muxc:ItemsRepeater Margin="10,0,0,0" ItemsSource="{Binding}"
+                                                ItemTemplate="{StaticResource templateSelector}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                    <DataTemplate x:Key="itemTemplate">
+                        <StackPanel x:Name="root" Orientation="Horizontal" Margin="10" Background="Transparent">
+                            <TextBlock Text="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                    <local:TreeTemplateSelector x:Key="templateSelector" GroupTemplate="{StaticResource groupTemplate}" ItemTemplate="{StaticResource itemTemplate}" />
+                </muxc:ItemsRepeaterScrollHost.Resources>
+                <ScrollViewer>
+                    <muxc:ItemsRepeater 
+                        x:Name="treeRepeter"
+                        ItemsSource="{x:Bind TreeData,Mode=OneWay}"
+                        ItemTemplate="{StaticResource templateSelector}"/>
+                </ScrollViewer>
+            </muxc:ItemsRepeaterScrollHost>
+
+            <TextBlock x:Name="indexPath" />
+            <TextBlock x:Name="isSelected" />
+        </StackPanel>
+    </Grid>
+</Page>
