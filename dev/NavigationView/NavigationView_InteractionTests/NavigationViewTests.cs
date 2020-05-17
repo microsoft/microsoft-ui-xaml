@@ -2710,6 +2710,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     addButton.Invoke();
                     addButton.Invoke();
+                    Wait.ForIdle();
 
                     positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
                     sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);

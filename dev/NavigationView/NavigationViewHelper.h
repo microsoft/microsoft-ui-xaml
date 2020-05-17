@@ -15,7 +15,9 @@ enum class NavigationViewRepeaterPosition
 {
     LeftNav,
     TopPrimary,
-    TopOverflow
+    TopOverflow,
+    LeftFooter,
+    TopFooter
 };
 
 enum class NavigationViewPropagateTarget

@@ -1033,11 +1033,19 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         {
             if (IsTopNavigationView())
             {
-                if (ir == m_topNavRepeater.get() || ir == m_topNavFooterMenuRepeater.get())
+                if (ir == m_topNavRepeater.get())
                 {
                     return NavigationViewRepeaterPosition::TopPrimary;
                 }
+                if (ir == m_topNavFooterMenuRepeater.get())
+                {
+                    return NavigationViewRepeaterPosition::TopFooter;
+                }
                 return NavigationViewRepeaterPosition::TopOverflow;
+            }
+            if (ir == m_leftNavFooterMenuRepeater.get())
+            {
+                return NavigationViewRepeaterPosition::LeftFooter;
             }
             return NavigationViewRepeaterPosition::LeftNav;
         }();

@@ -81,7 +81,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
     int32_t positionInSet = 0;
 
-    if (IsOnTopNavigation())
+    if (IsOnTopNavigation() && !IsOnFooterNavigation())
     {
         if (auto navigationView = GetParentNavigationView())
         {
@@ -102,7 +102,7 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 {
     int32_t sizeOfSet = 0;
 
-    if (IsOnTopNavigation())
+    if (IsOnTopNavigation() && !IsOnFooterNavigation())
     {
         if (auto navview = GetParentNavigationView())
         {
@@ -216,6 +216,21 @@ winrt::NavigationView NavigationViewItemAutomationPeer::GetParentNavigationView(
     return navigationView;
 }
 
+winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentItemsRepeater()
+{
+    winrt::ItemsRepeater itemsRepeater{ nullptr };
+
+    winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>();
+    if (auto parent = winrt::VisualTreeHelper::GetParent(navigationViewItem))
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            itemsRepeater = parentIR;
+        }
+    }
+    return itemsRepeater;
+}
+
 int32_t NavigationViewItemAutomationPeer::GetNavigationViewItemCountInPrimaryList()
 {
     int32_t count = 0;
@@ -252,12 +267,19 @@ bool NavigationViewItemAutomationPeer::IsSettingsItem()
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigation()
 {
-    return GetNavigationViewRepeaterPosition() != NavigationViewRepeaterPosition::LeftNav;
+    auto position = GetNavigationViewRepeaterPosition();
+    return position != NavigationViewRepeaterPosition::LeftNav && position != NavigationViewRepeaterPosition::LeftFooter;
 }
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigationOverflow()
 {
     return GetNavigationViewRepeaterPosition() == NavigationViewRepeaterPosition::TopOverflow;
+}
+
+bool NavigationViewItemAutomationPeer::IsOnFooterNavigation()
+{
+    auto position = GetNavigationViewRepeaterPosition();
+    return position == NavigationViewRepeaterPosition::LeftFooter || position == NavigationViewRepeaterPosition::TopFooter;
 }
 
 NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationViewRepeaterPosition()
@@ -277,54 +299,51 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 {
     int returnValue = 0;
 
-    if (auto const navview = GetParentNavigationView())
+    if (auto const repeater = GetParentItemsRepeater())
     {
-        if (auto const repeater = winrt::get_self<NavigationView>(navview)->LeftNavRepeater())
+        if (auto const parent = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(repeater).try_as<winrt::AutomationPeer>())
         {
-            if (auto const parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
+            if (auto const children = parent.GetChildren())
             {
-                if (auto const children = parent.GetChildren())
+                int index = 0;
+                bool itemFound = false;
+
+                for (auto const& child : children)
                 {
-                    int index = 0;
-                    bool itemFound = false;
-
-                    for (auto const& child : children)
+                    if (auto dependencyObject = repeater.TryGetElement(index))
                     {
-                        if (auto dependencyObject = repeater.TryGetElement(index))
+                        if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
                         {
-                            if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
+                            if (automationOutput == AutomationOutput::Size && itemFound)
                             {
-                                if (automationOutput == AutomationOutput::Size && itemFound)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    returnValue = 0;
-                                }
+                                break;
                             }
-                            else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
+                            else
                             {
-                                if (navviewItem.Visibility() == winrt::Visibility::Visible)
-                                {
-                                    returnValue++;
+                                returnValue = 0;
+                            }
+                        }
+                        else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
+                        {
+                            if (navviewItem.Visibility() == winrt::Visibility::Visible)
+                            {
+                                returnValue++;
 
-                                    if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                {
+                                    if (automationOutput == AutomationOutput::Position)
                                     {
-                                        if (automationOutput == AutomationOutput::Position)
-                                        {
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            itemFound = true;
-                                        }
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        itemFound = true;
                                     }
                                 }
                             }
                         }
-                        index++;
                     }
+                    index++;
                 }
             }
         }
