@@ -4692,6 +4692,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "E")]
+        public void VerifyHoldingKeyOnlyInvokesOnce()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
+            {
+                Verify.AreEqual("0", GetInvokeCount());
+                var homeItem = FindElement.ByName("NavViewInvokeItem");
+                FocusHelper.SetFocus(homeItem);
+
+                KeyboardHelper.PressKey(Key.Enter);
+
+                Verify.AreEqual("1", GetInvokeCount());
+
+                KeyboardHelper.HoldKeyMilliSeconds(Key.Enter, 2000);
+                Wait.ForIdle();
+                // Should have invoked once, not multiple times
+                Verify.AreEqual("2", GetInvokeCount());
+            }
+
+            string GetInvokeCount()
+            {
+                var textBlock = new TextBlock(FindElement.ByName("HomeItemInvokedCount"));
+                return textBlock.GetText();
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))

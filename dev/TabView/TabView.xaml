@@ -647,6 +647,7 @@
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 FontWeight="{TemplateBinding FontWeight}"
                                 FontSize="{ThemeResource TabViewItemHeaderFontSize}"
+                                Foreground="{ThemeResource TabViewItemHeaderForeground}"
                                 OpticalMarginAlignment="TrimSideBearings"
                                 HighContrastAdjustment="None" />
 
