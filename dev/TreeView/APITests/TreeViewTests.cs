@@ -672,21 +672,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
+                var treeViewRoot = new TreeViewNode();
                 var treeViewNode1 = new TreeViewNode();
                 var treeViewNode2 = new TreeViewNode();
                 var treeViewNode3 = new TreeViewNode();
                 var treeViewNode4 = new TreeViewNode();
                 var treeViewNode5 = new TreeViewNode();
 
+                // Need root since in TreeView we otherwise 
+                // could collapse whole tree and hide it forever
+                treeViewRoot.Children.Add(treeViewNode1);
+
                 treeViewNode1.Children.Add(treeViewNode2);
                 treeViewNode1.Children.Add(treeViewNode3);
                 treeViewNode1.Children.Add(treeViewNode4);
                 treeViewNode1.Children.Add(treeViewNode5);
 
-                var treeView = new TreeView();
-                Content = treeView;
-                Content.UpdateLayout();
-                
                 treeViewNode1.IsExpanded = true;
                 Verify.IsTrue(treeViewNode1.IsExpanded);
 
