@@ -415,5 +415,14 @@ namespace MUXControlsTestApp
                 GetToolTipStringForUIElement(scrollIncreaseButton, ScrollIncreaseButtonToolTipTextBlock);
             }
         }
+
+        private void GetSecondTabHeaderForegroundButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (FindVisualChildByName(SecondTab, "ContentPresenter") is ContentPresenter presenter
+                && presenter.Foreground is SolidColorBrush brush)
+            {
+                SecondTabHeaderForegroundTextBlock.Text = brush.Color.ToString();
+            }
+        }
     }
 }
