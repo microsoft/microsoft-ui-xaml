@@ -137,4 +137,12 @@
     <value>ടാബ് അടയ്ക്കുക (Ctrl+F4)</value>
     <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
   </data>
+  <data name="TabViewScrollDecreaseButtonTooltip" xml:space="preserve">
+    <value>ടാബ്‌ലിസ്റ്റ് പിറകിലേക്ക് സ്‌ക്രോള്‍ ചെയ്യുക</value>
+    <comment>Tooltip for the tab list scroll decrease button.</comment>
+  </data>
+  <data name="TabViewScrollIncreaseButtonTooltip" xml:space="preserve">
+    <value>ടാബ്‌ലിസ്റ്റ് മുന്നിലേക്ക് സ്‌ക്രോള്‍ ചെയ്യുക</value>
+    <comment>Tooltip for the tab list scroll increase button.</comment>
+  </data>
 </root>

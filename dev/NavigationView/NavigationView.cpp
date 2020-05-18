@@ -108,6 +108,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_settingsItemTappedRevoker.revoke();
     m_settingsItemKeyDownRevoker.revoke();
+    m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
 
     m_paneSearchButtonClickRevoker.revoke();
@@ -937,6 +938,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
             nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+            nviRevokers->keyUpRevoker = nvi.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
             nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
             nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
             nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
@@ -1005,10 +1007,12 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         m_settingsItemTappedRevoker.revoke();
         m_settingsItemKeyDownRevoker.revoke();
+        m_settingsItemKeyUpRevoker.revoke();
 
         m_settingsItem.set(settingsItem);
         m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
         m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
 
         auto nvibImpl = winrt::get_self<NavigationViewItem>(settingsItem);
         nvibImpl->SetNavigationViewParent(*this);
@@ -2152,11 +2156,40 @@ void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sende
     }
 }
 
+void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    // Since we handle space and enter upon initial key down, user can hold down and items get invoked rapidly
+    // To prevent that, we detect whether a key was released or not.
+    if ((args.OriginalKey() == winrt::VirtualKey::GamepadA
+        || args.Key() == winrt::VirtualKey::Enter
+        || args.Key() == winrt::VirtualKey::Space))
+    {
+        m_invokeKeyWasReleased = true;
+    }
+}
+
 void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    if ((args.OriginalKey() == winrt::VirtualKey::GamepadA
+        || args.Key() == winrt::VirtualKey::Enter
+        || args.Key() == winrt::VirtualKey::Space))
     {
-        HandleKeyEventForNavigationViewItem(nvi, args);
+        // Only handle those keys if m_invokeKeyWasReleased is true!
+        if (m_invokeKeyWasReleased)
+        {
+            m_invokeKeyWasReleased = false;
+            if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+            {
+                HandleKeyEventForNavigationViewItem(nvi, args);
+            }
+        }
+    }
+    else
+    {
+        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+        {
+            HandleKeyEventForNavigationViewItem(nvi, args);
+        }
     }
 }
 
