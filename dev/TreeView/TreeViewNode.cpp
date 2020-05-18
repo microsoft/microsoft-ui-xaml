@@ -231,7 +231,7 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
     if (!AreChildrenNodesEqualToItemsSource())
     {
         auto children = winrt::get_self<TreeViewNodeVector>(Children());
-        children->Clear(false /* updateItemsSource */);
+        children->Clear(false /* updateItemsSource */, false /* updateIsExpanded */);
 
         auto size = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
         for (auto i = 0; i < size; i++)
@@ -383,11 +383,11 @@ void TreeViewNodeVector::InsertAt(unsigned int index, winrt::TreeViewNode const&
 
 void TreeViewNodeVector::SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource)
 {
-    RemoveAt(index, updateItemsSource);
+    RemoveAt(index, updateItemsSource,false /* updateIsExpanded */);
     InsertAt(index, item, updateItemsSource);
 }
 
-void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
+void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource,bool updateIsExpanded)
 {
     auto inner = GetVectorInnerImpl();
     auto targetNode = inner->GetAt(index);
@@ -403,12 +403,16 @@ void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
         }
     }
 
-    // No children, so close parent
-    if (inner->Size() == 0)
+    // No children, so close parent if not requested otherwise
+    if (updateIsExpanded && inner->Size() == 0)
     {
         if (auto&& ownerNode = m_parent.get())
         {
-            ownerNode.IsExpanded(false);
+            // Only set IsExpanded to false if we are not the root node
+            if (auto&& ownerParent = ownerNode.Parent())
+            {
+                ownerNode.IsExpanded(false);
+            }
         }
     }
 }
@@ -444,7 +448,7 @@ void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const>
     }
 }
 
-void TreeViewNodeVector::Clear(bool updateItemsSource)
+void TreeViewNodeVector::Clear(bool updateItemsSource,bool updateIsExpanded)
 {
     auto inner = GetVectorInnerImpl();
     auto count = inner->Size();
@@ -468,9 +472,16 @@ void TreeViewNodeVector::Clear(bool updateItemsSource)
         }
     }
 
-    if (auto&& ownerNode = m_parent.get())
+    if (updateIsExpanded)
     {
-        ownerNode.IsExpanded(false);
+        if(auto&& ownerNode = m_parent.get())
+        {
+            // Only set IsExpanded to false if we are not the root node
+            if (auto&& ownerParent = ownerNode.Parent())
+            {
+                ownerNode.IsExpanded(false);
+            }
+        }
     }
 }
 
