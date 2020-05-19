@@ -4,7 +4,7 @@
   <PropertyGroup>
     <MUXVersionMajor>2</MUXVersionMajor>
     <MUXVersionMinor>4</MUXVersionMinor>
-    <MUXVersionPatch>1</MUXVersionPatch>
+    <MUXVersionPatch>2</MUXVersionPatch>
     <MUXVersionBuild Condition="$(MUXVersionBuild) == ''">0</MUXVersionBuild>
     <MUXVersionRevision Condition="$(MUXVersionRevision) == ''">0</MUXVersionRevision>
   </PropertyGroup>
