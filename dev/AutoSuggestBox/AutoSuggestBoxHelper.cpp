@@ -6,6 +6,7 @@
 #include "AutoSuggestBoxHelper.h"
 #include "DispatcherHelper.h"
 #include "CornerRadiusFilterConverter.h"
+#include "ResourceAccessor.h"
 
 static constexpr auto c_popupName = L"SuggestionsPopup"sv;
 static constexpr auto c_popupBorderName = L"SuggestionsContainer"sv;
@@ -103,8 +104,8 @@ void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sen
 
 void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoSuggestBox, bool isPopupOpen)
 {
-    auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(autoSuggestBox, box_value(c_controlCornerRadiusKey)));
-    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(autoSuggestBox, box_value(c_overlayCornerRadiusKey)));
+    auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(autoSuggestBox, box_value(c_controlCornerRadiusKey)));
+    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(autoSuggestBox, box_value(c_overlayCornerRadiusKey)));
 
     if (winrt::IControl7 autoSuggextBoxControl7 = autoSuggestBox)
     {
@@ -157,9 +158,4 @@ bool AutoSuggestBoxHelper::IsPopupOpenDown(const winrt::AutoSuggestBox& autoSugg
         }
     }
     return verticalOffset >= 0;
-}
-
-winrt::IInspectable AutoSuggestBoxHelper::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
-{
-    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }
