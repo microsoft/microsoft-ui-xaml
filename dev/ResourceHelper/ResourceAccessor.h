@@ -157,6 +157,8 @@ public:
 #define SR_TabViewCloseButtonName L"TabViewCloseButtonName"
 #define SR_TabViewCloseButtonTooltip L"TabViewCloseButtonTooltip"
 #define SR_TabViewCloseButtonTooltipWithKA L"TabViewCloseButtonTooltipWithKA"
+#define SR_TabViewScrollDecreaseButtonTooltip L"TabViewScrollDecreaseButtonTooltip"
+#define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 

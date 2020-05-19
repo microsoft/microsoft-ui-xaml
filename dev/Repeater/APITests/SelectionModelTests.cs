@@ -1134,6 +1134,80 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        [TestMethod] 
+        public void ValidateSelectionModeChangeFromMultipleToSingle()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel();
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                // First test: switching from multiple to single selection mode with just one selected item
+                selectionModel.Select(4);
+
+                selectionModel.SingleSelect = true;
+
+                // Verify that the item at index 4 is still selected 
+                Verify.IsTrue(selectionModel.SelectedIndex.CompareTo(Path(4)) == 0, "Item at index 4 should have still been selected");
+
+                // Second test: this time switching from multiple to single selection mode with more than one selected item
+                selectionModel.SingleSelect = false;
+                selectionModel.Select(5);
+                selectionModel.Select(6);
+
+                // Now switch to single selection mode
+                selectionModel.SingleSelect = true;
+
+                // Verify that 
+                // - only one item is currently selected
+                // - the currently selected item is the item with the lowest index in the Multiple selection list
+                Verify.AreEqual(1, selectionModel.SelectedIndices.Count,
+                    "Exactly one item should have been selected now after we switched from Multiple to Single selection mode");
+                Verify.IsTrue(selectionModel.SelectedIndices[0].CompareTo(selectionModel.SelectedIndex) == 0,
+                    "SelectedIndex and SelectedIndices should have been identical");
+                Verify.IsTrue(selectionModel.SelectedIndex.CompareTo(Path(4)) == 0, "The currently selected item should have been the first item in the Multiple selection list");
+            });
+        }
+
+        [TestMethod]
+        public void ValidateSelectionModeChangeFromMultipleToSingleSelectionChangedEvent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel();
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                // First test: switching from multiple to single selection mode with just one selected item
+                selectionModel.Select(4);
+
+                int selectionChangedFiredCount = 0;
+                selectionModel.SelectionChanged += IncreaseCountIfRaisedSelectionChanged;
+
+                // Now switch to single selection mode
+                selectionModel.SingleSelect = true;
+
+                // Verify that no SelectionChanged event was raised
+                Verify.AreEqual(0, selectionChangedFiredCount, "SelectionChanged event should have not been raised as only one item was selected");
+
+                // Second test: this time switching from multiple to single selection mode with more than one selected item
+                selectionModel.SelectionChanged -= IncreaseCountIfRaisedSelectionChanged;
+                selectionModel.SingleSelect = false;
+                selectionModel.Select(5);
+                selectionModel.SelectionChanged += IncreaseCountIfRaisedSelectionChanged;
+
+                // Now switch to single selection mode
+                selectionModel.SingleSelect = true;
+
+                // Verify that the SelectionChanged event was raised 
+                Verify.AreEqual(1, selectionChangedFiredCount, "SelectionChanged event should have been raised as the selection changed");
+
+                void IncreaseCountIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+                {
+                    selectionChangedFiredCount++;
+                }
+            });
+        }
+
         private void Select(SelectionModel manager, int index, bool select)
         {
             Log.Comment((select ? "Selecting " : "DeSelecting ") + index);

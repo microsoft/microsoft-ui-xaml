@@ -8,8 +8,8 @@ runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
     Double ContainerAnimationStartPosition{ get; };
     Double ContainerAnimationEndPosition{ get; };
-    Double ContainerAnimationStartPosition2{ get; };
-    Double ContainerAnimationEndPosition2{ get; };
+    Double Container2AnimationStartPosition{ get; };
+    Double Container2AnimationEndPosition{ get; };
     Double ContainerAnimationMidPosition{ get; };
     Double IndicatorLengthDelta{ get; };
     Windows.UI.Xaml.Media.RectangleGeometry ClipRect{ get; };
