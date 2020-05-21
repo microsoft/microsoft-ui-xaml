@@ -90,23 +90,6 @@ winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
     return m_pendingSelectedNodes.get();
 }
 
-void TreeView::SelectedItem(winrt::IInspectable const& item)
-{
-    if (auto listControl = ListControl())
-    {
-        if (auto viewModel = listControl->ListViewModel())
-        {
-            viewModel->SelectSingleItem(item);
-        }
-    }
-}
-
-winrt::IInspectable TreeView::SelectedItem()
-{
-    auto items = SelectedItems();
-    return items.Size() > 0 ? items.GetAt(0) : nullptr;
-}
-
 winrt::IVector<winrt::IInspectable> TreeView::SelectedItems()
 {
     if (auto listControl = ListControl())
@@ -257,6 +240,23 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
 
         winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(ItemsSource());
     }
+    else if (property == s_SelectedItemProperty)
+    {
+
+        const auto items = SelectedItems();
+        const auto selected = items.Size() > 0 ? items.GetAt(0) : nullptr;
+        // Checking if new value is different to the currently internally selected item
+        if (args.NewValue() != selected)
+        {
+            if (auto listControl = ListControl())
+            {
+                if (auto viewModel = listControl->ListViewModel())
+                {
+                    viewModel->SelectSingleItem(args.NewValue());
+                }
+            }
+        }
+    }
 }
 
 void TreeView::OnListControlDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
@@ -292,6 +292,29 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
     if (SelectionMode() == winrt::TreeViewSelectionMode::Single)
     {
         RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
+
+        const auto newSelectedItem = [this,args]() {
+            if(const auto& newItems = args.AddedItems())
+            {
+                if (newItems.Size() > 0)
+                {
+                    return newItems.GetAt(0);
+                }
+                else
+                {
+                    return (winrt::IInspectable)nullptr;
+                }
+            }
+            else
+            {
+                return (winrt::IInspectable)nullptr;
+            }
+        }();
+
+        if (SelectedItem() != newSelectedItem)
+        {
+            SelectedItem(newSelectedItem);
+        }
     }
 }
 

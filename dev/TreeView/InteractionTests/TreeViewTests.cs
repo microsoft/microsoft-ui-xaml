@@ -20,6 +20,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Windows.Devices.Sensors;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -2840,6 +2841,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite","C")]
+        public void SelectedItemBindingsWork()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                var setContentButton = new Button(FindElement.ByName("TwoWayBoundButton"));
+                var setSelectedItemButton = new Button(FindElement.ByName("SelectRoot2Item"));
+                var readResultButton = new Button(FindElement.ByName("ReadBindingResult"));
+
+                setContentButton.Click();
+                Wait.ForIdle();
+
+                readResultButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Root.1;Root.1",ReadResult());
+
+                setSelectedItemButton.Click();
+                Wait.ForIdle();
+                readResultButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Root.2;Root.2", ReadResult());
             }
         }
 
