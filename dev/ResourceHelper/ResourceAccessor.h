@@ -25,6 +25,7 @@ private:
 public:
     static winrt::hstring GetLocalizedStringResource(const wstring_view &resourceName);
     static winrt::LoadedImageSurface GetImageSurface(const wstring_view &assetName, winrt::Size imageSize);
+    static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 
     static bool IsResourceIdNull(ResourceIdType resourceId)
     {

@@ -667,6 +667,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void RemovingLastChildrenSetsIsExpandedToFalse()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeViewRoot = new TreeViewNode();
+                var treeViewNode1 = new TreeViewNode();
+                var treeViewNode2 = new TreeViewNode();
+                var treeViewNode3 = new TreeViewNode();
+                var treeViewNode4 = new TreeViewNode();
+                var treeViewNode5 = new TreeViewNode();
+
+                // Need root since in TreeView we otherwise 
+                // could collapse whole tree and hide it forever
+                treeViewRoot.Children.Add(treeViewNode1);
+
+                treeViewNode1.Children.Add(treeViewNode2);
+                treeViewNode1.Children.Add(treeViewNode3);
+                treeViewNode1.Children.Add(treeViewNode4);
+                treeViewNode1.Children.Add(treeViewNode5);
+
+                treeViewNode1.IsExpanded = true;
+                Verify.IsTrue(treeViewNode1.IsExpanded);
+
+                treeViewNode1.Children.Clear();
+                Verify.IsFalse(treeViewNode1.IsExpanded);
+
+                treeViewNode1.Children.Add(treeViewNode2);
+                treeViewNode1.IsExpanded = true;
+                Verify.IsTrue(treeViewNode1.IsExpanded);
+
+                treeViewNode1.Children.Remove(treeViewNode2);
+                Verify.IsFalse(treeViewNode1.IsExpanded);
+
+                treeViewNode1.Children.Add(treeViewNode2);
+                treeViewNode1.IsExpanded = true;
+                Verify.IsTrue(treeViewNode1.IsExpanded);
+
+                treeViewNode1.Children.RemoveAt(0);
+                Verify.IsFalse(treeViewNode1.IsExpanded);
+            });
+        }
+
         private bool IsMultiSelectCheckBoxChecked(TreeView tree, TreeViewNode node)
         {
             var treeViewItem = tree.ContainerFromNode(node) as TreeViewItem;

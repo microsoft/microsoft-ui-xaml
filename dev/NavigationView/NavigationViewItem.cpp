@@ -73,17 +73,23 @@ void NavigationViewItem::OnApplyTemplate()
 
     }
 
-    if (auto presenter = GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected))
+    winrt::UIElement const presenter = [this, controlProtected]()
     {
-        m_navigationViewItemPresenter.set(presenter);
+        if (auto presenter = GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected))
+        {
+            m_navigationViewItemPresenter.set(presenter);
+            return presenter.try_as<winrt::UIElement>();
+        }
+        // We don't have a presenter, so we are our own presenter.
+        return this->try_as<winrt::UIElement>();
+    }();
 
-        m_presenterPointerPressedRevoker = presenter.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerPressed });
-        m_presenterPointerReleasedRevoker = presenter.PointerReleased(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerReleased });
-        m_presenterPointerEnteredRevoker = presenter.PointerEntered(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerEntered });
-        m_presenterPointerExitedRevoker = presenter.PointerExited(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerExited });
-        m_presenterPointerCanceledRevoker = presenter.PointerCanceled(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerCanceled });
-        m_presenterPointerCaptureLostRevoker = presenter.PointerCaptureLost(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerCaptureLost });
-    }
+    m_presenterPointerPressedRevoker = presenter.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerPressed });
+    m_presenterPointerReleasedRevoker = presenter.PointerReleased(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerReleased });
+    m_presenterPointerEnteredRevoker = presenter.PointerEntered(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerEntered });
+    m_presenterPointerExitedRevoker = presenter.PointerExited(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerExited });
+    m_presenterPointerCanceledRevoker = presenter.PointerCanceled(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerCanceled });
+    m_presenterPointerCaptureLostRevoker = presenter.PointerCaptureLost(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerCaptureLost });
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
 
