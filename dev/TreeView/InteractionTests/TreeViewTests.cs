@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -2825,21 +2825,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper("TreeView Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewUnrealizedChildrenTestPage" }))
             {
-                SetContentMode(true);
+                TapOnTreeViewAt(50, 12, "GetSelectedItemName");
 
-                ClickButton("SwapItemsSource");
+                Log.Comment("Selecting item");
+                ClickButton("GetSelectedItemName");
                 Wait.ForIdle();
-                ClickButton("GetItemCount");
-                Verify.AreEqual("2", ReadResult());
 
-                ClickButton("SwapItemsSource");
+                Log.Comment("Verifying current selection");
+                var textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
+                Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
+
+                Log.Comment("Expanding selected item");
+                TapOnTreeViewAt(12, 12, "GetSelectedItemName");
                 Wait.ForIdle();
-                ClickButton("ExpandRootNode");
+
+                Log.Comment("Verifying selection again");
+                ClickButton("GetSelectedItemName");
                 Wait.ForIdle();
-                ClickButton("GetItemCount");
-                Verify.AreEqual("4", ReadResult());
+                textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
+                Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
             }
         }
 

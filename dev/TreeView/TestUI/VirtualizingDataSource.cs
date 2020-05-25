@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,7 +29,7 @@ namespace MUXControlsTestApp
 
         public override string ToString()
         {
-            return $"Item:{this.index}; layer: {this.nestingLevel}";
+            return $"Item: {this.index}; layer: {this.nestingLevel}";
         }
 
         public TreeViewNode GetTreeViewNode()

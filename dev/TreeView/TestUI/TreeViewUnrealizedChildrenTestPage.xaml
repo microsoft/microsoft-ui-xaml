@@ -11,6 +11,8 @@
 
     <StackPanel>
         <TextBlock Text="Unrealized children selection problem"/>
+        <TextBlock x:Name="SelectedItemName" AutomationProperties.Name="SelectedItemName"/>
+        <Button x:Name="GetSelectedItemName" AutomationProperties.Name="GetSelectedItemName" Content="Get selected item" Click="GetSelectedItemName_Click"/>
         <muxc:TreeView
             x:Name="UnrealizedTreeViewSelection"
             Expanding="UnrealizedTreeViewSelection_Expanding"

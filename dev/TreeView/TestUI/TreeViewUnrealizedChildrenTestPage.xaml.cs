@@ -35,6 +35,11 @@ namespace MUXControlsTestApp
             UnrealizedTreeViewSelection.RootNodes.Add(VirtualizingTestRootNode);
         }
 
+        private void GetSelectedItemName_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedItemName.Text = ((UnrealizedTreeViewSelection.SelectedItem as TreeViewNode).Content as CustomContent).ToString();
+        }
+
         private void UnrealizedTreeViewSelection_Expanding(Microsoft.UI.Xaml.Controls.TreeView sender, Microsoft.UI.Xaml.Controls.TreeViewExpandingEventArgs args)
         {
             VirtualizingDataSource.FillTreeNode(args.Node);
