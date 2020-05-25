@@ -2825,6 +2825,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                ClickButton("SwapItemsSource");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("2", ReadResult());
+
+                ClickButton("SwapItemsSource");
+                Wait.ForIdle();
+                ClickButton("ExpandRootNode");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("4", ReadResult());
+            }
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void SingleSelectWithUnrealizedChildrenDoesNotMoveSelection()
+        {
             using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewUnrealizedChildrenTestPage" }))
             {
                 TapOnTreeViewAt(50, 12, "GetSelectedItemName");
