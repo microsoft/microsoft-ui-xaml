@@ -2843,7 +2843,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void SingleSelectWithUnrealizedChildrenDoesNotMoveSelection()
