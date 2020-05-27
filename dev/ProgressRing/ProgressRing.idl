@@ -14,7 +14,7 @@ runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
+unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBase
 {
     ProgressRing();
 

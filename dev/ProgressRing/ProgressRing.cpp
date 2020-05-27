@@ -9,11 +9,9 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
-static constexpr wstring_view s_IndeterminateAnimatedVisualPlayerName{ L"IndeterminateAnimatedVisualPlayer"sv };
-static constexpr wstring_view s_LayoutRootName { L"LayoutRoot"sv };
-float GetCircleRadius(double thickness, double actualWidth);
-winrt::float4 Color4(winrt::Color color);
-
+static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
+static constexpr wstring_view s_IndeterminateLottiePlayerName{ L"IndeterminateLottiePlayer"sv };
+static constexpr wstring_view s_DeterminateLottiePlayerName{ L"DeterminateLottiePlayer"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
@@ -42,18 +40,8 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateAnimatedVisualPlayerName, controlProtected));
+    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateLottiePlayerName, controlProtected));
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
-
-    SetAnimatedVisualPlayerSource();
-    ChangeVisualState();
-    
-    m_outlinePath.set(GetTemplateChildT<winrt::Path>(s_OutlinePathName, controlProtected));
-    m_outlineFigure.set(GetTemplateChildT<winrt::PathFigure>(s_OutlineFigureName, controlProtected));
-    m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
-    m_ringPath.set(GetTemplateChildT<winrt::Path>(s_RingPathName, controlProtected));
-    m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_RingFigureName, controlProtected));
-    m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_RingArcName, controlProtected));
 
     m_determinatePlayer.set([this, controlProtected]()
     {
@@ -75,9 +63,7 @@ void ProgressRing::OnApplyTemplate()
             return indeterminateplayer;
         }());
 
-    GetStrokeThickness();
-    ApplyLottieAnimation();
-    //UpdateRing();
+    SetAnimatedVisualPlayerSource();
     UpdateLottieProgress();
     UpdateStates();
 }
@@ -85,12 +71,10 @@ void ProgressRing::OnApplyTemplate()
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     ApplyTemplateSettings();
-    //UpdateRing();
 }
 
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    //UpdateSegment();
     UpdateLottieProgress();
 }
 
@@ -152,8 +136,7 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
     }
 }
 
-// void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
-void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
@@ -164,9 +147,14 @@ void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChan
     }
 }
 
+void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateStates();
+}
+
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    ChangeVisualState();
+    UpdateStates();
 }
 
 void ProgressRing::SetAnimatedVisualPlayerSource()
@@ -260,7 +248,7 @@ void ProgressRing::UpdateLottieProgress()
     }
 }
 
-void ProgressRing::ChangeVisualState()
+void ProgressRing::UpdateStates()
 {
     if (IsActive())
     {
