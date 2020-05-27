@@ -248,9 +248,9 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
         // Checking if new value is different to the currently internally selected item
         if (args.NewValue() != selected)
         {
-            if (auto listControl = ListControl())
+            if (const auto listControl = ListControl())
             {
-                if (auto viewModel = listControl->ListViewModel())
+                if (const auto viewModel = listControl->ListViewModel())
                 {
                     viewModel->SelectSingleItem(args.NewValue());
                 }
