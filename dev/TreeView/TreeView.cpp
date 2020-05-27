@@ -293,7 +293,7 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
     {
         RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
 
-        const auto newSelectedItem = [this,args]() {
+        const auto newSelectedItem = [args]() {
             if(const auto& newItems = args.AddedItems())
             {
                 if (newItems.Size() > 0)
