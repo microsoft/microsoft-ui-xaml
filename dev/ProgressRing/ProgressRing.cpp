@@ -154,18 +154,31 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
     {
         if (!player.Source())
         {
-            player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
-
-            if (const auto progressRingDeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+            if (IsIndeterminate())
             {
-                SetLottieForegroundColor(progressRingDeterminate);
-                SetLottieBackgroundColor(progressRingDeterminate);
+                player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+
+                if (const auto progressRingIndeterminate = player.Source())
+                {
+                    SetLottieForegroundColor(progressRingIndeterminate);
+                    //SetLottieBackgroundColor(progressRingIndeterminate);
+                }
             }
+            else
+            {
+                player.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
+
+                if (const auto progressRingDeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
+                {
+                    //SetLottieForegroundColor(progressRingDeterminate);
+                    SetLottieBackgroundColor(progressRingDeterminate);
+                }
+            }  
         }
     }
 }
 
-void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate)
+void ProgressRing::SetLottieForegroundColor(winrt::IAnimatedVisualSource progressRing)
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
@@ -182,7 +195,9 @@ void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals
         }
     }();
 
-    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
+    const auto progressRingAnimatedVisual = progressRing.try_as<AnimatedVisuals::ProgressRingIndeterminate>();
+
+    progressRingAnimatedVisual->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
 }
 
 void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate)

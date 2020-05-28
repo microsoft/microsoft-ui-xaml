@@ -33,8 +33,8 @@ public:
 
 private:
     void SetAnimatedVisualPlayerSource();
-    void SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
-    void SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
+    void SetLottieForegroundColor(const winrt::IAnimatedVisualSource);
+    void SetLottieBackgroundColor(const winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate>);
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
