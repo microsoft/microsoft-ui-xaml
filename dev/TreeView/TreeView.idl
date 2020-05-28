@@ -135,6 +135,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     [WUXC_VERSION_PREVIEW]
     {
         event Windows.Foundation.TypedEventHandler<TreeView, TreeViewSelectionChangedEventArgs> SelectionChanged;
+        static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
     }
 
     static Windows.UI.Xaml.DependencyProperty SelectionModeProperty{ get; };
@@ -173,6 +174,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     [WUXC_VERSION_MUXONLY]
     {
         TreeViewNode SelectedNode{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Object SelectedItem{ get; set; };
         Windows.Foundation.Collections.IVector<Object> SelectedItems{ get; };
     }

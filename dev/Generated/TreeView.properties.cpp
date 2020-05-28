@@ -21,6 +21,7 @@ GlobalDependencyProperty TreeViewProperties::s_ItemContainerTransitionsProperty{
 GlobalDependencyProperty TreeViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_ItemTemplateProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_ItemTemplateSelectorProperty{ nullptr };
+GlobalDependencyProperty TreeViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_SelectionModeProperty{ nullptr };
 
 TreeViewProperties::TreeViewProperties()
@@ -124,6 +125,17 @@ void TreeViewProperties::EnsureProperties()
                 ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_SelectedItemProperty)
+    {
+        s_SelectedItemProperty =
+            InitializeDependencyProperty(
+                L"SelectedItem",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TreeView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnSelectedItemPropertyChanged));
+    }
     if (!s_SelectionModeProperty)
     {
         s_SelectionModeProperty =
@@ -147,10 +159,19 @@ void TreeViewProperties::ClearProperties()
     s_ItemsSourceProperty = nullptr;
     s_ItemTemplateProperty = nullptr;
     s_ItemTemplateSelectorProperty = nullptr;
+    s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
 }
 
 void TreeViewProperties::OnItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeView>();
+    winrt::get_self<TreeView>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewProperties::OnSelectedItemPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -244,6 +265,16 @@ void TreeViewProperties::ItemTemplateSelector(winrt::DataTemplateSelector const&
 winrt::DataTemplateSelector TreeViewProperties::ItemTemplateSelector()
 {
     return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TreeView*>(this)->GetValue(s_ItemTemplateSelectorProperty));
+}
+
+void TreeViewProperties::SelectedItem(winrt::IInspectable const& value)
+{
+    static_cast<TreeView*>(this)->SetValue(s_SelectedItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TreeViewProperties::SelectedItem()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TreeView*>(this)->GetValue(s_SelectedItemProperty));
 }
 
 void TreeViewProperties::SelectionMode(winrt::TreeViewSelectionMode const& value)

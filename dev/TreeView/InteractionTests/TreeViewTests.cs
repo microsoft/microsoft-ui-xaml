@@ -2843,6 +2843,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite","C")]
+        public void SelectedItemBindingsWork()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                var setContentButton = new Button(FindElement.ByName("TwoWayBoundButton"));
+                var setSelectedItemButton = new Button(FindElement.ByName("SelectRoot2Item"));
+                var readResultButton = new Button(FindElement.ByName("ReadBindingResult"));
+
+                setContentButton.Click();
+                Wait.ForIdle();
+
+                readResultButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Root.1;Root.1",ReadResult());
+
+                setSelectedItemButton.Click();
+                Wait.ForIdle();
+                readResultButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Root.2;Root.2", ReadResult());
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
