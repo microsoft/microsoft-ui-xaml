@@ -89,6 +89,7 @@ void TabView::OnApplyTemplate()
         if (listView)
         {
             m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
+            m_listViewPointerExitedRevoker = listView.PointerExited(winrt::auto_revoke, { this,&TabView::OnListViewPointerExited });
             m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
 
             m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
@@ -341,6 +342,18 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
     }
 }
 
+void TabView::OnListViewPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    if (updateTabWidthOnPointerLeave)
+    {
+        UpdateTabWidths();
+        auto scopeGuard = gsl::finally([this]()
+        {
+            updateTabWidthOnPointerLeave = false;
+        });
+    }
+}
+
 void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
@@ -423,7 +436,7 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
 
 void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
-    UpdateTabWidths();
+    updateTabWidthOnPointerLeave = true;
     UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
 }
 
@@ -434,42 +447,50 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         m_tabItemsChangedEventSource(*this, args);
 
         int numItems = static_cast<int>(TabItems().Size());
-        if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
+
+        if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)
         {
-            // SelectedIndex might also already be -1
-            auto selectedIndex = SelectedIndex();
-            if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.Index()))
+            updateTabWidthOnPointerLeave = true;
+            if (numItems > 0)
             {
-                // Find the closest tab to select instead.
-                int startIndex = static_cast<int>(args.Index());
-                if (startIndex >= numItems)
+                // SelectedIndex might also already be -1
+                auto selectedIndex = SelectedIndex();
+                if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.Index()))
                 {
-                    startIndex = numItems - 1;
+                    // Find the closest tab to select instead.
+                    int startIndex = static_cast<int>(args.Index());
+                    if (startIndex >= numItems)
+                    {
+                        startIndex = numItems - 1;
+                    }
+                    int index = startIndex;
+
+                    do
+                    {
+                        auto nextItem = ContainerFromIndex(index).as<winrt::ListViewItem>();
+
+                        if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
+                        {
+                            SelectedItem(TabItems().GetAt(index));
+                            break;
+                        }
+
+                        // try the next item
+                        index++;
+                        if (index >= numItems)
+                        {
+                            index = 0;
+                        }
+                    } while (index != startIndex);
                 }
-                int index = startIndex;
-
-                do
-                {
-                    auto nextItem = ContainerFromIndex(index).as<winrt::ListViewItem>();
-
-                    if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
-                    {
-                        SelectedItem(TabItems().GetAt(index));
-                        break;
-                    }
-
-                    // try the next item
-                    index++;
-                    if (index >= numItems)
-                    {
-                        index = 0;
-                    }
-                } while (index != startIndex);
             }
+        }
+        else
+        {
+            UpdateTabWidths();
         }
     }
 
-    UpdateTabWidths();
 }
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
