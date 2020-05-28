@@ -21,32 +21,6 @@
                     <Grid x:Name="LayoutRoot" Background="Transparent">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualStateGroup.Transitions>
-                                    <VisualTransition From="Indeterminate" To="Determinate">
-                                        <Storyboard>
-                                            <DoubleAnimation
-                                                Storyboard.TargetName="DeterminateLottiePlayer"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="1"
-                                                Duration="0:0:0.15" />
-                                            <DoubleAnimation
-                                                Storyboard.TargetName="IndeterminateLottiePlayer"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="0"
-                                                Duration="0:0:0.15" />
-                                        </Storyboard>
-                                    </VisualTransition>
-                                </VisualStateGroup.Transitions>
-                                <VisualState x:Name="Determinate" />
-                                <VisualState x:Name="Indeterminate">
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="IndeterminateLottiePlayer"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0:0:0.15" />
-                                    </Storyboard>
-                                </VisualState>
                                 <VisualState x:Name="Inactive">
                                     <Storyboard>
                                         <DoubleAnimation
@@ -68,11 +42,8 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Determinate AnimatedVisualPlayer for Lottie -->
-                        <local:AnimatedVisualPlayer x:Name="DeterminateLottiePlayer" AutoPlay="false" Stretch="fill" Opacity="0"/>
-
-                        <!-- Indeterminate AnimatedVisualPlayer for Lottie -->
-                        <local:AnimatedVisualPlayer x:Name="IndeterminateLottiePlayer" AutoPlay="false" Stretch="fill"/>
+                        <!-- AnimatedVisualPlayer for Lottie -->
+                        <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="false" Stretch="fill"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

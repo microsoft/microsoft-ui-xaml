@@ -20,6 +20,7 @@
             <controls:ProgressRing
                 x:Name="TestProgressRing"
                 IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
             />
 
             <Grid Width="200px" HorizontalAlignment="Left">
@@ -56,8 +57,8 @@
             <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind ShowIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowIsActiveCheckBox" AutomationProperties.Name="ShowIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
 
-            <TextBlock AutomationProperties.Name="ShowIsDeterminateText" Text="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Mode=OneWay}"/>
-            <CheckBox x:Name="ShowIsDeterminateCheckBox" AutomationProperties.Name="ShowIsDeterminateCheckBox" Content="IsIndeterminate"/>
+            <TextBlock AutomationProperties.Name="ShowIsIndeterminateText" Text="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="ShowIsIndeterminateCheckBox" AutomationProperties.Name="ShowIsIndeterminateCheckBox" Content="IsIndeterminate"/>
 
             <TextBlock Text="Animated Visual Player Opacity:"/>
             <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>

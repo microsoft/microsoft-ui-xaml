@@ -12,19 +12,28 @@ public:
     void IsActive(bool value);
     bool IsActive();
 
+    void IsIndeterminate(bool value);
+    bool IsIndeterminate();
+
     void TemplateSettings(winrt::ProgressRingTemplateSettings const& value);
     winrt::ProgressRingTemplateSettings TemplateSettings();
 
     static winrt::DependencyProperty IsActiveProperty() { return s_IsActiveProperty; }
+    static winrt::DependencyProperty IsIndeterminateProperty() { return s_IsIndeterminateProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_IsActiveProperty;
+    static GlobalDependencyProperty s_IsIndeterminateProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
     static void OnIsActivePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsIndeterminatePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

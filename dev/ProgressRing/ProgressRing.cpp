@@ -10,8 +10,7 @@
 #include "math.h"
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
-static constexpr wstring_view s_IndeterminateLottiePlayerName{ L"IndeterminateLottiePlayer"sv };
-static constexpr wstring_view s_DeterminateLottiePlayerName{ L"DeterminateLottiePlayer"sv };
+static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
@@ -25,6 +24,9 @@ ProgressRing::ProgressRing()
 
     RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
     
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
 
@@ -40,28 +42,17 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateLottiePlayerName, controlProtected));
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
 
-    m_determinatePlayer.set([this, controlProtected]()
+    m_player.set([this, controlProtected]()
     {
-        auto const determinateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_DeterminateLottiePlayerName, controlProtected);
-        if (determinateplayer)
+        auto const player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
+        if (player)
         {
-            determinateplayer.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
+            player.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
         }
-        return determinateplayer;
+        return player;
     }());
-
-    m_indeterminatePlayer.set([this, controlProtected]()
-        {
-            auto const indeterminateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateLottiePlayerName, controlProtected);
-            if (indeterminateplayer)
-            {
-                indeterminateplayer.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
-            }
-            return indeterminateplayer;
-        }());
 
     SetAnimatedVisualPlayerSource();
     UpdateLottieProgress();
@@ -159,36 +150,16 @@ void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPrope
 
 void ProgressRing::SetAnimatedVisualPlayerSource()
 {
-    if (auto&& determinatePlayer = m_determinatePlayer.get())
+    if (auto&& player = m_player.get())
     {
-        if (!determinatePlayer.Source())
+        if (!player.Source())
         {
-            determinatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+            player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
 
-            if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+            if (const auto progressRingDeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
             {
                 SetLottieForegroundColor(progressRingDeterminate);
                 SetLottieBackgroundColor(progressRingDeterminate);
-            }
-        }
-    }
-
-    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
-    {
-        indeterminatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
-
-        if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-        {
-            if (!indeterminatePlayer.Source())
-            {
-
-                indeterminatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
-
-                if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-                {
-                    SetLottieForegroundColor(progressRingIndeterminate);
-                    SetLottieBackgroundColor(progressRingIndeterminate);
-                }
             }
         }
     }
@@ -237,27 +208,33 @@ void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals
 
 void ProgressRing::UpdateLottieProgress()
 {
-    if (auto&& determinatePlayer = m_determinatePlayer.get())
+    if (auto&& player = m_player.get())
     {
         const double range = Maximum() - Minimum();
         const double fromProgress = m_oldValue / range;
         const double toProgress = Value() / range;
 
-        determinatePlayer.PlayAsync(fromProgress, toProgress, false);
+        player.PlayAsync(fromProgress, toProgress, false);
         m_oldValue = Value();
     }
 }
 
 void ProgressRing::UpdateStates()
 {
-    if (IsActive())
+    if (IsActive() && IsIndeterminate())
     {
         winrt::VisualStateManager::GoToState(*this, L"Active", true);
 
-        if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+        if (auto&& player = m_player.get())
         {
-            const auto _ = indeterminatePlayer.PlayAsync(0, 1, true);
+            const auto _ = player.PlayAsync(0, 1, true);
         }
+    }
+    else if (IsActive() && !IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Active", true);
+
+        UpdateLottieProgress();
     }
     else
     {
