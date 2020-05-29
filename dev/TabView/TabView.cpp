@@ -85,6 +85,10 @@ void TabView::OnApplyTemplate()
         m_tabContainerGrid.set(containerGrid);
         m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
     }
+    else
+    {
+        m_tabContainerGrid.set(nullptr);
+    }
 
     m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
 
@@ -349,11 +353,11 @@ void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const w
 {
     if (updateTabWidthOnPointerLeave)
     {
-        UpdateTabWidths();
         auto scopeGuard = gsl::finally([this]()
         {
             updateTabWidthOnPointerLeave = false;
         });
+        UpdateTabWidths();
     }
 }
 
@@ -439,8 +443,11 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
 
 void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
-    updateTabWidthOnPointerLeave = true;
-    UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+    if (!updateTabWidthOnPointerLeave)
+    {
+        // Presenter size didn't change because of item being removed, so update manually
+        UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+    }
 }
 
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
@@ -743,7 +750,15 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths)
                         tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
                         if (auto listview = m_listView.get())
                         {
-                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                            if (shouldUpdateWidths)
+                            {
+                                winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                            }
+                            else
+                            {
+                                m_scrollDecreaseButton.get().IsEnabled(false);
+                                m_scrollIncreaseButton.get().IsEnabled(false);
+                            }
                         }
                     }
                 }
@@ -763,7 +778,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths)
                             winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, visible
                                 ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
                                 : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
-                            if (visible)
+                            if (visible && shouldUpdateWidths)
                             {
                                 UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
                             }

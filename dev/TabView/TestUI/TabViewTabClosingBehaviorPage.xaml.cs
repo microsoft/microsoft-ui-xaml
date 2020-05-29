@@ -56,8 +56,8 @@ namespace MUXControlsTestApp
             var scrollIncreaseButton = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") as RepeatButton;
             var scrollDecreaseButton = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButton") as RepeatButton;
 
-            scrollButtonStateValue += scrollIncreaseButton.Visibility == Visibility.Visible ? "true;" : "false;";
-            scrollButtonStateValue += scrollDecreaseButton.Visibility == Visibility.Visible ? "true;" : "false;";
+            scrollButtonStateValue += scrollIncreaseButton.IsEnabled + ";";
+            scrollButtonStateValue += scrollDecreaseButton.IsEnabled + ";";
 
             ScrollButtonStatus.Text = scrollButtonStateValue;
         }

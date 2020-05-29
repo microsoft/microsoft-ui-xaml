@@ -656,13 +656,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
 
                 Log.Comment("Verifying sizing behavior when closing a tab");
-                CloseTabAndVerifyWidth("Tab 1", 500,true);
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
 
-                CloseTabAndVerifyWidth("Tab 2", 500, true);
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
 
-                CloseTabAndVerifyWidth("Tab 3", 443, false);
+                CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
 
-                CloseTabAndVerifyWidth("Tab 4", 343, false);
+                CloseTabAndVerifyWidth("Tab 4", 401, "False;False;");
 
                 Log.Comment("Leaving the pointer exited area");
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
@@ -676,21 +676,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 500) < pixelTolerance);
             }
 
-            void CloseTabAndVerifyWidth(string tabName, int expectedValue, bool expectedScrollButtonVisible)
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
             {
                 Log.Comment("Closing tab:" + tabName);
                 FindCloseButton(FindElement.ByName(tabName)).Click();
                 Wait.ForIdle();
                 Log.Comment("Verifying TabView width");
                 Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
-                if(expectedScrollButtonVisible)
-                {
-                    Verify.AreEqual("true;true;", FindElement.ByName("ScrollButtonStatus").GetText());
-                }
-                else
-                {
-                    Verify.AreEqual("false;false;", FindElement.ByName("ScrollButtonStatus").GetText());
-                }
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
 
             }
 
