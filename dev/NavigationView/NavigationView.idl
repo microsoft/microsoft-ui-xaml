@@ -216,8 +216,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty IsPaneOpenProperty { get; };
     static Windows.UI.Xaml.DependencyProperty CompactModeThresholdWidthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ExpandedModeThresholdWidthProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty FooterMenuItemsProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty FooterMenuItemsSourceProperty{ get; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty FooterMenuItemsProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty FooterMenuItemsSourceProperty{ get; };
+    }
     static Windows.UI.Xaml.DependencyProperty PaneFooterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HeaderProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
