@@ -53,7 +53,7 @@ void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspec
     UpdateWidthBasedTemplateSettings();
 }
 
-void ProgressBar::OnIndicatorWidthParameterChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void ProgressBar::OnIndicatorWidthComponentChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
     SetProgressBarIndicatorWidth();
