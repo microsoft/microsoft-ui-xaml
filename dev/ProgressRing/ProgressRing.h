@@ -34,8 +34,8 @@ public:
 
 private:
     void SetAnimatedVisualPlayerSource();
-    void SetLottieForegroundColor();
-    void SetLottieBackgroundColor();
+    void SetLottieForegroundColor(const winrt::IAnimatedVisualSource);
+    void SetLottieBackgroundColor(const winrt::IAnimatedVisualSource);
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);

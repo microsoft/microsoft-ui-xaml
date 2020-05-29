@@ -92,7 +92,21 @@ void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, c
 
 void ProgressRing::OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    SetLottieForegroundColor();
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
+    {
+        if (auto const progressRingDeterminate = determinatePlayer.Source())
+        {
+            SetLottieForegroundColor(progressRingDeterminate);
+        }
+    }
+
+    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+    {
+        if (auto const progressRingIndeterminate = indeterminatePlayer.Source())
+        {
+            SetLottieForegroundColor(progressRingIndeterminate);
+        }
+    }
 }
 
 void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -107,21 +121,15 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 
 void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    SetLottieBackgroundColor();
+    //SetLottieBackgroundColor();
 }
 
 void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    if (auto&& determinatePlayer = m_determinatePlayer.get())
-    {
-        if (determinatePlayer.Opacity() == 0)
-        {
-            determinatePlayer.Stop();
-        }
-    }
-
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
+        auto test = indeterminatePlayer.Opacity();
+
         if (indeterminatePlayer.Opacity() == 0)
         {
             indeterminatePlayer.Stop();
@@ -146,6 +154,12 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
         if (!determinatePlayer.Source())
         {
             determinatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
+
+            if (const auto progressRingDeterminate = determinatePlayer.Source())
+            {
+                SetLottieForegroundColor(progressRingDeterminate);
+                SetLottieBackgroundColor(progressRingDeterminate);
+            }
         }
     }
 
@@ -153,15 +167,19 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
     {
         if (!indeterminatePlayer.Source())
         {
+
             indeterminatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+
+            if (const auto progressRingIndeterminate = indeterminatePlayer.Source())
+            {
+                SetLottieForegroundColor(progressRingIndeterminate);
+                SetLottieBackgroundColor(progressRingIndeterminate);
+            }
         }
     }
-
-    SetLottieForegroundColor();
-    SetLottieBackgroundColor();
 }
 
-void ProgressRing::SetLottieForegroundColor()
+void ProgressRing::SetLottieForegroundColor(const winrt::IAnimatedVisualSource animatedVisualSource)
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
@@ -178,30 +196,13 @@ void ProgressRing::SetLottieForegroundColor()
         }
     }();
 
-    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+    if (const auto progressRing = animatedVisualSource.try_as<AnimatedVisuals::ProgressRingIndeterminate>())
     {
-        if (!indeterminatePlayer.Source())
-        {
-            if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-            {
-                progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
-            }
-        }    
-    }
-
-    if (auto&& determinatePlayer = m_determinatePlayer.get())
-    {
-        if (!determinatePlayer.Source())
-        {
-            if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
-            {
-                progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
-            }
-        }
+        progressRing->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
     }
 }
 
-void ProgressRing::SetLottieBackgroundColor()
+void ProgressRing::SetLottieBackgroundColor(const winrt::IAnimatedVisualSource animatedVisualSource)
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
@@ -213,31 +214,14 @@ void ProgressRing::SetLottieBackgroundColor()
         }
         else
         {
-            // Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
+             //Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
             return SharedHelpers::FindInApplicationResources(s_DefaultBackgroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
         }
     }();
 
-    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+    if (const auto progressRing = animatedVisualSource.try_as<AnimatedVisuals::ProgressRingIndeterminate>())
     {
-        if (!indeterminatePlayer.Source())
-        {
-            if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-            {
-                progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
-            }
-        }
-    }
-
-    if (auto&& determinatePlayer = m_determinatePlayer.get())
-    {
-        if (!determinatePlayer.Source())
-        {
-            if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
-            {
-                progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
-            }
-        }
+        progressRing->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, SharedHelpers::RgbaColor(backgroundColor));
     }
 }
 
