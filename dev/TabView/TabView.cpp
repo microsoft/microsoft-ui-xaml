@@ -641,6 +641,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container)
             internalTabViewItem->RaiseRequestClose(*args);
         }
     }
+    UpdateTabWidths(false);
 }
 
 void TabView::OnScrollDecreaseClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -670,7 +671,7 @@ winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
     return __super::MeasureOverride(availableSize);
 }
 
-void TabView::UpdateTabWidths()
+void TabView::UpdateTabWidths(bool shouldUpdateWidths)
 {
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
 
@@ -763,18 +764,22 @@ void TabView::UpdateTabWidths()
         }
     }
 
-    for (auto item : TabItems())
-    {
-        // Set the calculated width on each tab.
-        auto tvi = item.try_as<winrt::TabViewItem>();
-        if (!tvi)
-        {
-            tvi = ContainerFromItem(item).as<winrt::TabViewItem>();
-        }
 
-        if (tvi)
+    if (shouldUpdateWidths)
+    {
+        for (auto item : TabItems())
         {
-            tvi.Width(tabWidth);
+            // Set the calculated width on each tab.
+            auto tvi = item.try_as<winrt::TabViewItem>();
+            if (!tvi)
+            {
+                tvi = ContainerFromItem(item).as<winrt::TabViewItem>();
+            }
+
+            if (tvi)
+            {
+                tvi.Width(tabWidth);
+            }
         }
     }
 }

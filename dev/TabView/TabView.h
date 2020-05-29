@@ -145,7 +145,7 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabWidths();
+    void UpdateTabWidths(bool shouldUpdateWidths=true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
 
