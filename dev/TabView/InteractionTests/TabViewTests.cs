@@ -660,9 +660,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 2", 500, true);
 
-                // Scroll buttons are not visible after closing this tab.
-                // However the TabCloseRequested event get's raised before the scroll buttons dissappear.
-                // This results in every call essentially verifiying the scroll button state of the previous tab closing.
                 CloseTabAndVerifyWidth("Tab 3", 443, false);
 
                 CloseTabAndVerifyWidth("Tab 4", 343, false);
