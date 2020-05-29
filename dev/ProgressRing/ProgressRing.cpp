@@ -180,17 +180,23 @@ void ProgressRing::SetLottieForegroundColor()
 
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-        if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+        if (!indeterminatePlayer.Source())
         {
-            progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
-        }
+            if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+            {
+                progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
+            }
+        }    
     }
 
     if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
+        if (!determinatePlayer.Source())
         {
-            progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
+            if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
+            {
+                progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
+            }
         }
     }
 }
@@ -214,17 +220,23 @@ void ProgressRing::SetLottieBackgroundColor()
 
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-        if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+        if (!indeterminatePlayer.Source())
         {
-            progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
+            if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+            {
+                progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
+            }
         }
     }
 
     if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
+        if (!determinatePlayer.Source())
         {
-            progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
+            if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
+            {
+                progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
+            }
         }
     }
 }

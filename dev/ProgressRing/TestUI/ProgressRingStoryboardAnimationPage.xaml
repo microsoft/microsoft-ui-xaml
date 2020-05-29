@@ -34,23 +34,9 @@
                             </Grid.Resources>
 
                             <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="SizeStates">
-                                    <VisualState x:Name="Large">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Duration="0" Storyboard.TargetName="SixthCircle" Storyboard.TargetProperty="Visibility">
-                                                <DiscreteObjectKeyFrame KeyTime="0">
-                                                    <DiscreteObjectKeyFrame.Value>
-                                                        <Visibility>Visible</Visibility>
-                                                    </DiscreteObjectKeyFrame.Value>
-                                                </DiscreteObjectKeyFrame>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Small" />
-                                </VisualStateGroup>
                                 <VisualStateGroup x:Name="ActiveStates">
                                     <VisualState x:Name="Inactive" />
-                                    <VisualState x:Name="Active">
+                                    <VisualState x:Name="IndeterminateActive">
                                         <Storyboard RepeatBehavior="Forever">
                                             <ObjectAnimationUsingKeyFrames Duration="0" Storyboard.TargetName="Ring" Storyboard.TargetProperty="Visibility">
                                                 <DiscreteObjectKeyFrame KeyTime="0">
@@ -151,6 +137,7 @@
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
+                                    <VisualState x:Name="DeterminateActive"/>
                                 </VisualStateGroup>
 
                             </VisualStateManager.VisualStateGroups>
