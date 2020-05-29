@@ -1015,5 +1015,20 @@ namespace MUXControlsTestApp
                 this.ContentModeTestTreeView.ItemsSource = TestTreeView2ItemsSource;
             }
         }
+
+        private void TwoWayBoundButton_Click(object sender, RoutedEventArgs e)
+        {
+            TwoWayBoundButton.Content = TestTreeView.RootNodes[0].Children[1];
+        }
+
+        private void SelectRoot2Item_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeView.SelectedItem = TestTreeView.RootNodes[0].Children[2];
+        }
+        private void ReadBindingResult_Click(object sender, RoutedEventArgs e)
+        {
+            Results.Text = (TwoWayBoundButton.Content as TreeViewNode).Content as string 
+                + ";" + (TestTreeView.SelectedItem as TreeViewNode).Content as string;
+        }
     }
 }

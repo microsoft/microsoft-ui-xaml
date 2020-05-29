@@ -156,7 +156,7 @@ void ButtonInteraction::OnPointerReleased(winrt::UIElement const& sender, winrt:
     auto target = sender;
     auto pointerArgs = args;
 
-    bool wasPressing = m_isPressing;
+    const bool wasPressing = m_isPressing;
 
     UpdateIsPressing(false);
 

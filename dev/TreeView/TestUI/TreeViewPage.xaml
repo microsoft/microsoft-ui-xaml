@@ -88,6 +88,14 @@
                         Width="400" Height="400"
                         ItemInvoked="TestTreeView_ItemInvoked"/>
 
+                    <Button x:Name="TwoWayBoundButton" AutomationProperties.Name="TwoWayBoundButton"
+                            Click="TwoWayBoundButton_Click" Content="{x:Bind TestTreeView.SelectedItem,Mode=TwoWay}"/>
+
+                    <Button x:Name="SelectRoot2Item" AutomationProperties.Name="SelectRoot2Item"
+                            Click="SelectRoot2Item_Click" Content="Select Root.2"/>
+
+                    <Button x:Name="ReadBindingResult" AutomationProperties.Name="ReadBindingResult" Click="ReadBindingResult_Click" />
+
                     <muxcontrols:TreeView x:Name="TestTreeView2"
                         AutomationProperties.Name="TestTreeView2"
                         HorizontalAlignment="Left"
