@@ -52,28 +52,16 @@
                                             Storyboard.TargetName="DeterminateLottiePlayer"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
-                                            Duration="0:0:0.15" />
+                                            Duration="0" />
                                         <DoubleAnimation
                                             Storyboard.TargetName="IndeterminateLottiePlayer"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"
-                                            Duration="0:0:0.15" />
+                                            Duration="0" />
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="IndeterminateActive">
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="DeterminateLottiePlayer"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.15" />
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="IndeterminateLottiePlayer"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0:0:0.15" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="IndeterminateActive" />
+
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
