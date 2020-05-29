@@ -153,7 +153,7 @@ namespace
         CompositionEllipseGeometry Ellipse_7_0()
         {
             const auto result = _c.CreateEllipseGeometry();
-            result.Radius({ 7.0F, 7.0F });
+            result.Radius({ 8.0F, 8.0F });
             return result;
         }
 
@@ -165,7 +165,7 @@ namespace
         {
             const auto result = _c.CreateEllipseGeometry();
             result.TrimEnd(0.5F);
-            result.Radius({ 7.0F, 7.0F });
+            result.Radius({ 8.0F, 8.0F });
             return result;
         }
 
@@ -176,7 +176,7 @@ namespace
         CompositionEllipseGeometry Ellipse_7_2()
         {
             const auto result = _c.CreateEllipseGeometry();
-            result.Radius({ 7.0F, 7.0F });
+            result.Radius({ 8.0F, 8.0F });
             StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_0p99(), RootProgress());
             return result;
         }
@@ -189,7 +189,7 @@ namespace
             const auto result = CreateSpriteShape(Ellipse_7_0(), { 1.76999998F, 0.0F, 0.0F, 1.76999998F, 16.0F, 16.0F });
             result.StrokeBrush(ThemeColor_Background());
             result.StrokeDashCap(CompositionStrokeCap::Round);
-            result.StrokeThickness(4.0F);
+            result.StrokeThickness(2.0F);
             return result;
         }
 
@@ -204,7 +204,7 @@ namespace
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
-            result.StrokeThickness(4.0F);
+            result.StrokeThickness(2.0F);
             return result;
         }
 
@@ -219,7 +219,7 @@ namespace
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
-            result.StrokeThickness(4.0F);
+            result.StrokeThickness(2.0F);
             return result;
         }
 

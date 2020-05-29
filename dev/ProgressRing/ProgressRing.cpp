@@ -10,7 +10,8 @@
 #include "math.h"
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
-static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
+static constexpr wstring_view s_IndeterminateLottiePlayerName{ L"IndeterminateLottiePlayer"sv };
+static constexpr wstring_view s_DeterminateLottiePlayerName{ L"DeterminateLottiePlayer"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
@@ -44,15 +45,25 @@ void ProgressRing::OnApplyTemplate()
 
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
 
-    m_player.set([this, controlProtected]()
+    m_determinatePlayer.set([this, controlProtected]()
     {
-        auto const player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
-        if (player)
+        auto const determinateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_DeterminateLottiePlayerName, controlProtected);
+        if (determinateplayer)
         {
-            player.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
+            determinateplayer.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
         }
-        return player;
+        return determinateplayer;
     }());
+
+    m_indeterminatePlayer.set([this, controlProtected]()
+        {
+            auto const indeterminateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateLottiePlayerName, controlProtected);
+            if (indeterminateplayer)
+            {
+                indeterminateplayer.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
+            }
+            return indeterminateplayer;
+        }());
 
     SetAnimatedVisualPlayerSource();
     UpdateLottieProgress();
@@ -101,11 +112,19 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
 
 void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    if (auto&& player = m_player.get())
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        if (player.Opacity() == 0)
+        if (determinatePlayer.Opacity() == 0)
         {
-            player.Stop();
+            determinatePlayer.Stop();
+        }
+    }
+
+    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+    {
+        if (indeterminatePlayer.Opacity() == 0)
+        {
+            indeterminatePlayer.Stop();
         }
     }
 }
@@ -117,29 +136,29 @@ void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    SetAnimatedVisualPlayerSource();
     UpdateStates();
 }
 
 void ProgressRing::SetAnimatedVisualPlayerSource()
 {
-    if (auto&& player = m_player.get())
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        if (!player.Source())
+        if (!determinatePlayer.Source())
         {
-            if (IsIndeterminate())
-            {
-                player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
-            }
-            else
-            {
-                player.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
-            }
-
-            SetLottieForegroundColor();
-            SetLottieBackgroundColor();
+            determinatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
         }
     }
+
+    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+    {
+        if (!indeterminatePlayer.Source())
+        {
+            indeterminatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+        }
+    }
+
+    SetLottieForegroundColor();
+    SetLottieBackgroundColor();
 }
 
 void ProgressRing::SetLottieForegroundColor()
@@ -159,21 +178,19 @@ void ProgressRing::SetLottieForegroundColor()
         }
     }();
 
-    if (auto&& player = m_player.get())
+    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-        if (IsIndeterminate())
+        if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
-            if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-            {
-                progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
-            }
+            progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
         }
-        else
+    }
+
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
+    {
+        if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
         {
-            if (const auto progressRingDeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
-            {
-                progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
-            }
+            progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
         }
     }
 }
@@ -195,34 +212,32 @@ void ProgressRing::SetLottieBackgroundColor()
         }
     }();
 
-    if (auto&& player = m_player.get())
+    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-        if (IsIndeterminate())
+        if (const auto progressRingIndeterminate = indeterminatePlayer.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
-            if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-            {
-                progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
-            }
+            progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
         }
-        else
+    }
+
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
+    {
+        if (const auto progressRingDeterminate = determinatePlayer.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
         {
-            if (const auto progressRingDeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingDeterminate>())
-            {
-                progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
-            }
+            progressRingDeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(backgroundColor));
         }
     }
 }
 
 void ProgressRing::UpdateLottieProgress()
 {
-    if (auto&& player = m_player.get())
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
         const double range = Maximum() - Minimum();
         const double fromProgress = m_oldValue / range;
         const double toProgress = Value() / range;
 
-        player.PlayAsync(fromProgress, toProgress, false);
+        determinatePlayer.PlayAsync(fromProgress, toProgress, false);
         m_oldValue = Value();
     }
 }
@@ -231,16 +246,16 @@ void ProgressRing::UpdateStates()
 {
     if (IsActive() && IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Active", true);
+        winrt::VisualStateManager::GoToState(*this, L"IndeterminateActive", true);
 
-        if (auto&& player = m_player.get())
+        if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
         {
-            const auto _ = player.PlayAsync(0, 1, true);
+            const auto _ = indeterminatePlayer.PlayAsync(0, 1, true);
         }
     }
     else if (IsActive() && !IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Active", true);
+        winrt::VisualStateManager::GoToState(*this, L"DeterminateActive", true);
 
         UpdateLottieProgress();
     }
@@ -248,9 +263,9 @@ void ProgressRing::UpdateStates()
     {
         winrt::VisualStateManager::GoToState(*this, L"Inactive", true);
 
-        if (auto&& player = m_player.get())
+        if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
         {
-            player.Stop();
+            indeterminatePlayer.Stop();
         }
     }
 }
