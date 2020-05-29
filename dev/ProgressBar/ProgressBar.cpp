@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -18,10 +18,10 @@ ProgressBar::ProgressBar()
 
     // NOTE: This is necessary only because Value isn't one of OUR properties, it's implemented in RangeBase.
     // If it was one of ProgressBar's properties, defined in the IDL, you'd do it differently (see IsIndeterminate).
-    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
-    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
+    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 }
@@ -53,7 +53,7 @@ void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspec
     UpdateWidthBasedTemplateSettings();
 }
 
-void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void ProgressBar::OnIndicatorWidthComponentChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
     SetProgressBarIndicatorWidth();

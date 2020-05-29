@@ -29,7 +29,7 @@ public:
     void OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    void OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnIndicatorWidthComponentChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     void SetProgressBarIndicatorWidth();
     void UpdateStates();
