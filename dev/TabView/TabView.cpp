@@ -80,7 +80,11 @@ void TabView::OnApplyTemplate()
     m_addButtonColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"AddButtonColumn", controlProtected));
     m_rightContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"RightContentColumn", controlProtected));
 
-    m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
+    if (const auto& containerGrid = GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected))
+    {
+        m_tabContainerGrid.set(containerGrid);
+        m_tabStripPointerExitedRevoker = containerGrid.PointerExited(winrt::auto_revoke, { this,&TabView::OnTabStripPointerExited });
+    }
 
     m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
 
@@ -89,7 +93,6 @@ void TabView::OnApplyTemplate()
         if (listView)
         {
             m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
-            m_listViewPointerExitedRevoker = listView.PointerExited(winrt::auto_revoke, { this,&TabView::OnListViewPointerExited });
             m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
 
             m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
@@ -342,7 +345,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
     }
 }
 
-void TabView::OnListViewPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
     if (updateTabWidthOnPointerLeave)
     {

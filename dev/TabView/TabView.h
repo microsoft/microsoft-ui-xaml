@@ -127,7 +127,7 @@ private:
     void OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnListViewPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
 
     void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
@@ -176,7 +176,7 @@ private:
     tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
-    winrt::ListView::PointerExited_revoker m_listViewPointerExitedRevoker{};
+    winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 
