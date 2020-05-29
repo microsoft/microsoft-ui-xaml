@@ -647,6 +647,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifySizingBehaviorOnTabClose()
+        {
+            int pixelTolerance = 10;
+            
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab");
+                CloseTabAndVerifyWidth("Tab 1", 500,true);
+
+                CloseTabAndVerifyWidth("Tab 2", 500, true);
+
+                // Scroll buttons are not visible after closing this tab.
+                // However the TabCloseRequested event get's raised before the scroll buttons dissappear.
+                // This results in every call essentially verifiying the scroll button state of the previous tab closing.
+                CloseTabAndVerifyWidth("Tab 3", 443, false);
+
+                CloseTabAndVerifyWidth("Tab 4", 343, false);
+
+                Log.Comment("Leaving the pointer exited area");
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+                
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify correct TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 500) < pixelTolerance);
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, bool expectedScrollButtonVisible)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindCloseButton(FindElement.ByName(tabName)).Click();
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                if(expectedScrollButtonVisible)
+                {
+                    Verify.AreEqual("true;true;", FindElement.ByName("ScrollButtonStatus").GetText());
+                }
+                else
+                {
+                    Verify.AreEqual("false;false;", FindElement.ByName("ScrollButtonStatus").GetText());
+                }
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
         public void PressButtonAndVerifyText(String buttonName, String textBlockName, String expectedText)
         {
             Button button = FindElement.ByName<Button>(buttonName);
