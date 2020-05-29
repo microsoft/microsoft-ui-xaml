@@ -7,6 +7,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingDeterminate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
@@ -16,6 +17,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingDeterminate.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />

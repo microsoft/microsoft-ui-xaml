@@ -30,7 +30,6 @@ namespace AnimatedVisuals
         winrt::float4 ColorAsVector4(winrt::Windows::UI::Color color);
 
         winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
-        winrt::Windows::UI::Composition::CompositionPropertySet GetThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
         // Animation duration: 2.000 seconds.
         static constexpr int64_t c_durationTicks{ 20000000L };
@@ -47,6 +46,8 @@ namespace AnimatedVisuals
         void Foreground(winrt::Windows::UI::Color value);
 
     public:
+        virtual winrt::Windows::UI::Composition::CompositionPropertySet GetThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
+
         virtual winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
             const winrt::Windows::UI::Composition::Compositor& compositor,
             winrt::IInspectable& diagnostics);
