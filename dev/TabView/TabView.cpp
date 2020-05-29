@@ -499,7 +499,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
             if (args.Index() == TabItems().Size())
             {
-                UpdateTabWidths();
+                UpdateTabWidths(true,false);
             }
         }
         else
@@ -688,7 +688,7 @@ winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
     return __super::MeasureOverride(availableSize);
 }
 
-void TabView::UpdateTabWidths(bool shouldUpdateWidths)
+void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace)
 {
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
 
@@ -724,14 +724,41 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths)
             {
                 if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
                 {
+
                     auto const minTabWidth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewItemMinWidthName, box_value(c_tabMinimumWidth)));
                     auto const maxTabWidth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewItemMaxWidthName, box_value(c_tabMaximumWidth)));
 
-                    // Calculate the proportional width of each tab given the width of the ScrollViewer.
+                    // If we should fill all of the available space, use scrollviewer dimensions
                     auto const padding = Padding();
-                    auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
+                    if (fillAllAvailableSpace)
+                    {
+                        // Calculate the proportional width of each tab given the width of the ScrollViewer.
+                        auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
+                        tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
+                    }
+                    else
+                    {
+                        double availableTabViewSpace = (tabColumn.ActualWidth() - (padding.Left + padding.Right));
+                        if (const auto increaseButton = m_scrollIncreaseButton.get())
+                        {
+                            if (increaseButton.Visibility() == winrt::Visibility::Visible)
+                            {
+                                availableTabViewSpace -= increaseButton.ActualWidth();
+                            }
+                        }
 
-                    tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
+                        if (const auto decreaseButton = m_scrollDecreaseButton.get())
+                        {
+                            if (decreaseButton.Visibility() == winrt::Visibility::Visible)
+                            {
+                                availableTabViewSpace -= decreaseButton.ActualWidth();
+                            }
+                        }
+
+                        // Use current size to update items to fill the currently occupied space
+                        tabWidth = availableTabViewSpace / (double)(TabItems().Size());
+                    }
+
 
                     // Size tab column to needed size
                     tabColumn.MaxWidth(availableWidth);
@@ -750,7 +777,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths)
                         tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
                         if (auto listview = m_listView.get())
                         {
-                            if (shouldUpdateWidths)
+                            if (shouldUpdateWidths && fillAllAvailableSpace)
                             {
                                 winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
                             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -648,10 +648,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void VerifySizingBehaviorOnTabClose()
+        public void VerifySizingBehaviorOnTabCloseComingFromScroll()
         {
             int pixelTolerance = 10;
-            
+
             using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
             {
 
@@ -662,13 +662,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
 
+                CloseTabAndVerifyWidth("Tab 5", 401, "False;False;");
+
                 CloseTabAndVerifyWidth("Tab 4", 401, "False;False;");
 
                 Log.Comment("Leaving the pointer exited area");
                 var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
                 readTabViewWidthButton.Click();
                 Wait.ForIdle();
-                
+
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify correct TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 283) < pixelTolerance);
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindCloseButton(FindElement.ByName(tabName)).Click();
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
+        [TestMethod]
+        public void VerifySizingBehaviorOnTabCloseComingFromNonScroll()
+        {
+            int pixelTolerance = 10;
+
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab");
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
+
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                CloseTabAndVerifyWidth("Tab 5", 500, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 4", 500, "False;False;");
+
+                Log.Comment("Leaving the pointer exited area");
+
                 readTabViewWidthButton.Click();
                 Wait.ForIdle();
 
