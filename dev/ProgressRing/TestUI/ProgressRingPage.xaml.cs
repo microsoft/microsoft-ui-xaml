@@ -27,13 +27,8 @@ namespace MUXControlsTestApp
             var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
             commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
-            foreach (var state in commonStatesGroup.States)
-            {
-                // Change the animation to 0 duration to avoid timing issues in the test.
-                //state.Storyboard.Children[0].Duration = new Duration(TimeSpan.FromSeconds(0));
-            }
 
-            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
+            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 1);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
@@ -46,7 +41,7 @@ namespace MUXControlsTestApp
             VisualStateText.Text = e.NewState.Name;
 
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
-            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
+            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 1);
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
         }

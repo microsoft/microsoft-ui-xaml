@@ -43,24 +43,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void ChangeStateTest()
+         public void ChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Verify IsActive property is set to true by default for testing");
+                Log.Comment("Verify IsActive and IsIndeterminate property is set to true by default for testing");
 
                 ToggleButton isActiveCheckBox = FindElement.ByName<ToggleButton>("ShowIsActiveCheckBox");
+                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsIndeterminateCheckBox");
 
                 TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
+                TextBlock isIsIndeterminateText = FindElement.ByName<TextBlock>("ShowIsIndeterminateText");
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
                 TextBlock opacityText = FindElement.ByName<TextBlock>("OpacityText");
 
                 Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
+                Verify.IsTrue(Convert.ToBoolean(isIsIndeterminateText.DocumentText));
 
-                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+                Log.Comment("IsActive and IsIndeterminate set to true updates ProgressRing to IndeterminateActive state");
 
-                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Verify.AreEqual("IndeterminateActive", visualStateText.DocumentText);
+
                 Log.Comment("Verity that opacity is 1 when Active");
                 Verify.AreEqual("1", opacityText.DocumentText);
 
@@ -72,15 +76,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
 
-                isActiveCheckBox.ToggleAndWait();
+                Log.Comment("IsActive set to True and IsIndeterminate set to false updates ProgressRing to DeterminateActive state");
+
+                isIndeterminateCheckBox.ToggleAndWait();
+
+                Verify.AreEqual("DeterminateActive", visualStateText.DocumentText);
+
+                Log.Comment("Verify Lottie animation for Indeterminate player is not playing when in DeterminateActive state");
+                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
 
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+
+                isActiveCheckBox.ToggleAndWait();
+                
                 Verify.AreEqual("Inactive", visualStateText.DocumentText);
 
                 Log.Comment("Verify Lottie animation is not playing when in Inactive state");
                 Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
 
                 Wait.ForIdle();
+
                 Log.Comment("Verity that opacity is 0 when Inactive");
                 Verify.AreEqual("0", opacityText.DocumentText);
 
@@ -98,43 +113,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 navigateToCustomLottieSourcePage.InvokeAndWait();
 
-                Log.Comment("Verify IsActive property is set to true by default for testing");
+                Log.Comment("Verify IsActive and IsIndeterminate property is set to true by default for testing");
 
-                ToggleButton customLottieSourceIsActiveCheckBox = FindElement.ByName<ToggleButton>("CustomLottieSourceIsActiveCheckBox");
+                ToggleButton isActiveCheckBox = FindElement.ByName<ToggleButton>("ShowIsActiveCheckBox_CLS");
+                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsIndeterminateCheckBox_CLS");
 
                 TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
+                TextBlock isIsIndeterminateText = FindElement.ByName<TextBlock>("ShowIsIndeterminateText");
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
                 TextBlock opacityText = FindElement.ByName<TextBlock>("OpacityText");
 
                 Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
+                Verify.IsTrue(Convert.ToBoolean(isIsIndeterminateText.DocumentText));
 
-                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+                Log.Comment("IsActive and IsIndeterminate set to true updates ProgressRing to IndeterminateActive state");
 
-                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Verify.AreEqual("IndeterminateActive", visualStateText.DocumentText);
+
                 Log.Comment("Verity that opacity is 1 when Active");
                 Verify.AreEqual("1", opacityText.DocumentText);
 
                 // Lottie animations only support Windows versions rs5 and above
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    Log.Comment("Verify Lottie animation is playing whith custom Lottie source and in Active state");
+                    Log.Comment("Verify Lottie animation is playing when in Active state");
 
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
 
-                customLottieSourceIsActiveCheckBox.ToggleAndWait();
+                Log.Comment("IsActive set to True and IsIndeterminate set to false updates ProgressRing to DeterminateActive state");
+
+                isIndeterminateCheckBox.ToggleAndWait();
+
+                Verify.IsFalse(Convert.ToBoolean(isIsIndeterminateText.DocumentText));
+
+                Verify.AreEqual("DeterminateActive", visualStateText.DocumentText);
+
+                Log.Comment("Verify Lottie animation for Indeterminate player is not playing when in DeterminateActive state");
+                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
 
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+
+                isActiveCheckBox.ToggleAndWait();
+
                 Verify.AreEqual("Inactive", visualStateText.DocumentText);
 
                 Log.Comment("Verify Lottie animation is not playing when in Inactive state");
                 Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
 
                 Wait.ForIdle();
+
                 Log.Comment("Verity that opacity is 0 when Inactive");
                 Verify.AreEqual("0", opacityText.DocumentText);
-
             }
         }
 
@@ -152,14 +183,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify IsActive property is set to true by default for testing");
 
                 ToggleButton storyboardAnimationIsActiveCheckBox = FindElement.ByName<ToggleButton>("StoryboardAnimationIsActiveCheckBox");
+
                 TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
 
                 Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
 
-                Log.Comment("IsActive set to true updates ProgressRing to Active state");
+                Log.Comment("IsActive set to true updates ProgressRing to IndeterminateActive state");
 
-                Verify.AreEqual("Active", visualStateText.DocumentText);
+                Verify.AreEqual("IndeterminateActive", visualStateText.DocumentText);
 
                 storyboardAnimationIsActiveCheckBox.ToggleAndWait();
 

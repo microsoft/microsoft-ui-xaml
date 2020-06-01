@@ -121,7 +121,21 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 
 void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    //SetLottieBackgroundColor();
+    if (auto&& determinatePlayer = m_determinatePlayer.get())
+    {
+        if (auto const progressRingDeterminate = determinatePlayer.Source())
+        {
+            SetLottieBackgroundColor(progressRingDeterminate);
+        }
+    }
+
+    if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+    {
+        if (auto const progressRingIndeterminate = indeterminatePlayer.Source())
+        {
+            SetLottieBackgroundColor(progressRingIndeterminate);
+        }
+    }
 }
 
 void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
