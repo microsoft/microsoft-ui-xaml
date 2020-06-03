@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -447,6 +447,7 @@ void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, con
     {
         // Presenter size didn't change because of item being removed, so update manually
         UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+        UpdateTabWidths();
     }
 }
 
@@ -497,9 +498,13 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             }
             // Last item removed, update sizes
             // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
-            if (args.Index() == TabItems().Size())
+            if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
-                UpdateTabWidths(true,false);
+                updateTabWidthOnPointerLeave = true;
+                if (args.Index() == TabItems().Size())
+                {
+                    UpdateTabWidths(true,false);
+                }
             }
         }
         else
@@ -805,7 +810,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                             winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, visible
                                 ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
                                 : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
-                            if (visible && shouldUpdateWidths)
+                            if (visible)
                             {
                                 UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
                             }
@@ -817,7 +822,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
     }
 
 
-    if (shouldUpdateWidths)
+    if (shouldUpdateWidths || TabWidthMode() != winrt::TabViewWidthMode::Equal)
     {
         for (auto item : TabItems())
         {

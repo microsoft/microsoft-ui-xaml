@@ -161,10 +161,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Close a tab to make room. The scroll buttons should disappear:
                 Log.Comment("Closing a tab:");
                 Button closeButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                closeButton.MovePointer(0, 0);
                 closeButton.InvokeAndWait();
                 VerifyElement.NotFound("LongHeaderTab", FindBy.Name);
 
                 Log.Comment("Scroll buttons should disappear");
+                // Leaving tabstrip with this so the tabs update their width
+                FindElement.ByName<Button>("GetScrollButtonsVisible").MovePointer(0,0);
+                Wait.ForIdle();
                 Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");
 
                 // Make sure the scroll buttons can show up in 'Equal' sizing mode. 
