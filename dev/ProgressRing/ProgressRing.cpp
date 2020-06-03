@@ -16,6 +16,9 @@ static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemCont
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
 static constexpr wstring_view s_BackgroundName{ L"Background"sv };
+static constexpr wstring_view s_IndeterminateActiveStateName{ L"IndeterminateActive"sv };
+static constexpr wstring_view s_DeterminateActiveStateName{ L"DeterminateActive"sv };
+static constexpr wstring_view s_InactiveStateName{ L"Inactive"sv };
 
 ProgressRing::ProgressRing()
 {
@@ -142,8 +145,6 @@ void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, cons
 {
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-        auto test = indeterminatePlayer.Opacity();
-
         if (indeterminatePlayer.Opacity() == 0)
         {
             indeterminatePlayer.Stop();
@@ -165,11 +166,13 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 {
     if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        if (!determinatePlayer.Source())
+        const auto progressRingDeterminate = determinatePlayer.Source();
+
+        if (!progressRingDeterminate)
         {
             determinatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
 
-            if (const auto progressRingDeterminate = determinatePlayer.Source())
+            if (progressRingDeterminate)
             {
                 SetLottieForegroundColor(progressRingDeterminate);
                 SetLottieBackgroundColor(progressRingDeterminate);
@@ -179,12 +182,14 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-        if (!indeterminatePlayer.Source())
-        {
 
+        const auto progressRingIndeterminate = indeterminatePlayer.Source();
+
+        if (!progressRingIndeterminate)
+        {
             indeterminatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
 
-            if (const auto progressRingIndeterminate = indeterminatePlayer.Source())
+            if (progressRingIndeterminate)
             {
                 SetLottieForegroundColor(progressRingIndeterminate);
                 SetLottieBackgroundColor(progressRingIndeterminate);
@@ -243,35 +248,39 @@ void ProgressRing::UpdateLottieProgress()
 {
     if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
+        const double value = Value();
         const double range = Maximum() - Minimum();
         const double fromProgress = m_oldValue / range;
-        const double toProgress = Value() / range;
+        const double toProgress = value / range;
 
-        determinatePlayer.PlayAsync(fromProgress, toProgress, false);
-        m_oldValue = Value();
+        const auto _ = determinatePlayer.PlayAsync(fromProgress, toProgress, false);
+        m_oldValue = value;
     }
 }
 
 void ProgressRing::UpdateStates()
 {
-    if (IsActive() && IsIndeterminate())
+    if (IsActive())
     {
-        winrt::VisualStateManager::GoToState(*this, L"IndeterminateActive", true);
-
-        if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+        if (IsIndeterminate())
         {
-            const auto _ = indeterminatePlayer.PlayAsync(0, 1, true);
-        }
-    }
-    else if (IsActive() && !IsIndeterminate())
-    {
-        winrt::VisualStateManager::GoToState(*this, L"DeterminateActive", true);
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminateActiveStateName, true);
 
-        UpdateLottieProgress();
+            if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
+            {
+                const auto _ = indeterminatePlayer.PlayAsync(0, 1, true);
+            }
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, s_DeterminateActiveStateName, true);
+
+            UpdateLottieProgress();
+        }   
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"Inactive", true);
+        winrt::VisualStateManager::GoToState(*this, s_InactiveStateName, true);
 
         if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
         {

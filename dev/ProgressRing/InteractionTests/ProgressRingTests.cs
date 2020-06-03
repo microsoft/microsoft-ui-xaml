@@ -80,6 +80,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 isIndeterminateCheckBox.ToggleAndWait();
 
+                Verify.IsFalse(Convert.ToBoolean(isIsIndeterminateText.DocumentText));
+
                 Verify.AreEqual("DeterminateActive", visualStateText.DocumentText);
 
                 Log.Comment("Verify Lottie animation for Indeterminate player is not playing when in DeterminateActive state");
