@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -2840,6 +2840,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void SingleSelectWithUnrealizedChildrenDoesNotMoveSelection()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewUnrealizedChildrenTestPage" }))
+            {
+                TapOnTreeViewAt(50, 12, "GetSelectedItemName");
+
+                Log.Comment("Selecting item");
+                ClickButton("GetSelectedItemName");
+                Wait.ForIdle();
+
+                Log.Comment("Verifying current selection");
+                var textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
+                Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
+
+                Log.Comment("Expanding selected item");
+                TapOnTreeViewAt(12, 12, "GetSelectedItemName");
+                Wait.ForIdle();
+
+                Log.Comment("Verifying selection again");
+                ClickButton("GetSelectedItemName");
+                Wait.ForIdle();
+                textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
+                Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
             }
         }
 
