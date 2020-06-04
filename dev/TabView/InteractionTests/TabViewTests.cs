@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -167,7 +167,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Scroll buttons should disappear");
                 // Leaving tabstrip with this so the tabs update their width
-                FindElement.ByName<Button>("GetScrollButtonsVisible").MovePointer(0,0);
+                FindElement.ByName<Button>("IsClosableCheckBox").MovePointer(0,0);
                 Wait.ForIdle();
                 Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");
 
