@@ -118,7 +118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
-                UIObject smallerTab = FindElement.ByName("FirstTab");
+                UIObject smallerTab = FindElement.ByName("SecondTab");
                 UIObject largerTab = FindElement.ByName("LongHeaderTab");
 
                 FindElement.ByName<Button>("SetTabViewWidth").InvokeAndWait();
@@ -161,10 +161,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Close a tab to make room. The scroll buttons should disappear:
                 Log.Comment("Closing a tab:");
                 Button closeButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                closeButton.MovePointer(0, 0);
                 closeButton.InvokeAndWait();
                 VerifyElement.NotFound("LongHeaderTab", FindBy.Name);
 
                 Log.Comment("Scroll buttons should disappear");
+                // Leaving tabstrip with this so the tabs update their width
+                FindElement.ByName<Button>("IsClosableCheckBox").MovePointer(0,0);
+                Wait.ForIdle();
                 Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");
 
                 // Make sure the scroll buttons can show up in 'Equal' sizing mode. 
@@ -623,13 +627,138 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ScrollButtonToolTipTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                PressButtonAndVerifyText("GetScrollDecreaseButtonToolTipButton", "ScrollDecreaseButtonToolTipTextBlock", "Scroll tab list backward");
+                PressButtonAndVerifyText("GetScrollIncreaseButtonToolTipButton", "ScrollIncreaseButtonToolTipTextBlock", "Scroll tab list forward");
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTabViewItemHeaderForegroundResource()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button getSecondTabHeaderForegroundButton = FindElement.ByName<Button>("GetSecondTabHeaderForegroundButton");
+                getSecondTabHeaderForegroundButton.InvokeAndWait();
+
+                TextBlock secondTabHeaderForegroundTextBlock = FindElement.ByName<TextBlock>("SecondTabHeaderForegroundTextBlock");
+
+                Verify.AreEqual("#FF008000", secondTabHeaderForegroundTextBlock.DocumentText);
+            }
+        }
+
+        [TestMethod]
+        public void VerifySizingBehaviorOnTabCloseComingFromScroll()
+        {
+            int pixelTolerance = 10;
+
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab");
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 5", 401, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 4", 401, "False;False;");
+
+                Log.Comment("Leaving the pointer exited area");
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify correct TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 283) < pixelTolerance);
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindCloseButton(FindElement.ByName(tabName)).Click();
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
+        [TestMethod]
+        public void VerifySizingBehaviorOnTabCloseComingFromNonScroll()
+        {
+            int pixelTolerance = 10;
+
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab");
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
+
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                CloseTabAndVerifyWidth("Tab 5", 500, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 4", 500, "False;False;");
+
+                Log.Comment("Leaving the pointer exited area");
+
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify correct TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 500) < pixelTolerance);
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindCloseButton(FindElement.ByName(tabName)).Click();
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
         public void PressButtonAndVerifyText(String buttonName, String textBlockName, String expectedText)
         {
             Button button = FindElement.ByName<Button>(buttonName);
             button.InvokeAndWait();
 
             TextBlock textBlock = FindElement.ByName<TextBlock>(textBlockName);
-            Verify.AreEqual(textBlock.DocumentText, expectedText);
+            Verify.AreEqual(expectedText, textBlock.DocumentText);
         }
 
         Button FindCloseButton(UIObject tabItem)

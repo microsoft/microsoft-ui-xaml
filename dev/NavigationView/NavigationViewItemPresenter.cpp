@@ -38,24 +38,27 @@ void NavigationViewItemPresenter::OnApplyTemplate()
             m_expandCollapseChevron.set(expandCollapseChevron);
             m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
         }
-
         navigationViewItem->UpdateVisualStateNoTransition();
 
-        // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes.
+
+        // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
         // Also register for splitview pane state changes when not in 'Top' PaneDisplayMode so we can handle different NavigationViewItem display cases
         // (such as compact mode).
-        if (navigationViewItem->GetNavigationView().PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
+        if(auto&& navigationView = navigationViewItem->GetNavigationView())
         {
-            UpdateCompactPaneLength(m_compactPaneLengthValue, true);
-
-            if (const auto splitView = navigationViewItem->GetSplitView())
+            if (navigationView.PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
             {
-                m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
-                    winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItemPresenter::OnSplitViewPropertyChanged });
-                m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
-                    winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItemPresenter::OnSplitViewPropertyChanged });
+                UpdateCompactPaneLength(m_compactPaneLengthValue, true);
 
-                UpdateClosedCompactVisualState();
+                if (const auto splitView = navigationViewItem->GetSplitView())
+                {
+                    m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
+                        winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItemPresenter::OnSplitViewPropertyChanged });
+                    m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
+                        winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItemPresenter::OnSplitViewPropertyChanged });
+
+                    UpdateClosedCompactVisualState();
+                }
             }
         }
     }

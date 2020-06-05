@@ -137,4 +137,12 @@
     <value>Затвори ја картичката (Ctrl+F4)</value>
     <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
   </data>
+  <data name="TabViewScrollDecreaseButtonTooltip" xml:space="preserve">
+    <value>Лизгај го наназад списокот со картички</value>
+    <comment>Tooltip for the tab list scroll decrease button.</comment>
+  </data>
+  <data name="TabViewScrollIncreaseButtonTooltip" xml:space="preserve">
+    <value>Лизгај го напред списокот со картички</value>
+    <comment>Tooltip for the tab list scroll increase button.</comment>
+  </data>
 </root>
