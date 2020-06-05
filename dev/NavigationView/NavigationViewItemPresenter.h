@@ -32,6 +32,8 @@ public:
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();
+    void OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
+    void UpdateClosedCompactVisualState();
 
     double m_compactPaneLengthValue { 40 };
 
@@ -45,4 +47,7 @@ private:
 
     tracker_ref<winrt::Storyboard> m_chevronExpandedStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_chevronCollapsedStoryboard{ this };
+
+    PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
+    PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
 };
