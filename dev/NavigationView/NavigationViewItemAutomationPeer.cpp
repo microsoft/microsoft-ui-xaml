@@ -279,6 +279,19 @@ NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationVi
     return NavigationViewRepeaterPosition::LeftNav;
 }
 
+winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentRepeater()
+{
+    if (auto const navview = GetParentNavigationView())
+    {
+        if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
+        {
+            return winrt::get_self<NavigationView>(navview)->GetParentItemsRepeaterForContainer(navigationViewItem);
+        }
+    }
+    return nullptr;
+}
+
+
 // Get either the position or the size of the set for this particular item in the case of left nav. 
 // We go through all the items and then we determine if the listviewitem from the left listview can be a navigation view item header
 // or a navigation view item. If it's the former, we just reset the count. If it's the latter, we increment the counter.
@@ -287,54 +300,60 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 {
     int returnValue = 0;
 
-    if (auto const navview = GetParentNavigationView())
+    if (auto const repeater = GetParentRepeater())
     {
-        if (auto const repeater = winrt::get_self<NavigationView>(navview)->LeftNavRepeater())
+        if (auto const parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
         {
-            if (auto const parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
+            if (auto const children = parent.GetChildren())
             {
-                if (auto const children = parent.GetChildren())
+                int index = 0;
+                bool itemFound = false;
+
+                for (auto const& child : children)
                 {
-                    int index = 0;
-                    bool itemFound = false;
-
-                    for (auto const& child : children)
+                    if (auto dependencyObject = repeater.TryGetElement(index))
                     {
-                        if (auto dependencyObject = repeater.TryGetElement(index))
+                        if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
                         {
-                            if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
+                            if (automationOutput == AutomationOutput::Size && itemFound)
                             {
-                                if (automationOutput == AutomationOutput::Size && itemFound)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    returnValue = 0;
-                                }
+                                break;
                             }
-                            else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
+                            else
                             {
-                                if (navviewItem.Visibility() == winrt::Visibility::Visible)
-                                {
-                                    returnValue++;
+                                returnValue = 0;
+                            }
+                        }
+                        else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
+                        {
+                            if (navviewItem.Visibility() == winrt::Visibility::Visible)
+                            {
+                                returnValue++;
 
-                                    if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                auto nvipSelf = static_cast<winrt::FrameworkElementAutomationPeer>(*this);
+                                auto nameSelf = nvipSelf.GetName();
+
+                                auto nviCurrentName = navviewItem.Name();
+
+                                auto nvipCurrent = winrt::FrameworkElementAutomationPeer::FromElement(navviewItem);
+                                auto nameCurrent = nvipCurrent.GetName();
+
+                                //if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                if (nvipSelf == nvipCurrent)
+                                {
+                                    if (automationOutput == AutomationOutput::Position)
                                     {
-                                        if (automationOutput == AutomationOutput::Position)
-                                        {
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            itemFound = true;
-                                        }
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        itemFound = true;
                                     }
                                 }
                             }
                         }
-                        index++;
                     }
+                    index++;
                 }
             }
         }

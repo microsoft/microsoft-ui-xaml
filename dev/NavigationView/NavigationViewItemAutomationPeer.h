@@ -52,6 +52,7 @@ private:
     };
 
     winrt::NavigationView GetParentNavigationView();
+    winrt::ItemsRepeater GetParentRepeater();
     bool IsOnTopNavigation();
     bool IsOnTopNavigationOverflow();
     bool IsSettingsItem();
