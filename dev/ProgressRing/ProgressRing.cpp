@@ -51,10 +51,7 @@ void ProgressRing::OnApplyTemplate()
     m_determinatePlayer.set([this, controlProtected]()
     {
         auto const determinateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_DeterminateLottiePlayerName, controlProtected);
-        if (determinateplayer)
-        {
-            determinateplayer.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
-        }
+
         return determinateplayer;
     }());
 
