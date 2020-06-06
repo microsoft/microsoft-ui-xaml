@@ -32,8 +32,7 @@ public:
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    winrt::UIElement GetSelectionIndicator();
-    winrt::ToolTip GetToolTip();
+    winrt::UIElement GetSelectionIndicator() const;
 
     // IUIElement / IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer() override;
@@ -50,35 +49,37 @@ public:
     // It provides a chance for NavigationViewItemPresenter to request visualstate refresh
     void UpdateVisualStateNoTransition();
 
-    void OnPresenterPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPresenterPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPresenterPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPresenterPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-
     void ShowHideChildren();
-    bool ShouldRepeaterShowInFlyout();
+    bool ShouldRepeaterShowInFlyout() const;
 
-    winrt::ItemsRepeater GetRepeater() { return m_repeater.get(); };
-
-    NavigationViewItemPresenter* GetPresenter();
+    winrt::ItemsRepeater GetRepeater() const { return m_repeater.get(); };
 
     void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
-    bool ShowSelectionIndicatorIfRequired();
     void RotateExpandCollapseChevron(bool isExpanded);
-    bool IsRepeaterVisible();
+    bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
 
 private:
+    winrt::UIElement const GetPresenterOrItem() const;
+    NavigationViewItemPresenter* GetPresenter() const;
+
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
-    void OnNavigationViewRepeaterPositionChanged() override;
     void OnNavigationViewItemBaseDepthChanged() override;
+    void OnNavigationViewItemBaseIsSelectedChanged() override;
+    void OnNavigationViewItemBasePositionChanged() override;
 
-    void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPresenterPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPresenterPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPresenterPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPresenterPointerMoved(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPresenterPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void ResetTrackedPointerId();
+    bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateCompactPaneLength();
     void UpdateIsClosedCompact();
@@ -93,33 +94,38 @@ private:
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
     bool ShouldShowContent();
-    bool ShouldEnableToolTip();
-    bool IsOnLeftNav();
-    bool IsOnTopPrimary();
+    bool ShouldEnableToolTip() const;
+    bool IsOnLeftNav() const;
+    bool IsOnTopPrimary() const;
     bool HasChildren();
 
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
-    void ReparentContent();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
     void UpdateItemIndentation();
     void ShowSelectionIndicator(bool visible);
+    void ProcessPointerCanceled(const winrt::PointerRoutedEventArgs& args);
+    void ProcessPointerOver(const winrt::PointerRoutedEventArgs& args);
+    void HookInputEvents(const winrt::IControlProtected& controlProtected);
+    void UnhookInputEvents();
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
 
     winrt::UIElement::PointerPressed_revoker m_presenterPointerPressedRevoker{};
-    winrt::UIElement::PointerReleased_revoker m_presenterPointerReleasedRevoker{};
     winrt::UIElement::PointerEntered_revoker m_presenterPointerEnteredRevoker{};
-    winrt::UIElement::PointerExited_revoker m_presenterPointerExitedRevoker{};
-    winrt::UIElement::PointerCanceled_revoker m_presenterPointerCanceledRevoker{};
-    winrt::UIElement::PointerCaptureLost_revoker m_presenterPointerCaptureLostRevoker{};
+    winrt::UIElement::PointerMoved_revoker m_presenterPointerMovedRevoker{};
+    RoutedEventHandler_revoker m_presenterPointerReleasedRevoker{};
+    RoutedEventHandler_revoker m_presenterPointerExitedRevoker{};
+    RoutedEventHandler_revoker m_presenterPointerCanceledRevoker{};
+    RoutedEventHandler_revoker m_presenterPointerCaptureLostRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
+    winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
     NavigationViewItemHelper<NavigationViewItem> m_helper{ this };
@@ -135,6 +141,8 @@ private:
     bool m_hasKeyboardFocus{ false };
 
     // Visual state tracking
+    winrt::Pointer m_capturedPointer{ nullptr };
+    uint32_t m_trackedPointerId{ 0 };
     bool m_isPressed{ false };
     bool m_isPointerOver{ false };
 

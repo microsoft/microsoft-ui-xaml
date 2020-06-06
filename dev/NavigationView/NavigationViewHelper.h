@@ -36,7 +36,7 @@ public:
     {
     }
 
-    winrt::UIElement GetSelectionIndicator() { return m_selectionIndicator.get(); }
+    winrt::UIElement GetSelectionIndicator() const { return m_selectionIndicator.get(); }
 
     void Init(const winrt::IControlProtected & controlProtected)
     {

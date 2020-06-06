@@ -18,4 +18,8 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnIsSelectedPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };
