@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -48,7 +48,7 @@ public:
     winrt::IInspectable Data() const { return m_data.get(); }
     winrt::IDataTemplateComponent DataTemplateComponent() const { return m_dataTemplateComponent.get(); }
 
-    bool MustClearDataContext() { return m_mustClearDataContext; }
+    bool MustClearDataContext() const { return m_mustClearDataContext; }
     void MustClearDataContext(bool mustClearDataContext) { m_mustClearDataContext = mustClearDataContext; }
 
     static constexpr int PhaseNotSpecified = std::numeric_limits<int>::min();
