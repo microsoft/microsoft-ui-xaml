@@ -99,7 +99,7 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 
 // We need to clear the datacontext to prevent crashes from happening,
 //  however we only do that if we were the ones setting it.
-// That is when one of the following is the case (numbering taken from line ~630:
+// That is when one of the following is the case (numbering taken from line ~642):
 // 1.2    No ItemTemplate, data is not a UIElement
 // 2.1    ItemTemplate, data is not FrameworkElement
 // 2.2.2  Itemtemplate, data is FrameworkElement, ElementFactory returned Element different to data
