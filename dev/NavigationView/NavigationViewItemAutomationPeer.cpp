@@ -320,16 +320,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
                             {
                                 returnValue++;
 
-                                auto nvipSelf = static_cast<winrt::FrameworkElementAutomationPeer>(*this);
-                                auto nameSelf = nvipSelf.GetName();
-
-                                auto nviCurrentName = navviewItem.Name();
-
-                                auto nvipCurrent = winrt::FrameworkElementAutomationPeer::FromElement(navviewItem);
-                                auto nameCurrent = nvipCurrent.GetName();
-
-                                //if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
-                                if (nvipSelf == nvipCurrent)
+                                if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                                 {
                                     if (automationOutput == AutomationOutput::Position)
                                     {
@@ -363,38 +354,41 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(Au
 
     if (auto const parentRepeater = GetParentRepeater())
     {
-        auto numberOfElements = parentRepeater.ItemsSourceView().Count();
-
-        for (int32_t i = 0; i < numberOfElements; i++)
+        if (auto const itemsSourceView = parentRepeater.ItemsSourceView())
         {
-            if (auto child = parentRepeater.TryGetElement(i))
-            {
-                if (child.try_as<winrt::NavigationViewItemHeader>())
-                {
-                    if (automationOutput == AutomationOutput::Size && itemFound)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        returnValue = 0;
-                    }
-                }
-                else if (auto const navviewitem = child.try_as<winrt::NavigationViewItem>())
-                {
-                    if (navviewitem.Visibility() == winrt::Visibility::Visible)
-                    {
-                        returnValue++;
+            auto numberOfElements = itemsSourceView.Count();
 
-                        if (winrt::FrameworkElementAutomationPeer::FromElement(navviewitem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+            for (int32_t i = 0; i < numberOfElements; i++)
+            {
+                if (auto child = parentRepeater.TryGetElement(i))
+                {
+                    if (child.try_as<winrt::NavigationViewItemHeader>())
+                    {
+                        if (automationOutput == AutomationOutput::Size && itemFound)
                         {
-                            if (automationOutput == AutomationOutput::Position)
+                            break;
+                        }
+                        else
+                        {
+                            returnValue = 0;
+                        }
+                    }
+                    else if (auto const navviewitem = child.try_as<winrt::NavigationViewItem>())
+                    {
+                        if (navviewitem.Visibility() == winrt::Visibility::Visible)
+                        {
+                            returnValue++;
+
+                            if (winrt::FrameworkElementAutomationPeer::FromElement(navviewitem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                             {
-                                break;
-                            }
-                            else
-                            {
-                                itemFound = true;
+                                if (automationOutput == AutomationOutput::Position)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    itemFound = true;
+                                }
                             }
                         }
                     }
