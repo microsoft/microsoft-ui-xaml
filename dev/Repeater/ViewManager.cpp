@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -97,6 +97,15 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
     }
 }
 
+// We need to clear the datacontext to prevent crashes from happening,
+//  however we only do that if we were the ones setting it.
+// That is when one of the following is the case (numbering taken from line ~630:
+// 1.2    No ItemTemplate, data is not a UIElement
+// 2.1    ItemTemplate, data is not FrameworkElement
+// 2.2.2  Itemtemplate, data is FrameworkElement, ElementFactory returned Element different to data
+//
+// In all of those three cases, we the ItemTemplateShim is NOT null.
+// Luckily when we create the items, we store whether we were the once setting the DataContext.
 void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
     m_owner->OnElementClearing(element);
@@ -134,6 +143,16 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
     virtInfo->MoveOwnershipToElementFactory();
+
+    // During creation of this object, we were the one setting the DataContext, so clear it now.
+    if (virtInfo->MustClearDataContext())
+    {
+        if (const auto elementAsFE = element.try_as<winrt::FrameworkElement>())
+        {
+            elementAsFE.DataContext(nullptr);
+        }
+    }
+
     m_phaser.StopPhasing(element, virtInfo);
     if (m_lastFocusedElement == element)
     {
@@ -693,6 +712,8 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         // which means that the element has been recycled and not created from scratch.
         REPEATER_TRACE_PERF(L"ElementRecycled");
     }
+    // Clear flag
+    virtInfo->MustClearDataContext(false);
 
     if (data != element)
     {
@@ -731,6 +752,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
             }();
 
             elementAsFE.DataContext(elementDataContext);
+            virtInfo->MustClearDataContext(true);
         }
         else
         {
