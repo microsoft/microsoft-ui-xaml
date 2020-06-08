@@ -8,6 +8,7 @@
 #include "NavigationView.h"
 #include "NavigationViewItemBase.h"
 #include "SharedHelpers.h"
+#include "NavigationViewHelper.h"
 
 
 #include "NavigationViewItemAutomationPeer.properties.cpp"
@@ -123,9 +124,23 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 int32_t NavigationViewItemAutomationPeer::GetLevelCore()
 {
     int32_t level = 0;
-    if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
+    if (winrt::NavigationViewItemBase nvib = Owner().try_as<winrt::NavigationViewItemBase>())
     {
-        return winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Depth();
+        auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        if (nvibImpl->IsTopLevelItem())
+        {
+            return 1;
+        }
+        else
+        {
+            if (auto const navView = GetParentNavigationView())
+            {
+                if (auto const indexPath = winrt::get_self<NavigationView>(navView)->GetIndexPathForContainer(nvib))
+                {
+                    return indexPath.GetSize();
+                }
+            }
+        }
     }
 
     return level;

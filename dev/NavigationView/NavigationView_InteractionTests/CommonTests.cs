@@ -814,7 +814,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        public void HierarchyItemsAccessibilitySetTest()
+        public void HierarchyItemsAccessibilitySetAndLevelTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
@@ -826,9 +826,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AutomationElement ae = AutomationElement.FocusedElement;
                 int positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
                 int sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+                int itemLevel = (int)ae.GetCurrentPropertyValue(AutomationElement.LevelProperty);
 
                 Verify.AreEqual(4, positionInSet, "Position in set");
                 Verify.AreEqual(15, sizeOfSet, "Size of set");
+                Verify.AreEqual(1, itemLevel, "Level of item");
 
                 Log.Comment("Expanding Menu Item 15.");
                 InputHelper.LeftClick(menuItem15);
@@ -842,9 +844,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 ae = AutomationElement.FocusedElement;
                 positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
                 sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+                itemLevel = (int)ae.GetCurrentPropertyValue(AutomationElement.LevelProperty);
 
                 Verify.AreEqual(2, positionInSet, "Position in set, not including separator/header");
                 Verify.AreEqual(3, sizeOfSet, "Size of set");
+                Verify.AreEqual(2, itemLevel, "Level of item");
             }
         }
 
