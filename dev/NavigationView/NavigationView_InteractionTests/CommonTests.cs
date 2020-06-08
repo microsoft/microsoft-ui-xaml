@@ -814,6 +814,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        public void HierarchyItemsAccessibilitySetTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Setting focus to Menu Item 15");
+                UIObject menuItem15 = FindElement.ByName("Menu Item 15");
+                menuItem15.SetFocus();
+                Wait.ForIdle();
+
+                AutomationElement ae = AutomationElement.FocusedElement;
+                int positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                int sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                Verify.AreEqual(4, positionInSet, "Position in set");
+                Verify.AreEqual(15, sizeOfSet, "Size of set");
+
+                Log.Comment("Expanding Menu Item 15.");
+                InputHelper.LeftClick(menuItem15);
+                Wait.ForIdle();
+
+                Log.Comment("Setting focus to Menu Item 17");
+                UIObject menuItem17 = FindElement.ByName("Menu Item 17");
+                menuItem17.SetFocus();
+                Wait.ForIdle();
+
+                ae = AutomationElement.FocusedElement;
+                positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                Verify.AreEqual(2, positionInSet, "Position in set, not including separator/header");
+                Verify.AreEqual(3, sizeOfSet, "Size of set");
+            }
+        }
+
+        [TestMethod]
         public void ItemsSourceAccessibilitySetTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
