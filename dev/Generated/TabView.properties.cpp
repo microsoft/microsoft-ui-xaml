@@ -167,7 +167,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTabItemsSourcePropertyChanged));
     }
     if (!s_TabItemTemplateProperty)
     {
@@ -292,6 +292,14 @@ void TabViewProperties::OnSelectedItemPropertyChanged(
 {
     auto owner = sender.as<winrt::TabView>();
     winrt::get_self<TabView>(owner)->OnSelectedItemPropertyChanged(args);
+}
+
+void TabViewProperties::OnTabItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabView>();
+    winrt::get_self<TabView>(owner)->OnTabItemsSourcePropertyChanged(args);
 }
 
 void TabViewProperties::OnTabWidthModePropertyChanged(

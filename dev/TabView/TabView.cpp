@@ -70,6 +70,37 @@ TabView::TabView()
 
 void TabView::OnApplyTemplate()
 {
+    m_listViewLoadedRevoker.revoke();
+    m_listViewSelectionChangedRevoker.revoke();
+    m_listViewDragItemsStartingRevoker.revoke();
+    m_listViewDragItemsCompletedRevoker.revoke();
+    m_listViewDragOverRevoker.revoke();
+    m_listViewDropRevoker.revoke();
+    m_listViewGettingFocusRevoker.revoke();
+    m_listViewCanReorderItemsPropertyChangedRevoker.revoke();
+    m_listViewAllowDropPropertyChangedRevoker.revoke();
+    m_addButtonClickRevoker.revoke();
+    m_itemsPresenterSizeChangedRevoker.revoke();
+    m_scrollViewerLoadedRevoker.revoke();
+    m_scrollViewerViewChangedRevoker.revoke();
+    m_scrollDecreaseClickRevoker.revoke();
+    m_scrollIncreaseClickRevoker.revoke();
+
+    m_tabContentPresenter.set(nullptr);
+    m_rightContentPresenter.set(nullptr);
+    m_leftContentColumn.set(nullptr);
+    m_tabColumn.set(nullptr);
+    m_addButtonColumn.set(nullptr);
+    m_rightContentColumn.set(nullptr);
+    m_tabContainerGrid.set(nullptr);
+    m_shadowReceiver.set(nullptr);
+    m_listView.set(nullptr);
+    m_addButton.set(nullptr);
+    m_itemsPresenter.set(nullptr);
+    m_scrollViewer.set(nullptr);
+    m_scrollDecreaseButton.set(nullptr);
+    m_scrollIncreaseButton.set(nullptr);
+
     winrt::IControlProtected controlProtected{ *this };
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
@@ -97,6 +128,9 @@ void TabView::OnApplyTemplate()
             m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
 
             m_listViewGettingFocusRevoker = listView.GettingFocus(winrt::auto_revoke, { this, &TabView::OnListViewGettingFocus });
+
+            m_listViewCanReorderItemsPropertyChangedRevoker = RegisterPropertyChanged(listView, winrt::ListViewBase::CanReorderItemsProperty(), { this, &TabView::OnListViewDraggingPropertyChanged });
+            m_listViewAllowDropPropertyChangedRevoker = RegisterPropertyChanged(listView, winrt::UIElement::AllowDropProperty(), { this, &TabView::OnListViewDraggingPropertyChanged });
         }
         return listView;
     }());
@@ -141,6 +175,13 @@ void TabView::OnApplyTemplate()
             shadowCaster.Shadow(shadow);
         }
     }
+
+    UpdateListViewItemContainerTransitions();
+}
+
+void TabView::OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdateListViewItemContainerTransitions();
 }
 
 void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
@@ -209,6 +250,71 @@ void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChan
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSelectedItem();
+}
+
+void TabView::OnTabItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateListViewItemContainerTransitions();
+}
+
+void TabView::UpdateListViewItemContainerTransitions()
+{
+    if (TabItemsSource())
+    {
+        if (auto listView = m_listView.get())
+        {
+            if (listView.CanReorderItems() && listView.AllowDrop())
+            {
+                // Remove all the AddDeleteThemeTransition/ContentThemeTransition instances in the inner ListView's ItemContainerTransitions
+                // collection to avoid attempting to reparent a tab's content while it is still parented during a tab reordering user gesture.
+                // This is only required when:
+                //  - the TabViewItem' contents are databound to UIElements (this condition is not being checked below though).
+                //  - System animations turned on (this condition is not being checked below though to maximize behavior consistency).
+                //  - TabViewItem reordering is turned on.
+                // With all those conditions met, the databound UIElements are still parented to the old item container as the tab is being dropped in
+                // its new location. Without animations, the old item container is already put into the recycling pool and picked as the new container.
+                // Its ContentControl.Content is kept unchanged and no reparenting is attempted.
+                // Because the default ItemContainerTransitions collection is defined in the TabViewListView style, all ListView instances share the same
+                // collection by default. Thus to avoid one TabView affecting all other ones, a new ItemContainerTransitions collection is created
+                // when the original one contains an AddDeleteThemeTransition or ContentThemeTransition instance.
+                bool transitionCollectionHasAddDeleteOrContentThemeTransition = [listView]()
+                {
+                    if (auto itemContainerTransitions = listView.ItemContainerTransitions())
+                    {
+                        for (auto&& transition : itemContainerTransitions)
+                        {
+                            if (transition &&
+                                (transition.try_as<winrt::AddDeleteThemeTransition>() || transition.try_as<winrt::ContentThemeTransition>()))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }();
+
+                if (transitionCollectionHasAddDeleteOrContentThemeTransition)
+                {
+                    auto const newItemContainerTransitions = winrt::TransitionCollection();
+                    auto const oldItemContainerTransitions = listView.ItemContainerTransitions();
+
+                    for (auto&& transition : oldItemContainerTransitions)
+                    {
+                        if (transition)
+                        {
+                            if (transition.try_as<winrt::AddDeleteThemeTransition>() || transition.try_as<winrt::ContentThemeTransition>())
+                            {
+                                continue;
+                            }
+                            newItemContainerTransitions.Append(transition);
+                        }
+                    }
+
+                    listView.ItemContainerTransitions(newItemContainerTransitions);
+                }
+            }
+        }
+    }
 }
 
 void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)

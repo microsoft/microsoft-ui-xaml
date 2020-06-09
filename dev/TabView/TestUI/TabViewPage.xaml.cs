@@ -394,6 +394,11 @@ namespace MUXControlsTestApp
             this.Frame.Navigate(typeof(TabViewSizingPage));
         }
 
+        private void TabViewTabItemsSourcePageButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(TabViewTabItemsSourcePage));
+        }
+
         private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
         {
             FirstTab.Header = "s";

@@ -1,0 +1,39 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.TabViewTabItemsSourcePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <controls:TabView x:Name="TabViewItemsSourceSample"
+            Margin="5"
+            SelectedIndex="0"
+            MinHeight="200"
+            TabItemsSource="{x:Bind myDatas, Mode=OneWay}"
+            AddTabButtonClick="TabViewItemsSourceSample_AddTabButtonClick"
+            TabCloseRequested="TabViewItemsSourceSample_TabCloseRequested">
+            <controls:TabView.TabItemTemplate>
+                <DataTemplate x:DataType="local:MyData">
+                    <controls:TabViewItem
+                        Header="{x:Bind DataHeader}"
+                        IconSource="{x:Bind DataIconSource}"
+                        Content="{x:Bind DataContent}"/>
+                </DataTemplate>
+            </controls:TabView.TabItemTemplate>
+        </controls:TabView>
+        <StackPanel Margin="5" Grid.Row="1">
+            <CheckBox x:Name="chkCanDragItems" Content="ListView.CanDragItems?" IsChecked="False" Checked="ChkCanDragItems_Checked" Unchecked="ChkCanDragItems_Unchecked"/>
+            <CheckBox x:Name="chkCanReorderItems" Content="ListView.CanReorderItems?" IsChecked="True" Checked="ChkCanReorderItems_Checked" Unchecked="ChkCanReorderItems_Unchecked"/>
+            <CheckBox x:Name="chkCanDrag" Content="ListView.CanDrag?" IsChecked="False" Checked="ChkCanDrag_Checked" Unchecked="ChkCanDrag_Unchecked"/>
+            <CheckBox x:Name="chkAllowDrop" Content="ListView.AllowDrop?" IsChecked="True" Checked="ChkAllowDrop_Checked" Unchecked="ChkAllowDrop_Unchecked"/>
+        </StackPanel>
+    </Grid>
+</Page>

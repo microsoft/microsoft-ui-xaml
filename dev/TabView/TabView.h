@@ -104,6 +104,7 @@ public:
 
     // Internal
     void OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnTabItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -147,7 +148,9 @@ private:
     void UpdateTabWidths();
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+    void UpdateListViewItemContainerTransitions();
 
+    void OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     int GetItemCount();
@@ -174,6 +177,9 @@ private:
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
+
+    PropertyChanged_revoker m_listViewCanReorderItemsPropertyChangedRevoker{};
+    PropertyChanged_revoker m_listViewAllowDropPropertyChangedRevoker{};
 
     winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
