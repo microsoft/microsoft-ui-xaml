@@ -47,13 +47,7 @@ void ProgressRing::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
-
-    m_determinatePlayer.set([this, controlProtected]()
-    {
-        auto const determinateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_DeterminateLottiePlayerName, controlProtected);
-
-        return determinateplayer;
-    }());
+    m_determinatePlayer.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_DeterminateLottiePlayerName, controlProtected));
 
     m_indeterminatePlayer.set([this, controlProtected]()
         {
@@ -163,13 +157,11 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 {
     if (auto&& determinatePlayer = m_determinatePlayer.get())
     {
-        const auto progressRingDeterminate = determinatePlayer.Source();
-
-        if (!progressRingDeterminate)
+        if (!determinatePlayer.Source())
         {
             determinatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
 
-            if (progressRingDeterminate)
+            if (const auto progressRingDeterminate = determinatePlayer.Source())
             {
                 SetLottieForegroundColor(progressRingDeterminate);
                 SetLottieBackgroundColor(progressRingDeterminate);
@@ -179,14 +171,11 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 
     if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
     {
-
-        const auto progressRingIndeterminate = indeterminatePlayer.Source();
-
-        if (!progressRingIndeterminate)
+        if (!indeterminatePlayer.Source())
         {
             indeterminatePlayer.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
 
-            if (progressRingIndeterminate)
+            if (const auto progressRingIndeterminate = indeterminatePlayer.Source())
             {
                 SetLottieForegroundColor(progressRingIndeterminate);
                 SetLottieBackgroundColor(progressRingIndeterminate);
