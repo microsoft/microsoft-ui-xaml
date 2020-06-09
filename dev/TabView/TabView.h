@@ -89,7 +89,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-    winrt::Size MeasureOverride(winrt::Size const& availableSize); 
+    winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -128,6 +128,7 @@ private:
     void OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
 
     void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
@@ -145,7 +146,7 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabWidths();
+    void UpdateTabWidths(bool shouldUpdateWidths=true, bool fillAllAvailableSpace=true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
     void UpdateListViewItemContainerTransitions();
@@ -154,6 +155,9 @@ private:
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     int GetItemCount();
+
+    bool updateTabWidthOnPointerLeave{ false };
+
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
@@ -175,6 +179,7 @@ private:
     tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
+    winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 
