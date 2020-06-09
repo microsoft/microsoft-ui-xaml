@@ -34,6 +34,13 @@
             <CheckBox x:Name="chkCanReorderItems" Content="ListView.CanReorderItems?" IsChecked="True" Checked="ChkCanReorderItems_Checked" Unchecked="ChkCanReorderItems_Unchecked"/>
             <CheckBox x:Name="chkCanDrag" Content="ListView.CanDrag?" IsChecked="False" Checked="ChkCanDrag_Checked" Unchecked="ChkCanDrag_Unchecked"/>
             <CheckBox x:Name="chkAllowDrop" Content="ListView.AllowDrop?" IsChecked="True" Checked="ChkAllowDrop_Checked" Unchecked="ChkAllowDrop_Unchecked"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Last TabItemsChanged Info - " Margin="2"/>
+                <TextBlock Text="CollectionChange:" Margin="2"/>
+                <TextBlock x:Name="tblIVectorChangedEventArgsCollectionChange" AutomationProperties.Name="tblIVectorChangedEventArgsCollectionChange" Text="-" Margin="2"/>
+                <TextBlock Text=", Index:" Margin="2"/>
+                <TextBlock x:Name="tblIVectorChangedEventArgsIndex" AutomationProperties.Name="tblIVectorChangedEventArgsIndex" Text="-" Margin="2"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

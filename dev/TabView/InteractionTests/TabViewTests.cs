@@ -66,12 +66,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 selectItemButton.InvokeAndWait();
 
                 TextBlock selectedIndexTextBlock = FindElement.ByName<TextBlock>("SelectedIndexTextBlock");
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "1");
+                Verify.AreEqual("1", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Verify that setting SelectedIndex changes selection.");
                 Button selectIndexButton = FindElement.ByName<Button>("SelectIndexButton");
                 selectIndexButton.InvokeAndWait();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
+                Verify.AreEqual("2", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Verify that ctrl-click on tab selects it.");
                 UIObject firstTab = FindElement.ByName("FirstTab");
@@ -79,14 +79,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 firstTab.Click();
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
                 Wait.ForIdle();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Verify that ctrl-click on tab does not deselect.");
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
                 firstTab.Click();
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
                 Wait.ForIdle();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
             }
         }
 
@@ -234,19 +234,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(closeButton);
 
                 TextBlock selectedIndexTextBlock = FindElement.ByName<TextBlock>("SelectedIndexTextBlock");
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("When the selected tab is closed, selection should move to the next one.");
                 // Use Tab's close button:
                 closeButton.InvokeAndWait();
                 VerifyElement.NotFound("FirstTab", FindBy.Name);
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Select last tab.");
                 UIObject lastTab = FindElement.ByName("LastTab");
                 lastTab.Click();
                 Wait.ForIdle();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "3");
+                Verify.AreEqual("3", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("When the selected tab is last and is closed, selection should move to the previous item.");
 
@@ -254,7 +254,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 lastTab.Click(PointerButtons.Middle);
                 Wait.ForIdle();
                 VerifyElement.NotFound("LastTab", FindBy.Name);
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
+                Verify.AreEqual("2", selectedIndexTextBlock.DocumentText);
             }
         }
 
@@ -341,6 +341,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Home tab content should be visible.");
                 UIObject tabContent = FindElement.ByName("FirstTabContent");
                 Verify.IsNotNull(tabContent);
+            }
+        }
+
+        [TestMethod]
+        public void ReorderItemsTest()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button tabItemsSourcePageButton = FindElement.ByName<Button>("TabViewTabItemsSourcePageButton");
+                tabItemsSourcePageButton.InvokeAndWait();
+
+                UIObject sourceTab = null;
+                int attempts = 0;
+
+                do
+                {
+                    Wait.ForMilliseconds(100);
+                    ElementCache.Refresh();
+
+                    sourceTab = FindElement.ByName("tabViewItem0");
+                    attempts++;
+                }
+                while (sourceTab == null && attempts < 4);
+
+                Verify.IsNotNull(sourceTab);
+
+                UIObject dropTab = FindElement.ByName("tabViewItem2");
+                Verify.IsNotNull(dropTab);
+
+                Log.Comment("Reordering tabs with drag-drop operation...");
+                InputHelper.DragToTarget(sourceTab, dropTab);
+                Wait.ForIdle();
+                ElementCache.Refresh();
+                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
+
+                TextBlock tblIVectorChangedEventArgsCollectionChange = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsCollectionChange");
+                Verify.AreEqual("ItemInserted", tblIVectorChangedEventArgsCollectionChange.DocumentText);
+
+                TextBlock tblIVectorChangedEventArgsIndex = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsIndex");
+                Verify.AreEqual("1", tblIVectorChangedEventArgsIndex.DocumentText);
             }
         }
 
@@ -480,7 +527,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
                 Verify.IsNotNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
-
             }
         } 
 
@@ -526,7 +572,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 TextBlock dragOutsideTextBlock = FindElement.ByName<TextBlock>("TabDroppedOutsideTextBlock");
-                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "");
+                Verify.AreEqual("", dragOutsideTextBlock.DocumentText);
 
                 Log.Comment("Drag tab out");
                 UIObject firstTab = TryFindElement.ByName("FirstTab");
@@ -534,7 +580,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Verify event fired");
-                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "Home");
+                Verify.AreEqual("Home", dragOutsideTextBlock.DocumentText);
             }
         }
 

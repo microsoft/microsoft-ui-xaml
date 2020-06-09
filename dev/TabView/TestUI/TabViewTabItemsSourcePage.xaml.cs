@@ -1,7 +1,9 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 using System.Collections.ObjectModel;
+using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
@@ -15,6 +17,7 @@ namespace MUXControlsTestApp
 
     public sealed partial class TabViewTabItemsSourcePage : Page
     {
+        const int initialTabsCount = 3;
         ListView innerListView = null;
         ObservableCollection<MyData> myDatas;
 
@@ -23,13 +26,31 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
             Loaded += TabViewTabItemsSourcePage_Loaded;
+            TabViewItemsSourceSample.TabItemsChanged += TabViewItemsSourceSample_TabItemsChanged;
 
             InitializeDataBindingSampleData();
+        }
+
+        private void TabViewItemsSourceSample_TabItemsChanged(TabView sender, IVectorChangedEventArgs args)
+        {
+            tblIVectorChangedEventArgsCollectionChange.Text = args.CollectionChange.ToString();
+            tblIVectorChangedEventArgsIndex.Text = args.Index.ToString();
         }
 
         private void TabViewTabItemsSourcePage_Loaded(object sender, RoutedEventArgs e)
         {
             innerListView = TabViewItemsSourceSample.FindElementOfTypeInSubtree<ListView>();
+
+            for (int tabIndex = 0; tabIndex < initialTabsCount; tabIndex++)
+            {
+                var tabViewItem = TabViewItemsSourceSample.ContainerFromIndex(tabIndex) as TabViewItem;
+
+                if (tabViewItem != null)
+                {
+                    tabViewItem.Name = "tabViewItem" + tabIndex;
+                    AutomationProperties.SetName(tabViewItem, tabViewItem.Name);
+                }
+            }
         }
 
         private void ChkCanDragItems_Checked(object sender, RoutedEventArgs e)
@@ -100,7 +121,7 @@ namespace MUXControlsTestApp
         {
             myDatas = new ObservableCollection<MyData>();
 
-            for (int index = 0; index < 3; index++)
+            for (int index = 0; index < initialTabsCount; index++)
             {
                 myDatas.Add(CreateNewMyData(index));
             }
