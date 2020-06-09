@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -110,6 +110,18 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
     m_owner->OnElementClearing(element);
 
+    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    virtInfo->MoveOwnershipToElementFactory();
+
+    // During creation of this object, we were the one setting the DataContext, so clear it now.
+    if (virtInfo->MustClearDataContext())
+    {
+        if (const auto elementAsFE = element.try_as<winrt::FrameworkElement>())
+        {
+            elementAsFE.DataContext(nullptr);
+        }
+    }
+
     if (m_owner->ItemTemplateShim())
     {
         if (!m_ElementFactoryRecycleArgs)
@@ -139,18 +151,6 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         }
 
         children.RemoveAt(childIndex);
-    }
-
-    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-    virtInfo->MoveOwnershipToElementFactory();
-
-    // During creation of this object, we were the one setting the DataContext, so clear it now.
-    if (virtInfo->MustClearDataContext())
-    {
-        if (const auto elementAsFE = element.try_as<winrt::FrameworkElement>())
-        {
-            elementAsFE.DataContext(nullptr);
-        }
     }
 
     m_phaser.StopPhasing(element, virtInfo);
