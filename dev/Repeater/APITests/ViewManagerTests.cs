@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
@@ -759,6 +759,76 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); }
                 });
         }
+
+        [TestMethod]
+        // Why does this test work?
+        // When the elements get created from the RecyclingElementFactory, we get already "existing" data templates.
+        // However, the reason for the crash in #2384 is that those "empty" data templates actually still had their data context
+        // The data context of course only gets set after we give the ViewManager the data template.
+        // Thus, the DataContext we see in GetElementCore is the OLD datacontext.
+        // If that data context is not null, that means it did not get cleared when the element was recycled, which is the wrong behavior.
+        // To check if the clearing is working correctly, we log all data contexts, and check if all of them are null.
+        public void ValidateElementClearingClearsDataContext()
+        {
+            ItemsRepeater repeater = null;
+            MockRecyclingTestFactory elementFactory = null;
+            int elementClearingRaisedCount = 0;
+            ItemsRepeaterScrollHost scroller = null;
+            Log.Comment("Initialize ItemsRepeater");
+            RunOnUIThread.Execute(() =>
+            {
+                elementFactory = new MockRecyclingTestFactory();
+                elementFactory.RecyclePool = new RecyclePool();
+                elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> " + "<Button Content=\"{Binding}\" />" + @"</DataTemplate>");
+
+                repeater = CreateRepeater(Enumerable.Range(0, 100),
+                    elementFactory);
+
+                repeater.Layout = new StackLayout();
+
+                var scrollViewer = new ScrollViewer() { Content = repeater };
+                scroller = new ItemsRepeaterScrollHost() 
+                {
+                    Height = 200,
+                    Width = 200,
+                    ScrollViewer = scrollViewer
+                };
+
+                Content = scroller;
+                scroller.UpdateLayout();
+                repeater.ElementClearing += Repeater_ElementClearing;
+            });
+
+            IdleSynchronizer.Wait();
+
+            Log.Comment("Scrolling ItemsRepeater around to clear and recycle elements");
+            RunOnUIThread.Execute(() =>
+            {
+                scroller.ScrollViewer.ChangeView(null, 400, null, true);
+                scroller.ScrollViewer.ChangeView(null, 600, null, true);
+                scroller.ScrollViewer.ChangeView(null, 800, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            Log.Comment("Verify ItemsRepeater cleared data contexts correctly");
+            Verify.IsTrue(elementClearingRaisedCount > 0, "ItemsRepeater should have cleared some elements");
+            foreach (object o in elementFactory.DataContextsInGetElement)
+            {
+                // TL;DR; on why we check this:
+                // All DataContexts that are present on our returned ItemTemplate(Shim) get logged inside DataContextsInGetElement.
+                // If one of them is not null, that means the DataContext did not get cleared correctly which is a bug.
+                Verify.IsNull(o, "Datacontext should be null on a recycled ItemTemplate");
+            }
+
+            void Repeater_ElementClearing(ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementClearingEventArgs args)
+            {
+                elementClearingRaisedCount++;
+            }
+        }
+
+
         private void MoveFocusToIndex(ItemsRepeater repeater, int index)
         {
             var element = repeater.TryGetElement(index) as Control;

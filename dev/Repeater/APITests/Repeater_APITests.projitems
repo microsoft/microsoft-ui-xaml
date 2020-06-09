@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\LayoutExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\FlowLayoutDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockNonVirtualizingLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockRecyclingTestFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\NamedGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\NonVirtualStackLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\OrientationBasedMeasures.cs" />
