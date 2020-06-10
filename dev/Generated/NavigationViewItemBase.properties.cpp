@@ -31,13 +31,21 @@ void NavigationViewItemBaseProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItemBase>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsSelectedPropertyChanged));
     }
 }
 
 void NavigationViewItemBaseProperties::ClearProperties()
 {
     s_IsSelectedProperty = nullptr;
+}
+
+void NavigationViewItemBaseProperties::OnIsSelectedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItemBase>();
+    winrt::get_self<NavigationViewItemBase>(owner)->OnPropertyChanged(args);
 }
 
 void NavigationViewItemBaseProperties::IsSelected(bool value)

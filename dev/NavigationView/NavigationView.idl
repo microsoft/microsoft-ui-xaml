@@ -301,12 +301,15 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
 [webhosthidden]
 [WUXC_INTERFACE_NAME("INavigationViewItemBase", edf04eb1-37d1-471f-8570-3829ee5b2bc6)]
 [WUXC_CONSTRUCTOR_NAME("INavigationViewItemBaseFactory", eb014cef-7890-4ebb-8245-02e8510f321d)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 [default_interface]
 unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ContentControl
 {
     [WUXC_VERSION_MUXONLY]
     {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Boolean IsSelected{ get; set; };
+
         static Windows.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
     }
 }
