@@ -75,11 +75,11 @@ header.masthead h1 {
 }
 
 #download {
-  background-color: #eb7200;
+  background-color: #066522;
 }
 
 #download:hover {
-  background-color: #c25e00;
+  background-color: #044317;
 }
 @media (min-width: 768px) {
   header.masthead {
@@ -571,4 +571,28 @@ a:hover {
 
 .card {
   margin-bottom: 20px;
+}
+
+#sample-apps{
+  list-style: none;
+  padding-left: 0;
+}
+
+.ex-sublist li {
+  margin-bottom: 5px;
+}
+
+.sample-app {
+  margin-bottom: 15px;
+}
+
+.control-option {
+  color: #0267b8;
+  outline: none;
+  background-color: transparent;
+  border: none;
+}
+
+.control-option:hover, v.control-option:active, .control-option:focus {
+  outline: none;
 }

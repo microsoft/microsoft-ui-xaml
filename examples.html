@@ -91,18 +91,44 @@
     </div>
     <div class="row">
         <div class="col-12">
-            <h3 class="content-subhead">Xaml Controls Gallery</h3>
-            <p>The Xaml Controls Gallery is WinUI's official sample app, and is the absolute best place to discover, try out, and browse all of our controls and styles. It includes a huge variety of samples and in-depth code snippets for all of WinUI's controls, complete with customization options in many samples. You can download it from the Microsoft store or build it yourself - it's open source on Github. </p>
-            <ul>
-                <li><a href="https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt">Download the Xaml Controls Gallery app from the Microsoft Store</a></li>
-                <li><a href="https://github.com/Microsoft/Xaml-Controls-Gallery" target="_blank">Check out the Github repository</a></li>
+            <h3 class="content-subhead">Full Sample Apps</h3>
+            <p>Here are some end-to-end sample apps that show off the power and beauty of WinUI. All of these sample apps are open-source, with links to their repositories below.</p>
+            <ul id="sample-apps">
+                <li class="sample-app">
+                    <h4 style="color: black;">Xaml Controls Gallery</h4>
+                    <p>The Xaml Controls Gallery is a tool that lets you directly interact with all WinUI controls. It provides customization options for controls alongside in-depth code snippets and samples to help you learn and inspire you. The app is available as both a UWP app and a Win32 app, allowing you to test controls in your preferred environment.</p>
+                    <ul class="ex-sublist">
+                        <li style="list-style-type:circle;"><a href="https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt" target="_blank">Download the UWP Xaml Controls Gallery app from the Microsoft Store</a></li>
+                        <li style="list-style-type:circle;"><a href="https://github.com/Microsoft/Xaml-Controls-Gallery" target="_blank">Check out the Github repository</a></li>
+                    </ul>
+                </li>
+                <li class="sample-app">
+                    <h4 style="color: black;">Van Arsdel</h4>
+                    <p>Van Arsdel is a UWP-based WinUI sample app that serves to show off not only WinUI controls, but how to use them to showcase the Fluent Design system. Use this app as a resource for learning about more in-depth, end-to-end WinUI app development. </p>
+                    <ul class="ex-sublist">
+                        <li style="list-style-type:circle;"><a href="https://www.microsoft.com/en-us/p/van-arsdel/9pf5pftsnwpt" target="_blank">Download the Van Arsdel app from the Microsoft Store</a></li>
+                        <li style="list-style-type:circle;"><a href="https://github.com/microsoft/vanarsdely" target="_blank">Check out the Github repository</a></li>
+                    </ul>
+                </li>  
+                </li>
             </ul>
         </div>
     </div>
     <div class="row">
         <div class="col-12">
             <h3 class="content-subhead">Code Samples</h3>
-            <p></p>
+            <p>Click below to see some of our most popular WinUI controls and how to implement them with XAML markup.</p>
+            <p>
+                <button  onclick="switchControl(this)" class="control-option" href="#">NavigationView</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">MenuBar</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">TeachingTip</button> &middot; <button onclick="switchControl(this)"  class="control-option" href="#">NumberBox</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">Slider</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">WebView 2</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">SwipeControl</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">Animations</button> &middot; <button  onclick="switchControl(this)" class="control-option" href="#">TabView</button>
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6"> 
+            <img src="img/twitter.png" id="current-control-img"/>
+        </div>
+        <div class="col-md-6">
+            <pre id="current-control-code"/>
         </div>
     </div>
 
