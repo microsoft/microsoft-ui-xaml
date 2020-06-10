@@ -32,7 +32,6 @@
 #include "WindowsNumerics.h"
 
 using namespace winrt::Windows::Foundation;
-using namespace winrt::Windows::Foundation::Metadata;
 using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::Graphics;
 using namespace winrt::Windows::UI;
