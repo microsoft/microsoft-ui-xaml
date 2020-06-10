@@ -70,37 +70,7 @@ TabView::TabView()
 
 void TabView::OnApplyTemplate()
 {
-    m_listViewLoadedRevoker.revoke();
-    m_listViewSelectionChangedRevoker.revoke();
-    m_listViewDragItemsStartingRevoker.revoke();
-    m_listViewDragItemsCompletedRevoker.revoke();
-    m_listViewDragOverRevoker.revoke();
-    m_listViewDropRevoker.revoke();
-    m_listViewGettingFocusRevoker.revoke();
-    m_listViewCanReorderItemsPropertyChangedRevoker.revoke();
-    m_listViewAllowDropPropertyChangedRevoker.revoke();
-    m_addButtonClickRevoker.revoke();
-    m_itemsPresenterSizeChangedRevoker.revoke();
-    m_tabStripPointerExitedRevoker.revoke();
-    m_scrollViewerLoadedRevoker.revoke();
-    m_scrollViewerViewChangedRevoker.revoke();
-    m_scrollDecreaseClickRevoker.revoke();
-    m_scrollIncreaseClickRevoker.revoke();
-
-    m_tabContentPresenter.set(nullptr);
-    m_rightContentPresenter.set(nullptr);
-    m_leftContentColumn.set(nullptr);
-    m_tabColumn.set(nullptr);
-    m_addButtonColumn.set(nullptr);
-    m_rightContentColumn.set(nullptr);
-    m_tabContainerGrid.set(nullptr);
-    m_shadowReceiver.set(nullptr);
-    m_listView.set(nullptr);
-    m_addButton.set(nullptr);
-    m_itemsPresenter.set(nullptr);
-    m_scrollViewer.set(nullptr);
-    m_scrollDecreaseButton.set(nullptr);
-    m_scrollIncreaseButton.set(nullptr);
+    UnhookEventsAndClearFields();
 
     winrt::IControlProtected controlProtected{ *this };
 
@@ -322,6 +292,41 @@ void TabView::UpdateListViewItemContainerTransitions()
     }
 }
 
+void TabView::UnhookEventsAndClearFields()
+{
+    m_listViewLoadedRevoker.revoke();
+    m_listViewSelectionChangedRevoker.revoke();
+    m_listViewDragItemsStartingRevoker.revoke();
+    m_listViewDragItemsCompletedRevoker.revoke();
+    m_listViewDragOverRevoker.revoke();
+    m_listViewDropRevoker.revoke();
+    m_listViewGettingFocusRevoker.revoke();
+    m_listViewCanReorderItemsPropertyChangedRevoker.revoke();
+    m_listViewAllowDropPropertyChangedRevoker.revoke();
+    m_addButtonClickRevoker.revoke();
+    m_itemsPresenterSizeChangedRevoker.revoke();
+    m_tabStripPointerExitedRevoker.revoke();
+    m_scrollViewerLoadedRevoker.revoke();
+    m_scrollViewerViewChangedRevoker.revoke();
+    m_scrollDecreaseClickRevoker.revoke();
+    m_scrollIncreaseClickRevoker.revoke();
+
+    m_tabContentPresenter.set(nullptr);
+    m_rightContentPresenter.set(nullptr);
+    m_leftContentColumn.set(nullptr);
+    m_tabColumn.set(nullptr);
+    m_addButtonColumn.set(nullptr);
+    m_rightContentColumn.set(nullptr);
+    m_tabContainerGrid.set(nullptr);
+    m_shadowReceiver.set(nullptr);
+    m_listView.set(nullptr);
+    m_addButton.set(nullptr);
+    m_itemsPresenter.set(nullptr);
+    m_scrollViewer.set(nullptr);
+    m_scrollDecreaseButton.set(nullptr);
+    m_scrollIncreaseButton.set(nullptr);
+}
+
 void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateTabWidths();
@@ -454,11 +459,11 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
-    if (updateTabWidthOnPointerLeave)
+    if (m_updateTabWidthOnPointerLeave)
     {
         auto scopeGuard = gsl::finally([this]()
         {
-            updateTabWidthOnPointerLeave = false;
+            m_updateTabWidthOnPointerLeave = false;
         });
         UpdateTabWidths();
     }
@@ -546,7 +551,7 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
 
 void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
-    if (!updateTabWidthOnPointerLeave)
+    if (!m_updateTabWidthOnPointerLeave)
     {
         // Presenter size didn't change because of item being removed, so update manually
         UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
@@ -564,7 +569,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)
         {
-            updateTabWidthOnPointerLeave = true;
+            m_updateTabWidthOnPointerLeave = true;
             if (numItems > 0)
             {
                 // SelectedIndex might also already be -1
@@ -603,7 +608,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
             if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
-                updateTabWidthOnPointerLeave = true;
+                m_updateTabWidthOnPointerLeave = true;
                 if (args.Index() == TabItems().Size())
                 {
                     UpdateTabWidths(true,false);

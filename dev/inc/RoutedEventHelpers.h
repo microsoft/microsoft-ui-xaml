@@ -81,7 +81,11 @@ enum class RoutedEventType
     GettingFocus,
     LosingFocus,
     KeyDown,
-    PointerPressed
+    PointerPressed,
+    PointerReleased,
+    PointerExited,
+    PointerCanceled,
+    PointerCaptureLost
 };
 
 template<RoutedEventType eventType>
@@ -114,6 +118,34 @@ template <>
 struct RoutedEventTraits<RoutedEventType::PointerPressed>
 {
     static winrt::RoutedEvent Event() { return winrt::UIElement::PointerPressedEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerReleased>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerReleasedEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerExited>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerExitedEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerCanceled>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerCanceledEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerCaptureLost>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerCaptureLostEvent(); }
     using HandlerT = winrt::PointerEventHandler;
 };
 

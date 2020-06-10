@@ -16,7 +16,7 @@ public:
     void OnApplyTemplate() override;
 
 private:
-    void OnNavigationViewRepeaterPositionChanged() override;
+    void OnNavigationViewItemBasePositionChanged() override;
     void OnNavigationViewItemBaseDepthChanged() override;
     void UpdateVisualState(bool useTransitions);
     void UpdateItemIndentation();

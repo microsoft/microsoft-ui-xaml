@@ -151,15 +151,16 @@ private:
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
     void UpdateListViewItemContainerTransitions();
 
+    void UnhookEventsAndClearFields();
+
     void OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     int GetItemCount();
 
-    bool updateTabWidthOnPointerLeave{ false };
-
-
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
+
+    bool m_updateTabWidthOnPointerLeave{ false };
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };

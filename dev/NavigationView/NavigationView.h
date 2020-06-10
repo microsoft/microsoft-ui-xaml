@@ -93,8 +93,6 @@ public:
 
 private:
 
-    void OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
-
     // Selection handling functions
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
@@ -261,7 +259,6 @@ private:
     void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
     void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void OnOverflowItemSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
         bool isSettingsItem,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
