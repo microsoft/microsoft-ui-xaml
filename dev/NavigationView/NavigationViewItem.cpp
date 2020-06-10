@@ -60,21 +60,7 @@ void NavigationViewItem::OnApplyTemplate()
     // Stop UpdateVisualState before template is applied. Otherwise the visuals may be unexpected
     m_appliedTemplate = false;
 
-    UnhookInputEvents();
-
-    m_flyoutClosingRevoker.revoke();
-    m_splitViewIsPaneOpenChangedRevoker.revoke();
-    m_splitViewDisplayModeChangedRevoker.revoke();
-    m_splitViewCompactPaneLengthChangedRevoker.revoke();
-    m_repeaterElementPreparedRevoker.revoke();
-    m_repeaterElementClearingRevoker.revoke();
-    m_isEnabledChangedRevoker.revoke();
-
-    m_rootGrid.set(nullptr);
-    m_navigationViewItemPresenter.set(nullptr);
-    m_toolTip.set(nullptr);
-    m_repeater.set(nullptr);
-    m_flyoutContentGrid.set(nullptr);
+    UnhookEventsAndClearFields();
 
     NavigationViewItemBase::OnApplyTemplate();
 
@@ -506,10 +492,9 @@ bool NavigationViewItem::IsOnTopPrimary() const
 
 winrt::UIElement const NavigationViewItem::GetPresenterOrItem() const
 {
-    if (m_navigationViewItemPresenter)
+    if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto navigationViewItemPresenter = m_navigationViewItemPresenter.get();
-        return navigationViewItemPresenter ? navigationViewItemPresenter.try_as<winrt::UIElement>() : nullptr;
+        return presenter.try_as<winrt::UIElement>();
     }
     else
     {
@@ -914,4 +899,23 @@ void NavigationViewItem::UnhookInputEvents()
     m_presenterPointerExitedRevoker.revoke();
     m_presenterPointerCanceledRevoker.revoke();
     m_presenterPointerCaptureLostRevoker.revoke();
+}
+
+void NavigationViewItem::UnhookEventsAndClearFields()
+{
+    UnhookInputEvents();
+
+    m_flyoutClosingRevoker.revoke();
+    m_splitViewIsPaneOpenChangedRevoker.revoke();
+    m_splitViewDisplayModeChangedRevoker.revoke();
+    m_splitViewCompactPaneLengthChangedRevoker.revoke();
+    m_repeaterElementPreparedRevoker.revoke();
+    m_repeaterElementClearingRevoker.revoke();
+    m_isEnabledChangedRevoker.revoke();
+
+    m_rootGrid.set(nullptr);
+    m_navigationViewItemPresenter.set(nullptr);
+    m_toolTip.set(nullptr);
+    m_repeater.set(nullptr);
+    m_flyoutContentGrid.set(nullptr);
 }

@@ -108,6 +108,7 @@ private:
     void ProcessPointerOver(const winrt::PointerRoutedEventArgs& args);
     void HookInputEvents(const winrt::IControlProtected& controlProtected);
     void UnhookInputEvents();
+    void UnhookEventsAndClearFields();
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
