@@ -84,7 +84,6 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 
     if (IsSettingsItem())
     {
-
         return 1;
     }
 
@@ -123,7 +122,6 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 
 int32_t NavigationViewItemAutomationPeer::GetLevelCore()
 {
-    int32_t level = 0;
     if (winrt::NavigationViewItemBase nvib = Owner().try_as<winrt::NavigationViewItemBase>())
     {
         auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
@@ -143,7 +141,7 @@ int32_t NavigationViewItemAutomationPeer::GetLevelCore()
         }
     }
 
-    return level;
+    return 0;
 }
 
 void NavigationViewItemAutomationPeer::Invoke()
