@@ -2,6 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace MUXControlsTestApp
 {
@@ -22,6 +23,12 @@ namespace MUXControlsTestApp
             var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
             commonStatesGroup.CurrentStateChanged += this.ProgressRingCustomLottieSourcePage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
+
+            for (int i = 0; i < commonStatesGroup.Transitions[0].Storyboard.Children.Count; i++)
+            {
+                // Change the animation to 0 duration to avoid timing issues in the test.
+                commonStatesGroup.Transitions[0].Storyboard.Children[i].Duration = new Duration(TimeSpan.FromSeconds(0));
+            }
 
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 1);
 
