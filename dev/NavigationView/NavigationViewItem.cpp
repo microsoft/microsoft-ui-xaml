@@ -181,12 +181,12 @@ void NavigationViewItem::OnSplitViewPropertyChanged(const winrt::DependencyObjec
 
 void NavigationViewItem::UpdateCompactPaneLength()
 {
-    if (auto splitView = GetSplitView())
+    if (const auto splitView = GetSplitView())
     {
         SetValue(s_CompactPaneLengthProperty, winrt::PropertyValue::CreateDouble(splitView.CompactPaneLength()));
 
         // Only update when on left
-        if (auto presenter = GetPresenter())
+        if (const auto presenter = GetPresenter())
         {
             presenter->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
         }
@@ -195,11 +195,18 @@ void NavigationViewItem::UpdateCompactPaneLength()
 
 void NavigationViewItem::UpdateIsClosedCompact()
 {
-    if (auto splitView = GetSplitView())
+    if (const auto splitView = GetSplitView())
     {
         // Check if the pane is closed and if the splitview is in either compact mode.
-        m_isClosedCompact = !splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+        m_isClosedCompact = !splitView.IsPaneOpen()
+            && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+
         UpdateVisualState(true /*useTransitions*/);
+
+        if (const auto presenter = GetPresenter())
+        {
+            presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
+        }
     }
 }
 
