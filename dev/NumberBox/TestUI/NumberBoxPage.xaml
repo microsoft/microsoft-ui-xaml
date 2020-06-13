@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.NumberBoxPage"
     x:Name="NumberBoxTestPage"
@@ -146,6 +146,9 @@
                     </controls:NumberBox>
                     <controls:NumberBox x:Name="HeaderTemplateTestingNumberBox"/>
                 </StackPanel>
+
+                <!-- FontSize propagation -->
+                <controls:NumberBox Header="Header text" FontSize="50"/>
             </StackPanel>
         </Grid>
 
