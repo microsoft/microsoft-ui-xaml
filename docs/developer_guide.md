@@ -204,7 +204,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     ![released artifacts](images/test_fail_page3.png)
 
-    ![drop folder](images/test_pipeline_drop-2.png)
+    ![drop folder](images/test_pipeline_drop.png)
     
     Note that the drop archive can be several hundreds of MB big (700 MB or bigger is not uncommon). Once you have downloaded the drop archive and unpacked it, you will find the updated visual tree msters in `drop/VisualTreeMasters/`.
 
