@@ -9,6 +9,7 @@ assignees: ''
 
 **Describe the bug**
 <!-- Please enter a short, clear description of the bug -->
+<!-- For bugs related to the UWP app model, please open a bug on the Project Reunion repository: https://github.com/microsoft/ProjectReunion -->
 
 **Steps to reproduce the bug**
 <!-- Please provide any required setup and steps to reproduce the behavior -->

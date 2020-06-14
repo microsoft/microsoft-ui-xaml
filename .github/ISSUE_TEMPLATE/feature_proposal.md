@@ -9,6 +9,8 @@ assignees: ''
 
 <!-- This is a template for new feature or API proposals.
 For example you can use this to propose a new API on an existing type, or an idea for a new UI control.
+For feature proposals related to the UWP app model, please open an issue on the Project Reunion repository: https://github.com/microsoft/ProjectReunion
+
 It's fine if you don't have all the details: you can start with the Summary and Rationale.
 
 This link describes the WinUI feature/API proposal process:
