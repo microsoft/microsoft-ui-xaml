@@ -85,6 +85,9 @@ static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Beha
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
 
+static constexpr int c_mainMenuBlockIndex = 0;
+static constexpr int c_footerMenuBlockIndex = 1;
+
 constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
@@ -245,7 +248,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
     if (IsTopNavigationView())
     {
-        auto inMainMenu = selectedIndex.GetAt(0) == 0;
+        auto inMainMenu = selectedIndex.GetAt(0) == c_mainMenuBlockIndex;
         // If selectedIndex does not exist, means item is being deselected through API
         auto isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? inMainMenu && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1)) : false;
         if (isInOverflow)
@@ -323,7 +326,7 @@ void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& sele
     if (isInModeWithFlyout && selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
     {
         // Item selected is a leaf node, find top level parent and close flyout
-        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(1), selectedIndex.GetAt(0) == 1 /* inFooter */))
+        if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(1), selectedIndex.GetAt(0) == c_footerMenuBlockIndex /* inFooter */))
         {
             if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
             {
@@ -915,6 +918,18 @@ bool NavigationView::IsRootGridOfFlyout(const winrt::DependencyObject& element)
     return false;
 }
 
+winrt::ItemsRepeater NavigationView::GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib)
+{
+    auto parentIR = GetParentItemsRepeaterForContainer(nvib);
+    auto currentNvib = nvib;
+    while (!IsRootItemsRepeater(parentIR))
+    {
+        currentNvib = GetParentNavigationViewItemForContainer(currentNvib);
+        parentIR = GetParentItemsRepeaterForContainer(currentNvib);
+    }
+    return parentIR;
+}
+
 winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib)
 {
     if (auto parent = winrt::VisualTreeHelper::GetParent(nvib))
@@ -1006,7 +1021,7 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
 
     isInFooterMenu = parent == m_leftNavFooterMenuRepeater.get() || parent == m_topNavFooterMenuRepeater.get();
 
-    path.insert(path.begin(), isInFooterMenu ? 1 : 0);
+    path.insert(path.begin(), isInFooterMenu ? c_footerMenuBlockIndex : c_mainMenuBlockIndex);
 
     return IndexPath::CreateFromIndices(path);
 }
@@ -2079,7 +2094,7 @@ void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const
 void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected)
 {
     // Update the isChildSelected property for every container on the IndexPath (with the exception of the actual container pointed to by the indexpath)
-    auto container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == 1 /*inFooter*/);
+    auto container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
     // first index is fo mainmenu or footer
     // second is index of item in mainmenu or footer
     // next in menuitem children 
@@ -2410,7 +2425,7 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
 {
     auto const firstElement = [this, nvib]()
     {
-        auto const parentIR = GetParentItemsRepeaterForContainer(nvib);
+        auto const parentIR = GetParentRootItemsRepeaterForContainer(nvib);
         return parentIR.TryGetElement(0);
     }();
 
@@ -2422,7 +2437,7 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
 
 void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib)
 {
-    auto const parentIR = GetParentItemsRepeaterForContainer(nvib);
+    auto const parentIR = GetParentRootItemsRepeaterForContainer(nvib);
 
     if (auto itemsSourceView = parentIR.ItemsSourceView())
     {
@@ -2558,7 +2573,7 @@ bool NavigationView::BumperNavigation(int offset)
         if (auto nvi = NavigationViewItemOrSettingsContentFromData(item))
         {
             auto indexPath = GetIndexPathForContainer(nvi);
-            auto isInFooter = indexPath.GetAt(0) == 1;
+            auto isInFooter = indexPath.GetAt(0) == c_footerMenuBlockIndex;
 
             auto indexInMainList = isInFooter ? -1 : indexPath.GetAt(1);
             auto indexInFooter = isInFooter ? indexPath.GetAt(1) : -1;
@@ -4709,7 +4724,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 {
     if (ip && ip.GetSize() > 0)
     {
-        if (auto const container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == 1 /*inFooter*/))
+        if (auto const container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/))
         {
             // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
             // We want to be able to retrieve containers for items that are in the flyout.
@@ -4771,19 +4786,6 @@ winrt::ItemsRepeater NavigationView::LeftNavRepeater()
     return m_leftNavRepeater.get();
 }
 
-bool NavigationView::IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib)
-{
-    if (IsTopNavigationView())
-    {
-        auto parentIR = GetParentItemsRepeaterForContainer(nvib);
-        if (parentIR == m_topNavRepeaterOverflowView.get())
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 winrt::NavigationViewItem NavigationView::GetSelectedContainer()
 {
     if (auto selectedItem = SelectedItem())
@@ -4834,7 +4836,7 @@ winrt::NavigationViewItem NavigationView::FindLowestLevelContainerToDisplaySelec
     auto const selectedIndex = m_selectionModel.SelectedIndex();
     if (selectedIndex && selectedIndex.GetSize() > 1)
     {
-        if (auto container = GetContainerForIndex(selectedIndex.GetAt(indexIntoIndex), selectedIndex.GetAt(0) == 1 /* inFooter */))
+        if (auto container = GetContainerForIndex(selectedIndex.GetAt(indexIntoIndex), selectedIndex.GetAt(0) == c_footerMenuBlockIndex /* inFooter */))
         {
             if (auto nvi = container.try_as<winrt::NavigationViewItem>())
             {
@@ -4911,7 +4913,7 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::I
 {
     if (ip && ip.GetSize() > 1)
     {
-        if (auto const container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == 1 /*inFooter*/))
+        if (auto const container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/))
         {
             return GetChildrenForItemInIndexPath(container, ip, forceRealize);
         }

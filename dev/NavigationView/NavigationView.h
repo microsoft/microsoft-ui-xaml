@@ -117,9 +117,9 @@ private:
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
+    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
-    bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
     bool DoesRepeaterHaveRealizedContainers(const winrt::ItemsRepeater& ir);
     bool IsSettingsItem(winrt::IInspectable const& item);
