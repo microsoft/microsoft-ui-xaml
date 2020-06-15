@@ -108,7 +108,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_settingsItemTappedRevoker.revoke();
     m_settingsItemKeyDownRevoker.revoke();
-    m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
 
     m_paneSearchButtonClickRevoker.revoke();
@@ -1006,7 +1005,6 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         m_settingsItemTappedRevoker.revoke();
         m_settingsItemKeyDownRevoker.revoke();
-        m_settingsItemKeyUpRevoker.revoke();
 
         m_settingsItem.set(settingsItem);
         m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });

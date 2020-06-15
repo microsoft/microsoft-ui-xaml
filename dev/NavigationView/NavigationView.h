@@ -375,7 +375,6 @@ private:
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
     winrt::UIElement::Tapped_revoker m_settingsItemTappedRevoker{};
     winrt::UIElement::KeyDown_revoker m_settingsItemKeyDownRevoker{};
-    winrt::UIElement::KeyUp_revoker m_settingsItemKeyUpRevoker{};
     winrt::Button::Click_revoker m_paneSearchButtonClickRevoker{};
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
