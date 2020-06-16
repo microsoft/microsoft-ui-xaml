@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -1934,13 +1934,21 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
+        if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            auto navViewItemPeer = peer.as<winrt::NavigationViewAutomationPeer>();
+            winrt::get_self<NavigationViewAutomationPeer>(navViewItemPeer)->RaiseSelectionChangedEvent(
+                prevItem, nextItem
+            );
+        }
+
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
 
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
-        }    
+        }
     }
 }
 

@@ -50,3 +50,18 @@ winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProv
     }
     return {};
 }
+
+void NavigationViewAutomationPeer::RaiseSelectionChangedEvent(winrt::IInspectable const& oldSelection, winrt::IInspectable const& newSelecttion)
+{
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionPatternOnInvalidated))
+    {
+        //RaiseAutomationEvent(winrt::AutomationEvents::SelectionPatternOnInvalidated);
+        //RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+
+        // box_value(oldState) doesn't work here, use ReferenceWithABIRuntimeClassName to make Narrator can unbox it.
+        //RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
+        //    box_value(oldSelection),
+        //    box_value(newSelecttion)
+        //);
+    }
+}
