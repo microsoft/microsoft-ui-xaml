@@ -240,6 +240,19 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
     m_suggestedToolTipContent.set(newToolTipContent);
 }
 
+void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        auto navViewItemPeer = peer.as<winrt::NavigationViewItemAutomationPeer>();
+        winrt::get_self<NavigationViewItemAutomationPeer>(navViewItemPeer)->RaiseExpandCollapseAutomationEvent(
+            IsExpanded() ?
+                winrt::ExpandCollapseState::Expanded
+                : winrt::ExpandCollapseState::Collapsed
+        );
+    }
+}
+
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateNoTransition();

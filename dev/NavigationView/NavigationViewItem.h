@@ -27,6 +27,7 @@ public:
     void OnApplyTemplate() override;
 
     // Property change callbacks
+    void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
