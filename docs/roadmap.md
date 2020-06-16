@@ -35,9 +35,9 @@ We're focused on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedback on it, although please note it's a very early build with lots of missing features. For installation info and known issues see:
+You can download WinUI 3 Preview 1 to try out - we'd love feedback on it, although please note it's an early preview build with lots of missing features. For installation info and known issues see:
 
-[WinUI 3.0 Alpha (November 2019)](https://docs.microsoft.com/uwp/toolkits/winui3/)
+[WinUI 3.0 Preview 1 (May 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 Conceptual overview of WinUI 3:
 
@@ -113,9 +113,9 @@ We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 to
 
 We're planning to release WinUI 3.0 in 2020.
 
-You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedback on it, although please note it's a very early build with lots of missing features. For installation info and known issues see the [discussion issue #1531](https://github.com/microsoft/microsoft-ui-xaml/issues/1531) and the 3.0 Alpha installation info:
+You can download WinUI 3 Preview 1 to try out - we'd love feedback on it, although please note it's a early preview build with lots of missing features. For installation info and known issues see:
 
-[WinUI 3.0 Alpha (November 2019)](https://docs.microsoft.com/uwp/toolkits/winui3/)
+[WinUI 3.0 Preview 1 (May 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 The next major milestones we're currently working toward are:
 
