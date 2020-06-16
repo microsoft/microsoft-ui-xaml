@@ -44,7 +44,7 @@ Conceptual overview of WinUI 3:
 ![WinUI 3 platform](roadmap_winui3.png)
 
 > You can watch the Build 2019 conference session *State of the Union: The Windows Presentation Platform* for more details:
-https://mybuild.techcommunity.microsoft.com/sessions/77008
+https://www.youtube.com/watch?v=hKMzFjGfoy0
 
 The existing UWP Xaml APIs that ship as part of the OS will no longer receive new feature updates. They will still receive security updates and critical fixes according to the Windows 10 support lifecycle.
 
