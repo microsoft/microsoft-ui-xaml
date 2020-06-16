@@ -8,6 +8,7 @@
 #include "NavigationView.h"
 #include "NavigationViewItemBase.h"
 #include "SharedHelpers.h"
+#include "NavigationViewHelper.h"
 
 
 #include "NavigationViewItemAutomationPeer.properties.cpp"
@@ -83,12 +84,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 
     if (IsOnTopNavigation() && !IsOnFooterNavigation())
     {
-        if (auto navigationView = GetParentNavigationView())
-        {
-            auto topDataProvider = winrt::get_self<NavigationView>(navigationView)->GetTopDataProvider();
-            positionInSet = GetPositionOrSetCountInTopNavHelper(IsOnTopNavigationOverflow()
-                ? topDataProvider.GetOverflowItems() : topDataProvider.GetPrimaryItems(), AutomationOutput::Position);
-        }
+        positionInSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Position);
     }
     else
     {
@@ -106,9 +102,7 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
     {
         if (auto navview = GetParentNavigationView())
         {
-            auto topNavDataProvider = winrt::get_self<NavigationView>(navview)->GetTopDataProvider();
-            sizeOfSet = GetPositionOrSetCountInTopNavHelper(IsOnTopNavigationOverflow()
-                ? topNavDataProvider.GetOverflowItems() : topNavDataProvider.GetPrimaryItems(), AutomationOutput::Size);
+            sizeOfSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Size);
 
         }
     }
@@ -122,13 +116,27 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 
 int32_t NavigationViewItemAutomationPeer::GetLevelCore()
 {
-    int32_t level = 0;
-    if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
+    if (winrt::NavigationViewItemBase nvib = Owner().try_as<winrt::NavigationViewItemBase>())
     {
-        return winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Depth();
+        auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        if (nvibImpl->IsTopLevelItem())
+        {
+            return 1;
+        }
+        else
+        {
+            if (auto const navView = GetParentNavigationView())
+            {
+                if (auto const indexPath = winrt::get_self<NavigationView>(navView)->GetIndexPathForContainer(nvib))
+                {
+                    // first index in path stands for main or footer menu
+                    return indexPath.GetSize() - 1;
+                }
+            }
+        }
     }
 
-    return level;
+    return 0;
 }
 
 void NavigationViewItemAutomationPeer::Invoke()
@@ -216,21 +224,6 @@ winrt::NavigationView NavigationViewItemAutomationPeer::GetParentNavigationView(
     return navigationView;
 }
 
-winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentItemsRepeater()
-{
-    winrt::ItemsRepeater itemsRepeater{ nullptr };
-
-    winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>();
-    if (auto parent = winrt::VisualTreeHelper::GetParent(navigationViewItem))
-    {
-        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
-        {
-            itemsRepeater = parentIR;
-        }
-    }
-    return itemsRepeater;
-}
-
 int32_t NavigationViewItemAutomationPeer::GetNavigationViewItemCountInPrimaryList()
 {
     int32_t count = 0;
@@ -290,6 +283,19 @@ NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationVi
     }
     return NavigationViewRepeaterPosition::LeftNav;
 }
+
+winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentItemsRepeater()
+{
+    if (auto const navview = GetParentNavigationView())
+    {
+        if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
+        {
+            return winrt::get_self<NavigationView>(navview)->GetParentItemsRepeaterForContainer(navigationViewItem);
+        }
+    }
+    return nullptr;
+}
+
 
 // Get either the position or the size of the set for this particular item in the case of left nav. 
 // We go through all the items and then we determine if the listviewitem from the left listview can be a navigation view item header
@@ -356,49 +362,52 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 // Basically, we do the same here as GetPositionOrSetCountInLeftNavHelper without dealing with the listview directly, because 
 // TopDataProvider provcides two methods: GetOverflowItems() and GetPrimaryItems(), so we can break the loop (in case of position) by 
 // comparing the value of the FrameworkElementAutomationPeer we can get from the item we're iterating through to this object.
-int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(winrt::IVector<winrt::IInspectable> navigationViewElements, AutomationOutput automationOutput)
+int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(AutomationOutput automationOutput)
 {
     int32_t returnValue = 0;
+    bool itemFound = false;
 
-    if (auto const navview = GetParentNavigationView())
+    if (auto const parentRepeater = GetParentItemsRepeater())
     {
-        bool itemFound = false;
-
-        for (auto const& child : navigationViewElements)
+        if (auto const itemsSourceView = parentRepeater.ItemsSourceView())
         {
-            if (auto const childAsNavViewItem = navview.ContainerFromMenuItem(child))
-            {
-                if (child.try_as<winrt::NavigationViewItemHeader>())
-                {
-                    if (automationOutput == AutomationOutput::Size && itemFound)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        returnValue = 0;
-                    }
-                }
-                else if (auto const navviewitem = childAsNavViewItem.try_as<winrt::NavigationViewItem>())
-                {
-                    if (navviewitem.Visibility() == winrt::Visibility::Visible)
-                    {
-                        returnValue++;
+            auto numberOfElements = itemsSourceView.Count();
 
-                        if (winrt::FrameworkElementAutomationPeer::FromElement(navviewitem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+            for (int32_t i = 0; i < numberOfElements; i++)
+            {
+                if (auto child = parentRepeater.TryGetElement(i))
+                {
+                    if (child.try_as<winrt::NavigationViewItemHeader>())
+                    {
+                        if (automationOutput == AutomationOutput::Size && itemFound)
                         {
-                            if (automationOutput == AutomationOutput::Position)
+                            break;
+                        }
+                        else
+                        {
+                            returnValue = 0;
+                        }
+                    }
+                    else if (auto const navviewitem = child.try_as<winrt::NavigationViewItem>())
+                    {
+                        if (navviewitem.Visibility() == winrt::Visibility::Visible)
+                        {
+                            returnValue++;
+
+                            if (winrt::FrameworkElementAutomationPeer::FromElement(navviewitem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                             {
-                                break;
-                            }
-                            else
-                            {
-                                itemFound = true;
+                                if (automationOutput == AutomationOutput::Position)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    itemFound = true;
+                                }
                             }
                         }
                     }
                 }
-
             }
         }
     }

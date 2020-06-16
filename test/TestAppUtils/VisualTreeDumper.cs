@@ -141,8 +141,8 @@ namespace MUXControls.TestAppUtils
         public static readonly string ValueNULL = "[NULL]";
         public class DefaultFilter : IFilter
         {
-            private static readonly string[] _propertyNamePostfixWhiteList = new string[] {"Brush", "Thickness"};
-            private List<string> _propertyNameWhiteList = new List<string> {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name", "CornerRadius",
+            private static readonly string[] _propertyNamePostfixAllowedList = new string[] {"Brush", "Thickness"};
+            private List<string> _propertyNameAllowedList = new List<string> {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name", "CornerRadius",
                 "Width", "Height", "MinWidth", "MinHeight", "MaxWidth", "MaxHeight" };
             private static readonly Dictionary<string, string> _ignorePropertyValues = new Dictionary<string, string> {
                 {"MinWidth","0" },
@@ -151,10 +151,10 @@ namespace MUXControls.TestAppUtils
                 {"MaxHeight","∞" },
             };
 
-            public List<string> PropertyNameWhiteList 
+            public List<string> PropertyNameAllowedList 
             {
-                get { return _propertyNameWhiteList; }
-                set { _propertyNameWhiteList = value; }
+                get { return _propertyNameAllowedList; }
+                set { _propertyNameAllowedList = value; }
             }
 
             public virtual bool ShouldVisitPropertyValuePair(string propertyName, string value)
@@ -175,7 +175,7 @@ namespace MUXControls.TestAppUtils
 
             public virtual bool ShouldVisitProperty(string propertyName)
             {
-                return (_propertyNamePostfixWhiteList.Where(item => propertyName.EndsWith(item)).Count()) > 0 || _propertyNameWhiteList.Contains(propertyName);
+                return (_propertyNamePostfixAllowedList.Where(item => propertyName.EndsWith(item)).Count()) > 0 || _propertyNameAllowedList.Contains(propertyName);
             }
         }
 

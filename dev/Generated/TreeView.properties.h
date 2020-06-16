@@ -33,6 +33,9 @@ public:
     void ItemTemplateSelector(winrt::DataTemplateSelector const& value);
     winrt::DataTemplateSelector ItemTemplateSelector();
 
+    void SelectedItem(winrt::IInspectable const& value);
+    winrt::IInspectable SelectedItem();
+
     void SelectionMode(winrt::TreeViewSelectionMode const& value);
     winrt::TreeViewSelectionMode SelectionMode();
 
@@ -44,6 +47,7 @@ public:
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
     static winrt::DependencyProperty ItemTemplateSelectorProperty() { return s_ItemTemplateSelectorProperty; }
+    static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
 
     static GlobalDependencyProperty s_CanDragItemsProperty;
@@ -54,6 +58,7 @@ public:
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;
     static GlobalDependencyProperty s_ItemTemplateSelectorProperty;
+    static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_SelectionModeProperty;
 
     winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewCollapsedEventArgs> const& value);
@@ -80,6 +85,10 @@ public:
     static void ClearProperties();
 
     static void OnItemsSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSelectedItemPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

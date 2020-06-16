@@ -83,6 +83,9 @@ public:
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
+    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
+    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib); 
+    winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
 
     // Hierarchical related functions
     void Expand(const winrt::NavigationViewItem& item);
@@ -105,7 +108,6 @@ private:
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
-    winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::UIElement GetContainerForIndex(int index, bool inFooter);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
@@ -116,8 +118,6 @@ private:
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
-    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
-    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);

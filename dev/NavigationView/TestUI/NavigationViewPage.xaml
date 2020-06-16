@@ -188,6 +188,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="SelectedItemIsEnabledCheckbox" AutomationProperties.Name="SelectedItemIsEnabledCheckbox" Content="SelectedItem IsEnabled" IsChecked="True" Checked="SelectedItemIsEnabledCheckbox_Checked" Unchecked="SelectedItemIsEnabledCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="SettingsItemVisibilityCheckbox" AutomationProperties.Name="SettingsItemVisibilityCheckbox" Content="Show Settings" Checked="SettingsItemVisibilityCheckbox_Checked" Unchecked="SettingsItemVisibilityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="PaneToggleButtonVisiblityCheckbox" AutomationProperties.Name="PaneToggleButtonVisiblityCheckbox" Content="Show Hamburger Button" Checked="PaneToggleButtonVisiblityCheckbox_Checked" Unchecked="PaneToggleButtonVisiblityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="AutoSuggestCheckbox" AutomationProperties.Name="AutoSuggestCheckbox" Content="Set AutoSuggestBox" IsChecked="True" Checked="AutoSuggestCheckbox_Checked" Unchecked="AutoSuggestCheckbox_Unchecked" Margin="5"/>

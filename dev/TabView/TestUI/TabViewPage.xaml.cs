@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -394,6 +394,16 @@ namespace MUXControlsTestApp
             this.Frame.Navigate(typeof(TabViewSizingPage));
         }
 
+        private void TabViewTabClosingBehaviorButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(TabViewTabClosingBehaviorPage));
+        }
+
+        private void TabViewTabItemsSourcePageButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(TabViewTabItemsSourcePage));
+        }
+        
         private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
         {
             FirstTab.Header = "s";

@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.TabViewPage"
     x:Name="TabViewTestPage"
@@ -153,7 +153,17 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton" Margin="8" Click="TabViewSizingPageButton_Click" FontSize="20">TabView Sizing Page</Button>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
+                                        Margin="8" Click="TabViewSizingPageButton_Click"
+                                        FontSize="20">TabView Sizing Page</Button>
+                                <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
+                                        Margin="8" Click="TabViewTabClosingBehaviorButton_Click"
+                                        FontSize="20">TabView Tab Closing behavior Page</Button>
+                                <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
+                                        Margin="8" Click="TabViewTabItemsSourcePageButton_Click"
+                                        FontSize="20">TabView TabItemsSource Page</Button>
+                            </StackPanel>
                         </StackPanel>
                     </controls:TabViewItem>
 
