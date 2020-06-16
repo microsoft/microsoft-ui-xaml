@@ -37,7 +37,7 @@ https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
 Building the solution **MUXControls.sln** will build all projects. 
 Generally you will want to set your configuration to **Debug**, **x64**, and 
-select **MUXControlsTestApp** as your startup project in Visual Studio.
+select **MUXControlsTestApp** as your startup project in Visual Studio. To retrieve the appropriate dependencies, right click on the solution in the Solution Explorer and select "Restore NuGet Packages". 
 
 If you want to work on a single control/project, instead of using the **MUXControls.sln**, you can open the **MUXControlsInnerLoop.sln**.
 
