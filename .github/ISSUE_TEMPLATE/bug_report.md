@@ -47,11 +47,10 @@ Examples
 <!-- Which device form factors did you see the issue on? Leave blank if you didn't try that device. -->
 | Device form factor | Saw the problem? |
 | :-------------------- | :------------------- |
-| Desktop                 | <!-- Yes/No? -->   |
-| Mobile                   | <!-- Yes/No? -->   |
-| Xbox                      | <!-- Yes/No? -->   |
-| Surface Hub          | <!-- Yes/No? -->    |
-| IoT                         | <!-- Yes/No? -->    |
+| Desktop               | <!-- Yes/No? -->   |
+| Xbox                  | <!-- Yes/No? -->   |
+| Surface Hub           | <!-- Yes/No? -->    |
+| IoT                   | <!-- Yes/No? -->    |
 
 
 **Additional context**
