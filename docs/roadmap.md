@@ -119,7 +119,5 @@ You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedba
 
 The next major milestones we're currently working toward are:
 
-1. **Open sourcing**: our next main focus area is getting the full WinUI 3 Xaml platform migrated to open source development on GitHub in this repo
-
-2. **Preview release**: we're planning to release a more complete preview in the first half of 2020
+![WinUI 3 milestones](images/roadmap/winui3-roadmap.png)
 
