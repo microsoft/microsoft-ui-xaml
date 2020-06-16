@@ -6,10 +6,10 @@
 #include "pch.h"
 #include "common.h"
 
-#include "ProgressRingIndeterminate.h"
-#include "ProgressRingDeterminate.h"
-#include "ProgressRingTemplateSettings.h"
+#include "AnimatedVisuals/ProgressRingIndeterminate.h"
+#include "AnimatedVisuals/ProgressRingDeterminate.h"
 
+#include "ProgressRingTemplateSettings.h"
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
 
