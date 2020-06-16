@@ -19,5 +19,6 @@ public:
 
 private:
     winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
+    std::vector<winrt::NavigationViewItem> navigationViewItemPool;
 
 };

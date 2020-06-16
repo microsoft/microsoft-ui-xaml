@@ -61,6 +61,9 @@ public:
     void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
     bool IsTopLevelItem() { return m_isTopLevelItem; };
 
+    void CreatedByNavigationViewItemsFactory(bool createdByNavigationViewItemsFactory) { m_createdByNavigationViewItemsFactory = createdByNavigationViewItemsFactory; };
+    bool CreatedByNavigationViewItemsFactory() { return m_createdByNavigationViewItemsFactory; };
+
 protected:
 
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
@@ -70,4 +73,8 @@ private:
     NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
     int m_depth{ 0 };
     bool m_isTopLevelItem{ false };
+
+    // Flag to keep track of whether this item was created by the custom internal NavigationViewItemsFactory.
+    // This is required in order to achieve proper recycling
+    bool m_createdByNavigationViewItemsFactory{ false };
 };
