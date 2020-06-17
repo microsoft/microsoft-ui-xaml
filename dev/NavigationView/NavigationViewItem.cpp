@@ -247,8 +247,8 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
         auto navViewItemPeer = peer.as<winrt::NavigationViewItemAutomationPeer>();
         winrt::get_self<NavigationViewItemAutomationPeer>(navViewItemPeer)->RaiseExpandCollapseAutomationEvent(
             IsExpanded() ?
-                winrt::ExpandCollapseState::Expanded
-                : winrt::ExpandCollapseState::Collapsed
+                winrt::ExpandCollapseState::Expanded :
+                winrt::ExpandCollapseState::Collapsed
         );
     }
 }
