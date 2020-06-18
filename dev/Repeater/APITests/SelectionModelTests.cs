@@ -53,15 +53,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
                 Log.Comment("Set the source to 10 items");
                 selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                // Check index selection
                 Select(selectionModel, 3, true);
                 ValidateSelection(selectionModel, new List<IndexPath>() { Path(3) }, new List<IndexPath>() { Path() });
                 Select(selectionModel, 3, false);
+                ValidateSelection(selectionModel, new List<IndexPath>() { });
+
+                // Check index path selection
+                Select(selectionModel, Path(4), true);
+                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+                Select(selectionModel, Path(4), false);
                 ValidateSelection(selectionModel, new List<IndexPath>() { });
             });
         }
 
         [TestMethod]
-        public void ValidateSelectionChangedEvent()
+        public void ValidateSelectionChangedEventSingleSelection()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                bool select = true;
+                int selectionChangedFiredCount = 0;
+                selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args) {
+                    selectionChangedFiredCount++;
+
+                    // Verify SelectionChanged was raised after selection state was changed in the SelectionModel
+                    if (select)
+                    {
+                        ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+                    }
+                    else
+                    {
+                        ValidateSelection(selectionModel, new List<IndexPath>() { });
+                    }
+                };
+
+                Select(selectionModel, Path(4), select);
+                Verify.AreEqual(1, selectionChangedFiredCount);
+
+                select = false;
+                Select(selectionModel, Path(4), select);
+                Verify.AreEqual(2, selectionChangedFiredCount);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateSelectionChangedEventMultipleSelection()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -72,11 +113,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args) 
                 {
                     selectionChangedFiredCount++;
+
+                    // Verify SelectionChanged was raised after selection state was changed in the SelectionModel
                     ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
                 };
 
                 Select(selectionModel, 4, true);
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
                 Verify.AreEqual(1, selectionChangedFiredCount);
             });
         }
@@ -1090,6 +1132,80 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 throw new Exception("SelectionChangedEvent was raised, but shouldn't have been raised as selection did not change. Tested method: " + testName);
             }
+        }
+
+        [TestMethod] 
+        public void ValidateSelectionModeChangeFromMultipleToSingle()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel();
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                // First test: switching from multiple to single selection mode with just one selected item
+                selectionModel.Select(4);
+
+                selectionModel.SingleSelect = true;
+
+                // Verify that the item at index 4 is still selected 
+                Verify.IsTrue(selectionModel.SelectedIndex.CompareTo(Path(4)) == 0, "Item at index 4 should have still been selected");
+
+                // Second test: this time switching from multiple to single selection mode with more than one selected item
+                selectionModel.SingleSelect = false;
+                selectionModel.Select(5);
+                selectionModel.Select(6);
+
+                // Now switch to single selection mode
+                selectionModel.SingleSelect = true;
+
+                // Verify that 
+                // - only one item is currently selected
+                // - the currently selected item is the item with the lowest index in the Multiple selection list
+                Verify.AreEqual(1, selectionModel.SelectedIndices.Count,
+                    "Exactly one item should have been selected now after we switched from Multiple to Single selection mode");
+                Verify.IsTrue(selectionModel.SelectedIndices[0].CompareTo(selectionModel.SelectedIndex) == 0,
+                    "SelectedIndex and SelectedIndices should have been identical");
+                Verify.IsTrue(selectionModel.SelectedIndex.CompareTo(Path(4)) == 0, "The currently selected item should have been the first item in the Multiple selection list");
+            });
+        }
+
+        [TestMethod]
+        public void ValidateSelectionModeChangeFromMultipleToSingleSelectionChangedEvent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionModel selectionModel = new SelectionModel();
+                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+                // First test: switching from multiple to single selection mode with just one selected item
+                selectionModel.Select(4);
+
+                int selectionChangedFiredCount = 0;
+                selectionModel.SelectionChanged += IncreaseCountIfRaisedSelectionChanged;
+
+                // Now switch to single selection mode
+                selectionModel.SingleSelect = true;
+
+                // Verify that no SelectionChanged event was raised
+                Verify.AreEqual(0, selectionChangedFiredCount, "SelectionChanged event should have not been raised as only one item was selected");
+
+                // Second test: this time switching from multiple to single selection mode with more than one selected item
+                selectionModel.SelectionChanged -= IncreaseCountIfRaisedSelectionChanged;
+                selectionModel.SingleSelect = false;
+                selectionModel.Select(5);
+                selectionModel.SelectionChanged += IncreaseCountIfRaisedSelectionChanged;
+
+                // Now switch to single selection mode
+                selectionModel.SingleSelect = true;
+
+                // Verify that the SelectionChanged event was raised 
+                Verify.AreEqual(1, selectionChangedFiredCount, "SelectionChanged event should have been raised as the selection changed");
+
+                void IncreaseCountIfRaisedSelectionChanged(SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+                {
+                    selectionChangedFiredCount++;
+                }
+            });
         }
 
         private void Select(SelectionModel manager, int index, bool select)

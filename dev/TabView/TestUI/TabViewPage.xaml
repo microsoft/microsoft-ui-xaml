@@ -99,6 +99,21 @@
                     <Button x:Name="GetFirstTabLocationButton" AutomationProperties.Name="GetFirstTabLocationButton" Content="FirstTab" Click="GetFirstTabLocationButton_Click"/>
                     <TextBlock x:Name="FirstTabLocationTextBlock" AutomationProperties.Name="FirstTabLocationTextBlock" Margin="4,0,0,0" Text=""/>
                 </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetScrollDecreaseButtonToolTipButton" AutomationProperties.Name="GetScrollDecreaseButtonToolTipButton" Content="TooltipScrollDecreaseButton" Click="GetScrollDecreaseButtonToolTipButton_Click"/>
+                    <TextBlock x:Name="ScrollDecreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollDecreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
+                    <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetSecondTabHeaderForegroundButton" AutomationProperties.Name="GetSecondTabHeaderForegroundButton" Content="SecondTabHeaderForeground" Click="GetSecondTabHeaderForegroundButton_Click" />
+                    <TextBlock x:Name="SecondTabHeaderForegroundTextBlock" AutomationProperties.Name="SecondTabHeaderForegroundTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
             </StackPanel>
 
             <Grid Grid.Column="1">
@@ -138,11 +153,25 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton" Margin="8" Click="TabViewSizingPageButton_Click" FontSize="20">TabView Sizing Page</Button>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
+                                        Margin="8" Click="TabViewSizingPageButton_Click"
+                                        FontSize="20">TabView Sizing Page</Button>
+                                <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
+                                        Margin="8" Click="TabViewTabClosingBehaviorButton_Click"
+                                        FontSize="20">TabView Tab Closing behavior Page</Button>
+                                <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
+                                        Margin="8" Click="TabViewTabItemsSourcePageButton_Click"
+                                        FontSize="20">TabView TabItemsSource Page</Button>
+                            </StackPanel>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
+                        <controls:TabViewItem.Resources>
+                            <!-- Do not remove or change this! We are verifying this resource in a TabView InteractionTest. -->
+                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="#FF008000" />
+                        </controls:TabViewItem.Resources>
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>
@@ -198,6 +227,12 @@
                     </Grid.ColumnDefinitions>
 
                     <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
+                        <controls:TabView.Resources>
+                            <ResourceDictionary>
+                                <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="SystemAccentColor"/>
+                            </ResourceDictionary>
+                        </controls:TabView.Resources>
+
                         <controls:TabView.TabItemTemplate>
                             <DataTemplate x:DataType="local:TabDataItem">
                                 <controls:TabViewItem Header="{x:Bind Header}" IconSource="{x:Bind IconSource}" Content="{x:Bind Content}">

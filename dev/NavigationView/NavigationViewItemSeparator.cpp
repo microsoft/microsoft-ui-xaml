@@ -26,7 +26,7 @@ void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
                 : L"HorizontalLine"sv
             : L"VerticalLine"sv;
 
-        VisualStateUtil::GotToStateIfGroupExists(*this, groupName, stateName, false /*useTransitions*/);
+        VisualStateUtil::GoToStateIfGroupExists(*this, groupName, stateName, false /*useTransitions*/);
     }
 }
 
@@ -56,14 +56,14 @@ void NavigationViewItemSeparator::OnApplyTemplate()
     UpdateItemIndentation();
 }
 
-void NavigationViewItemSeparator::OnNavigationViewRepeaterPositionChanged()
-{
-    UpdateVisualState(false /*useTransition*/);
-}
-
 void NavigationViewItemSeparator::OnNavigationViewItemBaseDepthChanged()
 {
     UpdateItemIndentation();
+}
+
+void NavigationViewItemSeparator::OnNavigationViewItemBasePositionChanged()
+{
+    UpdateVisualState(false /*useTransition*/);
 }
 
 void NavigationViewItemSeparator::OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)

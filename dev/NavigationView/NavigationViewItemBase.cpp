@@ -7,7 +7,7 @@
 #include "NavigationView.h"
 #include "IndexPath.h"
 
-NavigationViewRepeaterPosition NavigationViewItemBase::Position()
+NavigationViewRepeaterPosition NavigationViewItemBase::Position() const
 {
     return m_position;
 }
@@ -17,27 +17,30 @@ void NavigationViewItemBase::Position(NavigationViewRepeaterPosition value)
     if (m_position != value)
     {
         m_position = value;
-        OnNavigationViewRepeaterPositionChanged();
+        OnNavigationViewItemBasePositionChanged();
     }
 }
 
-winrt::NavigationView NavigationViewItemBase::GetNavigationView()
+winrt::NavigationView NavigationViewItemBase::GetNavigationView() const
 {
     return m_navigationView.get();
 }
 
 void NavigationViewItemBase::Depth(int depth)
 {
-    m_depth = depth;
-    OnNavigationViewItemBaseDepthChanged();
+    if (m_depth != depth)
+    {
+        m_depth = depth;
+        OnNavigationViewItemBaseDepthChanged();
+    }
 }
 
-int NavigationViewItemBase::Depth()
+int NavigationViewItemBase::Depth() const
 {
     return m_depth;
 }
 
-winrt::SplitView NavigationViewItemBase::GetSplitView()
+winrt::SplitView NavigationViewItemBase::GetSplitView() const
 {
     winrt::SplitView splitView{ nullptr };
     auto navigationView = GetNavigationView();
@@ -51,4 +54,12 @@ winrt::SplitView NavigationViewItemBase::GetSplitView()
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
     m_navigationView = winrt::make_weak(navigationView);
+}
+
+void NavigationViewItemBase::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.Property() == s_IsSelectedProperty)
+    {
+        OnNavigationViewItemBaseIsSelectedChanged();
+    }
 }

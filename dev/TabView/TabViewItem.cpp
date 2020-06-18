@@ -9,6 +9,8 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 
+static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
+
 TabViewItem::TabViewItem()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TabViewItem);
@@ -22,6 +24,12 @@ TabViewItem::TabViewItem()
 
 void TabViewItem::OnApplyTemplate()
 {
+    auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
+    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
+
+    templateSettings->LeftInsetRadiusMargin(winrt::Thickness({ -popupRadius.BottomLeft,0,0,0 }));
+    templateSettings->RightInsetRadiusMargin(winrt::Thickness({0,0,-popupRadius.BottomRight,0}));
+
     winrt::IControlProtected controlProtected{ *this };
 
     auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
@@ -84,6 +92,15 @@ void TabViewItem::OnApplyTemplate()
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+    if (IsSelected())
+    {
+        SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));
+    }
+    else
+    {
+        SetValue(winrt::Canvas::ZIndexProperty(), box_value(0));
+    }
+
     UpdateShadow();
     UpdateWidthModeVisualState();
 
@@ -226,7 +243,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
         }
     }
 
-    if (auto toolTip = m_toolTip.get())
+    if (auto&& toolTip = m_toolTip.get())
     {
         // Update tooltip text to new header text
         auto headerContent = Header();

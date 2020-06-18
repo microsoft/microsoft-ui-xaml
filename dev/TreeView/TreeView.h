@@ -33,8 +33,6 @@ public:
     winrt::TreeViewNode SelectedNode();
     winrt::IVector<winrt::TreeViewNode> SelectedNodes();
 
-    void SelectedItem(winrt::IInspectable const& item);
-    winrt::IInspectable SelectedItem();
     winrt::IVector<winrt::IInspectable> SelectedItems();
 
     void UpdateSelection(winrt::TreeViewNode const& node, bool isSelected);

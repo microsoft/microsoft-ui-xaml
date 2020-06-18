@@ -27,15 +27,15 @@ static constexpr auto c_chevronHidden = L"ChevronHidden"sv;
 static constexpr auto c_chevronVisibleOpen = L"ChevronVisibleOpen"sv;
 static constexpr auto c_chevronVisibleClosed = L"ChevronVisibleClosed"sv;
 
+NavigationViewItem::NavigationViewItem()
+{
+    SetDefaultStyleKey(this);
+    SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
+}
+
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
     UpdateVisualState(false /*useTransition*/);
-}
-
-void NavigationViewItem::OnNavigationViewRepeaterPositionChanged()
-{
-    UpdateVisualStateNoTransition();
-    ReparentRepeater();
 }
 
 void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
@@ -44,17 +44,24 @@ void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
     PropagateDepthToChildren(Depth() + 1);
 }
 
-NavigationViewItem::NavigationViewItem()
+void NavigationViewItem::OnNavigationViewItemBaseIsSelectedChanged()
 {
-    SetDefaultStyleKey(this);
-    SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
+    UpdateVisualStateForPointer();
+}
+
+void NavigationViewItem::OnNavigationViewItemBasePositionChanged()
+{
+    UpdateVisualStateNoTransition();
+    ReparentRepeater();
 }
 
 void NavigationViewItem::OnApplyTemplate()
 {
-    // Stop UpdateVisualState before template is applied. Otherwise the visual may not the same as we expect
+    // Stop UpdateVisualState before template is applied. Otherwise the visuals may be unexpected
     m_appliedTemplate = false;
- 
+
+    UnhookEventsAndClearFields();
+
     NavigationViewItemBase::OnApplyTemplate();
 
     // Find selection indicator
@@ -70,20 +77,11 @@ void NavigationViewItem::OnApplyTemplate()
         {
             m_flyoutClosingRevoker = flyoutBase.Closing(winrt::auto_revoke, { this, &NavigationViewItem::OnFlyoutClosing });
         }
-
     }
 
-    if (auto presenter = GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected))
-    {
-        m_navigationViewItemPresenter.set(presenter);
+    HookInputEvents(controlProtected);
 
-        m_presenterPointerPressedRevoker = presenter.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerPressed });
-        m_presenterPointerReleasedRevoker = presenter.PointerReleased(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerReleased });
-        m_presenterPointerEnteredRevoker = presenter.PointerEntered(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerEntered });
-        m_presenterPointerExitedRevoker = presenter.PointerExited(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerExited });
-        m_presenterPointerCanceledRevoker = presenter.PointerCanceled(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerCanceled });
-        m_presenterPointerCaptureLostRevoker = presenter.PointerCaptureLost(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerCaptureLost });
-    }
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NavigationViewItem::OnIsEnabledChanged });
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
 
@@ -120,6 +118,7 @@ void NavigationViewItem::OnApplyTemplate()
     m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
 
     m_appliedTemplate = true;
+
     UpdateItemIndentation();
     UpdateVisualStateNoTransition();
     ReparentRepeater();
@@ -149,7 +148,7 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
     }
 }
  
-winrt::UIElement NavigationViewItem::GetSelectionIndicator()
+winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
 {
     auto selectIndicator = m_helper.GetSelectionIndicator(); 
     if (auto presenter = GetPresenter())
@@ -261,23 +260,6 @@ void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::Dependenc
 void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateForChevron();
-}
-
-bool NavigationViewItem::ShowSelectionIndicatorIfRequired()
-{
-    if (!IsSelected())
-    {
-        if (!IsRepeaterVisible() && IsChildSelected())
-        {
-            ShowSelectionIndicator(true);
-            return true;
-        }
-        else
-        {
-            ShowSelectionIndicator(false);
-        }
-    }
-    return false;
 }
 
 void NavigationViewItem::ShowSelectionIndicator(bool visible)
@@ -429,15 +411,14 @@ void NavigationViewItem::UpdateVisualStateForPointer()
     // update the states for the item itself.
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), enabledStateValue, true);
-        winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), selectedStateValue, true);
+        winrt::VisualStateManager::GoToState(presenter, enabledStateValue, true);
+        winrt::VisualStateManager::GoToState(presenter, selectedStateValue, true);
     }
     else
     {
         winrt::VisualStateManager::GoToState(*this, enabledStateValue, true);
         winrt::VisualStateManager::GoToState(*this, selectedStateValue, true);
     }
-
 }
 
 void NavigationViewItem::UpdateVisualState(bool useTransitions)
@@ -457,7 +438,7 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
         if (auto const presenter = m_navigationViewItemPresenter.get())
         {
             // Backward Compatibility with RS4-, new implementation prefer IconOnLeft/IconOnly/ContentOnly
-            winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), shouldShowIcon ? L"IconVisible" : L"IconCollapsed", useTransitions);
+            winrt::VisualStateManager::GoToState(presenter, shouldShowIcon ? L"IconVisible" : L"IconCollapsed", useTransitions);
         }
     } 
    
@@ -476,7 +457,7 @@ void NavigationViewItem::UpdateVisualStateForChevron()
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
         auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? ( IsExpanded() ? c_chevronVisibleOpen : c_chevronVisibleClosed) : c_chevronHidden;
-        winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), chevronState, true);
+        winrt::VisualStateManager::GoToState(presenter, chevronState, true);
     }
 }
 
@@ -490,7 +471,7 @@ bool NavigationViewItem::ShouldShowIcon()
     return static_cast<bool>(Icon());
 }
 
-bool NavigationViewItem::ShouldEnableToolTip()
+bool NavigationViewItem::ShouldEnableToolTip() const
 {
     // We may enable Tooltip for IconOnly in the future, but not now
     return IsOnLeftNav() && m_isClosedCompact;
@@ -501,19 +482,31 @@ bool NavigationViewItem::ShouldShowContent()
     return static_cast<bool>(Content());
 }
 
-bool NavigationViewItem::IsOnLeftNav()
+bool NavigationViewItem::IsOnLeftNav() const
 {
     return Position() == NavigationViewRepeaterPosition::LeftNav;
 }
 
-bool NavigationViewItem::IsOnTopPrimary()
+bool NavigationViewItem::IsOnTopPrimary() const
 {
     return Position() == NavigationViewRepeaterPosition::TopPrimary;
 }
 
-NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
+winrt::UIElement const NavigationViewItem::GetPresenterOrItem() const
 {
-    NavigationViewItemPresenter * presenter = nullptr;
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        return presenter.try_as<winrt::UIElement>();
+    }
+    else
+    {
+        return this->try_as<winrt::UIElement>();
+    }
+}
+
+NavigationViewItemPresenter* NavigationViewItem::GetPresenter() const
+{
+    NavigationViewItemPresenter* presenter = nullptr;
     if (m_navigationViewItemPresenter)
     {
         presenter = winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get());
@@ -586,14 +579,18 @@ void NavigationViewItem::ReparentRepeater()
     }
 }
 
-bool NavigationViewItem::ShouldRepeaterShowInFlyout()
+bool NavigationViewItem::ShouldRepeaterShowInFlyout() const
 {
     return (m_isClosedCompact && IsTopLevelItem()) || IsOnTopPrimary();
 }
 
-bool NavigationViewItem::IsRepeaterVisible()
+bool NavigationViewItem::IsRepeaterVisible() const
 {
-    return m_repeater.get().Visibility() == winrt::Visibility::Visible;
+    if (auto const repeater = m_repeater.get())
+    {
+        return repeater.Visibility() == winrt::Visibility::Visible;
+    }
+    return false;
 }
 
 void NavigationViewItem::UpdateItemIndentation()
@@ -686,48 +683,241 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
     }
 }
 
-void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void NavigationViewItem::ResetTrackedPointerId()
 {
+    m_trackedPointerId = 0;
+}
+
+// Returns False when the provided pointer Id matches the currently tracked Id.
+// When there is no currently tracked Id, sets the tracked Id to the provided Id and returns False.
+// Returns True when the provided pointer Id does not match the currently tracked Id.
+bool NavigationViewItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& args)
+{
+    uint32_t pointerId = args.Pointer().PointerId();
+
+    if (m_trackedPointerId == 0)
+    {
+        m_trackedPointerId = pointerId;
+    }
+    else if (m_trackedPointerId != pointerId)
+    {
+        return true;
+    }
+    return false;
+}
+
+void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    MUX_ASSERT(!m_isPressed);
+    MUX_ASSERT(!m_capturedPointer);
+
     // TODO: Update to look at presenter instead
     auto pointerProperties = args.GetCurrentPoint(*this).Properties();
     m_isPressed = pointerProperties.IsLeftButtonPressed() || pointerProperties.IsRightButtonPressed();
 
+    auto pointer = args.Pointer();
+    auto presenter = GetPresenterOrItem();
+
+    MUX_ASSERT(presenter);
+
+    if (presenter.CapturePointer(pointer))
+    {
+        m_capturedPointer = pointer;
+    }
+
     UpdateVisualState(true);
 }
 
-void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    m_isPressed = false;
-    UpdateVisualState(true);
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    if (m_isPressed)
+    {
+        m_isPressed = false;
+
+        if (m_capturedPointer)
+        {
+            auto presenter = GetPresenterOrItem();
+
+            MUX_ASSERT(presenter);
+
+            presenter.ReleasePointerCapture(m_capturedPointer);
+        }
+
+        UpdateVisualState(true);
+    }
 }
 
-void NavigationViewItem::OnPresenterPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void NavigationViewItem::OnPresenterPointerEntered(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    m_isPointerOver = true;
-    UpdateVisualState(true);
+    ProcessPointerOver(args);
 }
 
-void NavigationViewItem::OnPresenterPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void NavigationViewItem::OnPresenterPointerMoved(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    ProcessPointerOver(args);
+}
+
+void NavigationViewItem::OnPresenterPointerExited(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
     m_isPointerOver = false;
+
+    if (!m_capturedPointer)
+    {
+        ResetTrackedPointerId();
+    }
+
     UpdateVisualState(true);
 }
 
-void NavigationViewItem::OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void NavigationViewItem::OnPresenterPointerCanceled(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    m_isPressed = false;
-    m_isPointerOver = false;
-    UpdateVisualState(true);
+    ProcessPointerCanceled(args);
 }
 
-void NavigationViewItem::OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void NavigationViewItem::OnPresenterPointerCaptureLost(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    m_isPressed = false;
-    m_isPointerOver = false;
+    ProcessPointerCanceled(args);
+}
+
+void NavigationViewItem::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
+{
+    if (!IsEnabled())
+    {
+        m_isPressed = false;
+        m_isPointerOver = false;
+
+        if (m_capturedPointer)
+        {
+            auto presenter = GetPresenterOrItem();
+
+            MUX_ASSERT(presenter);
+
+            presenter.ReleasePointerCapture(m_capturedPointer);
+            m_capturedPointer = nullptr;
+        }
+
+        ResetTrackedPointerId();
+    }
+
     UpdateVisualState(true);
 }
 
 void NavigationViewItem::RotateExpandCollapseChevron(bool isExpanded)
 {
-    winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->RotateExpandCollapseChevron(isExpanded);
+    if (auto presenter = GetPresenter())
+    {
+        presenter->RotateExpandCollapseChevron(isExpanded);
+    }
+}
+
+void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    m_isPressed = false;
+    m_isPointerOver = false;
+    m_capturedPointer = nullptr;
+    ResetTrackedPointerId();
+    UpdateVisualState(true);
+}
+
+void NavigationViewItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    if (!m_isPointerOver)
+    {
+        m_isPointerOver = true;
+        UpdateVisualState(true);
+    }
+}
+
+void NavigationViewItem::HookInputEvents(const winrt::IControlProtected& controlProtected)
+{
+    winrt::UIElement const presenter = [this, controlProtected]()
+    {
+        if (auto presenter = GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected))
+        {
+            m_navigationViewItemPresenter.set(presenter);
+            return presenter.try_as<winrt::UIElement>();
+        }
+        // We don't have a presenter, so we are our own presenter.
+        return this->try_as<winrt::UIElement>();
+    }();
+
+    MUX_ASSERT(presenter);
+
+    // Handlers that set flags are skipped when args.Handled is already True.
+    m_presenterPointerPressedRevoker = presenter.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerPressed });
+    m_presenterPointerEnteredRevoker = presenter.PointerEntered(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerEntered });
+    m_presenterPointerMovedRevoker = presenter.PointerMoved(winrt::auto_revoke, { this, &NavigationViewItem::OnPresenterPointerMoved });
+
+    // Handlers that reset flags are not skipped when args.Handled is already True to avoid broken states.
+    m_presenterPointerReleasedRevoker = AddRoutedEventHandler<RoutedEventType::PointerReleased>(
+        presenter,
+        { this, &NavigationViewItem::OnPresenterPointerReleased },
+        true /*handledEventsToo*/);
+    m_presenterPointerExitedRevoker = AddRoutedEventHandler<RoutedEventType::PointerExited>(
+        presenter,
+        { this, &NavigationViewItem::OnPresenterPointerExited },
+        true /*handledEventsToo*/);
+    m_presenterPointerCanceledRevoker = AddRoutedEventHandler<RoutedEventType::PointerCanceled>(
+        presenter,
+        { this, &NavigationViewItem::OnPresenterPointerCanceled },
+        true /*handledEventsToo*/);
+    m_presenterPointerCaptureLostRevoker = AddRoutedEventHandler<RoutedEventType::PointerCaptureLost>(
+        presenter,
+        { this, &NavigationViewItem::OnPresenterPointerCaptureLost },
+        true /*handledEventsToo*/);
+}
+
+void NavigationViewItem::UnhookInputEvents()
+{
+    m_presenterPointerPressedRevoker.revoke();
+    m_presenterPointerEnteredRevoker.revoke();
+    m_presenterPointerMovedRevoker.revoke();
+    m_presenterPointerReleasedRevoker.revoke();
+    m_presenterPointerExitedRevoker.revoke();
+    m_presenterPointerCanceledRevoker.revoke();
+    m_presenterPointerCaptureLostRevoker.revoke();
+}
+
+void NavigationViewItem::UnhookEventsAndClearFields()
+{
+    UnhookInputEvents();
+
+    m_flyoutClosingRevoker.revoke();
+    m_splitViewIsPaneOpenChangedRevoker.revoke();
+    m_splitViewDisplayModeChangedRevoker.revoke();
+    m_splitViewCompactPaneLengthChangedRevoker.revoke();
+    m_repeaterElementPreparedRevoker.revoke();
+    m_repeaterElementClearingRevoker.revoke();
+    m_isEnabledChangedRevoker.revoke();
+
+    m_rootGrid.set(nullptr);
+    m_navigationViewItemPresenter.set(nullptr);
+    m_toolTip.set(nullptr);
+    m_repeater.set(nullptr);
+    m_flyoutContentGrid.set(nullptr);
 }

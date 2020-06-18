@@ -6,6 +6,7 @@
 #include "ComboBoxHelper.h"
 #include "DispatcherHelper.h"
 #include "CornerRadiusFilterConverter.h"
+#include "ResourceAccessor.h"
 
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
@@ -93,8 +94,8 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
 {
     if (comboBox.IsEditable())
     {
-        auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(comboBox, box_value(c_controlCornerRadiusKey)));
-        auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(comboBox, box_value(c_overlayCornerRadiusKey)));
+        auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(comboBox, box_value(c_controlCornerRadiusKey)));
+        auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(comboBox, box_value(c_overlayCornerRadiusKey)));
 
         if (winrt::IControl7 comboBoxControl7 = comboBox)
         {
@@ -148,9 +149,4 @@ bool ComboBoxHelper::IsPopupOpenDown(const winrt::ComboBox& comboBox)
         }
     }
     return verticalOffset > 0;
-}
-
-winrt::IInspectable ComboBoxHelper::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
-{
-    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }

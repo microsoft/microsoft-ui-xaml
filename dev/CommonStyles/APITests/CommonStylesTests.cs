@@ -173,8 +173,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             var visualTreeDumperFilter = new VisualTreeDumper.DefaultFilter();
-            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxWidth");
-            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxHeight");
+            visualTreeDumperFilter.PropertyNameAllowedList.Remove("MaxWidth");
+            visualTreeDumperFilter.PropertyNameAllowedList.Remove("MaxHeight");
             VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
         }
 
@@ -305,9 +305,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         class CustomizedFilter : VisualTreeDumper.IFilter
         {
 
-            private static readonly string[] _propertyNamePostfixBlackList = new string[] { "Property", "Transitions", "Template", "Style", "Selector" };
+            private static readonly string[] _propertyNamePostfixBlockList = new string[] { "Property", "Transitions", "Template", "Style", "Selector" };
 
-            private static readonly string[] _propertyNameBlackList = new string[] { "Interactions", "ColumnDefinitions", "RowDefinitions",
+            private static readonly string[] _propertyNameBlockList = new string[] { "Interactions", "ColumnDefinitions", "RowDefinitions",
             "Children", "Resources", "Transitions", "Dispatcher", "TemplateSettings", "ContentTemplate", "ContentTransitions",
             "ContentTemplateSelector", "Content", "ContentTemplateRoot", "XYFocusUp", "XYFocusRight", "XYFocusLeft", "Parent",
             "Triggers", "RequestedTheme", "XamlRoot", "IsLoaded", "BaseUri", "Resources"};
@@ -394,8 +394,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             public bool ShouldVisitProperty(string propertyName)
             {
-                return (_propertyNamePostfixBlackList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
-                    !_propertyNameBlackList.Contains(propertyName);
+                return (_propertyNamePostfixBlockList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
+                    !_propertyNameBlockList.Contains(propertyName);
             }
         }
 

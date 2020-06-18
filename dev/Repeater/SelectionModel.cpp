@@ -60,15 +60,17 @@ void SelectionModel::SingleSelect(bool value)
     {
         m_singleSelect = value;
         auto selectedIndices = SelectedIndices();
-        if (value && selectedIndices && selectedIndices.Size() > 0)
+
+        // Only update selection and raise SelectionChanged event when:
+        // - we switch from SelectionMode::Multiple to SelectionMode::Single and
+        // - more than one item was selected at the time of the switch
+        if (value && selectedIndices && selectedIndices.Size() > 1)
         {
             // We want to be single select, so make sure there is only 
             // one selected item.
             auto firstSelectionIndexPath = selectedIndices.GetAt(0);
             ClearSelection(true /* resetAnchor */, false /*raiseSelectionChanged */);
-            SelectWithPathImpl(firstSelectionIndexPath, true /* select */, false /* raiseSelectionChanged */);
-            // Setting SelectedIndex will raise SelectionChanged event.
-            SelectedIndex(firstSelectionIndexPath);
+            SelectWithPathImpl(firstSelectionIndexPath, true /* select */, true /* raiseSelectionChanged */);
         }
 
         RaisePropertyChanged(L"SingleSelect");
@@ -647,7 +649,13 @@ void SelectionModel::SelectWithPathImpl(const winrt::IndexPath& index, bool sele
         // If we unselect something, raise event any way, otherwise changedSelection is false
         bool changedSelection = false;
 
-        if (m_singleSelect)
+        // We only need to clear selection by walking the data structure from the beginning when:
+        // - we are in single selection mode and 
+        // - want to select something.
+        // 
+        // If we want to unselect something we unselect it directly in TraverseIndexPath below and raise the SelectionChanged event
+        // if required.
+        if (m_singleSelect && select)
         {
             ClearSelection(true /*resetAnchor*/, false /* raiseSelectionChanged */);
         }

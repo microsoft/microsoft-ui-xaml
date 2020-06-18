@@ -43,23 +43,27 @@ public:
         __super::OnLostFocus(e);
     }
 
-    NavigationViewRepeaterPosition Position();
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    NavigationViewRepeaterPosition Position() const;
     void Position(NavigationViewRepeaterPosition value);
-    virtual void OnNavigationViewRepeaterPositionChanged() {}
+    virtual void OnNavigationViewItemBasePositionChanged() {}
 
     void Depth(int depth);
-    int Depth();
+    int Depth() const;
     virtual void OnNavigationViewItemBaseDepthChanged() {}
-    
-    winrt::NavigationView GetNavigationView();
-    winrt::SplitView GetSplitView();
+
+    virtual void OnNavigationViewItemBaseIsSelectedChanged() {}
+
+    winrt::NavigationView GetNavigationView() const;
+    winrt::SplitView GetSplitView() const;
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 
-    // TODO: Constant is a temporary mesure. Potentially expose using TemplateSettings.
+    // TODO: Constant is a temporary measure. Potentially expose using TemplateSettings.
     static constexpr int c_itemIndentation = 25;
 
     void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
-    bool IsTopLevelItem() { return m_isTopLevelItem; };
+    bool IsTopLevelItem() const { return m_isTopLevelItem; };
 
 protected:
 

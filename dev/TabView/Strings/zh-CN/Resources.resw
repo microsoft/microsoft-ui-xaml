@@ -137,4 +137,12 @@
     <value>关闭选项卡(Ctrl+F4)</value>
     <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
   </data>
+  <data name="TabViewScrollDecreaseButtonTooltip" xml:space="preserve">
+    <value>向后滚动选项卡列表</value>
+    <comment>Tooltip for the tab list scroll decrease button.</comment>
+  </data>
+  <data name="TabViewScrollIncreaseButtonTooltip" xml:space="preserve">
+    <value>向前滚动选项卡列表</value>
+    <comment>Tooltip for the tab list scroll increase button.</comment>
+  </data>
 </root>

@@ -66,12 +66,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 selectItemButton.InvokeAndWait();
 
                 TextBlock selectedIndexTextBlock = FindElement.ByName<TextBlock>("SelectedIndexTextBlock");
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "1");
+                Verify.AreEqual("1", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Verify that setting SelectedIndex changes selection.");
                 Button selectIndexButton = FindElement.ByName<Button>("SelectIndexButton");
                 selectIndexButton.InvokeAndWait();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
+                Verify.AreEqual("2", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Verify that ctrl-click on tab selects it.");
                 UIObject firstTab = FindElement.ByName("FirstTab");
@@ -79,14 +79,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 firstTab.Click();
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
                 Wait.ForIdle();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Verify that ctrl-click on tab does not deselect.");
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
                 firstTab.Click();
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
                 Wait.ForIdle();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
             }
         }
 
@@ -118,7 +118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
-                UIObject smallerTab = FindElement.ByName("FirstTab");
+                UIObject smallerTab = FindElement.ByName("SecondTab");
                 UIObject largerTab = FindElement.ByName("LongHeaderTab");
 
                 FindElement.ByName<Button>("SetTabViewWidth").InvokeAndWait();
@@ -161,10 +161,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Close a tab to make room. The scroll buttons should disappear:
                 Log.Comment("Closing a tab:");
                 Button closeButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                closeButton.MovePointer(0, 0);
                 closeButton.InvokeAndWait();
                 VerifyElement.NotFound("LongHeaderTab", FindBy.Name);
 
                 Log.Comment("Scroll buttons should disappear");
+                // Leaving tabstrip with this so the tabs update their width
+                FindElement.ByName<Button>("IsClosableCheckBox").MovePointer(0,0);
+                Wait.ForIdle();
                 Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");
 
                 // Make sure the scroll buttons can show up in 'Equal' sizing mode. 
@@ -234,19 +238,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(closeButton);
 
                 TextBlock selectedIndexTextBlock = FindElement.ByName<TextBlock>("SelectedIndexTextBlock");
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("When the selected tab is closed, selection should move to the next one.");
                 // Use Tab's close button:
                 closeButton.InvokeAndWait();
                 VerifyElement.NotFound("FirstTab", FindBy.Name);
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+                Verify.AreEqual("0", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("Select last tab.");
                 UIObject lastTab = FindElement.ByName("LastTab");
                 lastTab.Click();
                 Wait.ForIdle();
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "3");
+                Verify.AreEqual("3", selectedIndexTextBlock.DocumentText);
 
                 Log.Comment("When the selected tab is last and is closed, selection should move to the previous item.");
 
@@ -254,7 +258,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 lastTab.Click(PointerButtons.Middle);
                 Wait.ForIdle();
                 VerifyElement.NotFound("LastTab", FindBy.Name);
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
+                Verify.AreEqual("2", selectedIndexTextBlock.DocumentText);
             }
         }
 
@@ -341,6 +345,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Home tab content should be visible.");
                 UIObject tabContent = FindElement.ByName("FirstTabContent");
                 Verify.IsNotNull(tabContent);
+            }
+        }
+
+        [TestMethod]
+        public void ReorderItemsTest()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button tabItemsSourcePageButton = FindElement.ByName<Button>("TabViewTabItemsSourcePageButton");
+                tabItemsSourcePageButton.InvokeAndWait();
+
+                UIObject sourceTab = null;
+                int attempts = 0;
+
+                do
+                {
+                    Wait.ForMilliseconds(100);
+                    ElementCache.Refresh();
+
+                    sourceTab = FindElement.ByName("tabViewItem0");
+                    attempts++;
+                }
+                while (sourceTab == null && attempts < 4);
+
+                Verify.IsNotNull(sourceTab);
+
+                UIObject dropTab = FindElement.ByName("tabViewItem2");
+                Verify.IsNotNull(dropTab);
+
+                Log.Comment("Reordering tabs with drag-drop operation...");
+                InputHelper.DragToTarget(sourceTab, dropTab);
+                Wait.ForIdle();
+                ElementCache.Refresh();
+                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
+
+                TextBlock tblIVectorChangedEventArgsCollectionChange = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsCollectionChange");
+                Verify.AreEqual("ItemInserted", tblIVectorChangedEventArgsCollectionChange.DocumentText);
+
+                TextBlock tblIVectorChangedEventArgsIndex = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsIndex");
+                Verify.AreEqual("1", tblIVectorChangedEventArgsIndex.DocumentText);
             }
         }
 
@@ -480,7 +531,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
                 Verify.IsNotNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
-
             }
         } 
 
@@ -526,7 +576,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 TextBlock dragOutsideTextBlock = FindElement.ByName<TextBlock>("TabDroppedOutsideTextBlock");
-                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "");
+                Verify.AreEqual("", dragOutsideTextBlock.DocumentText);
 
                 Log.Comment("Drag tab out");
                 UIObject firstTab = TryFindElement.ByName("FirstTab");
@@ -534,7 +584,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Verify event fired");
-                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "Home");
+                Verify.AreEqual("Home", dragOutsideTextBlock.DocumentText);
             }
         }
 
@@ -623,13 +673,138 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ScrollButtonToolTipTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                PressButtonAndVerifyText("GetScrollDecreaseButtonToolTipButton", "ScrollDecreaseButtonToolTipTextBlock", "Scroll tab list backward");
+                PressButtonAndVerifyText("GetScrollIncreaseButtonToolTipButton", "ScrollIncreaseButtonToolTipTextBlock", "Scroll tab list forward");
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTabViewItemHeaderForegroundResource()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button getSecondTabHeaderForegroundButton = FindElement.ByName<Button>("GetSecondTabHeaderForegroundButton");
+                getSecondTabHeaderForegroundButton.InvokeAndWait();
+
+                TextBlock secondTabHeaderForegroundTextBlock = FindElement.ByName<TextBlock>("SecondTabHeaderForegroundTextBlock");
+
+                Verify.AreEqual("#FF008000", secondTabHeaderForegroundTextBlock.DocumentText);
+            }
+        }
+
+        [TestMethod]
+        public void VerifySizingBehaviorOnTabCloseComingFromScroll()
+        {
+            int pixelTolerance = 10;
+
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab");
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 5", 401, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 4", 401, "False;False;");
+
+                Log.Comment("Leaving the pointer exited area");
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify correct TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 283) < pixelTolerance);
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindCloseButton(FindElement.ByName(tabName)).Click();
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
+        [TestMethod]
+        public void VerifySizingBehaviorOnTabCloseComingFromNonScroll()
+        {
+            int pixelTolerance = 10;
+
+            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTabClosingBehaviorButton" }))
+            {
+
+                Log.Comment("Verifying sizing behavior when closing a tab");
+                CloseTabAndVerifyWidth("Tab 1", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 2", 500, "True;False;");
+
+                CloseTabAndVerifyWidth("Tab 3", 500, "False;False;");
+
+                var readTabViewWidthButton = new Button(FindElement.ByName("GetActualWidthButton"));
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                CloseTabAndVerifyWidth("Tab 5", 500, "False;False;");
+
+                CloseTabAndVerifyWidth("Tab 4", 500, "False;False;");
+
+                Log.Comment("Leaving the pointer exited area");
+
+                readTabViewWidthButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify correct TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 500) < pixelTolerance);
+            }
+
+            void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
+            {
+                Log.Comment("Closing tab:" + tabName);
+                FindCloseButton(FindElement.ByName(tabName)).Click();
+                Wait.ForIdle();
+                Log.Comment("Verifying TabView width");
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - expectedValue) < pixelTolerance);
+                Verify.AreEqual(expectedScrollbuttonStates, FindElement.ByName("ScrollButtonStatus").GetText());
+
+            }
+
+            double GetActualTabViewWidth()
+            {
+                var tabviewWidth = new TextBlock(FindElement.ByName("TabViewWidth"));
+
+                return Double.Parse(tabviewWidth.GetText());
+            }
+        }
+
         public void PressButtonAndVerifyText(String buttonName, String textBlockName, String expectedText)
         {
             Button button = FindElement.ByName<Button>(buttonName);
             button.InvokeAndWait();
 
             TextBlock textBlock = FindElement.ByName<TextBlock>(textBlockName);
-            Verify.AreEqual(textBlock.DocumentText, expectedText);
+            Verify.AreEqual(expectedText, textBlock.DocumentText);
         }
 
         Button FindCloseButton(UIObject tabItem)

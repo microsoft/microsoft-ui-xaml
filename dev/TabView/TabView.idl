@@ -89,6 +89,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TabView, Windows.Foundation.Collections.IVectorChangedEventArgs> TabItemsChanged;
 
     // From ListView
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object TabItemsSource;
     Windows.Foundation.Collections.IVector<Object> TabItems{ get; };
 
@@ -176,8 +177,19 @@ unsealed runtimeclass TabViewItemTemplateSettings : Windows.UI.Xaml.DependencyOb
     TabViewItemTemplateSettings();
 
     Windows.UI.Xaml.Controls.IconElement IconElement;
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.UI.Xaml.Thickness LeftInsetRadiusMargin;
+        Windows.UI.Xaml.Thickness RightInsetRadiusMargin;
+    }
 
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty LeftInsetRadiusMarginProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty RightInsetRadiusMarginProperty{ get; };
+    }
 }
 
 }

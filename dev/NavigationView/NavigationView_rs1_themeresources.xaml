@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -248,7 +248,13 @@
     <Thickness x:Key="NavigationViewItemSeparatorMargin">16,10</Thickness>
     <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">16,10</Thickness>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">10,0</Thickness>
-
+    <Thickness x:Key="NavigationViewItemContentPresenterMargin">0,0,16,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,0,16,0</Thickness>
+    <Thickness x:Key="NavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowContentPresenterMargin">12,0,16,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
+    
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">
@@ -665,7 +671,7 @@
 
                                 <ContentPresenter x:Name="ContentPresenter"
                                     Grid.Column="1"
-                                    Margin="0,0,16,0"
+                                    Margin="{ThemeResource NavigationViewItemContentPresenterMargin}"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
                                     ContentTemplate="{TemplateBinding ContentTemplate}"
                                     Content="{TemplateBinding Content}"
@@ -680,7 +686,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
-                                    Margin="-16,0,0,0"
+                                    Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
                                     Background="Transparent">
                                     <TextBlock
                                             Width="12" Height="12"
@@ -833,7 +839,7 @@
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                    Margin="0,0,16,0"
+                                    Margin="{ThemeResource NavigationViewItemContentPresenterMargin}"
                                     Padding="{TemplateBinding Padding}"
                                     AutomationProperties.AccessibilityView="Raw"/>
 
@@ -842,7 +848,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
-                                    Margin="-16,0,0,0"
+                                    Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
                                     Background="Transparent">
                                     <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
                                             RenderTransformOrigin="0.5, 0.5"
@@ -1118,7 +1124,7 @@
                             <ContentPresenter
                                 x:Name="ContentPresenter"
                                 Grid.Column="1"
-                                Margin="8,0,16,0"
+                                Margin="{ThemeResource TopNavigationViewItemContentPresenterMargin}"
                                 TextWrapping="NoWrap"
                                 Foreground="{TemplateBinding Foreground}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -1133,7 +1139,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="24"
-                                    Margin="-16,0,0,0"
+                                    Margin="{ThemeResource TopNavigationViewItemExpandChevronMargin}"
                                     Background="Transparent">
                                 <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
                                             RenderTransformOrigin="0.5, 0.5"
@@ -1273,7 +1279,7 @@
                             <ContentPresenter
                                 x:Name="ContentPresenter"
                                 Grid.Column="1"
-                                Margin="8,0,16,0"
+                                Margin="{ThemeResource TopNavigationViewItemContentPresenterMargin}"
                                 Foreground="{TemplateBinding Foreground}"
                                 TextWrapping="NoWrap"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -1286,7 +1292,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="24"
-                                    Margin="-16,0,0,0"
+                                    Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
                                     Background="Transparent">
                                 <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
                                             RenderTransformOrigin="0.5, 0.5"
@@ -1461,7 +1467,7 @@
                                 <ContentPresenter
                                     x:Name="ContentPresenter"
                                     Grid.Column="1"
-                                    Margin="12,0,16,0"
+                                    Margin="{ThemeResource TopNavigationViewItemOnOverflowContentPresenterMargin}"
                                     Foreground="{TemplateBinding Foreground}"
                                     TextWrapping="NoWrap"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -1476,7 +1482,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
-                                    Padding="12,0,12,0"
+                                    Padding="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronPadding}"
                                     Background="Transparent">
                                     <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
                                             Width="12" Height="12"

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -978,6 +978,11 @@ namespace MUXControlsTestApp
             Frame.NavigateWithoutAnimation(typeof(TreeViewNodeInMarkupTestPage));
         }
 
+        private void TreeViewUnrealizedChildrenTestPage_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.NavigateWithoutAnimation(typeof(TreeViewUnrealizedChildrenTestPage));
+        }
+
         private void ClearException_Click(object sender, RoutedEventArgs e)
         {
             ExceptionMessage.Text = string.Empty;
@@ -1009,6 +1014,21 @@ namespace MUXControlsTestApp
             {
                 this.ContentModeTestTreeView.ItemsSource = TestTreeView2ItemsSource;
             }
+        }
+
+        private void TwoWayBoundButton_Click(object sender, RoutedEventArgs e)
+        {
+            TwoWayBoundButton.Content = TestTreeView.RootNodes[0].Children[1];
+        }
+
+        private void SelectRoot2Item_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeView.SelectedItem = TestTreeView.RootNodes[0].Children[2];
+        }
+        private void ReadBindingResult_Click(object sender, RoutedEventArgs e)
+        {
+            Results.Text = (TwoWayBoundButton.Content as TreeViewNode).Content as string 
+                + ";" + (TestTreeView.SelectedItem as TreeViewNode).Content as string;
         }
     }
 }

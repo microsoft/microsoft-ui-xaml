@@ -202,6 +202,22 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SelectedItemIsEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SelectedItem != null)
+            {
+                (NavView.SelectedItem as Control).IsEnabled = true;
+            }
+        }
+
+        private void SelectedItemIsEnabledCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SelectedItem != null)
+            {
+                (NavView.SelectedItem as Control).IsEnabled = false;
+            }
+        }
+
         private void SettingsItemVisibilityCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             NavView.IsSettingsVisible = true;
@@ -347,6 +363,24 @@ namespace MUXControlsTestApp
             {
                 ItemInvokedItemContainerType.Text = args.InvokedItemContainer.GetType().ToString();
             }
+
+            var curSelected = sender.SelectedItem as NavigationViewItem;
+            var text = args.InvokedItem as string;
+            if (curSelected != null && (string)curSelected.Content == text)
+            {
+                if(InvokedItemState.Text == "ItemWasSelectedInItemInvoked")
+                {
+                    InvokedItemState.Text = "ItemWasInvokedSecomdTimeWithCorrectSelection";
+                }
+                else
+                {
+                    InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                }
+            } 
+            else
+            {
+                InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
+            }
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -378,6 +412,15 @@ namespace MUXControlsTestApp
             if (args.SelectedItemContainer != null)
             {
                 SelectionChangedItemContainerType.Text = args.SelectedItemContainer.GetType().ToString();
+            }
+
+            if (NavView.SelectedItem == null)
+            {
+                SelectedItemIsEnabledCheckbox.IsChecked = null;
+            }
+            else
+            {
+                SelectedItemIsEnabledCheckbox.IsChecked = (NavView.SelectedItem as Control).IsEnabled;
             }
         }
 

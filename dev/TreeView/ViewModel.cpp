@@ -1041,7 +1041,12 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
     case (winrt::CollectionChange::ItemInserted):
     {
         auto newNode = changingChildrenNode.Children().GetAt(index);
-        UpdateNodeSelection(newNode, NodeSelectionState(changingChildrenNode));
+
+        // If we are in multi select, we want the new child items to be also selected.
+        if (!IsInSingleSelectionMode())
+        {
+            UpdateNodeSelection(newNode, NodeSelectionState(changingChildrenNode));
+        }
         break;
     }
 
