@@ -19,7 +19,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(XES_DFSDROP)' == ''">
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.66</Version>
+      <Version>1.0.67</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Native.Compiler">
       <Version>2.2.3</Version>
