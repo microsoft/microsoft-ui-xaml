@@ -369,7 +369,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(Au
     {
         if (auto const itemsSourceView = parentRepeater.ItemsSourceView())
         {
-            auto numberOfElements = itemsSourceView.Count();
+            auto const numberOfElements = itemsSourceView.Count();
 
             for (int32_t i = 0; i < numberOfElements; i++)
             {

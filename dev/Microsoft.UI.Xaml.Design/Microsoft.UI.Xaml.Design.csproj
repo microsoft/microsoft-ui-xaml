@@ -17,6 +17,8 @@
     <!-- This design-time dll depends on an x86-only reference and should be built x86 no matter the solution configuration. -->
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <!-- These configurations are all the same because we always build x86, but VS wants them there 
        to show them as options in the configuration manager. -->
@@ -71,5 +73,15 @@
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.ToggleSplitButton.bmp" />
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.TreeView.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.66\build\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.66\build\MUXCustomBuildTasks.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.66\build\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.66\build\MUXCustomBuildTasks.targets'))" />
+  </Target>
 </Project>

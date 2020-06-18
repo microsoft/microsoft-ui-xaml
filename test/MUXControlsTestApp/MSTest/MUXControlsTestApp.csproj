@@ -19,7 +19,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(XES_DFSDROP)' == ''">
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.48</Version>
+      <Version>1.0.66</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Native.Compiler">
       <Version>2.2.3</Version>
@@ -39,11 +39,11 @@
   <ItemGroup>
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
   </ItemGroup>
-  <ItemGroup >
-    <AppxManifest Include="PackageInnerLoop.appxmanifest" Condition="$(SolutionName) == 'MUXControlsInnerLoop'">      
+  <ItemGroup>
+    <AppxManifest Include="PackageInnerLoop.appxmanifest" Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
-    </AppxManifest>    
-    <AppxManifest Include="Package.appxmanifest" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">      
+    </AppxManifest>
+    <AppxManifest Include="Package.appxmanifest" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>

@@ -100,13 +100,11 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     TeachingTipTailVisibility TailVisibility;
 
     Object ActionButtonContent;
-    [MUX_DEFAULT_VALUE("unbox_value<winrt::Style>(winrt::Application::Current().Resources().Lookup(box_value(L\"DefaultButtonStyle\")))")]
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
     Object ActionButtonCommandParameter;
 
     Object CloseButtonContent;
-    [MUX_DEFAULT_VALUE("unbox_value<winrt::Style>(winrt::Application::Current().Resources().Lookup(box_value(L\"DefaultButtonStyle\")))")]
     Windows.UI.Xaml.Style CloseButtonStyle;
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;

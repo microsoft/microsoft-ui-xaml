@@ -406,10 +406,10 @@ void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource,boo
     // No children, so close parent if not requested otherwise
     if (updateIsExpanded && inner->Size() == 0)
     {
-        if (auto&& ownerNode = m_parent.get())
+        if (const auto& ownerNode = m_parent.get())
         {
             // Only set IsExpanded to false if we are not the root node
-            if (auto&& ownerParent = ownerNode.Parent())
+            if (const auto& ownerParent = ownerNode.Parent())
             {
                 ownerNode.IsExpanded(false);
             }
@@ -474,10 +474,10 @@ void TreeViewNodeVector::Clear(bool updateItemsSource,bool updateIsExpanded)
 
     if (updateIsExpanded)
     {
-        if(auto&& ownerNode = m_parent.get())
+        if(const auto& ownerNode = m_parent.get())
         {
             // Only set IsExpanded to false if we are not the root node
-            if (auto&& ownerParent = ownerNode.Parent())
+            if (const auto& ownerParent = ownerNode.Parent())
             {
                 ownerNode.IsExpanded(false);
             }

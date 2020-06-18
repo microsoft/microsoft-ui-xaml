@@ -135,7 +135,7 @@
     <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
     <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
-    <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'"/>
+    <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
     <Import Project="..\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
   </ImportGroup>
@@ -171,11 +171,7 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
   <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
-  <PropertyGroup Condition="
-    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
-    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
-    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
-    ">
+  <PropertyGroup Condition="&#xD;&#xA;    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR&#xD;&#xA;    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR&#xD;&#xA;    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')&#xD;&#xA;    ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
@@ -440,12 +436,12 @@
        IXamlMetadataProvider implementation. -->
   <Target Name="ComputeXamlGeneratedCompileInputs" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets')" />
     <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -548,7 +544,7 @@
     <!-- The Name of the Local Assembly in Managed and Native -->
     <PropertyGroup>
       <LocalAssembly Condition="'$(LocalAssembly)' == '' and Exists(@(XamlIntermediateAssembly))">
-        @(XamlIntermediateAssembly-&gt;'%(Identity)')
+        @(XamlIntermediateAssembly->'%(Identity)')
       </LocalAssembly>
     </PropertyGroup>
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
@@ -615,7 +611,7 @@
   <!-- Merge all idl files into one -->
   <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
     <PropertyGroup>
-      <MidlLines>@(Midl-&gt;'#include &lt;%(FullPath)&gt;', '
+      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
 ')</MidlLines>
     </PropertyGroup>
     <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
@@ -636,8 +632,8 @@
   <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(IntDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>
-      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs->'-i &quot;%(Identity)&quot;', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs->'-i "%(Identity)"', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
     </PropertyGroup>
     <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
   </Target>
@@ -666,7 +662,6 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe'))" />
-    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props'))" />
@@ -675,6 +670,7 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>

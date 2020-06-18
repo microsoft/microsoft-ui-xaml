@@ -47,6 +47,9 @@
   <ItemGroup>
     <Compile Include="TestAppInstallHelper.cs" Condition="$(BuildingWithBuildExe) == 'true'" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MUXCustomBuildTasks" Version="1.0.66" />
+  </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.targets" />
   <!-- Sdk="Microsoft.NET.Sdk" doesn't do anything in Razzle, so we need to manually include the C# targets file there. -->
   <Import Project="$(CSharpTargetsFilePath)" Condition="$(BuildingWithBuildExe) == 'true'" />

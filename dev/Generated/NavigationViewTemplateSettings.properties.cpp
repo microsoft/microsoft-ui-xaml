@@ -120,7 +120,10 @@ void NavigationViewTemplateSettingsProperties::ClearProperties()
 
 void NavigationViewTemplateSettingsProperties::BackButtonVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_BackButtonVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility NavigationViewTemplateSettingsProperties::BackButtonVisibility()
@@ -130,7 +133,10 @@ winrt::Visibility NavigationViewTemplateSettingsProperties::BackButtonVisibility
 
 void NavigationViewTemplateSettingsProperties::LeftPaneVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_LeftPaneVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility NavigationViewTemplateSettingsProperties::LeftPaneVisibility()
@@ -140,7 +146,10 @@ winrt::Visibility NavigationViewTemplateSettingsProperties::LeftPaneVisibility()
 
 void NavigationViewTemplateSettingsProperties::OverflowButtonVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_OverflowButtonVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility NavigationViewTemplateSettingsProperties::OverflowButtonVisibility()
@@ -150,7 +159,10 @@ winrt::Visibility NavigationViewTemplateSettingsProperties::OverflowButtonVisibi
 
 void NavigationViewTemplateSettingsProperties::PaneToggleButtonVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_PaneToggleButtonVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility NavigationViewTemplateSettingsProperties::PaneToggleButtonVisibility()
@@ -160,7 +172,10 @@ winrt::Visibility NavigationViewTemplateSettingsProperties::PaneToggleButtonVisi
 
 void NavigationViewTemplateSettingsProperties::SingleSelectionFollowsFocus(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_SingleSelectionFollowsFocusProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewTemplateSettingsProperties::SingleSelectionFollowsFocus()
@@ -170,7 +185,10 @@ bool NavigationViewTemplateSettingsProperties::SingleSelectionFollowsFocus()
 
 void NavigationViewTemplateSettingsProperties::TopPadding(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_TopPaddingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NavigationViewTemplateSettingsProperties::TopPadding()
@@ -180,7 +198,10 @@ double NavigationViewTemplateSettingsProperties::TopPadding()
 
 void NavigationViewTemplateSettingsProperties::TopPaneVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_TopPaneVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility NavigationViewTemplateSettingsProperties::TopPaneVisibility()

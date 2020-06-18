@@ -414,7 +414,10 @@ void ScrollerProperties::OnZoomModePropertyChanged(
 
 void ScrollerProperties::Background(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_BackgroundProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush ScrollerProperties::Background()
@@ -424,7 +427,10 @@ winrt::Brush ScrollerProperties::Background()
 
 void ScrollerProperties::Content(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_ContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement ScrollerProperties::Content()
@@ -434,7 +440,10 @@ winrt::UIElement ScrollerProperties::Content()
 
 void ScrollerProperties::ContentOrientation(winrt::ContentOrientation const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ContentOrientation ScrollerProperties::ContentOrientation()
@@ -444,9 +453,12 @@ winrt::ContentOrientation ScrollerProperties::ContentOrientation()
 
 void ScrollerProperties::HorizontalAnchorRatio(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<Scroller*>(this)->ValidateAnchorRatio(coercedValue);
     static_cast<Scroller*>(this)->SetValue(s_HorizontalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollerProperties::HorizontalAnchorRatio()
@@ -456,7 +468,10 @@ double ScrollerProperties::HorizontalAnchorRatio()
 
 void ScrollerProperties::HorizontalScrollChainingMode(winrt::ChainingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_HorizontalScrollChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ChainingMode ScrollerProperties::HorizontalScrollChainingMode()
@@ -466,7 +481,10 @@ winrt::ChainingMode ScrollerProperties::HorizontalScrollChainingMode()
 
 void ScrollerProperties::HorizontalScrollMode(winrt::ScrollMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_HorizontalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ScrollMode ScrollerProperties::HorizontalScrollMode()
@@ -476,7 +494,10 @@ winrt::ScrollMode ScrollerProperties::HorizontalScrollMode()
 
 void ScrollerProperties::HorizontalScrollRailingMode(winrt::RailingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_HorizontalScrollRailingModeProperty, ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RailingMode ScrollerProperties::HorizontalScrollRailingMode()
@@ -486,7 +507,10 @@ winrt::RailingMode ScrollerProperties::HorizontalScrollRailingMode()
 
 void ScrollerProperties::IgnoredInputKind(winrt::InputKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_IgnoredInputKindProperty, ValueHelper<winrt::InputKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::InputKind ScrollerProperties::IgnoredInputKind()
@@ -496,9 +520,12 @@ winrt::InputKind ScrollerProperties::IgnoredInputKind()
 
 void ScrollerProperties::MaxZoomFactor(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<Scroller*>(this)->ValidateZoomFactoryBoundary(coercedValue);
     static_cast<Scroller*>(this)->SetValue(s_MaxZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollerProperties::MaxZoomFactor()
@@ -508,9 +535,12 @@ double ScrollerProperties::MaxZoomFactor()
 
 void ScrollerProperties::MinZoomFactor(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<Scroller*>(this)->ValidateZoomFactoryBoundary(coercedValue);
     static_cast<Scroller*>(this)->SetValue(s_MinZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollerProperties::MinZoomFactor()
@@ -520,9 +550,12 @@ double ScrollerProperties::MinZoomFactor()
 
 void ScrollerProperties::VerticalAnchorRatio(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<Scroller*>(this)->ValidateAnchorRatio(coercedValue);
     static_cast<Scroller*>(this)->SetValue(s_VerticalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollerProperties::VerticalAnchorRatio()
@@ -532,7 +565,10 @@ double ScrollerProperties::VerticalAnchorRatio()
 
 void ScrollerProperties::VerticalScrollChainingMode(winrt::ChainingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_VerticalScrollChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ChainingMode ScrollerProperties::VerticalScrollChainingMode()
@@ -542,7 +578,10 @@ winrt::ChainingMode ScrollerProperties::VerticalScrollChainingMode()
 
 void ScrollerProperties::VerticalScrollMode(winrt::ScrollMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_VerticalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ScrollMode ScrollerProperties::VerticalScrollMode()
@@ -552,7 +591,10 @@ winrt::ScrollMode ScrollerProperties::VerticalScrollMode()
 
 void ScrollerProperties::VerticalScrollRailingMode(winrt::RailingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_VerticalScrollRailingModeProperty, ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RailingMode ScrollerProperties::VerticalScrollRailingMode()
@@ -562,7 +604,10 @@ winrt::RailingMode ScrollerProperties::VerticalScrollRailingMode()
 
 void ScrollerProperties::ZoomChainingMode(winrt::ChainingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_ZoomChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ChainingMode ScrollerProperties::ZoomChainingMode()
@@ -572,7 +617,10 @@ winrt::ChainingMode ScrollerProperties::ZoomChainingMode()
 
 void ScrollerProperties::ZoomMode(winrt::ZoomMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<Scroller*>(this)->SetValue(s_ZoomModeProperty, ValueHelper<winrt::ZoomMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ZoomMode ScrollerProperties::ZoomMode()

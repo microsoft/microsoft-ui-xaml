@@ -225,6 +225,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="packages.config" />
     <None Include="TestAppCX_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -274,5 +275,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.66\build\native\MUXCustomBuildTasks.targets'))" />
+  </Target>
 </Project>
