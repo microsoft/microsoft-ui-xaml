@@ -31,7 +31,7 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForType(const wstring_view& type)
     }
     else
     {
-        auto iterator = m_typeLoggingLevels.find(type);
+        const auto iterator = m_typeLoggingLevels.find(type);
 
         if (iterator != m_typeLoggingLevels.end())
         {
@@ -48,7 +48,7 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForInstance(const winrt::IInspectable
 {
     if (sender)
     {
-        auto iterator = m_instanceLoggingLevels.find(sender);
+        const auto iterator = m_instanceLoggingLevels.find(sender);
 
         if (iterator != m_instanceLoggingLevels.end())
         {
@@ -120,7 +120,7 @@ void MUXControlsTestHooks::SetLoggingLevelForTypeImpl(const wstring_view& type, 
     }
     else
     {
-        auto iterator = m_typeLoggingLevels.find(type);
+        const auto iterator = m_typeLoggingLevels.find(type);
 
         if (iterator != m_typeLoggingLevels.end())
         {
@@ -155,7 +155,7 @@ void MUXControlsTestHooks::SetLoggingLevelForInstanceImpl(const winrt::IInspecta
 
     if (sender)
     {
-        auto iterator = m_instanceLoggingLevels.find(sender);
+        const auto iterator = m_instanceLoggingLevels.find(sender);
 
         if (iterator != m_instanceLoggingLevels.end())
         {

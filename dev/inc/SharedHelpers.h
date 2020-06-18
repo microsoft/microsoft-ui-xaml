@@ -290,7 +290,7 @@ public:
     template <typename IndexType, typename ElementType>
     static void EraseIfExists(std::map<IndexType, ElementType>& map, IndexType const& index)
     {
-        auto it = map.find(index);
+        const auto it = map.find(index);
         if (it != map.end())
         {
             map.erase(it);
