@@ -37,7 +37,8 @@ Examples
 | Windows 10 version                  | Saw the problem? |
 | :--------------------------------- | :-------------------- |
 | Insider Build (xxxxx)              | <!-- Yes/No? -->   |
-| November 2019 Update (18363)  | <!-- Yes/No? -->   |
+| May 2020 Update (19041)            | <!-- Yes/No? -->   |
+| November 2019 Update (18363)       | <!-- Yes/No? -->   |
 | May 2019 Update (18362)            | <!-- Yes/No? -->   |
 | October 2018 Update (17763)        | <!-- Yes/No? -->   |
 | April 2018 Update (17134)          | <!-- Yes/No? -->   |
