@@ -98,6 +98,7 @@
     <Style x:Key="DefaultContentDialogStyle" TargetType="ContentDialog">
         <Setter Property="Foreground" Value="{ThemeResource ContentDialogForeground}" />
         <Setter Property="Background" Value="{ThemeResource ContentDialogBackground}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ContentDialogBorderWidth}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ContentDialogBorderBrush}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
@@ -276,7 +277,7 @@
                                 x:Name="BackgroundElement"
                                 Background="{TemplateBinding Background}"
                                 FlowDirection="{TemplateBinding FlowDirection}"
-                                BorderThickness="{ThemeResource ContentDialogBorderWidth}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                 contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
