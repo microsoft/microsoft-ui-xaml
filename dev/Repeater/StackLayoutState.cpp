@@ -43,7 +43,7 @@ void StackLayoutState::OnElementMeasured(int elementIndex, double majorSize, dou
     m_maxArrangeBounds = std::max(m_maxArrangeBounds, minorSize);
 }
 
-void StackLayoutState::OnArrangeLayoutEnd()
+void StackLayoutState::OnMeasureStart()
 {
     m_maxArrangeBounds = 0.0;
 }

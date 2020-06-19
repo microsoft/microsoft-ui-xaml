@@ -109,8 +109,8 @@ public:
     void Append(winrt::TreeViewNode const& item, bool updateItemsSource = true);   
     void InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);
     void SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);   
-    void RemoveAt(unsigned int index, bool updateItemsSource = true);
+    void RemoveAt(unsigned int index, bool updateItemsSource = true, bool updateIsExpanded = true);
     void RemoveAtEnd(bool updateItemsSource = true);
     void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource = true);    
-    void Clear(bool updateItemsSource = true);
+    void Clear(bool updateItemsSource = true, bool updateIsExpanded = true);
 };

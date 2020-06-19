@@ -29,7 +29,7 @@
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home" />
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Icon="Shop" Tag="Apps" /> <!-- AppsItem only have Icon and no content -->
                 <muxcontrols:NavigationViewItem x:Name="SuppressSelection" Content="SuppressSelection" Icon="Emoji" SelectsOnInvoked="False" />
-                <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji" />
+                <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
                 <muxcontrols:NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio" />

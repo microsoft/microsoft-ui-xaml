@@ -129,4 +129,20 @@
     <value>Aizvērt cilni</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
+    <value>Aizvērt cilni</value>
+    <comment>Tooltip for the close button on each tab.</comment>
+  </data>
+  <data name="TabViewCloseButtonTooltipWithKA" xml:space="preserve">
+    <value>Aizvērt cilni (Ctrl+F4)</value>
+    <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
+  </data>
+  <data name="TabViewScrollDecreaseButtonTooltip" xml:space="preserve">
+    <value>Ritināt ciļņu sarakstā atpakaļ</value>
+    <comment>Tooltip for the tab list scroll decrease button.</comment>
+  </data>
+  <data name="TabViewScrollIncreaseButtonTooltip" xml:space="preserve">
+    <value>Ritināt ciļņu sarakstā uz priekšu</value>
+    <comment>Tooltip for the tab list scroll increase button.</comment>
+  </data>
 </root>

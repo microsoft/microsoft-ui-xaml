@@ -96,7 +96,7 @@ bool VisualStateUtil::VisualStateGroupExists(const winrt::FrameworkElement& cont
     return static_cast<bool>(GetVisualStateGroup(control, groupName));
 }
 
-void VisualStateUtil::GotToStateIfGroupExists(const winrt::Control& control, const std::wstring_view& groupName, const std::wstring_view& stateName, bool useTransitions)
+void VisualStateUtil::GoToStateIfGroupExists(const winrt::Control& control, const std::wstring_view& groupName, const std::wstring_view& stateName, bool useTransitions)
 {
     auto visualStateGroup = GetVisualStateGroup(control, groupName);
     if (visualStateGroup)
