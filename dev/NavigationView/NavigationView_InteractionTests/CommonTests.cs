@@ -1642,11 +1642,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Medium);
                 Wait.ForIdle();
 
-                // Verify that top-level items use the correct content padding
+                // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
                 Verify.AreEqual("0,0,0,0", contentPresenterMarginTextBlock.DocumentText);
 
-                // Child items in closed compact mode are shown in a flyout. Verify that they are using the correct padding 
+                // Child items in closed compact mode are shown in a flyout. Verify that they are using the correct margin 
                 Log.Comment("Expand item with children");
                 UIObject hasChildItem = FindElement.ByName("HasChildItem");
                 InputHelper.LeftClick(hasChildItem);
@@ -1660,7 +1660,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
 
-                // Verify that top-level items use the correct content padding
+                // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
                 Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
             }
