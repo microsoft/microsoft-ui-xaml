@@ -1627,5 +1627,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 }
             }
         }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemContentPresenterMargin()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var getTopLevelContentPresenterMarginButton = FindElement.ById<Button>("GetTopLevelNavViewItemContentPresenterMarginButton");
+                var getChildContentPresenterMarginButton = FindElement.ById<Button>("GetChildNavViewItemContentPresenterMarginButton");
+                var contentPresenterMarginTextBlock = new TextBlock(FindElement.ByName("NavViewItemContentPresenterMarginTextBlock"));
+
+                // Switch the NavigationView to closed compact mode
+                Log.Comment("Switch NavigationView to closed compact mode");
+                SetNavViewWidth(ControlWidth.Medium);
+                Wait.ForIdle();
+
+                // Verify that top-level items use the correct content padding
+                getTopLevelContentPresenterMarginButton.InvokeAndWait();
+                Verify.AreEqual("0,0,0,0", contentPresenterMarginTextBlock.DocumentText);
+
+                // Child items in closed compact mode are shown in a flyout. Verify that they are using the correct padding 
+                Log.Comment("Expand item with children");
+                UIObject hasChildItem = FindElement.ByName("HasChildItem");
+                InputHelper.LeftClick(hasChildItem);
+                Wait.ForIdle();
+
+                getChildContentPresenterMarginButton.InvokeAndWait();
+                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+
+                // Switch the NavigationView to expanded mode
+                Log.Comment("Switch NavigationView to expanded mode");
+                SetNavViewWidth(ControlWidth.Wide);
+                Wait.ForIdle();
+
+                // Verify that top-level items use the correct content padding
+                getTopLevelContentPresenterMarginButton.InvokeAndWait();
+                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+            }
+        }
     }
 }
