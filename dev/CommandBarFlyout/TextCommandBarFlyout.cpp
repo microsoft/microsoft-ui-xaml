@@ -914,7 +914,7 @@ void TextCommandBarFlyout::ExecuteSelectAllCommand()
 
 winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons textControlButton)
 {
-    auto foundButton = m_buttons.find(textControlButton);
+    const auto foundButton = m_buttons.find(textControlButton);
 
     if (foundButton != m_buttons.end())
     {

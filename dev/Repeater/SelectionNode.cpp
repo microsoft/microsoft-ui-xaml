@@ -195,7 +195,7 @@ winrt::IReference<bool> SelectionNode::IsSelectedWithPartial()
         const auto it = std::find_if(parentsChildren.cbegin(), parentsChildren.cend(), [this](const std::shared_ptr<SelectionNode>& node) { return node.get() == this; });
         if (it != parentsChildren.end())
         {
-            auto myIndexInParent = static_cast<int>(it - parentsChildren.begin());
+            const auto myIndexInParent = static_cast<int>(it - parentsChildren.begin());
             isSelected = m_parent->IsSelectedWithPartial(myIndexInParent);
         }
     }

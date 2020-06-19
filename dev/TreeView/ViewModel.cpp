@@ -1012,11 +1012,14 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
         if (changingNodeParent.IsExpanded())
         {
             auto removedNode = GetRemovedChildTreeViewNodeByIndex(changingNodeParent, index);
-            unsigned int removedNodeIndex = 0;
-            MUX_ASSERT(IndexOfNode(removedNode, removedNodeIndex));
+            [[gsl::suppress(con)]]
+            {
+                unsigned int removedNodeIndex = 0;
+                MUX_ASSERT(IndexOfNode(removedNode, removedNodeIndex));
 
-            RemoveNodeAndDescendantsFromView(removedNode);
-            InsertAt(removedNodeIndex, targetNode.as<winrt::IInspectable>());
+                RemoveNodeAndDescendantsFromView(removedNode);
+                InsertAt(removedNodeIndex, targetNode.as<winrt::IInspectable>());
+            }
 
             if (IsContentMode())
             {
