@@ -130,21 +130,25 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavRepeaterLoadedRevoker.revoke();
+    m_leftNavRepeaterGettingFocusRevoker.revoke();
     m_leftNavRepeater.set(nullptr);
 
     m_topNavItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterLoadedRevoker.revoke();
+    m_topNavRepeaterGettingFocusRevoker.revoke();
     m_topNavRepeater.set(nullptr);
 
     m_leftNavFooterMenuItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavFooterMenuItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavFooterMenuRepeaterLoadedRevoker.revoke();
+    m_leftNavFooterMenuRepeaterGettingFocusRevoker.revoke();
     m_leftNavFooterMenuRepeater.set(nullptr);
 
     m_topNavFooterMenuItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavFooterMenuItemsRepeaterElementClearingRevoker.revoke();
     m_topNavFooterMenuRepeaterLoadedRevoker.revoke();
+    m_topNavFooterMenuRepeaterGettingFocusRevoker.revoke();
     m_topNavFooterMenuRepeater.set(nullptr);
 
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
@@ -417,6 +421,8 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
+        m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
+
         leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
@@ -436,6 +442,8 @@ void NavigationView::OnApplyTemplate()
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
+
+        m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         topNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
@@ -495,6 +503,8 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavFooterMenuRepeaterLoadedRevoker = leftFooterMenuNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
+        m_leftNavFooterMenuRepeaterGettingFocusRevoker = leftFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
+
         leftFooterMenuNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
@@ -515,6 +525,8 @@ void NavigationView::OnApplyTemplate()
         m_topNavFooterMenuItemsRepeaterElementClearingRevoker = topFooterMenuNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
 
         m_topNavFooterMenuRepeaterLoadedRevoker = topFooterMenuNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
+
+        m_topNavFooterMenuRepeaterGettingFocusRevoker = topFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         topFooterMenuNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
@@ -2433,6 +2445,63 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
             if (auto controlLast = lastElement.try_as<winrt::Control>())
             {
                 controlLast.Focus(winrt::FocusState::Programmatic);
+            }
+        }
+    }
+}
+
+void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
+{
+    if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard && m_selectionModel.SelectedIndex())
+    {
+        if (auto const oldFocusedElement = args.OldFocusedElement())
+        {
+            if (auto const newRootItemsRepeater = sender.try_as<winrt::ItemsRepeater>())
+            {
+                auto const isFocusOutsideCurrentRootRepeater = [this, oldFocusedElement, newRootItemsRepeater]()
+                {
+                    bool isFocusOutsideCurrentRootRepeater = true;
+                    auto treeWalkerCursor = oldFocusedElement;
+
+                    // check if last focused element was in same root repeater
+                    while (treeWalkerCursor)
+                    {
+                        if (auto oldFocusedNavigationItemBase = treeWalkerCursor.try_as<winrt::NavigationViewItemBase>())
+                        {
+                            auto const oldParentRootRepeater = GetParentRootItemsRepeaterForContainer(oldFocusedNavigationItemBase);
+                            isFocusOutsideCurrentRootRepeater = oldParentRootRepeater != newRootItemsRepeater;
+                            break;
+                        }
+
+                        treeWalkerCursor = winrt::VisualTreeHelper::GetParent(treeWalkerCursor);
+                    }
+
+                    return isFocusOutsideCurrentRootRepeater;
+                }();
+
+                auto const rootRepeaterForSelectedItem = [this]()
+                {
+                    if (IsTopNavigationView())
+                    {
+                        return m_selectionModel.SelectedIndex().GetAt(0) == c_mainMenuBlockIndex ? m_topNavRepeater.get() : m_topNavFooterMenuRepeater.get();
+                    }
+                    return m_selectionModel.SelectedIndex().GetAt(0) == c_mainMenuBlockIndex ? m_leftNavRepeater.get() : m_leftNavFooterMenuRepeater.get();
+                }();
+
+                // If focus is coming from outside the root repeater,
+                // and selected item is within current repeater
+                // we should put focus on selected item
+                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                {
+                    if (newRootItemsRepeater == rootRepeaterForSelectedItem && isFocusOutsideCurrentRootRepeater)
+                    {
+                        auto const selectedContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex(), true /* lastVisible */);
+                        if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(selectedContainer))
+                        {
+                            args.Handled(true);
+                        }
+                    }
+                }
             }
         }
     }
@@ -4706,24 +4775,36 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
     return nullptr;
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible)
 {
     if (ip && ip.GetSize() > 0)
     {
         if (auto const container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/))
         {
+            if (lastVisible)
+            {
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+                {
+                    if (!nvi.IsExpanded())
+                    {
+                        return nvi;
+                    }
+                }
+            }
+
             // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
             // We want to be able to retrieve containers for items that are in the flyout.
             // This will return nullptr if requesting children containers of
             // items in the primary list, or unrealized items in the overflow popup.
             // However this should not happen.
-            return GetContainerForIndexPath(container, ip);
+            return GetContainerForIndexPath(container, ip, lastVisible);
         }
     }
     return nullptr;
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip)
+
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible)
 {
     auto container = firstContainer;
     if (ip.GetSize() > 1)
@@ -4733,6 +4814,11 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
             bool succeededGettingNextContainer = false;
             if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
             {
+                if (lastVisible && nvi.IsExpanded() == false)
+                {
+                    return nvi;
+                }
+
                 if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
                 {
                     if (auto const nextContainer = nviRepeater.TryGetElement(ip.GetAt(i)))

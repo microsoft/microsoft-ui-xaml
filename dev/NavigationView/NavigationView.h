@@ -109,8 +109,8 @@ private:
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     winrt::UIElement GetContainerForIndex(int index, bool inFooter);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible = false);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
@@ -258,6 +258,7 @@ private:
 
     void OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     void OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
+    void OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
     void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
     void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
@@ -396,18 +397,22 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_leftNavRepeaterLoadedRevoker{};
+    winrt::ItemsRepeater::GettingFocus_revoker m_leftNavRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_topNavRepeaterLoadedRevoker{};
+    winrt::ItemsRepeater::GettingFocus_revoker m_topNavRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavFooterMenuItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavFooterMenuItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_leftNavFooterMenuRepeaterLoadedRevoker{};
+    winrt::ItemsRepeater::GettingFocus_revoker m_leftNavFooterMenuRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavFooterMenuItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavFooterMenuItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_topNavFooterMenuRepeaterLoadedRevoker{};
+    winrt::ItemsRepeater::GettingFocus_revoker m_topNavFooterMenuRepeaterGettingFocusRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavOverflowItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
