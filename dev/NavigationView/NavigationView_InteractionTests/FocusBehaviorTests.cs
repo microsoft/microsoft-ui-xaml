@@ -155,7 +155,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     UIObject firstItem = FindElement.ByName("Home");
                     UIObject appsItem = FindElement.ByName("Apps");
-                    UIObject lastItem = FindElement.ByName("Integer");
+                    UIObject lastItem = FindElement.ByName("HasChildItem");
 
                     Log.Comment("Make sure something inside the ListView other than the first item has input focus");
                     appsItem.SetFocus();

@@ -250,7 +250,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Verify that original menu items can be removed");
                     removeButton.Invoke();
                     Wait.ForIdle();
-                    VerifyElement.NotFound("Integer", FindBy.Name);
+                    VerifyElement.NotFound("HasChildItem", FindBy.Name);
 
                     Log.Comment("Verify that menu items can be added after removing");
                     addButton.Invoke();
