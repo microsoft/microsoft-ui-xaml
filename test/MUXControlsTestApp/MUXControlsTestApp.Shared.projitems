@@ -285,7 +285,7 @@
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_unset.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\SMPTE_WallpaperHD.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Properties\App.rd.xml" />
-    <Content Include="$(MSBuildThisFileDirectory)\master\*.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)\verification\*.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
   </ItemGroup>
   <ItemGroup>
