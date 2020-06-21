@@ -158,13 +158,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             using(VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
             {
-                // Generate a basic NavigationView master file for all the pane display modes
+                // Generate a basic NavigationView verification file for all the pane display modes
                 foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
                 {
                     var filePrefix = "NavigationView" + paneDisplayMode;
                     NavigationViewPaneDisplayMode displayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
 
-                    // We can skip generating a master file for Left mode since Auto is achieving the same result.
+                    // We can skip generating a verification file for Left mode since Auto is achieving the same result.
                     if (displayMode == NavigationViewPaneDisplayMode.Left)
                     {
                         continue;
