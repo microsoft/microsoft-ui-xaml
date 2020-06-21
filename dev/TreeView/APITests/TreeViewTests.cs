@@ -499,7 +499,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
             TestUtilities.SetAsVisualTreeRoot(treeView);
 
-            VisualTreeTestHelper.VerifyVisualTree(root: treeView, masterFilePrefix: "TreeView");
+            VisualTreeTestHelper.VerifyVisualTree(root: treeView, verificationFileNamePrefix: "TreeView");
         }
 
         [TestMethod]

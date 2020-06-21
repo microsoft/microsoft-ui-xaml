@@ -172,20 +172,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
                     var navigationView = SetupNavigationView(displayMode);
-                    visualTreeVerifier.VerifyVisualTreeNoException(root: navigationView, masterFilePrefix: filePrefix);
+                    visualTreeVerifier.VerifyVisualTreeNoException(root: navigationView, verificationFileNamePrefix: filePrefix);
                 }
 
                 Log.Comment($"Verify visual tree for NavigationViewScrolling");
                 var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, verificationFileNamePrefix: "NavigationViewScrolling");
                 
                 Log.Comment($"Verify visual tree for NavigationViewLeftPaneContent");
                 var leftNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewPaneContent, masterFilePrefix: "NavigationViewLeftPaneContent");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewPaneContent, verificationFileNamePrefix: "NavigationViewLeftPaneContent");
 
                 Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
                 var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, masterFilePrefix: "NavigationViewTopPaneContent");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, verificationFileNamePrefix: "NavigationViewTopPaneContent");
             }
         }
 
@@ -619,7 +619,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
         }
 
-        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)
+        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string verificationFileNamePrefix)
         {
             UIElement headerContent = null;
 
@@ -637,7 +637,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             VisualTreeTestHelper.VerifyVisualTree(
                 root: headerContent,
-                masterFilePrefix: masterFilePrefix);
+                verificationFileNamePrefix: verificationFileNamePrefix);
         }
 
         [TestMethod]
