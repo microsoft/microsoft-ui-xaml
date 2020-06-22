@@ -1,16 +1,43 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBase
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ProgressRingTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    // TemplateSetting properties from WUXC for backwards compatibility.
+    Double EllipseDiameter{ get; };
+    Windows.UI.Xaml.Thickness EllipseOffset{ get; };
+    Double MaxSideLength{ get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
 {
     ProgressRing();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Double StrokeThickness{ get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsActive{ get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty StrokeThicknessProperty{ get; };
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    ProgressRingTemplateSettings TemplateSettings{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
+}
+
+}
+
+namespace MU_XAP_NAMESPACE
+{
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    ProgressRingAutomationPeer(MU_XC_NAMESPACE.ProgressRing owner);
 }
 
 }

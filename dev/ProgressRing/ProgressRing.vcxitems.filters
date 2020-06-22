@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)IThemedAnimatedVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

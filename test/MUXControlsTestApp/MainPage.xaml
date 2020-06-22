@@ -74,6 +74,12 @@
                 AutomationProperties.AutomationId="FlowDirectionChooser"
                 VerticalAlignment="Center"
                 SelectionChanged="FlowDirectionChooser_SelectionChanged"/>
+            <ComboBox
+                x:Name="AppHighContrastAdjustmentChooser"
+                VerticalAlignment="Center"
+                AutomationProperties.AutomationId="AppHighContrastAdjustmentChooser"
+                Header="ApplicationHighContrastAdjustment"
+                SelectionChanged="AppHighContrastAdjustmentChooser_SelectionChanged" />
 
         </StackPanel>
     </Grid>

@@ -8,8 +8,8 @@
 #include "TreeViewList.h"
 #include "TreeViewListAutomationPeer.h"
 #include "TreeViewItem.h"
-
 #include "TreeViewList.properties.cpp"
+#include "DispatcherHelper.h"
 
 TreeViewList::TreeViewList()
 {
@@ -100,7 +100,18 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
     {
         auto targetItem = args.ItemContainer().as<winrt::TreeViewItem>();
         auto targetNode = NodeFromContainer(targetItem);
+
         auto treeViewItem = winrt::get_self<TreeViewItem>(targetItem);
+        auto treeViewNode = winrt::get_self<TreeViewNode>(targetNode);
+
+        if (auto itemsSource = targetItem.ItemsSource())
+        {
+            if (treeViewNode->ItemsSource() == nullptr)
+            {
+                treeViewItem->SetItemsSource(targetNode, itemsSource);
+            }
+        }   
+
         treeViewItem->UpdateIndentation(targetNode.Depth());
         treeViewItem->UpdateSelectionVisual(winrt::get_self<TreeViewNode>(targetNode)->SelectionState());
     }
@@ -320,6 +331,14 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
     {
         bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
+        if (itemContainer.IsExpanded() != itemNode->IsExpanded()) {
+            const DispatcherHelper dispatcher{ *this };
+            dispatcher.RunAsync(
+                [itemNode, itemContainer]()
+                {
+                    itemNode->IsExpanded(itemContainer.IsExpanded());
+                });
+        }
     }
     else
     {

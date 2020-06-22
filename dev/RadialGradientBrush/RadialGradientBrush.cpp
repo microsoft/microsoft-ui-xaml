@@ -64,27 +64,35 @@ void RadialGradientBrush::OnDisconnected()
     }
 }
 
-void RadialGradientBrush::OnEllipseCenterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void RadialGradientBrush::OnCenterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
-        UpdateCompositionGradientEllipseCenter();
+        UpdateCompositionGradientCenter();
     }
 }
 
-void RadialGradientBrush::OnEllipseRadiusPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void RadialGradientBrush::OnRadiusXPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
-        UpdateCompositionGradientEllipseRadius();
+        UpdateCompositionGradientRadius();
     }
 }
 
-void RadialGradientBrush::OnGradientOriginOffsetPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void RadialGradientBrush::OnRadiusYPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
-        UpdateCompositionGradientOriginOffset();
+        UpdateCompositionGradientRadius();
+    }
+}
+
+void RadialGradientBrush::OnGradientOriginPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
+    {
+        UpdateCompositionGradientOrigin();
     }
 }
 
@@ -101,6 +109,14 @@ void RadialGradientBrush::OnInterpolationSpacePropertyChanged(const winrt::Depen
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
         UpdateCompositionInterpolationSpace();
+    }
+}
+
+void RadialGradientBrush::OnSpreadMethodPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
+    {
+        UpdateCompositionExtendMode();
     }
 }
 
@@ -128,12 +144,13 @@ void RadialGradientBrush::EnsureCompositionBrush()
             // If CompositionRadialGradientBrush is available then use it to render a gradient.
             m_brush = compositor.CreateRadialGradientBrush();
 
-            UpdateCompositionGradientEllipseCenter();
-            UpdateCompositionGradientEllipseRadius();
-            UpdateCompositionGradientOriginOffset();
+            UpdateCompositionGradientCenter();
+            UpdateCompositionGradientRadius();
+            UpdateCompositionGradientOrigin();
             UpdateCompositionGradientStops();
             UpdateCompositionGradientMappingMode();
             UpdateCompositionInterpolationSpace();
+            UpdateCompositionExtendMode();
         }
         else
         {
@@ -146,25 +163,28 @@ void RadialGradientBrush::EnsureCompositionBrush()
     }
 }
 
-void RadialGradientBrush::UpdateCompositionGradientEllipseCenter()
+void RadialGradientBrush::UpdateCompositionGradientCenter()
 {
     MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto ellipseCenter = EllipseCenter();
-        compositionGradientBrush.EllipseCenter(winrt::float2(ellipseCenter.X, ellipseCenter.Y));
+        const auto center = Center();
+        compositionGradientBrush.EllipseCenter(winrt::float2(center.X, center.Y));
+
+        // Changing the center affects the origin in the comp brush because we are translating from
+        // Origin to offset.
+        UpdateCompositionGradientOrigin();
     }
 }
 
-void RadialGradientBrush::UpdateCompositionGradientEllipseRadius()
+void RadialGradientBrush::UpdateCompositionGradientRadius()
 {
     MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto ellipseRadius = EllipseRadius();
-        compositionGradientBrush.EllipseRadius(winrt::float2(ellipseRadius.X, ellipseRadius.Y));
+        compositionGradientBrush.EllipseRadius(winrt::float2(static_cast<float>(RadiusX()), static_cast<float>(RadiusY())));
     }
 }
 
@@ -188,14 +208,25 @@ void RadialGradientBrush::UpdateCompositionGradientMappingMode()
     }
 }
 
-void RadialGradientBrush::UpdateCompositionGradientOriginOffset()
+void RadialGradientBrush::UpdateCompositionGradientOrigin()
 {
     MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto gradientOriginOffset = GradientOriginOffset();
-        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOriginOffset.X, gradientOriginOffset.Y));
+        const auto gradientOrigin = GradientOrigin();
+        const auto center = Center();
+        // Comp uses offset, WinUI will follow WPF and use bounds relative to the element in all mapping modes.
+        // If ElementWidth=100 ElementHeight=100
+        // Relative mode
+        //     TopLeft of element = 0,0
+        //     Center of element = .5,.5
+        //     BottomRight of element = 1,1
+        // Absolute mode
+        //     TopLeft of element = 0,0
+        //     Center of element = 50,50
+        //     BottomRight of element = 100,100
+        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - center.X, gradientOrigin.Y - center.Y));
     }
 }
 
@@ -227,6 +258,29 @@ void RadialGradientBrush::UpdateCompositionInterpolationSpace()
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
         compositionGradientBrush.InterpolationSpace(InterpolationSpace());
+    }
+}
+
+void RadialGradientBrush::UpdateCompositionExtendMode()
+{
+    MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
+
+    if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
+    {
+        switch (SpreadMethod())
+        {
+        case winrt::GradientSpreadMethod::Repeat:
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Wrap);
+            break;
+        case winrt::GradientSpreadMethod::Reflect:
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Mirror);
+            break;
+        case winrt::GradientSpreadMethod::Pad:
+            [[fallthrough]];
+        default: // Use Pad as the default if the mode isn't recognized.
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Clamp);
+            break;
+        }
     }
 }
 

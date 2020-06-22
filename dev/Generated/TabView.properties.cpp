@@ -18,6 +18,7 @@ GlobalDependencyProperty TabViewProperties::s_AddTabButtonCommandParameterProper
 GlobalDependencyProperty TabViewProperties::s_AllowDropTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanDragTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanReorderTabsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_CloseButtonOverlayModeProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_IsAddTabButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedItemProperty{ nullptr };
@@ -102,6 +103,17 @@ void TabViewProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 nullptr);
     }
+    if (!s_CloseButtonOverlayModeProperty)
+    {
+        s_CloseButtonOverlayModeProperty =
+            InitializeDependencyProperty(
+                L"CloseButtonOverlayMode",
+                winrt::name_of<winrt::TabViewCloseButtonOverlayMode>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::TabViewCloseButtonOverlayMode>::BoxValueIfNecessary(winrt::TabViewCloseButtonOverlayMode::Auto),
+                winrt::PropertyChangedCallback(&OnCloseButtonOverlayModePropertyChanged));
+    }
     if (!s_IsAddTabButtonVisibleProperty)
     {
         s_IsAddTabButtonVisibleProperty =
@@ -155,7 +167,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTabItemsSourcePropertyChanged));
     }
     if (!s_TabItemTemplateProperty)
     {
@@ -243,6 +255,7 @@ void TabViewProperties::ClearProperties()
     s_AllowDropTabsProperty = nullptr;
     s_CanDragTabsProperty = nullptr;
     s_CanReorderTabsProperty = nullptr;
+    s_CloseButtonOverlayModeProperty = nullptr;
     s_IsAddTabButtonVisibleProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
@@ -255,6 +268,14 @@ void TabViewProperties::ClearProperties()
     s_TabStripHeaderProperty = nullptr;
     s_TabStripHeaderTemplateProperty = nullptr;
     s_TabWidthModeProperty = nullptr;
+}
+
+void TabViewProperties::OnCloseButtonOverlayModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabView>();
+    winrt::get_self<TabView>(owner)->OnCloseButtonOverlayModePropertyChanged(args);
 }
 
 void TabViewProperties::OnSelectedIndexPropertyChanged(
@@ -271,6 +292,14 @@ void TabViewProperties::OnSelectedItemPropertyChanged(
 {
     auto owner = sender.as<winrt::TabView>();
     winrt::get_self<TabView>(owner)->OnSelectedItemPropertyChanged(args);
+}
+
+void TabViewProperties::OnTabItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabView>();
+    winrt::get_self<TabView>(owner)->OnTabItemsSourcePropertyChanged(args);
 }
 
 void TabViewProperties::OnTabWidthModePropertyChanged(
@@ -329,6 +358,16 @@ void TabViewProperties::CanReorderTabs(bool value)
 bool TabViewProperties::CanReorderTabs()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanReorderTabsProperty));
+}
+
+void TabViewProperties::CloseButtonOverlayMode(winrt::TabViewCloseButtonOverlayMode const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_CloseButtonOverlayModeProperty, ValueHelper<winrt::TabViewCloseButtonOverlayMode>::BoxValueIfNecessary(value));
+}
+
+winrt::TabViewCloseButtonOverlayMode TabViewProperties::CloseButtonOverlayMode()
+{
+    return ValueHelper<winrt::TabViewCloseButtonOverlayMode>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CloseButtonOverlayModeProperty));
 }
 
 void TabViewProperties::IsAddTabButtonVisible(bool value)

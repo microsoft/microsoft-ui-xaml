@@ -136,7 +136,8 @@
         <Grid Grid.Column="1" Margin="12">
             <Grid x:Name="SimulatedWindow" AutomationProperties.Name="SimulatedWindow" Grid.Column="1" Background="Gray">
 
-                <muxcontrols:TwoPaneView x:Name="TwoPaneView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="TwoPaneView_SizeChanged">
+                <muxcontrols:TwoPaneView x:Name="TwoPaneView" AutomationProperties.Name="TwoPaneViewLarge"
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="TwoPaneView_SizeChanged">
                     <muxcontrols:TwoPaneView.Pane1>
                         <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="{ThemeResource SystemChromeDisabledHighColor}" SizeChanged="PaneSizeChanged">
 

@@ -22,6 +22,7 @@
             <Button AutomationProperties.Name="FirstButton" Content="Element to test that focus moves correctly"/>
 
             <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
+            <TextBlock Text="Sample menu bar"/>
             <muxc:MenuBar x:Name="menuBar">
                 <muxc:MenuBarItem x:Name="FileItem" AutomationProperties.Name="FileItem" Title="File">
                     <MenuFlyoutItem x:Name="NewItem" AutomationProperties.Name="NewItem" Text="New" Click="NewItem_Click"/>
@@ -55,10 +56,14 @@
                     <MenuFlyoutItem Text="Font..."/>
                 </muxc:MenuBarItem>
             </muxc:MenuBar>
-            
+
+            <TextBlock Text="Custom sized menu bar" Margin="0,6,0,0"/>
             <muxc:MenuBar x:Name="SizedMenuBar" AutomationProperties.Name="SizedMenuBar" Height="24">
                 <muxc:MenuBarItem x:Name="SizedMenuBarItem" AutomationProperties.Name="SizedMenuBarItem" Title="Size"/>
             </muxc:MenuBar>
+
+            <TextBlock Text="Initially empty menubar" Margin="0,6,0,0"/>
+            <muxc:MenuBar x:Name="EmptyMenuBar"></muxc:MenuBar>
         </StackPanel>
         <TextBlock Grid.Row="1" Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
         <StackPanel Margin="0,20,0,20" VerticalAlignment="Top"  Grid.Row="2" Orientation="Horizontal">
@@ -72,6 +77,7 @@
             <Button x:Name="RemoveMenuBarItemButton" AutomationProperties.Name="RemoveMenuBarItemButton" Click="RemoveMenuBarItem_Click" Content="Remove Menu Bar Item"/>
             <Button x:Name="AddFlyoutItemButton" AutomationProperties.Name="AddFlyoutItemButton" Click="AddFlyoutItem_Click" Content="Add Flyout Item"/>
             <Button x:Name="RemoveFlyoutItemButton" AutomationProperties.Name="RemoveFlyoutItemButton" Click="RemoveFlyoutItem_Click" Content="Remove Flyout Item"/>
+            <Button x:Name="AddItemsToEmptyMenuBar" AutomationProperties.Name="AddItemsToEmptyMenuBar" Click="AddMenuBarToEmptyMenuBarItem_Click" Content="Add a menu item to the empty menu bar"/>
         </StackPanel>
         <StackPanel Grid.Row="3">
             <TextBlock Text="Test output" Style="{ThemeResource StandardGroupHeader}"/>

@@ -43,15 +43,15 @@
             <SolidColorBrush x:Key="ButtonPressedForegroundThemeBrush" Color="#FF000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="AccentButtonBackground" ResourceKey="SystemControlBackgroundAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackground" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="SystemControlForegroundAccentBrush" />
             <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
             <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="AccentButtonForeground" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
+            <StaticResource x:Key="AccentButtonForeground" ResourceKey="SystemControlHighlightAltAccentBrush" />
             <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
             <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
+            <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
@@ -225,6 +225,7 @@
                         x:Name="ContentPresenter"
                         Background="{TemplateBinding Background}"
                         contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Content="{TemplateBinding Content}"

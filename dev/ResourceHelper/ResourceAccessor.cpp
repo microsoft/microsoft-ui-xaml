@@ -46,3 +46,8 @@ winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &
     }();
     return winrt::LoadedImageSurface::StartLoadFromUri(imageUri, imageSize);
 }
+
+winrt::IInspectable ResourceAccessor::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
+{
+    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
+}
