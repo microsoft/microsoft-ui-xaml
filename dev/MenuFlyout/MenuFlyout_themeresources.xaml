@@ -136,7 +136,7 @@
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
             <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundBaseHighBrush" />
             <contract7NotPresent:StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7Present:StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
             <contract7NotPresent:StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />

@@ -1,4 +1,4 @@
-﻿# Developer Guide
+# Developer Guide
 
 This guide provides instructions on how to build the repo and implement 
 improvements.
@@ -19,6 +19,11 @@ Additional reading:
 
 Install latest VS2019 (16.1 or later) from here: http://visualstudio.com/downloads
 
+Include the following workloads:
+* .NET desktop development
+* Desktop Development with C++
+* Universal Windows Platform development
+
 #### SDK
 
 While WinUI is designed to work against many versions of Windows, you will need 
@@ -27,21 +32,71 @@ a fairly recent SDK in order to build WinUI. It's required that you install the
 all the boxes when prompted), or you can manually download them from here: 
 https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
-<!-- 
-You will also need to install The Windows 10 Insider SDK 18323. The easiest way 
-to install this is to run the Install-WindowsSdkISO.ps1 script from this repo in
-an Administrator Powershell window:
-
- `.\build\Install-WindowsSdkISO.ps1 18323` -->
 
 ## Building the repository
 
+Building the solution **MUXControls.sln** will build all projects. 
 Generally you will want to set your configuration to **Debug**, **x64**, and 
-select **MUXControlsTestApp** as your startup project in Visual Studio.
+select **MUXControlsTestApp** as your startup project in Visual Studio. To retrieve the appropriate dependencies, right click on the solution in the Solution Explorer and select "Restore NuGet Packages". 
+
+If you want to work on a single control/project, instead of using the **MUXControls.sln**, you can open the **MUXControlsInnerLoop.sln**.
+
+#### Working with the MUXControlsInnerLoop solution
+To work on a specific feature or control using the **MUXControlInnerLoop.sln** you will need to modify the **InnerLoopAreas.props** file to include the desired controls and projects. For example, to work in the ItemsRepeater using the InnerLoop, you will need to add
+```xml
+<FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
+```
+to the **InnerLoopAreas.props** file.
+
+A full list of all areas can be found in the **FeatureArea.props** files. To include a component in the `Microsoft.UI.Xaml.dll` but not add it to the MUXControlsTestApp, you add it with `productOnly` instead of `true`: 
+```xml
+<FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+```
+
+
+If you use the inner loop solution, please avoid pushing changes to the inner loop solution or **InnerLoopAreas.props** files.
+This can be avoided by running the following commands in git:
+```
+git update-index --skip-worktree InnerLoopAreas.props
+git update-index --skip-worktree MUXControlsInnerLoop.sln
+```
 
 ### Creating a NuGet package
 
-> More information will be coming on this soon
+To create a NuGet package for a given build flavor (release/debug) and build arch (x64/x86/ARM/ARM64), first you need to build the solution in that configuration.
+
+After building the solution in the desired configuration, you can run the `build-nupkg.ps1` script that will run the required steps.
+The script takes the following arguments:
+#### -BuildOutput
+The path to the microsoft-ui-xaml BuildOutput folder
+#### -BuildFlavor
+The flavor to use for nuget build (`debug` or `release`). Defaults to `release`.
+#### -BuildArch
+The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`. Defaults to `x86`.
+#### -OutputDir
+The folder where the nuget package will be generated in
+#### -SkipFrameworkPackage
+Can be specified to skip building a framework package. Defaults to `False`.
+In order to generate framework packages, you need to generate package appx files. 
+This can be done using the `MakeAllAppx.cmd` located in the same folder as `build-nupkg.ps1`.
+
+
+Example usage (running from root of repository folder):
+```
+// Builds a NuGet package with debug binaries and arch x64 into the folder "NuGetPackage"
+.\build\NuSpecs\build-nupkg.ps1 -BuildOutput "..\..\BuildOutput" -BuildFlavor "debug" -BuildArch "x64" -OutputDir "..\..\NugetPackage"
+```
+
+> Note: To use debug build outputs as nuget package, you need to change [this line](https://github.com/microsoft/microsoft-ui-xaml/blob/7d2cd793a0154580f1dd0c9685c461198e05f207/dev/dll/Microsoft.UI.Xaml.vcxproj#L35) in `microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.vcxproj` from
+> ```xml
+> <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf> 
+> ``` 
+> to 
+> ```xml
+> <DisableEmbeddedXbf>false</DisableEmbeddedXbf> 
+> ```
+> to allow building of .pri files in debug mode, which are needed for the NuGet package.
+
 
 ## Testing
 
@@ -79,7 +134,7 @@ MUXControls.ReleaseTest, NugetPackageTestApp (C#) and NugetPackageTestAppCX
 
 Test classes for this are in MUXControls.ReleaseTest, and they share test 
 infrastructure with MUX so you can write tests in the same way as in MUX. 
-The only difference is you’ll have to specify the TestType in ClassInitialize 
+The only difference is you'll have to specify the TestType in ClassInitialize 
 and TestCleanup (TestType.Nuget for NugetPackageTestApp and TestType.NugetCX 
 for NugetPackageTestAppCX). 
 ```
@@ -94,7 +149,7 @@ public void TestCleanup()
 }
 ```
 The test apps are using released versions of MUX NuGet package locally. In [CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20), 
-the test pipeline will generate a NuGet package for each build, and there’s a 
+the test pipeline will generate a NuGet package for each build, and there's a 
 separate pipeline configured to consume the generated package from latest 
 build and run MUXControl.ReleaseTest.
 
@@ -183,3 +238,4 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 This project collects usage data and sends it to Microsoft to help improve our 
 products and services. Note however that no data collection is performed
 when using your private builds.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

@@ -119,9 +119,9 @@
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
             <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundChromeBlackLowBrush" />
-            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundChromeBlackMediumLowBrush" />
-            <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -347,8 +347,8 @@
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
             <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundChromeBlackLowBrush" />
-            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundChromeBlackMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>

@@ -6,6 +6,9 @@
 #include "pch.h"
 #include "common.h"
 
+#include "ProgressRingIndeterminate.h"
+#include "ProgressRingTemplateSettings.h"
+
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
 
@@ -17,29 +20,24 @@ class ProgressRing :
 public:
     ProgressRing();
 
-    // IFrameworkElement
+    winrt::AutomationPeer OnCreateAutomationPeer();
+
     void OnApplyTemplate();
 
-    void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
 private:
-    void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
-
+    void SetAnimatedVisualPlayerSource();
+    void SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
+    void SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void UpdateSegment();
-    void UpdateRing();
+    void ChangeVisualState();
+    void ApplyTemplateSettings();
 
-    static winrt::Size ComputeEllipseSize(double thickness, double width, double height);
-
+    tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
-    tracker_ref<winrt::PathFigure> m_outlineFigure{ this };
-    tracker_ref<winrt::ArcSegment> m_outlineArc{ this };
-    tracker_ref<winrt::PathFigure> m_ringFigure{ this };
-    tracker_ref<winrt::ArcSegment> m_ringArc{ this };
-
-    static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
-    static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
-    static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
-    static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
-    static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
 };

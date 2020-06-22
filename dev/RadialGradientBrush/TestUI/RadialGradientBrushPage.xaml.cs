@@ -62,6 +62,33 @@ namespace MUXControlsTestApp
             }
         }
 
+        public string[] GetSpreadMethodValueNames()
+        {
+            return Enum.GetNames(typeof(GradientSpreadMethod));
+        }
+
+        public string DynamicGradientBrushSpreadMethod
+        {
+            get
+            {
+                if (DynamicGradientBrush != null)
+                {
+                    return DynamicGradientBrush.SpreadMethod.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                if (DynamicGradientBrush != null && value != null)
+                {
+                    DynamicGradientBrush.SpreadMethod = (GradientSpreadMethod)Enum.Parse(typeof(GradientSpreadMethod), value);
+                }
+            }
+        }
+
         private void ReplaceGradientButton_Click(object sender, RoutedEventArgs e)
         {
             DynamicGradientBrush = new RadialGradientBrush();
@@ -94,17 +121,17 @@ namespace MUXControlsTestApp
 
         private void RandomizeGradientOriginButton_Click(object sender, RoutedEventArgs e)
         {
-            RandomizeGradientOriginOffset(DynamicGradientBrush);
+            RandomizeGradientOrigin(DynamicGradientBrush);
         }
 
-        private void RandomizeEllipseCenterButton_Click(object sender, RoutedEventArgs e)
+        private void RandomizeCenterButton_Click(object sender, RoutedEventArgs e)
         {
-            RandomizeEllipseCenter(DynamicGradientBrush);
+            RandomizeCenter(DynamicGradientBrush);
         }
 
-        private void RandomizeEllipseRadiusButton_Click(object sender, RoutedEventArgs e)
+        private void RandomizeRadiusButton_Click(object sender, RoutedEventArgs e)
         {
-            RandomizeEllipseRadius(DynamicGradientBrush);
+            RandomizeRadius(DynamicGradientBrush);
         }
 
         private void ToggleMappingModeButton_Click(object sender, RoutedEventArgs e)
@@ -123,7 +150,7 @@ namespace MUXControlsTestApp
             byte[] pixelArray = pixelBuffer.ToArray();
 
             // Sample top left and center pixels to verify rendering is correct.
-            var centerColor = GetPixelAtPoint(new Point(50, 50), rtb, pixelArray);
+            var centerColor = GetPixelAtPoint(new Point(rtb.PixelWidth / 2, rtb.PixelHeight / 2), rtb, pixelArray);
             var outerColor = GetPixelAtPoint(new Point(0, 0), rtb, pixelArray);
 
             if (ApiInformation.IsTypePresent("Windows.UI.Composition.CompositionRadialGradientBrush"))
@@ -151,14 +178,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void InterpolationColorSpaceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (DynamicGradientBrush != null && e.AddedItems.Count > 0)
-            {
-                DynamicGradientBrush.InterpolationSpace = (CompositionColorSpace)Enum.Parse(typeof(CompositionColorSpace), e.AddedItems[0].ToString());
-            }
-        }
-
         private void AddRandomGradientStop(RadialGradientBrush gradientBrush)
         {
             if (gradientBrush != null)
@@ -179,47 +198,49 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void RandomizeGradientOriginOffset(RadialGradientBrush gradientBrush)
+        private void RandomizeGradientOrigin(RadialGradientBrush gradientBrush)
         {
             if (gradientBrush != null)
             {
                 if (gradientBrush.MappingMode == BrushMappingMode.Absolute)
                 {
-                    gradientBrush.GradientOriginOffset = new Point(_random.Next(0, 100), _random.Next(0, 100));
+                    gradientBrush.GradientOrigin = new Point(_random.Next(0, 100), _random.Next(0, 100));
                 }
                 else
                 {
-                    gradientBrush.GradientOriginOffset = new Point(_random.Next(-100, 100) / 100f, _random.Next(-100, 100) / 100f);
+                    gradientBrush.GradientOrigin = new Point(_random.Next(-100, 100) / 100f, _random.Next(-100, 100) / 100f);
                 }
             }
         }
 
-        private void RandomizeEllipseCenter(RadialGradientBrush gradientBrush)
+        private void RandomizeCenter(RadialGradientBrush gradientBrush)
         {
             if (gradientBrush != null)
             {
                 if (gradientBrush.MappingMode == BrushMappingMode.Absolute)
                 {
-                    gradientBrush.EllipseCenter = new Point(_random.Next(0, 100), _random.Next(0, 100));
+                    gradientBrush.Center = new Point(_random.Next(0, 100), _random.Next(0, 100));
                 }
                 else
                 {
-                    gradientBrush.EllipseCenter = new Point(_random.NextDouble(), _random.NextDouble());
+                    gradientBrush.Center = new Point(_random.NextDouble(), _random.NextDouble());
                 }
             }
         }
 
-        private void RandomizeEllipseRadius(RadialGradientBrush gradientBrush)
+        private void RandomizeRadius(RadialGradientBrush gradientBrush)
         {
             if (gradientBrush != null)
             {
                 if (gradientBrush.MappingMode == BrushMappingMode.Absolute)
                 {
-                    gradientBrush.EllipseRadius = new Point(_random.Next(10, 200), _random.Next(10, 200));
+                    gradientBrush.RadiusX = _random.Next(10, 200);
+                    gradientBrush.RadiusY = _random.Next(10, 200);
                 }
                 else
                 {
-                    gradientBrush.EllipseRadius = new Point(_random.NextDouble(), _random.NextDouble());
+                    gradientBrush.RadiusX = _random.NextDouble();
+                    gradientBrush.RadiusY = _random.NextDouble();
                 }
             }
         }
@@ -230,9 +251,9 @@ namespace MUXControlsTestApp
             {
                 gradientBrush.MappingMode = ((gradientBrush.MappingMode == BrushMappingMode.RelativeToBoundingBox) ? BrushMappingMode.Absolute : BrushMappingMode.RelativeToBoundingBox);
 
-                RandomizeEllipseCenter(gradientBrush);
-                RandomizeEllipseRadius(gradientBrush);
-                RandomizeGradientOriginOffset(gradientBrush);
+                RandomizeCenter(gradientBrush);
+                RandomizeRadius(gradientBrush);
+                RandomizeGradientOrigin(gradientBrush);
             }
         }
 

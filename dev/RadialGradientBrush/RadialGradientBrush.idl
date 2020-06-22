@@ -1,7 +1,7 @@
 ﻿namespace MU_XM_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [contentproperty("GradientStops")]
 unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
@@ -10,14 +10,19 @@ unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositio
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
-    Windows.Foundation.Point EllipseCenter { get; set; };
+    Windows.Foundation.Point Center { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.5")]
+    Double RadiusX { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.5")]
+    Double RadiusY { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
-    Windows.Foundation.Point EllipseRadius { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Windows.Foundation.Point GradientOriginOffset { get; set; };
+    Windows.Foundation.Point GradientOrigin { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::BrushMappingMode::RelativeToBoundingBox")]
@@ -27,13 +32,19 @@ unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositio
     [MUX_DEFAULT_VALUE("winrt::Windows::UI::Composition::CompositionColorSpace::Auto")]
     Windows.UI.Composition.CompositionColorSpace InterpolationSpace { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::GradientSpreadMethod::Pad")]
+    Windows.UI.Xaml.Media.GradientSpreadMethod SpreadMethod { get; set; };
+
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Media.GradientStop> GradientStops { get; };
 
-    static Windows.UI.Xaml.DependencyProperty EllipseCenterProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty EllipseRadiusProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty GradientOriginOffsetProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty CenterProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty RadiusXProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty RadiusYProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty GradientOriginProperty { get; };
     static Windows.UI.Xaml.DependencyProperty InterpolationSpaceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MappingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty SpreadMethodProperty { get; };
 }
 
 }

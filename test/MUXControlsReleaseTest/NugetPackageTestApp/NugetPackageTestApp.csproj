@@ -174,7 +174,7 @@
       <Version>2.1.190606001</Version>
     </PackageReference>
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.38</Version>
+      <Version>1.0.48</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />

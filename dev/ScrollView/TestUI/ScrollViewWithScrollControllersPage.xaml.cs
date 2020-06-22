@@ -24,6 +24,9 @@ namespace MUXControlsTestApp
 
         public ScrollViewWithScrollControllersPage()
         {
+            // We need the styles of the CompositionScrollController, so lets load it
+            App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
             this.InitializeComponent();
             UseScrollView(this.markupScrollView);
         }

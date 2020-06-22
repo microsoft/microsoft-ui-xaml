@@ -84,8 +84,8 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
         bool isStartPath = IsSubSet(start, currentPath);
         bool isEndPath = IsSubSet(end, currentPath);
 
-        int startIndex = depth < start.GetSize() && isStartPath ? start.GetAt(depth) : 0;
-        int endIndex = depth < end.GetSize() && isEndPath ? end.GetAt(depth) : node->DataCount() - 1;
+        int startIndex = depth < start.GetSize() && isStartPath ? std::max(0, start.GetAt(depth)) : 0;
+        int endIndex = depth < end.GetSize() && isEndPath ? std::min(node->DataCount() - 1, end.GetAt(depth)) : node->DataCount() - 1;
 
         for (int i = endIndex; i >= startIndex; i--)
         {
@@ -132,15 +132,21 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
 // static 
 bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::IndexPath& subset)
 {
-    bool isSubset = true;
-    for (int i = 0; i < subset.GetSize(); i++)
+    const auto subsetSize = subset.GetSize();
+    if (path.GetSize() < subsetSize)
     {
-        isSubset = path.GetAt(i) == subset.GetAt(i);
-        if (!isSubset)
-            break;
+        return false;
     }
 
-    return isSubset;
+    for (int i = 0; i < subsetSize; i++)
+    {
+        if (path.GetAt(i) != subset.GetAt(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // static 

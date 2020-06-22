@@ -28,6 +28,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using System.Runtime.InteropServices;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
@@ -103,6 +104,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
                 else
                 {
+                    // Maxmize window to ensure we can find UIA elements
+                    var appFrameWindow = new Window(CoreWindow);
+                    if (appFrameWindow.CanMaximize)
+                    {
+                        appFrameWindow.SetWindowVisualState(WindowVisualState.Maximized);
+                    }
+
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
                     ApplicationFrameWindow = topWindowObj;
 
@@ -296,52 +304,147 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public void Close()
         {
+            int appWindowsProccessId = GetProcessIdFromAppWindow();
+
+            if (!CloseAppWindowWithCloseButton())
+            {
+                Log.Comment("Failed to close application window. We will fall back to terminating the app process.");
+            }
+
+            EnsureApplicationProcessHasExited(appWindowsProccessId);
+
             if (Process != null)
             {
                 Process.Dispose();
                 Process = null;
             }
+        }
 
+        private void EnsureApplicationProcessHasExited(int appWindowsProccessId)
+        {
+            // Ensure that the application process has exited. 
+            // Terminate the process and wait if necessary.
+
+            // To ensure that we don't end up in an unexpected state, we use multiple ways to 
+            // find application processes
+            // 1. Find processes by name matching the app name
+            // 2. Use the proc id from the app window UIA object
+            // 3. Use the Process obj we found when this Application object was initialized.
+            // This is just a sanity check. Under normal circumstances, there should only be 
+            // one app process. 
+            
+            var appProcesses = Process.GetProcessesByName(_packageName).ToList();
+
+            if (appWindowsProccessId != -1)
+            {
+                try
+                {
+                    appProcesses.Add(Process.GetProcessById(appWindowsProccessId));
+                }
+                catch (Exception)
+                {
+                    // Ignore. GetProcessById throws if the process has already exited.
+                }
+            }
+
+            if (Process != null)
+            {
+                appProcesses.Add(Process);
+            }
+
+            foreach (var proc in appProcesses)
+            {
+                if (!proc.HasExited)
+                {
+                    if (!KillProcessAndWaitForExit(proc))
+                    {
+                        throw new Exception($"Unable to kill process: {proc}");
+                    }
+                }
+            }
+        }
+
+        private int GetProcessIdFromAppWindow()
+        {
+            if (UIObject.Root.Children.TryFind(_windowCondition, out UIObject topWindowObj))
+            {
+                return topWindowObj.ProcessId;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        private bool CloseAppWindowWithCloseButton()
+        {
             var topWindowCondition = _windowCondition.OrWith(_appFrameWindowCondition);
 
             UIObject topWindowObj = null;
             bool didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out topWindowObj);
-
-            if (didFindWindow)
+            if(!didFindWindow)
             {
-                Log.Comment("Closing application: {0}", topWindowObj);
-                UIObject closeAppInvoker;
-                if (topWindowObj.Descendants.TryFind(UICondition.Create("@AutomationId='__CloseAppInvoker'"), out closeAppInvoker))
-                {
-                    (new Button(closeAppInvoker)).Invoke();
-                }
-                else
-                {
-                    Log.Comment("Application.Close: Failed to find close app invoker: {0}", closeAppInvoker);
-                    LogDumpTree();
-                }
+                Log.Comment("Application.CloseAppWindowWithCloseButton: Cound not find app window.");
+                return false;
+            }
 
-                // We'll wait until the window closes.  For some reason, ProcessClosedWaiter
-                // doesn't seem to actually work, so we'll instead just check for the window
-                // until the check fails.
-                int triesLeft = 20;
+            Log.Comment("Closing application: {0}", topWindowObj);
+            UIObject closeAppInvoker;
+            if (!topWindowObj.Descendants.TryFind(UICondition.Create("@AutomationId='__CloseAppInvoker'"), out closeAppInvoker))
+            {
+                Log.Comment("Application.CloseAppWindowWithCloseButton: Failed to find close app invoker.");
+                return false;
+            }
 
-                do
-                {
-                    if (triesLeft == 0)
-                    {
-                        throw new Exception("Application won't close!");
-                    }
+            Log.Comment("Invoking CloseAppInvoker {0}", closeAppInvoker);
+            (new Button(closeAppInvoker)).Invoke();
 
-                    Wait.ForMilliseconds(100);
-                    didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out topWindowObj);
-                    triesLeft--;
-                } while (didFindWindow);
+            bool didWindowClose = WaitForWindowToClose(topWindowCondition);
+            if (!didWindowClose)
+            {
+                Log.Comment("Application.CloseAppWindowWithCloseButton: Window did not close");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool KillProcessAndWaitForExit(Process process)
+        {
+            Log.Comment($"Killing process {process}");
+            if (process.HasExited)
+            {
+                return true;
             }
             else
             {
-                Log.Comment("Could not find application CoreWindow.  Has it already closed?");
+                process.Kill();
+                return process.WaitForExit(10000 /*milliseconds*/);
             }
+        }
+
+        private static bool WaitForWindowToClose(UICondition topWindowCondition)
+        {
+            // We'll wait until the window closes.  For some reason, ProcessClosedWaiter
+            // doesn't seem to actually work, so we'll instead just check for the window
+            // until the check fails.
+            int triesLeft = 20;
+
+            bool didFindWindow = true;
+
+            do
+            {
+                if (triesLeft == 0)
+                {
+                    return false;
+                }
+
+                Wait.ForMilliseconds(100);
+                didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out UIObject topWindowObj);
+                triesLeft--;
+            } while (didFindWindow);
+
+            return true;
         }
 
         public void GoBack()

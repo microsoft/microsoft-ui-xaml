@@ -134,7 +134,6 @@ Write-Host
 if(-not $SkipFrameworkPackage)
 {
     # Nuget package with framework package encapsulation
-
     $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir\FrameworkPackage"
 
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\x86\Release"

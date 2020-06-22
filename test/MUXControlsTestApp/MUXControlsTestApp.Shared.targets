@@ -71,12 +71,14 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\FlipView\TestUI\FlipView_TestUI.projitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\TestUI\CalendarView_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\APITests\CalendarView_APITests.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />

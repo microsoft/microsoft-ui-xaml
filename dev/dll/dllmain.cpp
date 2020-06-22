@@ -4,8 +4,12 @@
 #include "pch.h"
 #include "common.h"
 #include "TraceLogging.h"
+#include "version.h"
 
 HINSTANCE g_hInstance = nullptr;
+
+// Version string to send on telemetry events, this is the version string that is used in the version resource
+const char *g_BinaryVersion = (const char *)(VER_FILE_VERSION_STR);
 
 STDAPI_(void) SendTelemetryOnSuspend();
 
