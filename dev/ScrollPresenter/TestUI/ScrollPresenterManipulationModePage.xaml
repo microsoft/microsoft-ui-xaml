@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollerManipulationModePage"
+    x:Class="MUXControlsTestApp.ScrollPresenterManipulationModePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -21,15 +21,15 @@
 
         <StackPanel Orientation="Horizontal" Margin="2" Grid.ColumnSpan="2">
             <TextBlock Text="ManipulationMode impact." Margin="2" VerticalAlignment="Center"/>
-            <TextBlock Text="Scroller0 State:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtScroller0State" AutomationProperties.AutomationId="txtScroller0State" IsTabStop="False" VerticalAlignment="Center" MinWidth="200"/>
-            <TextBlock Text="Scroller1 State:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtScroller1State" AutomationProperties.AutomationId="txtScroller1State" IsTabStop="False" VerticalAlignment="Center" MinWidth="200"/>
+            <TextBlock Text="ScrollPresenter0 State:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollPresenter0State" AutomationProperties.AutomationId="txtScrollPresenter0State" IsTabStop="False" VerticalAlignment="Center" MinWidth="200"/>
+            <TextBlock Text="ScrollPresenter1 State:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollPresenter1State" AutomationProperties.AutomationId="txtScrollPresenter1State" IsTabStop="False" VerticalAlignment="Center" MinWidth="200"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="1" Margin="2">
-            <CheckBox x:Name="chkLogScrollerMessages" AutomationProperties.AutomationId="chkLogScrollerMessages"
-                Content="Log Scroller Messages?" Margin="2" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
+            <CheckBox x:Name="chkLogScrollPresenterMessages" AutomationProperties.AutomationId="chkLogScrollPresenterMessages"
+                Content="Log ScrollPresenter Messages?" Margin="2" Checked="ChkLogScrollPresenterMessages_Checked" Unchecked="ChkLogScrollPresenterMessages_Unchecked"/>
             <Button x:Name="btnGetFullLog" Margin="2" AutomationProperties.AutomationId="btnGetFullLog" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                 Content="Get log" Click="btnGetFullLog_Click"/>
             <Button x:Name="btnClearFullLog" Margin="2" AutomationProperties.AutomationId="btnClearFullLog" HorizontalAlignment="Stretch" VerticalAlignment="Center"
@@ -37,13 +37,13 @@
             <ComboBox x:Name="cmbFullLog" AutomationProperties.Name="cmbFullLog" Margin="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="200"/>
         </StackPanel>
 
-        <controlsPrimitives:Scroller x:Name="scroller1" AutomationProperties.Name="scroller1" Background="Violet" 
+        <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter1" AutomationProperties.Name="scrollPresenter1" Background="Violet" 
             ZoomMode="Enabled" MinZoomFactor="0.7" MaxZoomFactor="1.3"
             HorizontalScrollRailingMode="Enabled" VerticalScrollRailingMode="Enabled"
             Width="600" Height="600" Grid.Row="1">
             <StackPanel Width="900" Height="900" Background="Lavender">
                 <StackPanel Orientation="Horizontal" Margin="10">
-                    <TextBlock Text="scroller1.ManipulationMode:" VerticalAlignment="Center"/>
+                    <TextBlock Text="scrollPresenter1.ManipulationMode:" VerticalAlignment="Center"/>
                     <ComboBox x:Name="cmbManipulationModeS1" AutomationProperties.Name="cmbManipulationModeS1" 
                         SelectedIndex="0" SelectionChanged="CmbManipulationMode_SelectionChanged">
                         <ComboBoxItem>System</ComboBoxItem>
@@ -64,14 +64,14 @@
                         </ComboBox>
                     </StackPanel>
                     
-                    <controlsPrimitives:Scroller x:Name="scroller0" AutomationProperties.Name="scroller0" Background="Lime"
+                    <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter0" AutomationProperties.Name="scrollPresenter0" Background="Lime"
                         Width="400" Height="400" Margin="10" 
                         ZoomMode="Enabled" MinZoomFactor="0.7" MaxZoomFactor="1.3"
                         HorizontalScrollChainingMode="Always" VerticalScrollChainingMode="Always" ZoomChainingMode="Always"
                         HorizontalScrollRailingMode="Enabled" VerticalScrollRailingMode="Enabled">
                         <StackPanel Width="700" Height="700" Background="LimeGreen">
                             <StackPanel Orientation="Horizontal" Margin="10">
-                                <TextBlock Text="scroller0.ManipulationMode:" VerticalAlignment="Center"/>
+                                <TextBlock Text="scrollPresenter0.ManipulationMode:" VerticalAlignment="Center"/>
                                 <ComboBox x:Name="cmbManipulationModeS0" AutomationProperties.Name="cmbManipulationModeS0"
                                     SelectedIndex="0" SelectionChanged="CmbManipulationMode_SelectionChanged">
                                     <ComboBoxItem>System</ComboBoxItem>
@@ -93,9 +93,9 @@
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
-                    </controlsPrimitives:Scroller>
+                    </controlsPrimitives:ScrollPresenter>
                 </StackPanel>
             </StackPanel>
-        </controlsPrimitives:Scroller>
+        </controlsPrimitives:ScrollPresenter>
     </Grid>
 </local:TestPage>

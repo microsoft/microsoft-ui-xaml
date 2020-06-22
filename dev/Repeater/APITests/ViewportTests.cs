@@ -38,13 +38,13 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrollingSurface;
 using ConfigurationChangedEventHandler = Microsoft.UI.Private.Controls.ConfigurationChangedEventHandler;
@@ -191,10 +191,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        public void ValidateOneScrollerScenario()
+        public void ValidateOneScrollPresenterScenario()
         {
             var realizationRects = new List<Rect>();
-            var scroller = (Scroller)null;
+            var scrollPresenter = (ScrollPresenter)null;
             var scrollCompletedEvent = new AutoResetEvent(false);
             var zoomCompletedEvent = new AutoResetEvent(false);
 
@@ -207,14 +207,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalCacheLength = 0.0
                 };
 
-                scroller = new Scroller
+                scrollPresenter = new ScrollPresenter
                 {
                     Content = repeater,
                     Width = 200,
                     Height = 300
                 };
 
-                Content = scroller;
+                Content = scrollPresenter;
                 Content.UpdateLayout();
 
                 Verify.AreEqual(2, realizationRects.Count);
@@ -222,12 +222,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 0, 200, 300), realizationRects[1]);
                 realizationRects.Clear();
 
-                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     scrollCompletedEvent.Set();
                 };
 
-                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
+                scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     zoomCompletedEvent.Set();
                 };
@@ -236,7 +236,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                scroller.ScrollTo(0.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                scrollPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -249,7 +249,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scrollCompletedEvent.Reset();
                 // Max viewport offset is (300, 400). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
-                scroller.ScrollTo(400.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                scrollPresenter.ScrollTo(400.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -259,10 +259,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(300, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
 
-                scroller.ZoomTo(
+                scrollPresenter.ZoomTo(
                     2.0f,
                     Vector2.Zero,
-                    new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                    new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(zoomCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -280,11 +280,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        public void ValidateTwoScrollersScenario()
+        public void ValidateTwoScrollPresentersScenario()
         {
             var realizationRects = new List<Rect>();
-            var horizontalScroller = (Scroller)null;
-            var verticalScroller = (Scroller)null;
+            var horizontalScrollPresenter = (ScrollPresenter)null;
+            var verticalScrollPresenter = (ScrollPresenter)null;
             var horizontalScrollCompletedEvent = new AutoResetEvent(false);
             var verticalScrollCompletedEvent = new AutoResetEvent(false);
 
@@ -297,16 +297,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalCacheLength = 0.0
                 };
 
-                horizontalScroller = new Scroller
+                horizontalScrollPresenter = new ScrollPresenter
                 {
                     Content = repeater,
                     ContentOrientation = ContentOrientation.Horizontal
                 };
 
                 var grid = new Grid();
-                grid.Children.Add(horizontalScroller);
+                grid.Children.Add(horizontalScrollPresenter);
 
-                verticalScroller = new Scroller
+                verticalScrollPresenter = new ScrollPresenter
                 {
                     Content = grid,
                     Width = 200,
@@ -314,7 +314,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     ContentOrientation = ContentOrientation.Vertical
                 };
 
-                Content = verticalScroller;
+                Content = verticalScrollPresenter;
                 Content.UpdateLayout();
 
                 Verify.AreEqual(2, realizationRects.Count);
@@ -322,12 +322,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 0, 200, 200), realizationRects[1]);
                 realizationRects.Clear();
 
-                horizontalScroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                horizontalScrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     horizontalScrollCompletedEvent.Set();
                 };
 
-                verticalScroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                verticalScrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     verticalScrollCompletedEvent.Set();
                 };
@@ -336,7 +336,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                verticalScroller.ScrollTo(0.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                verticalScrollPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(verticalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -348,7 +348,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 // Max viewport offset is (300, 300). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
-                horizontalScroller.ScrollTo(400.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                horizontalScrollPresenter.ScrollTo(400.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(horizontalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -361,7 +361,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        public void ValidateSupportForScrollerConfigurationChanges()
+        public void ValidateSupportForScrollPresenterConfigurationChanges()
         {
             // In RS1, the interaction tracker always animates the viewport when its offset
             // is forced to change because the extent got smaller (e.g. viewport.x +  viewport.width > extent.width
@@ -370,7 +370,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // so we will run this test in RS2+ to keep it simple.
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
-                Log.Warning("Skipping ValidateSupportForScrollerConfigurationChanges");
+                Log.Warning("Skipping ValidateSupportForScrollPresenterConfigurationChanges");
                 return;
             }
 
@@ -381,8 +381,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 return;
             }
 
-            // From the inner most to the outer most scroller.
-            var scrollers = new Scroller[4];
+            // From the inner most to the outer most ScrollPresenter.
+            var scrollPresenters = new ScrollPresenter[4];
             var grids = new Grid[4];
             var realizationRects = new List<Rect>();
             var scrollCompletedEvent = new AutoResetEvent(false);
@@ -396,7 +396,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalCacheLength = 0.0
                 };
 
-                for (int i = 0; i < scrollers.Length; ++i)
+                for (int i = 0; i < scrollPresenters.Length; ++i)
                 {
                     grids[i] = new Grid()
                     {
@@ -404,31 +404,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         MaxWidth = 200,
                         MaxHeight = 200
                     };
-                    grids[i].Children.Add(i > 0 ? (UIElement)scrollers[i - 1] : repeater);
+                    grids[i].Children.Add(i > 0 ? (UIElement)scrollPresenters[i - 1] : repeater);
                     grids[i].SizeChanged += (sender, args) =>
                     {
                         Grid grid = sender as Grid;
                         Log.Comment("Grid_SizeChanged for " + grid.Name + ", size=(" + grid.ActualWidth + ", " + grid.ActualHeight + ")");
                     };
 
-                    scrollers[i] = new Scroller()
+                    scrollPresenters[i] = new ScrollPresenter()
                     {
-                        Name = "scroller" + i,
+                        Name = "scrollPresenter" + i,
                         Content = grids[i],
                     };
-                    scrollers[i].SizeChanged += (sender, args) =>
+                    scrollPresenters[i].SizeChanged += (sender, args) =>
                     {
-                        Scroller scroller = sender as Scroller;
-                        string scrollerName = scroller.Name;
-                        Log.Comment("Scroller_SizeChanged for " + scrollerName + ", size=(" + scroller.ActualWidth + ", " + scroller.ActualHeight + ")");
+                        ScrollPresenter scrollPresenter = sender as ScrollPresenter;
+                        string scrollPresenterName = scrollPresenter.Name;
+                        Log.Comment("ScrollPresenter_SizeChanged for " + scrollPresenterName + ", size=(" + scrollPresenter.ActualWidth + ", " + scrollPresenter.ActualHeight + ")");
                     };
                 }
 
-                var outerScroller = scrollers.Last();
-                outerScroller.Width = 200.0;
-                outerScroller.Height = 200.0;
+                var outerScrollPresenter = scrollPresenters.Last();
+                outerScrollPresenter.Width = 200.0;
+                outerScrollPresenter.Height = 200.0;
 
-                Content = outerScroller;
+                Content = outerScrollPresenter;
                 Content.UpdateLayout();
 
                 Verify.AreEqual(2, realizationRects.Count);
@@ -436,9 +436,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 0, 200, 200), realizationRects[1]);
                 realizationRects.Clear();
 
-                for (int i = 0; i < scrollers.Length; ++i)
+                for (int i = 0; i < scrollPresenters.Length; ++i)
                 {
-                    scrollers[i].ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                    scrollPresenters[i].ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                     {
                         scrollCompletedEvent.Set();
                     };
@@ -456,15 +456,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         grids[1].MaxHeight = 200;
                         grids[2].MaxWidth = double.PositiveInfinity;
                         grids[2].MaxHeight = double.PositiveInfinity;
-                        scrollers[1].ContentOrientation = ContentOrientation.None;
-                        scrollers[2].ContentOrientation = ContentOrientation.Horizontal;
+                        scrollPresenters[1].ContentOrientation = ContentOrientation.None;
+                        scrollPresenters[2].ContentOrientation = ContentOrientation.Horizontal;
                     }
                     else
                     {
                         grids[0].MaxHeight = double.PositiveInfinity;
                         grids[1].MaxWidth = double.PositiveInfinity;
                         grids[1].MaxHeight = double.PositiveInfinity;
-                        scrollers[1].ContentOrientation = ContentOrientation.Vertical;
+                        scrollPresenters[1].ContentOrientation = ContentOrientation.Vertical;
                     }
                 });
                 IdleSynchronizer.Wait();
@@ -474,13 +474,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     scrollCompletedEvent.Reset();
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
-                        Log.Comment("Scrolling Scroller #1 to vertical offset 100");
-                        scrollers[1].ScrollTo(0.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        Log.Comment("Scrolling ScrollPresenter #1 to vertical offset 100");
+                        scrollPresenters[1].ScrollTo(0.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                     }
                     else
                     {
-                        Log.Comment("Scrolling Scroller #2 to horizontal offset 150");
-                        scrollers[2].ScrollTo(150.0, 0.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));                        
+                        Log.Comment("Scrolling ScrollPresenter #2 to horizontal offset 150");
+                        scrollPresenters[2].ScrollTo(150.0, 0.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));                        
                     }
                 });
                 Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
@@ -489,12 +489,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
-                        Verify.AreEqual(scrollers[1].VerticalOffset, 100.0);
+                        Verify.AreEqual(scrollPresenters[1].VerticalOffset, 100.0);
                         Verify.AreEqual(new Rect(0, 0, 200, 500), realizationRects.Last());
                     }
                     else
                     {
-                        Verify.AreEqual(scrollers[2].HorizontalOffset, 150.0);
+                        Verify.AreEqual(scrollPresenters[2].HorizontalOffset, 150.0);
                         Verify.AreEqual(new Rect(0, -150, 500, 200), realizationRects.Last());
                     }
 
@@ -506,7 +506,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanGrowCacheBuffer()
         {
-            var scroller = (Scroller)null;
+            var scrollPresenter = (ScrollPresenter)null;
             var repeater = (ItemsRepeater)null;
             var measureRealizationRects = new List<Rect>();
             var arrangeRealizationRects = new List<Rect>();
@@ -516,7 +516,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 Log.Comment("Preparing the visual tree...");
 
-                scroller = new Scroller
+                scrollPresenter = new ScrollPresenter
                 {
                     Width = 400,
                     Height = 400
@@ -534,7 +534,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     {
                         arrangeRealizationRects.Add(context.RealizationRect);
 
-                        if (context.RealizationRect.Height == scroller.Height * (repeater.VerticalCacheLength + 1))
+                        if (context.RealizationRect.Height == scrollPresenter.Height * (repeater.VerticalCacheLength + 1))
                         {
                             fullCacheEvent.Set();
                         }
@@ -548,8 +548,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Layout = layout
                 };
 
-                scroller.Content = repeater;
-                Content = scroller;
+                scrollPresenter.Content = repeater;
+                Content = scrollPresenter;
             });
 
             if (!fullCacheEvent.WaitOne(500000)) Verify.Fail("Cache full size never reached.");
@@ -558,12 +558,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 var cacheLength = repeater.VerticalCacheLength;
-                var expectedVisibleWindow = new Rect(0, 0, scroller.Width, scroller.Height);
+                var expectedVisibleWindow = new Rect(0, 0, scrollPresenter.Width, scrollPresenter.Height);
                 var expectedRealizationWindow = new Rect(
-                    -cacheLength / 2 * scroller.Width,
-                    -cacheLength / 2 * scroller.Height,
-                    (1 + cacheLength) * scroller.Width,
-                    (1 + cacheLength) * scroller.Height);
+                    -cacheLength / 2 * scrollPresenter.Width,
+                    -cacheLength / 2 * scrollPresenter.Height,
+                    (1 + cacheLength) * scrollPresenter.Width,
+                    (1 + cacheLength) * scrollPresenter.Height);
 
                 Log.Comment("Validate that the realization window reached full size.");
                 Verify.AreEqual(expectedRealizationWindow, measureRealizationRects.Last());
@@ -999,7 +999,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 return;
             }
 
-            Scroller scroller = null;
+            ScrollPresenter scrollPresenter = null;
             ItemsRepeater repeater = null;
             var rootLoadedEvent = new AutoResetEvent(initialState: false);
             var scrollCompletedEvent = new AutoResetEvent(initialState: false);
@@ -1035,18 +1035,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                              </DataTemplate>
                            </controls:RecyclingElementFactory>
                          </Grid.Resources>
-                         <controls:Scroller x:Name='Scroller' Width='400' Height='600' IsChildAvailableWidthConstrained='True' Background='Gray'>
+                         <controls:ScrollPresenter x:Name='ScrollPresenter' Width='400' Height='600' IsChildAvailableWidthConstrained='True' Background='Gray'>
                            <controls:ItemsRepeater
                              x:Name='ItemsRepeater'
                              ElementFactory='{StaticResource ElementFactory}'
                              Layout='{StaticResource VerticalStackLayout}'
                              HorizontalCacheLength='0'
                              VerticalCacheLength='0' />
-                         </controls:Scroller>
+                         </controls:ScrollPresenter>
                        </Grid>"));
 
                 var elementFactory = (RecyclingElementFactory)root.Resources["ElementFactory"];
-                scroller = (Scroller)root.FindName("Scroller");
+                scrollPresenter = (ScrollPresenter)root.FindName("ScrollPresenter");
                 repeater = (ItemsRepeater)root.FindName("ItemsRepeater");
 
                 var groups = Enumerable.Range(0, 10).Select(i => new NamedGroup<string>(
@@ -1063,13 +1063,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         "ItemTemplate";
                 };
 
-                scroller.ViewChanged += (o, e) =>
+                scrollPresenter.ViewChanged += (o, e) =>
                 {
-                    Log.Comment("ViewChanged: " + scroller.VerticalOffset);
-                    viewChangedOffsets.Add(scroller.VerticalOffset);
+                    Log.Comment("ViewChanged: " + scrollPresenter.VerticalOffset);
+                    viewChangedOffsets.Add(scrollPresenter.VerticalOffset);
                 };
 
-                ((IRepeaterScrollingSurface)scroller).ViewportChanged += (o, isFinal) =>
+                ((IRepeaterScrollingSurface)scrollPresenter).ViewportChanged += (o, isFinal) =>
                 {
                     if (isFinal)
                     {
@@ -1123,7 +1123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    expectedVerticalOffsetAt9_10 = scroller.VerticalOffset;
+                    expectedVerticalOffsetAt9_10 = scrollPresenter.VerticalOffset;
                     var group = (FrameworkElement)repeater.GetOrCreateElement(9);
                     var innerRepeater = (ItemsRepeater)group.FindName("InnerRepeater");
                     innerRepeater.GetOrCreateElement(10).StartBringIntoView(new BringIntoViewOptions
@@ -1137,7 +1137,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(expectedVerticalOffsetAt9_10, scroller.VerticalOffset);
+                    Verify.AreEqual(expectedVerticalOffsetAt9_10, scrollPresenter.VerticalOffset);
                 });
             }
 

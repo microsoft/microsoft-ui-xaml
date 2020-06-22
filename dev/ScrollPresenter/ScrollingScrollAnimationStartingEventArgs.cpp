@@ -4,17 +4,17 @@
 #include "pch.h"
 #include "common.h"
 #include "ResourceAccessor.h"
-#include "ScrollerTrace.h"
-#include "ScrollAnimationStartingEventArgs.h"
+#include "ScrollPresenterTrace.h"
+#include "ScrollingScrollAnimationStartingEventArgs.h"
 
-winrt::CompositionAnimation ScrollAnimationStartingEventArgs::Animation()
+winrt::CompositionAnimation ScrollingScrollAnimationStartingEventArgs::Animation()
 {
     return m_animation;
 }
 
-void ScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const& value)
+void ScrollingScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const& value)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
     if (!value)
     {
         throw winrt::hresult_invalid_argument(L"Animation cannot be set to null.");
@@ -22,44 +22,44 @@ void ScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnimation con
     m_animation = value;
 }
 
-winrt::ScrollInfo ScrollAnimationStartingEventArgs::ScrollInfo()
+winrt::ScrollInfo ScrollingScrollAnimationStartingEventArgs::ScrollInfo()
 {
     return winrt::ScrollInfo{ m_offsetsChangeId };
 }
 
-winrt::float2 ScrollAnimationStartingEventArgs::StartPosition()
+winrt::float2 ScrollingScrollAnimationStartingEventArgs::StartPosition()
 {
     return m_startPosition;
 }
 
-winrt::float2 ScrollAnimationStartingEventArgs::EndPosition()
+winrt::float2 ScrollingScrollAnimationStartingEventArgs::EndPosition()
 {
     return m_endPosition;
 }
 
-void ScrollAnimationStartingEventArgs::SetOffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingScrollAnimationStartingEventArgs::SetOffsetsChangeId(int32_t offsetsChangeId)
 {
     m_offsetsChangeId = offsetsChangeId;
 }
 
-winrt::CompositionAnimation ScrollAnimationStartingEventArgs::GetAnimation() const
+winrt::CompositionAnimation ScrollingScrollAnimationStartingEventArgs::GetAnimation() const
 {
     return m_animation;
 }
 
-void ScrollAnimationStartingEventArgs::SetAnimation(const winrt::CompositionAnimation& animation)
+void ScrollingScrollAnimationStartingEventArgs::SetAnimation(const winrt::CompositionAnimation& animation)
 {
     m_animation = animation;
 }
 
 
-void ScrollAnimationStartingEventArgs::SetStartPosition(const winrt::float2& startPosition)
+void ScrollingScrollAnimationStartingEventArgs::SetStartPosition(const winrt::float2& startPosition)
 {
     m_startPosition = startPosition;
 }
 
 
-void ScrollAnimationStartingEventArgs::SetEndPosition(const winrt::float2& endPosition)
+void ScrollingScrollAnimationStartingEventArgs::SetEndPosition(const winrt::float2& endPosition)
 {
     m_endPosition = endPosition;
 }

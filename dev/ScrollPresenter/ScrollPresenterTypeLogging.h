@@ -5,7 +5,7 @@
 
 #include "ViewChange.h"
 #include "InteractionTrackerAsyncOperation.h"
-#include "Scroller.h"
+#include "ScrollPresenter.h"
 
 namespace TypeLogging
 {
@@ -19,11 +19,11 @@ namespace TypeLogging
     winrt::hstring InputKindToString(const winrt::InputKind& inputKind);
     winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode);
     winrt::hstring SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode);
-    winrt::hstring ScrollerViewKindToString(ScrollerViewKind viewKind);
-    winrt::hstring ScrollerViewChangeResultToString(ScrollerViewChangeResult result);
+    winrt::hstring ScrollPresenterViewKindToString(ScrollPresenterViewKind viewKind);
+    winrt::hstring ScrollPresenterViewChangeResultToString(ScrollPresenterViewChangeResult result);
     winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount);
-    winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options);
-    winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options);
+    winrt::hstring ScrollOptionsToString(const winrt::ScrollingScrollOptions& options);
+    winrt::hstring ZoomOptionsToString(const winrt::ScrollingZoomOptions& options);
     winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType);
     winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTrackerAsyncOperationTrigger operationTrigger);
 };

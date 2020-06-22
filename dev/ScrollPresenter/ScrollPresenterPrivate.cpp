@@ -4,54 +4,54 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "Scroller.h"
+#include "ScrollPresenter.h"
 #include "DoubleUtil.h"
 
-bool Scroller::IsHorizontallyScrollable()
+bool ScrollPresenter::IsHorizontallyScrollable()
 {
     return m_contentOrientation != winrt::ContentOrientation::Vertical;
 }
 
-bool Scroller::IsVerticallyScrollable()
+bool ScrollPresenter::IsVerticallyScrollable()
 {
     return m_contentOrientation != winrt::ContentOrientation::Horizontal;
 }
 
-winrt::event_token Scroller::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
+winrt::event_token ScrollPresenter::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
 {
     return m_viewportChanged.add(value);
 }
 
-void Scroller::ViewportChanged(winrt::event_token const& token)
+void ScrollPresenter::ViewportChanged(winrt::event_token const& token)
 {
     m_viewportChanged.remove(token);
 }
 
-winrt::event_token Scroller::PostArrange(winrt::PostArrangeEventHandler const& value)
+winrt::event_token ScrollPresenter::PostArrange(winrt::PostArrangeEventHandler const& value)
 {
     return m_postArrange.add(value);
 }
 
-void Scroller::PostArrange(winrt::event_token const& token)
+void ScrollPresenter::PostArrange(winrt::event_token const& token)
 {
     m_postArrange.remove(token);
 }
 
-winrt::event_token Scroller::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& value)
+winrt::event_token ScrollPresenter::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& value)
 {
     return m_configurationChanged.add(value);
 }
 
-void Scroller::ConfigurationChanged(winrt::event_token const& token)
+void ScrollPresenter::ConfigurationChanged(winrt::event_token const& token)
 {
     m_configurationChanged.remove(token);
 }
 
-winrt::Rect Scroller::GetRelativeViewport(
+winrt::Rect ScrollPresenter::GetRelativeViewport(
     winrt::UIElement const& child)
 {
     // The commented out code is expected to work but somehow the child.TransformToVisual(*this)
-    // transform returns unexpected values shortly after a Scroller.Content layout offset change.
+    // transform returns unexpected values shortly after a ScrollPresenter.Content layout offset change.
     // Bug 14999031 is tracking this issue. For now the m_contentLayoutOffsetX/Y, m_zoomedHorizontalOffset,
     // m_zoomedVerticalOffset usage below mitigates the problem.
 
@@ -73,17 +73,17 @@ winrt::Rect Scroller::GetRelativeViewport(
         (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
         viewportWidth, viewportHeight };
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
 
     return result;
 }
 
-winrt::UIElement Scroller::CurrentAnchor()
+winrt::UIElement ScrollPresenter::CurrentAnchor()
 {
     return AnchorElement();
 }
 
-winrt::UIElement Scroller::AnchorElement()
+winrt::UIElement ScrollPresenter::AnchorElement()
 {
     bool isAnchoringElementHorizontally = false;
     bool isAnchoringElementVertically = false;
@@ -96,14 +96,14 @@ winrt::UIElement Scroller::AnchorElement()
     }
 
     auto value = m_anchorElement.get();
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
     return value;
 }
 
-void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
+void ScrollPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (!element)
     {
@@ -130,9 +130,9 @@ void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
     }
 }
 
-void Scroller::UnregisterAnchorCandidate(winrt::UIElement const& element)
+void ScrollPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (!element)
     {

@@ -18,7 +18,7 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
@@ -75,7 +75,7 @@ namespace MUXControlsTestApp.Utilities
                 Viewport = 0.0;
             }
 
-            public bool AreInteractionsAllowed
+            public bool AreScrollControllerInteractionsAllowed
             {
                 get;
                 private set;
@@ -247,7 +247,7 @@ namespace MUXControlsTestApp.Utilities
                     "UniScrollController: SetScrollMode for Orientation=" + Orientation +
                     " with scrollMode=" + scrollMode);
                 ScrollMode = scrollMode;
-                UpdateAreInteractionsAllowed();
+                UpdateAreScrollControllerInteractionsAllowed();
             }
 
             public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -326,13 +326,13 @@ namespace MUXControlsTestApp.Utilities
                 ScrollCompleted?.Invoke(this, new UniScrollControllerScrollCompletedEventArgs(info.OffsetsChangeId));
             }
 
-            internal bool UpdateAreInteractionsAllowed()
+            internal bool UpdateAreScrollControllerInteractionsAllowed()
             {
-                bool oldAreInteractionsAllowed = AreInteractionsAllowed;
+                bool oldAreScrollControllerInteractionsAllowed = AreScrollControllerInteractionsAllowed;
 
-                AreInteractionsAllowed = ScrollMode != ScrollMode.Disabled && Owner.IsEnabled;
+                AreScrollControllerInteractionsAllowed = ScrollMode != ScrollMode.Disabled && Owner.IsEnabled;
 
-                if (oldAreInteractionsAllowed != AreInteractionsAllowed)
+                if (oldAreScrollControllerInteractionsAllowed != AreScrollControllerInteractionsAllowed)
                 {
                     RaiseInteractionInfoChanged();
                     return true;
@@ -386,7 +386,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollToRequestedEventArgs e =
                         new ScrollControllerScrollToRequestedEventArgs(
                             offset,
-                            new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
                     return e.Info.OffsetsChangeId;
                 }
@@ -404,7 +404,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollByRequestedEventArgs e =
                         new ScrollControllerScrollByRequestedEventArgs(
                             offsetDelta,
-                            new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
                     return e.Info.OffsetsChangeId;
                 }
@@ -943,14 +943,14 @@ namespace MUXControlsTestApp.Utilities
             targetThumbVerticalOffset = Math.Min(targetThumbVerticalOffset, maxThumbOffset.Y);
 
             Point targetThumbOffset = new Point(targetThumbHorizontalOffset, targetThumbVerticalOffset);
-            Point targetScrollerOffset = ScrollerOffsetFromThumbOffset(targetThumbOffset);
+            Point targetScrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
-            int viewChangeId = RaiseScrollToRequested(targetScrollerOffset, AnimationMode.Auto, true /*hookupCompletion*/);
+            int viewChangeId = RaiseScrollToRequested(targetScrollPresenterOffset, AnimationMode.Auto, true /*hookupCompletion*/);
             if (viewChangeId != -1 && !operations.ContainsKey(viewChangeId))
             {
                 operations.Add(
                     viewChangeId, 
-                    new OperationInfo(viewChangeId, new Point(targetScrollerOffset.X - HorizontalThumbOffset, targetScrollerOffset.Y - VerticalThumbOffset), targetScrollerOffset));
+                    new OperationInfo(viewChangeId, new Point(targetScrollPresenterOffset.X - HorizontalThumbOffset, targetScrollPresenterOffset.Y - VerticalThumbOffset), targetScrollPresenterOffset));
             }
         }
 
@@ -969,10 +969,10 @@ namespace MUXControlsTestApp.Utilities
                 Point targetThumbOffset = new Point(
                     preManipulationThumbOffset.X + e.Cumulative.Translation.X,
                     preManipulationThumbOffset.Y + e.Cumulative.Translation.Y);
-                Point scrollerOffset = ScrollerOffsetFromThumbOffset(targetThumbOffset);
+                Point scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
                 int viewChangeId = RaiseScrollToRequested(
-                    scrollerOffset, AnimationMode.Disabled, true /*hookupCompletion*/);
+                    scrollPresenterOffset, AnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
 
@@ -988,8 +988,8 @@ namespace MUXControlsTestApp.Utilities
         private void BiDirectionalScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("BiDirectionalScrollController: IsEnabledChanged with IsEnabled=" + IsEnabled);
-            if (!horizontalScrollController.UpdateAreInteractionsAllowed() ||
-                !verticalScrollController.UpdateAreInteractionsAllowed())
+            if (!horizontalScrollController.UpdateAreScrollControllerInteractionsAllowed() ||
+                !verticalScrollController.UpdateAreScrollControllerInteractionsAllowed())
             {
                 RaiseInteractionInfoChanged();
             }
@@ -1057,9 +1057,9 @@ namespace MUXControlsTestApp.Utilities
             verticalScrollController.UpdateInteractionVisualScrollMultiplier();
         }
 
-        private Point ScrollerOffsetFromThumbOffset(Point thumbOffset)
+        private Point ScrollPresenterOffsetFromThumbOffset(Point thumbOffset)
         {
-            Point scrollerOffset = new Point();
+            Point scrollPresenterOffset = new Point();
 
             if (Thumb != null)
             {
@@ -1072,13 +1072,13 @@ namespace MUXControlsTestApp.Utilities
                 }
                 if (parentSize.Width != thumbSize.Width || parentSize.Height != thumbSize.Height)
                 {
-                    scrollerOffset = new Point(
+                    scrollPresenterOffset = new Point(
                         parentSize.Width == thumbSize.Width ? 0 : (thumbOffset.X * (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset) / (parentSize.Width - thumbSize.Width)),
                         parentSize.Height == thumbSize.Height ? 0 : (thumbOffset.Y * (verticalScrollController.MaxOffset - verticalScrollController.MinOffset) / (parentSize.Height - thumbSize.Height)));
                 }
             }
 
-            return scrollerOffset;
+            return scrollPresenterOffset;
         }
 
         private Point MaxThumbOffset()

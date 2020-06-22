@@ -4,16 +4,16 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollPresenterTypeLogging.h"
 #include "ScrollControllerScrollByRequestedEventArgs.h"
 
 #include "ScrollControllerScrollByRequestedEventArgs.properties.cpp"
 
 ScrollControllerScrollByRequestedEventArgs::ScrollControllerScrollByRequestedEventArgs(
     double offsetDelta,
-    winrt::ScrollOptions const & options)
+    winrt::ScrollingScrollOptions const & options)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offsetDelta);
 
     m_offsetDelta = offsetDelta;
@@ -25,7 +25,7 @@ double ScrollControllerScrollByRequestedEventArgs::OffsetDelta() const
     return m_offsetDelta;
 }
 
-winrt::ScrollOptions ScrollControllerScrollByRequestedEventArgs::Options() const
+winrt::ScrollingScrollOptions ScrollControllerScrollByRequestedEventArgs::Options() const
 {
     return m_options;
 }
@@ -37,7 +37,7 @@ winrt::ScrollInfo ScrollControllerScrollByRequestedEventArgs::Info() const
 
 void ScrollControllerScrollByRequestedEventArgs::Info(winrt::ScrollInfo info)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 
     m_info = info;
 }

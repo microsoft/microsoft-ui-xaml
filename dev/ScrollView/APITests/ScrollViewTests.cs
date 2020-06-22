@@ -21,23 +21,23 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
+using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
+using ScrollViewTestHooks = Microsoft.UI.Private.Controls.ScrollViewTestHooks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ScrollViewerTests : ApiTestBase
+    public class ScrollViewTests : ApiTestBase
     {
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
@@ -63,131 +63,131 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultMaxZoomFactor = 10.0;
         private const double c_defaultAnchorRatio = 0.0;
 
-        private const double c_defaultUIScrollViewerContentWidth = 1200.0;
-        private const double c_defaultUIScrollViewerContentHeight = 600.0;
-        private const double c_defaultUIScrollViewerWidth = 300.0;
-        private const double c_defaultUIScrollViewerHeight = 200.0;
+        private const double c_defaultUIScrollViewContentWidth = 1200.0;
+        private const double c_defaultUIScrollViewContentHeight = 600.0;
+        private const double c_defaultUIScrollViewWidth = 300.0;
+        private const double c_defaultUIScrollViewHeight = 200.0;
 
-        private ScrollViewerVisualStateCounts m_scrollViewerVisualStateCounts;
+        private ScrollViewVisualStateCounts m_scrollViewVisualStateCounts;
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the ScrollViewer default properties.")]
+        [TestProperty("Description", "Verifies the ScrollView default properties.")]
         public void VerifyDefaultPropertyValues()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
             RunOnUIThread.Execute(() =>
             {
-                ScrollViewer scrollViewer = new ScrollViewer();
-                Verify.IsNotNull(scrollViewer);
+                ScrollView scrollView = new ScrollView();
+                Verify.IsNotNull(scrollView);
 
-                Log.Comment("Verifying ScrollViewer default property values");
-                Verify.IsNull(scrollViewer.Content);
-                Verify.IsNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
-                Verify.IsNull(scrollViewer.HorizontalScrollController);
-                Verify.IsNull(scrollViewer.VerticalScrollController);
+                Log.Comment("Verifying ScrollView default property values");
+                Verify.IsNull(scrollView.Content);
+                Verify.IsNull(ScrollViewTestHooks.GetScrollPresenterPart(scrollView));
+                Verify.IsNull(scrollView.HorizontalScrollController);
+                Verify.IsNull(scrollView.VerticalScrollController);
 #if USE_SCROLLMODE_AUTO
-                Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
-                Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
+                Verify.AreEqual(scrollView.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
+                Verify.AreEqual(scrollView.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
 #endif
-                Verify.AreEqual(scrollViewer.IgnoredInputKind, c_defaultIgnoredInputKind);
-                Verify.AreEqual(scrollViewer.ContentOrientation, c_defaultContentOrientation);
-                Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
-                Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
-                Verify.AreEqual(scrollViewer.HorizontalScrollRailingMode, c_defaultHorizontalScrollRailingMode);
-                Verify.AreEqual(scrollViewer.VerticalScrollRailingMode, c_defaultVerticalScrollRailingMode);
-                Verify.AreEqual(scrollViewer.HorizontalScrollMode, c_defaultHorizontalScrollMode);
-                Verify.AreEqual(scrollViewer.VerticalScrollMode, c_defaultVerticalScrollMode);
-                Verify.AreEqual(scrollViewer.ZoomMode, c_defaultZoomMode);
-                Verify.AreEqual(scrollViewer.ZoomChainingMode, c_defaultZoomChainingMode);
-                Verify.IsGreaterThan(scrollViewer.MinZoomFactor, c_defaultMinZoomFactor - c_epsilon);
-                Verify.IsLessThan(scrollViewer.MinZoomFactor, c_defaultMinZoomFactor + c_epsilon);
-                Verify.IsGreaterThan(scrollViewer.MaxZoomFactor, c_defaultMaxZoomFactor - c_epsilon);
-                Verify.IsLessThan(scrollViewer.MaxZoomFactor, c_defaultMaxZoomFactor + c_epsilon);
-                Verify.AreEqual(scrollViewer.HorizontalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scrollViewer.VerticalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scrollViewer.ExtentWidth, 0.0);
-                Verify.AreEqual(scrollViewer.ExtentHeight, 0.0);
-                Verify.AreEqual(scrollViewer.ViewportWidth, 0.0);
-                Verify.AreEqual(scrollViewer.ViewportHeight, 0.0);
-                Verify.AreEqual(scrollViewer.ScrollableWidth, 0.0);
-                Verify.AreEqual(scrollViewer.ScrollableHeight, 0.0);
+                Verify.AreEqual(scrollView.IgnoredInputKind, c_defaultIgnoredInputKind);
+                Verify.AreEqual(scrollView.ContentOrientation, c_defaultContentOrientation);
+                Verify.AreEqual(scrollView.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
+                Verify.AreEqual(scrollView.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
+                Verify.AreEqual(scrollView.HorizontalScrollRailingMode, c_defaultHorizontalScrollRailingMode);
+                Verify.AreEqual(scrollView.VerticalScrollRailingMode, c_defaultVerticalScrollRailingMode);
+                Verify.AreEqual(scrollView.HorizontalScrollMode, c_defaultHorizontalScrollMode);
+                Verify.AreEqual(scrollView.VerticalScrollMode, c_defaultVerticalScrollMode);
+                Verify.AreEqual(scrollView.ZoomMode, c_defaultZoomMode);
+                Verify.AreEqual(scrollView.ZoomChainingMode, c_defaultZoomChainingMode);
+                Verify.IsGreaterThan(scrollView.MinZoomFactor, c_defaultMinZoomFactor - c_epsilon);
+                Verify.IsLessThan(scrollView.MinZoomFactor, c_defaultMinZoomFactor + c_epsilon);
+                Verify.IsGreaterThan(scrollView.MaxZoomFactor, c_defaultMaxZoomFactor - c_epsilon);
+                Verify.IsLessThan(scrollView.MaxZoomFactor, c_defaultMaxZoomFactor + c_epsilon);
+                Verify.AreEqual(scrollView.HorizontalAnchorRatio, c_defaultAnchorRatio);
+                Verify.AreEqual(scrollView.VerticalAnchorRatio, c_defaultAnchorRatio);
+                Verify.AreEqual(scrollView.ExtentWidth, 0.0);
+                Verify.AreEqual(scrollView.ExtentHeight, 0.0);
+                Verify.AreEqual(scrollView.ViewportWidth, 0.0);
+                Verify.AreEqual(scrollView.ViewportHeight, 0.0);
+                Verify.AreEqual(scrollView.ScrollableWidth, 0.0);
+                Verify.AreEqual(scrollView.ScrollableHeight, 0.0);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the ScrollViewer properties after template application.")]
-        public void VerifyScrollerAttachedProperties()
+        [TestProperty("Description", "Verifies the ScrollView properties after template application.")]
+        public void VerifyScrollPresenterAttachedProperties()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollView", "ScrollPresenter"))
             {
-                ScrollViewer scrollViewer = null;
-                Rectangle rectangleScrollViewerContent = null;
-                AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollViewerUnloadedEvent = new AutoResetEvent(false);
+                ScrollView scrollView = null;
+                Rectangle rectangleScrollViewContent = null;
+                AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewUnloadedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollViewerContent = new Rectangle();
-                    scrollViewer = new ScrollViewer();
+                    rectangleScrollViewContent = new Rectangle();
+                    scrollView = new ScrollView();
 
-                    SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent, scrollViewerUnloadedEvent);
+                    SetupDefaultUI(scrollView, rectangleScrollViewContent, scrollViewLoadedEvent, scrollViewUnloadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Setting Scroller-cloned properties to non-default values");
-                    scrollViewer.IgnoredInputKind = InputKind.MouseWheel | InputKind.Pen;
-                    scrollViewer.ContentOrientation = ContentOrientation.Horizontal;
-                    scrollViewer.HorizontalScrollChainingMode = ChainingMode.Always;
-                    scrollViewer.VerticalScrollChainingMode = ChainingMode.Never;
-                    scrollViewer.HorizontalScrollRailingMode = RailingMode.Disabled;
-                    scrollViewer.VerticalScrollRailingMode = RailingMode.Disabled;
-                    scrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
-                    scrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-                    scrollViewer.ZoomMode = ZoomMode.Enabled;
-                    scrollViewer.ZoomChainingMode = ChainingMode.Never;
-                    scrollViewer.MinZoomFactor = 2.0;
-                    scrollViewer.MaxZoomFactor = 8.0;
+                    Log.Comment("Setting ScrollPresenter-cloned properties to non-default values");
+                    scrollView.IgnoredInputKind = InputKind.MouseWheel | InputKind.Pen;
+                    scrollView.ContentOrientation = ContentOrientation.Horizontal;
+                    scrollView.HorizontalScrollChainingMode = ChainingMode.Always;
+                    scrollView.VerticalScrollChainingMode = ChainingMode.Never;
+                    scrollView.HorizontalScrollRailingMode = RailingMode.Disabled;
+                    scrollView.VerticalScrollRailingMode = RailingMode.Disabled;
+                    scrollView.HorizontalScrollMode = ScrollMode.Enabled;
+                    scrollView.VerticalScrollMode = ScrollMode.Disabled;
+                    scrollView.ZoomMode = ZoomMode.Enabled;
+                    scrollView.ZoomChainingMode = ChainingMode.Never;
+                    scrollView.MinZoomFactor = 2.0;
+                    scrollView.MaxZoomFactor = 8.0;
 
-                    Log.Comment("Verifying Scroller-cloned non-default properties");
-                    Verify.AreEqual(scrollViewer.IgnoredInputKind, InputKind.MouseWheel | InputKind.Pen);
-                    Verify.AreEqual(scrollViewer.ContentOrientation, ContentOrientation.Horizontal);
-                    Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, ChainingMode.Always);
-                    Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, ChainingMode.Never);
-                    Verify.AreEqual(scrollViewer.HorizontalScrollRailingMode, RailingMode.Disabled);
-                    Verify.AreEqual(scrollViewer.VerticalScrollRailingMode, RailingMode.Disabled);
-                    Verify.AreEqual(scrollViewer.HorizontalScrollMode, ScrollMode.Enabled);
-                    Verify.AreEqual(scrollViewer.VerticalScrollMode, ScrollMode.Disabled);
+                    Log.Comment("Verifying ScrollPresenter-cloned non-default properties");
+                    Verify.AreEqual(scrollView.IgnoredInputKind, InputKind.MouseWheel | InputKind.Pen);
+                    Verify.AreEqual(scrollView.ContentOrientation, ContentOrientation.Horizontal);
+                    Verify.AreEqual(scrollView.HorizontalScrollChainingMode, ChainingMode.Always);
+                    Verify.AreEqual(scrollView.VerticalScrollChainingMode, ChainingMode.Never);
+                    Verify.AreEqual(scrollView.HorizontalScrollRailingMode, RailingMode.Disabled);
+                    Verify.AreEqual(scrollView.VerticalScrollRailingMode, RailingMode.Disabled);
+                    Verify.AreEqual(scrollView.HorizontalScrollMode, ScrollMode.Enabled);
+                    Verify.AreEqual(scrollView.VerticalScrollMode, ScrollMode.Disabled);
 #if USE_SCROLLMODE_AUTO
-                    Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, ScrollMode.Enabled);
-                    Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, ScrollMode.Disabled);
+                    Verify.AreEqual(scrollView.ComputedHorizontalScrollMode, ScrollMode.Enabled);
+                    Verify.AreEqual(scrollView.ComputedVerticalScrollMode, ScrollMode.Disabled);
 #endif
-                    Verify.AreEqual(scrollViewer.ZoomMode, ZoomMode.Enabled);
-                    Verify.AreEqual(scrollViewer.ZoomChainingMode, ChainingMode.Never);
-                    Verify.IsGreaterThan(scrollViewer.MinZoomFactor, 2.0 - c_epsilon);
-                    Verify.IsLessThan(scrollViewer.MinZoomFactor, 2.0 + c_epsilon);
-                    Verify.IsGreaterThan(scrollViewer.MaxZoomFactor, 8.0 - c_epsilon);
-                    Verify.IsLessThan(scrollViewer.MaxZoomFactor, 8.0 + c_epsilon);
+                    Verify.AreEqual(scrollView.ZoomMode, ZoomMode.Enabled);
+                    Verify.AreEqual(scrollView.ZoomChainingMode, ChainingMode.Never);
+                    Verify.IsGreaterThan(scrollView.MinZoomFactor, 2.0 - c_epsilon);
+                    Verify.IsLessThan(scrollView.MinZoomFactor, 2.0 + c_epsilon);
+                    Verify.IsGreaterThan(scrollView.MaxZoomFactor, 8.0 - c_epsilon);
+                    Verify.IsLessThan(scrollView.MaxZoomFactor, 8.0 + c_epsilon);
 
-                    Log.Comment("Resetting window content and ScrollViewer");
+                    Log.Comment("Resetting window content and ScrollView");
                     Content = null;
-                    scrollViewer = null;
+                    scrollView = null;
                 });
 
-                WaitForEvent("Waiting for Unloaded event", scrollViewerUnloadedEvent);
+                WaitForEvent("Waiting for Unloaded event", scrollViewUnloadedEvent);
 
                 IdleSynchronizer.Wait();
                 Log.Comment("Garbage collecting...");
@@ -199,53 +199,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroller attached properties.")]
+        [TestProperty("Description", "Verifies the ScrollPresenter attached properties.")]
         public void VerifyPropertyValuesAfterTemplateApplication()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollView", "ScrollPresenter"))
             {
-                ScrollViewer scrollViewer = null;
-                Rectangle rectangleScrollViewerContent = null;
-                AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollViewerUnloadedEvent = new AutoResetEvent(false);
+                ScrollView scrollView = null;
+                Rectangle rectangleScrollViewContent = null;
+                AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewUnloadedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollViewerContent = new Rectangle();
-                    scrollViewer = new ScrollViewer();
+                    rectangleScrollViewContent = new Rectangle();
+                    scrollView = new ScrollView();
 
-                    SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent, scrollViewerUnloadedEvent);
+                    SetupDefaultUI(scrollView, rectangleScrollViewContent, scrollViewLoadedEvent, scrollViewUnloadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Verifying ScrollViewer property values after Loaded event");
-                    Verify.AreEqual(scrollViewer.Content, rectangleScrollViewerContent);
-                    Verify.IsNotNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
-                    Verify.AreEqual(ScrollViewerTestHooks.GetScrollerPart(scrollViewer).Content, rectangleScrollViewerContent);
-                    Verify.IsNotNull(scrollViewer.HorizontalScrollController);
-                    Verify.IsNotNull(scrollViewer.VerticalScrollController);
-                    Verify.AreEqual(scrollViewer.ExtentWidth, c_defaultUIScrollViewerContentWidth);
-                    Verify.AreEqual(scrollViewer.ExtentHeight, c_defaultUIScrollViewerContentHeight);
-                    Verify.AreEqual(scrollViewer.ViewportWidth, c_defaultUIScrollViewerWidth);
-                    Verify.AreEqual(scrollViewer.ViewportHeight, c_defaultUIScrollViewerHeight);
-                    Verify.AreEqual(scrollViewer.ScrollableWidth, c_defaultUIScrollViewerContentWidth - c_defaultUIScrollViewerWidth);
-                    Verify.AreEqual(scrollViewer.ScrollableHeight, c_defaultUIScrollViewerContentHeight - c_defaultUIScrollViewerHeight);
+                    Log.Comment("Verifying ScrollView property values after Loaded event");
+                    Verify.AreEqual(scrollView.Content, rectangleScrollViewContent);
+                    Verify.IsNotNull(ScrollViewTestHooks.GetScrollPresenterPart(scrollView));
+                    Verify.AreEqual(ScrollViewTestHooks.GetScrollPresenterPart(scrollView).Content, rectangleScrollViewContent);
+                    Verify.IsNotNull(scrollView.HorizontalScrollController);
+                    Verify.IsNotNull(scrollView.VerticalScrollController);
+                    Verify.AreEqual(scrollView.ExtentWidth, c_defaultUIScrollViewContentWidth);
+                    Verify.AreEqual(scrollView.ExtentHeight, c_defaultUIScrollViewContentHeight);
+                    Verify.AreEqual(scrollView.ViewportWidth, c_defaultUIScrollViewWidth);
+                    Verify.AreEqual(scrollView.ViewportHeight, c_defaultUIScrollViewHeight);
+                    Verify.AreEqual(scrollView.ScrollableWidth, c_defaultUIScrollViewContentWidth - c_defaultUIScrollViewWidth);
+                    Verify.AreEqual(scrollView.ScrollableHeight, c_defaultUIScrollViewContentHeight - c_defaultUIScrollViewHeight);
 
-                    Log.Comment("Resetting window content and ScrollViewer");
+                    Log.Comment("Resetting window content and ScrollView");
                     Content = null;
-                    scrollViewer = null;
+                    scrollView = null;
                 });
 
-                WaitForEvent("Waiting for Unloaded event", scrollViewerUnloadedEvent);
+                WaitForEvent("Waiting for Unloaded event", scrollViewUnloadedEvent);
 
                 IdleSynchronizer.Wait();
                 Log.Comment("Garbage collecting...");
@@ -257,7 +257,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the ScrollViewer visual state changes based on the AutoHideScrollBars, IsEnabled and ScrollBarVisibility settings.")]
+        [TestProperty("Description", "Verifies the ScrollView visual state changes based on the AutoHideScrollBars, IsEnabled and ScrollBarVisibility settings.")]
         public void VerifyVisualStates()
         {
             UISettings settings = new UISettings();
@@ -280,39 +280,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void VerifyVisualStates(ScrollBarVisibility scrollBarVisibility, bool autoHideScrollControllers)
         {
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollView"))
             {
-                ScrollViewer scrollViewer = null;
+                ScrollView scrollView = null;
 
                 RunOnUIThread.Execute(() =>
                 {
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessageForVisualStateChange;
-                    m_scrollViewerVisualStateCounts = new ScrollViewerVisualStateCounts();
-                    scrollViewer = new ScrollViewer();
+                    m_scrollViewVisualStateCounts = new ScrollViewVisualStateCounts();
+                    scrollView = new ScrollView();
                 });
 
-                using (ScrollViewerTestHooksHelper scrollViewerTestHooksHelper = new ScrollViewerTestHooksHelper(scrollViewer, autoHideScrollControllers))
+                using (ScrollViewTestHooksHelper scrollViewTestHooksHelper = new ScrollViewTestHooksHelper(scrollView, autoHideScrollControllers))
                 {
-                    Rectangle rectangleScrollViewerContent = null;
-                    AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
-                    AutoResetEvent scrollViewerUnloadedEvent = new AutoResetEvent(false);
+                    Rectangle rectangleScrollViewContent = null;
+                    AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+                    AutoResetEvent scrollViewUnloadedEvent = new AutoResetEvent(false);
 
                     RunOnUIThread.Execute(() =>
                     {
-                        rectangleScrollViewerContent = new Rectangle();
-                        scrollViewer.HorizontalScrollBarVisibility = scrollBarVisibility;
-                        scrollViewer.VerticalScrollBarVisibility = scrollBarVisibility;
+                        rectangleScrollViewContent = new Rectangle();
+                        scrollView.HorizontalScrollBarVisibility = scrollBarVisibility;
+                        scrollView.VerticalScrollBarVisibility = scrollBarVisibility;
 
                         SetupDefaultUI(
-                            scrollViewer: scrollViewer,
-                            rectangleScrollViewerContent: rectangleScrollViewerContent,
-                            scrollViewerLoadedEvent: scrollViewerLoadedEvent,
-                            scrollViewerUnloadedEvent: scrollViewerUnloadedEvent,
+                            scrollView: scrollView,
+                            rectangleScrollViewContent: rectangleScrollViewContent,
+                            scrollViewLoadedEvent: scrollViewLoadedEvent,
+                            scrollViewUnloadedEvent: scrollViewUnloadedEvent,
                             setAsContentRoot: true,
                             useParentGrid: true);
                     });
 
-                    WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+                    WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
 
                     RunOnUIThread.Execute(() =>
                     {
@@ -330,11 +330,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
                             expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
 
-                        m_scrollViewerVisualStateCounts.ResetStateCounts();
+                        m_scrollViewVisualStateCounts.ResetStateCounts();
                         MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessageForVisualStateChange;
 
-                        Log.Comment("Disabling ScrollViewer");
-                        scrollViewer.IsEnabled = false;
+                        Log.Comment("Disabling ScrollView");
+                        scrollView.IsEnabled = false;
                     });
 
                     IdleSynchronizer.Wait();
@@ -355,11 +355,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
                             expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
 
-                        m_scrollViewerVisualStateCounts.ResetStateCounts();
+                        m_scrollViewVisualStateCounts.ResetStateCounts();
                         MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessageForVisualStateChange;
 
-                        Log.Comment("Enabling ScrollViewer");
-                        scrollViewer.IsEnabled = true;
+                        Log.Comment("Enabling ScrollView");
+                        scrollView.IsEnabled = true;
                     });
 
                     IdleSynchronizer.Wait();
@@ -382,10 +382,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                         Log.Comment("Resetting window content");
                         Content = null;
-                        m_scrollViewerVisualStateCounts = null;
+                        m_scrollViewVisualStateCounts = null;
                     });
 
-                    WaitForEvent("Waiting for Unloaded event", scrollViewerUnloadedEvent);
+                    WaitForEvent("Waiting for Unloaded event", scrollViewUnloadedEvent);
                 }
             }
         }
@@ -394,43 +394,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             if (args.IsVerboseLevel)
             {
-                if (args.Message.Contains("ScrollViewer::GoToState"))
+                if (args.Message.Contains("ScrollView::GoToState"))
                 {
                     if (args.Message.Contains("NoIndicator"))
                     {
-                        m_scrollViewerVisualStateCounts.NoIndicatorStateCount++;
+                        m_scrollViewVisualStateCounts.NoIndicatorStateCount++;
                     }
                     else if (args.Message.Contains("TouchIndicator"))
                     {
-                        m_scrollViewerVisualStateCounts.TouchIndicatorStateCount++;
+                        m_scrollViewVisualStateCounts.TouchIndicatorStateCount++;
                     }
                     else if (args.Message.Contains("MouseIndicator"))
                     {
-                        m_scrollViewerVisualStateCounts.MouseIndicatorStateCount++;
+                        m_scrollViewVisualStateCounts.MouseIndicatorStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorCollapsedDisabled"))
                     {
-                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount++;
+                        m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorCollapsedWithoutAnimation"))
                     {
-                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount++;
+                        m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorDisplayedWithoutAnimation"))
                     {
-                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount++;
+                        m_scrollViewVisualStateCounts.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorExpandedWithoutAnimation"))
                     {
-                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedWithoutAnimationStateCount++;
+                        m_scrollViewVisualStateCounts.ScrollBarsSeparatorExpandedWithoutAnimationStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorCollapsed"))
                     {
-                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount++;
+                        m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorExpanded"))
                     {
-                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedStateCount++;
+                        m_scrollViewVisualStateCounts.ScrollBarsSeparatorExpandedStateCount++;
                     }
                 }
             }
@@ -447,21 +447,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             uint expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount,
             uint expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount)
         {
-            Log.Comment($"expectedMouseIndicatorStateCount:{expectedMouseIndicatorStateCount}, mouseIndicatorStateCount:{m_scrollViewerVisualStateCounts.MouseIndicatorStateCount}");
-            Log.Comment($"expectedNoIndicatorStateCount:{expectedNoIndicatorStateCount}, noIndicatorStateCount:{m_scrollViewerVisualStateCounts.NoIndicatorStateCount}");
-            Log.Comment($"expectedScrollBarsSeparatorCollapsedStateCount:{expectedScrollBarsSeparatorCollapsedStateCount}, scrollBarsSeparatorCollapsedStateCount:{m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount}");
-            Log.Comment($"expectedScrollBarsSeparatorCollapsedDisabledStateCount:{expectedScrollBarsSeparatorCollapsedDisabledStateCount}, scrollBarsSeparatorCollapsedDisabledStateCount:{m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount}");
-            Log.Comment($"expectedScrollBarsSeparatorExpandedStateCount:{expectedScrollBarsSeparatorExpandedStateCount}, scrollBarsSeparatorExpandedStateCount:{m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedStateCount}");
+            Log.Comment($"expectedMouseIndicatorStateCount:{expectedMouseIndicatorStateCount}, mouseIndicatorStateCount:{m_scrollViewVisualStateCounts.MouseIndicatorStateCount}");
+            Log.Comment($"expectedNoIndicatorStateCount:{expectedNoIndicatorStateCount}, noIndicatorStateCount:{m_scrollViewVisualStateCounts.NoIndicatorStateCount}");
+            Log.Comment($"expectedScrollBarsSeparatorCollapsedStateCount:{expectedScrollBarsSeparatorCollapsedStateCount}, scrollBarsSeparatorCollapsedStateCount:{m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount}");
+            Log.Comment($"expectedScrollBarsSeparatorCollapsedDisabledStateCount:{expectedScrollBarsSeparatorCollapsedDisabledStateCount}, scrollBarsSeparatorCollapsedDisabledStateCount:{m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount}");
+            Log.Comment($"expectedScrollBarsSeparatorExpandedStateCount:{expectedScrollBarsSeparatorExpandedStateCount}, scrollBarsSeparatorExpandedStateCount:{m_scrollViewVisualStateCounts.ScrollBarsSeparatorExpandedStateCount}");
 
-            Verify.AreEqual(expectedMouseIndicatorStateCount, m_scrollViewerVisualStateCounts.MouseIndicatorStateCount);
-            Verify.AreEqual(expectedTouchIndicatorStateCount, m_scrollViewerVisualStateCounts.TouchIndicatorStateCount);
-            Verify.AreEqual(expectedNoIndicatorStateCount, m_scrollViewerVisualStateCounts.NoIndicatorStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedDisabledStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorExpandedStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedWithoutAnimationStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedMouseIndicatorStateCount, m_scrollViewVisualStateCounts.MouseIndicatorStateCount);
+            Verify.AreEqual(expectedTouchIndicatorStateCount, m_scrollViewVisualStateCounts.TouchIndicatorStateCount);
+            Verify.AreEqual(expectedNoIndicatorStateCount, m_scrollViewVisualStateCounts.NoIndicatorStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedStateCount, m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedDisabledStateCount, m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorExpandedStateCount, m_scrollViewVisualStateCounts.ScrollBarsSeparatorExpandedStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount, m_scrollViewVisualStateCounts.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount, m_scrollViewVisualStateCounts.ScrollBarsSeparatorExpandedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount, m_scrollViewVisualStateCounts.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount);
         }
 
         [TestMethod]
@@ -470,76 +470,76 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollView", "ScrollPresenter"))
             {
                 int expectedAnchorCandidatesCount = 0;
-                Scroller scroller = null;
-                ScrollViewer scrollViewer = null;
-                Rectangle rectangleScrollViewerContent = null;
-                AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollViewerAnchorRequestedEvent = new AutoResetEvent(false);
+                ScrollPresenter scrollPresenter = null;
+                ScrollView scrollView = null;
+                Rectangle rectangleScrollViewContent = null;
+                AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewAnchorRequestedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollViewerContent = new Rectangle();
-                    scrollViewer = new ScrollViewer();
-                    scrollViewer.HorizontalAnchorRatio = 0.1;
+                    rectangleScrollViewContent = new Rectangle();
+                    scrollView = new ScrollView();
+                    scrollView.HorizontalAnchorRatio = 0.1;
 
-                    SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent);
+                    SetupDefaultUI(scrollView, rectangleScrollViewContent, scrollViewLoadedEvent);
 
-                    scrollViewer.AnchorRequested += (ScrollViewer sender, ScrollerAnchorRequestedEventArgs args) =>
+                    scrollView.AnchorRequested += (ScrollView sender, ScrollingAnchorRequestedEventArgs args) =>
                     {
-                        Log.Comment("ScrollViewer.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
+                        Log.Comment("ScrollView.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
                         Verify.IsNull(args.AnchorElement);
                         Verify.AreEqual(expectedAnchorCandidatesCount, args.AnchorCandidates.Count);
-                        scrollViewerAnchorRequestedEvent.Set();
+                        scrollViewAnchorRequestedEvent.Set();
                     };
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Accessing inner Scroller control");
-                    scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+                    Log.Comment("Accessing inner ScrollPresenter control");
+                    scrollPresenter = ScrollViewTestHooks.GetScrollPresenterPart(scrollView);
 
                     Log.Comment("Registering Rectangle as anchor candidate");
-                    scrollViewer.RegisterAnchorCandidate(rectangleScrollViewerContent);
+                    scrollView.RegisterAnchorCandidate(rectangleScrollViewContent);
                     expectedAnchorCandidatesCount = 1;
 
-                    Log.Comment("Forcing Scroller layout");
-                    scroller.InvalidateArrange();
+                    Log.Comment("Forcing ScrollPresenter layout");
+                    scrollPresenter.InvalidateArrange();
                 });
 
-                WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
+                WaitForEvent("Waiting for AnchorRequested event", scrollViewAnchorRequestedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Unregistering Rectangle as anchor candidate");
-                    scrollViewer.UnregisterAnchorCandidate(rectangleScrollViewerContent);
+                    scrollView.UnregisterAnchorCandidate(rectangleScrollViewContent);
                     expectedAnchorCandidatesCount = 0;
 
-                    Log.Comment("Forcing Scroller layout");
-                    scroller.InvalidateArrange();
+                    Log.Comment("Forcing ScrollPresenter layout");
+                    scrollPresenter.InvalidateArrange();
                 });
 
-                WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
+                WaitForEvent("Waiting for AnchorRequested event", scrollViewAnchorRequestedEvent);
             }
         }
 
         private void SetupDefaultUI(
-            ScrollViewer scrollViewer,
-            Rectangle rectangleScrollViewerContent = null,
-            AutoResetEvent scrollViewerLoadedEvent = null,
-            AutoResetEvent scrollViewerUnloadedEvent = null,
+            ScrollView scrollView,
+            Rectangle rectangleScrollViewContent = null,
+            AutoResetEvent scrollViewLoadedEvent = null,
+            AutoResetEvent scrollViewUnloadedEvent = null,
             bool setAsContentRoot = true,
             bool useParentGrid = false)
         {
-            Log.Comment("Setting up default UI with ScrollViewer" + (rectangleScrollViewerContent == null ? "" : " and Rectangle"));
+            Log.Comment("Setting up default UI with ScrollView" + (rectangleScrollViewContent == null ? "" : " and Rectangle"));
 
             LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -549,37 +549,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
             twoColorLGB.GradientStops.Add(orangeGS);
 
-            if (rectangleScrollViewerContent != null)
+            if (rectangleScrollViewContent != null)
             {
-                rectangleScrollViewerContent.Width = c_defaultUIScrollViewerContentWidth;
-                rectangleScrollViewerContent.Height = c_defaultUIScrollViewerContentHeight;
-                rectangleScrollViewerContent.Fill = twoColorLGB;
+                rectangleScrollViewContent.Width = c_defaultUIScrollViewContentWidth;
+                rectangleScrollViewContent.Height = c_defaultUIScrollViewContentHeight;
+                rectangleScrollViewContent.Fill = twoColorLGB;
             }
 
-            Verify.IsNotNull(scrollViewer);
-            scrollViewer.Name = "scrollViewer";
-            scrollViewer.Width = c_defaultUIScrollViewerWidth;
-            scrollViewer.Height = c_defaultUIScrollViewerHeight;
-            if (rectangleScrollViewerContent != null)
+            Verify.IsNotNull(scrollView);
+            scrollView.Name = "scrollView";
+            scrollView.Width = c_defaultUIScrollViewWidth;
+            scrollView.Height = c_defaultUIScrollViewHeight;
+            if (rectangleScrollViewContent != null)
             {
-                scrollViewer.Content = rectangleScrollViewerContent;
+                scrollView.Content = rectangleScrollViewContent;
             }
 
-            if (scrollViewerLoadedEvent != null)
+            if (scrollViewLoadedEvent != null)
             {
-                scrollViewer.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollView.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("ScrollViewer.Loaded event handler");
-                    scrollViewerLoadedEvent.Set();
+                    Log.Comment("ScrollView.Loaded event handler");
+                    scrollViewLoadedEvent.Set();
                 };
             }
 
-            if (scrollViewerUnloadedEvent != null)
+            if (scrollViewUnloadedEvent != null)
             {
-                scrollViewer.Unloaded += (object sender, RoutedEventArgs e) =>
+                scrollView.Unloaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("ScrollViewer.Unloaded event handler");
-                    scrollViewerUnloadedEvent.Set();
+                    Log.Comment("ScrollView.Unloaded event handler");
+                    scrollViewUnloadedEvent.Set();
                 };
             }
 
@@ -588,13 +588,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (useParentGrid)
             {
                 parentGrid = new Grid();
-                parentGrid.Width = c_defaultUIScrollViewerWidth * 3;
-                parentGrid.Height = c_defaultUIScrollViewerHeight * 3;
+                parentGrid.Width = c_defaultUIScrollViewWidth * 3;
+                parentGrid.Height = c_defaultUIScrollViewHeight * 3;
 
-                scrollViewer.HorizontalAlignment = HorizontalAlignment.Left;
-                scrollViewer.VerticalAlignment = VerticalAlignment.Top;
+                scrollView.HorizontalAlignment = HorizontalAlignment.Left;
+                scrollView.VerticalAlignment = VerticalAlignment.Top;
 
-                parentGrid.Children.Add(scrollViewer);
+                parentGrid.Children.Add(scrollView);
             }
 
             if (setAsContentRoot)
@@ -606,7 +606,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 else
                 {
-                    Content = scrollViewer;
+                    Content = scrollView;
                 }
             }
         }
@@ -621,8 +621,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // Custom ScrollViewer that records its visual state changes.
-    public class ScrollViewerVisualStateCounts
+    // Custom ScrollView that records its visual state changes.
+    public class ScrollViewVisualStateCounts
     {
         public uint NoIndicatorStateCount
         {

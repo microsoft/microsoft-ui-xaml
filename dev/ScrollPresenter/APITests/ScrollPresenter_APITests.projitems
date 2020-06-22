@@ -7,15 +7,15 @@
     <SharedGUID>474B92F7-CD58-FED9-8569-9640529D1871</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Scroller_APITests</Import_RootNamespace>
+    <Import_RootNamespace>ScrollPresenter_APITests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollControllerTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerAnchoringTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerLayoutTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerSnapPointTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerViewChangeTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterAnchoringTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterBringIntoViewTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterLayoutTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterSnapPointTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterViewChangeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterTests.cs" />
   </ItemGroup>
 </Project>

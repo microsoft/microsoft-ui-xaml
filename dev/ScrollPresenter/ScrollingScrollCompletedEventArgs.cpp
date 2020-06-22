@@ -3,24 +3,24 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollCompletedEventArgs.h"
+#include "ScrollingScrollCompletedEventArgs.h"
 
-winrt::ScrollInfo ScrollCompletedEventArgs::ScrollInfo()
+winrt::ScrollInfo ScrollingScrollCompletedEventArgs::ScrollInfo()
 {
     return winrt::ScrollInfo{ m_offsetsChangeId };
 }
 
-ScrollerViewChangeResult ScrollCompletedEventArgs::Result()
+ScrollPresenterViewChangeResult ScrollingScrollCompletedEventArgs::Result()
 {
     return m_result;
 }
 
-void ScrollCompletedEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingScrollCompletedEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
 {
     m_offsetsChangeId = offsetsChangeId;
 }
 
-void ScrollCompletedEventArgs::Result(ScrollerViewChangeResult result)
+void ScrollingScrollCompletedEventArgs::Result(ScrollPresenterViewChangeResult result)
 {
     m_result = result;
 }

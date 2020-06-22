@@ -21,23 +21,23 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
-using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
+using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
+using ScrollingZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
+using ScrollPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollPresenterViewChangeResult;
 using Windows.UI.ViewManagement;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests : ApiTestBase
+    partial class ScrollPresenterTests : ApiTestBase
     {
         // Enum used in tests that use InterruptViewChange
         private enum ViewChangeInterruptionKind
@@ -55,138 +55,138 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private uint viewChangedCount = 0u;
 
         [TestMethod]
-        [TestProperty("Description", "Changes Scroller offsets using ScrollTo, ScrollBy, ScrollFrom and AnimationMode/SnapPointsMode enum values.")]
+        [TestProperty("Description", "Changes ScrollPresenter offsets using ScrollTo, ScrollBy, ScrollFrom and AnimationMode/SnapPointsMode enum values.")]
         public void BasicOffsetChanges()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             // Jump to absolute offsets
-            ScrollTo(scroller, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
-            ScrollTo(scroller, 22.0, 11.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ScrollTo(scrollPresenter, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ScrollTo(scrollPresenter, 22.0, 11.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Jump to relative offsets
-            ScrollBy(scroller, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ScrollBy(scroller, 15.0, 4.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ScrollBy(scrollPresenter, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollBy(scrollPresenter, 15.0, 4.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Animate to absolute offsets
-            ScrollTo(scroller, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ScrollTo(scroller, 5.0, 75.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ScrollTo(scrollPresenter, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollTo(scrollPresenter, 5.0, 75.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to absolute offsets based on UISettings.AnimationsEnabled
-            ScrollTo(scroller, 55.0, 25.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollTo(scrollPresenter, 55.0, 25.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
 
             // Animate to relative offsets
-            ScrollBy(scroller, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ScrollBy(scroller, -80.0, 200.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ScrollBy(scrollPresenter, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollBy(scrollPresenter, -80.0, 200.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to relative offsets based on UISettings.AnimationsEnabled
-            ScrollBy(scroller, 80.0, -200.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollBy(scrollPresenter, 80.0, -200.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
 
             // Flick with additional offsets velocity
-            ScrollFrom(scroller, -65.0f, 80.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+            ScrollFrom(scrollPresenter, -65.0f, 80.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
 
             // Flick with additional offsets velocity and custom scroll inertia decay rate
-            ScrollFrom(scroller, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f , verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
+            ScrollFrom(scrollPresenter, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f , verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
 
             // Do it all again while respecting snap points
-            ScrollTo(scroller, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Default, hookViewChanged: false);
-            ScrollBy(scroller, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Default, hookViewChanged: false);
-            ScrollTo(scroller, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Default, hookViewChanged: false);
-            ScrollBy(scroller, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Default, hookViewChanged: false);
+            ScrollTo(scrollPresenter, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Default, hookViewChanged: false);
+            ScrollBy(scrollPresenter, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Default, hookViewChanged: false);
+            ScrollTo(scrollPresenter, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Default, hookViewChanged: false);
+            ScrollBy(scrollPresenter, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Default, hookViewChanged: false);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Changes Scroller zoomFactor using ZoomTo, ZoomBy, ZoomFrom and AnimationMode enum values.")]
+        [TestProperty("Description", "Changes ScrollPresenter zoomFactor using ZoomTo, ZoomBy, ZoomFrom and AnimationMode enum values.")]
         public void BasicZoomFactorChanges()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             // Jump to absolute zoomFactor
-            ZoomTo(scroller, 2.0f, 22.0f, 33.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
-            ZoomTo(scroller, 5.0f, 33.0f, 22.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ZoomTo(scrollPresenter, 2.0f, 22.0f, 33.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollPresenter, 5.0f, 33.0f, 22.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Jump to relative zoomFactor
-            ZoomBy(scroller, 1.0f, 55.0f, 66.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ZoomBy(scroller, 1.0f, 66.0f, 55.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ZoomBy(scrollPresenter, 1.0f, 55.0f, 66.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomBy(scrollPresenter, 1.0f, 66.0f, 55.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Animate to absolute zoomFactor
-            ZoomTo(scroller, 4.0f, -40.0f, -25.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ZoomTo(scroller, 6.0f, 25.0f, 40.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ZoomTo(scrollPresenter, 4.0f, -40.0f, -25.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollPresenter, 6.0f, 25.0f, 40.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to absolute zoomFactor based on UISettings.AnimationsEnabled
-            ZoomTo(scroller, 3.0f, 10.0f, 20.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollPresenter, 3.0f, 10.0f, 20.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
 
             // Animate to relative zoomFactor
-            ZoomBy(scroller, -2.0f, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ZoomBy(scroller, 1.0f, 100.0f, 200.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ZoomBy(scrollPresenter, -2.0f, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomBy(scrollPresenter, 1.0f, 100.0f, 200.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to relative zoomFactor based on UISettings.AnimationsEnabled
-            ZoomBy(scroller, 2.0f, 200.0f, 100.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomBy(scrollPresenter, 2.0f, 200.0f, 100.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
 
             // Flick with additional zoomFactor velocity
-            ZoomFrom(scroller, 2.0f, inertiaDecayRate: null, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
+            ZoomFrom(scrollPresenter, 2.0f, inertiaDecayRate: null, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
 
             // Flick with additional zoomFactor velocity and custom zoomFactor inertia decay rate
-            ZoomFrom(scroller, -2.0f, inertiaDecayRate: 0.75f, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
+            ZoomFrom(scrollPresenter, -2.0f, inertiaDecayRate: 0.75f, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
         }
 
         [TestMethod]
         [TestProperty("Description", "Cancels an animated offsets change.")]
         public void BasicOffsetsChangeCancelation()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+            ScrollPresenterOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 operation = StartScrollTo(
-                    scroller,
+                    scrollPresenter,
                     600.0,
                     400.0,
                     AnimationMode.Enabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvent);
+                    scrollPresenterViewChangeOperationEvent);
 
                 bool operationCanceled = false;
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
 
@@ -194,22 +194,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("Canceling view change");
                         operationCanceled = true;
-                        sender.ScrollBy(0, 0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        sender.ScrollBy(0, 0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                     }
                 };
             });
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+            WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.IsTrue(scroller.HorizontalOffset < 600.0);
-                Verify.IsTrue(scroller.VerticalOffset < 400.0);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Interrupted, operation.Result);
+                Verify.IsTrue(scrollPresenter.HorizontalOffset < 600.0);
+                Verify.IsTrue(scrollPresenter.VerticalOffset < 400.0);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Interrupted, operation.Result);
             });
         }
 
@@ -223,39 +223,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollPresenter"))
             {
-                Scroller scroller = null;
-                Rectangle rectangleScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                ScrollPresenter scrollPresenter = null;
+                Rectangle rectangleScrollPresenterContent = null;
+                AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerContent = new Rectangle();
-                    scroller = new Scroller();
-                    scroller.Name = "scr";
+                    rectangleScrollPresenterContent = new Rectangle();
+                    scrollPresenter = new ScrollPresenter();
+                    scrollPresenter.Name = "scr";
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     operation = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         8.0f,
                         100.0f,
                         150.0f,
                         AnimationMode.Enabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
 
                     bool operationCanceled = false;
 
-                    scroller.ViewChanged += (sender, args) =>
+                    scrollPresenter.ViewChanged += (sender, args) =>
                     {
                         Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
 
@@ -263,27 +263,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ZoomBy(0, Vector2.Zero, new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                            sender.ZoomBy(0, Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                         }
                     };
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                        scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                    Verify.IsTrue(scroller.ZoomFactor < 8.0f);
-                    Verify.AreEqual(ScrollerViewChangeResult.Interrupted, operation.Result);
+                    Verify.IsTrue(scrollPresenter.ZoomFactor < 8.0f);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Interrupted, operation.Result);
                 });
             }
         }
 
         [TestMethod]
         [TestProperty("Description", "Checks to make sure the exposed startPosition, endPosition, StartZoomFactor, and EndZoomFactor " +
-            "on ScrollAnimationStartingEventArgs and ZoomAnimationStartingEventArgs respectively are accurate.")]
+            "on ScrollingScrollAnimationStartingEventArgs and ScrollingZoomAnimationStartingEventArgs respectively are accurate.")]
         public void ValidateScrollAnimationStartingAndZoomFactorEventArgsHaveValidStartAndEndPositions()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -293,9 +293,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             int numOffsetChanges = 0;
             int numZoomFactorChanges = 0;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
             Point newPosition1 = new Point(100, 150);
             Point newPosition2 = new Point(50, 100);
             float newZoomFactor1 = 2.0f;
@@ -303,22 +303,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Attach to ScrollAnimationStarting");
 
-                scroller.ZoomAnimationStarting += (Scroller sender, ZoomAnimationStartingEventArgs e) =>
+                scrollPresenter.ZoomAnimationStarting += (ScrollPresenter sender, ScrollingZoomAnimationStartingEventArgs e) =>
                 {
-                    Log.Comment("Scroller.ZoomAnimationStarting event handler");
+                    Log.Comment("ScrollPresenter.ZoomAnimationStarting event handler");
                     if (numZoomFactorChanges == 0)
                     {
                         Verify.AreEqual(2.0f, e.EndZoomFactor);
@@ -332,9 +332,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                scroller.ScrollAnimationStarting += (Scroller sender, ScrollAnimationStartingEventArgs e) =>
+                scrollPresenter.ScrollAnimationStarting += (ScrollPresenter sender, ScrollingScrollAnimationStartingEventArgs e) =>
                 {
-                    Log.Comment("Scroller.ScrollAnimationStarting event handler");
+                    Log.Comment("ScrollPresenter.ScrollAnimationStarting event handler");
                     if (numOffsetChanges == 0)
                     {
                         Verify.AreEqual(100.0f, e.EndPosition.X);
@@ -357,16 +357,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Animating to absolute Offset");
-            ScrollTo(scroller, newPosition1.X, newPosition1.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ScrollTo(scrollPresenter, newPosition1.X, newPosition1.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute Offset");
-            ScrollTo(scroller, newPosition2.X, newPosition2.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ScrollTo(scrollPresenter, newPosition2.X, newPosition2.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute zoomFactor");
-            ZoomTo(scroller, newZoomFactor1, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollPresenter, newZoomFactor1, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute zoomFactor");
-            ZoomTo(scroller, newZoomFactor2, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollPresenter, newZoomFactor2, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
         }
 
@@ -380,32 +380,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollPresenter"))
             {
-                Scroller scroller = null;
-                Rectangle rectangleScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                ScrollPresenter scrollPresenter = null;
+                Rectangle rectangleScrollPresenterContent = null;
+                AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerContent = new Rectangle();
-                    scroller = new Scroller();
+                    rectangleScrollPresenterContent = new Rectangle();
+                    scrollPresenter = new ScrollPresenter();
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += (sender, args) =>
+                    scrollPresenter.ViewChanged += (sender, args) =>
                     {
                         Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                     };
 
-                    scroller.ScrollAnimationStarting += (sender, args) =>
+                    scrollPresenter.ScrollAnimationStarting += (sender, args) =>
                     {
                         Log.Comment("ScrollAnimationStarting - OffsetsChangeId={0}", args.ScrollInfo.OffsetsChangeId);
                         Verify.IsNotNull(args.Animation);
@@ -417,28 +417,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     };
 
                     operation = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         600.0,
                         400.0,
                         AnimationMode.Enabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment($"Final HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={scroller.ZoomFactor}");
+                    Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
-                    Verify.AreEqual(600.0, scroller.HorizontalOffset);
-                    Verify.AreEqual(400.0, scroller.VerticalOffset);
-                    Verify.AreEqual(1.0f, scroller.ZoomFactor);
+                    Verify.AreEqual(600.0, scrollPresenter.HorizontalOffset);
+                    Verify.AreEqual(400.0, scrollPresenter.VerticalOffset);
+                    Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
 
                     Verify.IsLessThanOrEqual(viewChangedCount, 2u);
 
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
                 });
             }
         }
@@ -453,32 +453,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollPresenter"))
             {
-                Scroller scroller = null;
-                Rectangle rectangleScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                ScrollPresenter scrollPresenter = null;
+                Rectangle rectangleScrollPresenterContent = null;
+                AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerContent = new Rectangle();
-                    scroller = new Scroller();
+                    rectangleScrollPresenterContent = new Rectangle();
+                    scrollPresenter = new ScrollPresenter();
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += (sender, args) =>
+                    scrollPresenter.ViewChanged += (sender, args) =>
                     {
                         Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                     };
 
-                    scroller.ZoomAnimationStarting += (sender, args) =>
+                    scrollPresenter.ZoomAnimationStarting += (sender, args) =>
                     {
                         Log.Comment("ZoomAnimationStarting - ZoomFactorChangeId={0}", args.ZoomInfo.ZoomFactorChangeId);
                         Verify.IsNotNull(args.Animation);
@@ -490,82 +490,82 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     };
 
                     operation = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         8.0f,
                         100.0f,
                         150.0f,
                         AnimationMode.Enabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment($"Final HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={scroller.ZoomFactor}");
+                    Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
-                    Verify.IsLessThan(Math.Abs(scroller.HorizontalOffset - 700.0), 0.01);
-                    Verify.IsLessThan(Math.Abs(scroller.VerticalOffset - 1050.0), 0.01);
-                    Verify.AreEqual(8.0f, scroller.ZoomFactor);
+                    Verify.IsLessThan(Math.Abs(scrollPresenter.HorizontalOffset - 700.0), 0.01);
+                    Verify.IsLessThan(Math.Abs(scrollPresenter.VerticalOffset - 1050.0), 0.01);
+                    Verify.AreEqual(8.0f, scrollPresenter.ZoomFactor);
 
                     Verify.IsLessThanOrEqual(viewChangedCount, 2u);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
                 });
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Requests a view change just before unloading scroller.")]
+        [TestProperty("Description", "Requests a view change just before unloading scrollPresenter.")]
         public void InterruptViewChangeWithUnloading()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+            ScrollPresenterOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, setAsContentRoot: true);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent, setAsContentRoot: true);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
 
                 operation = StartScrollTo(
-                    scroller,
+                    scrollPresenter,
                     600.0,
                     400.0,
                     AnimationMode.Disabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvent);
+                    scrollPresenterViewChangeOperationEvent);
 
-                Log.Comment("Resetting window content to unparent Scroller");
+                Log.Comment("Resetting window content to unparent ScrollPresenter");
                 Content = null;
             });
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+            WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(0.0, scroller.HorizontalOffset);
-                Verify.AreEqual(0.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Interrupted, operation.Result);
+                Verify.AreEqual(0.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(0.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Interrupted, operation.Result);
             });
         }
 
@@ -601,42 +601,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Attempts an offsets change while there is no content.")]
         public void OffsetsChangeWithNoContent()
         {
-            Scroller scroller = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
+            ScrollPresenter scrollPresenter = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+            ScrollPresenterOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                scroller = new Scroller();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, null /*rectangleScrollerContent*/, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, null /*rectangleScrollPresenterContent*/, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 operation = StartScrollTo(
-                    scroller,
+                    scrollPresenter,
                     600.0,
                     400.0,
                     AnimationMode.Enabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvent);
+                    scrollPresenterViewChangeOperationEvent);
             });
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+            WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(0.0, scroller.HorizontalOffset);
-                Verify.AreEqual(0.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Ignored, operation.Result);
+                Verify.AreEqual(0.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(0.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Ignored, operation.Result);
             });
         }
 
@@ -644,43 +644,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Attempts a zoomFactor change while there is no content.")]
         public void ZoomFactorChangeWithNoContent()
         {
-            Scroller scroller = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
+            ScrollPresenter scrollPresenter = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+            ScrollPresenterOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                scroller = new Scroller();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, null /*rectangleScrollerContent*/, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, null /*rectangleScrollPresenterContent*/, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 operation = StartZoomTo(
-                    scroller,
+                    scrollPresenter,
                     8.0f,
                     100.0f,
                     150.0f,
                     AnimationMode.Enabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvent);
+                    scrollPresenterViewChangeOperationEvent);
             });
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+            WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(0.0, scroller.HorizontalOffset);
-                Verify.AreEqual(0.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Ignored, operation.Result);
+                Verify.AreEqual(0.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(0.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Ignored, operation.Result);
             });
         }
 
@@ -694,106 +694,106 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ConsecutiveOffsetJumps(bool waitForFirstCompletion)
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent[] scrollerViewChangeOperationEvents = null;
-            ScrollerOperation[] operations = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent[] scrollPresenterViewChangeOperationEvents = null;
+            ScrollPresenterOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                scrollerViewChangeOperationEvents = new AutoResetEvent[3];
-                scrollerViewChangeOperationEvents[0] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[1] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[2] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents = new AutoResetEvent[3];
+                scrollPresenterViewChangeOperationEvents[0] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[1] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[2] = new AutoResetEvent(false);
 
-                operations = new ScrollerOperation[3];
+                operations = new ScrollPresenterOperation[3];
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
 
                 operations[0] = StartScrollTo(
-                    scroller,
+                    scrollPresenter,
                     600.0,
                     400.0,
                     AnimationMode.Disabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvents[0]);
+                    scrollPresenterViewChangeOperationEvents[0]);
 
                 if (!waitForFirstCompletion)
                 {
                     operations[1] = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         500.0,
                         300.0,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
             });
 
-            WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+            WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
 
             if (waitForFirstCompletion)
             {
                 RunOnUIThread.Execute(() =>
                 {
                     operations[1] = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         500.0,
                         300.0,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 });
             }
 
-            WaitForEvent("Waiting for second view change completion", scrollerViewChangeOperationEvents[1]);
+            WaitForEvent("Waiting for second view change completion", scrollPresenterViewChangeOperationEvents[1]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(500.0, scroller.HorizontalOffset);
-                Verify.AreEqual(300.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[0].Result);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[1].Result);
+                Verify.AreEqual(500.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(300.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[0].Result);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[1].Result);
 
                 // Jump to the same offsets.
                 operations[2] = StartScrollTo(
-                    scroller,
+                    scrollPresenter,
                     500.0,
                     300.0,
                     AnimationMode.Disabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvents[2]);
+                    scrollPresenterViewChangeOperationEvents[2]);
             });
 
-            WaitForEvent("Waiting for third view change completion", scrollerViewChangeOperationEvents[2]);
+            WaitForEvent("Waiting for third view change completion", scrollPresenterViewChangeOperationEvents[2]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(500.0, scroller.HorizontalOffset);
-                Verify.AreEqual(300.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[2].Result);
+                Verify.AreEqual(500.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(300.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[2].Result);
             });
         }
 
@@ -819,32 +819,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ConsecutiveZoomFactorJumps(bool isFirstZoomRelative, bool isSecondZoomRelative, bool waitForFirstCompletion)
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent[] scrollerViewChangeOperationEvents = null;
-            ScrollerOperation[] operations = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent[] scrollPresenterViewChangeOperationEvents = null;
+            ScrollPresenterOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                scrollerViewChangeOperationEvents = new AutoResetEvent[3];
-                scrollerViewChangeOperationEvents[0] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[1] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[2] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents = new AutoResetEvent[3];
+                scrollPresenterViewChangeOperationEvents[0] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[1] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[2] = new AutoResetEvent(false);
 
-                operations = new ScrollerOperation[3];
+                operations = new ScrollPresenterOperation[3];
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
@@ -852,30 +852,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (isFirstZoomRelative)
                 {
                     operations[0] = StartZoomBy(
-                        scroller,
+                        scrollPresenter,
                         7.0f,
                         150.0f,
                         120.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
                 else
                 {
                     operations[0] = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         8.0f,
                         150.0f,
                         120.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
             });
 
             if (waitForFirstCompletion)
             {
-                WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+                WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
             }
 
             RunOnUIThread.Execute(() =>
@@ -883,66 +883,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (isFirstZoomRelative)
                 {
                     operations[1] = StartZoomBy(
-                        scroller,
+                        scrollPresenter,
                         -1.0f,
                         10.0f,
                         90.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
                 else
                 {
                     operations[1] = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         7.0f,
                         10.0f,
                         90.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
             });
 
             if (!waitForFirstCompletion)
             {
-                WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+                WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
             }
-            WaitForEvent("Waiting for second view change completion", scrollerViewChangeOperationEvents[1]);
+            WaitForEvent("Waiting for second view change completion", scrollPresenterViewChangeOperationEvents[1]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(917.5, scroller.HorizontalOffset);
-                Verify.AreEqual(723.75, scroller.VerticalOffset);
-                Verify.AreEqual(7.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[0].Result);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[1].Result);
+                Verify.AreEqual(917.5, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(723.75, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(7.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[0].Result);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[1].Result);
 
                 // Jump to the same zoomFactor
                 operations[2] = StartZoomTo(
-                    scroller,
+                    scrollPresenter,
                     7.0f,
                     10.0f,
                     90.0f,
                     AnimationMode.Disabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvents[2]);
+                    scrollPresenterViewChangeOperationEvents[2]);
             });
 
-            WaitForEvent("Waiting for third view change completion", scrollerViewChangeOperationEvents[2]);
+            WaitForEvent("Waiting for third view change completion", scrollPresenterViewChangeOperationEvents[2]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(917.5, scroller.HorizontalOffset);
-                Verify.AreEqual(723.75, scroller.VerticalOffset);
-                Verify.AreEqual(7.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[2].Result);
+                Verify.AreEqual(917.5, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(723.75, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(7.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[2].Result);
             });
         }
 
@@ -962,31 +962,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ConsecutiveScrollAndZoomJumps(bool isScrollRelative, bool isZoomRelative, bool waitForFirstCompletion)
         { 
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent[] scrollerViewChangeOperationEvents = null;
-            ScrollerOperation[] operations = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent[] scrollPresenterViewChangeOperationEvents = null;
+            ScrollPresenterOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                scrollerViewChangeOperationEvents = new AutoResetEvent[2];
-                scrollerViewChangeOperationEvents[0] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[1] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents = new AutoResetEvent[2];
+                scrollPresenterViewChangeOperationEvents[0] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[1] = new AutoResetEvent(false);
 
-                operations = new ScrollerOperation[2];
+                operations = new ScrollPresenterOperation[2];
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
@@ -994,28 +994,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (isScrollRelative)
                 {
                     operations[0] = StartScrollBy(
-                        scroller,
+                        scrollPresenter,
                         80.0,
                         35.0,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
                 else
                 {
                     operations[0] = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         80.0,
                         35.0,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
             });
 
             if (waitForFirstCompletion)
             {
-                WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+                WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
             }
 
             RunOnUIThread.Execute(() =>
@@ -1023,43 +1023,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (isZoomRelative)
                 {
                     operations[1] = StartZoomBy(
-                        scroller,
+                        scrollPresenter,
                         2.0f,
                         10.0f,
                         90.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
                 else
                 {
                     operations[1] = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         3.0f,
                         10.0f,
                         90.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
             });
 
             if (!waitForFirstCompletion)
             {
-                WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+                WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
             }
-            WaitForEvent("Waiting for second view change completion", scrollerViewChangeOperationEvents[1]);
+            WaitForEvent("Waiting for second view change completion", scrollPresenterViewChangeOperationEvents[1]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(260.0, scroller.HorizontalOffset);
-                Verify.AreEqual(285.0, scroller.VerticalOffset);
-                Verify.AreEqual(3.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[0].Result);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[1].Result);
+                Verify.AreEqual(260.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(285.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(3.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[0].Result);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[1].Result);
             });
         }
 
@@ -1079,31 +1079,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ConsecutiveZoomAndScrollJumps(bool isZoomRelative, bool isScrollRelative, bool waitForFirstCompletion)
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent[] scrollerViewChangeOperationEvents = null;
-            ScrollerOperation[] operations = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent[] scrollPresenterViewChangeOperationEvents = null;
+            ScrollPresenterOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                scrollerViewChangeOperationEvents = new AutoResetEvent[2];
-                scrollerViewChangeOperationEvents[0] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[1] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents = new AutoResetEvent[2];
+                scrollPresenterViewChangeOperationEvents[0] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[1] = new AutoResetEvent(false);
 
-                operations = new ScrollerOperation[2];
+                operations = new ScrollPresenterOperation[2];
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
@@ -1111,30 +1111,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (isZoomRelative)
                 {
                     operations[0] = StartZoomBy(
-                        scroller,
+                        scrollPresenter,
                         2.0f,
                         10.0f,
                         90.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
                 else
                 {
                     operations[0] = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         3.0f,
                         10.0f,
                         90.0f,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
             });
 
             if (waitForFirstCompletion)
             {
-                WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+                WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
             }
 
             RunOnUIThread.Execute(() =>
@@ -1142,68 +1142,68 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (isScrollRelative)
                 {
                     operations[1] = StartScrollBy(
-                        scroller,
+                        scrollPresenter,
                         80.0,
                         35.0,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
                 else
                 {
                     operations[1] = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         80.0,
                         35.0,
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[1]);
+                        scrollPresenterViewChangeOperationEvents[1]);
                 }
             });
 
             if (!waitForFirstCompletion)
             {
-                WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+                WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
             }
-            WaitForEvent("Waiting for second view change completion", scrollerViewChangeOperationEvents[1]);
+            WaitForEvent("Waiting for second view change completion", scrollPresenterViewChangeOperationEvents[1]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
                 if (isScrollRelative)
                 {
-                    Verify.AreEqual(100.0, scroller.HorizontalOffset);
-                    Verify.AreEqual(215.0, scroller.VerticalOffset);
+                    Verify.AreEqual(100.0, scrollPresenter.HorizontalOffset);
+                    Verify.AreEqual(215.0, scrollPresenter.VerticalOffset);
                 }
                 else
                 {
-                    Verify.AreEqual(80.0, scroller.HorizontalOffset);
-                    Verify.AreEqual(35.0, scroller.VerticalOffset);
+                    Verify.AreEqual(80.0, scrollPresenter.HorizontalOffset);
+                    Verify.AreEqual(35.0, scrollPresenter.VerticalOffset);
                 }
-                Verify.AreEqual(3.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[0].Result);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[1].Result);
+                Verify.AreEqual(3.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[0].Result);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[1].Result);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Requests a non-animated offsets change before loading scroller.")]
+        [TestProperty("Description", "Requests a non-animated offsets change before loading scrollPresenter.")]
         public void SetOffsetsBeforeLoading()
         {
             ChangeOffsetsBeforeLoading(false /*animate*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Requests an animated offsets change before loading scroller.")]
+        [TestProperty("Description", "Requests an animated offsets change before loading scrollPresenter.")]
         public void AnimateOffsetsBeforeLoading()
         {
             ChangeOffsetsBeforeLoading(true /*animate*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Requests a non-animated zoomFactor change before loading scroller.")]
+        [TestProperty("Description", "Requests a non-animated zoomFactor change before loading scrollPresenter.")]
         public void SetZoomFactorBeforeLoading()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -1216,7 +1216,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Requests an animated zoomFactor change before loading scroller.")]
+        [TestProperty("Description", "Requests an animated zoomFactor change before loading scrollPresenter.")]
         public void AnimateZoomFactorBeforeLoading()
         {
             ChangeZoomFactorBeforeLoading(true /*animate*/);
@@ -1226,29 +1226,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Requests a non-animated offset change immediately after increasing content size.")]
         public void OffsetJumpAfterContentResizing()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent.Width = c_defaultUIScrollerContentWidth + 200.0;
+                rectangleScrollPresenterContent.Width = c_defaultUIScrollPresenterContentWidth + 200.0;
             });
 
             // Jump to absolute offsets
             ScrollTo(
-                scroller,
-                c_defaultUIScrollerContentWidth + 200.0 - c_defaultUIScrollerWidth,
+                scrollPresenter,
+                c_defaultUIScrollPresenterContentWidth + 200.0 - c_defaultUIScrollPresenterWidth,
                 c_defaultVerticalOffset,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore);
@@ -1256,103 +1256,103 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ChangeOffsetsBeforeLoading(bool animate)
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+            ScrollPresenterOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, false /*setAsContentRoot*/);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent, false /*setAsContentRoot*/);
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
 
                 operation = StartScrollTo(
-                    scroller,
+                    scrollPresenter,
                     600.0,
                     400.0,
                     animate ? AnimationMode.Enabled : AnimationMode.Disabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvent);
+                    scrollPresenterViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
-                Content = scroller;
+                Content = scrollPresenter;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+            WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(600.0, scroller.HorizontalOffset);
-                Verify.AreEqual(400.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                Verify.AreEqual(600.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(400.0, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
             });
         }
 
         private void ChangeZoomFactorBeforeLoading(bool animate)
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+            ScrollPresenterOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, false /*setAsContentRoot*/);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent, false /*setAsContentRoot*/);
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                 };
 
                 operation = StartZoomTo(
-                    scroller,
+                    scrollPresenter,
                     8.0f,
                     100.0f,
                     150.0f,
                     animate ? AnimationMode.Enabled : AnimationMode.Disabled,
                     SnapPointsMode.Ignore,
-                    scrollerViewChangeOperationEvent);
+                    scrollPresenterViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
-                Content = scroller;
+                Content = scrollPresenter;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+            WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
-                Verify.IsLessThan(Math.Abs(scroller.HorizontalOffset - 700.0), 0.01);
-                Verify.IsLessThan(Math.Abs(scroller.VerticalOffset - 1050.0), 0.01);
-                Verify.AreEqual(8.0f, scroller.ZoomFactor);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                Verify.IsLessThan(Math.Abs(scrollPresenter.HorizontalOffset - 700.0), 0.01);
+                Verify.IsLessThan(Math.Abs(scrollPresenter.VerticalOffset - 1050.0), 0.01);
+                Verify.AreEqual(8.0f, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
             });
         }
 
         private void ScrollTo(
-            Scroller scroller,
+            ScrollPresenter scrollPresenter,
             double horizontalOffset,
             double verticalOffset,
             AnimationMode animationMode,
@@ -1362,7 +1362,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             double? expectedFinalHorizontalOffset = null,
             double? expectedFinalVerticalOffset = null)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true,
@@ -1372,22 +1372,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 CompositionPropertySpy.SynchronouslyTickUIThread(6);
 
                 float originalZoomFactor = 1.0f;
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollerTestHooksHelper.ResetExpressionAnimationStatusChanges(scroller);
+                    scrollPresenterTestHooksHelper.ResetExpressionAnimationStatusChanges(scrollPresenter);
 
                     if (hookViewChanged)
                     {
-                        scroller.ViewChanged += (sender, args) =>
+                        scrollPresenter.ViewChanged += (sender, args) =>
                         {
                             Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                         };
                     }
 
-                    originalZoomFactor = scroller.ZoomFactor;
+                    originalZoomFactor = scrollPresenter.ZoomFactor;
 
                     if (expectedFinalHorizontalOffset == null)
                     {
@@ -1400,25 +1400,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     operation = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         horizontalOffset,
                         verticalOffset,
                         animationMode,
                         snapPointsMode,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment($"Final HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={scroller.ZoomFactor}");
+                    Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
-                    Verify.AreEqual(expectedFinalHorizontalOffset, scroller.HorizontalOffset);
-                    Verify.AreEqual(expectedFinalVerticalOffset, scroller.VerticalOffset);
-                    Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(expectedFinalHorizontalOffset, scrollPresenter.HorizontalOffset);
+                    Verify.AreEqual(expectedFinalVerticalOffset, scrollPresenter.VerticalOffset);
+                    Verify.AreEqual(originalZoomFactor, scrollPresenter.ZoomFactor);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
@@ -1435,15 +1435,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
-                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
+                    ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
                     Verify.IsNull(expressionAnimationStatusChanges);
                 });
             }
         }
 
         private void ScrollBy(
-            Scroller scroller,
+            ScrollPresenter scrollPresenter,
             double horizontalOffsetDelta,
             double verticalOffsetDelta,
             AnimationMode animationMode,
@@ -1453,7 +1453,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             double? expectedFinalHorizontalOffset = null,
             double? expectedFinalVerticalOffset = null)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true,
@@ -1465,24 +1465,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 double originalHorizontalOffset = 0.0;
                 double originalVerticalOffset = 0.0;
                 float originalZoomFactor = 1.0f;
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollerTestHooksHelper.ResetExpressionAnimationStatusChanges(scroller);
+                    scrollPresenterTestHooksHelper.ResetExpressionAnimationStatusChanges(scrollPresenter);
 
                     if (hookViewChanged)
                     {
-                        scroller.ViewChanged += (sender, args) =>
+                        scrollPresenter.ViewChanged += (sender, args) =>
                         {
                             Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                         };
                     }
 
-                    originalHorizontalOffset = scroller.HorizontalOffset;
-                    originalVerticalOffset = scroller.VerticalOffset;
-                    originalZoomFactor = scroller.ZoomFactor;
+                    originalHorizontalOffset = scrollPresenter.HorizontalOffset;
+                    originalVerticalOffset = scrollPresenter.VerticalOffset;
+                    originalZoomFactor = scrollPresenter.ZoomFactor;
 
                     Log.Comment($"Original HorizontalOffset={originalHorizontalOffset}, VerticalOffset={originalVerticalOffset}, ZoomFactor={originalZoomFactor}");
 
@@ -1497,25 +1497,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     operation = StartScrollBy(
-                        scroller,
+                        scrollPresenter,
                         horizontalOffsetDelta,
                         verticalOffsetDelta,
                         animationMode,
                         snapPointsMode,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment($"Final HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={scroller.ZoomFactor}");
+                    Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
-                    Verify.AreEqual(expectedFinalHorizontalOffset, scroller.HorizontalOffset);
-                    Verify.AreEqual(expectedFinalVerticalOffset, scroller.VerticalOffset);
-                    Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(expectedFinalHorizontalOffset, scrollPresenter.HorizontalOffset);
+                    Verify.AreEqual(expectedFinalVerticalOffset, scrollPresenter.VerticalOffset);
+                    Verify.AreEqual(originalZoomFactor, scrollPresenter.ZoomFactor);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
@@ -1532,22 +1532,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
-                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
+                    ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
                     Verify.IsNull(expressionAnimationStatusChanges);
                 });
             }
         }
 
         private void ScrollFrom(
-            Scroller scroller,
+            ScrollPresenter scrollPresenter,
             float horizontalVelocity,
             float verticalVelocity,
             float? horizontalInertiaDecayRate,
             float? verticalInertiaDecayRate,
             bool hookViewChanged = true)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true))
@@ -1558,57 +1558,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 double originalHorizontalOffset = 0.0;
                 double originalVerticalOffset = 0.0;
                 float originalZoomFactor = 1.0f;
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollerTestHooksHelper.ResetExpressionAnimationStatusChanges(scroller);
+                    scrollPresenterTestHooksHelper.ResetExpressionAnimationStatusChanges(scrollPresenter);
 
                     if (hookViewChanged)
                     {
-                        scroller.ViewChanged += (sender, args) =>
+                        scrollPresenter.ViewChanged += (sender, args) =>
                         {
                             Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                         };
                     }
 
-                    originalHorizontalOffset = scroller.HorizontalOffset;
-                    originalVerticalOffset = scroller.VerticalOffset;
-                    originalZoomFactor = scroller.ZoomFactor;
+                    originalHorizontalOffset = scrollPresenter.HorizontalOffset;
+                    originalVerticalOffset = scrollPresenter.VerticalOffset;
+                    originalZoomFactor = scrollPresenter.ZoomFactor;
 
                     Log.Comment($"Original HorizontalOffset={originalHorizontalOffset}, VerticalOffset={originalVerticalOffset}, ZoomFactor={originalZoomFactor}");
 
                     operation = StartScrollFrom(
-                        scroller,
+                        scrollPresenter,
                         horizontalVelocity,
                         verticalVelocity,
                         horizontalInertiaDecayRate,
                         verticalInertiaDecayRate,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                        scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
                     if (horizontalVelocity > 0)
-                        Verify.IsTrue(originalHorizontalOffset < scroller.HorizontalOffset);
+                        Verify.IsTrue(originalHorizontalOffset < scrollPresenter.HorizontalOffset);
                     else if (horizontalVelocity < 0)
-                        Verify.IsTrue(originalHorizontalOffset > scroller.HorizontalOffset);
+                        Verify.IsTrue(originalHorizontalOffset > scrollPresenter.HorizontalOffset);
                     else
-                        Verify.IsTrue(originalHorizontalOffset == scroller.HorizontalOffset);
+                        Verify.IsTrue(originalHorizontalOffset == scrollPresenter.HorizontalOffset);
                     if (verticalVelocity > 0)
-                        Verify.IsTrue(originalVerticalOffset < scroller.VerticalOffset);
+                        Verify.IsTrue(originalVerticalOffset < scrollPresenter.VerticalOffset);
                     else if (verticalVelocity < 0)
-                        Verify.IsTrue(originalVerticalOffset > scroller.VerticalOffset);
+                        Verify.IsTrue(originalVerticalOffset > scrollPresenter.VerticalOffset);
                     else
-                        Verify.IsTrue(originalVerticalOffset == scroller.VerticalOffset);
-                    Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                        Verify.IsTrue(originalVerticalOffset == scrollPresenter.VerticalOffset);
+                    Verify.AreEqual(originalZoomFactor, scrollPresenter.ZoomFactor);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
                 });
 
                 Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
@@ -1616,49 +1616,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
-                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
+                    ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
                     Verify.IsNull(expressionAnimationStatusChanges);
                 });
             }
         }
 
-        private ScrollerOperation StartScrollTo(
-            Scroller scroller,
+        private ScrollPresenterOperation StartScrollTo(
+            ScrollPresenter scrollPresenter,
             double horizontalOffset,
             double verticalOffset,
             AnimationMode animationMode,
             SnapPointsMode snapPointsMode,
-            AutoResetEvent scrollerViewChangeOperationEvent)
+            AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
             Log.Comment("ScrollTo - horizontalOffset={0}, verticalOffset={1}, animationMode={2}, snapPointsMode={3}",
                 horizontalOffset, verticalOffset, animationMode, snapPointsMode);
 
             viewChangedCount = 0u;
-            ScrollerOperation operation = new ScrollerOperation();
+            ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scroller.ScrollTo(
+            operation.Id = scrollPresenter.ScrollTo(
                 horizontalOffset,
                 verticalOffset,
-                new ScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
+                new ScrollingScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
-                scrollerViewChangeOperationEvent.Set();
+                scrollPresenterViewChangeOperationEvent.Set();
             }
             else
             {
-                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+                        ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
                         Log.Comment("ScrollCompleted: ScrollTo OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
-                        scrollerViewChangeOperationEvent.Set();
+                        scrollPresenterViewChangeOperationEvent.Set();
                     }
                 };
             }
@@ -1666,42 +1666,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollerOperation StartScrollBy(
-            Scroller scroller,
+        private ScrollPresenterOperation StartScrollBy(
+            ScrollPresenter scrollPresenter,
             double horizontalOffsetDelta,
             double verticalOffsetDelta,
             AnimationMode animationMode,
             SnapPointsMode snapPointsMode,
-            AutoResetEvent scrollerViewChangeOperationEvent)
+            AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
             Log.Comment("ScrollBy - horizontalOffsetDelta={0}, verticalOffsetDelta={1}, animationMode={2}, snapPointsMode={3}",
                 horizontalOffsetDelta, verticalOffsetDelta, animationMode, snapPointsMode);
 
             viewChangedCount = 0u;
-            ScrollerOperation operation = new ScrollerOperation();
+            ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scroller.ScrollBy(
+            operation.Id = scrollPresenter.ScrollBy(
                 horizontalOffsetDelta,
                 verticalOffsetDelta,
-                new ScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
+                new ScrollingScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
-                scrollerViewChangeOperationEvent.Set();
+                scrollPresenterViewChangeOperationEvent.Set();
             }
             else
             {
-                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+                        ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
                         Log.Comment("ScrollCompleted: ScrollBy OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
-                        scrollerViewChangeOperationEvent.Set();
+                        scrollPresenterViewChangeOperationEvent.Set();
                     }
                 };
             }
@@ -1709,13 +1709,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollerOperation StartScrollFrom(
-            Scroller scroller,
+        private ScrollPresenterOperation StartScrollFrom(
+            ScrollPresenter scrollPresenter,
             float horizontalVelocity,
             float verticalVelocity,
             float? horizontalInertiaDecayRate,
             float? verticalInertiaDecayRate,
-            AutoResetEvent scrollerViewChangeOperationEvent)
+            AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
             Log.Comment("ScrollFrom - horizontalVelocity={0}, verticalVelocity={1}, horizontalInertiaDecayRate={2}, verticalInertiaDecayRate={3}",
                 horizontalVelocity, verticalVelocity, horizontalInertiaDecayRate, verticalInertiaDecayRate);
@@ -1728,29 +1728,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             viewChangedCount = 0u;
-            ScrollerOperation operation = new ScrollerOperation();
+            ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scroller.ScrollFrom(
+            operation.Id = scrollPresenter.ScrollFrom(
                     new Vector2(horizontalVelocity, verticalVelocity),
                     inertiaDecayRate).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
-                scrollerViewChangeOperationEvent.Set();
+                scrollPresenterViewChangeOperationEvent.Set();
             }
             else
             {
-                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+                        ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
                         Log.Comment("ScrollCompleted: ScrollFrom OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
-                        scrollerViewChangeOperationEvent.Set();
+                        scrollPresenterViewChangeOperationEvent.Set();
                     }
                 };
             }
@@ -1759,7 +1759,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         private void ZoomTo(
-            Scroller scroller,
+            ScrollPresenter scrollPresenter,
             float zoomFactor,
             float centerPointX,
             float centerPointY,
@@ -1768,44 +1768,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             bool hookViewChanged = true,
             bool? isAnimationsEnabledOverride = null)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true, 
                 isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
                     if (hookViewChanged)
                     {
-                        scroller.ViewChanged += (sender, args) =>
+                        scrollPresenter.ViewChanged += (sender, args) =>
                         {
                             Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                         };
                     }
 
                     operation = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         zoomFactor,
                         centerPointX,
                         centerPointY,
                         animationMode,
                         snapPointsMode,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment($"Final HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={scroller.ZoomFactor}");
+                    Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
-                    Verify.AreEqual(zoomFactor, scroller.ZoomFactor);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(zoomFactor, scrollPresenter.ZoomFactor);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
@@ -1822,15 +1822,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
-                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
+                    ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
                     VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);
                 });
             }
         }
 
         private void ZoomBy(
-            Scroller scroller,
+            ScrollPresenter scrollPresenter,
             float zoomFactorDelta,
             float centerPointX,
             float centerPointY,
@@ -1839,49 +1839,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             bool hookViewChanged = true,
             bool? isAnimationsEnabledOverride = null)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true,
                 isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
                 float originalZoomFactor = 1.0f;
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
                     if (hookViewChanged)
                     {
-                        scroller.ViewChanged += (sender, args) =>
+                        scrollPresenter.ViewChanged += (sender, args) =>
                         {
                             Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                         };
                     }
 
-                    originalZoomFactor = scroller.ZoomFactor;
+                    originalZoomFactor = scrollPresenter.ZoomFactor;
 
-                    Log.Comment($"Original HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={originalZoomFactor}");
+                    Log.Comment($"Original HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={originalZoomFactor}");
 
                     operation = StartZoomBy(
-                        scroller,
+                        scrollPresenter,
                         zoomFactorDelta,
                         centerPointX,
                         centerPointY,
                         animationMode,
                         snapPointsMode,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment($"Final HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={scroller.ZoomFactor}");
+                    Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
-                    Verify.AreEqual(zoomFactorDelta + originalZoomFactor, scroller.ZoomFactor);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(zoomFactorDelta + originalZoomFactor, scrollPresenter.ZoomFactor);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
@@ -1898,67 +1898,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
-                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
+                    ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
                     VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);                    
                 });
             }
         }
 
         private void ZoomFrom(
-            Scroller scroller,
+            ScrollPresenter scrollPresenter,
             float zoomFactorVelocity,
             float? inertiaDecayRate,
             float centerPointX,
             float centerPointY,
             bool hookViewChanged = true)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true))
             {
                 float originalZoomFactor = 1.0f;
-                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-                ScrollerOperation operation = null;
+                AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollPresenterOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
                     if (hookViewChanged)
                     {
-                        scroller.ViewChanged += (sender, args) =>
+                        scrollPresenter.ViewChanged += (sender, args) =>
                         {
                             Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
                         };
                     }
 
-                    originalZoomFactor = scroller.ZoomFactor;
+                    originalZoomFactor = scrollPresenter.ZoomFactor;
 
-                    Log.Comment($"Original HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={originalZoomFactor}");
+                    Log.Comment($"Original HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={originalZoomFactor}");
 
                     operation = StartZoomFrom(
-                        scroller,
+                        scrollPresenter,
                         zoomFactorVelocity,
                         inertiaDecayRate,
                         centerPointX,
                         centerPointY,
-                        scrollerViewChangeOperationEvent);
+                        scrollPresenterViewChangeOperationEvent);
                 });
 
-                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                WaitForEvent("Waiting for view change completion", scrollPresenterViewChangeOperationEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                        scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
                     if (zoomFactorVelocity > 0)
-                        Verify.IsTrue(originalZoomFactor < scroller.ZoomFactor);
+                        Verify.IsTrue(originalZoomFactor < scrollPresenter.ZoomFactor);
                     else if (zoomFactorVelocity < 0)
-                        Verify.IsTrue(originalZoomFactor > scroller.ZoomFactor);
+                        Verify.IsTrue(originalZoomFactor > scrollPresenter.ZoomFactor);
                     else
-                        Verify.IsTrue(originalZoomFactor == scroller.ZoomFactor);
-                    Verify.AreEqual(ScrollerViewChangeResult.Completed, operation.Result);
+                        Verify.IsTrue(originalZoomFactor == scrollPresenter.ZoomFactor);
+                    Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
                 });
 
                 Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
@@ -1966,50 +1966,50 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
-                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
+                    ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
                     VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);
                 });
             }
         }
 
-        private ScrollerOperation StartZoomTo(
-            Scroller scroller,
+        private ScrollPresenterOperation StartZoomTo(
+            ScrollPresenter scrollPresenter,
             float zoomFactor,
             float centerPointX,
             float centerPointY,
             AnimationMode animationMode,
             SnapPointsMode snapPointsMode,
-            AutoResetEvent scrollerViewChangeOperationEvent)
+            AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
             Log.Comment("ZoomTo - zoomFactor={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
                 zoomFactor, centerPointX, centerPointY, animationMode, snapPointsMode);
 
             viewChangedCount = 0u;
-            ScrollerOperation operation = new ScrollerOperation();
+            ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scroller.ZoomTo(
+            operation.Id = scrollPresenter.ZoomTo(
                 zoomFactor,
                 new Vector2(centerPointX, centerPointY), 
-                new ZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
-                scrollerViewChangeOperationEvent.Set();
+                scrollPresenterViewChangeOperationEvent.Set();
             }
             else
             {
-                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
+                scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+                        ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
                         Log.Comment("ZoomCompleted: ZoomTo ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
-                        scrollerViewChangeOperationEvent.Set();
+                        scrollPresenterViewChangeOperationEvent.Set();
                     }
                 };
             }
@@ -2017,43 +2017,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollerOperation StartZoomBy(
-            Scroller scroller,
+        private ScrollPresenterOperation StartZoomBy(
+            ScrollPresenter scrollPresenter,
             float zoomFactorDelta,
             float centerPointX,
             float centerPointY,
             AnimationMode animationMode,
             SnapPointsMode snapPointsMode,
-            AutoResetEvent scrollerViewChangeOperationEvent)
+            AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
             Log.Comment("ZoomBy - zoomFactorDelta={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
                 zoomFactorDelta, centerPointX, centerPointY, animationMode, snapPointsMode);
 
             viewChangedCount = 0u;
-            ScrollerOperation operation = new ScrollerOperation();
+            ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scroller.ZoomBy(
+            operation.Id = scrollPresenter.ZoomBy(
                 zoomFactorDelta,
                 new Vector2(centerPointX, centerPointY),
-                new ZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
-                scrollerViewChangeOperationEvent.Set();
+                scrollPresenterViewChangeOperationEvent.Set();
             }
             else
             {
-                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
+                scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+                        ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
                         Log.Comment("ZoomCompleted: ZoomBy ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
-                        scrollerViewChangeOperationEvent.Set();
+                        scrollPresenterViewChangeOperationEvent.Set();
                     }
                 };
             }
@@ -2061,40 +2061,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollerOperation StartZoomFrom(
-            Scroller scroller,
+        private ScrollPresenterOperation StartZoomFrom(
+            ScrollPresenter scrollPresenter,
             float zoomFactorVelocity,
             float? inertiaDecayRate,
             float centerPointX,
             float centerPointY,
-            AutoResetEvent scrollerViewChangeOperationEvent)
+            AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
             Log.Comment("ZoomFrom - zoomFactorVelocity={0}, inertiaDecayRate={1}, centerPoint=({2},{3})",
                 zoomFactorVelocity, inertiaDecayRate, centerPointX, centerPointY);
 
             viewChangedCount = 0u;
-            ScrollerOperation operation = new ScrollerOperation();
+            ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scroller.ZoomFrom(
+            operation.Id = scrollPresenter.ZoomFrom(
                 zoomFactorVelocity, new Vector2(centerPointX, centerPointY), inertiaDecayRate).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
-                scrollerViewChangeOperationEvent.Set();
+                scrollPresenterViewChangeOperationEvent.Set();
             }
             else
             {
-                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
+                scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+                        ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
                         Log.Comment("ZoomCompleted: ZoomFrom ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
-                        scrollerViewChangeOperationEvent.Set();
+                        scrollPresenterViewChangeOperationEvent.Set();
                     }
                 };
             }
@@ -2109,33 +2109,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByZoomFactorChange;
             bool changeOffsetsSecond =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.ZoomFactorChangeByOffsetsChange;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent[] scrollerViewChangeOperationEvents = null;
-            ScrollerOperation[] operations = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent[] scrollPresenterViewChangeOperationEvents = null;
+            ScrollPresenterOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                scrollerViewChangeOperationEvents = new AutoResetEvent[2];
-                scrollerViewChangeOperationEvents[0] = new AutoResetEvent(false);
-                scrollerViewChangeOperationEvents[1] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents = new AutoResetEvent[2];
+                scrollPresenterViewChangeOperationEvents[0] = new AutoResetEvent(false);
+                scrollPresenterViewChangeOperationEvents[1] = new AutoResetEvent(false);
 
-                operations = new ScrollerOperation[2];
+                operations = new ScrollPresenterOperation[2];
                 operations[0] = null;
                 operations[1] = null;
 
-                scroller.ViewChanged += (sender, args) =>
+                scrollPresenter.ViewChanged += (sender, args) =>
                 {
                     Log.Comment($"ViewChanged viewChangedCount={++viewChangedCount} - HorizontalOffset={sender.HorizontalOffset}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
 
@@ -2145,23 +2145,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         if (changeOffsetsSecond)
                         {
                             operations[1] = StartScrollTo(
-                                scroller,
+                                scrollPresenter,
                                 500.0,
                                 300.0,
                                 AnimationMode.Enabled,
                                 SnapPointsMode.Ignore,
-                                scrollerViewChangeOperationEvents[1]);
+                                scrollPresenterViewChangeOperationEvents[1]);
                         }
                         else
                         {
                             operations[1] = StartZoomTo(
-                                scroller,
+                                scrollPresenter,
                                 7.0f,
                                 70.0f,
                                 50.0f,
                                 AnimationMode.Enabled,
                                 SnapPointsMode.Ignore,
-                                scrollerViewChangeOperationEvents[1]);
+                                scrollPresenterViewChangeOperationEvents[1]);
                         }
                     }
                 };
@@ -2169,60 +2169,60 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 if (changeOffsetsFirst)
                 {
                     operations[0] = StartScrollTo(
-                        scroller,
+                        scrollPresenter,
                         600.0,
                         400.0,
                         AnimationMode.Enabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
                 else
                 {
                     operations[0] = StartZoomTo(
-                        scroller,
+                        scrollPresenter,
                         8.0f,
                         100.0f,
                         150.0f,
                         AnimationMode.Enabled,
                         SnapPointsMode.Ignore,
-                        scrollerViewChangeOperationEvents[0]);
+                        scrollPresenterViewChangeOperationEvents[0]);
                 }
             });
 
-            WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
+            WaitForEvent("Waiting for first view change completion", scrollPresenterViewChangeOperationEvents[0]);
 
-            WaitForEvent("Waiting for second view change completion", scrollerViewChangeOperationEvents[1]);
+            WaitForEvent("Waiting for second view change completion", scrollPresenterViewChangeOperationEvents[1]);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
                 if (changeOffsetsFirst && changeOffsetsSecond)
                 {
-                    Verify.AreEqual(500.0, scroller.HorizontalOffset);
-                    Verify.AreEqual(300.0, scroller.VerticalOffset);
-                    Verify.AreEqual(1.0f, scroller.ZoomFactor);
+                    Verify.AreEqual(500.0, scrollPresenter.HorizontalOffset);
+                    Verify.AreEqual(300.0, scrollPresenter.VerticalOffset);
+                    Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
                 }
                 if (changeOffsetsFirst && !changeOffsetsSecond)
                 {
-                    Verify.IsGreaterThanOrEqual(scroller.HorizontalOffset, 600.0);
-                    Verify.IsGreaterThanOrEqual(scroller.VerticalOffset, 400.0);
-                    Verify.AreEqual(7.0f, scroller.ZoomFactor);
+                    Verify.IsGreaterThanOrEqual(scrollPresenter.HorizontalOffset, 600.0);
+                    Verify.IsGreaterThanOrEqual(scrollPresenter.VerticalOffset, 400.0);
+                    Verify.AreEqual(7.0f, scrollPresenter.ZoomFactor);
                 }
                 if (!changeOffsetsFirst && changeOffsetsSecond)
                 {
-                    Verify.IsGreaterThanOrEqual(scroller.HorizontalOffset, 500.0);
-                    Verify.IsGreaterThanOrEqual(scroller.VerticalOffset, 300.0);
-                    Verify.AreEqual(8.0f, scroller.ZoomFactor);
+                    Verify.IsGreaterThanOrEqual(scrollPresenter.HorizontalOffset, 500.0);
+                    Verify.IsGreaterThanOrEqual(scrollPresenter.VerticalOffset, 300.0);
+                    Verify.AreEqual(8.0f, scrollPresenter.ZoomFactor);
                 }
                 if (!changeOffsetsFirst && !changeOffsetsSecond)
                 {
-                    Verify.AreEqual(7.0f, scroller.ZoomFactor);
+                    Verify.AreEqual(7.0f, scrollPresenter.ZoomFactor);
                 }
 
-                Verify.AreEqual(ScrollerViewChangeResult.Interrupted, operations[0].Result);
-                Verify.AreEqual(ScrollerViewChangeResult.Completed, operations[1].Result);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Interrupted, operations[0].Result);
+                Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operations[1].Result);
             });
         }
 
@@ -2285,15 +2285,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return false;
         }
 
-        private class ScrollerOperation
+        private class ScrollPresenterOperation
         {
-            public ScrollerOperation()
+            public ScrollPresenterOperation()
             {
-                Result = ScrollerViewChangeResult.Ignored;
+                Result = ScrollPresenterViewChangeResult.Ignored;
                 Id = -1;
             }
 
-            public ScrollerViewChangeResult Result
+            public ScrollPresenterViewChangeResult Result
             {
                 get;
                 set;

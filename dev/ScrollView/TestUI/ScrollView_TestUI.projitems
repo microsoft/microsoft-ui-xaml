@@ -7,63 +7,63 @@
     <SharedGUID>20C52FD5-62FD-53B4-A4A0-995C9B5A014D</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ScrollViewer_Test</Import_RootNamespace>
+    <Import_RootNamespace>ScrollView_Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerBlankPage.xaml.cs">
-      <DependentUpon>ScrollViewerBlankPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewBlankPage.xaml.cs">
+      <DependentUpon>ScrollViewBlankPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerDynamicPage.xaml.cs">
-      <DependentUpon>ScrollViewerDynamicPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewDynamicPage.xaml.cs">
+      <DependentUpon>ScrollViewDynamicPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerKeyboardAndGamepadNavigationPage.xaml.cs">
-      <DependentUpon>ScrollViewerKeyboardAndGamepadNavigationPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewKeyboardAndGamepadNavigationPage.xaml.cs">
+      <DependentUpon>ScrollViewKeyboardAndGamepadNavigationPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerPage.xaml.cs">
-      <DependentUpon>ScrollViewerPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewPage.xaml.cs">
+      <DependentUpon>ScrollViewPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewersWithSimpleContentsPage.xaml.cs">
-      <DependentUpon>ScrollViewersWithSimpleContentsPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewsWithSimpleContentsPage.xaml.cs">
+      <DependentUpon>ScrollViewsWithSimpleContentsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerWithRTLFlowDirectionPage.xaml.cs">
-      <DependentUpon>ScrollViewerWithRTLFlowDirectionPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewWithRTLFlowDirectionPage.xaml.cs">
+      <DependentUpon>ScrollViewWithRTLFlowDirectionPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerWithScrollControllersPage.xaml.cs">
-      <DependentUpon>ScrollViewerWithScrollControllersPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewWithScrollControllersPage.xaml.cs">
+      <DependentUpon>ScrollViewWithScrollControllersPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerBlankPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewBlankPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerDynamicPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewDynamicPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerKeyboardAndGamepadNavigationPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewKeyboardAndGamepadNavigationPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewersWithSimpleContentsPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewsWithSimpleContentsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerWithRTLFlowDirectionPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewWithRTLFlowDirectionPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerWithScrollControllersPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewWithScrollControllersPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>

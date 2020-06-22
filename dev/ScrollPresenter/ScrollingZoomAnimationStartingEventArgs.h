@@ -3,20 +3,20 @@
 
 #pragma once
 
-#include "ZoomAnimationStartingEventArgs.g.h"
+#include "ScrollingZoomAnimationStartingEventArgs.g.h"
 
-class ZoomAnimationStartingEventArgs :
-    public winrt::implementation::ZoomAnimationStartingEventArgsT<ZoomAnimationStartingEventArgs>
+class ScrollingZoomAnimationStartingEventArgs :
+    public winrt::implementation::ScrollingZoomAnimationStartingEventArgsT<ScrollingZoomAnimationStartingEventArgs>
 {
 public:
-    ZoomAnimationStartingEventArgs()
+    ScrollingZoomAnimationStartingEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ZoomAnimationStartingEventArgs()
+    ~ScrollingZoomAnimationStartingEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IZoomAnimationStartingEventArgs overrides

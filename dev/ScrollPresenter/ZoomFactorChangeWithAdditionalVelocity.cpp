@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollPresenterTypeLogging.h"
 #include "ZoomFactorChangeWithAdditionalVelocity.h"
 
 ZoomFactorChangeWithAdditionalVelocity::ZoomFactorChangeWithAdditionalVelocity(
@@ -17,27 +17,27 @@ ZoomFactorChangeWithAdditionalVelocity::ZoomFactorChangeWithAdditionalVelocity(
         m_centerPoint(centerPoint),
         m_inertiaDecayRate(inertiaDecayRate)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
         zoomFactorVelocity, anticipatedZoomFactorChange);
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(), TypeLogging::NullableFloatToString(inertiaDecayRate).c_str());
 }
 
 ZoomFactorChangeWithAdditionalVelocity::~ZoomFactorChangeWithAdditionalVelocity()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
 void ZoomFactorChangeWithAdditionalVelocity::ZoomFactorVelocity(float zoomFactorVelocity)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT, METH_NAME, this, zoomFactorVelocity);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT, METH_NAME, this, zoomFactorVelocity);
 
     m_zoomFactorVelocity = zoomFactorVelocity;
 }
 
 void ZoomFactorChangeWithAdditionalVelocity::AnticipatedZoomFactorChange(float anticipatedZoomFactorChange)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT, METH_NAME, this, anticipatedZoomFactorChange);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT, METH_NAME, this, anticipatedZoomFactorChange);
 
     m_anticipatedZoomFactorChange = anticipatedZoomFactorChange;
 }

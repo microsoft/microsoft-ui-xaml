@@ -7,11 +7,11 @@
     <SharedGUID>8FAAD013-139C-8D2A-2285-45F717D9E64A</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Scroller_InteractionTests</Import_RootNamespace>
+    <Import_RootNamespace>ScrollPresenter_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTestsBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTestsWithAutomationPeer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTestsWithInputHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestsBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestsWithAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestsWithInputHelper.cs" />
   </ItemGroup>
 </Project>

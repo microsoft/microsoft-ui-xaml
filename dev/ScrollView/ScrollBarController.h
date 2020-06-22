@@ -5,7 +5,7 @@
 
 #include "common.h"
 
-class ScrollViewer;
+class ScrollView;
 
 using namespace std;
 
@@ -19,7 +19,7 @@ public:
     void SetScrollBar(const winrt::ScrollBar& scrollBar);
 
 #pragma region IScrollController
-    bool AreInteractionsAllowed();
+    bool AreScrollControllerInteractionsAllowed();
 
     bool AreScrollerInteractionsAllowed();
 
@@ -72,7 +72,7 @@ public:
 #pragma endregion
 
 private:
-    void UpdateAreInteractionsAllowed();
+    void UpdateAreScrollControllerInteractionsAllowed();
 
     void HookScrollBarEvent();
     void UnhookScrollBarEvent();
@@ -123,7 +123,7 @@ private:
     double m_lastOffset{ 0.0 };
     bool m_areScrollerInteractionsAllowed{ true };
     bool m_isInteracting{ false };
-    bool m_areInteractionsAllowed{ false };
+    bool m_areScrollControllerInteractionsAllowed{ false };
 
     // Event Sources
     event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs>> m_scrollToRequested { };

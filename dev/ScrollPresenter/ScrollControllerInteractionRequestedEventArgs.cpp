@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTrace.h"
+#include "ScrollPresenterTrace.h"
 #include "ScrollControllerInteractionRequestedEventArgs.h"
 
 #include "ScrollControllerInteractionRequestedEventArgs.properties.cpp"
@@ -12,7 +12,7 @@
 ScrollControllerInteractionRequestedEventArgs::ScrollControllerInteractionRequestedEventArgs(
     const winrt::PointerPoint& pointerPoint)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::PointerPointToString(pointerPoint).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::PointerPointToString(pointerPoint).c_str());
 
     m_pointerPoint = pointerPoint;
 }
@@ -29,6 +29,6 @@ bool ScrollControllerInteractionRequestedEventArgs::Handled() const
 
 void ScrollControllerInteractionRequestedEventArgs::Handled(bool handled)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, handled);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, handled);
     m_handled = handled;
 }

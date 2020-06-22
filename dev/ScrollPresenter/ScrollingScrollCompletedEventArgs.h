@@ -3,31 +3,31 @@
 
 #pragma once
 
-#include "Scroller.h"
-#include "ScrollCompletedEventArgs.g.h"
+#include "ScrollPresenter.h"
+#include "ScrollingScrollCompletedEventArgs.g.h"
 
-class ScrollCompletedEventArgs :
-    public winrt::implementation::ScrollCompletedEventArgsT<ScrollCompletedEventArgs>
+class ScrollingScrollCompletedEventArgs :
+    public winrt::implementation::ScrollingScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
 {
 public:
-    ScrollCompletedEventArgs()
+    ScrollingScrollCompletedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollCompletedEventArgs()
+    ~ScrollingScrollCompletedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IScrollCompletedEventArgs overrides
     winrt::ScrollInfo ScrollInfo();
-    ScrollerViewChangeResult Result();
+    ScrollPresenterViewChangeResult Result();
 
     void OffsetsChangeId(int32_t offsetsChangeId);
-    void Result(ScrollerViewChangeResult result);
+    void Result(ScrollPresenterViewChangeResult result);
 
 private:
     int32_t m_offsetsChangeId{ -1 };
-    ScrollerViewChangeResult m_result{ ScrollerViewChangeResult::Completed };
+    ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

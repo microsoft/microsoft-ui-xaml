@@ -4,32 +4,32 @@
 #include "pch.h"
 #include "common.h"
 #include "ResourceAccessor.h"
-#include "ScrollerTrace.h"
-#include "ZoomAnimationStartingEventArgs.h"
+#include "ScrollPresenterTrace.h"
+#include "ScrollingZoomAnimationStartingEventArgs.h"
 
-winrt::float2 ZoomAnimationStartingEventArgs::CenterPoint()
+winrt::float2 ScrollingZoomAnimationStartingEventArgs::CenterPoint()
 {
     return m_centerPoint;
 }
 
-float ZoomAnimationStartingEventArgs::StartZoomFactor()
+float ScrollingZoomAnimationStartingEventArgs::StartZoomFactor()
 {
     return m_startZoomFactor;
 }
 
-float ZoomAnimationStartingEventArgs::EndZoomFactor()
+float ScrollingZoomAnimationStartingEventArgs::EndZoomFactor()
 {
     return m_endZoomFactor;
 }
 
-winrt::CompositionAnimation ZoomAnimationStartingEventArgs::Animation()
+winrt::CompositionAnimation ScrollingZoomAnimationStartingEventArgs::Animation()
 {
     return m_animation;
 }
 
-void ZoomAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const& value)
+void ScrollingZoomAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const& value)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
     if (!value)
     {
         throw winrt::hresult_invalid_argument(L"Animation cannot be set to null.");
@@ -37,37 +37,37 @@ void ZoomAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const
     m_animation = value;
 }
 
-winrt::ZoomInfo ZoomAnimationStartingEventArgs::ZoomInfo()
+winrt::ZoomInfo ScrollingZoomAnimationStartingEventArgs::ZoomInfo()
 {
     return winrt::ZoomInfo{ m_zoomFactorChangeId };
 }
 
-void ZoomAnimationStartingEventArgs::SetZoomFactorChangeId(int32_t zoomFactorChangeId)
+void ScrollingZoomAnimationStartingEventArgs::SetZoomFactorChangeId(int32_t zoomFactorChangeId)
 {
     m_zoomFactorChangeId = zoomFactorChangeId;
 }
 
-winrt::CompositionAnimation ZoomAnimationStartingEventArgs::GetAnimation() const
+winrt::CompositionAnimation ScrollingZoomAnimationStartingEventArgs::GetAnimation() const
 {
     return m_animation;
 }
 
-void ZoomAnimationStartingEventArgs::SetAnimation(const winrt::CompositionAnimation& animation)
+void ScrollingZoomAnimationStartingEventArgs::SetAnimation(const winrt::CompositionAnimation& animation)
 {
     m_animation = animation;
 }
 
-void ZoomAnimationStartingEventArgs::SetCenterPoint(const winrt::float2& centerPoint)
+void ScrollingZoomAnimationStartingEventArgs::SetCenterPoint(const winrt::float2& centerPoint)
 {
     m_centerPoint = centerPoint;
 }
 
-void ZoomAnimationStartingEventArgs::SetStartZoomFactor(const float& startZoomFactor)
+void ScrollingZoomAnimationStartingEventArgs::SetStartZoomFactor(const float& startZoomFactor)
 {
     m_startZoomFactor = startZoomFactor;
 }
 
-void ZoomAnimationStartingEventArgs::SetEndZoomFactor(const float& endZoomFactor)
+void ScrollingZoomAnimationStartingEventArgs::SetEndZoomFactor(const float& endZoomFactor)
 {
     m_endZoomFactor = endZoomFactor;
 }

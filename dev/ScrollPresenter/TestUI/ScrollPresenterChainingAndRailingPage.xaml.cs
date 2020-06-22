@@ -7,37 +7,37 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerChainingAndRailingPage : TestPage
+    public sealed partial class ScrollPresenterChainingAndRailingPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
-        private int scroller3ZoomFactorChangeId = -1;
+        private int scrollPresenter3ZoomFactorChangeId = -1;
 
-        public ScrollerChainingAndRailingPage()
+        public ScrollPresenterChainingAndRailingPage()
         {
             InitializeComponent();
-            InitializeUIFromScroller("0");
-            InitializeUIFromScroller("1");
-            InitializeUIFromScroller("3");
+            InitializeUIFromScrollPresenter("0");
+            InitializeUIFromScrollPresenter("1");
+            InitializeUIFromScrollPresenter("3");
             InitializeUIFromScrollViewer("2");
 
-            scroller0.StateChanged += Scroller_StateChanged;
-            scroller1.StateChanged += Scroller_StateChanged;
-            scroller3.StateChanged += Scroller_StateChanged;
+            scrollPresenter0.StateChanged += ScrollPresenter_StateChanged;
+            scrollPresenter1.StateChanged += ScrollPresenter_StateChanged;
+            scrollPresenter3.StateChanged += ScrollPresenter_StateChanged;
 
-            scroller3.ZoomCompleted += Scroller_ZoomCompleted;
+            scrollPresenter3.ZoomCompleted += ScrollPresenter_ZoomCompleted;
 
             scrollViewer2.DirectManipulationStarted += ScrollViewer2_DirectManipulationStarted;
             scrollViewer2.DirectManipulationCompleted += ScrollViewer2_DirectManipulationCompleted;
@@ -57,31 +57,31 @@ namespace MUXControlsTestApp
             txtScrollViewer2VSP.Text = String.Format("{0,5:N1}%", (sender as ScrollViewer).VerticalOffset / (sender as ScrollViewer).ScrollableHeight * 100.0);
         }
 
-        private void Scroller_StateChanged(Scroller sender, object args)
+        private void ScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
-            if (sender == scroller0)
+            if (sender == scrollPresenter0)
             {
-                txtScroller0State.Text = "scroller0 " + scroller0.State.ToString();
-                txtScroller0HSP.Text = String.Format("{0,5:N1}%", sender.HorizontalOffset / 3.0);
-                txtScroller0VSP.Text = String.Format("{0,5:N1}%", sender.VerticalOffset / 3.0);
+                txtScrollPresenter0State.Text = "scrollPresenter0 " + scrollPresenter0.State.ToString();
+                txtScrollPresenter0HSP.Text = String.Format("{0,5:N1}%", sender.HorizontalOffset / 3.0);
+                txtScrollPresenter0VSP.Text = String.Format("{0,5:N1}%", sender.VerticalOffset / 3.0);
             }
-            else if (sender == scroller1)
+            else if (sender == scrollPresenter1)
             {
-                txtScroller1State.Text = "scroller1 " + scroller1.State.ToString();
-                txtScroller1HSP.Text = String.Format("{0,5:N1}%", sender.HorizontalOffset / 3.0);
-                txtScroller1VSP.Text = String.Format("{0,5:N1}%", sender.VerticalOffset / 3.0);
+                txtScrollPresenter1State.Text = "scrollPresenter1 " + scrollPresenter1.State.ToString();
+                txtScrollPresenter1HSP.Text = String.Format("{0,5:N1}%", sender.HorizontalOffset / 3.0);
+                txtScrollPresenter1VSP.Text = String.Format("{0,5:N1}%", sender.VerticalOffset / 3.0);
             }
-            else if (sender == scroller3)
+            else if (sender == scrollPresenter3)
             {
-                txtScroller3State.Text = "scroller3 " + scroller3.State.ToString();
-                txtScroller3HSP.Text = String.Format("{0,5:N1}%", sender.HorizontalOffset / 3.0);
-                txtScroller3VSP.Text = String.Format("{0,5:N1}%", sender.VerticalOffset / 3.0);
+                txtScrollPresenter3State.Text = "scrollPresenter3 " + scrollPresenter3.State.ToString();
+                txtScrollPresenter3HSP.Text = String.Format("{0,5:N1}%", sender.HorizontalOffset / 3.0);
+                txtScrollPresenter3VSP.Text = String.Format("{0,5:N1}%", sender.VerticalOffset / 3.0);
             }
         }
 
-        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
-            if (args.ZoomInfo.ZoomFactorChangeId == scroller3ZoomFactorChangeId)
+            if (args.ZoomInfo.ZoomFactorChangeId == scrollPresenter3ZoomFactorChangeId)
                 this.txtResetStatus.Text = "Views reset";
         }
 
@@ -89,10 +89,10 @@ namespace MUXControlsTestApp
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
-            Scroller scroller = GetScrollerWithSuffix(suffix);
-            if (scroller != null)
+            ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
+            if (scrollPresenter != null)
             {
-                scroller.HorizontalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollPresenter.HorizontalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -108,10 +108,10 @@ namespace MUXControlsTestApp
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
-            Scroller scroller = GetScrollerWithSuffix(suffix);
-            if (scroller != null)
+            ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
+            if (scrollPresenter != null)
             {
-                scroller.VerticalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollPresenter.VerticalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -127,10 +127,10 @@ namespace MUXControlsTestApp
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
-            Scroller scroller = GetScrollerWithSuffix(suffix);
-            if (scroller != null)
+            ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
+            if (scrollPresenter != null)
             {
-                scroller.ZoomChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollPresenter.ZoomChainingMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -146,10 +146,10 @@ namespace MUXControlsTestApp
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
-            Scroller scroller = GetScrollerWithSuffix(suffix);
-            if (scroller != null)
+            ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
+            if (scrollPresenter != null)
             {
-                scroller.HorizontalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
+                scrollPresenter.HorizontalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -165,10 +165,10 @@ namespace MUXControlsTestApp
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
-            Scroller scroller = GetScrollerWithSuffix(suffix);
-            if (scroller != null)
+            ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
+            if (scrollPresenter != null)
             {
-                scroller.VerticalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
+                scrollPresenter.VerticalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -180,16 +180,16 @@ namespace MUXControlsTestApp
             }
         }
 
-        private Scroller GetScrollerWithSuffix(string suffix)
+        private ScrollPresenter GetScrollPresenterWithSuffix(string suffix)
         {
             switch (suffix)
             {
                 case "0":
-                    return scroller0;
+                    return scrollPresenter0;
                 case "1":
-                    return scroller1;
+                    return scrollPresenter1;
                 case "3":
-                    return scroller3;
+                    return scrollPresenter3;
                 default:
                     return null;
             }
@@ -206,31 +206,31 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void InitializeUIFromScroller(string suffix)
+        private void InitializeUIFromScrollPresenter(string suffix)
         {
-            Scroller scroller = FindName("scroller" + suffix) as Scroller;
-            if (scroller == null)
+            ScrollPresenter scrollPresenter = FindName("scrollPresenter" + suffix) as ScrollPresenter;
+            if (scrollPresenter == null)
                 return;
 
             ComboBox cmb = FindName("cmbHorizontalScrollChainingMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scroller.HorizontalScrollChainingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.HorizontalScrollChainingMode;
 
             cmb = FindName("cmbVerticalScrollChainingMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scroller.VerticalScrollChainingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.VerticalScrollChainingMode;
 
             cmb = FindName("cmbZoomChainingMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scroller.ZoomChainingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.ZoomChainingMode;
 
             cmb = FindName("cmbHorizontalScrollRailingMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scroller.HorizontalScrollRailingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.HorizontalScrollRailingMode;
 
             cmb = FindName("cmbVerticalScrollRailingMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scroller.VerticalScrollRailingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.VerticalScrollRailingMode;
         }
 
         private void InitializeUIFromScrollViewer(string suffix)
@@ -264,29 +264,29 @@ namespace MUXControlsTestApp
         {
             this.txtResetStatus.Text = "Resetting views ...";
             ResetView(this.scrollViewer2);
-            ResetView(this.scroller0);
-            ResetView(this.scroller1);
-            ResetView(this.scroller3);
+            ResetView(this.scrollPresenter0);
+            ResetView(this.scrollPresenter1);
+            ResetView(this.scrollPresenter3);
         }
 
         private void ResetView(UIElement element)
         {
-            Scroller scroller = element as Scroller;
+            ScrollPresenter scrollPresenter = element as ScrollPresenter;
 
-            if (scroller != null)
+            if (scrollPresenter != null)
             {
-                scroller.ScrollTo(
+                scrollPresenter.ScrollTo(
                     0.0,
                     0.0,
-                    new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                    new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
 
-                int viewChangeId = scroller.ZoomTo(
+                int viewChangeId = scrollPresenter.ZoomTo(
                     1.0f,
                     System.Numerics.Vector2.Zero,
-                    new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                    new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
 
-                if (this.scroller3 == scroller)
-                    scroller3ZoomFactorChangeId = viewChangeId;
+                if (this.scrollPresenter3 == scrollPresenter)
+                    scrollPresenter3ZoomFactorChangeId = viewChangeId;
             }
             else
             {
@@ -295,18 +295,18 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            //Turn on info and verbose logging for the Scroller type:
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //Turn on info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            //Turn off info and verbose logging for the Scroller type:
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //Turn off info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }

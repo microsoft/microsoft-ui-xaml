@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollerRepeaterAnchoringPage"
+    x:Class="MUXControlsTestApp.ScrollPresenterRepeaterAnchoringPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -33,7 +33,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <controlsPrimitives:Scroller x:Name="scroller" Width="400" Height="600" Margin="1" Background="AliceBlue"
+        <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter" Width="400" Height="600" Margin="1" Background="AliceBlue"
             VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled">
             <Border x:Name="border" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                 <controls:ItemsRepeater x:Name="repeater" Margin="30">
@@ -44,7 +44,7 @@
                     </controls:ItemsRepeater.Layout>
                 </controls:ItemsRepeater>
             </Border>
-        </controlsPrimitives:Scroller>
+        </controlsPrimitives:ScrollPresenter>
 
         <Canvas x:Name="cnsAnchorPoint" IsHitTestVisible="False" Width="400" Height="600" Margin="1" 
             Background="Transparent" VerticalAlignment="Top">
@@ -70,7 +70,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Scroller Properties" Grid.ColumnSpan="4" Foreground="Red"/>
+            <TextBlock Text="ScrollPresenter Properties" Grid.ColumnSpan="4" Foreground="Red"/>
 
             <TextBlock Text="HorizontalAnchorRatio:" Grid.Row="1" VerticalAlignment="Center"/>
             <TextBox x:Name="txtHorizontalAnchorRatio" Grid.Row="1" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
@@ -97,7 +97,7 @@
             <TextBlock x:Name="tblItemIndex" Text="Item Index:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"/>
             <TextBox x:Name="txtItemIndex" Text="0" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed"/>
 
-            <TextBlock Text="Scroller Methods" Grid.ColumnSpan="4" Foreground="Red" Grid.Row="5" Margin="0,4,0,0"/>
+            <TextBlock Text="ScrollPresenter Methods" Grid.ColumnSpan="4" Foreground="Red" Grid.Row="5" Margin="0,4,0,0"/>
 
             <Button x:Name="btnInvalidateArrange" Content="InvalidateArrange" Margin="1" Grid.Row="6" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInvalidateArrange_Click"/>
 
@@ -177,15 +177,15 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Scroller Events" Foreground="Red"/>
+            <TextBlock Text="ScrollPresenter Events" Foreground="Red"/>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <Button x:Name="btnClearScrollerEvents" Content="Clear" Click="BtnClearScrollerEvents_Click" Margin="1"/>
-                <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
-                <CheckBox x:Name="chkLogScrollerAnchorNotifications" Content="Log Scroller Anchor Notifications?" Margin="1"/>
-                <CheckBox x:Name="chkLogScrollerEvents" Content="Log Scroller Events?" Margin="1" Checked="ChkLogScrollerEvents_Checked" Unchecked="ChkLogScrollerEvents_Unchecked"/>
+                <Button x:Name="btnClearScrollPresenterEvents" Content="Clear" Click="BtnClearScrollPresenterEvents_Click" Margin="1"/>
+                <CheckBox x:Name="chkLogScrollPresenterMessages" Content="Log ScrollPresenter Messages?" Margin="1" Checked="ChkLogScrollPresenterMessages_Checked" Unchecked="ChkLogScrollPresenterMessages_Unchecked"/>
+                <CheckBox x:Name="chkLogScrollPresenterAnchorNotifications" Content="Log ScrollPresenter Anchor Notifications?" Margin="1"/>
+                <CheckBox x:Name="chkLogScrollPresenterEvents" Content="Log ScrollPresenter Events?" Margin="1" Checked="ChkLogScrollPresenterEvents_Checked" Unchecked="ChkLogScrollPresenterEvents_Unchecked"/>
             </StackPanel>
-            <ListBox x:Name="lstScrollerEvents" Margin="1" Grid.Row="2"/>
+            <ListBox x:Name="lstScrollPresenterEvents" Margin="1" Grid.Row="2"/>
         </Grid>
 
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="3">

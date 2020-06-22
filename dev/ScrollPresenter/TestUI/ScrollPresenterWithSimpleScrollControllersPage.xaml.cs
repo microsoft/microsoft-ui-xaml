@@ -18,7 +18,7 @@ using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollControlle
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
@@ -27,16 +27,16 @@ using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerWithSimpleScrollControllersPage : TestPage
+    public sealed partial class ScrollPresenterWithSimpleScrollControllersPage : TestPage
     {
         private CanvasScrollControllerConsumer canvasScrollControllerConsumer = null;
         private IScrollController horizontalScrollController = null;
         private IScrollController verticalScrollController = null;
 
-        public ScrollerWithSimpleScrollControllersPage()
+        public ScrollPresenterWithSimpleScrollControllersPage()
         {
             this.InitializeComponent();
-            this.Loaded += ScrollerWithSimpleScrollControllersPageOnLoaded;
+            this.Loaded += ScrollPresenterWithSimpleScrollControllersPageOnLoaded;
         }
 
         private void LogMessage(string message)
@@ -47,7 +47,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollerWithSimpleScrollControllersPageOnLoaded(object sender, RoutedEventArgs e)
+        private void ScrollPresenterWithSimpleScrollControllersPageOnLoaded(object sender, RoutedEventArgs e)
         {
             Rect rect = new Rect(0.0, 0.0, 300.0, 500.0);
             RectangleGeometry rectGeo = new RectangleGeometry();
@@ -68,10 +68,10 @@ namespace MUXControlsTestApp
 
             if (cmbIScrollControllerConsumer.SelectedIndex == 0)
             {
-                if (scroller.HorizontalScrollController != horizontalScrollController)
+                if (scrollPresenter.HorizontalScrollController != horizontalScrollController)
                 {
-                    scroller.HorizontalScrollController = horizontalScrollController;
-                    LogMessage("Scroller.HorizontalScrollController set");
+                    scrollPresenter.HorizontalScrollController = horizontalScrollController;
+                    LogMessage("ScrollPresenter.HorizontalScrollController set");
                 }
             }
             else if (canvasScrollControllerConsumer.HorizontalScrollController != horizontalScrollController)
@@ -92,10 +92,10 @@ namespace MUXControlsTestApp
 
             if (cmbIScrollControllerConsumer.SelectedIndex == 0)
             {
-                if (scroller.VerticalScrollController != verticalScrollController)
+                if (scrollPresenter.VerticalScrollController != verticalScrollController)
                 {
-                    scroller.VerticalScrollController = verticalScrollController;
-                    LogMessage("Scroller.VerticalScrollController set");
+                    scrollPresenter.VerticalScrollController = verticalScrollController;
+                    LogMessage("ScrollPresenter.VerticalScrollController set");
                 }
             }
             else if (canvasScrollControllerConsumer.VerticalScrollController != verticalScrollController)
@@ -107,10 +107,10 @@ namespace MUXControlsTestApp
 
         private void BtnResetHorizontalScrollController_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller != null && scroller.HorizontalScrollController != null)
+            if (scrollPresenter != null && scrollPresenter.HorizontalScrollController != null)
             {
-                scroller.HorizontalScrollController = null;
-                LogMessage("Scroller.HorizontalScrollController reset");
+                scrollPresenter.HorizontalScrollController = null;
+                LogMessage("ScrollPresenter.HorizontalScrollController reset");
             }
 
             if (canvasScrollControllerConsumer != null && canvasScrollControllerConsumer.HorizontalScrollController != null)
@@ -125,10 +125,10 @@ namespace MUXControlsTestApp
 
         private void BtnResetVerticalScrollController_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller != null && scroller.VerticalScrollController != null)
+            if (scrollPresenter != null && scrollPresenter.VerticalScrollController != null)
             {
-                scroller.VerticalScrollController = null;
-                LogMessage("Scroller.VerticalScrollController reset");
+                scrollPresenter.VerticalScrollController = null;
+                LogMessage("ScrollPresenter.VerticalScrollController reset");
             }
             if (canvasScrollControllerConsumer != null && canvasScrollControllerConsumer.VerticalScrollController != null)
             {
@@ -154,12 +154,12 @@ namespace MUXControlsTestApp
 
                 if (cmbIScrollControllerConsumer.SelectedIndex == 0)
                 {
-                    scroller.Visibility = Visibility.Visible;
+                    scrollPresenter.Visibility = Visibility.Visible;
                     canvas.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    scroller.Visibility = Visibility.Collapsed;
+                    scrollPresenter.Visibility = Visibility.Collapsed;
                     canvas.Visibility = Visibility.Visible;
                 }
 
@@ -177,7 +177,7 @@ namespace MUXControlsTestApp
                     canvasScrollControllerConsumer.IsEnabled = false;
                 }
 
-                LogMessage(cmbIScrollControllerConsumer.SelectedIndex == 0 ? "Scroller is consumer" : "CanvasScrollControllerConsumer is consumer");
+                LogMessage(cmbIScrollControllerConsumer.SelectedIndex == 0 ? "ScrollPresenter is consumer" : "CanvasScrollControllerConsumer is consumer");
             }
         }
 
@@ -627,7 +627,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        public bool AreInteractionsAllowed
+        public bool AreScrollControllerInteractionsAllowed
         {
             get;
             private set;
@@ -698,7 +698,7 @@ namespace MUXControlsTestApp
         public void SetScrollMode(ScrollMode scrollMode)
         {
             LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
-            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+            AreScrollControllerInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
         }
 
         public void SetValues(
@@ -820,7 +820,7 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollToRequestedEventArgs e = 
                     new ScrollControllerScrollToRequestedEventArgs(
                         offset,
-                        new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
                 if (e.Info.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.Info.OffsetsChangeId))
                 {
@@ -842,7 +842,7 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollByRequestedEventArgs e =
                     new ScrollControllerScrollByRequestedEventArgs(
                         offsetDelta,
-                        new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
                 if (e.Info.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.Info.OffsetsChangeId))
                 {

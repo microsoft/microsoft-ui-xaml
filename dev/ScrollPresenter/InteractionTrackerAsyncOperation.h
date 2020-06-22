@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ViewChangeBase.h"
-#include "ScrollerTrace.h"
+#include "ScrollPresenterTrace.h"
 
 enum class InteractionTrackerAsyncOperationType
 {
@@ -20,7 +20,7 @@ enum class InteractionTrackerAsyncOperationType
 
 enum class InteractionTrackerAsyncOperationTrigger
 {
-    // Operation is triggered by a direct call to Scroller's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
+    // Operation is triggered by a direct call to ScrollPresenter's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
     DirectViewChange = 0x01,
     // Operation is triggered by the horizontal IScrollController.
     HorizontalScrollControllerRequest = 0x02,
@@ -77,7 +77,7 @@ public:
 
     void SetIsCanceled(bool isCanceled)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCanceled);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCanceled);
 
         m_isCanceled = isCanceled;
     }
@@ -89,7 +89,7 @@ public:
 
     void SetIsDelayed(bool isDelayed)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isDelayed);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isDelayed);
 
         m_isDelayed = isDelayed;
     }
@@ -111,7 +111,7 @@ public:
 
     void SetIsCompleted(bool isCompleted)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCompleted);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCompleted);
 
         m_isCompleted = isCompleted;
     }
@@ -123,7 +123,7 @@ public:
 
     void SetTicksCountdown(int ticksCountdown)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, ticksCountdown);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, ticksCountdown);
 
         MUX_ASSERT(ticksCountdown > 0);
         m_preProcessingTicksCountdown = m_queuedOperationTicks = ticksCountdown;
@@ -148,7 +148,7 @@ public:
 
     void SetIsScrollControllerRequest(bool isFromHorizontalScrollController)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
             m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) | 
@@ -166,7 +166,7 @@ public:
 
         m_postProcessingTicksCountdown--;
         
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
         return m_postProcessingTicksCountdown == 0;
     }
 
@@ -177,7 +177,7 @@ public:
 
         m_preProcessingTicksCountdown--;        
 
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
         return m_preProcessingTicksCountdown == 0;
     }
 
@@ -193,7 +193,7 @@ public:
 
     void SetRequestId(int requestId)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, requestId);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, requestId);
 
         m_requestId = requestId;
     }
@@ -210,7 +210,7 @@ public:
 
     void SetRequiredOperation(std::shared_ptr<InteractionTrackerAsyncOperation> requiredOperation)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, requiredOperation);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, requiredOperation);
 
         m_requiredOperation = requiredOperation;
     }
@@ -227,8 +227,8 @@ private:
     int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
-    // Positive between the time the operation is queued in Scroller::ScrollTo/By/From, Scroller::ZoomTo/By/From or
-    // Scroller::OnCompositionTargetRendering and the time it is processed in Scroller::ProcessOffsetsChange or Scroller::ProcessZoomFactorChange.
+    // Positive between the time the operation is queued in ScrollPresenter::ScrollTo/By/From, ScrollPresenter::ZoomTo/By/From or
+    // ScrollPresenter::OnCompositionTargetRendering and the time it is processed in ScrollPresenter::ProcessOffsetsChange or ScrollPresenter::ProcessZoomFactorChange.
     int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
 
     // Initial value of m_preProcessingTicksCountdown when this operation is queued up.
@@ -240,10 +240,10 @@ private:
     // Set to True when the operation was canceled early enough to take effect.
     bool m_isCanceled{ false };
 
-    // Set to True when the operation is delayed until the scroller is loaded.
+    // Set to True when the operation is delayed until the scrollPresenter is loaded.
     bool m_isDelayed{ false };
 
-    // Set to True when the operation completed and was assigned a final ScrollerViewChangeResult result.
+    // Set to True when the operation completed and was assigned a final ScrollPresenterViewChangeResult result.
     bool m_isCompleted{ false };
 
     // OffsetsChange or ZoomFactorChange instance associated with this operation.

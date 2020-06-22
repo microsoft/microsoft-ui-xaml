@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollerMousePanningPage"
+    x:Class="MUXControlsTestApp.ScrollPresenterMousePanningPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -15,8 +15,8 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <controlsPrimitives:Scroller
-            x:Name="scroller" Width="500" Height="600"
+        <controlsPrimitives:ScrollPresenter
+            x:Name="scrollPresenter" Width="500" Height="600"
             ZoomMode="Enabled" Margin="4" Background="ForestGreen"
             VerticalAlignment="Top">
             <Grid>
@@ -58,7 +58,7 @@
                     </Rectangle>
                 </Canvas>
             </Grid>
-        </controlsPrimitives:Scroller>
+        </controlsPrimitives:ScrollPresenter>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

@@ -109,7 +109,7 @@ std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> SnapPointWrap
     return std::make_tuple(m_conditionExpressionAnimation, m_restingValueExpressionAnimation);
 }
 
-// Invoked on pre-RS5 versions when Scroller::m_isInertiaFromImpulse changed
+// Invoked on pre-RS5 versions when ScrollPresenter::m_isInertiaFromImpulse changed
 // and the 'iIFI' boolean parameters need to be updated.
 template<typename T>
 std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> SnapPointWrapper<T>::GetUpdatedExpressionAnimationsForImpulse(

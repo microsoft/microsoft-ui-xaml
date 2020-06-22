@@ -16,7 +16,7 @@ using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Control
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerExpressionAnimationSourcesPage : TestPage
+    public sealed partial class ScrollPresenterExpressionAnimationSourcesPage : TestPage
     {
         private bool isLoggingMessages = false;
         private int layoutCompletedCount = 0;
@@ -33,13 +33,13 @@ namespace MUXControlsTestApp
         private ExpressionAnimation vIndicatorHeightExpression;
         private ExpressionAnimation vIndicatorOffsetExpression;
 
-        public ScrollerExpressionAnimationSourcesPage()
+        public ScrollPresenterExpressionAnimationSourcesPage()
         {
             InitializeComponent();
-            Loaded += ScrollerExpressionAnimationSourcesPage_Loaded;
-            scroller.SizeChanged += Scroller_SizeChanged;
+            Loaded += ScrollPresenterExpressionAnimationSourcesPage_Loaded;
+            scrollPresenter.SizeChanged += ScrollPresenter_SizeChanged;
 
-            ChkLogScrollerMessages_Checked(null, null);
+            ChkLogScrollPresenterMessages_Checked(null, null);
         }
 
         private void SetLayoutCompleted(IdleDispatchedHandlerArgs args)
@@ -53,15 +53,15 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollerExpressionAnimationSourcesPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollPresenterExpressionAnimationSourcesPage_Loaded(object sender, RoutedEventArgs e)
         {
-            this.fullLogs.Add("ScrollerExpressionAnimationSourcesPage_Loaded");
+            this.fullLogs.Add("ScrollPresenterExpressionAnimationSourcesPage_Loaded");
             var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, SetupScrollbars);
         }
 
-        private void Scroller_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void ScrollPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            this.fullLogs.Add("Scroller_SizeChanged PreviousSize=" + e.PreviousSize + ", NewSize=" + e.NewSize);
+            this.fullLogs.Add("ScrollPresenter_SizeChanged PreviousSize=" + e.PreviousSize + ", NewSize=" + e.NewSize);
             var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, UpdateScrollbars);
 
             // One additional SetLayoutCompleted call is required to declare the layout final
@@ -95,8 +95,8 @@ namespace MUXControlsTestApp
                 "Vector2(Max(20.0f, Min(hScrollBarVisual.Size.X , seas.Viewport.X * hScrollBarVisual.Size.X / Max(0.0001f, seas.Extent.X * seas.ZoomFactor))), 30.0f)");
             vIndicatorHeightExpression = vScrollIndicatorVisual.Compositor.CreateExpressionAnimation(
                 "Vector2(30.0f, Max(20.0f, Min(vScrollBarVisual.Size.Y, seas.Viewport.Y * vScrollBarVisual.Size.Y / Max(0.0001f, seas.Extent.Y * seas.ZoomFactor))))");
-            hIndicatorWidthExpression.SetReferenceParameter("seas", scroller.ExpressionAnimationSources);
-            vIndicatorHeightExpression.SetReferenceParameter("seas", scroller.ExpressionAnimationSources);
+            hIndicatorWidthExpression.SetReferenceParameter("seas", scrollPresenter.ExpressionAnimationSources);
+            vIndicatorHeightExpression.SetReferenceParameter("seas", scrollPresenter.ExpressionAnimationSources);
             hIndicatorWidthExpression.SetReferenceParameter("hScrollBarVisual", hScrollBarVisual);
             vIndicatorHeightExpression.SetReferenceParameter("vScrollBarVisual", vScrollBarVisual);
             hIndicatorOffsetExpression = hScrollIndicatorVisual.Compositor.CreateExpressionAnimation(
@@ -111,8 +111,8 @@ namespace MUXControlsTestApp
                     "Max(0.0f, Min(vScrollBarVisual.Size.Y - vScrollIndicatorSpriteVisual.Size.Y, " +
                         "seas.Offset.Y * (vScrollBarVisual.Size.Y - vScrollIndicatorSpriteVisual.Size.Y) / Max(1.0f, (seas.Extent.Y * seas.ZoomFactor - seas.Viewport.Y))))," +
                     "0.0f)");
-            hIndicatorOffsetExpression.SetReferenceParameter("seas", scroller.ExpressionAnimationSources);
-            vIndicatorOffsetExpression.SetReferenceParameter("seas", scroller.ExpressionAnimationSources);
+            hIndicatorOffsetExpression.SetReferenceParameter("seas", scrollPresenter.ExpressionAnimationSources);
+            vIndicatorOffsetExpression.SetReferenceParameter("seas", scrollPresenter.ExpressionAnimationSources);
             hIndicatorOffsetExpression.SetReferenceParameter("hScrollBarVisual", hScrollBarVisual);
             vIndicatorOffsetExpression.SetReferenceParameter("vScrollBarVisual", vScrollBarVisual);
             hIndicatorOffsetExpression.SetReferenceParameter("hScrollIndicatorSpriteVisual", hScrollIndicatorSpriteVisual);
@@ -135,11 +135,11 @@ namespace MUXControlsTestApp
             }
 
             Vector2 viewport;
-            CompositionGetValueStatus cgvs = scroller.ExpressionAnimationSources.Properties.TryGetVector2("Viewport", out viewport);
+            CompositionGetValueStatus cgvs = scrollPresenter.ExpressionAnimationSources.Properties.TryGetVector2("Viewport", out viewport);
             txtViewport.Text = cgvs.ToString() + ", " + viewport.ToString();
 
             Vector2 extent;
-            cgvs = scroller.ExpressionAnimationSources.Properties.TryGetVector2("Extent", out extent);
+            cgvs = scrollPresenter.ExpressionAnimationSources.Properties.TryGetVector2("Extent", out extent);
             txtExtent.Text = cgvs.ToString() + ", " + extent.ToString();
 
             txtBarVisualWidth.Text = hScrollBarVisual.Size.X.ToString();
@@ -148,12 +148,12 @@ namespace MUXControlsTestApp
             txtIndicatorHeight.Text = (viewport.Y * vScrollBarVisual.Size.Y / Math.Max(1.0f, extent.Y)).ToString();
         }
 
-        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
             if (!isLoggingMessages)
             {
-                //Turn on info and verbose logging for the Scroller type:
-                MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                //Turn on info and verbose logging for the ScrollPresenter type:
+                MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
 
@@ -161,12 +161,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             if (isLoggingMessages)
             {
-                //Turn off info and verbose logging for the Scroller type:
-                MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                //Turn off info and verbose logging for the ScrollPresenter type:
+                MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
 

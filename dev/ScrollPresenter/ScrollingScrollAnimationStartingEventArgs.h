@@ -3,21 +3,21 @@
 
 #pragma once
 
-#include "ScrollerTrace.h"
-#include "ScrollAnimationStartingEventArgs.g.h"
+#include "ScrollPresenterTrace.h"
+#include "ScrollingScrollAnimationStartingEventArgs.g.h"
 
-class ScrollAnimationStartingEventArgs :
-    public winrt::implementation::ScrollAnimationStartingEventArgsT<ScrollAnimationStartingEventArgs>
+class ScrollingScrollAnimationStartingEventArgs :
+    public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
 {
 public:
-    ScrollAnimationStartingEventArgs()
+    ScrollingScrollAnimationStartingEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollAnimationStartingEventArgs()
+    ~ScrollingScrollAnimationStartingEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IScrollAnimationStartingEventArgs overrides

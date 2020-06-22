@@ -3,24 +3,24 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ZoomCompletedEventArgs.h"
+#include "ScrollingZoomCompletedEventArgs.h"
 
-winrt::ZoomInfo ZoomCompletedEventArgs::ZoomInfo()
+winrt::ZoomInfo ScrollingZoomCompletedEventArgs::ZoomInfo()
 {
     return winrt::ZoomInfo{ m_zoomFactorChangeId };
 }
 
-ScrollerViewChangeResult ZoomCompletedEventArgs::Result()
+ScrollPresenterViewChangeResult ScrollingZoomCompletedEventArgs::Result()
 {
     return m_result;
 }
 
-void ZoomCompletedEventArgs::ZoomFactorChangeId(int32_t zoomFactorChangeId)
+void ScrollingZoomCompletedEventArgs::ZoomFactorChangeId(int32_t zoomFactorChangeId)
 {
     m_zoomFactorChangeId = zoomFactorChangeId;
 }
 
-void ZoomCompletedEventArgs::Result(ScrollerViewChangeResult result)
+void ScrollingZoomCompletedEventArgs::Result(ScrollPresenterViewChangeResult result)
 {
     m_result = result;
 }

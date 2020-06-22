@@ -15,49 +15,49 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "ScrollViewer", Icon = "ScrollViewer.png")]
-    public sealed partial class ScrollViewerPage : TestPage
+    [TopLevelTestPage(Name = "ScrollView", Icon = "ScrollView.png")]
+    public sealed partial class ScrollViewPage : TestPage
     {
-        public ScrollViewerPage()
+        public ScrollViewPage()
         {
             LogController.InitializeLogging();
             this.InitializeComponent();
 
-            navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewersWithSimpleContentsPage), 0); };
-            navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerDynamicPage), 0); };
-            navigateToScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerWithScrollControllersPage), 0); };
-            navigateToRTL.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerWithRTLFlowDirectionPage), 0); };
-            navigateToKeyboardAndGamepadNavigation.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerKeyboardAndGamepadNavigationPage), 0); };
-            navigateToBlank.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerBlankPage), 0); };
+            navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewsWithSimpleContentsPage), 0); };
+            navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewDynamicPage), 0); };
+            navigateToScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewWithScrollControllersPage), 0); };
+            navigateToRTL.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewWithRTLFlowDirectionPage), 0); };
+            navigateToKeyboardAndGamepadNavigation.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewKeyboardAndGamepadNavigationPage), 0); };
+            navigateToBlank.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewBlankPage), 0); };
 
-            chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
+            chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
         }
 
-        private void CmbScrollViewerOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbScrollViewOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                "ScrollViewer",
-                cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2,
-                cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);
+                "ScrollView",
+                cmbScrollViewOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewOutputDebugStringLevel.SelectedIndex == 2,
+                cmbScrollViewOutputDebugStringLevel.SelectedIndex == 2);
 
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                "Scroller",
-                cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2,
-                cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);
+                "ScrollPresenter",
+                cmbScrollViewOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewOutputDebugStringLevel.SelectedIndex == 2,
+                cmbScrollViewOutputDebugStringLevel.SelectedIndex == 2);
         }
 
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
+            ScrollPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
         }
 
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
+            ScrollPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
         }
     }
 }

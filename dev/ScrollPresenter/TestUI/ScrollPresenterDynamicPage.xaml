@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollerDynamicPage"
+    x:Class="MUXControlsTestApp.ScrollPresenterDynamicPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -26,10 +26,10 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="7">
-            <CheckBox x:Name="chkScrollerProperties" 
-                      Content="Scroller Properties" 
-                      Checked="ChkScrollerProperties_Checked" 
-                      Unchecked="ChkScrollerProperties_Unchecked" 
+            <CheckBox x:Name="chkScrollPresenterProperties" 
+                      Content="ScrollPresenter Properties" 
+                      Checked="ChkScrollPresenterProperties_Checked" 
+                      Unchecked="ChkScrollPresenterProperties_Unchecked" 
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
@@ -40,17 +40,17 @@
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
-            <CheckBox x:Name="chkScrollerMethods"
-                      Content="Scroller Methods"
-                      Checked="ChkScrollerMethods_Checked"
-                      Unchecked="ChkScrollerMethods_Unchecked"
+            <CheckBox x:Name="chkScrollPresenterMethods"
+                      Content="ScrollPresenter Methods"
+                      Checked="ChkScrollPresenterMethods_Checked"
+                      Unchecked="ChkScrollPresenterMethods_Unchecked"
                       IsChecked="True"
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
-            <CheckBox x:Name="chkScrollerEvents" 
-                      Content="Scroller Events" 
-                      Checked="ChkScrollerEvents_Checked" 
-                      Unchecked="ChkScrollerEvents_Unchecked" 
+            <CheckBox x:Name="chkScrollPresenterEvents" 
+                      Content="ScrollPresenter Events" 
+                      Checked="ChkScrollPresenterEvents_Checked" 
+                      Unchecked="ChkScrollPresenterEvents_Unchecked" 
                       IsChecked="True"
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
@@ -61,20 +61,20 @@
                       IsChecked="False"
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
-            <CheckBox x:Name="chkScrollerTestHooks" 
-                      Content="Scroller Test Hooks"
-                      Checked="ChkScrollerTestHooks_Checked" 
-                      Unchecked="ChkScrollerTestHooks_Unchecked" 
+            <CheckBox x:Name="chkScrollPresenterTestHooks" 
+                      Content="ScrollPresenter Test Hooks"
+                      Checked="ChkScrollPresenterTestHooks_Checked" 
+                      Unchecked="ChkScrollPresenterTestHooks_Unchecked" 
                       IsChecked="False"
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
         </StackPanel>
 
-        <controlsPrimitives:Scroller x:Name="markupScroller" Width="300" Height="500" Grid.Row="1" Margin="1" Background="AliceBlue" VerticalAlignment="Top" ZoomMode="Enabled">
+        <controlsPrimitives:ScrollPresenter x:Name="markupScrollPresenter" Width="300" Height="500" Grid.Row="1" Margin="1" Background="AliceBlue" VerticalAlignment="Top" ZoomMode="Enabled">
             <Image x:Name="smallImg" Source="Assets/ingredient8.png" Width="900" Height="900"/>
-        </controlsPrimitives:Scroller>
+        </controlsPrimitives:ScrollPresenter>
 
-        <ScrollViewer x:Name="svScrollerProperties" Grid.Row="1" Grid.Column="1">
+        <ScrollViewer x:Name="svScrollPresenterProperties" Grid.Row="1" Grid.Column="1">
             <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
                   BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
                 <Grid.RowDefinitions>
@@ -118,7 +118,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Scroller Properties" Grid.Row="0" Grid.ColumnSpan="5" Foreground="Red"/>
+                <TextBlock Text="ScrollPresenter Properties" Grid.Row="0" Grid.ColumnSpan="5" Foreground="Red"/>
 
                 <TextBlock Text="ContentOrientation:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="cmbContentOrientation" Margin="1" Grid.Row="1" Grid.Column="1"
@@ -229,8 +229,8 @@
                 </ComboBox>
 
                 <TextBlock Text="ManipulationMode:" Grid.Row="14" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbScrollerManipulationMode" Margin="1" Grid.Row="14" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbScrollerManipulationMode_SelectionChanged">
+                <ComboBox x:Name="cmbScrollPresenterManipulationMode" Margin="1" Grid.Row="14" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbScrollPresenterManipulationMode_SelectionChanged">
                     <ComboBoxItem>System</ComboBoxItem>
                     <ComboBoxItem>None</ComboBoxItem>
                 </ComboBox>
@@ -457,7 +457,7 @@
             <CheckBox x:Name="chkLogContentEffectiveViewportChangedEvent" Grid.Row="17" Content="Log Content EffVPCgd Event?" Margin="1" Checked="ChkLogContentEffectiveViewportChangedEvent_Checked" Unchecked="ChkLogContentEffectiveViewportChangedEvent_Unchecked"/>
         </Grid>
 
-        <ScrollViewer x:Name="svScrollerMethods" Grid.Row="1" Grid.Column="3">
+        <ScrollViewer x:Name="svScrollPresenterMethods" Grid.Row="1" Grid.Column="3">
             <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
                   BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
                 <Grid.RowDefinitions>
@@ -468,7 +468,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Scroller Methods" Foreground="Red"/>
+                <TextBlock Text="ScrollPresenter Methods" Foreground="Red"/>
 
                 <Grid Grid.Row="1">
                     <Grid.RowDefinitions>
@@ -656,7 +656,7 @@
             </Grid>
         </ScrollViewer>
 
-        <Grid x:Name="grdScrollerEvents" Grid.Row="1" Grid.Column="4" Margin="4,0,4,0" Padding="6"
+        <Grid x:Name="grdScrollPresenterEvents" Grid.Row="1" Grid.Column="4" Margin="4,0,4,0" Padding="6"
                   BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -667,15 +667,15 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
         
-            <TextBlock Text="Scroller Events" Foreground="Red"/>
+            <TextBlock Text="ScrollPresenter Events" Foreground="Red"/>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <Button x:Name="btnClearScrollerEvents" Content="Clear" Click="BtnClearScrollerEvents_Click" Margin="1"/>
-                <Button x:Name="btnCopyScrollerEvents" Content="Copy into Clipboard" Click="BtnCopyScrollerEvents_Click" Margin="1"/>
-                <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
-                <CheckBox x:Name="chkLogScrollerEvents" Content="Log Scroller Events?" Margin="1" Checked="ChkLogScrollerEvents_Checked" Unchecked="ChkLogScrollerEvents_Unchecked"/>
+                <Button x:Name="btnClearScrollPresenterEvents" Content="Clear" Click="BtnClearScrollPresenterEvents_Click" Margin="1"/>
+                <Button x:Name="btnCopyScrollPresenterEvents" Content="Copy into Clipboard" Click="BtnCopyScrollPresenterEvents_Click" Margin="1"/>
+                <CheckBox x:Name="chkLogScrollPresenterMessages" Content="Log ScrollPresenter Messages?" Margin="1" Checked="ChkLogScrollPresenterMessages_Checked" Unchecked="ChkLogScrollPresenterMessages_Unchecked"/>
+                <CheckBox x:Name="chkLogScrollPresenterEvents" Content="Log ScrollPresenter Events?" Margin="1" Checked="ChkLogScrollPresenterEvents_Checked" Unchecked="ChkLogScrollPresenterEvents_Unchecked"/>
             </StackPanel>
-            <ListBox x:Name="lstScrollerEvents" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Auto" Margin="1" Grid.Row="2"/>
+            <ListBox x:Name="lstScrollPresenterEvents" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Auto" Margin="1" Grid.Row="2"/>
         </Grid>
 
         <Grid x:Name="grdPageMethods" Grid.Row="1" Grid.Column="5" Visibility="Collapsed" Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
@@ -700,20 +700,20 @@
 
             <TextBlock Text="Page Methods" Foreground="Red"/>
 
-            <Button x:Name="btnParentMarkupScroller" Content="Parent Markup Scroller" Margin="2" Grid.Row="1" Click="BtnParentMarkupScroller_Click"/>
-            <Button x:Name="btnUnparentMarkupScroller" Content="Unparent Markup Scroller" Margin="2" Grid.Row="2" Click="BtnUnparentMarkupScroller_Click"/>
-            <Button x:Name="btnUnparentReparentMarkupScroller" Content="Un/Reparent Markup Scroller" Margin="2" Grid.Row="3" Click="BtnUnparentReparentMarkupScroller_Click"/>
-            <Button x:Name="btnCreateDynamicScroller" Content="Create Dynamic Scroller" Margin="2" Grid.Row="4" Click="BtnCreateDynamicScroller_Click"/>
-            <Button x:Name="btnParentDynamicScroller" Content="Parent Dynamic Scroller" Margin="2" Grid.Row="5" Click="BtnParentDynamicScroller_Click"/>
-            <Button x:Name="btnUnparentDynamicScroller" Content="Unparent Dynamic Scroller" Margin="2" Grid.Row="6" Click="BtnUnparentDynamicScroller_Click"/>
-            <Button x:Name="btnReleaseDynamicScroller" Content="Release Dynamic Scroller" Margin="2" Grid.Row="7" Click="BtnReleaseDynamicScroller_Click"/>
-            <Button x:Name="btnUseMarkupScroller" Content="Use Markup Scroller" Margin="2" Grid.Row="8" Click="BtnUseMarkupScroller_Click"/>
-            <Button x:Name="btnUseDynamicScroller" Content="Use Dynamic Scroller" Margin="2" Grid.Row="9" Click="BtnUseDynamicScroller_Click"/>
+            <Button x:Name="btnParentMarkupScrollPresenter" Content="Parent Markup ScrollPresenter" Margin="2" Grid.Row="1" Click="BtnParentMarkupScrollPresenter_Click"/>
+            <Button x:Name="btnUnparentMarkupScrollPresenter" Content="Unparent Markup ScrollPresenter" Margin="2" Grid.Row="2" Click="BtnUnparentMarkupScrollPresenter_Click"/>
+            <Button x:Name="btnUnparentReparentMarkupScrollPresenter" Content="Un/Reparent Markup ScrollPresenter" Margin="2" Grid.Row="3" Click="BtnUnparentReparentMarkupScrollPresenter_Click"/>
+            <Button x:Name="btnCreateDynamicScrollPresenter" Content="Create Dynamic ScrollPresenter" Margin="2" Grid.Row="4" Click="BtnCreateDynamicScrollPresenter_Click"/>
+            <Button x:Name="btnParentDynamicScrollPresenter" Content="Parent Dynamic ScrollPresenter" Margin="2" Grid.Row="5" Click="BtnParentDynamicScrollPresenter_Click"/>
+            <Button x:Name="btnUnparentDynamicScrollPresenter" Content="Unparent Dynamic ScrollPresenter" Margin="2" Grid.Row="6" Click="BtnUnparentDynamicScrollPresenter_Click"/>
+            <Button x:Name="btnReleaseDynamicScrollPresenter" Content="Release Dynamic ScrollPresenter" Margin="2" Grid.Row="7" Click="BtnReleaseDynamicScrollPresenter_Click"/>
+            <Button x:Name="btnUseMarkupScrollPresenter" Content="Use Markup ScrollPresenter" Margin="2" Grid.Row="8" Click="BtnUseMarkupScrollPresenter_Click"/>
+            <Button x:Name="btnUseDynamicScrollPresenter" Content="Use Dynamic ScrollPresenter" Margin="2" Grid.Row="9" Click="BtnUseDynamicScrollPresenter_Click"/>
             <Button x:Name="btnExecuteQueuedOperations" Content="Execute Queued Operations" Margin="2" Grid.Row="10" Click="BtnExecuteQueuedOperations_Click"/>
             <Button x:Name="btnDiscardQueuedOperations" Content="Discard Queued Operations" Margin="2" Grid.Row="11" Click="BtnDiscardQueuedOperations_Click"/>
         </Grid>
 
-        <Grid x:Name="grdScrollerTestHooks" Grid.Row="1" Grid.Column="6" Margin="4,0,4,0" Padding="6"
+        <Grid x:Name="grdScrollPresenterTestHooks" Grid.Row="1" Grid.Column="6" Margin="4,0,4,0" Padding="6"
                   BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -730,7 +730,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Scroller Test Hooks" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
+            <TextBlock Text="ScrollPresenter Test Hooks" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
 
             <TextBlock Text="Content Layout OffsetX:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
             <TextBox x:Name="txtContentLayoutOffsetX" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>

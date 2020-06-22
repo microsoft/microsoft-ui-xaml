@@ -11,7 +11,7 @@
 #include "ZoomSnapPoint.g.h"
 #include "RepeatedZoomSnapPoint.g.h"
 
-struct ScrollerSnapPointSortPredicate
+struct SnapPointSortPredicate
 {
     //Sorting of snap points goes as follows:
     //We first sort on the primary value which for repeated snap points are their actualStart values, and for irregular snap points their values.
@@ -62,7 +62,7 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const = 0;
-    virtual ScrollerSnapPointSortPredicate SortPredicate() = 0;
+    virtual SnapPointSortPredicate SortPredicate() = 0;
     virtual std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint) = 0;
@@ -195,7 +195,7 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    ScrollerSnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
@@ -284,7 +284,7 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    ScrollerSnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
@@ -388,7 +388,7 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    ScrollerSnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
@@ -474,7 +474,7 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    ScrollerSnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);

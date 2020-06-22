@@ -27,7 +27,7 @@ using Point = System.Drawing.Point;
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class ScrollViewerTestsWithInputHelper
+    public class ScrollViewTestsWithInputHelper
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -45,8 +45,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Pans an Image in a ScrollViewer.")]
-        public void PanScrollViewer()
+        [TestProperty("Description", "Pans an Image in a ScrollView.")]
+        public void PanScrollView()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -57,67 +57,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             const double minHorizontalScrollPercent = 35.0;
             const double minVerticalScrollPercent = 35.0;
 
-            Log.Comment("Selecting ScrollViewer tests");
+            Log.Comment("Selecting ScrollView tests");
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
-                Log.Comment("Retrieving cmbShowScrollViewer");
-                ComboBox cmbShowScrollViewer = new ComboBox(FindElement.ByName("cmbShowScrollViewer"));
-                Verify.IsNotNull(cmbShowScrollViewer, "Verifying that cmbShowScrollViewer was found");
+                Log.Comment("Retrieving cmbShowScrollView");
+                ComboBox cmbShowScrollView = new ComboBox(FindElement.ByName("cmbShowScrollView"));
+                Verify.IsNotNull(cmbShowScrollView, "Verifying that cmbShowScrollView was found");
 
-                Log.Comment("Changing ScrollViewer selection to scrollViewer51");
-                cmbShowScrollViewer.SelectItemByName("scrollViewer_51");
-                Log.Comment("Selection is now {0}", cmbShowScrollViewer.Selection[0].Name);
+                Log.Comment("Changing ScrollView selection to scrollView51");
+                cmbShowScrollView.SelectItemByName("scrollView_51");
+                Log.Comment("Selection is now {0}", cmbShowScrollView.Selection[0].Name);
 
                 if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone1))
                 {
-                    Log.Comment("On RS1 the Scroller's content is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
-                    WaitForScrollViewerManipulationEnd("scrollViewer21");
+                    Log.Comment("On RS1 the ScrollPresenter's content is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
+                    WaitForScrollViewManipulationEnd("scrollView21");
                 }
 
                 Log.Comment("Retrieving img51");
                 UIObject img51UIObject = FindElement.ByName("img51");
                 Verify.IsNotNull(img51UIObject, "Verifying that img51 was found");
 
-                Log.Comment("Retrieving scroller51");
-                Scroller scroller51 = new Scroller(img51UIObject.Parent);
-                Verify.IsNotNull(scroller51, "Verifying that scroller51 was found");
+                Log.Comment("Retrieving scrollPresenter51");
+                ScrollPresenter scrollPresenter51 = new ScrollPresenter(img51UIObject.Parent);
+                Verify.IsNotNull(scrollPresenter51, "Verifying that scrollPresenter51 was found");
 
-                WaitForScrollViewerFinalSize(scroller51, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
+                WaitForScrollViewFinalSize(scrollPresenter51, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
 
                 // Tapping button before attempting pan operation to guarantee effective touch input
                 TapResetViewsButton();
 
-                Log.Comment("Panning ScrollViewer in diagonal");
-                PrepareForScrollViewerManipulationStart();
+                Log.Comment("Panning ScrollView in diagonal");
+                PrepareForScrollViewManipulationStart();
 
                 InputHelper.Pan(
-                    scroller51,
-                    new Point(scroller51.BoundingRectangle.Left + 25, scroller51.BoundingRectangle.Top + 25),
-                    new Point(scroller51.BoundingRectangle.Left - 25, scroller51.BoundingRectangle.Top - 25));
+                    scrollPresenter51,
+                    new Point(scrollPresenter51.BoundingRectangle.Left + 25, scrollPresenter51.BoundingRectangle.Top + 25),
+                    new Point(scrollPresenter51.BoundingRectangle.Left - 25, scrollPresenter51.BoundingRectangle.Top - 25));
 
-                Log.Comment("Waiting for scrollViewer51 pan completion");
-                WaitForScrollViewerManipulationEnd("scrollViewer51");
+                Log.Comment("Waiting for scrollView51 pan completion");
+                WaitForScrollViewManipulationEnd("scrollView51");
 
-                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
-                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+                Log.Comment("scrollPresenter51.HorizontalScrollPercent={0}", scrollPresenter51.HorizontalScrollPercent);
+                Log.Comment("scrollPresenter51.VerticalScrollPercent={0}", scrollPresenter51.VerticalScrollPercent);
 
-                if (scroller51.HorizontalScrollPercent <= minHorizontalScrollPercent || scroller51.VerticalScrollPercent <= minVerticalScrollPercent)
+                if (scrollPresenter51.HorizontalScrollPercent <= minHorizontalScrollPercent || scrollPresenter51.VerticalScrollPercent <= minVerticalScrollPercent)
                 {
                     LogAndClearTraces();
                 }
 
-                Verify.IsTrue(scroller51.HorizontalScrollPercent > minHorizontalScrollPercent, "Verifying scroller51 HorizontalScrollPercent is greater than " + minHorizontalScrollPercent + "%");
-                Verify.IsTrue(scroller51.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
+                Verify.IsTrue(scrollPresenter51.HorizontalScrollPercent > minHorizontalScrollPercent, "Verifying scrollPresenter51 HorizontalScrollPercent is greater than " + minHorizontalScrollPercent + "%");
+                Verify.IsTrue(scrollPresenter51.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scrollPresenter51 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
 
-                // scroller51's Content size is 800x800px.
+                // scrollPresenter51's Content size is 800x800px.
                 double horizontalOffset;
                 double verticalOffset;
-                double minHorizontalOffset = 800.0 * (1.0 - scroller51.HorizontalViewSize / 100.0) * minHorizontalScrollPercent / 100.0;
-                double minVerticalOffset = 800.0 * (1.0 - scroller51.VerticalViewSize / 100.0) * minVerticalScrollPercent / 100.0;
+                double minHorizontalOffset = 800.0 * (1.0 - scrollPresenter51.HorizontalViewSize / 100.0) * minHorizontalScrollPercent / 100.0;
+                double minVerticalOffset = 800.0 * (1.0 - scrollPresenter51.VerticalViewSize / 100.0) * minVerticalScrollPercent / 100.0;
                 float zoomFactor;
 
-                GetScrollerView(out horizontalOffset, out verticalOffset, out zoomFactor);
+                GetScrollPresenterView(out horizontalOffset, out verticalOffset, out zoomFactor);
                 Log.Comment("horizontalOffset={0}", horizontalOffset);
                 Log.Comment("verticalOffset={0}", verticalOffset);
                 Log.Comment("zoomFactor={0}", zoomFactor);
@@ -125,13 +125,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(verticalOffset > minVerticalOffset, "Verifying verticalOffset is greater than " + minVerticalOffset);
                 Verify.AreEqual(zoomFactor, 1.0f, "Verifying zoomFactor is 1.0f");
 
-                // Output-debug-string-level "None" is automatically restored when landing back on the ScrollViewer test page.
+                // Output-debug-string-level "None" is automatically restored when landing back on the ScrollView test page.
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Scrolls an Image in a ScrollViewer using the mouse on the ScrollBar thumb, then pans it with touch.")]
-        public void ScrollThenPanScrollViewer()
+        [TestProperty("Description", "Scrolls an Image in a ScrollView using the mouse on the ScrollBar thumb, then pans it with touch.")]
+        public void ScrollThenPanScrollView()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -139,9 +139,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            Log.Comment("Selecting ScrollViewer tests");
+            Log.Comment("Selecting ScrollView tests");
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 const double minVerticalScrollPercentAfterScroll = 15.0;
                 const double minHorizontalScrollPercentAfterPan = 35.0;
@@ -149,88 +149,88 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 double verticalScrollPercentAfterScroll = 0.0;
 
-                Log.Comment("Retrieving cmbShowScrollViewer");
-                ComboBox cmbShowScrollViewer = new ComboBox(FindElement.ByName("cmbShowScrollViewer"));
-                Verify.IsNotNull(cmbShowScrollViewer, "Verifying that cmbShowScrollViewer was found");
+                Log.Comment("Retrieving cmbShowScrollView");
+                ComboBox cmbShowScrollView = new ComboBox(FindElement.ByName("cmbShowScrollView"));
+                Verify.IsNotNull(cmbShowScrollView, "Verifying that cmbShowScrollView was found");
 
-                Log.Comment("Changing ScrollViewer selection to scrollViewer51");
-                cmbShowScrollViewer.SelectItemByName("scrollViewer_51");
-                Log.Comment("Selection is now {0}", cmbShowScrollViewer.Selection[0].Name);
+                Log.Comment("Changing ScrollView selection to scrollView51");
+                cmbShowScrollView.SelectItemByName("scrollView_51");
+                Log.Comment("Selection is now {0}", cmbShowScrollView.Selection[0].Name);
 
                 if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone1))
                 {
-                    Log.Comment("On RS1 the Scroller's content is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
-                    WaitForScrollViewerManipulationEnd("scrollViewer21");
+                    Log.Comment("On RS1 the ScrollPresenter's content is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
+                    WaitForScrollViewManipulationEnd("scrollView21");
                 }
 
                 Log.Comment("Retrieving img51");
                 UIObject img51UIObject = FindElement.ByName("img51");
                 Verify.IsNotNull(img51UIObject, "Verifying that img51 was found");
 
-                Log.Comment("Retrieving scroller51");
-                Scroller scroller51 = new Scroller(img51UIObject.Parent);
-                Verify.IsNotNull(scroller51, "Verifying that scroller51 was found");
+                Log.Comment("Retrieving scrollPresenter51");
+                ScrollPresenter scrollPresenter51 = new ScrollPresenter(img51UIObject.Parent);
+                Verify.IsNotNull(scrollPresenter51, "Verifying that scrollPresenter51 was found");
 
-                WaitForScrollViewerFinalSize(scroller51, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
+                WaitForScrollViewFinalSize(scrollPresenter51, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
 
                 // Tapping button before attempting pan operation to guarantee effective touch input
                 TapResetViewsButton();
 
                 Log.Comment("Left mouse buttom down over ScrollBar thumb");
-                InputHelper.LeftMouseButtonDown(scroller51, 140 /*offsetX*/, -100 /*offsetY*/);
+                InputHelper.LeftMouseButtonDown(scrollPresenter51, 140 /*offsetX*/, -100 /*offsetY*/);
 
                 Log.Comment("Mouse drag and left mouse buttom up over ScrollBar thumb");
-                InputHelper.LeftMouseButtonUp(scroller51, 140 /*offsetX*/, -50 /*offsetY*/);
+                InputHelper.LeftMouseButtonUp(scrollPresenter51, 140 /*offsetX*/, -50 /*offsetY*/);
 
-                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
-                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+                Log.Comment("scrollPresenter51.HorizontalScrollPercent={0}", scrollPresenter51.HorizontalScrollPercent);
+                Log.Comment("scrollPresenter51.VerticalScrollPercent={0}", scrollPresenter51.VerticalScrollPercent);
 
-                verticalScrollPercentAfterScroll = scroller51.VerticalScrollPercent;
+                verticalScrollPercentAfterScroll = scrollPresenter51.VerticalScrollPercent;
 
-                if (scroller51.HorizontalScrollPercent != 0.0 || scroller51.VerticalScrollPercent <= minVerticalScrollPercentAfterScroll)
+                if (scrollPresenter51.HorizontalScrollPercent != 0.0 || scrollPresenter51.VerticalScrollPercent <= minVerticalScrollPercentAfterScroll)
                 {
                     LogAndClearTraces();
                 }
 
-                Verify.AreEqual(scroller51.HorizontalScrollPercent, 0.0, "Verifying scroller51 HorizontalScrollPercent is still 0%");
-                Verify.IsTrue(verticalScrollPercentAfterScroll > minVerticalScrollPercentAfterScroll, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercentAfterScroll + "%");
+                Verify.AreEqual(scrollPresenter51.HorizontalScrollPercent, 0.0, "Verifying scrollPresenter51 HorizontalScrollPercent is still 0%");
+                Verify.IsTrue(verticalScrollPercentAfterScroll > minVerticalScrollPercentAfterScroll, "Verifying scrollPresenter51 VerticalScrollPercent is greater than " + minVerticalScrollPercentAfterScroll + "%");
 
-                Log.Comment("Panning ScrollViewer in diagonal");
-                PrepareForScrollViewerManipulationStart();
+                Log.Comment("Panning ScrollView in diagonal");
+                PrepareForScrollViewManipulationStart();
 
                 // Using a large enough span and duration for this diagonal pan so that it is not erroneously recognized as a horizontal pan.
                 InputHelper.Pan(
-                    scroller51,
-                    new Point(scroller51.BoundingRectangle.Left + 30, scroller51.BoundingRectangle.Top + 30),
-                    new Point(scroller51.BoundingRectangle.Left - 30, scroller51.BoundingRectangle.Top - 30),
+                    scrollPresenter51,
+                    new Point(scrollPresenter51.BoundingRectangle.Left + 30, scrollPresenter51.BoundingRectangle.Top + 30),
+                    new Point(scrollPresenter51.BoundingRectangle.Left - 30, scrollPresenter51.BoundingRectangle.Top - 30),
                     InputHelper.DefaultPanHoldDuration,
                     InputHelper.DefaultPanAcceleration / 2.4f);
 
-                Log.Comment("Waiting for scrollViewer51 pan completion");
-                WaitForScrollViewerManipulationEnd("scrollViewer51");
+                Log.Comment("Waiting for scrollView51 pan completion");
+                WaitForScrollViewManipulationEnd("scrollView51");
 
-                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
-                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+                Log.Comment("scrollPresenter51.HorizontalScrollPercent={0}", scrollPresenter51.HorizontalScrollPercent);
+                Log.Comment("scrollPresenter51.VerticalScrollPercent={0}", scrollPresenter51.VerticalScrollPercent);
 
-                if (scroller51.HorizontalScrollPercent <= minHorizontalScrollPercentAfterPan ||
-                    scroller51.VerticalScrollPercent <= minVerticalScrollPercentAfterPan ||
-                    scroller51.VerticalScrollPercent <= verticalScrollPercentAfterScroll)
+                if (scrollPresenter51.HorizontalScrollPercent <= minHorizontalScrollPercentAfterPan ||
+                    scrollPresenter51.VerticalScrollPercent <= minVerticalScrollPercentAfterPan ||
+                    scrollPresenter51.VerticalScrollPercent <= verticalScrollPercentAfterScroll)
                 {
                     LogAndClearTraces();
                 }
 
-                Verify.IsTrue(scroller51.HorizontalScrollPercent > minHorizontalScrollPercentAfterPan, "Verifying scroller51 HorizontalScrollPercent is greater than " + minHorizontalScrollPercentAfterPan + "%");
-                Verify.IsTrue(scroller51.VerticalScrollPercent > minVerticalScrollPercentAfterPan, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercentAfterPan + "%");
-                Verify.IsTrue(scroller51.VerticalScrollPercent > verticalScrollPercentAfterScroll, "Verifying scroller51 VerticalScrollPercent is greater than " + verticalScrollPercentAfterScroll + "%");
+                Verify.IsTrue(scrollPresenter51.HorizontalScrollPercent > minHorizontalScrollPercentAfterPan, "Verifying scrollPresenter51 HorizontalScrollPercent is greater than " + minHorizontalScrollPercentAfterPan + "%");
+                Verify.IsTrue(scrollPresenter51.VerticalScrollPercent > minVerticalScrollPercentAfterPan, "Verifying scrollPresenter51 VerticalScrollPercent is greater than " + minVerticalScrollPercentAfterPan + "%");
+                Verify.IsTrue(scrollPresenter51.VerticalScrollPercent > verticalScrollPercentAfterScroll, "Verifying scrollPresenter51 VerticalScrollPercent is greater than " + verticalScrollPercentAfterScroll + "%");
 
-                // scroller51's Content size is 800x800px.
+                // scrollPresenter51's Content size is 800x800px.
                 double horizontalOffset;
                 double verticalOffset;
-                double minHorizontalOffset = 800.0 * (1.0 - scroller51.HorizontalViewSize / 100.0) * minHorizontalScrollPercentAfterPan / 100.0;
-                double minVerticalOffset = 800.0 * (1.0 - scroller51.VerticalViewSize / 100.0) * minVerticalScrollPercentAfterPan / 100.0;
+                double minHorizontalOffset = 800.0 * (1.0 - scrollPresenter51.HorizontalViewSize / 100.0) * minHorizontalScrollPercentAfterPan / 100.0;
+                double minVerticalOffset = 800.0 * (1.0 - scrollPresenter51.VerticalViewSize / 100.0) * minVerticalScrollPercentAfterPan / 100.0;
                 float zoomFactor;
 
-                GetScrollerView(out horizontalOffset, out verticalOffset, out zoomFactor);
+                GetScrollPresenterView(out horizontalOffset, out verticalOffset, out zoomFactor);
                 Log.Comment("horizontalOffset={0}", horizontalOffset);
                 Log.Comment("verticalOffset={0}", verticalOffset);
                 Log.Comment("zoomFactor={0}", zoomFactor);
@@ -242,248 +242,248 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Tests Keyboard interaction (Up, Down, Left, Right, PageUp, PageDown, Home, End)")]
-        public void VerifyScrollViewerKeyboardInteraction()
+        public void VerifyScrollViewKeyboardInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
-                UIObject buttonInScrollViewer11;
-                Scroller scroller11;
-                SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
+                UIObject buttonInScrollView11;
+                ScrollPresenter scrollPresenter11;
+                SetupSimpleSingleScrollViewTest(out buttonInScrollView11, out scrollPresenter11);
 
-                var scrollAmountForDownOrUpKey = scroller11.BoundingRectangle.Height * 0.15;
-                var scrollAmountForPageUpOrPageDownKey = scroller11.BoundingRectangle.Height;
-                var scrollAmountForRightOrLeftKey = scroller11.BoundingRectangle.Width * 0.15;
-                var maxScrollOffset = 2000 - scroller11.BoundingRectangle.Height;
+                var scrollAmountForDownOrUpKey = scrollPresenter11.BoundingRectangle.Height * 0.15;
+                var scrollAmountForPageUpOrPageDownKey = scrollPresenter11.BoundingRectangle.Height;
+                var scrollAmountForRightOrLeftKey = scrollPresenter11.BoundingRectangle.Width * 0.15;
+                var maxScrollOffset = 2000 - scrollPresenter11.BoundingRectangle.Height;
 
                 double expectedVerticalOffset = 0;
                 double expectedHorizontalOffset = 0;
 
                 Log.Comment("Pressing Down key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedVerticalOffset += scrollAmountForDownOrUpKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing PageDown key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.PageDown, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.PageDown, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedVerticalOffset += scrollAmountForPageUpOrPageDownKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing Home key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedVerticalOffset = 0;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing End key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedVerticalOffset = maxScrollOffset;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing Up key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.Up, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.Up, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedVerticalOffset -= scrollAmountForDownOrUpKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing PageUp key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.PageUp, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.PageUp, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedVerticalOffset -= scrollAmountForPageUpOrPageDownKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing Right key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.Right, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.Right, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedHorizontalOffset += scrollAmountForRightOrLeftKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing Left key");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.Left, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.Left, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 expectedHorizontalOffset -= scrollAmountForRightOrLeftKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
                 Log.Comment("Pressing Down key three times");
-                KeyboardHelper.PressKey(buttonInScrollViewer11, Key.Down, modifierKey: ModifierKey.None, numPresses: 3, useDebugMode: true);
+                KeyboardHelper.PressKey(buttonInScrollView11, Key.Down, modifierKey: ModifierKey.None, numPresses: 3, useDebugMode: true);
                 expectedVerticalOffset += 3 * scrollAmountForDownOrUpKey;
-                WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+                WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies keyboard input is ignored when ScrollViewer.IgnoredInputKind is Keyboard.")]
-        public void VerifyScrollViewerIgnoresKeyboardInput()
+        [TestProperty("Description", "Verifies keyboard input is ignored when ScrollView.IgnoredInputKind is Keyboard.")]
+        public void VerifyScrollViewIgnoresKeyboardInput()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 UIObject img51;
-                Scroller scroller51;
+                ScrollPresenter scrollPresenter51;
 
-                SetupScrollViewerTestWithImage("51", out img51, out scroller51);
+                SetupScrollViewTestWithImage("51", out img51, out scrollPresenter51);
 
                 Log.Comment("Retrieving cmbIgnoredInputKind");
                 ComboBox cmbIgnoredInputKind = new ComboBox(FindElement.ByName("cmbIgnoredInputKind"));
                 Verify.IsNotNull(cmbIgnoredInputKind, "Verifying that cmbIgnoredInputKind was found");
 
-                Log.Comment("Changing ScrollViewer.IgnoredInputKind to Keyboard");
+                Log.Comment("Changing ScrollView.IgnoredInputKind to Keyboard");
                 cmbIgnoredInputKind.SelectItemByName("Keyboard");
                 Log.Comment("Selection is now {0}", cmbIgnoredInputKind.Selection[0].Name);
 
                 Log.Comment("Pressing Down key");
-                KeyboardHelper.PressKey(scroller51, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                VerifyScrollViewerRemainsAtView(0.0, 0.0, 1.0f);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                VerifyScrollViewRemainsAtView(0.0, 0.0, 1.0f);
 
                 Log.Comment("Pressing Right key");
-                KeyboardHelper.PressKey(scroller51, Key.Right, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                VerifyScrollViewerRemainsAtView(0.0, 0.0, 1.0f);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Right, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                VerifyScrollViewRemainsAtView(0.0, 0.0, 1.0f);
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Tests keyboard interaction (Down, Up, PageDown, PageUp, End, Home, Right, Left) when ScrollViewer.XYFocusKeyboardNavigation is Enabled.")]
-        public void VerifyScrollViewerKeyboardInteractionWithXYFocusEnabled()
+        [TestProperty("Description", "Tests keyboard interaction (Down, Up, PageDown, PageUp, End, Home, Right, Left) when ScrollView.XYFocusKeyboardNavigation is Enabled.")]
+        public void VerifyScrollViewKeyboardInteractionWithXYFocusEnabled()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 UIObject img51;
-                Scroller scroller51;
+                ScrollPresenter scrollPresenter51;
 
-                SetupScrollViewerTestWithImage("51", out img51, out scroller51);
+                SetupScrollViewTestWithImage("51", out img51, out scrollPresenter51);
 
-                var scrollAmountForDownOrUpKey = scroller51.BoundingRectangle.Height * 0.5;
-                var scrollAmountForPageUpOrPageDownKey = scroller51.BoundingRectangle.Height;
-                var scrollAmountForRightOrLeftKey = scroller51.BoundingRectangle.Width * 0.5;
-                var maxScrollOffset = 800 - scroller51.BoundingRectangle.Height;
+                var scrollAmountForDownOrUpKey = scrollPresenter51.BoundingRectangle.Height * 0.5;
+                var scrollAmountForPageUpOrPageDownKey = scrollPresenter51.BoundingRectangle.Height;
+                var scrollAmountForRightOrLeftKey = scrollPresenter51.BoundingRectangle.Width * 0.5;
+                var maxScrollOffset = 800 - scrollPresenter51.BoundingRectangle.Height;
 
                 Log.Comment("Pressing Down key");
-                KeyboardHelper.PressKey(scroller51, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, scrollAmountForDownOrUpKey);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, scrollAmountForDownOrUpKey);
 
                 Log.Comment("Pressing Up key");
-                KeyboardHelper.PressKey(scroller51, Key.Up, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, 0);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Up, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, 0);
 
                 Log.Comment("Pressing PageDown key");
-                KeyboardHelper.PressKey(scroller51, Key.PageDown, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, scrollAmountForPageUpOrPageDownKey);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.PageDown, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, scrollAmountForPageUpOrPageDownKey);
 
                 Log.Comment("Pressing PageUp key");
-                KeyboardHelper.PressKey(scroller51, Key.PageUp, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, 0);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.PageUp, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, 0);
 
                 Log.Comment("Pressing End key");
-                KeyboardHelper.PressKey(scroller51, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, maxScrollOffset);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, maxScrollOffset);
 
                 Log.Comment("Pressing Home key");
-                KeyboardHelper.PressKey(scroller51, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, 0);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, 0);
 
                 Log.Comment("Pressing Right key");
-                KeyboardHelper.PressKey(scroller51, Key.Right, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(scrollAmountForRightOrLeftKey, 0);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Right, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(scrollAmountForRightOrLeftKey, 0);
 
                 Log.Comment("Pressing Left key");
-                KeyboardHelper.PressKey(scroller51, Key.Left, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, 0);
+                KeyboardHelper.PressKey(scrollPresenter51, Key.Left, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, 0);
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Tests End and Home keys when ScrollViewer.VerticalScrollMode is Disabled.")]
+        [TestProperty("Description", "Tests End and Home keys when ScrollView.VerticalScrollMode is Disabled.")]
         public void ScrollHorizontallyWithEndHomeKeys()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 UIObject img31;
-                Scroller scroller31;
+                ScrollPresenter scrollPresenter31;
 
-                SetupScrollViewerTestWithImage("31", out img31, out scroller31);
+                SetupScrollViewTestWithImage("31", out img31, out scrollPresenter31);
 
                 Log.Comment("Pressing End key");
-                KeyboardHelper.PressKey(scroller31, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(900 - scroller31.BoundingRectangle.Width, 0);
+                KeyboardHelper.PressKey(scrollPresenter31, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(900 - scrollPresenter31.BoundingRectangle.Width, 0);
 
                 Log.Comment("Pressing Home key");
-                KeyboardHelper.PressKey(scroller31, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, 0);
+                KeyboardHelper.PressKey(scrollPresenter31, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, 0);
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Tests End and Home keys when ScrollViewer.VerticalScrollMode is Disabled in RightToLeft flow direction.")]
+        [TestProperty("Description", "Tests End and Home keys when ScrollView.VerticalScrollMode is Disabled in RightToLeft flow direction.")]
         public void ScrollHorizontallyWithEndHomeKeysInRTL()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 UIObject img32;
-                Scroller scroller32;
+                ScrollPresenter scrollPresenter32;
 
-                SetupScrollViewerTestWithImage("32", out img32, out scroller32);
+                SetupScrollViewTestWithImage("32", out img32, out scrollPresenter32);
 
                 Log.Comment("Pressing Home key");
-                KeyboardHelper.PressKey(scroller32, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(900 - scroller32.BoundingRectangle.Width, 0);
+                KeyboardHelper.PressKey(scrollPresenter32, Key.Home, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(900 - scrollPresenter32.BoundingRectangle.Width, 0);
 
                 Log.Comment("Pressing End key");
-                KeyboardHelper.PressKey(scroller32, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
-                WaitForScrollViewerOffsets(0, 0);
+                KeyboardHelper.PressKey(scrollPresenter32, Key.End, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
+                WaitForScrollViewOffsets(0, 0);
             }
         }
 
         [TestMethod]
         [TestProperty("Description", "Tests GamePad interaction")]
-        public void VerifyScrollViewerGamePadInteraction()
+        public void VerifyScrollViewGamePadInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
-                Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
+                Log.Warning("Test is disabled on pre-RS4 because ScrollView Gamepad interaction is not supported pre-RS4");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
                     UISettings settings = new UISettings();
                     bool areAnimationsEnabled = settings.AnimationsEnabled;
 
-                    UIObject buttonInScrollViewer11;
-                    Scroller scroller11;
-                    SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
+                    UIObject buttonInScrollView11;
+                    ScrollPresenter scrollPresenter11;
+                    SetupSimpleSingleScrollViewTest(out buttonInScrollView11, out scrollPresenter11);
 
                     Log.Comment("Tapping Button 1");
-                    InputHelper.Tap(buttonInScrollViewer11);
+                    InputHelper.Tap(buttonInScrollView11);
 
                     Log.Comment($"Focused element. Expected=Button 1, Actual={UIObject.Focused.Name}.");
                     Verify.AreEqual("Button 1", UIObject.Focused.Name, "Verify focused element");
 
-                    var scrollAmountForGamepadUpDown = scroller11.BoundingRectangle.Height * 0.5;
+                    var scrollAmountForGamepadUpDown = scrollPresenter11.BoundingRectangle.Height * 0.5;
                     Log.Comment($"scrollAmountForGamepadUpDown={scrollAmountForGamepadUpDown}.");
 
                     double expectedVerticalOffset = 0;
@@ -524,27 +524,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies gamepad input is ignored when ScrollViewer.IgnoredInputKind is Gamepad.")]
-        public void VerifyScrollViewerIgnoresGamepadInput()
+        [TestProperty("Description", "Verifies gamepad input is ignored when ScrollView.IgnoredInputKind is Gamepad.")]
+        public void VerifyScrollViewIgnoresGamepadInput()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
-                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                Log.Warning("Test is disabled on pre-RS2 because ScrollView not supported pre-RS2");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 UIObject img51;
-                Scroller scroller51;
+                ScrollPresenter scrollPresenter51;
 
-                SetupScrollViewerTestWithImage("51", out img51, out scroller51);
+                SetupScrollViewTestWithImage("51", out img51, out scrollPresenter51);
 
                 Log.Comment("Retrieving cmbIgnoredInputKind");
                 ComboBox cmbIgnoredInputKind = new ComboBox(FindElement.ByName("cmbIgnoredInputKind"));
                 Verify.IsNotNull(cmbIgnoredInputKind, "Verifying that cmbIgnoredInputKind was found");
 
-                Log.Comment("Changing ScrollViewer.IgnoredInputKind to Gamepad");
+                Log.Comment("Changing ScrollView.IgnoredInputKind to Gamepad");
                 cmbIgnoredInputKind.SelectItemByName("Gamepad");
                 Log.Comment("Selection is now {0}", cmbIgnoredInputKind.Selection[0].Name);
 
@@ -553,36 +553,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Pressing LeftThumbstick Down");
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickDown);
-                VerifyScrollViewerRemainsAtView(0.0, 0.0, 1.0f);
+                VerifyScrollViewRemainsAtView(0.0, 0.0, 1.0f);
 
                 Log.Comment("Pressing LeftThumbstick Right");
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickRight);
-                VerifyScrollViewerRemainsAtView(0.0, 0.0, 1.0f);
+                VerifyScrollViewRemainsAtView(0.0, 0.0, 1.0f);
             }
         }
 
         [TestMethod]
         [TestProperty("Description", "Tests GamePad interaction")]
-        public void VerifyScrollViewerGamePadHorizontalInteraction()
+        public void VerifyScrollViewGamePadHorizontalInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
-                Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
+                Log.Warning("Test is disabled on pre-RS4 because ScrollView Gamepad interaction is not supported pre-RS4");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
                     UISettings settings = new UISettings();
                     bool areAnimationsEnabled = settings.AnimationsEnabled;
 
-                    UIObject buttonInScrollViewer11;
-                    Scroller scroller11;
-                    SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
+                    UIObject buttonInScrollView11;
+                    ScrollPresenter scrollPresenter11;
+                    SetupSimpleSingleScrollViewTest(out buttonInScrollView11, out scrollPresenter11);
 
-                    var scrollAmountForGamepadLeftRight = scroller11.BoundingRectangle.Width * 0.5;
+                    var scrollAmountForGamepadLeftRight = scrollPresenter11.BoundingRectangle.Width * 0.5;
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
@@ -622,26 +622,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Tests GamePad interaction")]
-        public void VerifyScrollViewerGamePadTriggerInteraction()
+        public void VerifyScrollViewGamePadTriggerInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
-                Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
+                Log.Warning("Test is disabled on pre-RS4 because ScrollView Gamepad interaction is not supported pre-RS4");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
                     UISettings settings = new UISettings();
                     bool areAnimationsEnabled = settings.AnimationsEnabled;
 
-                    UIObject buttonInScrollViewer11;
-                    Scroller scroller11;
-                    SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
+                    UIObject buttonInScrollView11;
+                    ScrollPresenter scrollPresenter11;
+                    SetupSimpleSingleScrollViewTest(out buttonInScrollView11, out scrollPresenter11);
 
-                    var scrollAmountForGamepadTrigger = scroller11.BoundingRectangle.Height;
+                    var scrollAmountForGamepadTrigger = scrollPresenter11.BoundingRectangle.Height;
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
@@ -662,7 +662,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     double actualHorizontalOffset;
                     double actualVerticalOffset;
                     float actualZoomFactor;
-                    GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+                    GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
 
                     //Up. Change focus. Scroll.
                     expectedVerticalOffset = 0;
@@ -673,26 +673,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Tests GamePad interaction")]
-        public void VerifyScrollViewerGamePadBumperInteraction()
+        public void VerifyScrollViewGamePadBumperInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
-                Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
+                Log.Warning("Test is disabled on pre-RS4 because ScrollView Gamepad interaction is not supported pre-RS4");
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
+            using (var setup = new TestSetupHelper(new[] { "ScrollView Tests", "navigateToSimpleContents" }))
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
                     UISettings settings = new UISettings();
                     bool areAnimationsEnabled = settings.AnimationsEnabled;
 
-                    UIObject buttonInScrollViewer11;
-                    Scroller scroller11;
-                    SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
+                    UIObject buttonInScrollView11;
+                    ScrollPresenter scrollPresenter11;
+                    SetupSimpleSingleScrollViewTest(out buttonInScrollView11, out scrollPresenter11);
 
-                    var scrollAmountForBumper = scroller11.BoundingRectangle.Width;
+                    var scrollAmountForBumper = scrollPresenter11.BoundingRectangle.Width;
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
@@ -713,7 +713,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     double actualHorizontalOffset;
                     double actualVerticalOffset;
                     float actualZoomFactor;
-                    GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+                    GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
 
                     //Left. Change focus. Scroll.
                     expectedHorizontalOffset = areAnimationsEnabled ? 0 : 80.0;
@@ -722,51 +722,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void SetupSimpleSingleScrollViewerTest(out UIObject buttonInScrollViewer11, out Scroller scroller11)
+        private void SetupSimpleSingleScrollViewTest(out UIObject buttonInScrollView11, out ScrollPresenter scrollPresenter11)
         {
-            Log.Comment("Retrieving cmbShowScrollViewer");
-            ComboBox cmbShowScrollViewer = new ComboBox(FindElement.ByName("cmbShowScrollViewer"));
-            Verify.IsNotNull(cmbShowScrollViewer, "Verifying that cmbShowScrollViewer was found");
+            Log.Comment("Retrieving cmbShowScrollView");
+            ComboBox cmbShowScrollView = new ComboBox(FindElement.ByName("cmbShowScrollView"));
+            Verify.IsNotNull(cmbShowScrollView, "Verifying that cmbShowScrollView was found");
 
-            Log.Comment("Changing ScrollViewer selection to scrollViewer11");
-            cmbShowScrollViewer.SelectItemByName("scrollViewer_11");
-            Log.Comment("Selection is now {0}", cmbShowScrollViewer.Selection[0].Name);
+            Log.Comment("Changing ScrollView selection to scrollView11");
+            cmbShowScrollView.SelectItemByName("scrollView_11");
+            Log.Comment("Selection is now {0}", cmbShowScrollView.Selection[0].Name);
 
-            Log.Comment("Retrieving buttonInScrollViewer11");
-            buttonInScrollViewer11 = FindElement.ById("buttonInScrollViewer11");
-            Verify.IsNotNull(buttonInScrollViewer11, "Verifying that buttonInScrollViewer11 was found");
+            Log.Comment("Retrieving buttonInScrollView11");
+            buttonInScrollView11 = FindElement.ById("buttonInScrollView11");
+            Verify.IsNotNull(buttonInScrollView11, "Verifying that buttonInScrollView11 was found");
 
-            Log.Comment("Retrieving scroller11");
-            scroller11 = new Scroller(buttonInScrollViewer11.Parent);
-            Verify.IsNotNull(scroller11, "Verifying that scroller11 was found");
+            Log.Comment("Retrieving scrollPresenter11");
+            scrollPresenter11 = new ScrollPresenter(buttonInScrollView11.Parent);
+            Verify.IsNotNull(scrollPresenter11, "Verifying that scrollPresenter11 was found");
 
-            WaitForScrollViewerFinalSize(scroller11, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
+            WaitForScrollViewFinalSize(scrollPresenter11, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
 
-            buttonInScrollViewer11.Click();
+            buttonInScrollView11.Click();
             Wait.ForIdle();
         }
 
-        private void SetupScrollViewerTestWithImage(string suffix, out UIObject imageInScrollViewer, out Scroller scroller)
+        private void SetupScrollViewTestWithImage(string suffix, out UIObject imageInScrollView, out ScrollPresenter scrollPresenter)
         {
-            Log.Comment("Retrieving cmbShowScrollViewer");
-            ComboBox cmbShowScrollViewer = new ComboBox(FindElement.ByName("cmbShowScrollViewer"));
-            Verify.IsNotNull(cmbShowScrollViewer, "Verifying that cmbShowScrollViewer was found");
+            Log.Comment("Retrieving cmbShowScrollView");
+            ComboBox cmbShowScrollView = new ComboBox(FindElement.ByName("cmbShowScrollView"));
+            Verify.IsNotNull(cmbShowScrollView, "Verifying that cmbShowScrollView was found");
 
-            Log.Comment("Changing ScrollViewer selection to scrollViewer" + suffix);
-            cmbShowScrollViewer.SelectItemByName("scrollViewer_" + suffix);
-            Log.Comment("Selection is now {0}", cmbShowScrollViewer.Selection[0].Name);
+            Log.Comment("Changing ScrollView selection to scrollView" + suffix);
+            cmbShowScrollView.SelectItemByName("scrollView_" + suffix);
+            Log.Comment("Selection is now {0}", cmbShowScrollView.Selection[0].Name);
 
             Log.Comment("Retrieving img" + suffix);
-            imageInScrollViewer = FindElement.ById("img" + suffix);
-            Verify.IsNotNull(imageInScrollViewer, "Verifying that img" + suffix + " was found");
+            imageInScrollView = FindElement.ById("img" + suffix);
+            Verify.IsNotNull(imageInScrollView, "Verifying that img" + suffix + " was found");
 
-            Log.Comment("Retrieving Scroller");
-            scroller = new Scroller(imageInScrollViewer.Parent);
-            Verify.IsNotNull(scroller, "Verifying that Scroller was found");
+            Log.Comment("Retrieving ScrollPresenter");
+            scrollPresenter = new ScrollPresenter(imageInScrollView.Parent);
+            Verify.IsNotNull(scrollPresenter, "Verifying that ScrollPresenter was found");
 
-            WaitForScrollViewerFinalSize(scroller, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
+            WaitForScrollViewFinalSize(scrollPresenter, 300.0 /*expectedWidth*/, 400.0 /*expectedHeight*/);
 
-            imageInScrollViewer.Click();
+            imageInScrollView.Click();
             Wait.ForIdle();
         }
 
@@ -790,7 +790,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 focusChangedWaiter.Wait(TimeSpan.FromSeconds(2));
             }
 
-            WaitForScrollViewerOffsets(expectedHorizontalOffset, expectedVerticalOffset);
+            WaitForScrollViewOffsets(expectedHorizontalOffset, expectedVerticalOffset);
 
             Log.Comment($"Focused element. Expected={expectedFocusedItemName}, Actual={UIObject.Focused.Name}.");
             Verify.AreEqual(expectedFocusedItemName, UIObject.Focused.Name, "Verify focused element");
@@ -806,14 +806,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void WaitForScrollViewerOffsets(double expectedHorizontalOffset, double expectedVerticalOffset)
+        private void WaitForScrollViewOffsets(double expectedHorizontalOffset, double expectedVerticalOffset)
         {
-            Log.Comment("Waiting for ScrollViewer offsets: {0}, {1}", expectedHorizontalOffset, expectedVerticalOffset);
+            Log.Comment("Waiting for ScrollView offsets: {0}, {1}", expectedHorizontalOffset, expectedVerticalOffset);
 
             double actualHorizontalOffset;
             double actualVerticalOffset;
             float actualZoomFactor;
-            GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+            GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
 
             Func<bool> areOffsetsCorrect = () => AreClose(expectedHorizontalOffset, actualHorizontalOffset) && AreClose(expectedVerticalOffset, actualVerticalOffset);
 
@@ -821,50 +821,50 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (!areOffsetsCorrect() && triesRemaining-- > 0)
             {
                 Thread.Sleep(500);
-                GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+                GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
             }
 
             if (triesRemaining >= 0)
             {
                 // Allow the view to settle and the STateChanged, ScrollCompleted or ZoomCompleted events to be raised.
                 Thread.Sleep(250);
-                GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+                GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
             }
 
-            Log.Comment($"Final ScrollViewer offsets. Expected={expectedHorizontalOffset},{expectedVerticalOffset}, Actual={actualHorizontalOffset},{actualVerticalOffset}.");
+            Log.Comment($"Final ScrollView offsets. Expected={expectedHorizontalOffset},{expectedVerticalOffset}, Actual={actualHorizontalOffset},{actualVerticalOffset}.");
             if (!areOffsetsCorrect())
             {
                 LogAndClearTraces();
             }
-            Verify.IsTrue(areOffsetsCorrect(), String.Format("Verify ScrollViewer offsets. Expected={0},{1}, Actual={2},{3}.",
+            Verify.IsTrue(areOffsetsCorrect(), String.Format("Verify ScrollView offsets. Expected={0},{1}, Actual={2},{3}.",
                 expectedHorizontalOffset, expectedVerticalOffset, actualHorizontalOffset, actualVerticalOffset));
         }
 
-        private void VerifyScrollViewerRemainsAtView(double expectedHorizontalOffset, double expectedVerticalOffset, float expectedZoomFactor)
+        private void VerifyScrollViewRemainsAtView(double expectedHorizontalOffset, double expectedVerticalOffset, float expectedZoomFactor)
         {
-            Log.Comment("Verifying ScrollViewer view remains at: {0}, {1}, {2}",
+            Log.Comment("Verifying ScrollView view remains at: {0}, {1}, {2}",
                 expectedHorizontalOffset, expectedVerticalOffset, expectedZoomFactor);
 
             double actualHorizontalOffset;
             double actualVerticalOffset;
             float actualZoomFactor;
 
-            GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+            GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
 
             Func<bool> isViewCorrect = () =>
                 AreClose(expectedHorizontalOffset, actualHorizontalOffset) &&
                 AreClose(expectedVerticalOffset, actualVerticalOffset) &&
                 AreClose(expectedZoomFactor, actualZoomFactor);
 
-            Verify.IsTrue(isViewCorrect(), String.Format("Verify ScrollViewer initial view. Expected={0},{1},{2}, Actual={3},{4},{5}.",
+            Verify.IsTrue(isViewCorrect(), String.Format("Verify ScrollView initial view. Expected={0},{1},{2}, Actual={3},{4},{5}.",
                     expectedHorizontalOffset, expectedVerticalOffset, expectedZoomFactor,
                     actualHorizontalOffset, actualVerticalOffset, actualZoomFactor));
 
             Thread.Sleep(750);
 
-            GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+            GetScrollPresenterView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
 
-            Verify.IsTrue(isViewCorrect(), String.Format("Verify ScrollViewer final view. Expected={0},{1},{2}, Actual={3},{4},{5}.",
+            Verify.IsTrue(isViewCorrect(), String.Format("Verify ScrollView final view. Expected={0},{1},{2}, Actual={3},{4},{5}.",
                     expectedHorizontalOffset, expectedVerticalOffset, expectedZoomFactor,
                     actualHorizontalOffset, actualVerticalOffset, actualZoomFactor));
         }
@@ -894,33 +894,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void GetScrollerView(out double horizontalOffset, out double verticalOffset, out float zoomFactor)
+        private void GetScrollPresenterView(out double horizontalOffset, out double verticalOffset, out float zoomFactor)
         {
             horizontalOffset = 0.0;
             verticalOffset = 0.0;
             zoomFactor = 1.0f;
 
-            UIObject viewUIObject = FindElement.ById("txtScrollerHorizontalOffset");
+            UIObject viewUIObject = FindElement.ById("txtScrollPresenterHorizontalOffset");
             Edit viewTextBox = new Edit(viewUIObject);
             Log.Comment("Current HorizontalOffset: " + viewTextBox.Value);
             horizontalOffset = String.IsNullOrWhiteSpace(viewTextBox.Value) ? double.NaN : Convert.ToDouble(viewTextBox.Value);
 
-            viewUIObject = FindElement.ById("txtScrollerVerticalOffset");
+            viewUIObject = FindElement.ById("txtScrollPresenterVerticalOffset");
             viewTextBox = new Edit(viewUIObject);
             Log.Comment("Current VerticalOffset: " + viewTextBox.Value);
             verticalOffset = String.IsNullOrWhiteSpace(viewTextBox.Value) ? double.NaN : Convert.ToDouble(viewTextBox.Value);
 
-            viewUIObject = FindElement.ById("txtScrollerZoomFactor");
+            viewUIObject = FindElement.ById("txtScrollPresenterZoomFactor");
             viewTextBox = new Edit(viewUIObject);
             Log.Comment("Current ZoomFactor: " + viewTextBox.Value);
             zoomFactor = String.IsNullOrWhiteSpace(viewTextBox.Value) ? float.NaN : Convert.ToSingle(viewTextBox.Value);
         }
 
-        private void PrepareForScrollViewerManipulationStart(string stateTextBoxName = "txtScrollerState")
+        private void PrepareForScrollViewManipulationStart(string stateTextBoxName = "txtScrollPresenterState")
         {
-            UIObject scrollerStateUIObject = FindElement.ById(stateTextBoxName);
-            Edit scrollerStateTextBox = new Edit(scrollerStateUIObject);
-            Log.Comment("Pre-manipulation ScrollerState: " + scrollerStateTextBox.Value);
+            UIObject scrollPresenterStateUIObject = FindElement.ById(stateTextBoxName);
+            Edit scrollPresenterStateTextBox = new Edit(scrollPresenterStateUIObject);
+            Log.Comment("Pre-manipulation ScrollPresenterState: " + scrollPresenterStateTextBox.Value);
             Wait.ForIdle();
         }
 
@@ -982,14 +982,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return true;
         }
 
-        private void WaitForScrollViewerManipulationEnd(string scrollViewerName, string stateTextBoxName = "txtScrollerState")
+        private void WaitForScrollViewManipulationEnd(string scrollViewName, string stateTextBoxName = "txtScrollPresenterState")
         {
-            WaitForManipulationEnd(scrollViewerName, stateTextBoxName);
+            WaitForManipulationEnd(scrollViewName, stateTextBoxName);
         }
 
-        private bool TryWaitForScrollViewerManipulationEnd(string scrollViewerName, string stateTextBoxName = "txtScrollerState")
+        private bool TryWaitForScrollViewManipulationEnd(string scrollViewName, string stateTextBoxName = "txtScrollPresenterState")
         {
-            return WaitForManipulationEnd(scrollViewerName, stateTextBoxName, false /*throwOnError*/);
+            return WaitForManipulationEnd(scrollViewName, stateTextBoxName, false /*throwOnError*/);
         }
 
         private bool WaitForManipulationEnd(string elementName, string stateTextBoxName, bool throwOnError = true)
@@ -997,9 +997,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject elementStateUIObject = FindElement.ById(stateTextBoxName);
             Edit elementStateTextBox = new Edit(elementStateUIObject);
             Log.Comment("Current State: " + elementStateTextBox.Value);
-            if (elementStateTextBox.Value != elementName + ".PART_Root.PART_Scroller Idle")
+            if (elementStateTextBox.Value != elementName + ".PART_Root.PART_ScrollPresenter Idle")
             {
-                using (var waiter = new ValueChangedEventWaiter(elementStateTextBox, elementName + ".PART_Root.PART_Scroller Idle"))
+                using (var waiter = new ValueChangedEventWaiter(elementStateTextBox, elementName + ".PART_Root.PART_ScrollPresenter Idle"))
                 {
                     int loops = 0;
 
@@ -1017,7 +1017,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         }
                         else
                         {
-                            if (elementStateTextBox.Value == elementName + ".PART_Root.PART_Scroller Idle")
+                            if (elementStateTextBox.Value == elementName + ".PART_Root.PART_ScrollPresenter Idle")
                             {
                                 Log.Warning("Wait failed but TextBox contains expected text");
                                 LogAndClearTraces();
@@ -1050,21 +1050,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return true;
         }
 
-        private void WaitForScrollViewerFinalSize(UIObject scrollViewerUIObject, double expectedWidth, double expectedHeight)
+        private void WaitForScrollViewFinalSize(UIObject scrollViewUIObject, double expectedWidth, double expectedHeight)
         {
             int pauses = 0;
-            int widthDelta = Math.Abs(scrollViewerUIObject.BoundingRectangle.Width - (int)expectedWidth);
-            int heightDelta = Math.Abs(scrollViewerUIObject.BoundingRectangle.Height - (int)expectedHeight);
+            int widthDelta = Math.Abs(scrollViewUIObject.BoundingRectangle.Width - (int)expectedWidth);
+            int heightDelta = Math.Abs(scrollViewUIObject.BoundingRectangle.Height - (int)expectedHeight);
 
-            Log.Comment("scrollViewerUIObject.BoundingRectangle={0}", scrollViewerUIObject.BoundingRectangle);
+            Log.Comment("scrollViewUIObject.BoundingRectangle={0}", scrollViewUIObject.BoundingRectangle);
 
             while (widthDelta > 1 || heightDelta > 1 && pauses < 5)
             {
                 Wait.ForMilliseconds(60);
                 pauses++;
-                Log.Comment("scrollViewerUIObject.BoundingRectangle={0}", scrollViewerUIObject.BoundingRectangle);
-                widthDelta = Math.Abs(scrollViewerUIObject.BoundingRectangle.Width - (int)expectedWidth);
-                heightDelta = Math.Abs(scrollViewerUIObject.BoundingRectangle.Height - (int)expectedHeight);
+                Log.Comment("scrollViewUIObject.BoundingRectangle={0}", scrollViewUIObject.BoundingRectangle);
+                widthDelta = Math.Abs(scrollViewUIObject.BoundingRectangle.Width - (int)expectedWidth);
+                heightDelta = Math.Abs(scrollViewUIObject.BoundingRectangle.Height - (int)expectedHeight);
             };
 
             Verify.IsLessThanOrEqual(widthDelta, 1);
@@ -1102,7 +1102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Updating full log:");
             LogEditValue("txtResetStatus");
 
-            // Triggering ScrollViewersWithSimpleContentsPage.GetFullLog() call.
+            // Triggering ScrollViewsWithSimpleContentsPage.GetFullLog() call.
             TextInput.SendText("g");
             WaitForBoxChecked("chkLogUpdated");
         }
@@ -1129,7 +1129,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Clearing full log.");
             LogEditValue("txtResetStatus");
 
-            // Triggering ScrollViewersWithSimpleContentsPage.ClearFullLog() call.
+            // Triggering ScrollViewsWithSimpleContentsPage.ClearFullLog() call.
             TextInput.SendText("c");
             WaitForBoxChecked("chkLogCleared");
         }
@@ -1155,7 +1155,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             foreach (ComboBoxItem item in cmbFullLog.AllItems)
             {
-                if (item.Name.Contains("PART_Root.PART_Scroller ViewChanged"))
+                if (item.Name.Contains("PART_Root.PART_ScrollPresenter ViewChanged"))
                 {
                     viewChangeCount++;
                 }
@@ -1169,52 +1169,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return viewChangeCount;
         }
 
-        private void SetScrollerLoggingLevel(bool isPrivateLoggingEnabled)
+        private void SetScrollPresenterLoggingLevel(bool isPrivateLoggingEnabled)
         {
-            Log.Comment("Retrieving chkLogScrollerMessages");
-            CheckBox chkLogScrollerMessages = new CheckBox(FindElement.ById("chkLogScrollerMessages"));
-            Verify.IsNotNull(chkLogScrollerMessages, "Verifying that chkLogScrollerMessages was found");
+            Log.Comment("Retrieving chkLogScrollPresenterMessages");
+            CheckBox chkLogScrollPresenterMessages = new CheckBox(FindElement.ById("chkLogScrollPresenterMessages"));
+            Verify.IsNotNull(chkLogScrollPresenterMessages, "Verifying that chkLogScrollPresenterMessages was found");
 
-            if (isPrivateLoggingEnabled && chkLogScrollerMessages.ToggleState != ToggleState.On ||
-                !isPrivateLoggingEnabled && chkLogScrollerMessages.ToggleState != ToggleState.Off)
+            if (isPrivateLoggingEnabled && chkLogScrollPresenterMessages.ToggleState != ToggleState.On ||
+                !isPrivateLoggingEnabled && chkLogScrollPresenterMessages.ToggleState != ToggleState.Off)
             {
-                Log.Comment("Toggling chkLogScrollerMessages.IsChecked to " + isPrivateLoggingEnabled);
-                chkLogScrollerMessages.Toggle();
+                Log.Comment("Toggling chkLogScrollPresenterMessages.IsChecked to " + isPrivateLoggingEnabled);
+                chkLogScrollPresenterMessages.Toggle();
                 Wait.ForIdle();
             }
         }
 
-        private void SetScrollViewerLoggingLevel(bool isPrivateLoggingEnabled)
+        private void SetScrollViewLoggingLevel(bool isPrivateLoggingEnabled)
         {
-            Log.Comment("Retrieving chkLogScrollViewerMessages");
-            CheckBox chkLogScrollViewerMessages = new CheckBox(FindElement.ById("chkLogScrollViewerMessages"));
-            Verify.IsNotNull(chkLogScrollViewerMessages, "Verifying that chkLogScrollViewerMessages was found");
+            Log.Comment("Retrieving chkLogScrollViewMessages");
+            CheckBox chkLogScrollViewMessages = new CheckBox(FindElement.ById("chkLogScrollViewMessages"));
+            Verify.IsNotNull(chkLogScrollViewMessages, "Verifying that chkLogScrollViewMessages was found");
 
-            if (isPrivateLoggingEnabled && chkLogScrollViewerMessages.ToggleState != ToggleState.On ||
-                !isPrivateLoggingEnabled && chkLogScrollViewerMessages.ToggleState != ToggleState.Off)
+            if (isPrivateLoggingEnabled && chkLogScrollViewMessages.ToggleState != ToggleState.On ||
+                !isPrivateLoggingEnabled && chkLogScrollViewMessages.ToggleState != ToggleState.Off)
             {
-                Log.Comment("Toggling chkLogScrollViewerMessages.IsChecked to " + isPrivateLoggingEnabled);
-                chkLogScrollViewerMessages.Toggle();
+                Log.Comment("Toggling chkLogScrollViewMessages.IsChecked to " + isPrivateLoggingEnabled);
+                chkLogScrollViewMessages.Toggle();
                 Wait.ForIdle();
             }
         }
 
         private class LoggingHelper : IDisposable
         {
-            private ScrollViewerTestsWithInputHelper m_owner;
+            private ScrollViewTestsWithInputHelper m_owner;
 
-            public LoggingHelper(ScrollViewerTestsWithInputHelper owner)
+            public LoggingHelper(ScrollViewTestsWithInputHelper owner)
             {
                 m_owner = owner;
 
-                m_owner.SetScrollerLoggingLevel(isPrivateLoggingEnabled: true);
-                m_owner.SetScrollViewerLoggingLevel(isPrivateLoggingEnabled: true);
+                m_owner.SetScrollPresenterLoggingLevel(isPrivateLoggingEnabled: true);
+                m_owner.SetScrollViewLoggingLevel(isPrivateLoggingEnabled: true);
             }
 
             public void Dispose()
             {
-                m_owner.SetScrollerLoggingLevel(isPrivateLoggingEnabled: false);
-                m_owner.SetScrollViewerLoggingLevel(isPrivateLoggingEnabled: false);
+                m_owner.SetScrollPresenterLoggingLevel(isPrivateLoggingEnabled: false);
+                m_owner.SetScrollViewLoggingLevel(isPrivateLoggingEnabled: false);
             }
         }
     }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
@@ -16,43 +16,43 @@ using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Control
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollViewerWithScrollControllersPage : TestPage
+    public sealed partial class ScrollViewWithScrollControllersPage : TestPage
     {
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
-        private ScrollViewer scrollViewer = null;
+        private ScrollView scrollView = null;
 
-        public ScrollViewerWithScrollControllersPage()
+        public ScrollViewWithScrollControllersPage()
         {
             // We need the styles of the CompositionScrollController, so lets load it
             App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
 
             this.InitializeComponent();
-            UseScrollViewer(this.markupScrollViewer);
+            UseScrollView(this.markupScrollView);
         }
 
-        private void ChkScrollViewerProperties_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollViewProperties_Checked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollViewerProperties != null)
-                grdScrollViewerProperties.Visibility = Visibility.Visible;
+            if (grdScrollViewProperties != null)
+                grdScrollViewProperties.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollViewerProperties_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollViewProperties_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollViewerProperties != null)
-                grdScrollViewerProperties.Visibility = Visibility.Collapsed;
+            if (grdScrollViewProperties != null)
+                grdScrollViewProperties.Visibility = Visibility.Collapsed;
         }
 
-        private void ChkScrollerAttachedProperties_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollPresenterAttachedProperties_Checked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerAttachedProperties != null)
-                grdScrollerAttachedProperties.Visibility = Visibility.Visible;
+            if (grdScrollPresenterAttachedProperties != null)
+                grdScrollPresenterAttachedProperties.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollerAttachedProperties_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollPresenterAttachedProperties_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerAttachedProperties != null)
-                grdScrollerAttachedProperties.Visibility = Visibility.Collapsed;
+            if (grdScrollPresenterAttachedProperties != null)
+                grdScrollPresenterAttachedProperties.Visibility = Visibility.Collapsed;
         }
 
         private void ChkContentProperties_Checked(object sender, RoutedEventArgs e)
@@ -104,7 +104,7 @@ namespace MUXControlsTestApp
             try
             {
                 ContentOrientation co = (ContentOrientation)cmbContentOrientation.SelectedIndex;
-                scrollViewer.ContentOrientation = co;
+                scrollView.ContentOrientation = co;
             }
             catch (Exception ex)
             {
@@ -118,7 +118,7 @@ namespace MUXControlsTestApp
             try
             {
                 ScrollMode ssm = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
-                scrollViewer.HorizontalScrollMode = ssm;
+                scrollView.HorizontalScrollMode = ssm;
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace MUXControlsTestApp
             try
             {
                 ScrollMode ssm = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
-                scrollViewer.VerticalScrollMode = ssm;
+                scrollView.VerticalScrollMode = ssm;
             }
             catch (Exception ex)
             {
@@ -146,7 +146,7 @@ namespace MUXControlsTestApp
             try
             {
                 ZoomMode ssm = (ZoomMode)cmbZoomMode.SelectedIndex;
-                scrollViewer.ZoomMode = ssm;
+                scrollView.ZoomMode = ssm;
             }
             catch (Exception ex)
             {
@@ -164,7 +164,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollViewer.Width = Convert.ToDouble(txtWidth.Text);
+                scrollView.Width = Convert.ToDouble(txtWidth.Text);
             }
             catch (Exception ex)
             {
@@ -182,7 +182,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollViewer.Height = Convert.ToDouble(txtHeight.Text);
+                scrollView.Height = Convert.ToDouble(txtHeight.Text);
             }
             catch (Exception ex)
             {
@@ -200,7 +200,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollViewer.Padding = GetThicknessFromString(txtPadding.Text);
+                scrollView.Padding = GetThicknessFromString(txtPadding.Text);
             }
             catch (Exception ex)
             {
@@ -218,7 +218,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollViewer.HorizontalScrollBarVisibility = (ScrollBarVisibility)cmbHorizontalScrollBarVisibility.SelectedIndex;
+                scrollView.HorizontalScrollBarVisibility = (ScrollBarVisibility)cmbHorizontalScrollBarVisibility.SelectedIndex;
             }
             catch (Exception ex)
             {
@@ -236,7 +236,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollViewer.VerticalScrollBarVisibility = (ScrollBarVisibility)cmbVerticalScrollBarVisibility.SelectedIndex;
+                scrollView.VerticalScrollBarVisibility = (ScrollBarVisibility)cmbVerticalScrollBarVisibility.SelectedIndex;
             }
             catch (Exception ex)
             {
@@ -247,22 +247,22 @@ namespace MUXControlsTestApp
 
         private void ChkIsEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            scrollViewer.IsEnabled = true;
+            scrollView.IsEnabled = true;
         }
 
         private void ChkIsEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            scrollViewer.IsEnabled = false;
+            scrollView.IsEnabled = false;
         }
 
         private void ChkIsTabStop_Checked(object sender, RoutedEventArgs e)
         {
-            scrollViewer.IsTabStop = true;
+            scrollView.IsTabStop = true;
         }
 
         private void ChkIsTabStop_Unchecked(object sender, RoutedEventArgs e)
         {
-            scrollViewer.IsTabStop = false;
+            scrollView.IsTabStop = false;
         }
 
         private void BtnGetContentWidth_Click(object sender, RoutedEventArgs e)
@@ -274,7 +274,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                FrameworkElement contentAsFE = scrollViewer.Content as FrameworkElement;
+                FrameworkElement contentAsFE = scrollView.Content as FrameworkElement;
                 if (contentAsFE != null)
                     contentAsFE.Width = Convert.ToDouble(txtContentWidth.Text);
             }
@@ -294,7 +294,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                FrameworkElement contentAsFE = scrollViewer.Content as FrameworkElement;
+                FrameworkElement contentAsFE = scrollView.Content as FrameworkElement;
                 if (contentAsFE != null)
                     contentAsFE.Height = Convert.ToDouble(txtContentHeight.Text);
             }
@@ -314,7 +314,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                FrameworkElement contentAsFE = scrollViewer.Content as FrameworkElement;
+                FrameworkElement contentAsFE = scrollView.Content as FrameworkElement;
                 if (contentAsFE != null)
                     contentAsFE.Margin = GetThicknessFromString(txtContentMargin.Text);
             }
@@ -327,28 +327,28 @@ namespace MUXControlsTestApp
 
         private void ChkIsContentEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            Control contentAsC = scrollViewer.Content as Control;
+            Control contentAsC = scrollView.Content as Control;
             if (contentAsC != null)
                 contentAsC.IsEnabled = true;
         }
 
         private void ChkIsContentEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            Control contentAsC = scrollViewer.Content as Control;
+            Control contentAsC = scrollView.Content as Control;
             if (contentAsC != null)
                 contentAsC.IsEnabled = false;
         }
 
         private void ChkIsContentTabStop_Checked(object sender, RoutedEventArgs e)
         {
-            Control contentAsC = scrollViewer.Content as Control;
+            Control contentAsC = scrollView.Content as Control;
             if (contentAsC != null)
                 contentAsC.IsTabStop = true;
         }
 
         private void ChkIsContentTabStop_Unchecked(object sender, RoutedEventArgs e)
         {
-            Control contentAsC = scrollViewer.Content as Control;
+            Control contentAsC = scrollView.Content as Control;
             if (contentAsC != null)
                 contentAsC.IsTabStop = false;
         }
@@ -357,7 +357,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                cmbContentOrientation.SelectedIndex = (int)scrollViewer.ContentOrientation;
+                cmbContentOrientation.SelectedIndex = (int)scrollView.ContentOrientation;
             }
             catch (Exception ex)
             {
@@ -370,7 +370,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                cmbHorizontalScrollMode.SelectedIndex = (int)scrollViewer.HorizontalScrollMode;
+                cmbHorizontalScrollMode.SelectedIndex = (int)scrollView.HorizontalScrollMode;
             }
             catch (Exception ex)
             {
@@ -383,7 +383,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                cmbVerticalScrollMode.SelectedIndex = (int)scrollViewer.VerticalScrollMode;
+                cmbVerticalScrollMode.SelectedIndex = (int)scrollView.VerticalScrollMode;
             }
             catch (Exception ex)
             {
@@ -396,7 +396,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                cmbZoomMode.SelectedIndex = (int)scrollViewer.ZoomMode;
+                cmbZoomMode.SelectedIndex = (int)scrollView.ZoomMode;
             }
             catch (Exception ex)
             {
@@ -407,32 +407,32 @@ namespace MUXControlsTestApp
 
         private void UpdateWidth()
         {
-            txtWidth.Text = scrollViewer.Width.ToString();
+            txtWidth.Text = scrollView.Width.ToString();
         }
 
         private void UpdateHeight()
         {
-            txtHeight.Text = scrollViewer.Height.ToString();
+            txtHeight.Text = scrollView.Height.ToString();
         }
 
         private void UpdatePadding()
         {
-            txtPadding.Text = scrollViewer.Padding.ToString();
+            txtPadding.Text = scrollView.Padding.ToString();
         }
 
         private void UpdateHorizontalScrollBarVisibility()
         {
-            cmbHorizontalScrollBarVisibility.SelectedIndex = (int)scrollViewer.HorizontalScrollBarVisibility;
+            cmbHorizontalScrollBarVisibility.SelectedIndex = (int)scrollView.HorizontalScrollBarVisibility;
         }
 
         private void UpdateVerticalScrollBarVisibility()
         {
-            cmbVerticalScrollBarVisibility.SelectedIndex = (int)scrollViewer.VerticalScrollBarVisibility;
+            cmbVerticalScrollBarVisibility.SelectedIndex = (int)scrollView.VerticalScrollBarVisibility;
         }
 
         private void UpdateContentWidth()
         {
-            FrameworkElement contentAsFE = scrollViewer.Content as FrameworkElement;
+            FrameworkElement contentAsFE = scrollView.Content as FrameworkElement;
             if (contentAsFE == null)
                 txtContentWidth.Text = string.Empty;
             else
@@ -441,7 +441,7 @@ namespace MUXControlsTestApp
 
         private void UpdateContentHeight()
         {
-            FrameworkElement contentAsFE = scrollViewer.Content as FrameworkElement;
+            FrameworkElement contentAsFE = scrollView.Content as FrameworkElement;
             if (contentAsFE == null)
                 txtContentHeight.Text = string.Empty;
             else
@@ -450,7 +450,7 @@ namespace MUXControlsTestApp
 
         private void UpdateContentMargin()
         {
-            FrameworkElement contentAsFE = scrollViewer.Content as FrameworkElement;
+            FrameworkElement contentAsFE = scrollView.Content as FrameworkElement;
             if (contentAsFE == null)
                 txtContentMargin.Text = string.Empty;
             else
@@ -467,28 +467,28 @@ namespace MUXControlsTestApp
                     Convert.ToDouble(lengths[0]), Convert.ToDouble(lengths[1]), Convert.ToDouble(lengths[2]), Convert.ToDouble(lengths[3]));
         }
 
-        private void UseScrollViewer(ScrollViewer sv2)
+        private void UseScrollView(ScrollView sv2)
         {
-            if (scrollViewer == sv2 || sv2 == null)
+            if (scrollView == sv2 || sv2 == null)
                 return;
 
             try
             {
-                if (scrollViewer == null && (chkLogScrollViewerMessages.IsChecked == true || chkLogScrollerMessages.IsChecked == true))
+                if (scrollView == null && (chkLogScrollViewMessages.IsChecked == true || chkLogScrollPresenterMessages.IsChecked == true))
                 {
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
 
-                    if (chkLogScrollerMessages.IsChecked == true)
+                    if (chkLogScrollPresenterMessages.IsChecked == true)
                     {
-                        MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     }
-                    if (chkLogScrollViewerMessages.IsChecked == true)
+                    if (chkLogScrollViewMessages.IsChecked == true)
                     {
-                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollView", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     }
                 }
 
-                scrollViewer = sv2;
+                scrollView = sv2;
 
                 UpdateContentOrientation();
                 UpdateHorizontalScrollMode();
@@ -501,14 +501,14 @@ namespace MUXControlsTestApp
                 UpdateHorizontalScrollBarVisibility();
                 UpdateVerticalScrollBarVisibility();
 
-                chkIsEnabled.IsChecked = scrollViewer.IsEnabled;
-                chkIsTabStop.IsChecked = scrollViewer.IsTabStop;
+                chkIsEnabled.IsChecked = scrollView.IsEnabled;
+                chkIsTabStop.IsChecked = scrollView.IsTabStop;
 
                 UpdateContentWidth();
                 UpdateContentHeight();
                 UpdateContentMargin();
 
-                Control contentAsC = scrollViewer.Content as Control;
+                Control contentAsC = scrollView.Content as Control;
                 if (contentAsC != null)
                 {
                     chkIsContentEnabled.IsChecked = contentAsC.IsEnabled;
@@ -527,31 +527,31 @@ namespace MUXControlsTestApp
             lstLogs.Items.Clear();
         }
 
-        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollViewerMessages.IsChecked == false)
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            if (chkLogScrollViewMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollViewerMessages.IsChecked == false)
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            if (chkLogScrollViewMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollViewerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollViewMessages_Checked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollerMessages.IsChecked == false)
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollView", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            if (chkLogScrollPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollViewerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollViewMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollerMessages.IsChecked == false)
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollView", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            if (chkLogScrollPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 

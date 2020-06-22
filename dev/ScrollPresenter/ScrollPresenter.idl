@@ -106,10 +106,10 @@ enum SnapPointsMode
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
-unsealed runtimeclass ScrollOptions
+unsealed runtimeclass ScrollingScrollOptions
 {
-    ScrollOptions(AnimationMode animationMode);
-    ScrollOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+    ScrollingScrollOptions(AnimationMode animationMode);
+    ScrollingScrollOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
  
     AnimationMode AnimationMode { get; set; };
     SnapPointsMode SnapPointsMode { get; set; };
@@ -119,10 +119,10 @@ unsealed runtimeclass ScrollOptions
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
-unsealed runtimeclass ZoomOptions
+unsealed runtimeclass ScrollingZoomOptions
 {
-    ZoomOptions(AnimationMode animationMode);
-    ZoomOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+    ScrollingZoomOptions(AnimationMode animationMode);
+    ScrollingZoomOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
 
     AnimationMode AnimationMode { get; set; };
     SnapPointsMode SnapPointsMode { get; set; };
@@ -130,7 +130,7 @@ unsealed runtimeclass ZoomOptions
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollAnimationStartingEventArgs
+runtimeclass ScrollingScrollAnimationStartingEventArgs
 {
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Windows.Foundation.Numerics.Vector2 StartPosition { get; };
@@ -140,7 +140,7 @@ runtimeclass ScrollAnimationStartingEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ZoomAnimationStartingEventArgs
+runtimeclass ScrollingZoomAnimationStartingEventArgs
 {
     Windows.Foundation.Numerics.Vector2 CenterPoint { get; };
     Single StartZoomFactor { get; };
@@ -151,21 +151,21 @@ runtimeclass ZoomAnimationStartingEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollCompletedEventArgs
+runtimeclass ScrollingScrollCompletedEventArgs
 {
     ScrollInfo ScrollInfo { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ZoomCompletedEventArgs
+runtimeclass ScrollingZoomCompletedEventArgs
 {
     ZoomInfo ZoomInfo { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerBringingIntoViewEventArgs
+runtimeclass ScrollingBringingIntoViewEventArgs
 {
     SnapPointsMode SnapPointsMode { get; set; };
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
@@ -177,7 +177,7 @@ runtimeclass ScrollerBringingIntoViewEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerAnchorRequestedEventArgs
+runtimeclass ScrollingAnchorRequestedEventArgs
 {
     Windows.Foundation.Collections.IVector<Windows.UI.Xaml.UIElement> AnchorCandidates { get; };
     Windows.UI.Xaml.UIElement AnchorElement { get; set; };

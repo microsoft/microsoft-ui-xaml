@@ -11,7 +11,7 @@ using Windows.UI.Xaml.Input;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerMousePanningPage : TestPage
+    public sealed partial class ScrollPresenterMousePanningPage : TestPage
     {
         private bool _isMiddleButtonPressed = false;
         private bool _isInConstantVelocityPan = false;
@@ -21,19 +21,19 @@ namespace MUXControlsTestApp
         private double _preMousePanHorizontalOffset = 0.0;
         private double _preMousePanVerticalOffset = 0.0;
 
-        public ScrollerMousePanningPage()
+        public ScrollPresenterMousePanningPage()
         {
             InitializeComponent();
 
             btnClearEvents.Click += BtnClearEvents_Click;
-            scroller.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(Scroller_PointerPressed), true);
-            scroller.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(Scroller_PointerReleased), true);
-            scroller.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(Scroller_PointerMoved), true);
-            scroller.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(Scroller_PointerCanceled), true);
-            scroller.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(Scroller_PointerCaptureLost), true);
+            scrollPresenter.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ScrollPresenter_PointerPressed), true);
+            scrollPresenter.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(ScrollPresenter_PointerReleased), true);
+            scrollPresenter.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(ScrollPresenter_PointerMoved), true);
+            scrollPresenter.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(ScrollPresenter_PointerCanceled), true);
+            scrollPresenter.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(ScrollPresenter_PointerCaptureLost), true);
         }
 
-        private void Scroller_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Mouse &&
                 e.KeyModifiers == Windows.System.VirtualKeyModifiers.None)
@@ -48,7 +48,7 @@ namespace MUXControlsTestApp
                 if (!e.Handled)
                 {
                     PointerPointProperties ppp = e.GetCurrentPoint(null).Properties;
-                    Point position = e.GetCurrentPoint(scroller).Position;
+                    Point position = e.GetCurrentPoint(scrollPresenter).Position;
 
                     if (ppp.IsLeftButtonPressed)
                     {
@@ -65,8 +65,8 @@ namespace MUXControlsTestApp
                                 Windows.UI.Core.CoreCursorType.Hand, 0);
                             _isInMousePan = true;
                             _preMousePanPosition = position;
-                            _preMousePanHorizontalOffset = scroller.HorizontalOffset;
-                            _preMousePanVerticalOffset = scroller.VerticalOffset;
+                            _preMousePanHorizontalOffset = scrollPresenter.HorizontalOffset;
+                            _preMousePanVerticalOffset = scrollPresenter.VerticalOffset;
                             LogEvent("Pointer capture initiated @ position " + _preMousePanPosition.ToString());
                         }
                         else
@@ -98,12 +98,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Mouse)
             {
                 PointerPointProperties ppp = e.GetCurrentPoint(null).Properties;
-                Point position = e.GetCurrentPoint(scroller).Position;
+                Point position = e.GetCurrentPoint(scrollPresenter).Position;
 
                 if (_isInMousePan && !ppp.IsLeftButtonPressed)
                 {
@@ -135,18 +135,18 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Mouse)
             {
-                Point position = e.GetCurrentPoint(scroller).Position;
+                Point position = e.GetCurrentPoint(scrollPresenter).Position;
 
                 if (_isInMousePan)
                 {
-                    scroller.ScrollTo(
+                    scrollPresenter.ScrollTo(
                         _preMousePanPosition.X - position.X + _preMousePanHorizontalOffset,
                         _preMousePanPosition.Y - position.Y + _preMousePanVerticalOffset,
-                        new ScrollOptions(AnimationMode.Disabled));
+                        new ScrollingScrollOptions(AnimationMode.Disabled));
                 }
                 else
                 {
@@ -169,13 +169,13 @@ namespace MUXControlsTestApp
                             (float)(position.X - _preConstantVelocityPanPosition.X) / 2.0f,
                             (float)(position.Y - _preConstantVelocityPanPosition.Y) / 2.0f);
 
-                        scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate: Vector2.Zero);
+                        scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate: Vector2.Zero);
                     }
                 }
             }
         }
 
-        private void Scroller_PointerCanceled(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             LogEvent("Pointer canceled - id " + e.Pointer.PointerId);
             if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Mouse)
@@ -191,7 +191,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
             LogEvent("Pointer capture lost - id " + e.Pointer.PointerId);
         }
@@ -218,7 +218,7 @@ namespace MUXControlsTestApp
             _isInConstantVelocityPan = false;
             _isMiddleButtonPressed = false;
             fiConstantVelocityPanCenter.Visibility = Visibility.Collapsed;
-            scroller.ScrollBy(0, 0);
+            scrollPresenter.ScrollBy(0, 0);
             LogEvent("Constant velocity pan stopped");
         }
 

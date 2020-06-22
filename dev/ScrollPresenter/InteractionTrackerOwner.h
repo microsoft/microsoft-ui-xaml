@@ -5,13 +5,13 @@
 
 #include "common.h"
 
-// Class that handles the InteractionTracker callbacks. Has a weak reference back to the Scroller so it can be garbage-collected, 
+// Class that handles the InteractionTracker callbacks. Has a weak reference back to the ScrollPresenter so it can be garbage-collected, 
 // since the InteractionTracker keeps a strong reference to this object.
 class InteractionTrackerOwner
     : public winrt::implements<InteractionTrackerOwner, winrt::IInteractionTrackerOwner>
 {
 public:
-    InteractionTrackerOwner(const winrt::Scroller& scroller);
+    InteractionTrackerOwner(const winrt::ScrollPresenter& scrollPresenter);
     ~InteractionTrackerOwner();
 
 #pragma region IInteractionTrackerOwner
@@ -24,5 +24,5 @@ public:
 #pragma endregion
 
 private:
-    weak_ref<winrt::Scroller> m_owner{ nullptr };
+    weak_ref<winrt::ScrollPresenter> m_owner{ nullptr };
 };

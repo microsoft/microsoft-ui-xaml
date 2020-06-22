@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ScrollerSnapPoint.h"
+#include "SnapPoint.h"
 
 // The SnapPointWrapper class has a SnapPointBase member that can be shared among multiple
 // HorizontalSnapPoints, VerticalSnapPoints and ZoomSnapPoints collections.

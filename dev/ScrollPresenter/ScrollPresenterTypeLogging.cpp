@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollPresenterTypeLogging.h"
 #include "Utils.h"
 
 namespace TypeLogging
@@ -137,16 +137,16 @@ winrt::hstring SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMod
     }
 }
 
-winrt::hstring ScrollerViewKindToString(ScrollerViewKind viewKind)
+winrt::hstring ScrollPresenterViewKindToString(ScrollPresenterViewKind viewKind)
 {
     switch (viewKind)
     {
-    case ScrollerViewKind::Absolute:
+    case ScrollPresenterViewKind::Absolute:
         return L"Absolute";
-    case ScrollerViewKind::RelativeToCurrentView:
+    case ScrollPresenterViewKind::RelativeToCurrentView:
         return L"RelativeToCurrentView";
-#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
-    case ScrollerViewKind::RelativeToEndOfInertiaView:
+#ifdef ScrollPresenterViewKind_RelativeToEndOfInertiaView
+    case ScrollPresenterViewKind::RelativeToEndOfInertiaView:
         return L"RelativeToEndOfInertiaView";
 #endif
     default:
@@ -155,15 +155,15 @@ winrt::hstring ScrollerViewKindToString(ScrollerViewKind viewKind)
     }
 }
 
-winrt::hstring ScrollerViewChangeResultToString(ScrollerViewChangeResult result)
+winrt::hstring ScrollPresenterViewChangeResultToString(ScrollPresenterViewChangeResult result)
 {
     switch (result)
     {
-    case ScrollerViewChangeResult::Completed:
+    case ScrollPresenterViewChangeResult::Completed:
         return L"Completed";
-    case ScrollerViewChangeResult::Ignored:
+    case ScrollPresenterViewChangeResult::Ignored:
         return L"Ignored";
-    case ScrollerViewChangeResult::Interrupted:
+    case ScrollPresenterViewChangeResult::Interrupted:
         return L"Interrupted";
     default:
         MUX_ASSERT(false);
@@ -191,33 +191,33 @@ winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount)
     }
 }
 
-winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options)
+winrt::hstring ScrollOptionsToString(const winrt::ScrollingScrollOptions& options)
 {
     if (options)
     {
-        return StringUtil::FormatString(L"ScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        return StringUtil::FormatString(L"ScrollingScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
             options,
             AnimationModeToString(options.AnimationMode()).c_str(),
             SnapPointsModeToString(options.SnapPointsMode()).c_str());
     }
     else
     {
-        return L"ScrollOptions[null]";
+        return L"ScrollingScrollOptions[null]";
     }
 }
 
-winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options)
+winrt::hstring ZoomOptionsToString(const winrt::ScrollingZoomOptions& options)
 {
     if (options)
     {
-        return StringUtil::FormatString(L"ZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        return StringUtil::FormatString(L"ScrollingZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
             options,
             AnimationModeToString(options.AnimationMode()).c_str(),
             SnapPointsModeToString(options.SnapPointsMode()).c_str());
     }
     else
     {
-        return L"ZoomOptions[null]";
+        return L"ScrollingZoomOptions[null]";
     }
 }
 

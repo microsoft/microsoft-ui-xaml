@@ -4,8 +4,8 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "ScrollerSnapPoint.h"
+#include "ScrollPresenterTypeLogging.h"
+#include "SnapPoint.h"
 
 // Required for Modern Idl bug, should never be called.
 SnapPointBase::SnapPointBase()
@@ -26,8 +26,8 @@ winrt::hstring SnapPointBase::GetIsInertiaFromImpulseExpression(winrt::hstring c
 
 bool SnapPointBase::operator<(SnapPointBase* snapPoint)
 {
-    ScrollerSnapPointSortPredicate mySortPredicate = SortPredicate();
-    ScrollerSnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
+    SnapPointSortPredicate mySortPredicate = SortPredicate();
+    SnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
     if (mySortPredicate.primary < theirSortPredicate.primary)
     {
         return true;
@@ -55,8 +55,8 @@ bool SnapPointBase::operator<(SnapPointBase* snapPoint)
 
 bool SnapPointBase::operator==(SnapPointBase* snapPoint)
 {
-    ScrollerSnapPointSortPredicate mySortPredicate = SortPredicate();
-    ScrollerSnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
+    SnapPointSortPredicate mySortPredicate = SortPredicate();
+    SnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
     if (std::abs(mySortPredicate.primary - theirSortPredicate.primary) < s_equalityEpsilon
         && std::abs(mySortPredicate.secondary - theirSortPredicate.secondary) < s_equalityEpsilon
         && mySortPredicate.tertiary == theirSortPredicate.tertiary)
@@ -122,7 +122,7 @@ void SnapPointBase::SetBooleanParameter(
     wstring_view const& booleanName,
     bool booleanValue) const
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, booleanName, booleanValue);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, booleanName, booleanValue);
 
     expressionAnimation.SetBooleanParameter(booleanName, booleanValue);
 }
@@ -132,7 +132,7 @@ void SnapPointBase::SetScalarParameter(
     wstring_view const& scalarName,
     float scalarValue) const
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this, scalarName, scalarValue);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this, scalarName, scalarValue);
 
     expressionAnimation.SetScalarParameter(scalarName, scalarValue);
 }
@@ -217,7 +217,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateRestingPointExpression(
 {
     winrt::hstring expression = StringUtil::FormatString(L"%1!s!*%2!s!", s_snapPointValue.data(), scale.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -262,7 +262,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
         scaledMinImpulseApplicableRange.data(),
         scaledMaxImpulseApplicableRange.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -298,12 +298,12 @@ void ScrollSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     // thus this method has no job to do.
 }
 
-ScrollerSnapPointSortPredicate ScrollSnapPoint::SortPredicate()
+SnapPointSortPredicate ScrollSnapPoint::SortPredicate()
 {
     double actualValue = ActualValue();
 
     // Irregular snap point should be sorted before repeated snap points so it gives a tertiary sort value of 0 (repeated snap points get 1)
-    return ScrollerSnapPointSortPredicate{ actualValue, actualValue, 0 };
+    return SnapPointSortPredicate{ actualValue, actualValue, 0 };
 }
 
 std::tuple<double, double> ScrollSnapPoint::DetermineActualApplicableZone(
@@ -711,7 +711,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -772,7 +772,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -811,10 +811,10 @@ void RepeatedScrollSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     SetScalarParameter(restingValueExpressionAnimation, s_impulseIgnoredValue, static_cast<float>(ignoredValue));
 }
 
-ScrollerSnapPointSortPredicate RepeatedScrollSnapPoint::SortPredicate()
+SnapPointSortPredicate RepeatedScrollSnapPoint::SortPredicate()
 {
     // Repeated snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
-    return ScrollerSnapPointSortPredicate{ ActualStart(), ActualEnd(), 1 };
+    return SnapPointSortPredicate{ ActualStart(), ActualEnd(), 1 };
 }
 
 std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualApplicableZone(
@@ -1144,7 +1144,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateRestingPointExpression(
     winrt::hstring const& scale,
     bool isInertiaFromImpulse)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(s_snapPointValue);
 
@@ -1177,7 +1177,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
         s_minImpulseApplicableValue.data(),
         s_maxImpulseApplicableValue.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -1213,10 +1213,10 @@ void ZoomSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     // thus this method has no job to do.
 }
 
-ScrollerSnapPointSortPredicate ZoomSnapPoint::SortPredicate()
+SnapPointSortPredicate ZoomSnapPoint::SortPredicate()
 {
     // Irregular snap point should be sorted before repeated snap points so it gives a tertiary sort value of 0 (repeated snap points get 1)
-    return ScrollerSnapPointSortPredicate{ m_value, m_value, 0 };
+    return SnapPointSortPredicate{ m_value, m_value, 0 };
 }
 
 std::tuple<double, double> ZoomSnapPoint::DetermineActualApplicableZone(
@@ -1614,7 +1614,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -1676,7 +1676,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -1715,10 +1715,10 @@ void RepeatedZoomSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     SetScalarParameter(restingValueExpressionAnimation, s_impulseIgnoredValue, static_cast<float>(ignoredValue));
 }
 
-ScrollerSnapPointSortPredicate RepeatedZoomSnapPoint::SortPredicate()
+SnapPointSortPredicate RepeatedZoomSnapPoint::SortPredicate()
 {
     // Repeated snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
-    return ScrollerSnapPointSortPredicate{ m_start, m_end, 1 };
+    return SnapPointSortPredicate{ m_start, m_end, 1 };
 }
 
 std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualApplicableZone(

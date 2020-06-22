@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollPresenterTypeLogging.h"
 #include "InteractionTrackerAsyncOperation.h"
 
 InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
@@ -17,7 +17,7 @@ InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
     , m_isDelayed(isDelayed)
     , m_viewChangeBase(viewChangeBase)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, L"%s[0x%p](operationType: %s, operationTrigger: %s, isDelayed: %d, viewChange: 0x%p)\n",
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, L"%s[0x%p](operationType: %s, operationTrigger: %s, isDelayed: %d, viewChange: 0x%p)\n",
         METH_NAME, this, TypeLogging::InteractionTrackerAsyncOperationTypeToString(operationType).c_str(),
         TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(), isDelayed, viewChangeBase);
 
@@ -29,5 +29,5 @@ InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
 
 InteractionTrackerAsyncOperation::~InteractionTrackerAsyncOperation()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }

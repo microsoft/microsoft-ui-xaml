@@ -7,9 +7,9 @@
     <SharedGUID>374B93F8-DD19-5EDA-C56A-1640529D187C</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ScrollViewer_APITests</Import_RootNamespace>
+    <Import_RootNamespace>ScrollView_APITests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewTests.cs" />
   </ItemGroup>
 </Project>

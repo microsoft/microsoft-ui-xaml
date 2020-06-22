@@ -4,25 +4,25 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "ScrollOptions.h"
+#include "ScrollPresenterTypeLogging.h"
+#include "ScrollingScrollOptions.h"
 
-#include "ScrollOptions.properties.cpp"
+#include "ScrollingScrollOptions.properties.cpp"
 
-ScrollOptions::ScrollOptions(
+ScrollingScrollOptions::ScrollingScrollOptions(
     winrt::AnimationMode const& animationMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
 
     m_animationMode = animationMode;
 }
 
-ScrollOptions::ScrollOptions(
+ScrollingScrollOptions::ScrollingScrollOptions(
     winrt::AnimationMode const& animationMode,
     winrt::SnapPointsMode const& snapPointsMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str(),
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
 
@@ -30,27 +30,27 @@ ScrollOptions::ScrollOptions(
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::AnimationMode ScrollOptions::AnimationMode() const
+winrt::AnimationMode ScrollingScrollOptions::AnimationMode() const
 {
     return m_animationMode;
 }
 
-void ScrollOptions::AnimationMode(winrt::AnimationMode const& animationMode)
+void ScrollingScrollOptions::AnimationMode(winrt::AnimationMode const& animationMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
 
     m_animationMode = animationMode;
 }
 
-winrt::SnapPointsMode ScrollOptions::SnapPointsMode() const
+winrt::SnapPointsMode ScrollingScrollOptions::SnapPointsMode() const
 {
     return m_snapPointsMode;
 }
 
-void ScrollOptions::SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode)
+void ScrollingScrollOptions::SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
 
     m_snapPointsMode = snapPointsMode;

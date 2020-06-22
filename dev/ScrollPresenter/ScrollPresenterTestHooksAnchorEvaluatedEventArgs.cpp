@@ -3,9 +3,9 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollerTestHooksAnchorEvaluatedEventArgs.h"
+#include "ScrollPresenterTestHooksAnchorEvaluatedEventArgs.h"
 
-ScrollerTestHooksAnchorEvaluatedEventArgs::ScrollerTestHooksAnchorEvaluatedEventArgs(
+ScrollPresenterTestHooksAnchorEvaluatedEventArgs::ScrollPresenterTestHooksAnchorEvaluatedEventArgs(
     const winrt::UIElement& anchorElement,
     double viewportAnchorPointHorizontalOffset,
     double viewportAnchorPointVerticalOffset)
@@ -18,19 +18,19 @@ ScrollerTestHooksAnchorEvaluatedEventArgs::ScrollerTestHooksAnchorEvaluatedEvent
     m_viewportAnchorPointVerticalOffset = viewportAnchorPointVerticalOffset;
 }
 
-#pragma region IScrollerTestHooksAnchorEvaluatedEventArgs
+#pragma region IScrollPresenterTestHooksAnchorEvaluatedEventArgs
 
-winrt::UIElement ScrollerTestHooksAnchorEvaluatedEventArgs::AnchorElement()
+winrt::UIElement ScrollPresenterTestHooksAnchorEvaluatedEventArgs::AnchorElement()
 {
     return m_anchorElement.get();
 }
 
-double ScrollerTestHooksAnchorEvaluatedEventArgs::ViewportAnchorPointHorizontalOffset()
+double ScrollPresenterTestHooksAnchorEvaluatedEventArgs::ViewportAnchorPointHorizontalOffset()
 {
     return m_viewportAnchorPointHorizontalOffset;
 }
 
-double ScrollerTestHooksAnchorEvaluatedEventArgs::ViewportAnchorPointVerticalOffset()
+double ScrollPresenterTestHooksAnchorEvaluatedEventArgs::ViewportAnchorPointVerticalOffset()
 {
     return m_viewportAnchorPointVerticalOffset;
 }

@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollerPage"
+    x:Class="MUXControlsTestApp.ScrollPresenterPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -15,8 +15,8 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel>
-            <Button x:Name="navigateToSimpleContents" AutomationProperties.Name="navigateToSimpleContents" Margin="2" HorizontalAlignment="Stretch">Scrollers with simple contents</Button>
-            <Button x:Name="navigateToDynamic" AutomationProperties.Name="navigateToDynamic" Margin="2" HorizontalAlignment="Stretch">Exercise Scroller API</Button>
+            <Button x:Name="navigateToSimpleContents" AutomationProperties.Name="navigateToSimpleContents" Margin="2" HorizontalAlignment="Stretch">ScrollPresenters with simple contents</Button>
+            <Button x:Name="navigateToDynamic" AutomationProperties.Name="navigateToDynamic" Margin="2" HorizontalAlignment="Stretch">Exercise ScrollPresenter API</Button>
             <Button x:Name="navigateToExpressionAnimationSources" AutomationProperties.Name="navigateToExpressionAnimationSources" Margin="2" HorizontalAlignment="Stretch">Exercise ExpressionAnimationSources property</Button>
             <Button x:Name="navigateToChainingAndRailing" AutomationProperties.Name="navigateToChainingAndRailing" Margin="2" HorizontalAlignment="Stretch">Exercise Chaining and Railing properties</Button>
             <Button x:Name="navigateToStackPanelAnchoring" AutomationProperties.Name="navigateToStackPanelAnchoring" Margin="2" HorizontalAlignment="Stretch">StackPanel Anchoring</Button>
@@ -25,11 +25,11 @@
             <Button x:Name="navigateToZoomSnapPoints" AutomationProperties.Name="navigateToZoomSnapPoints" Margin="2" HorizontalAlignment="Stretch">Zoom Snap Points</Button>
             <Button x:Name="navigateToBringIntoView" AutomationProperties.Name="navigateToBringIntoView" Margin="2" HorizontalAlignment="Stretch">Bring into view</Button>
             <Button x:Name="navigateToManipulationMode" AutomationProperties.Name="navigateToManipulationMode" Margin="2" HorizontalAlignment="Stretch">Exercise ManipulationMode property</Button>
-            <Button x:Name="navigateToAccessibility" AutomationProperties.Name="navigateToAccessibility" Margin="2" HorizontalAlignment="Stretch">Exercise Scroller AutomationPeer</Button>
-            <Button x:Name="navigateToSimpleScrollControllers" AutomationProperties.Name="navigateToSimpleScrollControllers" Margin="2" HorizontalAlignment="Stretch">Scroller with simple scroll controllers</Button>
-            <Button x:Name="navigateToCompositionScrollControllers" AutomationProperties.Name="navigateToCompositionScrollControllers" Margin="2" HorizontalAlignment="Stretch">Scroller with composition scroll controllers</Button>
-            <Button x:Name="navigateToBiDirectionalScrollController" AutomationProperties.Name="navigateToBiDirectionalScrollController" Margin="2" HorizontalAlignment="Stretch">Scroller with composition bi-directional scroll controller</Button>
-            <Button x:Name="navigateToLeakDetection" AutomationProperties.Name="navigateToLeakDetection" Margin="2" HorizontalAlignment="Stretch">Detect Scroller Memory Leak</Button>
+            <Button x:Name="navigateToAccessibility" AutomationProperties.Name="navigateToAccessibility" Margin="2" HorizontalAlignment="Stretch">Exercise ScrollPresenter AutomationPeer</Button>
+            <Button x:Name="navigateToSimpleScrollControllers" AutomationProperties.Name="navigateToSimpleScrollControllers" Margin="2" HorizontalAlignment="Stretch">ScrollPresenter with simple scroll controllers</Button>
+            <Button x:Name="navigateToCompositionScrollControllers" AutomationProperties.Name="navigateToCompositionScrollControllers" Margin="2" HorizontalAlignment="Stretch">ScrollPresenter with composition scroll controllers</Button>
+            <Button x:Name="navigateToBiDirectionalScrollController" AutomationProperties.Name="navigateToBiDirectionalScrollController" Margin="2" HorizontalAlignment="Stretch">ScrollPresenter with composition bi-directional scroll controller</Button>
+            <Button x:Name="navigateToLeakDetection" AutomationProperties.Name="navigateToLeakDetection" Margin="2" HorizontalAlignment="Stretch">Detect ScrollPresenter Memory Leak</Button>
             <Button x:Name="navigateToMousePanning" AutomationProperties.Name="navigateToMousePanning" Margin="2" HorizontalAlignment="Stretch">Mouse-based panning</Button>
         </StackPanel>
         
@@ -48,8 +48,8 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Scroller OutputDebugString Level:" VerticalAlignment="Center" Margin="2"/>
-                <ComboBox x:Name="cmbScrollerOutputDebugStringLevel" AutomationProperties.Name="cmbScrollerOutputDebugStringLevel" Margin="2" HorizontalAlignment="Stretch" SelectedIndex="0" Grid.Column="1" SelectionChanged="CmbScrollerOutputDebugStringLevel_SelectionChanged">
+                <TextBlock Text="ScrollPresenter OutputDebugString Level:" VerticalAlignment="Center" Margin="2"/>
+                <ComboBox x:Name="cmbScrollPresenterOutputDebugStringLevel" AutomationProperties.Name="cmbScrollPresenterOutputDebugStringLevel" Margin="2" HorizontalAlignment="Stretch" SelectedIndex="0" Grid.Column="1" SelectionChanged="CmbScrollPresenterOutputDebugStringLevel_SelectionChanged">
                     <ComboBoxItem>None</ComboBoxItem>
                     <ComboBoxItem>Info</ComboBoxItem>
                     <ComboBoxItem>Verbose</ComboBoxItem>

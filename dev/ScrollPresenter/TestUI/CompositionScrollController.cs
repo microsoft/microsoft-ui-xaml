@@ -18,7 +18,7 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
@@ -282,7 +282,7 @@ namespace MUXControlsTestApp.Utilities
                 "CompositionScrollController: SetScrollMode for Orientation=" + Orientation +
                 " with scrollMode=" + scrollMode);
             this.scrollMode = scrollMode;
-            UpdateAreInteractionsAllowed();
+            UpdateAreScrollControllerInteractionsAllowed();
         }
 
         public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -493,7 +493,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public bool AreInteractionsAllowed
+        public bool AreScrollControllerInteractionsAllowed
         {
             get;
             private set;
@@ -656,7 +656,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollToRequestedEventArgs e =
                         new ScrollControllerScrollToRequestedEventArgs(
                             offset,
-                            new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
                     if (e.Info.OffsetsChangeId != -1)
                     {
@@ -692,7 +692,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollByRequestedEventArgs e =
                         new ScrollControllerScrollByRequestedEventArgs(
                             offsetDelta,
-                            new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
                     if (e.Info.OffsetsChangeId != -1)
                     {
@@ -771,10 +771,10 @@ namespace MUXControlsTestApp.Utilities
             if (isThumbDragged)
             {
                 double targetThumbOffset = preManipulationThumbOffset + (Orientation == Orientation.Horizontal ? e.Cumulative.Translation.X : e.Cumulative.Translation.Y);
-                double scrollerOffset = ScrollerOffsetFromThumbOffset(targetThumbOffset);
+                double scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
                 int offsetChangeId = RaiseScrollToRequested(
-                    scrollerOffset, AnimationMode.Disabled, true /*hookupCompletion*/);
+                    scrollPresenterOffset, AnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
 
@@ -824,13 +824,13 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private bool UpdateAreInteractionsAllowed()
+        private bool UpdateAreScrollControllerInteractionsAllowed()
         {
-            bool oldAreInteractionsAllowed = AreInteractionsAllowed;
+            bool oldAreScrollControllerInteractionsAllowed = AreScrollControllerInteractionsAllowed;
 
-            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+            AreScrollControllerInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
 
-            if (oldAreInteractionsAllowed != AreInteractionsAllowed)
+            if (oldAreScrollControllerInteractionsAllowed != AreScrollControllerInteractionsAllowed)
             {
                 RaiseInteractionInfoChanged();
                 return true;
@@ -1147,9 +1147,9 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private double ScrollerOffsetFromThumbOffset(double thumbOffset)
+        private double ScrollPresenterOffsetFromThumbOffset(double thumbOffset)
         {
-            double scrollerOffset = 0.0;
+            double scrollPresenterOffset = 0.0;
 
             if (interactionFrameworkElement != null)
             {
@@ -1165,16 +1165,16 @@ namespace MUXControlsTestApp.Utilities
                 {
                     if (IsThumbPositionMirrored)
                     {
-                        scrollerOffset = (parentDim - interactionFrameworkElementDim - thumbOffset) * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
+                        scrollPresenterOffset = (parentDim - interactionFrameworkElementDim - thumbOffset) * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
                     }
                     else
                     {
-                        scrollerOffset = thumbOffset * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
+                        scrollPresenterOffset = thumbOffset * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
                     }
                 }
             }
 
-            return scrollerOffset;
+            return scrollPresenterOffset;
         }
 
         private void CompositionScrollController_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1186,7 +1186,7 @@ namespace MUXControlsTestApp.Utilities
         private void CompositionScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("CompositionScrollController: IsEnabledChanged for Orientation=" + Orientation + ", IsEnabled=" + IsEnabled);
-            if (!UpdateAreInteractionsAllowed())
+            if (!UpdateAreScrollControllerInteractionsAllowed())
             {
                 RaiseInteractionInfoChanged();
             }

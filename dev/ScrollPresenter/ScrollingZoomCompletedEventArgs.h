@@ -3,31 +3,31 @@
 
 #pragma once
 
-#include "Scroller.h"
-#include "ZoomCompletedEventArgs.g.h"
+#include "ScrollPresenter.h"
+#include "ScrollingZoomCompletedEventArgs.g.h"
 
-class ZoomCompletedEventArgs :
-    public winrt::implementation::ZoomCompletedEventArgsT<ZoomCompletedEventArgs>
+class ScrollingZoomCompletedEventArgs :
+    public winrt::implementation::ScrollingZoomCompletedEventArgsT<ScrollingZoomCompletedEventArgs>
 {
 public:
-    ZoomCompletedEventArgs()
+    ScrollingZoomCompletedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ZoomCompletedEventArgs()
+    ~ScrollingZoomCompletedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IZoomCompletedEventArgs overrides
     winrt::ZoomInfo ZoomInfo();
-    ScrollerViewChangeResult Result();
+    ScrollPresenterViewChangeResult Result();
 
     void ZoomFactorChangeId(int32_t zoomFactorChangeId);
-    void Result(ScrollerViewChangeResult result);
+    void Result(ScrollPresenterViewChangeResult result);
 
 private:
     int32_t m_zoomFactorChangeId{ -1 };
-    ScrollerViewChangeResult m_result{ ScrollerViewChangeResult::Completed };
+    ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

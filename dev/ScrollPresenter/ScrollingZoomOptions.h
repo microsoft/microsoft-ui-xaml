@@ -3,19 +3,19 @@
 
 #pragma once
 
-#include "Scroller.h"
-#include "ZoomOptions.g.h"
+#include "ScrollPresenter.h"
+#include "ScrollingZoomOptions.g.h"
 
-class ZoomOptions :
-    public winrt::implementation::ZoomOptionsT<ZoomOptions>
+class ScrollingZoomOptions :
+    public winrt::implementation::ScrollingZoomOptionsT<ScrollingZoomOptions>
 {
 public:
-    ZoomOptions(winrt::AnimationMode const& animationMode);
-    ZoomOptions(winrt::AnimationMode const& animationMode, winrt::SnapPointsMode const& snapPointsMode);
+    ScrollingZoomOptions(winrt::AnimationMode const& animationMode);
+    ScrollingZoomOptions(winrt::AnimationMode const& animationMode, winrt::SnapPointsMode const& snapPointsMode);
 
-    ~ZoomOptions()
+    ~ScrollingZoomOptions()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     static constexpr winrt::AnimationMode s_defaultAnimationMode{ winrt::AnimationMode::Auto };

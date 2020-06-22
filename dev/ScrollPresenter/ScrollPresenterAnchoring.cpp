@@ -4,57 +4,57 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "Scroller.h"
+#include "ScrollPresenterTypeLogging.h"
+#include "ScrollPresenter.h"
 #include "DoubleUtil.h"
-#include "ScrollerTestHooks.h"
+#include "ScrollPresenterTestHooks.h"
 
-// Used when Scroller.HorizontalAnchorRatio or Scroller.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the Content is scrolled to an edge.
+// Used when ScrollPresenter.HorizontalAnchorRatio or ScrollPresenter.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the Content is scrolled to an edge.
 // It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
-void Scroller::RaiseConfigurationChanged()
+void ScrollPresenter::RaiseConfigurationChanged()
 {
     if (m_configurationChanged)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_configurationChanged(*this);
     }
 }
 
-void Scroller::RaisePostArrange()
+void ScrollPresenter::RaisePostArrange()
 {
     if (m_postArrange)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_postArrange(*this);
     }
 }
 
-void Scroller::RaiseViewportChanged(const bool isFinal)
+void ScrollPresenter::RaiseViewportChanged(const bool isFinal)
 {
     if (m_viewportChanged)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_viewportChanged(*this, isFinal);
     }
 }
 
-void Scroller::RaiseAnchorRequested()
+void ScrollPresenter::RaiseAnchorRequested()
 {
     if (m_anchorRequestedEventSource)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
         if (!m_anchorRequestedEventArgs)
         {
-            m_anchorRequestedEventArgs = tracker_ref<winrt::ScrollerAnchorRequestedEventArgs>(this, winrt::make<ScrollerAnchorRequestedEventArgs>(*this));
+            m_anchorRequestedEventArgs = tracker_ref<winrt::ScrollingAnchorRequestedEventArgs>(this, winrt::make<ScrollingAnchorRequestedEventArgs>(*this));
         }
 
-        com_ptr<ScrollerAnchorRequestedEventArgs> anchorRequestedEventArgs = winrt::get_self<ScrollerAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get())->get_strong();
+        com_ptr<ScrollingAnchorRequestedEventArgs> anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get())->get_strong();
 
         anchorRequestedEventArgs->SetAnchorElement(nullptr);
         anchorRequestedEventArgs->SetAnchorCandidates(m_anchorCandidates);
@@ -62,10 +62,10 @@ void Scroller::RaiseAnchorRequested()
     }
 }
 
-// Computes the type of anchoring to perform, if any, based on Scroller.HorizontalAnchorRatio, Scroller.VerticalAnchorRatio, 
+// Computes the type of anchoring to perform, if any, based on ScrollPresenter.HorizontalAnchorRatio, ScrollPresenter.VerticalAnchorRatio, 
 // the current offsets, zoomFactor, viewport size, content size and state.
 // When all 4 returned booleans are False, no element anchoring is performed, no far edge anchoring is performed. There may still be anchoring at near edges.
-void Scroller::IsAnchoring(
+void ScrollPresenter::IsAnchoring(
     _Out_ bool* isAnchoringElementHorizontally,
     _Out_ bool* isAnchoringElementVertically,
     _Out_opt_ bool* isAnchoringFarEdgeHorizontally,
@@ -86,7 +86,7 @@ void Scroller::IsAnchoring(
     // anchoring because of the check below. Unfortunately, I cannot validate that
     // removing the check is the correct fix due to dcomp bug 17523225. I filed a 
     // tracking bug to follow up once the dcomp bug is fixed.
-    // Bug 17523266: Scroller is not anchoring during mouse wheel
+    // Bug 17523266: ScrollPresenter is not anchoring during mouse wheel
     if (!m_interactionTracker || m_state == winrt::InteractionState::Animation)
     {
         // Skip calls to SetContentLayoutOffsetX / SetContentLayoutOffsetY when the InteractionTracker has not been set up yet,
@@ -151,9 +151,9 @@ void Scroller::IsAnchoring(
 }
 
 // Returns:
-// - viewportAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor point within the Scroller.Content. NaN if there is no horizontal anchoring.
-// - viewportAnchorPointVerticalOffset: unzoomed vertical offset of the anchor point within the Scroller.Content. NaN if there is no vertical anchoring.
-void Scroller::ComputeViewportAnchorPoint(
+// - viewportAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor point within the ScrollPresenter.Content. NaN if there is no horizontal anchoring.
+// - viewportAnchorPointVerticalOffset: unzoomed vertical offset of the anchor point within the ScrollPresenter.Content. NaN if there is no vertical anchoring.
+void ScrollPresenter::ComputeViewportAnchorPoint(
     double viewportWidth,
     double viewportHeight,
     _Out_ double* viewportAnchorPointHorizontalOffset,
@@ -171,13 +171,13 @@ void Scroller::ComputeViewportAnchorPoint(
 
     ComputeAnchorPoint(viewportAnchorBounds, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *viewportAnchorPointHorizontalOffset, *viewportAnchorPointVerticalOffset);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *viewportAnchorPointHorizontalOffset, *viewportAnchorPointVerticalOffset);
 }
 
 // Returns:
-// - elementAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor element's anchor point within the Scroller.Content. NaN if there is no horizontal anchoring.
-// - elementAnchorPointVerticalOffset: unzoomed vertical offset of the anchor element's point within the Scroller.Content. NaN if there is no vertical anchoring.
-void Scroller::ComputeElementAnchorPoint(
+// - elementAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor element's anchor point within the ScrollPresenter.Content. NaN if there is no horizontal anchoring.
+// - elementAnchorPointVerticalOffset: unzoomed vertical offset of the anchor element's point within the ScrollPresenter.Content. NaN if there is no vertical anchoring.
+void ScrollPresenter::ComputeElementAnchorPoint(
     bool isForPreArrange,
     _Out_ double* elementAnchorPointHorizontalOffset,
     _Out_ double* elementAnchorPointVerticalOffset)
@@ -193,11 +193,11 @@ void Scroller::ComputeElementAnchorPoint(
 
         ComputeAnchorPoint(anchorElementBounds, elementAnchorPointHorizontalOffset, elementAnchorPointVerticalOffset);
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *elementAnchorPointHorizontalOffset, *elementAnchorPointVerticalOffset);
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *elementAnchorPointHorizontalOffset, *elementAnchorPointVerticalOffset);
     }
 }
 
-void Scroller::ComputeAnchorPoint(
+void ScrollPresenter::ComputeAnchorPoint(
     const winrt::Rect& anchorBounds,
     _Out_ double* anchorPointX,
     _Out_ double* anchorPointY)
@@ -228,7 +228,7 @@ void Scroller::ComputeAnchorPoint(
 }
 
 // Computes the distance between the viewport's anchor point and the anchor element's anchor point.
-winrt::Size Scroller::ComputeViewportToElementAnchorPointsDistance(
+winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
     double viewportWidth,
     double viewportHeight,
     bool isForPreArrange)
@@ -269,7 +269,7 @@ winrt::Size Scroller::ComputeViewportToElementAnchorPointsDistance(
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointVerticalOffset - viewportAnchorPointVerticalOffset) * 1000000) / 1000000)
         };
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, viewportToElementAnchorPointsDistance.Width, viewportToElementAnchorPointsDistance.Height);
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, viewportToElementAnchorPointsDistance.Width, viewportToElementAnchorPointsDistance.Height);
 
         return viewportToElementAnchorPointsDistance;
     }
@@ -279,25 +279,25 @@ winrt::Size Scroller::ComputeViewportToElementAnchorPointsDistance(
     }
 }
 
-void Scroller::ClearAnchorCandidates()
+void ScrollPresenter::ClearAnchorCandidates()
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     m_anchorCandidates.clear();
     m_isAnchorElementDirty = true;
 }
 
-void Scroller::ResetAnchorElement()
+void ScrollPresenter::ResetAnchorElement()
 {
     if (m_anchorElement.get())
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_anchorElement.set(nullptr);
         m_anchorElementBounds = winrt::Rect{};
         m_isAnchorElementDirty = false;
 
-        com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+        com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
 
         if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
         {
@@ -306,9 +306,9 @@ void Scroller::ResetAnchorElement()
     }
 }
 
-// Raises the Scroller.AnchorRequested event. If no anchor element was specified, selects an anchor among the candidates vector that may have been altered 
+// Raises the ScrollPresenter.AnchorRequested event. If no anchor element was specified, selects an anchor among the candidates vector that may have been altered 
 // in the AnchorRequested event handler.
-void Scroller::EnsureAnchorElementSelection()
+void ScrollPresenter::EnsureAnchorElementSelection()
 {
     if (!m_isAnchorElementDirty)
     {
@@ -319,7 +319,7 @@ void Scroller::EnsureAnchorElementSelection()
     m_anchorElementBounds = winrt::Rect{};
     m_isAnchorElementDirty = false;
 
-    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+    com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
     double viewportAnchorPointHorizontalOffset{ 0.0 };
     double viewportAnchorPointVerticalOffset{ 0.0 };
 
@@ -333,7 +333,7 @@ void Scroller::EnsureAnchorElementSelection()
 
     RaiseAnchorRequested();
 
-    auto anchorRequestedEventArgs = winrt::get_self<ScrollerAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
+    auto anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
     winrt::UIElement requestedAnchorElement{ nullptr };
     winrt::IVector<winrt::UIElement> anchorCandidates{ nullptr };
     const winrt::UIElement content = Content();
@@ -354,7 +354,7 @@ void Scroller::EnsureAnchorElementSelection()
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
 
         return;
     }
@@ -409,7 +409,7 @@ void Scroller::EnsureAnchorElementSelection()
         m_anchorElement.set(bestAnchorCandidate);
         m_anchorElementBounds = bestAnchorCandidateBounds;
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
     }
 
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
@@ -420,7 +420,7 @@ void Scroller::EnsureAnchorElementSelection()
 
 // Checks if the provided anchor candidate is better than the current best, based on its distance to the viewport anchor point,
 // and potentially updates the best candidate and its bounds.
-void Scroller::ProcessAnchorCandidate(
+void ScrollPresenter::ProcessAnchorCandidate(
     const winrt::UIElement& anchorCandidate,
     const winrt::UIElement& content,
     const winrt::Rect& viewportAnchorBounds,
@@ -470,8 +470,8 @@ void Scroller::ProcessAnchorCandidate(
     }
 }
 
-// Returns the bounds of a Scroller.Content descendant in respect to that content.
-winrt::Rect Scroller::GetDescendantBounds(
+// Returns the bounds of a ScrollPresenter.Content descendant in respect to that content.
+winrt::Rect ScrollPresenter::GetDescendantBounds(
     const winrt::UIElement& content,
     const winrt::UIElement& descendant)
 {
@@ -489,7 +489,7 @@ winrt::Rect Scroller::GetDescendantBounds(
     return GetDescendantBounds(content, descendant, descendantRect);
 }
 
-bool Scroller::IsElementValidAnchor(const winrt::UIElement& element, const winrt::UIElement& content)
+bool ScrollPresenter::IsElementValidAnchor(const winrt::UIElement& element, const winrt::UIElement& content)
 {
     MUX_ASSERT(element);
     MUX_ASSERT(content);

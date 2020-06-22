@@ -17,18 +17,18 @@ using ScrollSnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoin
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerScrollSnapPointsPage : TestPage
+    public sealed partial class ScrollPresenterScrollSnapPointsPage : TestPage
     {
         private const int snapPointColumns = 29;
         private const int snapPointColumnWidth = 10;
@@ -36,24 +36,24 @@ namespace MUXControlsTestApp
         private int colorIndex = 0;
         private List<string> fullLogs = new List<string>();
 
-        public ScrollerScrollSnapPointsPage()
+        public ScrollPresenterScrollSnapPointsPage()
         {
             this.InitializeComponent();
-            Loaded += ScrollerScrollSnapPointsPage_Loaded;
+            Loaded += ScrollPresenterScrollSnapPointsPage_Loaded;
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (chkLogScrollerMessages.IsChecked == true)
+            if (chkLogScrollPresenterMessages.IsChecked == true)
             {
-                MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
             }
 
             base.OnNavigatedFrom(e);
         }
 
-        private void ScrollerScrollSnapPointsPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollPresenterScrollSnapPointsPage_Loaded(object sender, RoutedEventArgs e)
         {
             SolidColorBrush brush = new SolidColorBrush(Colors.Red);
             for (int j = 0; j < snapPointColumns; j++)
@@ -63,19 +63,19 @@ namespace MUXControlsTestApp
                 innerGrid.Height = snapPointColumnHeight;
                 this.stackPanel.Children.Add(innerGrid);
             }
-            this.markupScroller.ViewChanged += MarkupScroller_ViewChanged;
-            this.markupScroller.StateChanged += MarkupScroller_StateChanged;
+            this.markupScrollPresenter.ViewChanged += MarkupScrollPresenter_ViewChanged;
+            this.markupScrollPresenter.StateChanged += MarkupScrollPresenter_StateChanged;
         }
 
-        private void MarkupScroller_ViewChanged(Scroller sender, object args)
+        private void MarkupScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
-            this.txtScrollerOffset.Text = this.markupScroller.VerticalOffset.ToString();
-            this.txtScrollerZoomFactor.Text = this.markupScroller.ZoomFactor.ToString();
+            this.txtScrollPresenterOffset.Text = this.markupScrollPresenter.VerticalOffset.ToString();
+            this.txtScrollPresenterZoomFactor.Text = this.markupScrollPresenter.ZoomFactor.ToString();
         }
 
-        private void MarkupScroller_StateChanged(Scroller sender, object args)
+        private void MarkupScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
-            this.txtScrollerState.Text = this.markupScroller.State.ToString();
+            this.txtScrollPresenterState.Text = this.markupScrollPresenter.State.ToString();
         }
 
         private void BtnMIAddSnapPoint_Click(object sender, RoutedEventArgs e)
@@ -85,8 +85,8 @@ namespace MUXControlsTestApp
                 double value = Convert.ToDouble(txtMISnapPointValue.Text);
                 ScrollSnapPoint newSnapPoint = new ScrollSnapPoint(value, (ScrollSnapPointsAlignment)cmbMISnapPointAlignment.SelectedIndex);
                 Color fillColor = GetNewColor();
-                ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
-                markupScroller.VerticalSnapPoints.Add(newSnapPoint);
+                ScrollPresenterTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
+                markupScrollPresenter.VerticalSnapPoints.Add(newSnapPoint);
 
                 FillSnapPoint(new List<double> { value }, value, value, fillColor);
                 FixConsolidatedView();
@@ -107,8 +107,8 @@ namespace MUXControlsTestApp
                 double range = Convert.ToDouble(txtOIApplicableRange.Text);
                 ScrollSnapPoint newSnapPoint = new ScrollSnapPoint(value, range, ScrollSnapPointsAlignment.Near);
                 Color fillColor = GetNewColor();
-                ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
-                markupScroller.VerticalSnapPoints.Add(newSnapPoint);
+                ScrollPresenterTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
+                markupScrollPresenter.VerticalSnapPoints.Add(newSnapPoint);
 
                 FillSnapPoint(new List<double> { value }, (value - range), (value + range), fillColor);
                 FixConsolidatedView();
@@ -131,8 +131,8 @@ namespace MUXControlsTestApp
                 double end = Convert.ToDouble(txtMRSnapPointEnd.Text);
                 RepeatedScrollSnapPoint newSnapPoint = new RepeatedScrollSnapPoint(offset, interval, start, end, (ScrollSnapPointsAlignment)cmbMRSnapPointAlignment.SelectedIndex);
                 Color fillColor = GetNewColor();
-                ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
-                markupScroller.VerticalSnapPoints.Add(newSnapPoint);
+                ScrollPresenterTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
+                markupScrollPresenter.VerticalSnapPoints.Add(newSnapPoint);
 
                 double value = GetFirstRepeatedSnapPoint(offset, interval, start);
                 List<double> values = new List<double>();
@@ -166,8 +166,8 @@ namespace MUXControlsTestApp
 
                 RepeatedScrollSnapPoint newSnapPoint = new RepeatedScrollSnapPoint(offset, interval, start, end, range, ScrollSnapPointsAlignment.Near);
                 Color fillColor = GetNewColor();
-                ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
-                markupScroller.VerticalSnapPoints.Add(newSnapPoint);
+                ScrollPresenterTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
+                markupScrollPresenter.VerticalSnapPoints.Add(newSnapPoint);
 
                 double value = GetFirstRepeatedSnapPoint(offset, interval, start);
                 
@@ -191,7 +191,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                markupScroller.VerticalSnapPoints.RemoveAt(0);
+                markupScrollPresenter.VerticalSnapPoints.RemoveAt(0);
                 // TODO: Consider refreshing visualization of snap points
             }
             catch (Exception ex)
@@ -204,7 +204,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                markupScroller.VerticalSnapPoints.Clear();
+                markupScrollPresenter.VerticalSnapPoints.Clear();
                 // TODO: Consider clearing visualization of snap points
             }
             catch (Exception ex)
@@ -213,12 +213,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnScrollerOffsetChange_Click(object sender, RoutedEventArgs e)
+        private void BtnScrollPresenterOffsetChange_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double changeAmount = Convert.ToDouble(txtScrollerOffsetChange.Text);
-                markupScroller.ScrollFrom(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
+                double changeAmount = Convert.ToDouble(txtScrollPresenterOffsetChange.Text);
+                markupScrollPresenter.ScrollFrom(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
             }
             catch (Exception ex)
             {
@@ -230,7 +230,7 @@ namespace MUXControlsTestApp
         {
             try
             { 
-                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Default));
+                markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -242,7 +242,7 @@ namespace MUXControlsTestApp
         {
             try
             {                
-                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
+                markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {
@@ -323,16 +323,16 @@ namespace MUXControlsTestApp
         private void FixConsolidatedView()
         {
             consolidatedView.Children.Clear();
-            foreach (ScrollSnapPointBase snapPoint in ScrollerTestHooks.GetConsolidatedVerticalScrollSnapPoints(markupScroller))
+            foreach (ScrollSnapPointBase snapPoint in ScrollPresenterTestHooks.GetConsolidatedVerticalScrollSnapPoints(markupScrollPresenter))
             {
-                Vector2 zone = ScrollerTestHooks.GetVerticalSnapPointActualApplicableZone(markupScroller, snapPoint);
+                Vector2 zone = ScrollPresenterTestHooks.GetVerticalSnapPointActualApplicableZone(markupScrollPresenter, snapPoint);
                 zone.X = Math.Max(0, zone.X);
                 zone.Y = Math.Min(snapPointColumnHeight, zone.Y);
                 Rectangle rangeRectangle = new Rectangle();
                 rangeRectangle.Width = snapPointColumnWidth - 1;
                 rangeRectangle.Height = zone.Y - zone.X;
                 rangeRectangle.Margin = new Thickness(0, zone.X, 0, 0);
-                rangeRectangle.Fill = new SolidColorBrush(ScrollerTestHooks.GetSnapPointVisualizationColor(snapPoint));
+                rangeRectangle.Fill = new SolidColorBrush(ScrollPresenterTestHooks.GetSnapPointVisualizationColor(snapPoint));
                 rangeRectangle.VerticalAlignment = VerticalAlignment.Top;
                 consolidatedView.Children.Add(rangeRectangle);
             }
@@ -632,18 +632,18 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            //Turn on info and verbose logging for the Scroller type:
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //Turn on info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            //Turn off info and verbose logging for the Scroller type:
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //Turn off info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
