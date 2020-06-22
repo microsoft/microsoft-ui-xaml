@@ -17,8 +17,6 @@
     <!-- This design-time dll depends on an x86-only reference and should be built x86 no matter the solution configuration. -->
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <!-- These configurations are all the same because we always build x86, but VS wants them there 
        to show them as options in the configuration manager. -->
