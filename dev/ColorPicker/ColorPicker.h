@@ -139,45 +139,47 @@ private:
     // Template parts
     tracker_ref<winrt::ColorSpectrum> m_colorSpectrum{ this };
 
-    winrt::Grid m_colorPreviewRectangleGrid{ nullptr };
-    winrt::Rectangle m_colorPreviewRectangle{ nullptr };
-    winrt::Rectangle m_previousColorRectangle{ nullptr };
-    winrt::ImageBrush m_colorPreviewRectangleCheckeredBackgroundImageBrush{ nullptr };
+    tracker_ref<winrt::Grid> m_colorPreviewRectangleGrid{ this };
+    tracker_ref<winrt::Rectangle> m_colorPreviewRectangle{ this };
+    tracker_ref<winrt::Rectangle> m_previousColorRectangle{ this };
+    tracker_ref<winrt::ImageBrush> m_colorPreviewRectangleCheckeredBackgroundImageBrush{ this };
+
     winrt::IAsyncAction m_createColorPreviewRectangleCheckeredBackgroundBitmapAction{ nullptr };
 
-    winrt::ColorPickerSlider m_thirdDimensionSlider{ nullptr };
-    winrt::LinearGradientBrush m_thirdDimensionSliderGradientBrush{ nullptr };
+    tracker_ref<winrt::ColorPickerSlider> m_thirdDimensionSlider{ this };
+    tracker_ref<winrt::LinearGradientBrush> m_thirdDimensionSliderGradientBrush{ this };
 
-    winrt::ColorPickerSlider m_alphaSlider{ nullptr };
-    winrt::LinearGradientBrush m_alphaSliderGradientBrush{ nullptr };
-    winrt::Rectangle m_alphaSliderBackgroundRectangle{ nullptr };
-    winrt::ImageBrush m_alphaSliderCheckeredBackgroundImageBrush{ nullptr };
+    tracker_ref<winrt::ColorPickerSlider> m_alphaSlider{ this };
+    tracker_ref<winrt::LinearGradientBrush> m_alphaSliderGradientBrush{ this };
+    tracker_ref<winrt::Rectangle> m_alphaSliderBackgroundRectangle{ this };
+    tracker_ref<winrt::ImageBrush> m_alphaSliderCheckeredBackgroundImageBrush{ this };
+
     winrt::IAsyncAction m_alphaSliderCheckeredBackgroundBitmapAction{ nullptr };
 
-    winrt::ButtonBase m_moreButton{ nullptr };
-    winrt::TextBlock m_moreButtonLabel{ nullptr };
+    tracker_ref<winrt::ButtonBase> m_moreButton{ this };
+    tracker_ref<winrt::TextBlock> m_moreButtonLabel{ this };
     
-    winrt::ComboBox m_colorRepresentationComboBox{ nullptr };
-    winrt::TextBox m_redTextBox{ nullptr };
-    winrt::TextBox m_greenTextBox{ nullptr };
-    winrt::TextBox m_blueTextBox{ nullptr };
-    winrt::TextBox m_hueTextBox{ nullptr };
-    winrt::TextBox m_saturationTextBox{ nullptr };
-    winrt::TextBox m_valueTextBox{ nullptr };
-    winrt::TextBox m_alphaTextBox{ nullptr };
-    winrt::TextBox m_hexTextBox{ nullptr };
+    tracker_ref<winrt::ComboBox> m_colorRepresentationComboBox{ this };
+    tracker_ref<winrt::TextBox> m_redTextBox{ this };
+    tracker_ref<winrt::TextBox> m_greenTextBox{ this };
+    tracker_ref<winrt::TextBox> m_blueTextBox{ this };
+    tracker_ref<winrt::TextBox> m_hueTextBox{ this };
+    tracker_ref<winrt::TextBox> m_saturationTextBox{ this };
+    tracker_ref<winrt::TextBox> m_valueTextBox{ this };
+    tracker_ref<winrt::TextBox> m_alphaTextBox{ this };
+    tracker_ref<winrt::TextBox> m_hexTextBox{ this };
 
-    winrt::ComboBoxItem m_RgbComboBoxItem{ nullptr };
-    winrt::ComboBoxItem m_HsvComboBoxItem{ nullptr };
-    winrt::TextBlock m_redLabel{ nullptr };
-    winrt::TextBlock m_greenLabel{ nullptr };
-    winrt::TextBlock m_blueLabel{ nullptr };
-    winrt::TextBlock m_hueLabel{ nullptr };
-    winrt::TextBlock m_saturationLabel{ nullptr };
-    winrt::TextBlock m_valueLabel{ nullptr };
-    winrt::TextBlock m_alphaLabel{ nullptr };
+    tracker_ref<winrt::ComboBoxItem> m_RgbComboBoxItem{ this };
+    tracker_ref<winrt::ComboBoxItem> m_HsvComboBoxItem{ this };
+    tracker_ref<winrt::TextBlock> m_redLabel{ this };
+    tracker_ref<winrt::TextBlock> m_greenLabel{ this };
+    tracker_ref<winrt::TextBlock> m_blueLabel{ this };
+    tracker_ref<winrt::TextBlock> m_hueLabel{ this };
+    tracker_ref<winrt::TextBlock> m_saturationLabel{ this };
+    tracker_ref<winrt::TextBlock> m_valueLabel{ this };
+    tracker_ref<winrt::TextBlock> m_alphaLabel{ this };
 
-    winrt::SolidColorBrush m_checkerColorBrush{ nullptr };
+    tracker_ref<winrt::SolidColorBrush> m_checkerColorBrush{ this };
 
     DispatcherHelper m_dispatcherHelper{ *this };
 };

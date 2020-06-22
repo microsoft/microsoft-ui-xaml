@@ -73,6 +73,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <Thickness x:Key="CalendarDatePickerTopHeaderMargin">0,0,0,4</Thickness>
+
     <Style TargetType="CalendarDatePicker" BasedOn="{StaticResource DefaultCalendarDatePicker}" />
 
     <Style x:Key="DefaultCalendarDatePicker" TargetType="CalendarDatePicker">
