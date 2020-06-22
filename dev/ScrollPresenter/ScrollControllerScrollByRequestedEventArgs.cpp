@@ -30,12 +30,12 @@ winrt::ScrollingScrollOptions ScrollControllerScrollByRequestedEventArgs::Option
     return m_options;
 }
 
-int ScrollControllerScrollByRequestedEventArgs::CorrelationId() const
+int32_t ScrollControllerScrollByRequestedEventArgs::CorrelationId() const
 {
     return m_correlationId;
 }
 
-void ScrollControllerScrollByRequestedEventArgs::CorrelationId(int correlationId)
+void ScrollControllerScrollByRequestedEventArgs::CorrelationId(int32_t correlationId)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 

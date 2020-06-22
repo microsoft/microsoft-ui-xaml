@@ -569,9 +569,9 @@ namespace MUXControlsTestApp
         private int operationsCount = 0;
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
-        private List<int> lstScrollToIds = new List<int>();
-        private List<int> lstScrollByIds = new List<int>();
-        private List<int> lstAddScrollVelocityIds = new List<int>();
+        private List<int> lstScrollToCorrelationIds = new List<int>();
+        private List<int> lstScrollByCorrelationIds = new List<int>();
+        private List<int> lstAddScrollVelocityCorrelationIds = new List<int>();
 
         public event TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
         public event TypedEventHandler<IScrollController, object> InteractionInfoChanged;
@@ -745,19 +745,19 @@ namespace MUXControlsTestApp
                 "ScrollBarController: NotifyScrollCompleted for Orientation=" + Orientation +
                 " with offsetChangeCorrelationId=" + offsetChangeCorrelationId);
 
-            if (lstScrollToIds.Contains(offsetChangeCorrelationId))
+            if (lstScrollToCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollToIds.Remove(offsetChangeCorrelationId);
+                lstScrollToCorrelationIds.Remove(offsetChangeCorrelationId);
                 operationsCount--;
             }
-            else if (lstScrollByIds.Contains(offsetChangeCorrelationId))
+            else if (lstScrollByCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollByIds.Remove(offsetChangeCorrelationId);
+                lstScrollByCorrelationIds.Remove(offsetChangeCorrelationId);
                 operationsCount--;
             }
-            else if (lstAddScrollVelocityIds.Contains(offsetChangeCorrelationId))
+            else if (lstAddScrollVelocityCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstAddScrollVelocityIds.Remove(offsetChangeCorrelationId);
+                lstAddScrollVelocityCorrelationIds.Remove(offsetChangeCorrelationId);
                 operationsCount--;
             }
         }
@@ -842,10 +842,10 @@ namespace MUXControlsTestApp
                         offset,
                         new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
-                if (e.CorrelationId != -1 && !lstScrollToIds.Contains(e.CorrelationId))
+                if (e.CorrelationId != -1 && !lstScrollToCorrelationIds.Contains(e.CorrelationId))
                 {
                     operationsCount++;
-                    lstScrollToIds.Add(e.CorrelationId);
+                    lstScrollToCorrelationIds.Add(e.CorrelationId);
                 }
                 return e.CorrelationId;
             }
@@ -864,10 +864,10 @@ namespace MUXControlsTestApp
                         offsetDelta,
                         new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
-                if (e.CorrelationId != -1 && !lstScrollByIds.Contains(e.CorrelationId))
+                if (e.CorrelationId != -1 && !lstScrollByCorrelationIds.Contains(e.CorrelationId))
                 {
                     operationsCount++;
-                    lstScrollByIds.Add(e.CorrelationId);
+                    lstScrollByCorrelationIds.Add(e.CorrelationId);
                 }
                 return e.CorrelationId;
             }
@@ -885,10 +885,10 @@ namespace MUXControlsTestApp
                         offsetVelocity,
                         inertiaDecayRate);
                 AddScrollVelocityRequested(this, e);
-                if (e.CorrelationId != -1 && !lstAddScrollVelocityIds.Contains(e.CorrelationId))
+                if (e.CorrelationId != -1 && !lstAddScrollVelocityCorrelationIds.Contains(e.CorrelationId))
                 {
                     operationsCount++;
-                    lstAddScrollVelocityIds.Add(e.CorrelationId);
+                    lstAddScrollVelocityCorrelationIds.Add(e.CorrelationId);
                 }
                 return e.CorrelationId;
             }

@@ -23,6 +23,7 @@
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
 #include <winrt\Windows.Devices.Input.h>
+#include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
 #include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Graphics.Display.h>
@@ -32,6 +33,7 @@
 #include <winrt\Windows.System.Profile.h>
 #include <winrt\Windows.System.h>
 #include <winrt\Windows.System.Threading.h>
+#include <winrt\Windows.System.UserProfile.h>
 #include <winrt\Windows.UI.h>
 #include <winrt\Windows.UI.Composition.h>
 #include <winrt\Windows.UI.Composition.Effects.h>
@@ -93,6 +95,7 @@ namespace winrt
     using namespace ::winrt::Windows::Foundation::Collections;
     using namespace ::winrt::Windows::Foundation::Metadata;
     using namespace ::winrt::Windows::Foundation::Numerics;
+    using namespace ::winrt::Windows::Globalization;
     using namespace ::winrt::Windows::Globalization::NumberFormatting;
     using namespace ::winrt::Windows::Graphics::Display;
     using namespace ::winrt::Windows::Graphics::Imaging;
@@ -101,6 +104,7 @@ namespace winrt
     using namespace ::winrt::Windows::System;
     using namespace ::winrt::Windows::System::Power;
     using namespace ::winrt::Windows::System::Threading;
+    using namespace ::winrt::Windows::System::UserProfile;
     using namespace ::winrt::Windows::UI;
     using namespace ::winrt::Windows::UI::Composition;
     using namespace ::winrt::Windows::UI::Composition::Effects;
@@ -290,6 +294,7 @@ namespace winrt
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
     using Geometry = winrt::Windows::UI::Xaml::Media::Geometry;
+    using GradientSpreadMethod = winrt::Windows::UI::Xaml::Media::GradientSpreadMethod;
     using GradientStop = ::winrt::Windows::UI::Xaml::Media::GradientStop;
     using ImageBrush = ::winrt::Windows::UI::Xaml::Media::ImageBrush;
     using ImageSource = ::winrt::Windows::UI::Xaml::Media::ImageSource;

@@ -1637,12 +1637,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.ScrollTo(
+            operation.CorrelationId = scrollPresenter.ScrollTo(
                 horizontalOffset,
                 verticalOffset,
                 new ScrollingScrollOptions(animationMode, snapPointsMode));
 
-            if (operation.Id == -1)
+            if (operation.CorrelationId == -1)
             {
                 scrollPresenterViewChangeOperationEvent.Set();
             }
@@ -1650,7 +1650,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
-                    if (args.CorrelationId == operation.Id)
+                    if (args.CorrelationId == operation.CorrelationId)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
@@ -1680,12 +1680,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.ScrollBy(
+            operation.CorrelationId = scrollPresenter.ScrollBy(
                 horizontalOffsetDelta,
                 verticalOffsetDelta,
                 new ScrollingScrollOptions(animationMode, snapPointsMode));
 
-            if (operation.Id == -1)
+            if (operation.CorrelationId == -1)
             {
                 scrollPresenterViewChangeOperationEvent.Set();
             }
@@ -1693,7 +1693,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
-                    if (args.CorrelationId == operation.Id)
+                    if (args.CorrelationId == operation.CorrelationId)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
@@ -1730,11 +1730,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.AddScrollVelocity(
+            operation.CorrelationId = scrollPresenter.AddScrollVelocity(
                     new Vector2(horizontalVelocity, verticalVelocity),
                     inertiaDecayRate);
 
-            if (operation.Id == -1)
+            if (operation.CorrelationId == -1)
             {
                 scrollPresenterViewChangeOperationEvent.Set();
             }
@@ -1742,7 +1742,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
-                    if (args.CorrelationId == operation.Id)
+                    if (args.CorrelationId == operation.CorrelationId)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
@@ -1988,12 +1988,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.ZoomTo(
+            operation.CorrelationId = scrollPresenter.ZoomTo(
                 zoomFactor,
                 new Vector2(centerPointX, centerPointY),
                 new ScrollingZoomOptions(animationMode, snapPointsMode));
 
-            if (operation.Id == -1)
+            if (operation.CorrelationId == -1)
             {
                 scrollPresenterViewChangeOperationEvent.Set();
             }
@@ -2001,7 +2001,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
-                    if (args.CorrelationId == operation.Id)
+                    if (args.CorrelationId == operation.CorrelationId)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
@@ -2032,12 +2032,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.ZoomBy(
+            operation.CorrelationId = scrollPresenter.ZoomBy(
                 zoomFactorDelta,
                 new Vector2(centerPointX, centerPointY),
                 new ScrollingZoomOptions(animationMode, snapPointsMode));
 
-            if (operation.Id == -1)
+            if (operation.CorrelationId == -1)
             {
                 scrollPresenterViewChangeOperationEvent.Set();
             }
@@ -2045,7 +2045,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
-                    if (args.CorrelationId == operation.Id)
+                    if (args.CorrelationId == operation.CorrelationId)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
@@ -2075,10 +2075,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.AddZoomVelocity(
+            operation.CorrelationId = scrollPresenter.AddZoomVelocity(
                 zoomFactorVelocity, new Vector2(centerPointX, centerPointY), inertiaDecayRate);
 
-            if (operation.Id == -1)
+            if (operation.CorrelationId == -1)
             {
                 scrollPresenterViewChangeOperationEvent.Set();
             }
@@ -2086,7 +2086,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
-                    if (args.CorrelationId == operation.Id)
+                    if (args.CorrelationId == operation.CorrelationId)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
@@ -2290,7 +2290,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             public ScrollPresenterOperation()
             {
                 Result = ScrollPresenterViewChangeResult.Ignored;
-                Id = -1;
+                CorrelationId = -1;
             }
 
             public ScrollPresenterViewChangeResult Result
@@ -2299,7 +2299,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 set;
             }
 
-            public int Id
+            public int CorrelationId
             {
                 get;
                 set;

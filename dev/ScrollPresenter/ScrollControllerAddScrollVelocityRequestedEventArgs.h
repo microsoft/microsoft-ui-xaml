@@ -20,11 +20,11 @@ public:
 
     float OffsetVelocity() const;
     winrt::IReference<float> InertiaDecayRate() const;
-    int CorrelationId() const;
-    void CorrelationId(int correlationId);
+    int32_t CorrelationId() const;
+    void CorrelationId(int32_t correlationId);
 
 private:
     float m_offsetVelocity{ 0.0f };
     winrt::IReference<float> m_inertiaDecayRate{};
-    int m_correlationId{ -1 };
+    int32_t m_correlationId{ -1 };
 };

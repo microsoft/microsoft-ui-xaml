@@ -88,7 +88,7 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
-    static const int s_noOpCorrelationId;
+    static const int32_t s_noOpCorrelationId;
 
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
@@ -168,16 +168,16 @@ public:
 
     winrt::IVector<winrt::ZoomSnapPointBase> ZoomSnapPoints();
 
-    int ScrollTo(double horizontalOffset, double verticalOffset);
-    int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    int AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
+    int32_t AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
 #pragma endregion
 
@@ -559,7 +559,7 @@ private:
         float zoomFactor,
         const winrt::float2& centerPoint,
         int32_t zoomFactorChangeCorrelationId);
-    int GetNextViewChangeCorrelationId();
+    int32_t GetNextViewChangeCorrelationId();
 
     bool IsInertiaFromImpulse() const;
     bool IsLoadedAndSetUp() const;
@@ -770,7 +770,7 @@ private:
 #endif // _DEBUG
 
 private:
-    int m_latestViewChangeCorrelationId{ 0 };
+    int32_t m_latestViewChangeCorrelationId{ 0 };
     int m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };

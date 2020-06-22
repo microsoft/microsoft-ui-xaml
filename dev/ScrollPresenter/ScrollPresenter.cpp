@@ -27,7 +27,7 @@ const double c_scrollPresenterLineDelta = 16.0;
 // an offset change with additional velocity.
 const float c_scrollPresenterDefaultInertiaDecayRate = 0.95f;
 
-const int ScrollPresenter::s_noOpCorrelationId{ -1 };
+const int32_t ScrollPresenter::s_noOpCorrelationId{ -1 };
 
 ScrollPresenter::~ScrollPresenter()
 {
@@ -430,14 +430,14 @@ winrt::IVector<winrt::ZoomSnapPointBase> ScrollPresenter::ZoomSnapPoints()
     return m_zoomSnapPoints;
 }
 
-int ScrollPresenter::ScrollTo(double horizontalOffset, double verticalOffset)
+int32_t ScrollPresenter::ScrollTo(double horizontalOffset, double verticalOffset)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
 
     return ScrollTo(horizontalOffset, verticalOffset, nullptr /*options*/);
 }
 
-int ScrollPresenter::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
+int32_t ScrollPresenter::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -460,14 +460,14 @@ int ScrollPresenter::ScrollTo(double horizontalOffset, double verticalOffset, wi
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
+int32_t ScrollPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffsetDelta, verticalOffsetDelta);
 
     return ScrollBy(horizontalOffsetDelta, verticalOffsetDelta, nullptr /*options*/);
 }
 
-int ScrollPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
+int32_t ScrollPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -490,7 +490,7 @@ int ScrollPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffse
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+int32_t ScrollPresenter::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
@@ -511,7 +511,7 @@ int ScrollPresenter::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IRe
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
+int32_t ScrollPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
@@ -519,7 +519,7 @@ int ScrollPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> c
     return ZoomTo(zoomFactor, centerPoint, nullptr /*options*/);
 }
 
-int ScrollPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
+int32_t ScrollPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -542,7 +542,7 @@ int ScrollPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> c
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
+int32_t ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -551,7 +551,7 @@ int ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::floa
     return ZoomBy(zoomFactorDelta, centerPoint, nullptr /*options*/);
 }
 
-int ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
+int32_t ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -574,7 +574,7 @@ int ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::floa
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+int32_t ScrollPresenter::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -3250,7 +3250,7 @@ winrt::CompositionAnimation ScrollPresenter::GetZoomFactorAnimation(
     return RaiseZoomAnimationStarting(zoomFactorAnimation, zoomFactor, centerPoint, zoomFactorChangeCorrelationId);
 }
 
-int ScrollPresenter::GetNextViewChangeCorrelationId()
+int32_t ScrollPresenter::GetNextViewChangeCorrelationId()
 {
     return (m_latestViewChangeCorrelationId == std::numeric_limits<int>::max()) ? 0 : m_latestViewChangeCorrelationId + 1;
 }
@@ -6999,19 +6999,19 @@ bool ScrollPresenter::InterruptViewChangeWithAnimation(InteractionTrackerAsyncOp
     {
         MUX_ASSERT(m_interactionTracker);
 
-        int interruptionId = 0;
+        int interruptionRequestId = 0;
 
         if (interactionTrackerAsyncOperationType == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation)
         {
-            interruptionId = m_interactionTracker.TryUpdatePositionBy(winrt::float3(0.0f));
+            interruptionRequestId = m_interactionTracker.TryUpdatePositionBy(winrt::float3(0.0f));
         }
         else
         {
             MUX_ASSERT(interactionTrackerAsyncOperationType == InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation);
-            interruptionId = m_interactionTracker.TryUpdateScale(m_zoomFactor, winrt::float3(0.0f));
+            interruptionRequestId = m_interactionTracker.TryUpdateScale(m_zoomFactor, winrt::float3(0.0f));
         }
 
-        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, interruptionId);
+        SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, interruptionRequestId);
 
         return true;
     }

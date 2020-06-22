@@ -57,13 +57,13 @@ namespace MUXControlsTestApp.Utilities
 
         private struct OperationInfo
         {
-            public int Id;
+            public int CorrelationId;
             public double RelativeOffsetChange;
             public double OffsetTarget;
 
-            public OperationInfo(int id, double relativeOffsetChange, double offsetTarget) : this()
+            public OperationInfo(int correlationId, double relativeOffsetChange, double offsetTarget) : this()
             {
-                Id = id;
+                CorrelationId = correlationId;
                 RelativeOffsetChange = relativeOffsetChange;
                 OffsetTarget = offsetTarget;
             }
@@ -71,7 +71,7 @@ namespace MUXControlsTestApp.Utilities
 
         private List<string> lstAsyncEventMessage = new List<string>();
         private List<int> lstOffsetChangeCorrelationIds = new List<int>();
-        private List<int> lstAddScrollVelocityIds = new List<int>();
+        private List<int> lstAddScrollVelocityCorrelationIds = new List<int>();
         private Dictionary<int, OperationInfo> operations = new Dictionary<int, OperationInfo>();
         private FrameworkElement interactionFrameworkElement = null;
         UIElement horizontalGrid = null;
@@ -471,13 +471,13 @@ namespace MUXControlsTestApp.Utilities
                     operations.Remove(offsetChangeCorrelationId);
                 }
 
-                RaiseLogMessage("CompositionScrollController: ScrollTo/By completed. Id=" + offsetChangeCorrelationId);
+                RaiseLogMessage("CompositionScrollController: ScrollTo/By completed. CorrelationId=" + offsetChangeCorrelationId);
             }
-            else if (lstAddScrollVelocityIds.Contains(offsetChangeCorrelationId))
+            else if (lstAddScrollVelocityCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstAddScrollVelocityIds.Add(offsetChangeCorrelationId);
+                lstAddScrollVelocityCorrelationIds.Add(offsetChangeCorrelationId);
 
-                RaiseLogMessage("CompositionScrollController: AddScrollVelocityRequest completed. Id=" + offsetChangeCorrelationId);
+                RaiseLogMessage("CompositionScrollController: AddScrollVelocityRequest completed. CorrelationId=" + offsetChangeCorrelationId);
             }
 
             if (OffsetChangeCompleted != null)
@@ -729,9 +729,9 @@ namespace MUXControlsTestApp.Utilities
                 {
                     RaiseLogMessage("CompositionScrollController: AddScrollVelocityRequest started. OffsetsChangeCorrelationId=" + e.CorrelationId);
 
-                    if (hookupCompletion && !lstAddScrollVelocityIds.Contains(e.CorrelationId))
+                    if (hookupCompletion && !lstAddScrollVelocityCorrelationIds.Contains(e.CorrelationId))
                     {
-                        lstAddScrollVelocityIds.Add(e.CorrelationId);
+                        lstAddScrollVelocityCorrelationIds.Add(e.CorrelationId);
                     }
                 }
                 return e.CorrelationId;

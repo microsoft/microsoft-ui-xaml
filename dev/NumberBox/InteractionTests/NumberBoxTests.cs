@@ -47,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
-                Verify.AreEqual(0, numBox.Value);
+                numBox.SetValue(0);
 
                 ComboBox spinModeComboBox = FindElement.ByName<ComboBox>("SpinModeComboBox");
                 spinModeComboBox.SelectItemByName("Inline");
@@ -112,7 +112,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Check("MinCheckBox");
                 Check("MaxCheckBox");
 
+                Log.Comment("Verify that spin buttons are disabled if value is NaN.");
+                Wait.ForIdle();
+                Verify.IsFalse(upButton.IsEnabled);
+                Verify.IsFalse(downButton.IsEnabled);
+
                 Log.Comment("Verify that when Value is at Minimum, the down spin button is disabled.");
+                numBox.SetValue(0);
+                Wait.ForIdle();
                 Verify.IsTrue(upButton.IsEnabled);
                 Verify.IsFalse(downButton.IsEnabled);
 
@@ -134,12 +141,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(upButton.IsEnabled);
                 Verify.IsTrue(downButton.IsEnabled);
-
-                Log.Comment("Verify that spin buttons are disabled if value is NaN.");
-                numBox.SetValue(double.NaN);
-                Wait.ForIdle();
-                Verify.IsFalse(upButton.IsEnabled);
-                Verify.IsFalse(downButton.IsEnabled);
 
                 ComboBox validationComboBox = FindElement.ByName<ComboBox>("ValidationComboBox");
                 validationComboBox.SelectItemByName("Disabled");
@@ -165,6 +166,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
 
                 Log.Comment("Verify that focusing the NumberBox selects the text");
                 numBox.SetFocus();
@@ -302,27 +304,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
+                Wait.ForIdle();
 
                 Log.Comment("Verify that scroll doesn't work when the control doesn't have focus.");
+                FindElement.ByName("MaxCheckBox").SetFocus();
+                Wait.ForIdle();
                 InputHelper.RotateWheel(numBox, 1);
                 Wait.ForIdle();
                 Verify.AreEqual(0, numBox.Value);
 
                 FindTextBox(numBox).SetFocus();
+                Wait.ForIdle();
 
-                InputHelper.RotateWheel(numBox, 1);
-                InputHelper.RotateWheel(numBox, 1);
+                InputHelper.RotateWheel(FindTextBox(numBox), 1);
+                InputHelper.RotateWheel(FindTextBox(numBox), 1);
                 Wait.ForIdle();
                 Verify.AreEqual(2, numBox.Value);
 
-                InputHelper.RotateWheel(numBox, -1);
-                InputHelper.RotateWheel(numBox, -1);
-                InputHelper.RotateWheel(numBox, -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
+                InputHelper.RotateWheel(FindTextBox(numBox), -1);
                 Wait.ForIdle();
                 Verify.AreEqual(-1, numBox.Value);
 
                 // Testing for 1705
                 RangeValueSpinner numBoxInScrollViewer = FindElement.ByName<RangeValueSpinner>("NumberBoxInScroller");
+                numBoxInScrollViewer.SetValue(0);
+                Wait.ForIdle();
                 FindTextBox(numBoxInScrollViewer).SetFocus();
                 InputHelper.RotateWheel(numBoxInScrollViewer, 1);
                 InputHelper.RotateWheel(numBoxInScrollViewer, 1);
@@ -399,7 +408,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 EnterText(numBox, "12");
                 Verify.AreEqual("12", textTextBlock.GetText());
                 Verify.AreEqual("12", newValueTextBlock.GetText());
-                Verify.AreEqual("0",  oldValueTextBlock.GetText());
+                Verify.AreEqual("NaN",  oldValueTextBlock.GetText());
 
                 Log.Comment("Verify that setting value through UIA fires ValueChanged event.");
                 Button button = FindElement.ByName<Button>("SetValueButton");
@@ -447,6 +456,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
 
                 Log.Comment("Verify that expressions don't work if AcceptsExpression is false");
                 EnterText(numBox, "5 + 3");
@@ -523,6 +533,54 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(0, numErrors);
             }
         }
+
+        [TestMethod]
+        public void VerifyNumberBoxHeaderBehavior()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                var headerBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderBeforeApplyTemplateTest");
+                Verify.IsNotNull(headerBeforeApplyTemplate); 
+                
+                var headerTemplateBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderTemplateBeforeApplayTemplateTest");
+                Verify.IsNotNull(headerBeforeApplyTemplate);
+
+                var toggleHeaderButton = FindElement.ByName<Button>("ToggleHeaderValueButton");
+                var header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                
+                Log.Comment("Check header is null");
+                Verify.IsNull(header);
+
+                Log.Comment("Set header");
+                toggleHeaderButton.Invoke();
+                Wait.ForIdle();
+                
+                header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                Log.Comment("Check if header is present");
+                Verify.IsNotNull(header);
+                Log.Comment("Remove header");
+                toggleHeaderButton.Invoke();
+                Wait.ForIdle();
+                ElementCache.Clear();
+
+                Log.Comment("Check that header is null again");
+                header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                Verify.IsNull(header);
+
+
+                var toggleHeaderTemplateButton = FindElement.ByName<Button>("ToggleHeaderTemplateValueButton");
+                var headerTemplate = FindElement.ByName<TextBlock>("HeaderTemplateTestingBlock");
+
+                Verify.IsNull(headerTemplate);
+
+                toggleHeaderTemplateButton.Invoke();
+                Wait.ForIdle();
+
+                headerTemplate = FindElement.ByName<TextBlock>("HeaderTemplateTestingBlock");
+                Verify.IsNotNull(headerTemplate);
+            }
+        }
+
 
         Button FindButton(UIObject parent, string buttonName)
         {

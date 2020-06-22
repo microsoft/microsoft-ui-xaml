@@ -35,7 +35,7 @@ public:
     static const winrt::ScrollingScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollingScrollMode::Enabled };
     static const winrt::ScrollingScrollMode s_defaultVerticalScrollMode{ winrt::ScrollingScrollMode::Enabled };
 #endif
-    static const int s_noOpCorrelationId;
+    static const int32_t s_noOpCorrelationId;
     static const winrt::ScrollingChainMode s_defaultZoomChainMode{ winrt::ScrollingChainMode::Auto };
     static const winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
     static const winrt::ScrollingInputKinds s_defaultIgnoredInputKinds{ winrt::ScrollingInputKinds::None };
@@ -67,16 +67,16 @@ public:
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
 
-    int ScrollTo(double horizontalOffset, double verticalOffset);
-    int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    int AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
+    int32_t AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
     // Invoked by ScrollViewTestHooks
@@ -363,10 +363,10 @@ private:
     bool m_isPointerOverVerticalScrollController{ false };
 
     int m_verticalAddScrollVelocityDirection{ 0 };
-    int m_verticalAddScrollVelocityOffsetChangeCorrelationId{ -1 };
+    int32_t m_verticalAddScrollVelocityOffsetChangeCorrelationId{ -1 };
 
     int m_horizontalAddScrollVelocityDirection{ 0 };
-    int m_horizontalAddScrollVelocityOffsetChangeCorrelationId{ -1 };
+    int32_t m_horizontalAddScrollVelocityOffsetChangeCorrelationId{ -1 };
 
     // List of temporary ScrollViewBringIntoViewOperation instances used to track expected
     // ScrollPresenter::BringingIntoView occurrences due to navigation.

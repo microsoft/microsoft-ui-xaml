@@ -26,11 +26,18 @@
                 <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
-                    <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="1" SelectionChanged="TabWidthComboBox_SelectionChanged">
-                        <ComboBoxItem Content="SizeToContent"/>
+                    <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
                         <ComboBoxItem Content="Equal"/>
+                        <ComboBoxItem Content="SizeToContent"/>
+                        <ComboBoxItem Content="Compact"/>
                     </ComboBox>
                 </StackPanel>
+                <TextBlock Text="Closebutton overlay mode:"/>
+                <ComboBox x:Name="CloseButtonOverlayModeCombobox" AutomationProperties.Name="CloseButtonOverlayModeCombobox" SelectedIndex="2" Margin="0,4,0,0" SelectionChanged="CloseButtonOverlayModeCombobox_SelectionChanged">
+                    <ComboBoxItem Content="Auto"/>
+                    <ComboBoxItem Content="OnPointerOver"/>
+                    <ComboBoxItem Content="Always"/>
+                </ComboBox>
 
                 <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 
@@ -41,6 +48,9 @@
                 <Button x:Name="ChangeShopTextButton" AutomationProperties.Name="ChangeShopTextButton" Content="Change Shop text" Margin="0,0,0,8" Click="ChangeShopTextButton_Click"/>
                 <Button x:Name="CustomTooltipButton" AutomationProperties.Name="CustomTooltipButton" Content="Custom Tooltip" Margin="0,0,0,8" Click="CustomTooltipButton_Click"/>
                 <Button x:Name="SetTabViewWidth" AutomationProperties.Name="SetTabViewWidth" Content="Set Width" Margin="0,0,0,8" Click="SetTabViewWidth_Click" />
+                <Button x:Name="ScrollTabViewToTheLeft" AutomationProperties.Name="ScrollTabViewToTheLeft" Content="Scroll TabView To the Left" Margin="0,0,0,8" Click="TabViewScrollToTheLeftButton_Click" />
+                <Button x:Name="ScrollTabViewToTheMiddle" AutomationProperties.Name="ScrollTabViewToTheMiddle" Content="Scroll TabView To the Middle" Margin="0,0,0,8" Click="TabViewScrollToTheMiddleButton_Click" />
+                <Button x:Name="ScrollTabViewToTheRight" AutomationProperties.Name="ScrollTabViewToTheRight" Content="Scroll TabView To the Right" Margin="0,0,0,8" Click="TabViewScrollToTheRightButton_Click" />
 
                 <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
 
@@ -53,7 +63,17 @@
                     <Button x:Name="GetScrollButtonsVisible" AutomationProperties.Name="GetScrollButtonsVisible" Content="Get" Margin="4,0,0,0" Click="GetScrollButtonsVisible_Click" />
                 </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="DecreaseButton enabled:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock x:Name="ScrollDecreaseButtonEnabled" AutomationProperties.Name="ScrollDecreaseButtonEnabled" Text="False" VerticalAlignment="Center"/>
+                    <Button x:Name="GetScrollDecreaseButtonEnabled" AutomationProperties.Name="GetScrollDecreaseButtonEnabled" Content="Get" Margin="4,0,0,0" Click="GetScrollDecreaseButtonEnabled_Click" />
+                </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="IncreaseButton enabled:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock x:Name="ScrollIncreaseButtonEnabled" AutomationProperties.Name="ScrollIncreaseButtonEnabled" Text="False" VerticalAlignment="Center"/>
+                    <Button x:Name="GetScrollIncreaseButtonEnabled" AutomationProperties.Name="GetScrollIncreaseButtonEnabled" Content="Get" Margin="4,0,0,0" Click="GetScrollIncreaseButtonEnabled_Click" />
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock>Selected Index:</TextBlock>
@@ -78,6 +98,21 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <Button x:Name="GetFirstTabLocationButton" AutomationProperties.Name="GetFirstTabLocationButton" Content="FirstTab" Click="GetFirstTabLocationButton_Click"/>
                     <TextBlock x:Name="FirstTabLocationTextBlock" AutomationProperties.Name="FirstTabLocationTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetScrollDecreaseButtonToolTipButton" AutomationProperties.Name="GetScrollDecreaseButtonToolTipButton" Content="TooltipScrollDecreaseButton" Click="GetScrollDecreaseButtonToolTipButton_Click"/>
+                    <TextBlock x:Name="ScrollDecreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollDecreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
+                    <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetSecondTabHeaderForegroundButton" AutomationProperties.Name="GetSecondTabHeaderForegroundButton" Content="SecondTabHeaderForeground" Click="GetSecondTabHeaderForegroundButton_Click" />
+                    <TextBlock x:Name="SecondTabHeaderForegroundTextBlock" AutomationProperties.Name="SecondTabHeaderForegroundTextBlock" Margin="4,0,0,0" Text=""/>
                 </StackPanel>
             </StackPanel>
 
@@ -118,11 +153,25 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton" Margin="8" Click="TabViewSizingPageButton_Click" FontSize="20">TabView Sizing Page</Button>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
+                                        Margin="8" Click="TabViewSizingPageButton_Click"
+                                        FontSize="20">TabView Sizing Page</Button>
+                                <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
+                                        Margin="8" Click="TabViewTabClosingBehaviorButton_Click"
+                                        FontSize="20">TabView Tab Closing behavior Page</Button>
+                                <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
+                                        Margin="8" Click="TabViewTabItemsSourcePageButton_Click"
+                                        FontSize="20">TabView TabItemsSource Page</Button>
+                            </StackPanel>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
+                        <controls:TabViewItem.Resources>
+                            <!-- Do not remove or change this! We are verifying this resource in a TabView InteractionTest. -->
+                            <SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="#FF008000" />
+                        </controls:TabViewItem.Resources>
                         <controls:TabViewItem.IconSource>
                             <controls:SymbolIconSource Symbol="Shop"/>
                         </controls:TabViewItem.IconSource>
@@ -178,6 +227,12 @@
                     </Grid.ColumnDefinitions>
 
                     <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
+                        <controls:TabView.Resources>
+                            <ResourceDictionary>
+                                <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="SystemAccentColor"/>
+                            </ResourceDictionary>
+                        </controls:TabView.Resources>
+
                         <controls:TabView.TabItemTemplate>
                             <DataTemplate x:DataType="local:TabDataItem">
                                 <controls:TabViewItem Header="{x:Bind Header}" IconSource="{x:Bind IconSource}" Content="{x:Bind Content}">

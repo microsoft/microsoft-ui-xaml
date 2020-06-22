@@ -441,6 +441,11 @@ winrt::IInspectable SharedHelpers::FindResource(const std::wstring_view& resourc
     return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : defaultValue;
 }
 
+winrt::IInspectable SharedHelpers::FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue)
+{
+    return SharedHelpers::FindResource(resource, winrt::Application::Current().Resources(), defaultValue);
+}
+
 // When checkVisibility is True, IsAncestor additionally checks if any UIElement from the 'child'
 // to the 'parent' chain is Collapsed. It returns False when that is the case.
 bool SharedHelpers::IsAncestor(
@@ -713,4 +718,10 @@ winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspe
     }
     
     return returnHString;
+}
+
+/* static */
+winrt::float4 SharedHelpers::RgbaColor(const winrt::Color& color)
+{
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }

@@ -10,6 +10,10 @@
     <Import_RootNamespace>AcrylicBrush_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AcrylicBrushLuminosityTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)AcrylicBrushPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -32,6 +36,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AcrylicBrushLuminosityTestPage.xaml.cs">
+      <DependentUpon>AcrylicBrushLuminosityTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)AcrylicBrushPage.xaml.cs">
       <DependentUpon>AcrylicBrushPage.xaml</DependentUpon>
     </Compile>

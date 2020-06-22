@@ -5,7 +5,7 @@
 #include "common.h"
 #include "ScrollingZoomCompletedEventArgs.h"
 
-int ScrollingZoomCompletedEventArgs::CorrelationId()
+int32_t ScrollingZoomCompletedEventArgs::CorrelationId()
 {
     return m_zoomFactorChangeCorrelationId;
 }

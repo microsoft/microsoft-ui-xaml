@@ -21,7 +21,7 @@ public:
     }
 
     // IScrollingZoomCompletedEventArgs overrides
-    int CorrelationId();
+    int32_t CorrelationId();
     ScrollPresenterViewChangeResult Result();
 
     void ZoomFactorChangeCorrelationId(int32_t zoomFactorChangeCorrelationId);

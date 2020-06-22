@@ -16,7 +16,7 @@
 bool ScrollViewTrace::s_IsDebugOutputEnabled{ false };
 bool ScrollViewTrace::s_IsVerboseDebugOutputEnabled{ false };
 
-const int ScrollView::s_noOpCorrelationId{ -1 };
+const int32_t ScrollView::s_noOpCorrelationId{ -1 };
 
 ScrollView::ScrollView()
 {
@@ -202,7 +202,7 @@ void ScrollView::UnregisterAnchorCandidate(winrt::UIElement const& element)
 }
 
 
-int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset)
+int32_t ScrollView::ScrollTo(double horizontalOffset, double verticalOffset)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
 
@@ -214,7 +214,7 @@ int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset)
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
+int32_t ScrollView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -227,7 +227,7 @@ int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
+int32_t ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffsetDelta, verticalOffsetDelta);
 
@@ -239,7 +239,7 @@ int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelt
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
+int32_t ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -252,7 +252,7 @@ int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelt
     return s_noOpCorrelationId;
 }
 
-int ScrollView::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+int32_t ScrollView::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
@@ -265,7 +265,7 @@ int ScrollView::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReferen
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
+int32_t ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
@@ -278,7 +278,7 @@ int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> center
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
+int32_t ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -293,7 +293,7 @@ int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> center
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
+int32_t ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -307,7 +307,7 @@ int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> c
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
+int32_t ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -322,7 +322,7 @@ int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> c
     return s_noOpCorrelationId;
 }
 
-int ScrollView::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+int32_t ScrollView::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),

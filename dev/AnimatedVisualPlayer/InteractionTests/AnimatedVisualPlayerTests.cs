@@ -18,18 +18,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
-// CatGates requires that test namespaces begin with "Windows.UI.Xaml.Tests",
-// so we need to make sure that our test namespace begins with that to ensure that we get picked up.
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    class AnimatedVisualPlayerTests
+    public sealed class AnimatedVisualPlayerTests
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -40,6 +36,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
@@ -50,205 +47,163 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("AnimatedVisualPlayer Tests"))
             {
-                var progressTextBox = FindElement.ByName<Edit>("ProgressTextBox");
-                var isPlayingTextBoxBeforePlaying = FindElement.ByName<Edit>("IsPlayingTextBoxBeforePlaying");
-                var isPlayingTextBoxBeingPlaying = FindElement.ByName<Edit>("IsPlayingTextBoxBeingPlaying");
-                var playButton = FindElement.ByName<Button>("PlayButton");
+                var isPlayingTextBoxBeforePlaying = Edit("IsPlayingTextBoxBeforePlaying");
+                var isPlayingTextBoxBeingPlaying = Edit("IsPlayingTextBoxBeingPlaying");
 
-                if (playButton != null &&
-                    progressTextBox != null &&
-                    isPlayingTextBoxBeforePlaying != null &&
-                    isPlayingTextBoxBeingPlaying != null)
+                if (isPlayingTextBoxBeforePlaying is null ||
+                    isPlayingTextBoxBeingPlaying is null)
                 {
-                    using (var progressTextBoxWaiter = new PropertyChangedEventWaiter(progressTextBox, UIProperty.Get("Value.Value")))
-                    {
-                        playButton.Click();
-
-                        Log.Comment("Waiting until AnimatedVisualPlayer playing ends.");
-                        progressTextBoxWaiter.Wait();
-                        Log.Comment("EventWaiter of progressTextBox is raised.");
-
-                        Log.Comment("Value of isPlayingTextBoxBeforePlaying: \"{0}\".", isPlayingTextBoxBeforePlaying.Value);
-                        Verify.AreEqual(Constants.FalseText, isPlayingTextBoxBeforePlaying.Value);
-
-                        //
-                        // isPlayingTextBoxBeingPlaying value is supposed to be updated
-                        // inside the event handler function of Click for playButton in
-                        // the UI test.
-                        //
-                        Log.Comment("Value of isPlayingTextBoxBeingPlaying: \"{0}\".", isPlayingTextBoxBeingPlaying.Value);
-                        Verify.AreEqual(Constants.TrueText, isPlayingTextBoxBeingPlaying.Value);
-
-                        Log.Comment("Value of progressTextBox: \"{0}\".", progressTextBox.Value);
-                        Verify.AreEqual(Constants.PlayingEndedText, progressTextBox.Value);
-                    }
-                }
-                else
-                {
-                    Verify.Fail("PlayButton or any other UIElement is not found.");
+                    Verify.Fail("UIElement not found.");
+                    return;
                 }
 
-                ToZeroKeyframeAnimationAccessibilityTest();
-                FromOneKeyframeAnimationAccessibilityTest();
-                ReverseNegativePlaybackRateAnimationAccessibilityTest();
-                ReversePositivePlaybackRateAnimationAccessibilityTest();
-                HittestingAccessibilityTest();
+                ClickWaitAndVerifyText(
+                    clickTarget: Button("PlayButton"),
+                    edit: Edit("ProgressTextBox"),
+                    expectedValue: Constants.PlayingEndedText);
+
+
+                Log.Comment("Value of isPlayingTextBoxBeforePlaying: \"{0}\".", isPlayingTextBoxBeforePlaying.Value);
+                Verify.AreEqual(Constants.FalseText, isPlayingTextBoxBeforePlaying.Value);
+
+                //
+                // isPlayingTextBoxBeingPlaying value is supposed to be updated
+                // inside the event handler function of Click for playButton in
+                // the UI test.
+                //
+                Log.Comment("Value of isPlayingTextBoxBeingPlaying: \"{0}\".", isPlayingTextBoxBeingPlaying.Value);
+                Verify.AreEqual(Constants.TrueText, isPlayingTextBoxBeingPlaying.Value);
+
+                ToZeroKeyframeAnimationTest();
+                AroundTheEndAnimationTest();
+                FromOneKeyframeAnimationTest();
+                ReverseNegativePlaybackRateAnimationTest();
+                ReversePositivePlaybackRateAnimationTest();
+                HittestingTest();
                 FallenBackTest();
             }
         }
 
-        private void ToZeroKeyframeAnimationAccessibilityTest()
+        private void ToZeroKeyframeAnimationTest()
         {
-            var textBox = FindElement.ByName<Edit>("ToZeroKeyframeAnimationProgressTextBox");
-            var playButton = FindElement.ByName<Button>("ToZeroKeyframeAnimationPlayButton");
-
-            if (playButton != null && textBox != null)
-            {
-                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
-                {
-                    playButton.Click();
-
-                    Log.Comment("ToZeroKeyframeAnimationAccessibilityTest: textBoxWaiter: Waiting until AnimatedVisualPlayer playing ends.");
-                    textBoxWaiter.Wait();
-                    Log.Comment("ToZeroKeyframeAnimationAccessibilityTest: EventWaiter of textBox is raised.");
-
-                    Log.Comment("ToZeroKeyframeAnimationAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
-                    Verify.AreEqual(Constants.PlayingEndedText, textBox.Value);
-                }
-            }
-            else
-            {
-                Verify.Fail("ToZeroKeyframeAnimationAccessibilityTest: playButton or any other UIElement is not found.");
-            }
+            ClickWaitAndVerifyText(
+                clickTarget: Button("ToZeroKeyframeAnimationPlayButton"),
+                edit: Edit("ToZeroKeyframeAnimationProgressTextBox"),
+                expectedValue: Constants.PlayingEndedText);
         }
 
-        private void FromOneKeyframeAnimationAccessibilityTest()
+        private void AroundTheEndAnimationTest()
         {
-            var textBox = FindElement.ByName<Edit>("FromOneKeyframeAnimationProgressTextBox");
-            var playButton = FindElement.ByName<Button>("FromOneKeyframeAnimationPlayButton");
+            ClickWaitAndVerifyText(
+                clickTarget: Button("AroundTheEndAnimationPlayButton"),
+                edit: Edit("AroundTheEndAnimationProgressTextBox"),
+                expectedValue: Constants.PlayingEndedText);
+        }
 
-            if (playButton != null && textBox != null)
-            {
-                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
-                {
-                    playButton.Click();
 
-                    Log.Comment("FromOneKeyframeAnimationAccessibilityTest: textBoxWaiter: Waiting until AnimatedVisualPlayer playing ends.");
-                    textBoxWaiter.Wait();
-                    Log.Comment("FromOneKeyframeAnimationAccessibilityTest: EventWaiter of textBox is raised.");
-
-                    Log.Comment("FromOneKeyframeAnimationAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
-                    Verify.AreEqual(Constants.PlayingEndedText, textBox.Value);
-                }
-            }
-            else
-            {
-                Verify.Fail("FromOneKeyframeAnimationAccessibilityTest: playButton or any other UIElement is not found.");
-            }
+        private void FromOneKeyframeAnimationTest()
+        {
+            ClickWaitAndVerifyText(
+                clickTarget: Button("FromOneKeyframeAnimationPlayButton"),
+                edit: Edit("FromOneKeyframeAnimationProgressTextBox"),
+                expectedValue: Constants.PlayingEndedText);
         }
 
         // Reverse backward playing using negative playback rate by setting playback rate to positive.
-        private void ReverseNegativePlaybackRateAnimationAccessibilityTest()
+        private void ReverseNegativePlaybackRateAnimationTest()
         {
-            var textBox = FindElement.ByName<Edit>("ReverseNegativePlaybackRateAnimationTextBox");
-            var playButton = FindElement.ByName<Button>("ReverseNegativePlaybackRateAnimationPlayButton");
-
-            if (playButton != null && textBox != null)
-            {
-                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
-                {
-                    playButton.Click();
-
-                    Log.Comment("ReverseNegativePlaybackRateAnimationAccessibilityTest: textBoxWaiter: Waiting until AnimatedVisualPlayer playing ends.");
-                    textBoxWaiter.Wait();
-                    Log.Comment("ReverseNegativePlaybackRateAnimationAccessibilityTest: EventWaiter of textBox is raised.");
-
-                    Log.Comment("ReverseNegativePlaybackRateAnimationAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
-                    Verify.AreEqual(Constants.OneText, textBox.Value);
-                }
-            }
-            else
-            {
-                Verify.Fail("ReverseNegativePlaybackRateAnimationAccessibilityTest: playButton or any other UIElement is not found.");
-            }
+            ClickWaitAndVerifyText(
+                clickTarget: Button("ReverseNegativePlaybackRateAnimationPlayButton"),
+                edit: Edit("ReverseNegativePlaybackRateAnimationTextBox"),
+                expectedValue: Constants.OneText);
         }
 
         // Reverse forward playing using positive playback rate by setting playback rate to negative.
-        private void ReversePositivePlaybackRateAnimationAccessibilityTest()
+        private void ReversePositivePlaybackRateAnimationTest()
         {
-            var textBox = FindElement.ByName<Edit>("ReversePositivePlaybackRateAnimationTextBox");
-            var playButton = FindElement.ByName<Button>("ReversePositivePlaybackRateAnimationPlayButton");
-
-            if (playButton != null && textBox != null)
-            {
-                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
-                {
-                    playButton.Click();
-
-                    Log.Comment("ReversePositivePlaybackRateAnimationAccessibilityTest: textBoxWaiter: Waiting until AnimatedVisualPlayer playing ends.");
-                    textBoxWaiter.Wait();
-                    Log.Comment("EventWaiter of reversePositivePlaybackRateAnimationProgressTextBox is raised.");
-
-                    Log.Comment("ReversePositivePlaybackRateAnimationAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
-                    Verify.AreEqual(Constants.ZeroText, textBox.Value);
-                }
-            }
-            else
-            {
-                Verify.Fail("ReversePositivePlaybackRateAnimationAccessibilityTest: playButton or any other UIElement is not found.");
-            }
+            ClickWaitAndVerifyText(
+                clickTarget: Button("ReversePositivePlaybackRateAnimationPlayButton"),
+                edit: Edit("ReversePositivePlaybackRateAnimationTextBox"),
+                expectedValue: Constants.ZeroText);
         }
-        
-        private void HittestingAccessibilityTest()
+
+        // Tests that moving the mouse over the AnimatedVisualPlayer causes the
+        // PointerMoved event to be fired.
+        private void HittestingTest()
         {
-            if (!IsRS5OrHigher())
+            const string testName = nameof(HittestingTest);
+
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                return;
-            }
+                var textBox = Edit("HittestingTextBox");
 
-            var textBox = FindElement.ByName<Edit>("HittestingTextBox");
+                // Move the mouse away from the AnimatedVisualPlayer.
+                InputHelper.MoveMouse(textBox, 0, 0);
 
-            using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
-            {
-                TestEnvironment.Application.CoreWindow.Click();
+                // Clear the value of the Edit.
+                textBox.SetValueAndWait(string.Empty);
 
-                Log.Comment("HittestingAccessibilityTest: Waiting until OnPointerMoved handler in UI test returns.");
-                textBoxWaiter.Wait();
-                Log.Comment("HittestingAccessibilityTest: EventWaiter of HittestingAccessibilityTest is raised.");
+                using (var waiter = new ValueChangedEventWaiter(textBox))
+                {
+                    // Move the mouse over the AnimatedVisualPlayer.
+                    var player = FindElement.ByName("Player");
+                    InputHelper.MoveMouse(player, 20, 20);
 
-                Log.Comment("HittestingAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
+                    Log.Comment($"{testName}: Waiting until OnPointerMoved handler in UI test returns.");
+                    waiter.Wait();
+                }
+
+                Log.Comment($"{testName}: Value of textBox: \"{textBox.Value}\".");
                 Verify.AreEqual(Constants.PointerMovedText, textBox.Value);
             }
         }
 
+        // Tests that replacing the source with something invalid causes the
+        // fallback content to be displayed.
         private void FallenBackTest()
         {
-            var textBox = FindElement.ByName<Edit>("FallenBackTextBox");
-            var testButton = FindElement.ByName<Button>("FallenBackButton");
-
-            if (testButton != null && textBox != null)
-            {
-                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
-                {
-                    testButton.Click();
-
-                    Log.Comment("FallenBackTest: textBoxWaiter: Waiting until fallenback screencapture and results checking.");
-                    textBoxWaiter.Wait();
-                    Log.Comment("EventWaiter of FallenBackTextBox is raised.");
-
-                    Log.Comment("FallenBackTest: Value of textBox: \"{0}\".", textBox.Value);
-                    Verify.AreEqual(Constants.TrueText, textBox.Value);
-                }
-            }
-            else
-            {
-                Verify.Fail("FallenBackTest: FallenBackButton or any other UIElement is not found.");
-            }
+            ClickWaitAndVerifyText(
+                clickTarget: Button("FallenBackButton"),
+                edit: Edit("FallenBackTextBox"),
+                expectedValue: Constants.TrueText);
         }
 
-        private bool IsRS5OrHigher()
+        // Clicks the clickTarget, waits for the edit's text to change its value, 
+        // and returns the value of the edit.
+        void ClickWaitAndVerifyText(
+            UIObject clickTarget,
+            Edit edit,
+            string expectedValue,
+            [global::System.Runtime.CompilerServices.CallerMemberName] string testName = "")
         {
-            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7);
+            if (clickTarget is null)
+            {
+                Verify.Fail($"{testName}: {nameof(clickTarget)} UIElement not found.");
+                return;
+            }
+
+            if (edit is null)
+            {
+                Verify.Fail($"{testName}: {nameof(edit)} UIElement not found.");
+                return;
+            }
+
+            // Clear out the text box so it starts in a known state.
+            edit.SetValueAndWait(string.Empty);
+
+            using (var waiter = new ValueChangedEventWaiter(edit))
+            {
+                clickTarget.Click();
+                Log.Comment($"{testName}: Waiting for text to change.");
+                waiter.Wait();
+            }
+
+            Log.Comment($"{testName}: Value of text: \"{edit.Value}\".");
+            Verify.AreEqual(expectedValue, edit.Value);
         }
+
+        static Button Button(string name) => FindElement.ByName<Button>(name);
+
+        static Edit Edit(string name) => FindElement.ByName<Edit>(name);
     }
 }

@@ -21,7 +21,7 @@ public:
     }
 
     // IScrollingScrollCompletedEventArgs overrides
-    int CorrelationId();
+    int32_t CorrelationId();
     ScrollPresenterViewChangeResult Result();
 
     void OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId);
