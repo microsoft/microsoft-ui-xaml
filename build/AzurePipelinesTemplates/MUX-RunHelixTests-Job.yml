@@ -21,7 +21,7 @@ parameters:
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
-      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
+      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml%3bwindows.10.amd64.clientrs3.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
@@ -138,4 +138,4 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{ parameters.rerunPassesRequiredToAvoidFailure }}'

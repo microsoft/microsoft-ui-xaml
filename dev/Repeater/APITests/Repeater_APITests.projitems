@@ -26,10 +26,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockViewGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockVirtualizingLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\SharedHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\TestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\WinRTCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\DataAsElementElementFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollingPresenterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollPresenterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollViewerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ElementAnimatorTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ElementFromElementElementFactory.cs" />

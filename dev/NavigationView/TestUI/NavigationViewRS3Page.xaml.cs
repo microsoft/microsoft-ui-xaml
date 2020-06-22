@@ -54,11 +54,15 @@ namespace MUXControlsTestApp
         private void TestFrameCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             ChangeTestFrameVisibility(Visibility.Visible);
+            // Show titlebar to reenable clicking the buttons in the test frame
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = false;
         }
 
         private void TestFrameCheckbox_Unchecked(object sender, RoutedEventArgs e)
         {
             ChangeTestFrameVisibility(Visibility.Collapsed);
+            // Hide titlebar again in case we hid it before
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
         }
 
         private void ChangeTestFrameVisibility(Visibility visibility)

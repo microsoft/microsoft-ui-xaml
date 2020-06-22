@@ -22,108 +22,108 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 {
     public static class ScrollHelper
     {
-        public static void ScrollHorizontally(ScrollingPresenter scrollingPresenter, ScrollAmount amount)
+        public static void ScrollHorizontally(ScrollPresenter scrollPresenter, ScrollAmount amount)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
             Verify.AreNotEqual(amount, ScrollAmount.NoAmount);
-            Log.Comment("ScrollHelper.ScrollHorizontally scrollingPresenter={0}, amount={1}, before-offset={2}.",
-                string.IsNullOrWhiteSpace(scrollingPresenter.AutomationId) ? scrollingPresenter.Name : scrollingPresenter.AutomationId,
+            Log.Comment("ScrollHelper.ScrollHorizontally scrollPresenter={0}, amount={1}, before-offset={2}.",
+                string.IsNullOrWhiteSpace(scrollPresenter.AutomationId) ? scrollPresenter.Name : scrollPresenter.AutomationId,
                 amount,
-                scrollingPresenter.HorizontalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent);
 
-            scrollingPresenter.ScrollHorizontal(amount);
-            Wait.ForScrollChanged(scrollingPresenter, ScrollProperty.HorizontalScrollPercent);
+            scrollPresenter.ScrollHorizontal(amount);
+            Wait.ForScrollChanged(scrollPresenter, ScrollProperty.HorizontalScrollPercent);
 
             Log.Comment("ScrollHelper.ScrollHorizontally after-offset={0}.",
-                scrollingPresenter.HorizontalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent);
         }
 
-        public static void ScrollVertically(ScrollingPresenter scrollingPresenter, ScrollAmount amount)
+        public static void ScrollVertically(ScrollPresenter scrollPresenter, ScrollAmount amount)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
             Verify.AreNotEqual(amount, ScrollAmount.NoAmount);
-            Log.Comment("ScrollHelper.ScrollVertically scrollingPresenter={0}, amount={1}, before-offset={2}.", 
-                string.IsNullOrWhiteSpace(scrollingPresenter.AutomationId) ? scrollingPresenter.Name : scrollingPresenter.AutomationId,
+            Log.Comment("ScrollHelper.ScrollVertically scrollPresenter={0}, amount={1}, before-offset={2}.", 
+                string.IsNullOrWhiteSpace(scrollPresenter.AutomationId) ? scrollPresenter.Name : scrollPresenter.AutomationId,
                 amount,
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.VerticalScrollPercent);
 
-            scrollingPresenter.ScrollVertical(amount);
-            Wait.ForScrollChanged(scrollingPresenter, ScrollProperty.VerticalScrollPercent);
+            scrollPresenter.ScrollVertical(amount);
+            Wait.ForScrollChanged(scrollPresenter, ScrollProperty.VerticalScrollPercent);
 
             Log.Comment("ScrollHelper.ScrollVertically after-offset={0}.",
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.VerticalScrollPercent);
         }
 
-        public static void Scroll(ScrollingPresenter scrollingPresenter, ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
+        public static void Scroll(ScrollPresenter scrollPresenter, ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
             Verify.AreNotEqual(horizontalAmount, ScrollAmount.NoAmount);
             Verify.AreNotEqual(verticalAmount, ScrollAmount.NoAmount);
-            Log.Comment("ScrollHelper.Scroll scrollingPresenter={0}, horizontalAmount={1}, verticalAmount={2}, before-horizontal-offset={3}, before-vertical-offset={4}.",
-                string.IsNullOrWhiteSpace(scrollingPresenter.AutomationId) ? scrollingPresenter.Name : scrollingPresenter.AutomationId,
+            Log.Comment("ScrollHelper.Scroll scrollPresenter={0}, horizontalAmount={1}, verticalAmount={2}, before-horizontal-offset={3}, before-vertical-offset={4}.",
+                string.IsNullOrWhiteSpace(scrollPresenter.AutomationId) ? scrollPresenter.Name : scrollPresenter.AutomationId,
                 horizontalAmount,
                 verticalAmount,
-                scrollingPresenter.HorizontalScrollPercent,
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent,
+                scrollPresenter.VerticalScrollPercent);
 
-            scrollingPresenter.Scroll(horizontalAmount, verticalAmount);
-            Wait.ForScrollChanged(scrollingPresenter, ScrollProperty.HorizontalScrollPercent);
+            scrollPresenter.Scroll(horizontalAmount, verticalAmount);
+            Wait.ForScrollChanged(scrollPresenter, ScrollProperty.HorizontalScrollPercent);
 
             Log.Comment("ScrollHelper.Scroll after-horizontal-offset={0}, after-vertical-offset={1}.",
-                scrollingPresenter.HorizontalScrollPercent,
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent,
+                scrollPresenter.VerticalScrollPercent);
         }
 
-        public static void SetHorizontalScrollPercent(ScrollingPresenter scrollingPresenter, double horizontalPercent)
+        public static void SetHorizontalScrollPercent(ScrollPresenter scrollPresenter, double horizontalPercent)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
             Verify.AreNotEqual(horizontalPercent, 0.0);
-            Log.Comment("ScrollHelper.SetHorizontalScrollPercent scrollingPresenter={0}, horizontalPercent={1}, before-horizontal-offset={2}.",
-                string.IsNullOrWhiteSpace(scrollingPresenter.AutomationId) ? scrollingPresenter.Name : scrollingPresenter.AutomationId,
+            Log.Comment("ScrollHelper.SetHorizontalScrollPercent scrollPresenter={0}, horizontalPercent={1}, before-horizontal-offset={2}.",
+                string.IsNullOrWhiteSpace(scrollPresenter.AutomationId) ? scrollPresenter.Name : scrollPresenter.AutomationId,
                 horizontalPercent,
-                scrollingPresenter.HorizontalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent);
 
-            scrollingPresenter.SetScrollPercent(horizontalPercent, -1 /*NoScroll*/);
-            Wait.ForScrollChanged(scrollingPresenter, ScrollProperty.HorizontalScrollPercent);
+            scrollPresenter.SetScrollPercent(horizontalPercent, -1 /*NoScroll*/);
+            Wait.ForScrollChanged(scrollPresenter, ScrollProperty.HorizontalScrollPercent);
 
             Log.Comment("ScrollHelper.SetHorizontalScrollPercent after-horizontal-offset={0}.",
-                scrollingPresenter.HorizontalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent);
         }
 
-        public static void SetVerticalScrollPercent(ScrollingPresenter scrollingPresenter, double verticalPercent)
+        public static void SetVerticalScrollPercent(ScrollPresenter scrollPresenter, double verticalPercent)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
             Verify.AreNotEqual(verticalPercent, 0.0);
-            Log.Comment("ScrollHelper.SetVerticalScrollPercent scrollingPresenter={0}, verticalPercent={1}, before-vertical-offset={2}.",
-                string.IsNullOrWhiteSpace(scrollingPresenter.AutomationId) ? scrollingPresenter.Name : scrollingPresenter.AutomationId,
+            Log.Comment("ScrollHelper.SetVerticalScrollPercent scrollPresenter={0}, verticalPercent={1}, before-vertical-offset={2}.",
+                string.IsNullOrWhiteSpace(scrollPresenter.AutomationId) ? scrollPresenter.Name : scrollPresenter.AutomationId,
                 verticalPercent,
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.VerticalScrollPercent);
 
-            scrollingPresenter.SetScrollPercent(-1 /*NoScroll*/, verticalPercent);
-            Wait.ForScrollChanged(scrollingPresenter, ScrollProperty.VerticalScrollPercent);
+            scrollPresenter.SetScrollPercent(-1 /*NoScroll*/, verticalPercent);
+            Wait.ForScrollChanged(scrollPresenter, ScrollProperty.VerticalScrollPercent);
 
             Log.Comment("ScrollHelper.SetVerticalScrollPercent after-vertical-offset={0}.",
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.VerticalScrollPercent);
         }
 
-        public static void SetScrollPercent(ScrollingPresenter scrollingPresenter, double horizontalPercent, double verticalPercent)
+        public static void SetScrollPercent(ScrollPresenter scrollPresenter, double horizontalPercent, double verticalPercent)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
             Verify.AreNotEqual(horizontalPercent, 0.0);
             Verify.AreNotEqual(verticalPercent, 0.0);
-            Log.Comment("ScrollHelper.SetScrollPercent scrollingPresenter={0}, horizontalPercent={1}, verticalPercent={2}, before-horizontal-offset={3}, before-vertical-offset={4}.",
-                string.IsNullOrWhiteSpace(scrollingPresenter.AutomationId) ? scrollingPresenter.Name : scrollingPresenter.AutomationId,
+            Log.Comment("ScrollHelper.SetScrollPercent scrollPresenter={0}, horizontalPercent={1}, verticalPercent={2}, before-horizontal-offset={3}, before-vertical-offset={4}.",
+                string.IsNullOrWhiteSpace(scrollPresenter.AutomationId) ? scrollPresenter.Name : scrollPresenter.AutomationId,
                 horizontalPercent,
                 verticalPercent,
-                scrollingPresenter.HorizontalScrollPercent,
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent,
+                scrollPresenter.VerticalScrollPercent);
 
-            scrollingPresenter.SetScrollPercent(horizontalPercent, verticalPercent);
-            Wait.ForScrollChanged(scrollingPresenter, ScrollProperty.HorizontalScrollPercent);
+            scrollPresenter.SetScrollPercent(horizontalPercent, verticalPercent);
+            Wait.ForScrollChanged(scrollPresenter, ScrollProperty.HorizontalScrollPercent);
 
             Log.Comment("ScrollHelper.SetScrollPercent after-horizontal-offset={0}, after-vertical-offset={1}.",
-                scrollingPresenter.HorizontalScrollPercent,
-                scrollingPresenter.VerticalScrollPercent);
+                scrollPresenter.HorizontalScrollPercent,
+                scrollPresenter.VerticalScrollPercent);
         }
     }
 }

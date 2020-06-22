@@ -3,6 +3,8 @@
 
 #pragma once
 
+#define WINRT_LEAN_AND_MEAN
+
 #define NOMINMAX
 
 #pragma warning(disable : 6221) // Disable implicit cast warning for C++/WinRT headers (tracked by Bug 17528784: C++/WinRT headers trigger C6221 comparing e.code() to int-typed things)
@@ -108,7 +110,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
 #endif
 
-#ifdef SCROLLINGPRESENTER_INCLUDED
+#ifdef SCROLLPRESENTER_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
@@ -129,17 +131,17 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerInteractionRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollToRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollByRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollFromRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerAddScrollVelocityRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollingPresenterTestHooksAnchorEvaluatedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingAnchorRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingBringingIntoViewEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollAnimationStartingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingZoomAnimationStartingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollCompletedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingZoomCompletedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingPresenter, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksAnchorEvaluatedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingAnchorRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingBringingIntoViewEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollAnimationStartingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingZoomAnimationStartingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingZoomCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Windows::Foundation::IInspectable>>();
 #endif
 
 #ifdef SWIPECONTROL_INCLUDED
@@ -182,7 +184,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizer, struct winrt::Microsoft::UI::Xaml::Controls::RefreshRequestedEventArgs>>();
 #endif
 
-#ifdef SCROLLINGVIEW_INCLUDED
+#ifdef SCROLLVIEW_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollBarVisibility>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollingChainMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollingInputKinds>>();
@@ -192,7 +194,6 @@ void specialize_guids()
 #endif
 
 #ifdef TWOPANEVIEW_INCLUDED
-    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TreeViewSelectionMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewPriority>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewTallModeConfiguration>>();

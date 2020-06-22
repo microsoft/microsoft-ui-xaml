@@ -23,6 +23,19 @@
                 <!-- NOTE: If you change this entry, you must update App.StyleOverridesPlaceholder -->
                 <ResourceDictionary x:Name="_styleOverridesPlaceholder"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="StandardGroupHeader" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="22"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+                <Setter Property="AutomationProperties.HeadingLevel" Value="Level2"/>
+            </Style>
+
+            <Style x:Key="StandardGroupingStackPanel" TargetType="StackPanel">
+                <Setter Property="BorderBrush" Value="{ThemeResource SystemChromeGrayColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="8"/>
+            </Style>
+            
         </ResourceDictionary>
     </Application.Resources>
 

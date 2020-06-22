@@ -3,6 +3,5 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Feature to include for inner loop build -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
-    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
   </PropertyGroup>
 </Project>

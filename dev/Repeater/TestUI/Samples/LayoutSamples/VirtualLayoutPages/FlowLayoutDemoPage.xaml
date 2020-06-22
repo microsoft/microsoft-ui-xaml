@@ -1,0 +1,29 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.FlowLayoutDemoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:local="using:MUXControlsTestApp.Samples">
+
+    <ScrollViewer Width="180">
+        <mux:ItemsRepeater x:Name="repeater"
+                              HorizontalAlignment="Center"
+                              HorizontalCacheLength="0"
+                              VerticalCacheLength="0">
+            <mux:ItemsRepeater.Layout>
+                <mux:FlowLayout  LineAlignment="Start" MinRowSpacing="10" MinColumnSpacing="10"/>
+            </mux:ItemsRepeater.Layout>
+            <mux:ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="local:MyItem">
+                    <Button Width="50"
+                          Content="{x:Bind Label}"
+                            Height="{x:Bind Height}"
+                          BorderBrush="Black"
+                          BorderThickness="1">
+                    </Button>
+                </DataTemplate>
+            </mux:ItemsRepeater.ItemTemplate>
+        </mux:ItemsRepeater>
+    </ScrollViewer>
+</Page>

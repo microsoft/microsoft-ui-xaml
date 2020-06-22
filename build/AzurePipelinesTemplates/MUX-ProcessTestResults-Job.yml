@@ -3,7 +3,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   minimumExpectedTestsExecutedCount: 3000
   checkJobAttempt: false
-  
+  pgoArtifact: ''
 
 jobs:
 - job: ProcessTestResults
@@ -24,8 +24,8 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\UpdateUnreliableTests.ps1
-      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
-      
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
+
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
     condition: succeededOrFailed()
@@ -44,7 +44,11 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\ProcessHelixFiles.ps1
-      arguments: -OutputFilePath '$(helixOutputFolder)'
+      arguments: -OutputFolder '$(helixOutputFolder)'
+
+  - ${{if ne(parameters.pgoArtifact, '') }}:
+    - script: move /y $(helixOutputFolder)\PGO $(Build.ArtifactStagingDirectory)
+      displayName: 'Move pgc files to PGO artifact'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'
@@ -52,3 +56,11 @@ jobs:
     inputs:
       PathtoPublish: $(helixOutputFolder)
       artifactName: drop
+
+  - ${{if ne(parameters.pgoArtifact, '') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish pgc files'
+      condition: succeededOrFailed()
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)\PGO\Release
+        artifactName: ${{ parameters.pgoArtifact }}

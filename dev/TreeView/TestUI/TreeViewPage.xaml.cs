@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -24,6 +24,7 @@ using TreeViewDragItemsCompletedEventArgs = Microsoft.UI.Xaml.Controls.TreeViewD
 using TreeViewList = Microsoft.UI.Xaml.Controls.TreeViewList;
 using TreeViewItem = Microsoft.UI.Xaml.Controls.TreeViewItem;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
+using System.Threading.Tasks;
 
 namespace MUXControlsTestApp
 {
@@ -62,14 +63,34 @@ namespace MUXControlsTestApp
             TestTreeView2ItemsSource = new ObservableCollection<TreeViewItemSource>() { item1, item2 };
         }
 
-        private ObservableCollection<TreeViewItemSource> PrepareItemsSource()
+        private ObservableCollection<TreeViewItemSource> PrepareItemsSource(bool expandRootNode = false)
         {
             var root0 = new TreeViewItemSource() { Content = "Root.0" };
             var root1 = new TreeViewItemSource() { Content = "Root.1" };
             var root2 = new TreeViewItemSource() { Content = "Root.2" };
-            var root = new TreeViewItemSource() { Content = "Root", Children = { root0, root1, root2 } };
+            var root = new TreeViewItemSource() { Content = "Root", Children = { root0, root1, root2 }, IsExpanded = expandRootNode };
 
             return new ObservableCollection<TreeViewItemSource>{root};
+        }
+
+        private async Task<ObservableCollection<TreeViewItemSource>> PrepareItemsSourceAsync()
+        {
+            return await Task.Run(() => {
+                var items = PrepareItemsSource(expandRootNode: true);
+
+                var root0 = items[0].Children[0];
+                var x0 = new TreeViewItemSource { Content = "Root.0.0" };
+                root0.Children.Add(x0);
+
+                var root1 = items[0].Children[1];
+                var y0 = new TreeViewItemSource { Content = "Root.1.0" };
+                var y1 = new TreeViewItemSource { Content = "Root.1.1" };
+                root1.Children.Add(y0);
+                root1.Children.Add(y1);
+                root1.IsExpanded = true;
+
+                return items;
+            });
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -936,6 +957,11 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SelectLastRootNode_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeView.SelectedNode = TestTreeView.RootNodes[TestTreeView.RootNodes.Count-1];
+        }
+
         private void TreeViewLateDataInitTestPage_Click(object sender, RoutedEventArgs e)
         {
             Frame.NavigateWithoutAnimation(typeof(TreeViewLateDataInitTest));
@@ -952,9 +978,57 @@ namespace MUXControlsTestApp
             Frame.NavigateWithoutAnimation(typeof(TreeViewNodeInMarkupTestPage));
         }
 
+        private void TreeViewUnrealizedChildrenTestPage_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.NavigateWithoutAnimation(typeof(TreeViewUnrealizedChildrenTestPage));
+        }
+
         private void ClearException_Click(object sender, RoutedEventArgs e)
         {
             ExceptionMessage.Text = string.Empty;
+        }
+
+        private async void ResetItemsSourceAsync_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeViewItemsSource = await PrepareItemsSourceAsync();
+            this.Bindings.Update();
+        }
+
+        private void ResetItemsSource_Click(object sender, RoutedEventArgs e)
+        {
+            ContentModeTestTreeView.ItemsSource = PrepareItemsSource(expandRootNode: true);
+        }
+
+        private void ExpandRootNode_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeViewItemsSource[0].IsExpanded = !TestTreeViewItemsSource[0].IsExpanded;
+        }
+
+        private void SwapItemsSource_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentModeTestTreeView.ItemsSource == TestTreeView2ItemsSource)
+            {
+                this.ContentModeTestTreeView.ItemsSource = TestTreeViewItemsSource;
+            }
+            else
+            {
+                this.ContentModeTestTreeView.ItemsSource = TestTreeView2ItemsSource;
+            }
+        }
+
+        private void TwoWayBoundButton_Click(object sender, RoutedEventArgs e)
+        {
+            TwoWayBoundButton.Content = TestTreeView.RootNodes[0].Children[1];
+        }
+
+        private void SelectRoot2Item_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeView.SelectedItem = TestTreeView.RootNodes[0].Children[2];
+        }
+        private void ReadBindingResult_Click(object sender, RoutedEventArgs e)
+        {
+            Results.Text = (TwoWayBoundButton.Content as TreeViewNode).Content as string 
+                + ";" + (TestTreeView.SelectedItem as TreeViewNode).Content as string;
         }
     }
 }

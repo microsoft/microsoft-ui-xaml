@@ -23,7 +23,7 @@
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
                     <StackPanel>
                         <Border x:Name="TestRadioButtonsBorder" BorderBrush="Black" BorderThickness="1">
-                            <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
+                            <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" AccessKey="r" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
                         </Border>
                         <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
                             <RadioButton x:Name="TheRadioButton">"I'm really a Radio Button"</RadioButton>
@@ -145,7 +145,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <TextBlock Foreground="Red" HorizontalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0">RadioButtons Outputs</TextBlock>
                             <TextBlock Grid.Column="0" Grid.Row="1">Selected Index:</TextBlock>
                             <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
@@ -170,7 +170,7 @@
                             <TextBlock Grid.Column="0" Grid.Row="12"># of larger Columns:</TextBlock>
                             <TextBlock x:Name="LayoutNumberOfLargerColumnsTextBlock" AutomationProperties.Name="LayoutNumberOfLargerColumnsTextBlock" Grid.Row="12" Grid.Column="1" HorizontalAlignment="Left">0</TextBlock>
                         </Grid>
-                        
+
                     </ScrollViewer>
                     <!-- Logging Output -->
                     <Grid Margin="5" MaxWidth="450" Background="Bisque">

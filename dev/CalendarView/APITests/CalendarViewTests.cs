@@ -21,14 +21,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class CalendarViewTests
+    public class CalendarViewTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void VerifyVisualTree()
         {

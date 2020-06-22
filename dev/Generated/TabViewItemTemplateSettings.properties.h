@@ -12,9 +12,19 @@ public:
     void IconElement(winrt::IconElement const& value);
     winrt::IconElement IconElement();
 
+    void LeftInsetRadiusMargin(winrt::Thickness const& value);
+    winrt::Thickness LeftInsetRadiusMargin();
+
+    void RightInsetRadiusMargin(winrt::Thickness const& value);
+    winrt::Thickness RightInsetRadiusMargin();
+
     static winrt::DependencyProperty IconElementProperty() { return s_IconElementProperty; }
+    static winrt::DependencyProperty LeftInsetRadiusMarginProperty() { return s_LeftInsetRadiusMarginProperty; }
+    static winrt::DependencyProperty RightInsetRadiusMarginProperty() { return s_RightInsetRadiusMarginProperty; }
 
     static GlobalDependencyProperty s_IconElementProperty;
+    static GlobalDependencyProperty s_LeftInsetRadiusMarginProperty;
+    static GlobalDependencyProperty s_RightInsetRadiusMarginProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

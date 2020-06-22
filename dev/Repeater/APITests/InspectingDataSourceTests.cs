@@ -14,6 +14,7 @@ using Common;
 using System;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using MUXControlsTestApp.Utils;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -30,7 +31,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
 
     [TestClass]
-    public class InspectingDataSourceTests: TestsBase
+    public class InspectingDataSourceTests : ApiTestBase
     {
         [TestMethod]
         public void CanCreateFromIBindableIterable()
@@ -111,6 +112,79 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(true, dataSource.HasKeyIndexMapping);
                 Verify.AreEqual(5, dataSource.IndexFromKey("5"));
                 Verify.AreEqual("5", dataSource.KeyFromIndex(5));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyIndexOfBehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var collections = new List<IEnumerable>();
+                collections.Add(new ObservableVectorWithUniqueIds(Enumerable.Range(0, 10)));
+                collections.Add(new ObservableCollection<int>(Enumerable.Range(0,10)));
+
+                foreach(var collection in collections)
+                {
+                    var dataSource = new ItemsSourceView(collection);
+                    foreach(int i in collection)
+                    {
+                        Verify.AreEqual(i, dataSource.IndexOf(i));
+                    }
+
+                    Verify.AreEqual(-1, dataSource.IndexOf(11));
+                }
+
+                // Enumerabl.Range returns IEnumerable which does not provide IndexOf
+                var testingItemsSourceView = new ItemsSourceView(Enumerable.Range(0, 10));
+                var index = -1;
+                try
+                {
+                    index = testingItemsSourceView.IndexOf(0);
+                }catch(Exception){ }
+                Verify.AreEqual(-1, index);
+
+
+                var nullContainingEnumerable = new CustomEnumerable();
+                testingItemsSourceView = new ItemsSourceView(nullContainingEnumerable);
+
+                Verify.AreEqual(1,testingItemsSourceView.IndexOf(null));
+
+            });
+        }
+
+        // Calling Reset multiple times before layout runs causes a crash
+        // in unique ids. We end up thinking we have multiple elements with the same id.
+        [TestMethod]
+        public void VerifyCallingResetMultipleTimesOnUniqueIdItemsSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new CustomItemsSourceWithUniqueId(Enumerable.Range(0, 5).ToList());
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = data,
+                    Animator = new DefaultElementAnimator()
+                };
+
+                Content = new Windows.UI.Xaml.Controls.ScrollViewer() 
+                {
+                    Width=400,
+                    Height=400,
+                    Content = repeater
+                };
+                Content.UpdateLayout();
+
+                data.Reset();
+                data.Reset();
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(5, repeater.ItemsSourceView.Count);
+                for(int i=0; i< 5; i++)
+                {
+                    Verify.IsNotNull(repeater.TryGetElement(i));
+                }
             });
         }
 
@@ -342,6 +416,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             public int IndexFromKey(string id)
             {
                 return int.Parse(id);
+            }
+        }
+
+        class CustomEnumerable : IEnumerable<object>
+        {
+            private List<string> myList = new List<string>();
+            
+            public CustomEnumerable()
+            {
+                myList.Add("text");
+                myList.Add(null);
+                myList.Add("foobar");
+                myList.Add("WinUI is awesome");
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return myList.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return myList.GetEnumerator();
             }
         }
     }

@@ -13,6 +13,7 @@ using Windows.ApplicationModel.Core;
 using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
+using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationViewDisplayModeChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewDisplayModeChangedEventArgs;
 using NavigationViewPaneClosingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewPaneClosingEventArgs;
@@ -21,6 +22,7 @@ using NavigationViewBackRequestedEventArgs = Microsoft.UI.Xaml.Controls.Navigati
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
@@ -32,6 +34,36 @@ namespace MUXControlsTestApp
         private bool m_useFocusVisualKindReveal = false;
         // FocusVisualKind impacts other testing, recover to setting in unload page
         private FocusVisualKind m_focusVisualKind;
+
+        private int _selectionChangedEventsFired = 0;
+        public int m_selectionChangedEventsFired
+        {
+            get
+            {
+                return _selectionChangedEventsFired;
+            }
+            set
+            {
+                _selectionChangedEventsFired = value;
+                NumberOfSelectionChangedEventsRaisedTextBlock.Text = _selectionChangedEventsFired.ToString();
+            }
+        }
+
+        private int _itemInvokedEventsFired = 0;
+        public int m_itemInvokedEventsFired
+        {
+            get
+            {
+                return _itemInvokedEventsFired;
+            }
+            set
+            {
+                _itemInvokedEventsFired = value;
+                NumberOfItemInvokedEventsRaisedTextBlock.Text = _itemInvokedEventsFired.ToString();
+            }
+        }
+
+
         public NavigationViewPage()
         {
             this.InitializeComponent();
@@ -170,6 +202,22 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SelectedItemIsEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SelectedItem != null)
+            {
+                (NavView.SelectedItem as Control).IsEnabled = true;
+            }
+        }
+
+        private void SelectedItemIsEnabledCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SelectedItem != null)
+            {
+                (NavView.SelectedItem as Control).IsEnabled = false;
+            }
+        }
+
         private void SettingsItemVisibilityCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             NavView.IsSettingsVisible = true;
@@ -292,10 +340,61 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void ResetEventCounters_Click(object sender, RoutedEventArgs e)
+        {
+            m_itemInvokedEventsFired = 0;
+            m_selectionChangedEventsFired = 0;
+        }
+
+        private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            m_itemInvokedEventsFired++;
+
+            // Reset argument type indicatiors
+            ItemInvokedItemType.Text = "null";
+            ItemInvokedItemContainerType.Text = "null";
+
+            if (args.InvokedItem != null)
+            {
+                ItemInvokedItemType.Text = args.InvokedItem.GetType().ToString();
+            }
+
+            if (args.InvokedItemContainer != null)
+            {
+                ItemInvokedItemContainerType.Text = args.InvokedItemContainer.GetType().ToString();
+            }
+
+            var curSelected = sender.SelectedItem as NavigationViewItem;
+            var text = args.InvokedItem as string;
+            if (curSelected != null && (string)curSelected.Content == text)
+            {
+                if(InvokedItemState.Text == "ItemWasSelectedInItemInvoked")
+                {
+                    InvokedItemState.Text = "ItemWasInvokedSecomdTimeWithCorrectSelection";
+                }
+                else
+                {
+                    InvokedItemState.Text = "ItemWasSelectedInItemInvoked";
+                }
+            } 
+            else
+            {
+                InvokedItemState.Text = "Error:ItemUnselectedInItemInvoked";
+            }
+        }
+
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            SelectionChangedRaised.Text = "True";
+            // Reset argument type indicatiors
+            SelectionChangedItemType.Text = "null";
+            SelectionChangedItemContainerType.Text = "null";
+
+            m_selectionChangedEventsFired++;
             if (args.SelectedItem != null)
             {
+                SelectionChangedItemType.Text = args.SelectedItem.GetType().ToString();
+
                 var itemdata = args.SelectedItem as NavigationViewItem;
                 if (itemdata != null)
                 {
@@ -309,6 +408,25 @@ namespace MUXControlsTestApp
                     }
                 }
             }
+
+            if (args.SelectedItemContainer != null)
+            {
+                SelectionChangedItemContainerType.Text = args.SelectedItemContainer.GetType().ToString();
+            }
+
+            if (NavView.SelectedItem == null)
+            {
+                SelectedItemIsEnabledCheckbox.IsChecked = null;
+            }
+            else
+            {
+                SelectedItemIsEnabledCheckbox.IsChecked = (NavView.SelectedItem as Control).IsEnabled;
+            }
+        }
+
+        private void ClearSelectionChangeBlock(object sender,RoutedEventArgs e)
+        {
+            SelectionChangedRaised.Text = "False";
         }
 
         private void MoviesEnabledCheckbox_Checked(object sender, RoutedEventArgs e)

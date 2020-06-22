@@ -58,7 +58,7 @@ $featureAreasProps = $muxControlsDir + "\FeatureAreas.props";
 [xml]$xml = Get-Content $featureAreasProps
 foreach ($group in $xml.Project.PropertyGroup)
 {
-    if ($group.Attributes['Condition'].Value.Contains("SolutionName"))
+    if ($group.Attributes['Condition'].Value -ne $null -and $group.Attributes['Condition'].Value.Contains("(SolutionName) != 'MUXControlsInnerLoop'"))
     {
         $featureEnabledName = "Feature" + $controlName + "Enabled"
         $enabled = $xml.CreateElement($featureEnabledName, $xml.Project.NamespaceURI);
@@ -108,3 +108,71 @@ FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s
 
         ProfId_$controlName,`$1
 "@
+# Randomize class name for multiple use of class in one powershell
+$id = get-random
+
+# We need double backslash for C# strings below
+$cleanMuxControlsDir = $muxControlsDir.Replace("\","\\") + "\\"
+
+echo "$cleanMuxControlsDir"
+
+$assemblies=(
+	"System","EnvDTE","EnvDTE80"
+)
+
+$source=@"
+using System;
+using EnvDTE;
+using EnvDTE80;
+using System.Collections.Generic;
+namespace SolutionHelper
+{
+    public static class SolutionRegister$id{
+        public static void Main(){
+            Console.WriteLine("Started script");
+            var dteType = Type.GetTypeFromProgID("VisualStudio.DTE.16.0", true);
+            if(dteType == null)
+            {
+                Console.WriteLine("You need to install Visual Studio to add projects to the solution");
+                return;
+            }
+            var dte = (EnvDTE.DTE)System.Activator.CreateInstance(dteType);
+            var sln = (SolutionClass)dte.Solution;
+            Solution2 solution = (Solution2)dte.Solution;
+            Console.WriteLine("Got solution class");
+
+            var solutionNames = new List<string>(){"MUXControls.sln","MUXControlsInnerLoop.sln"};
+            foreach(var solutionName in solutionNames)
+            {
+                Console.WriteLine("Opening solution: $($cleanMuxControlsDir)" + solutionName);
+                solution.Open("$cleanMuxControlsDir" + solutionName);
+                Console.WriteLine("Opened solution");
+                var devFolder = solution.Projects.Item(1);
+    
+                // Get correct reference here:
+                Console.WriteLine("Get dev folder");
+                var devSolutionFolder = (SolutionFolder)devFolder.Object;
+                Console.WriteLine("Add folder");
+                SolutionFolder newControlFolder = (SolutionFolder)devSolutionFolder.AddSolutionFolder("$controlName").Object;
+
+                Console.WriteLine("Adding projects:");
+                Console.WriteLine("Adding source");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems");
+                Console.WriteLine("Adding test UI");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)/TestUI/$($controlName)_TestUI.shproj");
+                Console.WriteLine("Adding interactions test");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj");
+                Console.WriteLine("Finished adding projects, saving solution");
+
+                solution.Close(true);
+                Console.WriteLine("Saved solution" + solutionName);
+            }
+        }
+    }
+}
+"@
+
+
+Add-Type -ReferencedAssemblies $assemblies -TypeDefinition $source -Language CSharp
+
+iex "[SolutionHelper.SolutionRegister$id]::Main()"

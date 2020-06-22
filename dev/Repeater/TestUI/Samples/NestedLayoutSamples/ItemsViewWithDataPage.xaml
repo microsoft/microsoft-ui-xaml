@@ -1,0 +1,181 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.ItemsViewWithDataPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style TargetType="controls:ItemsRepeater" >
+            <Setter Property="TabFocusNavigation" Value="Once" />
+            <Setter Property="XYFocusKeyboardNavigation" Value="Enabled" />
+            <Setter Property="HorizontalCacheLength" Value="0" />
+            <Setter Property="VerticalCacheLength" Value="0" />
+        </Style>
+
+        <DataTemplate x:Key="RecipeTemplate">
+            <UserControl IsTabStop="True" UseSystemFocusVisuals="True">
+                <Border x:Name="borderRecipeTemplate" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        BorderBrush="LightGray" BorderThickness="1" Background="{ThemeResource SystemChromeMediumColor}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <Image x:Name="recipeImage" Margin="10" Width="120" Height="120" VerticalAlignment="Top" />
+                            <Button FontSize="10" Padding="2" Click="OnResizeMeButtonClick" HorizontalAlignment="Center" Height="20">Resize Me</Button>
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" >
+                            <Button Click="OnRecipeDeleted">X</Button>
+                            <Button Click="OnRecipeInserted">Insert</Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock x:Name="recipeDescription" TextWrapping="WrapWholeWords" Margin="10" />
+                            <TextBox PlaceholderText="Test Pinning" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </UserControl>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RecipeGroupTemplate">
+            <UserControl>
+                <StackPanel x:Name="stackPanelRecipeGroupTemplate">
+                    <UserControl IsTabStop="True" UseSystemFocusVisuals="True">
+                        <TextBlock x:Name="groupName" FontSize="24" />
+                    </UserControl>
+                    <controls:ItemsRepeater x:Name="groupLayout" VerticalCacheLength="0"/>
+                    <TextBlock FontSize="16" HorizontalAlignment="Center" Text="Footer!!!" />
+                </StackPanel>
+            </UserControl>
+        </DataTemplate>
+
+        <DataTemplate x:Key="YearTemplate">
+            <UserControl>
+                <StackPanel x:Name="stackPanelYearTemplate">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Rectangle Grid.Column="0" Height="2" Fill="Crimson" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        <UserControl Grid.Column="1" IsTabStop="True" UseSystemFocusVisuals="True">
+                            <TextBlock  x:Name="yearName" FontSize="24" Foreground="Crimson" Margin="10 0 10 0" />
+                        </UserControl>
+                        <Rectangle Grid.Column="2" Height="2" Fill="Crimson" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                    </Grid>
+                    <controls:ItemsRepeater x:Name="yearLayout" VerticalCacheLength="0"/>
+                </StackPanel>
+            </UserControl>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RecipeTemplateHorizontal">
+            <UserControl>
+                <Border x:Name="borderRecipeTemplate" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        BorderBrush="LightGray" BorderThickness="1" Background="{ThemeResource SystemChromeMediumColor}"  Width="300">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <Image x:Name="recipeImage" Margin="10" Width="120" Height="120" VerticalAlignment="Top" />
+                            <Button FontSize="10" Padding="2" Click="OnResizeMeButtonClick" HorizontalAlignment="Center" Height="20">Resize Me</Button>
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" >
+                            <Button Click="OnRecipeDeleted">X</Button>
+                            <Button Click="OnRecipeInserted">Insert</Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock x:Name="recipeDescription" TextWrapping="WrapWholeWords" Margin="10" />
+                            <TextBox PlaceholderText="Test Pinning" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </UserControl>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RecipeGroupTemplateHorizontal">
+            <UserControl>
+                <StackPanel x:Name="stackPanelRecipeGroupTemplate" Orientation="Horizontal">
+                    <TextBlock x:Name="groupName" FontSize="24" />
+                    <controls:ItemsRepeater x:Name="groupLayout"  VerticalCacheLength="0"/>
+                    <TextBlock FontSize="16" HorizontalAlignment="Center" Text="Footer!!!" />
+                </StackPanel>
+            </UserControl>
+        </DataTemplate>
+
+        <DataTemplate x:Key="YearTemplateHorizontal">
+            <StackPanel x:Name="stackPanelYearTemplate" Orientation="Horizontal">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Grid.Column="0" Height="2" Fill="Crimson" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                    <TextBlock Grid.Column="1" x:Name="yearName" FontSize="24" Foreground="Crimson" Margin="10 0 10 0" />
+                    <Rectangle Grid.Column="2" Height="2" Fill="Crimson" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                </Grid>
+                <controls:ItemsRepeater x:Name="yearLayout" VerticalCacheLength="0"/>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="goBackButton">Back</Button>
+            <Slider x:Name="maintainViewportSlider" Header="Maintain Viewport" Maximum="1" StepFrequency="0.5" TickFrequency="0.5" Width="148" ValueChanged="OnMaintainViewportSliderValueChanged" Padding="20 0 0 0" />
+            <StackPanel Orientation="Horizontal" x:Name="rootLayoutOptions">
+                <Slider x:Name="rowSpacingSlider" Header="MinRowSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="148" ValueChanged="OnRowSpacingSliderValueChanged" Padding="20 0 0 0" />
+                <Slider x:Name="colSpacingSlider" Header="MinColumnSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="148" ValueChanged="OnColumnSpacingSliderValueChanged" Padding="20 0 0 0" />
+                <ComboBox x:Name="lineAlignmentComboBox" SelectedIndex="0" Margin="8 0 0 0" VerticalAlignment="Center">
+                    <ComboBoxItem>Start</ComboBoxItem>
+                    <ComboBoxItem>Center</ComboBoxItem>
+                    <ComboBoxItem>End</ComboBoxItem>
+                    <ComboBoxItem>SpaceEvenly</ComboBoxItem>
+                    <ComboBoxItem>SpaceAround</ComboBoxItem>
+                    <ComboBoxItem>SpaceBetween</ComboBoxItem>
+                </ComboBox>
+                <ComboBox x:Name="itemsStretchComboBox" SelectedIndex="0" Margin="8 0 0 0" VerticalAlignment="Center">
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Fill</ComboBoxItem>
+                    <ComboBoxItem>Uniform</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+            <Slider x:Name="maxRowsOrColumnsSlider" Header="Max Rows / Columns" Margin="8 0 0 0" Minimum="0" Maximum="8" StepFrequency="1" TickFrequency="2" Width="148" ValueChanged="OnMaxRowsOrColumnsSliderValueChanged"/>
+            <TextBox x:Name="scrollIndex" PlaceholderText="Index" Margin="20 0 0 0" VerticalAlignment="Center" />
+            <Slider x:Name="scrollOffset" Header="Offset" Minimum="-25" Maximum="25" StepFrequency="1" TickFrequency="1" Width="75" Margin="20 0 0 0" />
+            <CheckBox x:Name="scrollAnimate">Animate</CheckBox>
+            <Button x:Name="scrollButton" Margin="20 0 0 0">Scroll</Button>
+        </StackPanel>
+
+        <!--With ItemsRepeaterScrollHost for testing downlevel-->
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
+            <ScrollViewer x:Name="scrollViewer">
+                <controls:ItemsRepeater x:Name="rootRepeater" VerticalCacheLength="0" />
+            </ScrollViewer>
+        </controls:ItemsRepeaterScrollHost>
+
+        <!-- No Element Tracker for RS5+. ScrollViewer can do the anchoring itself -->
+        <!--<ScrollViewer x:Name="scrollViewer" Grid.Row="1">
+            <controls:ItemsRepeater x:Name="rootRepeater" VerticalCacheLength="0">
+            </controls:ItemsRepeater>
+        </ScrollViewer>-->
+
+        <!-- No Element Tracker for RS5+. ScrollViewer can do the anchoring itself -->
+        <!--<controls:ScrollViewer x:Name="scrollViewer" Grid.Row="1">
+            <controls:ItemsRepeater x:Name="rootRepeater" VerticalCacheLength="0" />
+        </controls:ScrollViewer >-->
+    </Grid>
+</Page>

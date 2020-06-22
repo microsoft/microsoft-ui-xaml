@@ -33,6 +33,9 @@ public:
     void ItemTemplateSelector(winrt::DataTemplateSelector const& value);
     winrt::DataTemplateSelector ItemTemplateSelector();
 
+    void SelectedItem(winrt::IInspectable const& value);
+    winrt::IInspectable SelectedItem();
+
     void SelectionMode(winrt::TreeViewSelectionMode const& value);
     winrt::TreeViewSelectionMode SelectionMode();
 
@@ -44,6 +47,7 @@ public:
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
     static winrt::DependencyProperty ItemTemplateSelectorProperty() { return s_ItemTemplateSelectorProperty; }
+    static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
 
     static GlobalDependencyProperty s_CanDragItemsProperty;
@@ -54,6 +58,7 @@ public:
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;
     static GlobalDependencyProperty s_ItemTemplateSelectorProperty;
+    static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_SelectionModeProperty;
 
     winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewCollapsedEventArgs> const& value);
@@ -66,17 +71,24 @@ public:
     void Expanding(winrt::event_token const& token);
     winrt::event_token ItemInvoked(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewItemInvokedEventArgs> const& value);
     void ItemInvoked(winrt::event_token const& token);
+    winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewSelectionChangedEventArgs> const& value);
+    void SelectionChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewCollapsedEventArgs>> m_collapsedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewDragItemsCompletedEventArgs>> m_dragItemsCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewDragItemsStartingEventArgs>> m_dragItemsStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewExpandingEventArgs>> m_expandingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewItemInvokedEventArgs>> m_itemInvokedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewSelectionChangedEventArgs>> m_selectionChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
 
     static void OnItemsSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSelectedItemPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

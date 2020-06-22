@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
@@ -39,7 +39,7 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ViewManagerTests : TestsBase
+    public class ViewManagerTests : ApiTestBase
     {
         [TestMethod]
         public void CanQueryElementFactory()
@@ -759,6 +759,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); }
                 });
         }
+
+        [TestMethod]
+        // Why does this test work?
+        // When the elements get created from the RecyclingElementFactory, we get already "existing" data templates.
+        // However, the reason for the crash in #2384 is that those "empty" data templates actually still had their data context
+        // If that data context is not null, that means it did not get cleared when the element was recycled, which is the wrong behavior.
+        // To check if the clearing is working correctly, we are checking this inside the ElementFactory's RecycleElement function.
+        public void ValidateElementClearingClearsDataContext()
+        {
+            ItemsRepeater repeater = null;
+            MockElementFactory elementFactory = null;
+            int elementClearingRaisedCount = 0;
+            Log.Comment("Initialize ItemsRepeater");
+            RunOnUIThread.Execute(() =>
+            {
+                elementFactory = new MockElementFactory() {
+                    GetElementFunc = delegate (int index, UIElement owner) {
+                        return new Button() { Content = index };
+                           },
+
+                    ClearElementFunc = delegate (UIElement element, UIElement owner) {
+                        elementClearingRaisedCount++;
+                        Verify.IsNull((element as FrameworkElement).DataContext);
+                    }
+                };
+
+                repeater = CreateRepeater(Enumerable.Range(0, 100),
+                    elementFactory);
+
+                repeater.Layout = new StackLayout();
+
+                Content = repeater;
+                repeater.UpdateLayout();
+
+                repeater.ItemsSource = null;
+
+                Log.Comment("Verify ItemsRepeater cleared data contexts correctly");
+                Verify.IsTrue(elementClearingRaisedCount > 0, "ItemsRepeater should have cleared some elements");
+            });
+        }
+
+
         private void MoveFocusToIndex(ItemsRepeater repeater, int index)
         {
             var element = repeater.TryGetElement(index) as Control;

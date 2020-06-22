@@ -28,7 +28,7 @@ using FontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class SwipeControlTests
+    public class SwipeControlTests : ApiTestBase
     {
         [TestMethod]
         public void SwipeItemTest()
@@ -95,7 +95,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void SwipeControlTest()
         {
-            var resetEvent = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
             {
                 SwipeControl swipeControl = new SwipeControl();
@@ -107,16 +106,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(swipeControl.BottomItems);
                 swipeControl.LeftItems = new SwipeItems();
                 swipeControl.RightItems = new SwipeItems();
-                swipeControl.Loaded += (object sender, RoutedEventArgs args) => { resetEvent.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = swipeControl;
-            });
-
-            IdleSynchronizer.Wait();
-            resetEvent.WaitOne();
-
-            RunOnUIThread.Execute(() =>
-            {
-                SwipeControl swipeControl = (SwipeControl)MUXControlsTestApp.App.TestContentRoot;
+                Content = swipeControl;
+                Content.UpdateLayout();
                 Verify.IsFalse(swipeControl.IsTabStop);
                 Verify.IsNotNull(swipeControl.LeftItems);
                 Verify.IsNotNull(swipeControl.RightItems);
@@ -145,15 +136,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 SwipeControl swipeControl = new SwipeControl();
                 swipeControl.Loaded += (object sender, RoutedEventArgs args) => { resetEvent.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = swipeControl;
-            });
-
-            IdleSynchronizer.Wait();
-            resetEvent.WaitOne();
-
-            RunOnUIThread.Execute(() =>
-            {
-                SwipeControl swipeControl = (SwipeControl)MUXControlsTestApp.App.TestContentRoot;
+                Content = swipeControl;
+                Content.UpdateLayout();
                 swipeControl.TopItems = new SwipeItems();
                 swipeControl.LeftItems = new SwipeItems();
                 swipeControl.LeftItems.Add(new SwipeItem());
@@ -169,11 +153,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Warning("Test is disabled pre RS3.");
                 return;
             }
-            Windows.UI.Xaml.Controls.Grid rootGrid;
 
             RunOnUIThread.Execute(() =>
             {
-                rootGrid = (Windows.UI.Xaml.Controls.Grid)XamlReader.LoadWithInitialTemplateValidation(
+                var rootGrid = (Windows.UI.Xaml.Controls.Grid)XamlReader.LoadWithInitialTemplateValidation(
                 "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> " +
                     "<GridView> " +
                         "<GridViewItem> " +
@@ -192,10 +175,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     "</GridView> " +
                 "</Grid>");
 
-                MUXControlsTestApp.App.TestContentRoot = rootGrid;
+                Content = rootGrid;
+                Content.UpdateLayout();
             });
-            
-            IdleSynchronizer.Wait();
         }
     }
 }

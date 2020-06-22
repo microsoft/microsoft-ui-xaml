@@ -57,20 +57,28 @@
             <Button x:Name="SetTextButton" AutomationProperties.Name="SetTextButton" Content="Set text to 15" Click="SetTextButton_Click" Margin="0,4,0,0"/>
 
             <Button x:Name="SetValueButton" AutomationProperties.Name="SetValueButton" Content="Set value to 42" Click="SetValueButton_Click" Margin="0,4,0,0"/>
-            
+
             <Button x:Name="SetValueNaNButton" AutomationProperties.Name="SetValueNaNButton" Content="Set value to NaN" Click="SetNaNButton_Click" Margin="0,4,0,0"/>
+
+            <Button x:Name="SetTwoWayBoundValueNaNButton" AutomationProperties.Name="SetTwoWayBoundValueNaNButton" Content="Set two way bound value to NaN" Click="SetTwoWayBoundNaNButton_Click" Margin="0,4,0,0"/>
+
+            <Button x:Name="ToggleHeaderValueButton" AutomationProperties.Name="ToggleHeaderValueButton" Content="Toggle header for clipping issue" Click="ToggleHeaderValueButton_Click" Margin="0,4,0,0"/>
+
+            <Button x:Name="ToggleHeaderTemplateValueButton" AutomationProperties.Name="ToggleHeaderTemplateValueButton" Content="Toggle header template" Click="ToggleHeaderTemplateValueButton_Click" Margin="0,4,0,0"/>
+
         </StackPanel>
 
         <Grid Grid.Column="1">
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Orientation="Horizontal" contract5Present:Spacing="4">
+                        Orientation="Vertical" contract5Present:Spacing="4">
                 <!--Standard NumberBox test UI -->
                 <StackPanel>
                     <controls:NumberBox
+                        MinWidth="150"
                         x:Name="TestNumberBox"
-                        AutomationProperties.Name="TestNumberBox"
-                        Header="NumberBox"
+                        Description="Description text"
+                        Header="TestNumberBox"
                         PlaceholderText="Text"
                         ValueChanged="NumberBoxValueChanged"
                         SmallChange="{x:Bind SmallChangeNumberBox.Value, Mode=OneWay}"
@@ -96,7 +104,7 @@
                 </StackPanel>
 
                 <!-- NumberBox for nested scrolling bug(s)-->
-                <StackPanel Margin="10,0,0,0">
+                <StackPanel Margin="30,0,0,0">
                     <TextBlock>NumberBox inside ScrollViewer test</TextBlock>
                     <ScrollViewer x:Name="ScrollviewerWithScroll" Height="50"
                                   Width="200"
@@ -111,6 +119,32 @@
 
                     <TextBlock x:Name="VerticalOffsetDisplayBlock" Text="0"
                             AutomationProperties.Name="VerticalOffsetDisplayBlock"/>
+                </StackPanel>
+
+                <!-- NumberBox two way binding with x:Bind -->
+                <StackPanel>
+                    <controls:NumberBox Header="TwoWayBinding" x:Name="TwoWayBoundNumberBox"
+                              Value="{x:Bind DataModelWithINPC.Value, Mode=TwoWay}" />
+                    <TextBlock x:Name="TwoWayBoundNumberBoxValue" AutomationProperties.Name="TwoWayBoundNumberBoxValue" />
+                </StackPanel>
+
+                <!-- Testing alignment with textbox and without specified header -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBox MaxHeight="30" VerticalAlignment="Top"/>
+                    <controls:NumberBox x:Name="HeaderTestingNumberBox" MaxHeight="32" VerticalAlignment="Top" PlaceholderText="I should not be clipped without header"/>
+                    <controls:NumberBox x:Name="HeaderTestingNumberBoxTwo" MaxHeight="32" VerticalAlignment="Top">
+                        <controls:NumberBox.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock AutomationProperties.Name="HeaderTemplateBeforeApplayTemplateTest"  Text="MyText"/>
+                            </DataTemplate>
+                        </controls:NumberBox.HeaderTemplate>
+                    </controls:NumberBox>
+                    <controls:NumberBox>
+                        <controls:NumberBox.Header>
+                            <TextBlock AutomationProperties.Name="HeaderBeforeApplyTemplateTest" Text="TestNumberBox"/>
+                        </controls:NumberBox.Header>
+                    </controls:NumberBox>
+                    <controls:NumberBox x:Name="HeaderTemplateTestingNumberBox"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

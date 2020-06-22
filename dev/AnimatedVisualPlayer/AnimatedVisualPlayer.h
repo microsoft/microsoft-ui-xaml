@@ -12,7 +12,7 @@
 
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection
 // in Panel. The Children collection holds the fallback content.
-struct AnimatedVisualPlayer final :
+struct AnimatedVisualPlayer:
     public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
     public AnimatedVisualPlayerProperties
 {

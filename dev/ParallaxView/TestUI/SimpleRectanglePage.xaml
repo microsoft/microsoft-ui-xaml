@@ -68,7 +68,7 @@
             </StackPanel>
         </StackPanel>
 
-        <TextBlock Text="Simple Rectangle in ScrollingPresenter &amp; parallaxed Image and Rectangle in vertical orientation" Margin="4,24,4,4"/>
+        <TextBlock Text="Simple Rectangle in ScrollPresenter &amp; parallaxed Image and Rectangle in vertical orientation" Margin="4,24,4,4"/>
         <StackPanel x:Name="sp" Orientation="Horizontal">
             <Border Margin="4" Background="Cyan">
                 <muxcontrols:ParallaxView x:Name="parallaxView3" Width="300" Height="300" 

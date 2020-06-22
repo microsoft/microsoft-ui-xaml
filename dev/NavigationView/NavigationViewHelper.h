@@ -11,7 +11,7 @@ enum class NavigationViewVisualStateDisplayMode
     MinimalWithBackButton
 };
 
-enum class NavigationViewListPosition
+enum class NavigationViewRepeaterPosition
 {
     LeftNav,
     TopPrimary,
@@ -36,7 +36,7 @@ public:
     {
     }
 
-    winrt::UIElement GetSelectionIndicator() { return m_selectionIndicator.get(); }
+    winrt::UIElement GetSelectionIndicator() const { return m_selectionIndicator.get(); }
 
     void Init(const winrt::IControlProtected & controlProtected)
     {

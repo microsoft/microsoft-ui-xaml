@@ -12,23 +12,63 @@ public:
     void ClipRect(winrt::RectangleGeometry const& value);
     winrt::RectangleGeometry ClipRect();
 
+    void Container2AnimationEndPosition(double value);
+    double Container2AnimationEndPosition();
+
+    void Container2AnimationStartPosition(double value);
+    double Container2AnimationStartPosition();
+
     void ContainerAnimationEndPosition(double value);
     double ContainerAnimationEndPosition();
 
+    void ContainerAnimationMidPosition(double value);
+    double ContainerAnimationMidPosition();
+
     void ContainerAnimationStartPosition(double value);
     double ContainerAnimationStartPosition();
+
+    void Dispatcher(winrt::CoreDispatcher const& value);
+    winrt::CoreDispatcher Dispatcher();
+
+    void EllipseAnimationEndPosition(double value);
+    double EllipseAnimationEndPosition();
+
+    void EllipseAnimationWellPosition(double value);
+    double EllipseAnimationWellPosition();
+
+    void EllipseDiameter(double value);
+    double EllipseDiameter();
+
+    void EllipseOffset(double value);
+    double EllipseOffset();
 
     void IndicatorLengthDelta(double value);
     double IndicatorLengthDelta();
 
     static winrt::DependencyProperty ClipRectProperty() { return s_ClipRectProperty; }
+    static winrt::DependencyProperty Container2AnimationEndPositionProperty() { return s_Container2AnimationEndPositionProperty; }
+    static winrt::DependencyProperty Container2AnimationStartPositionProperty() { return s_Container2AnimationStartPositionProperty; }
     static winrt::DependencyProperty ContainerAnimationEndPositionProperty() { return s_ContainerAnimationEndPositionProperty; }
+    static winrt::DependencyProperty ContainerAnimationMidPositionProperty() { return s_ContainerAnimationMidPositionProperty; }
     static winrt::DependencyProperty ContainerAnimationStartPositionProperty() { return s_ContainerAnimationStartPositionProperty; }
+    static winrt::DependencyProperty DispatcherProperty() { return s_DispatcherProperty; }
+    static winrt::DependencyProperty EllipseAnimationEndPositionProperty() { return s_EllipseAnimationEndPositionProperty; }
+    static winrt::DependencyProperty EllipseAnimationWellPositionProperty() { return s_EllipseAnimationWellPositionProperty; }
+    static winrt::DependencyProperty EllipseDiameterProperty() { return s_EllipseDiameterProperty; }
+    static winrt::DependencyProperty EllipseOffsetProperty() { return s_EllipseOffsetProperty; }
     static winrt::DependencyProperty IndicatorLengthDeltaProperty() { return s_IndicatorLengthDeltaProperty; }
 
     static GlobalDependencyProperty s_ClipRectProperty;
+    static GlobalDependencyProperty s_Container2AnimationEndPositionProperty;
+    static GlobalDependencyProperty s_Container2AnimationStartPositionProperty;
     static GlobalDependencyProperty s_ContainerAnimationEndPositionProperty;
+    static GlobalDependencyProperty s_ContainerAnimationMidPositionProperty;
     static GlobalDependencyProperty s_ContainerAnimationStartPositionProperty;
+    static GlobalDependencyProperty s_DispatcherProperty;
+    static GlobalDependencyProperty s_EllipseAnimationEndPositionProperty;
+    static GlobalDependencyProperty s_EllipseAnimationWellPositionProperty;
+    static GlobalDependencyProperty s_EllipseDiameterProperty;
+    static GlobalDependencyProperty s_EllipseOffsetProperty;
     static GlobalDependencyProperty s_IndicatorLengthDeltaProperty;
 
     static void EnsureProperties();

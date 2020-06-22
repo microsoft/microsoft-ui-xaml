@@ -12,7 +12,7 @@
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="40">
         <TextBlock Text="Parallaxing for text controls' background" Margin="4"/>
         <StackPanel>
-            <Grid Background="Azure">
+            <Grid>
                 <muxcontrols:ParallaxView Width="200" Height="200" Margin="25" HorizontalAlignment="Left" 
                     VerticalShift="50" Source="{x:Bind textBox}">
                     <Image Source="Assets/ingredient7.png" Opacity="0.5"/>
@@ -20,7 +20,7 @@
                 <TextBox x:Name="textBox" AutomationProperties.Name="textBox" Width="200" Height="200" HorizontalAlignment="Left" Margin="25" TextWrapping="Wrap"/>
             </Grid>
 
-            <Grid Background="Cyan">
+            <Grid>
                 <muxcontrols:ParallaxView Width="400" Height="250" Margin="25" HorizontalAlignment="Left" 
                     VerticalShift="200" Source="{x:Bind richEditBox}">
                     <Image Source="Assets/ingredient7.png" Opacity="0.5" />

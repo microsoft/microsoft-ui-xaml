@@ -32,14 +32,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class CommonStylesApiTests
+    public class CommonStylesApiTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void VerifyUseCompactResourcesAPI()
         {
@@ -141,6 +135,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled due to #2210: Unreliable test: CommonStylesApiTests.VerifyVisualTreeForCommandBarOverflowMenu
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
@@ -168,25 +163,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 commandBar = (CommandBar)root.FindName("TestCommandBar");
                 Verify.IsNotNull(commandBar);
-            });
-
-            TestUtilities.SetAsVisualTreeRoot(root);
-
-            RunOnUIThread.Execute(() => {
+                Content = root;
+                Content.UpdateLayout();
                 commandBar.IsOpen = true;
-            });
-
-            MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => {
+                Content.UpdateLayout();
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 Verify.IsNotNull(popup);
                 overflowContent = popup.Child;
             });
 
             var visualTreeDumperFilter = new VisualTreeDumper.DefaultFilter();
-            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxWidth");
-            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxHeight");
+            visualTreeDumperFilter.PropertyNameAllowedList.Remove("MaxWidth");
+            visualTreeDumperFilter.PropertyNameAllowedList.Remove("MaxHeight");
             VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
         }
 
@@ -317,9 +305,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         class CustomizedFilter : VisualTreeDumper.IFilter
         {
 
-            private static readonly string[] _propertyNamePostfixBlackList = new string[] { "Property", "Transitions", "Template", "Style", "Selector" };
+            private static readonly string[] _propertyNamePostfixBlockList = new string[] { "Property", "Transitions", "Template", "Style", "Selector" };
 
-            private static readonly string[] _propertyNameBlackList = new string[] { "Interactions", "ColumnDefinitions", "RowDefinitions",
+            private static readonly string[] _propertyNameBlockList = new string[] { "Interactions", "ColumnDefinitions", "RowDefinitions",
             "Children", "Resources", "Transitions", "Dispatcher", "TemplateSettings", "ContentTemplate", "ContentTransitions",
             "ContentTemplateSelector", "Content", "ContentTemplateRoot", "XYFocusUp", "XYFocusRight", "XYFocusLeft", "Parent",
             "Triggers", "RequestedTheme", "XamlRoot", "IsLoaded", "BaseUri", "Resources"};
@@ -406,8 +394,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             public bool ShouldVisitProperty(string propertyName)
             {
-                return (_propertyNamePostfixBlackList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
-                    !_propertyNameBlackList.Contains(propertyName);
+                return (_propertyNamePostfixBlockList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
+                    !_propertyNameBlockList.Contains(propertyName);
             }
         }
 

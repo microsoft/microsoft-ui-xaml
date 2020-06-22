@@ -1,0 +1,425 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Layout.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContext.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)NonvirtualizingLayoutContext.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizationInfo.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayout.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.cpp">
+      <Filter>Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeater.common.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeater.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementIndexChangedEventArgs.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementPreparedEventArgs.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHost.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterLayoutContext.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SelectionModel.cpp">
+      <Filter>SelectionModel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SelectionModelChildrenRequestedEventArgs.cpp">
+      <Filter>SelectionModel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SelectionModelSelectionChangedEventArgs.cpp">
+      <Filter>SelectionModel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SelectionNode.cpp">
+      <Filter>SelectionModel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SelectionTreeHelper.cpp">
+      <Filter>SelectionModel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RecyclePool.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RecyclePoolFactory.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RecyclingElementFactory.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp">
+      <Filter>ItemsRepeater\Phasing</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Phaser.cpp">
+      <Filter>ItemsRepeater\Phasing</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)QPCTimer.cpp">
+      <Filter>ItemsRepeater\Phasing</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)CustomProperty.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)IndexPath.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)IndexRange.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp">
+      <Filter>ItemsRepeater\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementAnimator.cpp">
+      <Filter>ItemsRepeater\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceView.cpp">
+      <Filter>ItemsRepeater\ItemsSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.cpp">
+      <Filter>ItemsRepeater\ItemsSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)InspectingDataSource.cpp">
+      <Filter>ItemsRepeater\ItemsSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactory.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SelectTemplateEventArgs.cpp">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewManager.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManagerDownlevel.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ElementManager.cpp">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayout.cpp">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutAlgorithm.cpp">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutState.cpp">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)OrientationBasedMeasures.cpp">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLayout.cpp">
+      <Filter>Layouts\StackLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)StackLayoutState.cpp">
+      <Filter>Layouts\StackLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\StackLayout.properties.cpp">
+      <Filter>Layouts\StackLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayout.cpp">
+      <Filter>Layouts\UniformGridLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayoutState.cpp">
+      <Filter>Layouts\UniformGridLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.cpp">
+      <Filter>Automation</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)UniqueIdElementPool.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\UniformGridLayout.properties.cpp">
+      <Filter>Layouts\UniformGridLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp">
+      <Filter>ItemsRepeater</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Layout.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)LayoutContext.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NonvirtualizingLayoutContext.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizationInfo.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayout.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.h">
+      <Filter>Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeater.common.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeater.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementIndexChangedEventArgs.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementPreparedEventArgs.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHost.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterLayoutContext.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectedItems.h">
+      <Filter>SelectionModel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectionModel.h">
+      <Filter>SelectionModel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectionModelChildrenRequestedEventArgs.h">
+      <Filter>SelectionModel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectionModelSelectionChangedEventArgs.h">
+      <Filter>SelectionModel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectionNode.h">
+      <Filter>SelectionModel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectionTreeHelper.h">
+      <Filter>SelectionModel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RecyclePool.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RecyclePoolFactory.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RecyclingElementFactory.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.h">
+      <Filter>ItemsRepeater\Phasing</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Phaser.h">
+      <Filter>ItemsRepeater\Phasing</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)QPCTimer.h">
+      <Filter>ItemsRepeater\Phasing</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)CustomProperty.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)IndexPath.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)IndexRange.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimationManager.h">
+      <Filter>ItemsRepeater\Animations</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementAnimator.h">
+      <Filter>ItemsRepeater\Animations</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceView.h">
+      <Filter>ItemsRepeater\ItemsSource</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.h">
+      <Filter>ItemsRepeater\ItemsSource</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)InspectingDataSource.h">
+      <Filter>ItemsRepeater\ItemsSource</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactory.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SelectTemplateEventArgs.h">
+      <Filter>ItemsRepeater\ItemTemplate</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewManager.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManager.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManagerDownlevel.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ElementManager.h">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayout.h">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutAlgorithm.h">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutState.h">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)IFlowLayoutAlgorithmDelegates.h">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)OrientationBasedMeasures.h">
+      <Filter>Layouts\FlowLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLayout.h">
+      <Filter>Layouts\StackLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)StackLayoutState.h">
+      <Filter>Layouts\StackLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayout.h">
+      <Filter>Layouts\UniformGridLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayoutState.h">
+      <Filter>Layouts\UniformGridLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)UniqueIdElementPool.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTrace.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.h">
+      <Filter>ItemsRepeater</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Automation">
+      <UniqueIdentifier>{f7f84b56-900b-4a6e-8bdd-c2a55c8ec523}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{fce337d4-5751-47ec-8938-0d7d12253e0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ItemsRepeater">
+      <UniqueIdentifier>{cadc53d8-a46c-4882-b0a4-2f70ee3d6d40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ItemsRepeater\Animations">
+      <UniqueIdentifier>{5dca1c23-1d92-4d33-a133-70c55d7f802b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ItemsRepeater\ItemsSource">
+      <UniqueIdentifier>{8b3d58bb-4867-4906-8c93-25e229cd35ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ItemsRepeater\ItemTemplate">
+      <UniqueIdentifier>{3d51bc7b-9dbc-4a79-9b45-149c8d6ba95a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ItemsRepeater\Phasing">
+      <UniqueIdentifier>{77b7a882-3f38-47e3-85f6-eb411bac3447}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Layouts">
+      <UniqueIdentifier>{7ab0a82b-5005-43b7-9019-372c48b2bad3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Layouts\FlowLayout">
+      <UniqueIdentifier>{5de0719e-0a0c-4c52-bc86-1945bb3d7adb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Layouts\StackLayout">
+      <UniqueIdentifier>{cb3f5490-4da5-47cd-b0b3-175e63b1f8d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Layouts\UniformGridLayout">
+      <UniqueIdentifier>{16586797-e768-41a1-aa7f-a1a76729b796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SelectionModel">
+      <UniqueIdentifier>{09ee0419-018a-4432-b173-f6118789382f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ItemsRepeater.idl">
+      <Filter>ItemsRepeater</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterPrivate.idl">
+      <Filter>ItemsRepeater</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.idl">
+      <Filter>Automation</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl">
+      <Filter>Common</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

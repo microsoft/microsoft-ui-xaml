@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
@@ -47,6 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void SelectionTest()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -72,6 +73,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void SelectByItem()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
@@ -108,6 +110,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void FocusComingFromAnotherRepeaterTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
@@ -143,6 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void BasicKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -186,6 +190,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void MultiColumnKeyboardTest()
         {
             if(!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -248,6 +253,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void DisabledItemsKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -319,6 +325,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void DisabledItemsAtTopOfColumnKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -436,6 +443,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled due to: RadioButtonsTests.GamepadCanEscapeAndDoesNotSelectWithFocus is unreliable. #2202
+        [TestProperty("TestSuite", "B")]
         public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -489,6 +498,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void ControlKeyKeyboardTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -519,6 +529,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ColumnsTest()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -565,6 +576,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void UIAProperties()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -607,6 +619,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void InsertedCheckedRadioButtonGetsSelection()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -624,6 +637,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ScrollViewerSettingSelectionDoesNotMoveFocus()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -651,6 +665,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                         KeyboardHelper.PressKey(Key.Down);
                         VerifySelectedFocusedIndex(1);
+                    }
+                }
+            }
+        }
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void AccessKeys()
+        { 
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        SetNumberOfItems(10);
+
+                        VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifyFocusedIndex(0);
+                        VerifySelectedIndex(-1);
+
+                        SelectByIndex(3);
+                        VerifySelectedIndex(3);
+                        VerifyFocusedIndex(-1);
+
+                        KeyboardHelper.PressKey(Key.Tab);
+                        VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
                     }
                 }
             }
@@ -783,6 +836,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Clicking on item 'Radio Button " + index + "'");
             RadioButton item = FindElement.ByName<RadioButton>("Radio Button " + index);
             item.Click();
+        }
+
+        void UseAccessKey()
+        {
+            KeyboardHelper.PressDownModifierKey(ModifierKey.Alt);
+            KeyboardHelper.PressKey(Key.R);
+            KeyboardHelper.ReleaseModifierKey(ModifierKey.Alt);
         }
 
         void TapOnItem(int index, bool useBackup = false)

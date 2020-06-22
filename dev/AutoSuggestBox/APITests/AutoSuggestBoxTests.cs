@@ -21,14 +21,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class AutoSuggestBoxTests
+    public class AutoSuggestBoxTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void VerifyAutoSuggestBoxCornerRadius()
         {
@@ -66,7 +60,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
+        // Disabling flaky test
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/2363
+        //[TestMethod]
         public void VerifyVisualTree()
         {
             var autoSuggestBox = SetupAutoSuggestBox();

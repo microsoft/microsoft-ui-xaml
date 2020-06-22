@@ -39,7 +39,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         Backspace,
         F10,
         F4,
-        F6
+        F6,
+        R
     }
 
     [Flags]
@@ -72,6 +73,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             { Key.F10, "{F10}" },
             { Key.F4, "{F4}" },
             { Key.F6, "{F6}" },
+            { Key.R, "{R}" }
         };
 
         private static string ApplyModifierKey(string keyStrokes, ModifierKey key)
@@ -134,7 +136,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle();
         }
 
-        public static void PressDownModifierKey(ModifierKey modifierKey)
+        public static string GetPressDownModifierKeyStroke(ModifierKey modifierKey)
         {
             string keystrokes = string.Empty;
 
@@ -157,7 +159,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             {
                 keystrokes += "{WIN DOWN}";
             }
+            return keystrokes;
+        }
 
+        public static void PressDownModifierKey(ModifierKey modifierKey)
+        {
+            var keystrokes = GetPressDownModifierKeyStroke(modifierKey);
             if (keystrokes != string.Empty)
             {
                 Log.Comment("Send text '{0}'.", keystrokes);
@@ -166,7 +173,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
         }
 
-        public static void ReleaseModifierKey(ModifierKey modifierKey)
+        public static string GetReleaseModifierKeyStroke(ModifierKey modifierKey)
         {
             string keystrokes = string.Empty;
 
@@ -189,7 +196,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             {
                 keystrokes += "{WIN UP}";
             }
+            return keystrokes;
+        }
 
+        public static void ReleaseModifierKey(ModifierKey modifierKey)
+        {
+            var keystrokes = GetReleaseModifierKeyStroke(modifierKey);
             if (keystrokes != string.Empty)
             {
                 Log.Comment("Send text '{0}'.", keystrokes);
@@ -263,6 +275,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             if (useDebugMode)
             {
                 Log.Comment("Exiting PressKey.");
+            }
+        }
+
+        public static void HoldKeyMilliSeconds(Key key, uint milliseconds, ModifierKey modifierKey = ModifierKey.None, bool useDebugMode = false)
+        {
+            if (useDebugMode)
+            {
+                Log.Comment("Holding down key: {0} for {1} milliseconds.",key,milliseconds);
+            }
+            // Remove starting and ending curly bracket.
+            var cleanedName = keyToKeyStringDictionary[key].Substring(1).Replace("}", "");
+
+            string beginKeyStroke = GetPressDownModifierKeyStroke(modifierKey) + "{" + cleanedName + " DOWN}";
+            string endKeyStroke = "{" + cleanedName + " UP}" + GetReleaseModifierKeyStroke(modifierKey);
+            
+            TextInput.SendText(beginKeyStroke);
+
+            Wait.ForMilliseconds(milliseconds);
+
+            TextInput.SendText(endKeyStroke);
+
+            if (useDebugMode)
+            {
+                Log.Comment($"Pressed key for {milliseconds} milliseconds.");
+            }
+
+            Wait.ForIdle();
+
+            if (useDebugMode)
+            {
+                Log.Comment("Exiting HoldKeyForMilliSeconds.");
             }
         }
 

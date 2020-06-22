@@ -85,6 +85,7 @@
         </VisualStateManager.VisualStateGroups>
 
         <StackPanel Margin="24">
+            <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
             <ComboBox Header="Page Background" ItemsSource="{x:Bind backgroundTypeSource}" SelectionChanged="BackgroundComboBoxChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="local:RevealBackgroundItem">
@@ -109,6 +110,7 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
+            <TextBlock Text="Sample Grid" Style="{ThemeResource StandardGroupHeader}" Margin="0,16,0,8"/>
             <GridView Name="RevealGrid"
                     ItemsSource="{x:Bind gridSource}"
                     ItemTemplate="{StaticResource ImageTextItem}"

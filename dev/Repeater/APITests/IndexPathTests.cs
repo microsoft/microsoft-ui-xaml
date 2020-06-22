@@ -19,7 +19,7 @@ using IndexPath = Microsoft.UI.Xaml.Controls.IndexPath;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class IndexPathTests : TestsBase
+    public class IndexPathTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateIndexPath()

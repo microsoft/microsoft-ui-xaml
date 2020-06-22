@@ -24,6 +24,7 @@
         <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
                 PaneTitle="NavView Test"
                 DisplayModeChanged="NavView_DisplayModeChanged"
+                ItemInvoked="NavView_ItemInvoked"
                 SelectionChanged="NavView_SelectionChanged"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
@@ -41,7 +42,7 @@
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
-                <muxcontrols:NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio"/>
+                <muxcontrols:NavigationViewItem x:Name="MusicItem" AutomationProperties.Name="Music" Content="Music" Icon="Audio"/>
                 <muxcontrols:NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
                 <muxcontrols:NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
@@ -127,6 +128,8 @@
                             <ComboBoxItem Content="320" Tag="320"/>
                             <ComboBoxItem Content="648" Tag="648"/>
                         </ComboBox>
+
+                        <TextBlock x:Name="InvokedItemState" AutomationProperties.Name="InvokedItemState" Text="NoItemInvoked"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -177,9 +180,13 @@
                             <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
                             <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                         </ComboBox>
+                        <Button x:Name="ClearSelectionChangeIndicatorButton" AutomationProperties.Name="ClearSelectionChangeIndicatorButton"  Click="ClearSelectionChangeBlock">Clear selection changed indicator</Button>
+                        <TextBlock VerticalAlignment="Center">Selection was raised:  </TextBlock>
+                        <TextBlock VerticalAlignment="Center" x:Name="SelectionChangedRaised" AutomationProperties.Name="SelectionChangedRaised"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="SelectedItemIsEnabledCheckbox" AutomationProperties.Name="SelectedItemIsEnabledCheckbox" Content="SelectedItem IsEnabled" IsChecked="True" Checked="SelectedItemIsEnabledCheckbox_Checked" Unchecked="SelectedItemIsEnabledCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="SettingsItemVisibilityCheckbox" AutomationProperties.Name="SettingsItemVisibilityCheckbox" Content="Show Settings" Checked="SettingsItemVisibilityCheckbox_Checked" Unchecked="SettingsItemVisibilityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="PaneToggleButtonVisiblityCheckbox" AutomationProperties.Name="PaneToggleButtonVisiblityCheckbox" Content="Show Hamburger Button" Checked="PaneToggleButtonVisiblityCheckbox_Checked" Unchecked="PaneToggleButtonVisiblityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="AutoSuggestCheckbox" AutomationProperties.Name="AutoSuggestCheckbox" Content="Set AutoSuggestBox" IsChecked="True" Checked="AutoSuggestCheckbox_Checked" Unchecked="AutoSuggestCheckbox_Unchecked" Margin="5"/>
@@ -238,7 +245,28 @@
                         <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">LeftNavigationReveal?: </TextBlock>
                         <TextBlock x:Name="OnLeftNavigationRevealVisualState" AutomationProperties.Name="OnLeftNavigationRevealVisualState" Text="False" VerticalAlignment="Center"/>
                     </StackPanel>
-                    
+
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <Button x:Name="ResetEventCounters" AutomationProperties.Name="ResetEventCounters" Content="Reset Event Counters" Margin="0,0,2,0" Click="ResetEventCounters_Click"/>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">Number_of_ItemInvoked_events_raised:</TextBlock>
+                        <TextBlock x:Name="NumberOfItemInvokedEventsRaisedTextBlock" AutomationProperties.Name="NumberOfItemInvokedEventsRaisedTextBlock" Text="0" VerticalAlignment="Center"/>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">Number_of_SelectionChanged_events_raised:</TextBlock>
+                        <TextBlock x:Name="NumberOfSelectionChangedEventsRaisedTextBlock" AutomationProperties.Name="NumberOfSelectionChangedEventsRaisedTextBlock" Text="0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">ItemInvoked Arguments (InvokedItem | InvokedItemContainer): </TextBlock>
+                            <TextBox Margin="42,0,0,0" x:Name="ItemInvokedItemType" AutomationProperties.Name="ItemInvokedItemType" Text="N/A"/>
+                            <TextBox x:Name="ItemInvokedItemContainerType" AutomationProperties.Name="ItemInvokedItemContainerType" Text="N/A"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">SelectionChanged Arguments (SelectedItem | SelectedItemContainer):</TextBlock>
+                            <TextBox x:Name="SelectionChangedItemType" AutomationProperties.Name="SelectionChangedItemType" Text="N/A"/>
+                            <TextBox x:Name="SelectionChangedItemContainerType" AutomationProperties.Name="SelectionChangedItemContainerType" Text="N/A"/>
+                        </StackPanel>
+                    </StackPanel>
+
                     <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="5">
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris faucibus quam id sem porta posuere. Interdum et malesuada fames ac ante ipsum primis in faucibus. Morbi sodales suscipit justo quis consequat. Vestibulum lectus magna, mattis id eleifend sed, congue eget lectus. Nam et sem pellentesque, dignissim erat eu, tincidunt lacus. Ut porttitor tincidunt ullamcorper. Vestibulum sodales neque purus, vitae eleifend metus convallis in. Etiam non metus nec ligula pharetra molestie. Donec dignissim dapibus blandit. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
                         

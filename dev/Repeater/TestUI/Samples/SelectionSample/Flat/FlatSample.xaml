@@ -1,0 +1,81 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.Selection.FlatSample"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:local="using:MUXControlsTestApp.Samples.Selection">
+
+    <Page.Resources>
+        <controls:RecyclePool x:Key="RecyclePool" />
+        <controls:SelectionModel x:Name="selectionModel" />
+        <local:BoolToBrushConverter x:Name="boolToBrushConterter" />
+        <local:BoolToVisibilityConverter x:Name="boolToVisibilityConterter" />
+        <controls:RecyclingElementFactory x:Name="elementFactory"
+                                RecyclePool="{StaticResource RecyclePool}">
+            <DataTemplate x:Key="item">
+                <local:RepeaterItem x:Name="templateRoot" 
+                                                    SelectionModel="{StaticResource selectionModel}"
+                                                    AutomationProperties.Name="{Binding}">
+                    <Grid 
+                                        Background="{Binding ElementName=templateRoot, Path=IsSelected, Converter={StaticResource boolToBrushConterter}}" 
+                                        HorizontalAlignment="Stretch" 
+                                        Width="100" Height="100" 
+                                        BorderThickness="1" BorderBrush="LightGray">
+                        <SymbolIcon 
+                                            Symbol="Accept" 
+                                            Visibility="{Binding ElementName=templateRoot, Path=IsSelected, Converter={StaticResource boolToVisibilityConterter}}" 
+                                            HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                            Width="20" Height="20" 
+                                            Margin="5"/>
+                        <TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </local:RepeaterItem>
+            </DataTemplate>
+        </controls:RecyclingElementFactory>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <ToggleButton x:Name="multipleSelection" 
+                          IsChecked="False" 
+                          Checked="OnMultipleSelectionClicked" 
+                          Unchecked="OnMultipleSelectionClicked">Multiple</ToggleButton>
+            <Button Content="Grouped" Click="OnGroupedClicked" />
+            <Button Content="Back" Click="OnBackClicked" />
+        </StackPanel>
+
+        <!-- Details view for selected item -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock Text="SelectedItem:" />
+            <TextBlock Text="{Binding ElementName=selectionModel, Path=SelectedItem}"  Margin="0,0,10,0"/>
+            <!--<TextBlock Text="{x:Bind selectionModel.SelectedItem, Mode=OneWay}" />-->
+            <StackPanel>
+                <TextBlock>Collection Changes</TextBlock>
+                <TextBox x:Name="indexPath" Text="1.2.3" />
+                <Button x:Name="insert" Click="insert_Click" Content="Insert" />
+                <Button x:Name="remove" Click="remove_Click" Content="Remove" />
+                <Button x:Name="clear" Click="clear_Click" Content="Clear" />
+            </StackPanel>
+        </StackPanel>
+
+        <controls:ItemsRepeaterScrollHost Grid.Row="2" >
+            <ScrollViewer>
+                <local:SelectionContainer SelectionModel="{StaticResource selectionModel}">
+                    <controls:ItemsRepeater x:Name="repeater"  >
+                        <controls:ItemsRepeater.Layout>
+                            <controls:FlowLayout />
+                        </controls:ItemsRepeater.Layout>
+                    </controls:ItemsRepeater>
+                </local:SelectionContainer>
+            </ScrollViewer>
+        </controls:ItemsRepeaterScrollHost>
+
+    </Grid>
+</Page>
