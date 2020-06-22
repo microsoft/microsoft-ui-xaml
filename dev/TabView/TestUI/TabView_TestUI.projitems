@@ -10,6 +10,10 @@
     <Import_RootNamespace>TabView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)TabViewTabItemsSourcePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)TabViewSizingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -18,13 +22,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TabViewTabClosingBehaviorPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)TabViewTabItemsSourcePage.xaml.cs">
+      <DependentUpon>TabViewTabItemsSourcePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TabViewSizingPage.xaml.cs">
       <DependentUpon>TabViewSizingPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TabViewPage.xaml.cs">
       <DependentUpon>TabViewPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TabViewTabClosingBehaviorPage.xaml.cs">
+      <DependentUpon>TabViewTabClosingBehaviorPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

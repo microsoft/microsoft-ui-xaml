@@ -46,6 +46,7 @@
                 <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
                 <Button x:Name="PlayButton" Click="PlayButton_Click">Play forwards from 0 to 1</Button>
                 <Button x:Name="ToZeroKeyframeAnimationPlayButton" Click="ToZeroKeyframeAnimationPlayButton_Click">Play forwards from 0.35 to 0</Button>
+                <Button x:Name="AroundTheEndAnimationPlayButton" Click="AroundTheEndAnimationPlayButton_Click">Play forwards from 0.35 to 0.3</Button>
                 <Button x:Name="FromOneKeyframeAnimationPlayButton" Click="FromOneKeyframeAnimationPlayButton_Click">Play forwards from 1 to 0.35</Button>
                 <Button x:Name="ReverseNegativePlaybackRateAnimationPlayButton" Click="ReverseNegativePlaybackRateAnimationPlayButton_Click">Play backwards from 1 to 0.5 then forwards from 0.5 to 1</Button>
                 <Button x:Name="ReversePositivePlaybackRateAnimationPlayButton" Click="ReversePositivePlaybackRateAnimationPlayButton_Click">Play forwards from 0 to 0.5 then backwards from 0.5 to 0</Button>
@@ -57,18 +58,21 @@
 
                 <StackPanel Margin="0,0,8,0">
                     <TextBlock Text="General"  FontSize="18"/>
-                    <TextBox x:Name="ProgressTextBox" Header="Current status"/>
-                    <TextBox x:Name="IsPlayingTextBoxBeforePlaying" Header="Started playing"/>
-                    <TextBox x:Name="IsPlayingTextBoxBeingPlaying" Header="Is playing"/>
-                    <TextBox x:Name="FallenBackTextBox" Header="Fallback working"/>
+                    <TextBox Text="{x:Bind Player.IsPlaying,Mode=OneWay}" Header="Is playing"/>
+                    <TextBox Text="{x:Bind Player.PlaybackRate,Mode=OneWay}" Header="Playback rate"/>
+                    <TextBox x:Name="IsPlayingTextBoxBeforePlaying" Header="IsPlaying state before playing"/>
+                    <TextBox x:Name="IsPlayingTextBoxBeingPlaying" Header="IsPlaying state during playing"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,0,0">
                     <TextBlock Text="Specific scenarios" FontSize="18"/>
                     <TextBox x:Name="HittestingTextBox" Header="Pointer status"/>
+                    <TextBox x:Name="ProgressTextBox" Header="Animate 0 to 1 status"/>
                     <TextBox x:Name="ToZeroKeyframeAnimationProgressTextBox" Header="Animate to 0 status"/>
+                    <TextBox x:Name="AroundTheEndAnimationProgressTextBox" Header="Animate 0.35 to 0.3 status"/>
                     <TextBox x:Name="FromOneKeyframeAnimationProgressTextBox" Header="Animate from 1 status"/>
                     <TextBox x:Name="ReverseNegativePlaybackRateAnimationTextBox" Header="Animate backwards (negative rate) status"/>
                     <TextBox x:Name="ReversePositivePlaybackRateAnimationTextBox" Header="Animate backwards (positive rate) status"/>
+                    <TextBox x:Name="FallenBackTextBox" Header="Fallback working"/>
                 </StackPanel>
 
             </StackPanel>

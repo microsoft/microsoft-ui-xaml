@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using System.Linq;
 using Common;
 using MUXControlsTestApp.Utilities;
+using Windows.UI;
 
 namespace MUXControlsTestApp
 {
@@ -300,5 +301,16 @@ namespace MUXControlsTestApp
 
             DensityTestResult.Text = simpleVerify.ToString();
         }
+
+        private void BlueBackground_Click(object sender, RoutedEventArgs e)
+        {
+            RootSampleControlsPanel.Background = new SolidColorBrush(Color.FromArgb(255,0, 173, 239));
+        }
+
+        private void StandardBackground_Click(object sender, RoutedEventArgs e)
+        {
+            RootSampleControlsPanel.Background = new SolidColorBrush(Colors.Transparent);
+        }
+
     }
 }

@@ -5,9 +5,13 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Xml;
 using Windows.Globalization.NumberFormatting;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Markup;
 
 namespace MUXControlsTestApp
 {
@@ -122,6 +126,47 @@ namespace MUXControlsTestApp
         {
             DataModelWithINPC.Value = Double.NaN;
             TwoWayBoundNumberBoxValue.Text = TwoWayBoundNumberBox.Value.ToString();
+        }
+
+        private void ToggleHeaderValueButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(HeaderTestingNumberBox.Header is null)
+            {
+                var demoHeader = new TextBlock();
+                demoHeader.SetValue(AutomationProperties.NameProperty, "NumberBoxHeaderClippingDemoHeader");
+                demoHeader.Text = "Test header";
+                HeaderTestingNumberBox.Header = demoHeader;
+            }
+            else
+            {
+                // Switching between normal header and empty string header
+                if(HeaderTestingNumberBox.Header as string is null)
+                {
+                    HeaderTestingNumberBox.Header = "";
+                }
+                else
+                {
+                    HeaderTestingNumberBox.Header = null;
+                }
+            }
+        }
+
+        private void ToggleHeaderTemplateValueButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (HeaderTemplateTestingNumberBox.HeaderTemplate is null)
+            {
+                string templateString = 
+                @"<DataTemplate 
+                xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""> 
+                    <TextBlock AutomationProperties.Name=""HeaderTemplateTestingBlock"" Text=""Some text""/> 
+                </DataTemplate>";
+                HeaderTemplateTestingNumberBox.HeaderTemplate = XamlReader.Load(templateString) as DataTemplate;
+            }
+            else
+            {
+                // Switching between normal header and empty string header
+                HeaderTemplateTestingNumberBox.HeaderTemplate = null;
+            }
         }
 
         private void TextPropertyChanged(DependencyObject o, DependencyProperty p)

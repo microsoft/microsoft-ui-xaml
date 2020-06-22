@@ -42,6 +42,8 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
+    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -58,6 +60,7 @@ public:
     void ValidateNumberFormatter(winrt::INumberFormatter2 value);
 
 private:
+    winrt::DecimalFormatter GetRegionalSettingsAwareDecimalFormatter();
 
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -66,6 +69,7 @@ private:
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 
     void ValidateInput();
     void CoerceMinimum();
@@ -78,6 +82,8 @@ private:
     void UpdateSpinButtonEnabled();
     void StepValue(double change);
 
+    void UpdateHeaderPresenterState();
+
     bool IsInBounds(double value);
 
     bool m_valueUpdating{ false };
@@ -86,6 +92,7 @@ private:
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::ContentPresenter> m_headerPresenter{ this };
     tracker_ref<winrt::Popup> m_popup{ this };
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
@@ -95,4 +102,6 @@ private:
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
+
+    PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
 };

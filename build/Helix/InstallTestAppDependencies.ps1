@@ -1,4 +1,5 @@
-Push-Location ..\
+# Displaying progress is unnecessary and is just distracting.
+$ProgressPreference = "SilentlyContinue"
 
 $dependencyFiles = Get-ChildItem -Filter "*dependencies.txt"
 
@@ -11,5 +12,3 @@ foreach ($file in $dependencyFiles)
         Add-AppxPackage $line
     }
 }
-
-Pop-Location

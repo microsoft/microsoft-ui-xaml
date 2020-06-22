@@ -9,17 +9,22 @@ class ProgressRingProperties
 public:
     ProgressRingProperties();
 
-    void StrokeThickness(double value);
-    double StrokeThickness();
+    void IsActive(bool value);
+    bool IsActive();
 
-    static winrt::DependencyProperty StrokeThicknessProperty() { return s_StrokeThicknessProperty; }
+    void TemplateSettings(winrt::ProgressRingTemplateSettings const& value);
+    winrt::ProgressRingTemplateSettings TemplateSettings();
 
-    static GlobalDependencyProperty s_StrokeThicknessProperty;
+    static winrt::DependencyProperty IsActiveProperty() { return s_IsActiveProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
+
+    static GlobalDependencyProperty s_IsActiveProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnStrokeThicknessPropertyChanged(
+    static void OnIsActivePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

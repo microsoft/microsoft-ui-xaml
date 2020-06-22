@@ -41,7 +41,6 @@
     <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
-    <PGODatabaseVersion>2.0.0</PGODatabaseVersion>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -60,6 +59,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
+  <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="$(MSBuildProjectDirectory)\..\..\tools\MUXPGODatabase\PGO.version.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -444,7 +444,7 @@
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\..\packages\MUXPGODatabase.$(PGODatabaseVersion)\build\MUXPGODatabase.targets" Condition="Exists('..\..\packages\MUXPGODatabase.$(PGODatabaseVersion)\build\MUXPGODatabase.targets')" />
+    <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -632,7 +632,7 @@
     </ItemGroup>
   </Target>
   <!-- Need to invoke MDMerge again to produce the "public" metadata using MDMerge's -createPublicMetadata and -transformExperimental flags -->
-  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
+  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(IntDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
       <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>

@@ -39,6 +39,8 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void SetItemsSource(winrt::TreeViewNode const& node, winrt::IInspectable const& value);
+
 public:
     // IFrameworkElementOverrides
     void OnApplyTemplate();

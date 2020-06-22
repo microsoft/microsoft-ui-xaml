@@ -10,7 +10,13 @@
     <Import_RootNamespace>NavigationView_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EventTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FocusBehaviorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PaneBehaviorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTestsBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CommonTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewXamlIslandsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SelectionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TopModeTests.cs" />
   </ItemGroup>
 </Project>

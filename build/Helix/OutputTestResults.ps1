@@ -6,7 +6,6 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT,
     [bool]$CheckJobAttempt
 )
 
@@ -27,29 +26,26 @@ $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRe
 [System.Collections.Generic.List[string]]$unreliableTests = @()
 [System.Collections.Generic.List[string]]$unexpectedResultTest = @()
 
-$timesSeenByRunName = @{}
+[System.Collections.Generic.List[string]]$namesOfProcessedTestRuns = @()
 $totalTestsExecutedCount = 0
 
-foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
+# We assume that we only have one testRun with a given name that we care about
+# We only process the last testRun with a given name (based on completedDate)
+# The name of a testRun is set to the Helix queue that it was run on (e.g. windows.10.amd64.client19h1.xaml)
+# If we have multiple test runs on the same queue that we care about, we will need to re-visit this logic
+foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate" -Descending))
 {
-    # The same build for a pull request can have multiple test runs associated with it if the build owner opted to re-run a test run.
-    # We should only pay attention to the current attempt version.
-    # NB: If in the future we have pull request builds do multiple test runs as part of the same build definition, we'll need to revisit this.
     if ($CheckJobAttempt)
     {
-        if (-not $timesSeenByRunName.ContainsKey($testRun.name))
+        if ($namesOfProcessedTestRuns -contains $testRun.name)
         {
-            $timesSeenByRunName[$testRun.name] = 0
-        }
-    
-        $timesSeen = $timesSeenByRunName[$testRun.name] + 1
-        $timesSeenByRunName[$testRun.name] = $timesSeen
-
-        if ($timesSeen -ne $JobAttempt)
-        {
+            Write-Host "Skipping test run '$($testRun.name)', since we have already processed a test run of that name."
             continue
         }
     }
+    
+    Write-Host "Processing results from test run '$($testRun.name)'"
+    $namesOfProcessedTestRuns.Add($testRun.name)
 
     $totalTestsExecutedCount += $testRun.totalTests
 
@@ -58,7 +54,7 @@ foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
         
     foreach ($testResult in $testResults.value)
     {
-        $shortTestCaseTitle = $testResult.testCaseTitle -replace "release.[a-zA-Z0-9]+.Windows.UI.Xaml.Tests.MUXControls.",""
+        $shortTestCaseTitle = $testResult.testCaseTitle -replace "[a-zA-Z0-9]+.[a-zA-Z0-9]+.Windows.UI.Xaml.Tests.MUXControls.",""
 
         if ($testResult.outcome -eq "Failed")
         {

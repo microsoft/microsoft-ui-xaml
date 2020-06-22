@@ -18,7 +18,7 @@ steps:
   - template: MUX-InstallWindowsSDK-Steps.yml
 
   - template: MUX-InstallNuget-Steps.yml
-  
+
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
   - script: |
       "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
@@ -34,6 +34,14 @@ steps:
     inputs:
       filename: 'set'
 
+  - task: powershell@2
+    displayName: 'Restore PGO database'
+    condition: eq(variables['PGOBuildMode'], 'Optimize')
+    inputs:
+      targetType: filePath
+      workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+      filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
+
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore ${{ parameters.solutionPath }}'
     inputs:
@@ -45,7 +53,7 @@ steps:
     displayName: 'Build solution ${{ parameters.solutionPath }}'
     inputs:
       solution: ${{ parameters.solutionPath }}
-      vsVersion: 15.0
+      vsVersion: 16.0
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
       msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'

@@ -117,6 +117,11 @@
                 <TextBlock x:Name="ToggleStateOnClickTextBlock" AutomationProperties.Name="ToggleStateOnClickTextBlock" Margin="4,0,0,0" Text="Unchecked"/>
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,12">
+                <controls:ToggleSplitButton x:Name="BindingToggleSplitButton" Content="IsChecked" IsChecked="{Binding IsChecked, ElementName=IsCheckedCheckBox, Mode=TwoWay}"/>
+                <CheckBox x:Name="IsCheckedCheckBox" Content="IsChecked" IsChecked="False" Margin="12,0,0,0"/>
+            </StackPanel>
+
             <controls:ToggleSplitButton Content="Initially Checked" IsChecked="True"/>
 
             <StackPanel Orientation="Horizontal" Margin="0,12,0,0">

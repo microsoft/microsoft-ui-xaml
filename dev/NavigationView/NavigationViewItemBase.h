@@ -5,9 +5,11 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.properties.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
 
@@ -41,18 +43,35 @@ public:
         __super::OnLostFocus(e);
     }
 
-    virtual void OnNavigationViewRepeaterPositionChanged() {}
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    NavigationViewRepeaterPosition Position();
+    NavigationViewRepeaterPosition Position() const;
     void Position(NavigationViewRepeaterPosition value);
-    
-    winrt::NavigationView GetNavigationView();
-    winrt::SplitView GetSplitView();
+    virtual void OnNavigationViewItemBasePositionChanged() {}
+
+    void Depth(int depth);
+    int Depth() const;
+    virtual void OnNavigationViewItemBaseDepthChanged() {}
+
+    virtual void OnNavigationViewItemBaseIsSelectedChanged() {}
+
+    winrt::NavigationView GetNavigationView() const;
+    winrt::SplitView GetSplitView() const;
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+
+    // TODO: Constant is a temporary measure. Potentially expose using TemplateSettings.
+    static constexpr int c_itemIndentation = 25;
+
+    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
+    bool IsTopLevelItem() const { return m_isTopLevelItem; };
+
 protected:
+
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
-    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
 
+    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
+    int m_depth{ 0 };
+    bool m_isTopLevelItem{ false };
 };
