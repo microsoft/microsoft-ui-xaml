@@ -4,7 +4,7 @@
 // This is a header-only implementation of Win2D-like effects descriptions,
 // which can be use to describe effects graph in the Windows::UI::Composition API.
 
-#pragma
+#pragma once
 
 #include <cstring>
 #include <wrl.h>

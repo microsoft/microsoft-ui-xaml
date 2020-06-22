@@ -171,7 +171,11 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
   <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
-  <PropertyGroup Condition="&#xD;&#xA;    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR&#xD;&#xA;    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR&#xD;&#xA;    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')&#xD;&#xA;    ">
+  <PropertyGroup Condition="
+    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
+    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
+    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
+    ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
