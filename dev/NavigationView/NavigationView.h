@@ -61,6 +61,7 @@ public:
 
     static void CreateAndAttachHeaderAnimation(const winrt::Visual& visual);
 
+    void OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& args);
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     bool IsFullScreenOrTabletMode();
@@ -460,5 +461,7 @@ private:
     bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
 
     bool m_OrientationChangedPendingAnimation{ false };
+
+    bool m_TabKeyPrecedesFocusChange{ false };
 };
 

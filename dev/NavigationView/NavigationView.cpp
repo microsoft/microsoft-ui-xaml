@@ -2452,7 +2452,10 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
 
 void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
 {
-    if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard && m_selectionModel.SelectedIndex())
+    // if focus change was invoked by tab key
+    // and there is selected item in ItemsRepeater that gatting focus
+    // we should put focus on selected item
+    if (m_TabKeyPrecedesFocusChange && args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard && m_selectionModel.SelectedIndex())
     {
         if (auto const oldFocusedElement = args.OldFocusedElement())
         {
@@ -2505,6 +2508,8 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
             }
         }
     }
+
+    m_TabKeyPrecedesFocusChange = false;
 }
 
 void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
@@ -2547,12 +2552,19 @@ void NavigationView::OnSettingsInvoked()
     }
 }
 
+void NavigationView::OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& e)
+{
+    m_TabKeyPrecedesFocusChange = false;
+    __super::OnPreviewKeyDown(e);
+}
+
 void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 {
     const auto& eventArgs = e;
     auto key = eventArgs.Key();
 
     bool handled = false;
+    m_TabKeyPrecedesFocusChange = false;
 
     switch (key)
     {
@@ -2575,6 +2587,11 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         break;
     case winrt::VirtualKey::GamepadRightShoulder:
         handled = BumperNavigation(1);
+        break;
+    case winrt::VirtualKey::Tab:
+        // arrow keys navigation through ItemsRepeater don't get here
+        // so handle tab key to distinguish between tab focus and arrow focus navigation
+        m_TabKeyPrecedesFocusChange = true;
         break;
     case winrt::VirtualKey::Left:
         auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
