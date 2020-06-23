@@ -1036,7 +1036,7 @@
                                               Background=#00FFFFFF
                                               Width=40
                                               Name=ExpandCollapseChevron
-                                              Margin=-16,0,0,0
+                                              Margin=-20,0,6,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
                                               FocusVisualPrimaryThickness=2,2,2,2
@@ -1294,7 +1294,7 @@
                                               Background=#00FFFFFF
                                               Width=40
                                               Name=ExpandCollapseChevron
-                                              Margin=-16,0,0,0
+                                              Margin=-20,0,6,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
                                               FocusVisualPrimaryThickness=2,2,2,2
@@ -1592,7 +1592,7 @@
                                               Background=#00FFFFFF
                                               Width=40
                                               Name=ExpandCollapseChevron
-                                              Margin=-16,0,0,0
+                                              Margin=-20,0,6,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
                                               FocusVisualPrimaryThickness=2,2,2,2
