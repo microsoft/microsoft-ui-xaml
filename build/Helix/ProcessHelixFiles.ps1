@@ -1,5 +1,6 @@
 Param(
     [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
+    [string]$HelixAccessToken = $env:HelixAccessToken,
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
@@ -8,6 +9,12 @@ Param(
 
 $helixLinkFile = "$OutputFolder\LinksToHelixTestFiles.html"
 $visualTreeMasterFolder = "$OutputFolder\VisualTreeMasters"
+
+$accessTokenParam = ""
+if($HelixAccessToken)
+{
+    $accessTokenParam = "?access_token=$HelixAccessToken"
+}
 
 function Generate-File-Links
 {
@@ -59,7 +66,7 @@ foreach ($testRun in $testRuns.value)
         if (-not $workItems.Contains($workItem))
         {
             $workItems.Add($workItem)
-            $filesQueryUri = "https://helix.dot.net/api/2019-06-17/jobs/$helixJobId/workitems/$helixWorkItemName/files"
+            $filesQueryUri = "https://helix.dot.net/api/2019-06-17/jobs/$helixJobId/workitems/$helixWorkItemName/files$accessTokenParam"
             $files = Invoke-RestMethod -Uri $filesQueryUri -Method Get
 
             $screenShots = $files | where { $_.Name.EndsWith(".jpg") }
@@ -89,7 +96,8 @@ foreach ($testRun in $testRuns.value)
                 {
                     $destination = "$visualTreeMasterFolder\$($masterFile.Name)"
                     Write-Host "Copying $($masterFile.Name) to $destination"
-                    $webClient.DownloadFile($masterFile.Link, $destination)
+                    $link = "$($masterFile.Link)$accessTokenParam"
+                    $webClient.DownloadFile($link, $destination)
                 }
 
                 foreach($pgcFile in $pgcFiles)
@@ -107,7 +115,8 @@ foreach ($testRun in $testRuns.value)
                         New-Item $fullPath -ItemType Directory
                     }
 
-                    $webClient.DownloadFile($pgcFile.Link, $destination)
+                    $link = "$($pgcFile.Link)$accessTokenParam"
+                    $webClient.DownloadFile($link, $destination)
                 }
             }
         }
