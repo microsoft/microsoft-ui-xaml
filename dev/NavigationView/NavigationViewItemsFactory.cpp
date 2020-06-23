@@ -6,7 +6,7 @@
 #include "NavigationViewItemBase.h"
 #include "NavigationViewItem.h"
 #include "ItemTemplateWrapper.h"
-#include <ElementFactoryRecycleArgs.h>
+#include "ElementFactoryRecycleArgs.h"
 
 void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable const& newValue)
 {
