@@ -101,8 +101,8 @@
     <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
-    <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true' Or $(FeatureScrollerEnabled) == 'productOnly'" />
-    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true' Or $(FeatureScrollViewerEnabled) == 'productOnly'" />
+    <Import Project="..\ScrollPresenter\ScrollPresenter.vcxitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true' Or $(FeatureScrollPresenterEnabled) == 'productOnly'" />
+    <Import Project="..\ScrollView\ScrollView.vcxitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true' Or $(FeatureScrollViewEnabled) == 'productOnly'" />
     <Import Project="..\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true' Or $(FeatureLightsEnabled) == 'productOnly'" />
     <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true' Or $(FeatureRepeaterEnabled) == 'productOnly'" />
     <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true' Or $(FeatureSwipeControlEnabled) == 'productOnly'" />

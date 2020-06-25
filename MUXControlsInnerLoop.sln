@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "dev\Common\Common
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RatingControl", "dev\RatingControl\RatingControl.vcxitems", "{655F5DA8-F87B-45AF-88D1-A884881C3EDF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScrollViewer", "dev\ScrollViewer\ScrollViewer.vcxitems", "{755F5DA9-087C-55A0-98D2-B884881C3ED0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScrollView", "dev\ScrollView\ScrollView.vcxitems", "{755F5DA9-087C-55A0-98D2-B884881C3ED0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorPicker", "dev\ColorPicker\ColorPicker.vcxitems", "{248CC96D-67A2-4359-A4E3-AB0DAD110A1E}"
 EndProject
@@ -17,13 +17,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ColorPicker", "ColorPicker"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RatingControl", "RatingControl", "{3B0C114B-AC74-4BB1-975D-26FE5D505BD1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScrollViewer", "ScrollViewer", "{4B0C114C-BC75-5BB2-A75E-36FE5D505BD2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScrollView", "ScrollView", "{4B0C114C-BC75-5BB2-A75E-36FE5D505BD2}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ColorPicker_TestUI", "dev\ColorPicker\TestUI\ColorPicker_TestUI.shproj", "{4A87B4F1-4B6F-435A-950E-B2BB32A16001}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RatingControl_TestUI", "dev\RatingControl\TestUI\RatingControl_TestUI.shproj", "{10C52FD4-52FC-43B3-94AF-895C9B5A014C}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollViewer_TestUI", "dev\ScrollViewer\TestUI\ScrollViewer_TestUI.shproj", "{20C52FD5-62FD-53B4-A4A0-995C9B5A014D}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollView_TestUI", "dev\ScrollView\TestUI\ScrollView_TestUI.shproj", "{20C52FD5-62FD-53B4-A4A0-995C9B5A014D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.UI.Xaml", "dev\dll\Microsoft.UI.Xaml.vcxproj", "{AD0C90B0-4845-4D4B-88F1-86F653F8171B}"
 EndProject
@@ -41,11 +41,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ColorPicker_InteractionTest
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RatingControl_APITests", "dev\RatingControl\APITests\RatingControl_APITests.shproj", "{274B93F7-CD18-4ED9-B569-0640529D187B}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollViewer_APITests", "dev\ScrollViewer\APITests\ScrollViewer_APITests.shproj", "{374B93F8-DD19-5EDA-C56A-1640529D187C}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollView_APITests", "dev\ScrollView\APITests\ScrollView_APITests.shproj", "{374B93F8-DD19-5EDA-C56A-1640529D187C}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ParallaxView_APITests", "dev\ParallaxView\APITests\ParallaxView_APITests.shproj", "{374B93F7-CD18-4ED9-B569-0640529D187C}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Scroller_APITests", "dev\Scroller\APITests\Scroller_APITests.shproj", "{474B92F7-CD58-FED9-8569-9640529D1871}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollPresenter_APITests", "dev\ScrollPresenter\APITests\ScrollPresenter_APITests.shproj", "{474B92F7-CD58-FED9-8569-9640529D1871}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{5654F115-F01A-495B-91C7-09408ABF14F0}"
 EndProject
@@ -55,11 +55,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PersonPicture", "dev\Person
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RatingControl_InteractionTests", "dev\RatingControl\InteractionTests\RatingControl_InteractionTests.shproj", "{AFAAD014-132C-4D2A-A28E-4EF717D3E647}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollViewer_InteractionTests", "dev\ScrollViewer\InteractionTests\ScrollViewer_InteractionTests.shproj", "{BFAAD015-232D-5D2B-B28F-5EF717D3E648}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollView_InteractionTests", "dev\ScrollView\InteractionTests\ScrollView_InteractionTests.shproj", "{BFAAD015-232D-5D2B-B28F-5EF717D3E648}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ParallaxView_InteractionTests", "dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.shproj", "{BFAAD014-132C-4D2A-A28E-4EF717D3E648}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Scroller_InteractionTests", "dev\Scroller\InteractionTests\Scroller_InteractionTests.shproj", "{8FAAD013-139C-8D2A-2285-45F717D9E64A}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollPresenter_InteractionTests", "dev\ScrollPresenter\InteractionTests\ScrollPresenter_InteractionTests.shproj", "{8FAAD013-139C-8D2A-2285-45F717D9E64A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ResourceHelper", "dev\ResourceHelper\ResourceHelper.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
@@ -87,11 +87,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxView", "dev\Paralla
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ParallaxView_TestUI", "dev\ParallaxView\TestUI\ParallaxView_TestUI.shproj", "{00C52FD5-42FD-33B4-84A0-795C9B5A014D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scroller", "Scroller", "{437CED93-D8B1-995E-0A72-0AF38E01EB70}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScrollPresenter", "ScrollPresenter", "{437CED93-D8B1-995E-0A72-0AF38E01EB70}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Scroller", "dev\Scroller\Scroller.vcxitems", "{359544AA-A8CD-715C-CC36-F770E6E81AA0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScrollPresenter", "dev\ScrollPresenter\ScrollPresenter.vcxitems", "{359544AA-A8CD-715C-CC36-F770E6E81AA0}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Scroller_TestUI", "dev\Scroller\TestUI\Scroller_TestUI.shproj", "{0EC52FD5-42FE-3EB4-84E0-79EC9B5A014E}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollPresenter_TestUI", "dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.shproj", "{0EC52FD5-42FE-3EB4-84E0-79EC9B5A014E}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PersonPicture_APITests", "dev\PersonPicture\APITests\PersonPicture_APITests.shproj", "{5243EF2C-F250-48BD-B633-39CC2A0A38AA}"
 EndProject
@@ -450,7 +450,7 @@ Global
 		dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems*{00c52fd5-42fd-33b4-84a0-795c9b5a014d}*SharedItemsImports = 13
 		dev\lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems*{02ed27be-97e4-4327-bb96-8b3fa6869c48}*SharedItemsImports = 13
 		dev\Telemetry\Telemetry.vcxitems*{0db22ba9-6053-459b-baf5-e82ea1c78ab3}*SharedItemsImports = 9
-		dev\Scroller\TestUI\Scroller_TestUI.projitems*{0ec52fd5-42fe-3eb4-84e0-79ec9b5a014e}*SharedItemsImports = 13
+		dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.projitems*{0ec52fd5-42fe-3eb4-84e0-79ec9b5a014e}*SharedItemsImports = 13
 		dev\ProgressBar\ProgressBar.vcxitems*{0f61c8bd-d066-4812-a02b-e95ce18a985d}*SharedItemsImports = 9
 		dev\RatingControl\TestUI\RatingControl_TestUI.projitems*{10c52fd4-52fc-43b3-94af-895c9b5a014c}*SharedItemsImports = 13
 		dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems*{11b35f24-72b2-4228-9960-0d1ea283e1af}*SharedItemsImports = 13
@@ -468,7 +468,7 @@ Global
 		dev\TabView\TestUI\TabView_TestUI.projitems*{1d87aac7-1e11-40fc-90a7-b6ce1c4567ae}*SharedItemsImports = 13
 		dev\Pivot\Pivot.vcxitems*{1d9e0828-8e69-44ff-8f6f-edc3d858e42a}*SharedItemsImports = 9
 		dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems*{1f2872e7-28c9-4c01-88ed-73c43ee1c9a4}*SharedItemsImports = 13
-		dev\ScrollViewer\TestUI\ScrollViewer_TestUI.projitems*{20c52fd5-62fd-53b4-a4a0-995c9b5a014d}*SharedItemsImports = 13
+		dev\ScrollView\TestUI\ScrollView_TestUI.projitems*{20c52fd5-62fd-53b4-a4a0-995c9b5a014d}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems*{22a3d1c4-4d1c-4b04-b695-8fec39bfed86}*SharedItemsImports = 9
 		dev\Slider\TestUI\Slider_TestUI.projitems*{22b10561-4e56-430c-bcaa-d3c8b21bf753}*SharedItemsImports = 13
 		dev\DatePicker\DatePicker.vcxitems*{239f3422-24b8-433a-9d49-dd9c12f0dbfc}*SharedItemsImports = 9
@@ -481,9 +481,9 @@ Global
 		dev\ParallaxView\ParallaxView.vcxitems*{3095445a-afcd-5154-ac36-9770e6ec1aa5}*SharedItemsImports = 9
 		dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems*{3353a4a7-87b3-4e43-8f8d-43c7380d1d56}*SharedItemsImports = 9
 		dev\Lights\Lights.vcxitems*{3479a3ae-2854-4bec-80ab-eab0772cb90a}*SharedItemsImports = 9
-		dev\Scroller\Scroller.vcxitems*{359544aa-a8cd-715c-cc36-f770e6e81aa0}*SharedItemsImports = 9
+		dev\ScrollPresenter\ScrollPresenter.vcxitems*{359544aa-a8cd-715c-cc36-f770e6e81aa0}*SharedItemsImports = 9
 		dev\ParallaxView\APITests\ParallaxView_APITests.projitems*{374b93f7-cd18-4ed9-b569-0640529d187c}*SharedItemsImports = 13
-		dev\ScrollViewer\APITests\ScrollViewer_APITests.projitems*{374b93f8-dd19-5eda-c56a-1640529d187c}*SharedItemsImports = 13
+		dev\ScrollView\APITests\ScrollView_APITests.projitems*{374b93f8-dd19-5eda-c56a-1640529d187c}*SharedItemsImports = 13
 		dev\CheckBox\TestUI\CheckBox_TestUI.projitems*{38410f2a-d1f0-4373-8b77-ae25d6c36451}*SharedItemsImports = 13
 		dev\Collections\Collections.vcxitems*{395a71a1-4327-477b-85d4-af0851732ccb}*SharedItemsImports = 9
 		dev\CommonStyles\CommonStyles.vcxitems*{3a07fa59-c5c1-4b46-8b31-043f9ca91226}*SharedItemsImports = 9
@@ -496,7 +496,7 @@ Global
 		dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems*{42d6e8f9-59fe-4ca5-83eb-69a7622f5742}*SharedItemsImports = 13
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{44deafbc-bb7a-4b02-aeab-29df2c2f8587}*SharedItemsImports = 13
 		dev\ResourceHelper\ResourceHelper.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
-		dev\Scroller\APITests\Scroller_APITests.projitems*{474b92f7-cd58-fed9-8569-9640529d1871}*SharedItemsImports = 13
+		dev\ScrollPresenter\APITests\ScrollPresenter_APITests.projitems*{474b92f7-cd58-fed9-8569-9640529d1871}*SharedItemsImports = 13
 		dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.projitems*{475c3a33-637a-44dc-b789-6c2d78a75283}*SharedItemsImports = 13
 		dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems*{48bf2dab-82b5-4705-a880-f5310fb697f9}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems*{48f7b68b-8050-4523-8374-963aa3b2834f}*SharedItemsImports = 13
@@ -517,7 +517,7 @@ Global
 		dev\RatingControl\RatingControl.vcxitems*{655f5da8-f87b-45af-88d1-a884881c3edf}*SharedItemsImports = 9
 		test\MUXControlsTestApp\MUXControlsTestApp.Shared.projitems*{6aa772a6-cbf7-4ff3-8864-bc9366015dc2}*SharedItemsImports = 13
 		dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems*{74d18b1b-5f6b-4534-945b-131e8e3206fb}*SharedItemsImports = 13
-		dev\ScrollViewer\ScrollViewer.vcxitems*{755f5da9-087c-55a0-98d2-b884881c3ed0}*SharedItemsImports = 9
+		dev\ScrollView\ScrollView.vcxitems*{755f5da9-087c-55a0-98d2-b884881c3ed0}*SharedItemsImports = 9
 		dev\NumberBox\InteractionTests\NumberBox_InteractionTests.projitems*{773f7592-e7b3-42fc-a14a-e815afd6a0cb}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.projitems*{79863454-1dbf-45bb-b3d3-420b8f5e8705}*SharedItemsImports = 13
 		dev\NavigationView\TestUI\NavigationView_TestUI.projitems*{7ee5e585-090a-44bf-a950-80636e242327}*SharedItemsImports = 13
@@ -540,7 +540,7 @@ Global
 		dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems*{8dc0ea14-d850-4c6e-8918-beeb89e877bd}*SharedItemsImports = 13
 		dev\ScrollBar\ScrollBar.vcxitems*{8e0accd0-b881-488f-b449-0c4f89b55857}*SharedItemsImports = 9
 		dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems*{8f6f9336-c45c-40c1-abda-3679a20434b1}*SharedItemsImports = 13
-		dev\Scroller\InteractionTests\Scroller_InteractionTests.projitems*{8faad013-139c-8d2a-2285-45f717d9e64a}*SharedItemsImports = 13
+		dev\ScrollPresenter\InteractionTests\ScrollPresenter_InteractionTests.projitems*{8faad013-139c-8d2a-2285-45f717d9e64a}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems*{94aaadf1-80ca-45a7-9bd8-c6d00d58334d}*SharedItemsImports = 9
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{954d7000-c06f-49eb-a7d2-0df83de6ca35}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems*{999c289e-5ad6-4700-a44e-e85b696e508a}*SharedItemsImports = 13
@@ -582,7 +582,7 @@ Global
 		dev\ComboBox\TestUI\ComboBox_TestUI.projitems*{bcdf880a-41eb-4943-aae2-54a1a1159600}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\TestUI\RefreshVisualizer_TestUI.projitems*{bf236ee7-b31d-4150-a777-2b91492a84e2}*SharedItemsImports = 13
 		dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems*{bfaad014-132c-4d2a-a28e-4ef717d3e648}*SharedItemsImports = 13
-		dev\ScrollViewer\InteractionTests\ScrollViewer_InteractionTests.projitems*{bfaad015-232d-5d2b-b28f-5ef717d3e648}*SharedItemsImports = 13
+		dev\ScrollView\InteractionTests\ScrollView_InteractionTests.projitems*{bfaad015-232d-5d2b-b28f-5ef717d3e648}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems*{c0d77e37-d2d0-4e37-b6a1-8e6eae28945d}*SharedItemsImports = 13
 		dev\TimePicker\TestUI\TimePicker_TestUI.projitems*{c2de2b41-f6c4-4243-a71b-3a67e9ce528f}*SharedItemsImports = 13
 		dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems*{c332ceaf-68b6-4980-b6f3-b15e350cdce0}*SharedItemsImports = 13

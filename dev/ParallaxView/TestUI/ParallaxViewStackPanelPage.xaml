@@ -43,27 +43,27 @@
         </StackPanel>
 
         <StackPanel Grid.Column="1">
-            <TextBlock Text="Parallaxing children of a StackPanel vertically inside a Scroller" Margin="10"/>
-            <muxprimitives:Scroller x:Name="scrollerV" Width="220" Height="400" Margin="10" Background="Bisque" VerticalAlignment="Top">
+            <TextBlock Text="Parallaxing children of a StackPanel vertically inside a ScrollPresenter" Margin="10"/>
+            <muxprimitives:ScrollPresenter x:Name="scrollPresenterV" Width="220" Height="400" Margin="10" Background="Bisque" VerticalAlignment="Top">
                 <StackPanel>
                     <muxcontrols:ParallaxView Width="200" Height="150" Margin="10"
-                        Source="{x:Bind scrollerV}" VerticalShift="50">
+                        Source="{x:Bind scrollPresenterV}" VerticalShift="50">
                         <Image Source="Assets/ingredient7.png"/>
                     </muxcontrols:ParallaxView>
                     <muxcontrols:ParallaxView Width="200" Height="150" Margin="10"
-                        Source="{x:Bind scrollerV}" VerticalShift="50">
+                        Source="{x:Bind scrollPresenterV}" VerticalShift="50">
                         <Image Source="Assets/ingredient7.png"/>
                     </muxcontrols:ParallaxView>
                     <muxcontrols:ParallaxView Width="200" Height="150" Margin="10"
-                        Source="{x:Bind scrollerV}" VerticalShift="50">
+                        Source="{x:Bind scrollPresenterV}" VerticalShift="50">
                         <Image Source="Assets/ingredient7.png"/>
                     </muxcontrols:ParallaxView>
                     <muxcontrols:ParallaxView Width="200" Height="150" Margin="10"
-                        Source="{x:Bind scrollerV}" VerticalShift="50">
+                        Source="{x:Bind scrollPresenterV}" VerticalShift="50">
                         <Image Source="Assets/ingredient7.png"/>
                     </muxcontrols:ParallaxView>
                 </StackPanel>
-            </muxprimitives:Scroller>
+            </muxprimitives:ScrollPresenter>
         </StackPanel>
 
         <StackPanel Grid.Column="2">
@@ -92,27 +92,27 @@
         </StackPanel>
 
         <StackPanel Grid.Column="3">
-            <TextBlock Text="Parallaxing children of a StackPanel horizontally inside a Scroller" Margin="10"/>
-            <muxprimitives:Scroller x:Name="scrollerH" Width="400" Height="220" Margin="10" Background="Beige" VerticalAlignment="Top">
+            <TextBlock Text="Parallaxing children of a StackPanel horizontally inside a ScrollPresenter" Margin="10"/>
+            <muxprimitives:ScrollPresenter x:Name="scrollPresenterH" Width="400" Height="220" Margin="10" Background="Beige" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">
                     <muxcontrols:ParallaxView Width="150" Height="200" Margin="10"
-                        Source="{x:Bind scrollerH}" HorizontalShift="50">
+                        Source="{x:Bind scrollPresenterH}" HorizontalShift="50">
                         <Image Source="Assets/ingredient8.png"/>
                     </muxcontrols:ParallaxView>
                     <muxcontrols:ParallaxView Width="150" Height="200" Margin="10"
-                        Source="{x:Bind scrollerH}" HorizontalShift="50">
+                        Source="{x:Bind scrollPresenterH}" HorizontalShift="50">
                         <Image Source="Assets/ingredient8.png"/>
                     </muxcontrols:ParallaxView>
                     <muxcontrols:ParallaxView Width="150" Height="200" Margin="10"
-                        Source="{x:Bind scrollerH}" HorizontalShift="50">
+                        Source="{x:Bind scrollPresenterH}" HorizontalShift="50">
                         <Image Source="Assets/ingredient8.png"/>
                     </muxcontrols:ParallaxView>
                     <muxcontrols:ParallaxView Width="150" Height="200" Margin="10"
-                        Source="{x:Bind scrollerH}" HorizontalShift="50">
+                        Source="{x:Bind scrollPresenterH}" HorizontalShift="50">
                         <Image Source="Assets/ingredient8.png"/>
                     </muxcontrols:ParallaxView>
                 </StackPanel>
-            </muxprimitives:Scroller>
+            </muxprimitives:ScrollPresenter>
         </StackPanel>
     </Grid>
 </local:TestPage>
