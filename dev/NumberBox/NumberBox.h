@@ -86,6 +86,8 @@ private:
 
     bool IsInBounds(double value);
 
+    void MoveCaretToTextEnd();
+
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
 

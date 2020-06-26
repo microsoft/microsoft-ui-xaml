@@ -549,6 +549,10 @@ void NumberBox::StepValue(double change)
         }
 
         Value(newVal);
+
+        // We don't want the caret to move to the front of the text for example when using the up/down arrows
+        // to change the numberbox value.
+        MoveCaretToTextEnd();
     }
 }
 
@@ -575,9 +579,6 @@ void NumberBox::UpdateTextToValue()
         });
         m_textUpdating = true;
         Text(newText.data());
-
-        // This places the caret at the end of the text.
-        textBox.Select(static_cast<int32_t>(newText.size()), 0);
     }
 }
 
@@ -676,5 +677,14 @@ void NumberBox::UpdateHeaderPresenterState()
     if (auto&& headerPresenter = m_headerPresenter.get())
     {
         headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    }
+}
+
+void NumberBox::MoveCaretToTextEnd()
+{
+    if (auto&& textBox = m_textBox.get())
+    {
+        // This places the caret at the end of the text.
+        textBox.Select(static_cast<int32_t>(textBox.Text().size()), 0);
     }
 }
