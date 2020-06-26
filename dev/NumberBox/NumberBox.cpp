@@ -682,7 +682,7 @@ void NumberBox::UpdateHeaderPresenterState()
 
 void NumberBox::MoveCaretToTextEnd()
 {
-    if (auto&& textBox = m_textBox.get())
+    if (auto && textBox = m_textBox.get())
     {
         // This places the caret at the end of the text.
         textBox.Select(static_cast<int32_t>(textBox.Text().size()), 0);
