@@ -9,7 +9,6 @@ public:
     winrt::UIElement::Tapped_revoker tappedRevoker{};
     winrt::UIElement::KeyDown_revoker keyDownRevoker{};
     winrt::UIElement::GotFocus_revoker gotFocusRevoker{};
-    winrt::UIElement::KeyUp_revoker keyUpRevoker{};
     PropertyChanged_revoker isSelectedRevoker{};
     PropertyChanged_revoker isExpandedRevoker{};
 };

@@ -201,8 +201,8 @@ namespace MUXControlsTestApp
         {
             _isRootCreated = false;
             // Load the resource dictionary now
-            // Since the resource is only availble with ScrollViewer feature enabled, try this but expect it to fail sometimes
-#if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
+            // Since the resource is only available with ScrollView feature enabled, try this but expect it to fail sometimes
+#if FEATURE_SCROLLPRESENTER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
 #endif
 

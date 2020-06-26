@@ -106,6 +106,7 @@
 
                         <TextBox x:Name="InputBox"
                             Grid.Row="1"
+                            InputScope="Number"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"

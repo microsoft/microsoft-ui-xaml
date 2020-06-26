@@ -32,8 +32,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\TestUI\RatingControl_TestUI.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\TestUI\Repeater_TestUI.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Scroller\TestUI\Scroller_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollViewer\TestUI\ScrollViewer_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollView\TestUI\ScrollView_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitButton\TestUI\SplitButton_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
@@ -54,8 +54,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\APITests\RatingControl_APITests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\APITests\Repeater_APITests.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Scroller\APITests\Scroller_APITests.projitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollViewer\APITests\ScrollViewer_APITests.projitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollPresenter\APITests\ScrollPresenter_APITests.projitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollView\APITests\ScrollView_APITests.projitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitButton\APITests\SplitButton_APITests.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TreeView\APITests\TreeView_APITests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />

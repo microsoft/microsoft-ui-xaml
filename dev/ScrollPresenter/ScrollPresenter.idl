@@ -1,0 +1,186 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+struct ScrollInfo 
+{ 
+    Int32 OffsetsChangeId;
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+struct ZoomInfo
+{
+    Int32 ZoomFactorChangeId;
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ContentOrientation
+{
+    Vertical = 0,
+    Horizontal = 1,
+    None = 2,
+    Both = 3,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum InteractionState
+{
+    Idle = 0,
+    Interaction = 1,
+    Inertia = 2,
+    Animation = 3,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ScrollMode
+{
+    Enabled = 0,
+    Disabled = 1,
+#ifdef USE_SCROLLMODE_AUTO
+    Auto = 2,
+#endif
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ZoomMode
+{
+    Enabled = 0,
+    Disabled = 1,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ChainingMode
+{
+    Auto = 0,
+    Always = 1,
+    Never = 2,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum RailingMode
+{
+    Enabled = 0,
+    Disabled = 1,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[flags]
+enum InputKind
+{
+    None = 0,
+    Touch = 1,
+    Pen = 2,
+    MouseWheel = 4,
+    Keyboard = 8,
+    Gamepad = 16,
+    All = 255,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum AnimationMode 
+{ 
+   Disabled = 0,
+   Enabled = 1,
+   Auto = 2,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum SnapPointsMode
+{
+    Default = 0,
+    Ignore = 1,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollingScrollOptions
+{
+    ScrollingScrollOptions(AnimationMode animationMode);
+    ScrollingScrollOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+ 
+    AnimationMode AnimationMode { get; set; };
+    SnapPointsMode SnapPointsMode { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollingZoomOptions
+{
+    ScrollingZoomOptions(AnimationMode animationMode);
+    ScrollingZoomOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+
+    AnimationMode AnimationMode { get; set; };
+    SnapPointsMode SnapPointsMode { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingScrollAnimationStartingEventArgs
+{
+    Windows.UI.Composition.CompositionAnimation Animation { get; set; };
+    Windows.Foundation.Numerics.Vector2 StartPosition { get; };
+    Windows.Foundation.Numerics.Vector2 EndPosition { get; };
+    ScrollInfo ScrollInfo { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingZoomAnimationStartingEventArgs
+{
+    Windows.Foundation.Numerics.Vector2 CenterPoint { get; };
+    Single StartZoomFactor { get; };
+    Single EndZoomFactor { get; };
+    Windows.UI.Composition.CompositionAnimation Animation { get; set; };
+    ZoomInfo ZoomInfo { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingScrollCompletedEventArgs
+{
+    ScrollInfo ScrollInfo { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingZoomCompletedEventArgs
+{
+    ZoomInfo ZoomInfo { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingBringingIntoViewEventArgs
+{
+    SnapPointsMode SnapPointsMode { get; set; };
+    Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
+    Double TargetHorizontalOffset { get; };
+    Double TargetVerticalOffset { get; };
+    ScrollInfo ScrollInfo { get; };
+    Boolean Cancel { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingAnchorRequestedEventArgs
+{
+    Windows.Foundation.Collections.IVector<Windows.UI.Xaml.UIElement> AnchorCandidates { get; };
+    Windows.UI.Xaml.UIElement AnchorElement { get; set; };
+}
+
+}

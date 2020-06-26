@@ -34,7 +34,7 @@ ParallaxView::ParallaxView()
 void ParallaxView::RefreshAutomaticHorizontalOffsets()
 {
     // This method is meant to be invoked when the ParallaxView is parallaxing horizontally, is
-    // placed within a scroller content and its horizontal offset within that content has changed.
+    // placed within a scrollPresenter content and its horizontal offset within that content has changed.
     if (HorizontalSourceOffsetKind() == winrt::ParallaxSourceOffsetKind::Relative && HorizontalShift() != 0.0)
     {
         UpdateStartOffsetExpression(winrt::Orientation::Horizontal);
@@ -45,7 +45,7 @@ void ParallaxView::RefreshAutomaticHorizontalOffsets()
 void ParallaxView::RefreshAutomaticVerticalOffsets()
 {
     // This method is meant to be invoked when the ParallaxView is parallaxing vertically, is
-    // placed within a scroller content and its vertical offset within that content has changed.
+    // placed within a scrollPresenter content and its vertical offset within that content has changed.
     if (VerticalSourceOffsetKind() == winrt::ParallaxSourceOffsetKind::Relative && VerticalShift() != 0.0)
     {
         UpdateStartOffsetExpression(winrt::Orientation::Vertical);
@@ -388,7 +388,7 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
 
             if (m_scrollInputHelper->IsTargetElementInSource())
             {
-                // Target is inside the scroller.
+                // Target is inside the scrollPresenter.
 
                 // startOffset = (ParallaxViewOffset + HorizontalSourceStartOffset) * ZoomFactor - ViewportWidth - MaxUnderpanOffset
                 const float parallaxViewOffset = static_cast<float>(m_scrollInputHelper->GetOffsetFromScrollContentElement(*this, orientation));
@@ -401,7 +401,7 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
             }
             else
             {
-                // Target is outside the scroller.
+                // Target is outside the scrollPresenter.
 
                 // startOffset = HorizontalSourceStartOffset * ZoomFactor - MaxUnderpanOffset
                 startOffsetExpression = L"startOffset * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - maxUnderpanOffset";
@@ -480,7 +480,7 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
 
             if (m_scrollInputHelper->IsTargetElementInSource())
             {
-                // Target is inside the scroller.
+                // Target is inside the scrollPresenter.
 
                 // endOffset = (ParallaxViewOffset + ParallaxViewWidth + HorizontalSourceEndOffset) * ZoomFactor + MaxOverpanOffset
                 const float parallaxViewOffset = static_cast<float>(m_scrollInputHelper->GetOffsetFromScrollContentElement(*this, orientation));
@@ -492,7 +492,7 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
             }
             else
             {
-                // Target is outside the scroller.
+                // Target is outside the scrollPresenter.
 
                 const float viewportSize = static_cast<float>(m_scrollInputHelper->GetViewportSize(orientation));
                 const float contentSize = static_cast<float>(m_scrollInputHelper->GetContentSize(orientation));

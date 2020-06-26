@@ -550,7 +550,8 @@
                                             Child="{TemplateBinding HeroContent}"
                                             Background="{TemplateBinding Background}"/>
                                     <Grid x:Name="NonHeroContentRootGrid" Grid.Row="1">
-                                        <ScrollViewer Foreground="{TemplateBinding Foreground}">
+                                        <ScrollViewer Foreground="{TemplateBinding Foreground}"
+                                                      VerticalScrollBarVisibility="Auto">
                                             <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
                                                 <Grid Grid.Row="0">
                                                     <Grid.ColumnDefinitions>
