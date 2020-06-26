@@ -144,8 +144,15 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
             }
             return MenuItems().as<winrt::IInspectable>();
         }();
+        m_itemsSourceViewChanged.revoke();
         repeater.ItemsSource(itemsSource);
+        m_itemsSourceViewChanged = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
     }
+}
+
+void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    UpdateVisualStateForChevron();
 }
  
 winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
@@ -468,7 +475,7 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 
 bool NavigationViewItem::HasChildren()
 {
-    return MenuItems().Size() > 0 || MenuItemsSource() != nullptr || HasUnrealizedChildren();
+    return MenuItems().Size() > 0 || (MenuItemsSource() != nullptr && m_repeater.get().ItemsSourceView().Count() > 0) || HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
