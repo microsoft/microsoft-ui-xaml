@@ -243,14 +243,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
             {
-                // Go to the navview items.
+                // Set focus inside page
+                var focusButton = FindElement.ByName("FocusAnchorButton");
+                focusButton.SetFocus();
+
+                // Navigate to NavView
                 KeyboardHelper.PressKey(Key.Tab);
                 // Select the first item.
                 KeyboardHelper.PressKey(Key.Space);
+
+                Log.Comment("Verify correct items have been passed to selection event");
+                var selectedItem = FindElement.ByName("SelectionEventResult");
+                Verify.AreEqual("Passed", selectedItem.GetText());
                 // Go to the second item.
                 KeyboardHelper.PressKey(Key.Right);
                 // Select the second item.
                 KeyboardHelper.PressKey(Key.Space);
+                Log.Comment("Verify correct items have been passed to selection event");
+                Verify.AreEqual("Passed", selectedItem.GetText());
             }
         }
 

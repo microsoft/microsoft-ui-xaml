@@ -689,7 +689,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-
+        [TestMethod]
         public void MenuItemKeyboardInvokeTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1428,35 +1428,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 // TestFrame is disabled before the testcase. we should enable it and prepare for next test case
                 var testFrame = new CheckBox(FindElement.ById("TestFrameCheckbox"));
                 testFrame.Check();
-                Wait.ForIdle();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
-        public void EnsureNoCrashesInHorizontalFlipMenuItems()
-        {
-            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
-            foreach (var testScenario in testScenarios)
-            {
-                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
-                {
-                    var button = new Button(FindElement.ByName("FlipOrientationButton"));
-                    button.Invoke();
-                    Wait.ForIdle();
-                }
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
-        public void EnsureNoCrashesInHorizontalFlipMenuItemsSource()
-        {
-            // This navigates through to our test page
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top Nav Test" }))
-            {
-                var button = new Button(FindElement.ByName("FlipOrientationButton"));
-                button.Invoke();
                 Wait.ForIdle();
             }
         }
