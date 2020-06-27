@@ -28,6 +28,12 @@ namespace MUXControlsTestApp
             commonStatesGroup.CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
 
+            for (int i = 0; i < commonStatesGroup.Transitions[0].Storyboard.Children.Count; i++)
+            {
+                // Change the animation to 0 duration to avoid timing issues in the test.
+                commonStatesGroup.Transitions[0].Storyboard.Children[i].Duration = new Duration(TimeSpan.FromSeconds(0));
+            }
+
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 1);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
