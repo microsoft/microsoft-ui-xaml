@@ -150,7 +150,7 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
     }
 }
 
-void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
+void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
 {
     UpdateVisualStateForChevron();
 }
