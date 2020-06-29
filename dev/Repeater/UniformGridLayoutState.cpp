@@ -172,7 +172,7 @@ void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingL
             break;
 
         case winrt::NotifyCollectionChangedAction::Move:
-            throw winrt::hresult_not_implemented();
+            shouldClear = args.NewStartingIndex() == 0 || args.OldStartingIndex() == 0;
             break;
         }
 

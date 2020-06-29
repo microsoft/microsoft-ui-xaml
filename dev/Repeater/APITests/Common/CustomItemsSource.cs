@@ -99,6 +99,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
             }
         }
 
+        public void Move(int oldIndex, int newIndex, bool reset)
+        {
+
+            var item = Inner[oldIndex];
+            Inner.RemoveAt(oldIndex);
+            Inner.Insert(newIndex, item);
+
+            if (reset)
+            {
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+            }
+            else
+            {
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    NotifyCollectionChangedAction.Move,
+                    oldStartingIndex: oldIndex,
+                    oldItemsCount: 1,
+                    newStartingIndex: newIndex,
+                    newItemsCount: 1));
+            }
+        }
+
         public void Reset()
         {
             Random rand = new Random(123);

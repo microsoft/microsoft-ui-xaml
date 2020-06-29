@@ -87,6 +87,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
                         newArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, addedItems, removedItems, oldStartingIndex);
                     }
                     break;
+                case NotifyCollectionChangedAction.Move:
+                    newArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, null, newStartingIndex, oldStartingIndex);
+                    break;
                 case NotifyCollectionChangedAction.Reset:
                     newArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
                     break;
