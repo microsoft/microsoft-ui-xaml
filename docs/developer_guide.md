@@ -53,6 +53,9 @@ A full list of all areas can be found in the **FeatureArea.props** files. To inc
 <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
 ```
 
+When switching between the **MUXControls.sln** and **MUXControlsInnerLoop.sln**, make sure you either delete the **BuildOutput** folder in the solution's root directory or run `git clean -dfx`.
+Note that `git clean -dfx` deletes all untracked files, so it may also delete any changes you made. To see what would be deleted by that command without actually deleting anything, run `git clean -dfxn`.
+
 
 If you use the inner loop solution, please avoid pushing changes to the inner loop solution or **InnerLoopAreas.props** files.
 This can be avoided by running the following commands in git:
