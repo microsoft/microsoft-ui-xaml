@@ -46,8 +46,8 @@
                                 Width="1000"
                                 VerticalAlignment="Top"
                                 Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
+                                BorderBrush="Gray"
+                                BorderThickness="2">
 
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="ButtonStates">
@@ -161,18 +161,20 @@
 
                                     <IconSourceElement x:Name="MyIcon" IconSource="{TemplateBinding IconSource}" Grid.Column="1" HorizontalAlignment="Right" />
 
-                                    <TextBlock x:Name="MyTitle" Text="{TemplateBinding Title}" FontWeight="SemiBold" Grid.Column="2" TextWrapping ="WrapWholeWords" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                                    <ScrollViewer Grid.Column="3" VerticalAlignment="Center">
-                                        <ContentPresenter x:Name="MyMessage" Content="{TemplateBinding Message}" TextWrapping="WrapWholeWords"/>
+                                    <ScrollViewer Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock x:Name="MyTitle" Text="{TemplateBinding Title}" FontWeight="SemiBold" TextWrapping ="WrapWholeWords" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </ScrollViewer>
 
+                                    <ScrollViewer Grid.Column="3" VerticalAlignment="Center">
+                                        <ContentPresenter x:Name="MyMessage" Content="{TemplateBinding Message}" VerticalAlignment="Center" TextWrapping="WrapWholeWords"/>
+                                    </ScrollViewer>
 
                                     <Button Name="ActionButton" Content="{TemplateBinding ActionButtonContent}" Command="{TemplateBinding ActionButtonCommand}" Style="{TemplateBinding ActionButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="4"/>
 
                                     <Button Name="AlternateCloseButton" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" Grid.Column="5">
                                         <SymbolIcon Symbol="Cancel"/>
                                     </Button>
+                                    
                                     <Button Name="CloseButton" Content ="{TemplateBinding CloseButtonContent}" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="5"/>
                                 </Grid>
                             </Border>

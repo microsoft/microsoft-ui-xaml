@@ -15,7 +15,7 @@
             <RowDefinition Height="3*"/>
             
         </Grid.RowDefinitions>
-        <local:InfoBar x:Name="Test" Title="Error" Message="More Message" HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonContent="Thing" ActionButtonClick="Test_ActionButtonClick" Severity ="Critical" MaxHeight="150" >
+        <local:InfoBar x:Name="Test" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Severity ="Critical" MaxHeight="150" >
 
         </local:InfoBar>
         <Grid Grid.Row="1">
@@ -38,7 +38,7 @@
                     <x:String>Default</x:String>
                     <x:String>None</x:String>
                 </ComboBox>
-                <Button x:Name="SeverityButton" Click="SeverityButton_Click" Content="Set"/>
+                <Button x:Name="SeverityButton" Click="SeverityButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <TextBlock>Severity Level</TextBlock>
@@ -46,7 +46,7 @@
                     <x:String>Pin Icon</x:String>
                     <x:String>No Icon</x:String>
                 </ComboBox>
-                <Button x:Name="IconButton" Click="IconButton_Click" Content="Set"/>
+                <Button x:Name="IconButton" Click="IconButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="2">
                 <TextBlock>Title</TextBlock>
@@ -55,7 +55,7 @@
                     <x:String>Long Title</x:String>
                     <x:String>No Title</x:String>
                 </ComboBox>
-                <Button x:Name="TitleButton" Click="TitleButton_Click" Content="Set"/>
+                <Button x:Name="TitleButton" Click="TitleButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="3">
                 <TextBlock>Message</TextBlock>
@@ -64,7 +64,7 @@
                     <x:String>Long Message</x:String>
                     <x:String>No Message</x:String>
                 </ComboBox>
-                <Button x:Name="MessageButton" Click="MessageButton_Click" Content="Set"/>
+                <Button x:Name="MessageButton" Click="MessageButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="4">
                 <TextBlock>Close Button Content</TextBlock>
@@ -73,7 +73,7 @@
                     <x:String>Long Text</x:String>
                     <x:String>No Text</x:String>
                 </ComboBox>
-                <Button x:Name="CloseButtonContentButton" Click="CloseButtonContent_Click" Content="Set"/>
+                <Button x:Name="CloseButtonContentButton" Click="CloseButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="5">
                 <TextBlock>Action Button Content</TextBlock>
@@ -82,7 +82,7 @@
                     <x:String>Long Text</x:String>
                     <x:String>No Text</x:String>
                 </ComboBox>
-                <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set"/>
+                <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="6">
                 <TextBlock>Open</TextBlock>

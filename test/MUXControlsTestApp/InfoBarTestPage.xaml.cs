@@ -45,23 +45,6 @@ namespace MUXControlsTestApp.Shared
             await new MessageDialog("Thank you, mate").ShowAsync();
         }
 
-        private async void Test_CloseButtonClick(object sender, InfoBarEventArgs e)
-        {
-            e.IsHandled = true;
-            await new MessageDialog("Thank you, mate").ShowAsync();
-        }
-
-        private async void Test_Closing(InfoBar sender, InfoBarClosingEventArgs args)
-        {
-
-            await new MessageDialog("Thank you, mate im closing").ShowAsync();
-        }
-
-        private async void Test_Closed(InfoBar sender, InfoBarClosedEventArgs args)
-        {
-            await new MessageDialog("Thank you, mate im closed").ShowAsync();
-        }
-
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string severityName = e.AddedItems[0].ToString();

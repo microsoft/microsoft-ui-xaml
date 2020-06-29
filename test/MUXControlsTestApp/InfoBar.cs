@@ -311,6 +311,8 @@ namespace MUXControlsTestApp
             {
                 CloseButtonClick.Invoke(this, newE);
             }
+
+            //If the user sets IsHandled to true, they can override the behavior of CloseButtonClick
             if (newE.IsHandled == false)
             {
                 RaiseClosingEvent();
