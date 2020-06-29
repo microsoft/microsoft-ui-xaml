@@ -101,12 +101,10 @@ int InspectingDataSource::IndexFromKeyCore(winrt::hstring const& id)
     }
 }
 
-#pragma endregion
-
-int InspectingDataSource::IndexOf(winrt::IInspectable const& value)
+int InspectingDataSource::IndexOfCore(winrt::IInspectable const& value)
 {
     int index = -1;
-    if (m_vector && value)
+    if (m_vector)
     {
         auto v = static_cast<uint32_t>(-1);
         if (m_vector.get().IndexOf(value, v))
@@ -116,6 +114,8 @@ int InspectingDataSource::IndexOf(winrt::IInspectable const& value)
     }
     return index;
 }
+
+#pragma endregion
 
 winrt::IVector<winrt::IInspectable>
 InspectingDataSource::WrapIterable(const winrt::IIterable<winrt::IInspectable>& iterable)

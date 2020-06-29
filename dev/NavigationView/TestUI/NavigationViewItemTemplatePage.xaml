@@ -23,7 +23,6 @@
                         <Button Content="{Binding LastName}" />
                         <Button Content="{Binding FirstName}" />
                     </StackPanel>
-
                 </DataTemplate>
             </controls:NavigationView.MenuItemTemplate>
 

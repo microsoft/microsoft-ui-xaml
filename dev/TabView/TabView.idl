@@ -7,6 +7,16 @@ enum TabViewWidthMode
 {
     Equal = 0,
     SizeToContent = 1,
+    Compact = 2,
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+enum TabViewCloseButtonOverlayMode
+{
+    Auto = 0,
+    OnPointerOver = 1,
+    Always = 2,
 };
 
 [WUXC_VERSION_MUXONLY]
@@ -54,6 +64,7 @@ runtimeclass TabViewTabDragCompletedEventArgs
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[contentproperty("TabItems")]
 unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 {
     TabView();
@@ -62,6 +73,10 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     TabViewWidthMode TabWidthMode{ get; set; };
 
+    [MUX_DEFAULT_VALUE("winrt::TabViewCloseButtonOverlayMode::Auto")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    TabViewCloseButtonOverlayMode CloseButtonOverlayMode{ get; set; };
+    
     Object TabStripHeader{ get; set; };
     Windows.UI.Xaml.DataTemplate TabStripHeaderTemplate{ get; set; };
 
@@ -82,6 +97,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TabView, Windows.Foundation.Collections.IVectorChangedEventArgs> TabItemsChanged;
 
     // From ListView
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object TabItemsSource;
     Windows.Foundation.Collections.IVector<Object> TabItems{ get; };
 
@@ -125,6 +141,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty TabItemsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabItemTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabItemTemplateSelectorProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonOverlayModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanDragTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanReorderTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty AllowDropTabsProperty{ get; };
@@ -173,8 +190,19 @@ unsealed runtimeclass TabViewItemTemplateSettings : Windows.UI.Xaml.DependencyOb
     TabViewItemTemplateSettings();
 
     Windows.UI.Xaml.Controls.IconElement IconElement;
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.UI.Xaml.Thickness LeftInsetRadiusMargin;
+        Windows.UI.Xaml.Thickness RightInsetRadiusMargin;
+    }
 
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty LeftInsetRadiusMarginProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty RightInsetRadiusMarginProperty{ get; };
+    }
 }
 
 }

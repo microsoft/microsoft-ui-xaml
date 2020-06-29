@@ -18,8 +18,13 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItem.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemBase.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemCollapsedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemExpandingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemsFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.cpp" />
@@ -31,13 +36,17 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemHeader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemInvokedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemSeparator.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewList.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewPaneClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewSelectionChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemCollapsedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemExpandingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemRevokers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemsFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.h" />
@@ -49,7 +58,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemHeader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemInvokedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemSeparator.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewList.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewPaneClosingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewSelectionChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SplitDataSourceBase.h" />

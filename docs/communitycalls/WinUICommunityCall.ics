@@ -4,44 +4,37 @@ VERSION:2.0
 METHOD:PUBLISH
 X-MS-OLK-FORCEINSPECTOROPEN:TRUE
 BEGIN:VTIMEZONE
-TZID:Pacific Standard Time
+TZID:GMT Standard Time
 BEGIN:STANDARD
-DTSTART:16011104T020000
-RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11
-TZOFFSETFROM:-0700
-TZOFFSETTO:-0800
+DTSTART:16011028T020000
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+TZOFFSETFROM:+0100
+TZOFFSETTO:-0000
 END:STANDARD
 BEGIN:DAYLIGHT
-DTSTART:16010311T020000
-RRULE:FREQ=YEARLY;BYDAY=2SU;BYMONTH=3
-TZOFFSETFROM:-0800
-TZOFFSETTO:-0700
+DTSTART:16010325T010000
+RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+TZOFFSETFROM:-0000
+TZOFFSETTO:+0100
 END:DAYLIGHT
 END:VTIMEZONE
 BEGIN:VEVENT
 CLASS:PUBLIC
-CREATED:20191024T211745Z
+CREATED:20200129T205041Z
 DESCRIPTION:The WinUI community call is your monthly opportunity to learn a
 	bout native UX development for Windows with WinUI. \nIn these calls we’l
 	l discuss the WinUI roadmap\, our status and your feedback.\n \nhttps://gi
 	thub.com/microsoft/microsoft-ui-xaml\n \n_________________________________
-	______________________________________________ \nJoin Microsoft Teams Meet
-	ing <https://teams.microsoft.com/l/meetup-join/19%3ameeting_Yjk2OTFmZDctN2
-	I2OS00MGU4LTg1NWYtOWYwOWFlODg0YzIz%40thread.v2/0?context=%7b%22Tid%22%3a%2
-	272f988bf-86f1-41af-91ab-2d7cd011db47%22%2c%22Oid%22%3a%2230968ce2-cf69-41
-	0d-a009-09ed2ecefbdb%22%7d>  \n+1 425-616-0754 <tel:+1%20425-616-0754\,\,2
-	81065415#>    United States\, Seattle (Toll) \nConference ID: 281 065 415#
-	 \nLocal numbers <https://dialin.teams.microsoft.com/8551f4c1-bea3-441a-87
-	 38-69aa517a91c5?id=281065415>  | Learn more about Teams <https://aka.ms/
-	 JoinTeamsMeeting>  \n \n
-DTEND;TZID="Pacific Standard Time":20191030T100000
+	______________________________________________ \n \nWatch here: https://ww
+	w.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA\n \n
+DTEND;TZID="GMT Standard Time":20191120T180000
 DTSTAMP:20191024T211746Z
-DTSTART;TZID="Pacific Standard Time":20191030T090000
-LAST-MODIFIED:20191024T211745Z
+DTSTART;TZID="GMT Standard Time":20191120T170000
+LAST-MODIFIED:20200129T205041Z
 PRIORITY:5
-RRULE:FREQ=MONTHLY;COUNT=10;BYDAY=WE;BYSETPOS=-1
+RRULE:FREQ=MONTHLY;BYDAY=WE;BYSETPOS=3
 SEQUENCE:0
-SUMMARY;LANGUAGE=en-us:WinUI community call
+SUMMARY;LANGUAGE=en-gb:WinUI community call
 TRANSP:TRANSPARENT
 UID:040000008200E00074C5B7101A82E008000000002027C06E6E8AD501000000000000000
 	010000000F9A55E06C7A64740A4C99ACBF58CCFF4
@@ -51,8 +44,8 @@ X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml"
 	2" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http:
 	//www.w3.org/TR/REC-html40"><head><meta name=ProgId content=Word.Document>
 	<meta name=Generator content="Microsoft Word 15"><meta name=Originator con
-	tent="Microsoft Word 15"><link rel=File-List href="cid:filelist.xml@01D58A
-	75.C53DDC30"><!--[if gte mso 9]><xml>\n<o:OfficeDocumentSettings>\n<o:Allo
+	tent="Microsoft Word 15"><link rel=File-List href="cid:filelist.xml@01D5D6
+	CB.18E6ED30"><!--[if gte mso 9]><xml>\n<o:OfficeDocumentSettings>\n<o:Allo
 	wPNG/>\n</o:OfficeDocumentSettings>\n</xml><![endif]--><!--[if gte mso 9]>
 	<xml>\n<w:WordDocument>\n<w:SpellingState>Clean</w:SpellingState>\n<w:Docu
 	mentKind>DocumentEmail</w:DocumentKind>\n<w:TrackMoves/>\n<w:TrackFormatti
@@ -513,87 +506,69 @@ X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml"
 	tentStyles>\n</xml><![endif]--><style><!--\n/* Font Definitions */\n@font-
 	face\n	{font-family:"Cambria Math"\;\n	panose-1:2 4 5 3 5 4 6 3 2 4\;\n	ms
 	o-font-charset:0\;\n	mso-generic-font-family:roman\;\n	mso-font-pitch:vari
-	able\;\n	mso-font-signature:-536869121 1107305727 33554432 0 415 0\;}\n@fo
-	nt-face\n	{font-family:Calibri\;\n	panose-1:2 15 5 2 2 2 4 3 2 4\;\n	mso-f
-	ont-charset:0\;\n	mso-generic-font-family:swiss\;\n	mso-font-pitch:variabl
-	e\;\n	mso-font-signature:-469750017 -1073732485 9 0 511 0\;}\n@font-face\n
-		{font-family:"Segoe UI"\;\n	panose-1:2 11 5 2 4 2 4 2 2 3\;\n	mso-font-ch
-	arset:0\;\n	mso-generic-font-family:swiss\;\n	mso-font-pitch:variable\;\n	
-	mso-font-signature:-469750017 -1073683329 9 0 511 0\;}\n@font-face\n	{font
-	-family:"Segoe UI Semibold"\;\n	panose-1:2 11 7 2 4 2 4 2 2 3\;\n	mso-font
-	-charset:0\;\n	mso-generic-font-family:swiss\;\n	mso-font-pitch:variable\;
-	\n	mso-font-signature:-469750017 -1073683329 9 0 511 0\;}\n/* Style Defini
-	tions */\np.MsoNormal\, li.MsoNormal\, div.MsoNormal\n	{mso-style-unhide:n
-	o\;\n	mso-style-qformat:yes\;\n	mso-style-parent:""\;\n	margin:0in\;\n	mar
-	gin-bottom:.0001pt\;\n	mso-pagination:widow-orphan\;\n	font-size:11.0pt\;\
-	n	font-family:"Calibri"\,sans-serif\;\n	mso-fareast-font-family:Calibri\;}
-	\na:link\, span.MsoHyperlink\n	{mso-style-noshow:yes\;\n	mso-style-priorit
-	y:99\;\n	color:#0563C1\;\n	text-decoration:underline\;\n	text-underline:si
-	ngle\;}\na:visited\, span.MsoHyperlinkFollowed\n	{mso-style-noshow:yes\;\n
-		mso-style-priority:99\;\n	color:#954F72\;\n	text-decoration:underline\;\n
-		text-underline:single\;}\np.msonormal0\, li.msonormal0\, div.msonormal0\n
-		{mso-style-name:msonormal\;\n	mso-style-unhide:no\;\n	mso-margin-top-alt:
-	auto\;\n	margin-right:0in\;\n	mso-margin-bottom-alt:auto\;\n	margin-left:0
-	in\;\n	mso-pagination:widow-orphan\;\n	font-size:11.0pt\;\n	font-family:"C
-	alibri"\,sans-serif\;\n	mso-fareast-font-family:Calibri\;}\nspan.EmailStyl
-	e18\n	{mso-style-type:personal-compose\;\n	mso-style-noshow:yes\;\n	mso-st
-	yle-unhide:no\;\n	mso-ansi-font-size:11.0pt\;\n	mso-bidi-font-size:11.0pt\
-	;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:Calibri\;\
-	n	mso-fareast-font-family:Calibri\;\n	mso-hansi-font-family:Calibri\;\n	ms
-	o-bidi-font-family:"Times New Roman"\;\n	color:windowtext\;}\n.MsoChpDefau
-	lt\n	{mso-style-type:export-only\;\n	mso-default-props:yes\;\n	font-size:1
-	0.0pt\;\n	mso-ansi-font-size:10.0pt\;\n	mso-bidi-font-size:10.0pt\;\n	font
-	-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:Calibri\;\n	mso-fa
-	reast-font-family:Calibri\;\n	mso-hansi-font-family:Calibri\;}\n@page Word
-	Section1\n	{size:8.5in 11.0in\;\n	margin:1.0in 1.0in 1.0in 1.0in\;\n	mso-h
-	eader-margin:.5in\;\n	mso-footer-margin:.5in\;\n	mso-paper-source:0\;}\ndi
-	v.WordSection1\n	{page:WordSection1\;}\n--></style><!--[if gte mso 10]><st
-	yle>/* Style Definitions */\ntable.MsoNormalTable\n	{mso-style-name:"Table
-	 Normal"\;\n	mso-tstyle-rowband-size:0\;\n	mso-tstyle-colband-size:0\;\n	m
-	so-style-noshow:yes\;\n	mso-style-priority:99\;\n	mso-style-parent:""\;\n	
-	mso-padding-alt:0in 5.4pt 0in 5.4pt\;\n	mso-para-margin:0in\;\n	mso-para-m
-	argin-bottom:.0001pt\;\n	mso-pagination:widow-orphan\;\n	font-size:10.0pt\
-	;\n	font-family:"Calibri"\,sans-serif\;\n	mso-bidi-font-family:"Times New 
-	Roman"\;}\n</style><![endif]--><!--[if gte mso 9]><xml>\n<o:shapedefaults 
-	v:ext="edit" spidmax="1026" />\n</xml><![endif]--><!--[if gte mso 9]><xml>
-	\n<o:shapelayout v:ext="edit">\n<o:idmap v:ext="edit" data="1" />\n</o:sha
-	pelayout></xml><![endif]--></head><body lang=EN-US link="#0563C1" vlink="#
-	954F72" style='tab-interval:.5in'><div class=WordSection1><p class=MsoNorm
-	al>The WinUI community call is your monthly opportunity to learn about nat
-	ive UX development for Windows with WinUI. <o:p></o:p></p><p class=MsoNorm
-	al>In these calls we&#8217\;ll discuss the WinUI roadmap\, our status and 
-	your feedback.<o:p></o:p></p><p class=MsoNormal><o:p>&nbsp\;</o:p></p><p c
-	lass=MsoNormal><a href="https://github.com/microsoft/microsoft-ui-xaml">ht
-	tps://github.com/microsoft/microsoft-ui-xaml</a><o:p></o:p></p><p class=Ms
-	oNormal><span style='color:gray'><o:p>&nbsp\;</o:p></span></p><p class=Mso
-	Normal><span style='color:gray'>__________________________________________
-	_____________________________________</span> <o:p></o:p></p><p class=MsoNo
-	rmal><span style='font-family:"Segoe UI"\,sans-serif\;color:#252424'><a hr
-	ef="https://teams.microsoft.com/l/meetup-join/19%3ameeting_Yjk2OTFmZDctN2I
-	2OS00MGU4LTg1NWYtOWYwOWFlODg0YzIz%40thread.v2/0?context=%7b%22Tid%22%3a%22
-	72f988bf-86f1-41af-91ab-2d7cd011db47%22%2c%22Oid%22%3a%2230968ce2-cf69-410
-	d-a009-09ed2ecefbdb%22%7d" target="_blank"><span style='font-size:13.5pt\;
-	font-family:"Segoe UI Semibold"\,sans-serif\;color:#6264A7'>Join Microsoft
-	 Teams Meeting</span></a> <o:p></o:p></span></p><p class=MsoNormal><span s
-	tyle='font-family:"Segoe UI"\,sans-serif\;color:#252424'><a href="tel:+1%2
-	0425-616-0754\,\,281065415# " target="_blank"><span style='font-size:10.5p
-	t\;color:#6264A7\;text-decoration:none\;text-underline:none'>+1 425-616-07
-	54</span></a> </span><span style='font-size:9.0pt\;font-family:"Segoe UI"\
-	,sans-serif\;color:#252424'>&nbsp\; United States\, Seattle (Toll) </span>
-	<span style='font-family:"Segoe UI"\,sans-serif\;color:#252424'><o:p></o:p
-	></span></p><p class=MsoNormal><span style='font-size:9.0pt\;font-family:"
-	Segoe UI"\,sans-serif\;color:#252424'>Conference ID: </span><span style='f
-	ont-size:10.5pt\;font-family:"Segoe UI"\,sans-serif\;color:#252424'>281 06
-	5 415# </span><span style='font-family:"Segoe UI"\,sans-serif\;color:#2524
-	24'><o:p></o:p></span></p><p class=MsoNormal><span style='font-family:"Seg
-	oe UI"\,sans-serif\;color:#252424'><a href="https://dialin.teams.microsoft
-	.com/8551f4c1-bea3-441a-8738-69aa517a91c5?id=281065415" target="_blank"><s
-	pan style='font-size:9.0pt\;color:#6264A7\;text-decoration:none\;text-unde
-	rline:none'>Local numbers</span></a> | <a href="https://aka.ms/JoinTeamsMe
-	eting" target="_blank"><span style='font-size:9.0pt\;color:#6264A7\;text-d
-	ecoration:none\;text-underline:none'>Learn more about Teams</span></a> <o:
-	p></o:p></span></p><p class=MsoNormal><span style='mso-bidi-font-family:"T
-	imes New Roman"'><o:p>&nbsp\;</o:p></span></p></div></body></html>
+	able\;\n	mso-font-signature:3 0 0 0 1 0\;}\n@font-face\n	{font-family:Cali
+	bri\;\n	panose-1:2 15 5 2 2 2 4 3 2 4\;\n	mso-font-charset:0\;\n	mso-gener
+	ic-font-family:swiss\;\n	mso-font-pitch:variable\;\n	mso-font-signature:-4
+	69750017 -1073732485 9 0 511 0\;}\n@font-face\n	{font-family:"Segoe UI"\;\
+	n	panose-1:2 11 5 2 4 2 4 2 2 3\;\n	mso-font-charset:0\;\n	mso-generic-fon
+	t-family:swiss\;\n	mso-font-pitch:variable\;\n	mso-font-signature:-4697500
+	17 -1073683329 9 0 511 0\;}\n/* Style Definitions */\np.MsoNormal\, li.Mso
+	Normal\, div.MsoNormal\n	{mso-style-unhide:no\;\n	mso-style-qformat:yes\;\
+	n	mso-style-parent:""\;\n	margin:0cm\;\n	margin-bottom:.0001pt\;\n	mso-pag
+	ination:widow-orphan\;\n	font-size:11.0pt\;\n	font-family:"Calibri"\,sans-
+	serif\;\n	mso-fareast-font-family:Calibri\;}\na:link\, span.MsoHyperlink\n
+		{mso-style-noshow:yes\;\n	mso-style-priority:99\;\n	color:#0563C1\;\n	tex
+	t-decoration:underline\;\n	text-underline:single\;}\na:visited\, span.MsoH
+	yperlinkFollowed\n	{mso-style-noshow:yes\;\n	mso-style-priority:99\;\n	col
+	or:#954F72\;\n	text-decoration:underline\;\n	text-underline:single\;}\np.m
+	sonormal0\, li.msonormal0\, div.msonormal0\n	{mso-style-name:msonormal\;\n
+		mso-style-unhide:no\;\n	mso-margin-top-alt:auto\;\n	margin-right:0cm\;\n	
+	mso-margin-bottom-alt:auto\;\n	margin-left:0cm\;\n	mso-pagination:widow-or
+	phan\;\n	font-size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-fa
+	reast-font-family:Calibri\;}\nspan.EmailStyle18\n	{mso-style-type:personal
+	-compose\;\n	mso-style-noshow:yes\;\n	mso-style-unhide:no\;\n	mso-ansi-fon
+	t-size:11.0pt\;\n	mso-bidi-font-size:11.0pt\;\n	font-family:"Calibri"\,san
+	s-serif\;\n	mso-ascii-font-family:Calibri\;\n	mso-fareast-font-family:Cali
+	bri\;\n	mso-hansi-font-family:Calibri\;\n	mso-bidi-font-family:"Times New 
+	Roman"\;\n	color:windowtext\;}\n.MsoChpDefault\n	{mso-style-type:export-on
+	ly\;\n	mso-default-props:yes\;\n	font-size:10.0pt\;\n	mso-ansi-font-size:1
+	0.0pt\;\n	mso-bidi-font-size:10.0pt\;\n	font-family:"Calibri"\,sans-serif\
+	;\n	mso-ascii-font-family:Calibri\;\n	mso-fareast-font-family:Calibri\;\n	
+	mso-hansi-font-family:Calibri\;\n	mso-bidi-font-family:Calibri\;}\n@page W
+	ordSection1\n	{size:612.0pt 792.0pt\;\n	margin:72.0pt 72.0pt 72.0pt 72.0pt
+	\;\n	mso-header-margin:36.0pt\;\n	mso-footer-margin:36.0pt\;\n	mso-paper-s
+	ource:0\;}\ndiv.WordSection1\n	{page:WordSection1\;}\n--></style><!--[if g
+	te mso 10]><style>/* Style Definitions */\ntable.MsoNormalTable\n	{mso-sty
+	le-name:"Table Normal"\;\n	mso-tstyle-rowband-size:0\;\n	mso-tstyle-colban
+	d-size:0\;\n	mso-style-noshow:yes\;\n	mso-style-priority:99\;\n	mso-style-
+	parent:""\;\n	mso-padding-alt:0cm 5.4pt 0cm 5.4pt\;\n	mso-para-margin:0cm\
+	;\n	mso-para-margin-bottom:.0001pt\;\n	mso-pagination:widow-orphan\;\n	fon
+	t-size:10.0pt\;\n	font-family:"Calibri"\,sans-serif\;}\n</style><![endif]-
+	-><!--[if gte mso 9]><xml>\n<o:shapedefaults v:ext="edit" spidmax="1026" /
+	>\n</xml><![endif]--><!--[if gte mso 9]><xml>\n<o:shapelayout v:ext="edit"
+	>\n<o:idmap v:ext="edit" data="1" />\n</o:shapelayout></xml><![endif]--></
+	head><body lang=EN-GB link="#0563C1" vlink="#954F72" style='tab-interval:3
+	6.0pt'><div class=WordSection1><p class=MsoNormal><span lang=EN-US style='
+	mso-ansi-language:EN-US'>The WinUI community call is your monthly opportun
+	ity to learn about native UX development for Windows with WinUI. <o:p></o:
+	p></span></p><p class=MsoNormal><span lang=EN-US style='mso-ansi-language:
+	EN-US'>In these calls we’ll discuss the WinUI roadmap\, our status and y
+	our feedback.<o:p></o:p></span></p><p class=MsoNormal><span lang=EN-US sty
+	le='mso-ansi-language:EN-US'><o:p>&nbsp\;</o:p></span></p><p class=MsoNorm
+	al><span lang=EN-US style='mso-ansi-language:EN-US'><a href="https://githu
+	b.com/microsoft/microsoft-ui-xaml">https://github.com/microsoft/microsoft-
+	ui-xaml</a><o:p></o:p></span></p><p class=MsoNormal><span lang=EN-US style
+	='color:gray\;mso-ansi-language:EN-US'><o:p>&nbsp\;</o:p></span></p><p cla
+	ss=MsoNormal><span lang=EN-US style='color:gray\;mso-ansi-language:EN-US'>
+	__________________________________________________________________________
+	_____</span><span lang=EN-US style='mso-ansi-language:EN-US'> <o:p></o:p><
+	/span></p><p class=MsoNormal><span lang=EN-US style='font-family:"Segoe UI
+	"\,sans-serif\;color:#252424\;mso-ansi-language:EN-US'><o:p>&nbsp\;</o:p><
+	/span></p><p class=MsoNormal>Watch here: <a href="https://www.youtube.com/
+	channel/UCzLbHrU7U3cUDNQWWAqjceA">https://www.youtube.com/channel/UCzLbHrU
+	7U3cUDNQWWAqjceA</a><o:p></o:p></p><p class=MsoNormal><span lang=EN-US sty
+	le='mso-bidi-font-family:"Times New Roman"\;mso-ansi-language:EN-US'><o:p>
+	&nbsp\;</o:p></span></p></div></body></html>
 X-MICROSOFT-CDO-BUSYSTATUS:FREE
 X-MICROSOFT-CDO-IMPORTANCE:1
 X-MICROSOFT-DISALLOW-COUNTER:FALSE

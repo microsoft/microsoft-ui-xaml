@@ -84,7 +84,7 @@ public:
     void OnPropertyChanged(winrt::hstring const& propertyName);
 #pragma endregion
 
-    winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const std::weak_ptr<SelectionNode>& sourceNode);
+    winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const winrt::IndexPath& dataIndexPath);
     void OnSelectionInvalidatedDueToCollectionChange();
     std::shared_ptr<SelectionNode> SharedLeafNode() { return m_leafNode; }
 

@@ -3,7 +3,7 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props" Condition="Exists('$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\ReleaseTestSdkVersion.props" Condition="Exists('$(MSBuildProjectDirectory)\..\ReleaseTestSdkVersion.props') And $(BuildingWithBuildExe) != 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\mux.PGO.props" />
+  <Import Condition="'$(PGOBuildMode)' == 'Instrument'" Project="$(MSBuildProjectDirectory)\..\..\..\..\PGO.runtime.props" />
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>

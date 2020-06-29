@@ -130,13 +130,14 @@ namespace MUXControlsTestApp
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
         {
-            if(_rootGrid.RequestedTheme == ElementTheme.Default)
+            var contentAsFrameworkElement = Window.Current.Content as FrameworkElement;
+            if(contentAsFrameworkElement.RequestedTheme == ElementTheme.Default)
             {
                 // Convert theme from default to either dark or light based on application requestedtheme
-                _rootGrid.RequestedTheme = (Application.Current.RequestedTheme == ApplicationTheme.Light) ? ElementTheme.Light : ElementTheme.Dark;
+                contentAsFrameworkElement.RequestedTheme = (Application.Current.RequestedTheme == ApplicationTheme.Light) ? ElementTheme.Light : ElementTheme.Dark;
             }
             // Invert theme
-            _rootGrid.RequestedTheme = (_rootGrid.RequestedTheme == ElementTheme.Light) ? ElementTheme.Dark : ElementTheme.Light;
+            contentAsFrameworkElement.RequestedTheme = (contentAsFrameworkElement.RequestedTheme == ElementTheme.Light) ? ElementTheme.Dark : ElementTheme.Light;
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)

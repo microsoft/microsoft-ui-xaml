@@ -69,6 +69,7 @@ winrt::Size UniformGridLayout::MeasureOverride(
         LineSpacing(),
         m_maximumRowsOrColumns /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
+        false /* disableVirtualization */,
         LayoutId());
 
     // If after Measure the first item is in the realization rect, then we revoke grid state's ownership,
@@ -133,18 +134,18 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForRealization
 
     int itemsCount = context.ItemCount();
     auto realizationRect = context.RealizationRect();
-    if (itemsCount > 0 && realizationRect.*MajorSize() > 0)
+    if (itemsCount > 0 && MajorSize(realizationRect) > 0)
     {
         const auto gridState = GetAsGridState(context.LayoutState());
         const auto lastExtent = gridState->FlowAlgorithm().LastExtent();
         const int itemsPerLine = std::min( // note use of unsigned ints
-            std::max(1u, static_cast<unsigned int>(availableSize.*Minor() / GetMinorSizeWithSpacing(context))),
+            std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
             std::max(1u, m_maximumRowsOrColumns));
         const double majorSize = (itemsCount / itemsPerLine) * (double)(GetMajorSizeWithSpacing(context));
-        const double realizationWindowStartWithinExtent = (double)(realizationRect.*MajorStart() - lastExtent.*MajorStart());
-        if ((realizationWindowStartWithinExtent + realizationRect.*MajorSize()) >= 0 && realizationWindowStartWithinExtent <= majorSize)
+        const double realizationWindowStartWithinExtent = (double)(MajorStart(realizationRect) - MajorStart(lastExtent));
+        if ((realizationWindowStartWithinExtent + MajorSize(realizationRect)) >= 0 && realizationWindowStartWithinExtent <= majorSize)
         {
-            const double offset = std::max(0.0f, realizationRect.*MajorStart() - lastExtent.*MajorStart());
+            const double offset = std::max(0.0f, MajorStart(realizationRect) - MajorStart(lastExtent));
             const int anchorRowIndex = static_cast<int>(offset / GetMajorSizeWithSpacing(context));
 
             anchorIndex = std::max(0, std::min(itemsCount - 1, anchorRowIndex * itemsPerLine));
@@ -155,7 +156,7 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForRealization
     return winrt::FlowLayoutAnchorInfo
     {
         anchorIndex,
-        bounds.*MajorStart()
+        MajorStart(bounds)
     };
 }
 
@@ -170,12 +171,12 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForTargetEleme
     if (targetIndex >= 0 && targetIndex < count)
     {
         int itemsPerLine = std::min( // note use of unsigned ints
-            std::max(1u, static_cast<unsigned int>(availableSize.*Minor() / GetMinorSizeWithSpacing(context))),
+            std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
             std::max(1u, m_maximumRowsOrColumns));
         int indexOfFirstInLine = (targetIndex / itemsPerLine) * itemsPerLine;
         index = indexOfFirstInLine;
         auto state = GetAsGridState(context.LayoutState());
-        offset = GetLayoutRectForDataIndex(availableSize, indexOfFirstInLine, state->FlowAlgorithm().LastExtent(), context).*MajorStart();
+        offset = MajorStart(GetLayoutRectForDataIndex(availableSize, indexOfFirstInLine, state->FlowAlgorithm().LastExtent(), context));
     }
 
     return winrt::FlowLayoutAnchorInfo
@@ -202,7 +203,7 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
 
     // Constants
     const int itemsCount = context.ItemCount();
-    const float availableSizeMinor = availableSize.*Minor();
+    const float availableSizeMinor = Minor(availableSize);
     const int itemsPerLine =
         std::min( // note use of unsigned ints
             std::max(1u, std::isfinite(availableSizeMinor)
@@ -214,19 +215,19 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
     if (itemsCount > 0)
     {
         // Only use all of the space if item stretch is fill, otherwise size layout according to items placed
-        extent.*MinorSize() =
+        MinorSize(extent) =
             std::isfinite(availableSizeMinor) && m_itemsStretch == winrt::UniformGridLayoutItemsStretch::Fill ?
             availableSizeMinor :
             std::max(0.0f, itemsPerLine * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
-        extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
+        MajorSize(extent) = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
 
         if (firstRealized)
         {
             MUX_ASSERT(lastRealized);
 
-            extent.*MajorStart() = firstRealizedLayoutBounds.*MajorStart() - (firstRealizedItemIndex / itemsPerLine) * lineSize;
+            MajorStart(extent) = MajorStart(firstRealizedLayoutBounds) - (firstRealizedItemIndex / itemsPerLine) * lineSize;
             int remainingItems = itemsCount - lastRealizedItemIndex - 1;
-            extent.*MajorSize() = MajorEnd(lastRealizedLayoutBounds) - extent.*MajorStart() + (remainingItems / itemsPerLine) * lineSize;
+            MajorSize(extent) = MajorEnd(lastRealizedLayoutBounds) - MajorStart(extent) + (remainingItems / itemsPerLine) * lineSize;
         }
         else
         {
@@ -317,15 +318,15 @@ winrt::Rect UniformGridLayout::GetLayoutRectForDataIndex(
     const winrt::VirtualizingLayoutContext& context)
 {
     int itemsPerLine = std::min( //note use of unsigned ints
-        std::max(1u, static_cast<unsigned int>(availableSize.*Minor() / GetMinorSizeWithSpacing(context))),
+        std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
         std::max(1u, m_maximumRowsOrColumns));
     int rowIndex = static_cast<int>(index / itemsPerLine);
     int indexInRow = index - (rowIndex * itemsPerLine);
 
     auto gridState = GetAsGridState(context.LayoutState());
     winrt::Rect bounds = MinorMajorRect(
-        indexInRow * GetMinorSizeWithSpacing(context) + lastExtent.*MinorStart(),
-        rowIndex * GetMajorSizeWithSpacing(context) + lastExtent.*MajorStart(),
+        indexInRow * GetMinorSizeWithSpacing(context) + MinorStart(lastExtent),
+        rowIndex * GetMajorSizeWithSpacing(context) + MajorStart(lastExtent),
         GetScrollOrientation() == ScrollOrientation::Vertical ? static_cast<float>(gridState->EffectiveItemWidth()) : static_cast<float>(gridState->EffectiveItemHeight()),
         GetScrollOrientation() == ScrollOrientation::Vertical ? static_cast<float>(gridState->EffectiveItemHeight()) : static_cast<float>(gridState->EffectiveItemWidth()));
 

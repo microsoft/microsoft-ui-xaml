@@ -6,9 +6,15 @@
 #include "common.h"
 #include "ProgressRing.h"
 
-CppWinRTActivatableClassWithDPFactory(ProgressRing)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ProgressRing)
+}
 
-GlobalDependencyProperty ProgressRingProperties::s_StrokeThicknessProperty{ nullptr };
+#include "ProgressRing.g.cpp"
+
+GlobalDependencyProperty ProgressRingProperties::s_IsActiveProperty{ nullptr };
+GlobalDependencyProperty ProgressRingProperties::s_TemplateSettingsProperty{ nullptr };
 
 ProgressRingProperties::ProgressRingProperties()
 {
@@ -17,38 +23,60 @@ ProgressRingProperties::ProgressRingProperties()
 
 void ProgressRingProperties::EnsureProperties()
 {
-    if (!s_StrokeThicknessProperty)
+    if (!s_IsActiveProperty)
     {
-        s_StrokeThicknessProperty =
+        s_IsActiveProperty =
             InitializeDependencyProperty(
-                L"StrokeThickness",
-                winrt::name_of<double>(),
+                L"IsActive",
+                winrt::name_of<bool>(),
                 winrt::name_of<winrt::ProgressRing>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnStrokeThicknessPropertyChanged));
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsActivePropertyChanged));
+    }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::ProgressRingTemplateSettings>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ProgressRingTemplateSettings>::BoxedDefaultValue(),
+                nullptr);
     }
 }
 
 void ProgressRingProperties::ClearProperties()
 {
-    s_StrokeThicknessProperty = nullptr;
+    s_IsActiveProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
-void ProgressRingProperties::OnStrokeThicknessPropertyChanged(
+void ProgressRingProperties::OnIsActivePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::ProgressRing>();
-    winrt::get_self<ProgressRing>(owner)->OnStrokeThicknessPropertyChanged(args);
+    winrt::get_self<ProgressRing>(owner)->OnIsActivePropertyChanged(args);
 }
 
-void ProgressRingProperties::StrokeThickness(double value)
+void ProgressRingProperties::IsActive(bool value)
 {
-    static_cast<ProgressRing*>(this)->SetValue(s_StrokeThicknessProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<ProgressRing*>(this)->SetValue(s_IsActiveProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-double ProgressRingProperties::StrokeThickness()
+bool ProgressRingProperties::IsActive()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_StrokeThicknessProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_IsActiveProperty));
+}
+
+void ProgressRingProperties::TemplateSettings(winrt::ProgressRingTemplateSettings const& value)
+{
+    static_cast<ProgressRing*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressRingTemplateSettings>::BoxValueIfNecessary(value));
+}
+
+winrt::ProgressRingTemplateSettings ProgressRingProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::ProgressRingTemplateSettings>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_TemplateSettingsProperty));
 }

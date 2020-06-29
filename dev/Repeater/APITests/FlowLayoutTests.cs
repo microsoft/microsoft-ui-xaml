@@ -1601,22 +1601,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         break;
 
                     case LayoutChoice.Grid:
-                        var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
-                        var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
-                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
+                        {
+                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                            layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
+                        }
                         break;
 
                     case LayoutChoice.Flow:
-                        layout = new FlowLayoutDerived()
                         {
-                            MinColumnSpacing = lineSpacing,
-                            OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
+                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                            layout = new FlowLayoutDerived()
                             {
-                                Verify.AreEqual(0, startIndex % 4);
-                                Verify.AreEqual(4, countInLine);
-                                Verify.AreEqual(lineSize, itemSize);
-                            }
-                        };
+                                MinRowSpacing = minRowSpacing,
+                                MinColumnSpacing = minColumnSpacing,
+                                OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
+                                {
+                                    Verify.AreEqual(0, startIndex % 4);
+                                    Verify.AreEqual(4, countInLine);
+                                    Verify.AreEqual(lineSize, itemSize);
+                                }
+                            };
+                        }
                         break;
 
                     default:

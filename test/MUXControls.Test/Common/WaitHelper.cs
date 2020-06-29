@@ -145,14 +145,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             TestEnvironment.LogVerbose("Wait.ForIdle: End");
         }
 
-        public static bool ForScrollChanged(Scroller scroller, ScrollProperty scrollProperty)
+        public static bool ForScrollChanged(ScrollPresenter scrollPresenter, ScrollProperty scrollProperty)
         {
             Log.Comment("Wait.ForScrollChanged call for {0}.", scrollProperty.ToString());
 
             using (UIEventWaiter scrollChangedWaiter =
                 (scrollProperty == ScrollProperty.HorizontallyScrollable || scrollProperty == ScrollProperty.VerticallyScrollable) ?
-                    scroller.GetScrollChangedWaiter(scrollProperty, null) :
-                    scroller.GetScrollChangedWaiter(scrollProperty, double.NaN))
+                    scrollPresenter.GetScrollChangedWaiter(scrollProperty, null) :
+                    scrollPresenter.GetScrollChangedWaiter(scrollProperty, double.NaN))
             {
                 if (!scrollChangedWaiter.TryWait(TimeSpan.FromSeconds(5)))
                 {

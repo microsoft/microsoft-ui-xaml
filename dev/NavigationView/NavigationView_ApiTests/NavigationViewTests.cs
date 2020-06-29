@@ -27,6 +27,8 @@ using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHe
 using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
 using System.Collections.ObjectModel;
+using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Composition;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -90,7 +92,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.ExpandedModeThresholdWidth = 600.0;
                 navView.CompactModeThresholdWidth = 400.0;
                 navView.Width = 800.0;
-                navView.Height = 600.0;
+                navView.Height = 200.0;
                 navView.Content = "This test should have enough NavigationViewItems to scroll.";
                 Content = navView;
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
@@ -248,6 +250,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyPaneDisplayModeChangingPaneAccordingly()
+        {
+            var navView = SetupNavigationView();
+
+            foreach(var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                    navView.IsPaneOpen = false;
+                    // Set it below threshold width for auto mode
+                    navView.Width = navView.CompactModeThresholdWidth - 20;
+
+                    Content.UpdateLayout();
+
+                    navView.PaneDisplayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
+
+                    Content.UpdateLayout();
+
+                    // We only want to open the pane when explicitly set, otherwise it should be closed
+                    // since we set the width below the threshold width
+                    Verify.AreEqual((NavigationViewPaneDisplayMode)paneDisplayMode == NavigationViewPaneDisplayMode.Left, navView.IsPaneOpen);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyDefaultsAndBasicSetting()
         {
             NavigationView navView = null;
@@ -388,6 +417,96 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifySingleSelection()
         {
+            string navItemPresenter1CurrentState = string.Empty;
+            string navItemPresenter2CurrentState = string.Empty;
+            NavigationView navView = null;
+            NavigationViewItem menuItem1 = null;
+            NavigationViewItem menuItem2 = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                Content = navView;
+
+                menuItem1 = new NavigationViewItem();
+                menuItem2 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+                menuItem2.Content = "Item 2";
+
+                navView.MenuItems.Add(menuItem1);
+                navView.MenuItems.Add(menuItem2);
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                var menuItemLayoutRoot = VisualTreeHelper.GetChild(menuItem1, 0) as FrameworkElement;
+                var navItemPresenter = VisualTreeHelper.GetChild(menuItemLayoutRoot, 0) as FrameworkElement;
+                var navItemPresenterLayoutRoot = VisualTreeHelper.GetChild(navItemPresenter, 0) as FrameworkElement;
+                var statesGroups = VisualStateManager.GetVisualStateGroups(navItemPresenterLayoutRoot);
+
+                foreach (var visualStateGroup in statesGroups)
+                {
+                    Log.Comment($"VisualStateGroup1: Name={visualStateGroup.Name}, CurrentState={visualStateGroup.CurrentState.Name}");
+
+                    visualStateGroup.CurrentStateChanged += (object sender, VisualStateChangedEventArgs e) =>
+                    {
+                        Log.Comment($"VisualStateChangedEventArgs1: Name={e.Control.Name}, OldState={e.OldState.Name}, NewState={e.NewState.Name}");
+                        navItemPresenter1CurrentState = e.NewState.Name;
+                    };
+                }
+
+                menuItemLayoutRoot = VisualTreeHelper.GetChild(menuItem2, 0) as FrameworkElement;
+                navItemPresenter = VisualTreeHelper.GetChild(menuItemLayoutRoot, 0) as FrameworkElement;
+                navItemPresenterLayoutRoot = VisualTreeHelper.GetChild(navItemPresenter, 0) as FrameworkElement;
+                statesGroups = VisualStateManager.GetVisualStateGroups(navItemPresenterLayoutRoot);
+
+                foreach (var visualStateGroup in statesGroups)
+                {
+                    Log.Comment($"VisualStateGroup2: Name={visualStateGroup.Name}, CurrentState={visualStateGroup.CurrentState.Name}");
+
+                    visualStateGroup.CurrentStateChanged += (object sender, VisualStateChangedEventArgs e) =>
+                    {
+                        Log.Comment($"VisualStateChangedEventArgs2: Name={e.Control.Name}, OldState={e.OldState.Name}, NewState={e.NewState.Name}");
+                        navItemPresenter2CurrentState = e.NewState.Name;
+                    };
+                }
+
+                Verify.IsFalse(menuItem1.IsSelected);
+                Verify.IsFalse(menuItem2.IsSelected);
+                Verify.AreEqual(null, navView.SelectedItem);
+
+                menuItem1.IsSelected = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", navItemPresenter1CurrentState);
+                Verify.AreEqual(string.Empty, navItemPresenter2CurrentState);
+
+                Verify.IsTrue(menuItem1.IsSelected);
+                Verify.IsFalse(menuItem2.IsSelected);
+                Verify.AreEqual(menuItem1, navView.SelectedItem);
+
+                menuItem2.IsSelected = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", navItemPresenter1CurrentState);
+                Verify.AreEqual("Selected", navItemPresenter2CurrentState);
+
+                Verify.IsTrue(menuItem2.IsSelected);
+                Verify.IsFalse(menuItem1.IsSelected, "MenuItem1 should have been deselected when MenuItem2 was selected");
+                Verify.AreEqual(menuItem2, navView.SelectedItem);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNavigationItemUIAType()
+        {
             RunOnUIThread.Execute(() =>
             {
                 var navView = new NavigationView();
@@ -403,23 +522,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
                 Content.UpdateLayout();
 
-                Verify.IsFalse(menuItem1.IsSelected);
-                Verify.IsFalse(menuItem2.IsSelected);
-                Verify.AreEqual(navView.SelectedItem, null);
+                Verify.AreEqual(
+                    AutomationControlType.ListItem,
+                    NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
 
-                menuItem1.IsSelected = true;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
                 Content.UpdateLayout();
+                Verify.AreEqual(
+                    AutomationControlType.TabItem,
+                    NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
 
-                Verify.IsTrue(menuItem1.IsSelected);
-                Verify.IsFalse(menuItem2.IsSelected);
-                Verify.AreEqual(navView.SelectedItem, menuItem1);
-
-                menuItem2.IsSelected = true;
-                Content.UpdateLayout();
-
-                Verify.IsTrue(menuItem2.IsSelected);
-                Verify.IsFalse(menuItem1.IsSelected, "MenuItem1 should have been deselected when MenuItem2 was selected");
-                Verify.AreEqual(navView.SelectedItem, menuItem2);
             });
         }
 
@@ -592,6 +704,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(returnedItemForNonExistentContainer == null, "Returned item should be null.");
 
                 MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
+        [TestMethod]
+        public void VerifySelectedItemIsNullWhenNoItemIsSelected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                Content = navView;
+
+                var menuItem1 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+
+                navView.MenuItems.Add(menuItem1);
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                Verify.IsFalse(menuItem1.IsSelected);
+                Verify.AreEqual(null, navView.SelectedItem);
+
+                menuItem1.IsSelected = true;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(menuItem1.IsSelected);
+                Verify.AreEqual(menuItem1, navView.SelectedItem);
+
+                menuItem1.IsSelected = false;
+                Content.UpdateLayout();
+
+                Verify.IsFalse(menuItem1.IsSelected);
+                Verify.AreEqual(null, navView.SelectedItem, "SelectedItem should have been [null] as no item is selected");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInFooterDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+
+                Content = navView;
+
+                var navViewItem = new NavigationViewItem() { Content = "Footer item" };
+
+                navView.PaneFooter = navViewItem;
+
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                // If we don't get here, app has crashed. This verify is just making sure code got run
+                Verify.IsTrue(true);
             });
         }
     }

@@ -72,7 +72,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
     if (!s_HeaderTemplateProperty)
     {
@@ -83,7 +83,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnHeaderTemplatePropertyChanged));
     }
     if (!s_IsWrapEnabledProperty)
     {
@@ -247,7 +247,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(0),
+                ValueHelper<double>::BoxValueIfNecessary(std::numeric_limits<double>::quiet_NaN()),
                 winrt::PropertyChangedCallback(&OnValuePropertyChanged));
     }
 }
@@ -273,6 +273,22 @@ void NumberBoxProperties::ClearProperties()
     s_TextReadingOrderProperty = nullptr;
     s_ValidationModeProperty = nullptr;
     s_ValueProperty = nullptr;
+}
+
+void NumberBoxProperties::OnHeaderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnHeaderPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnHeaderTemplatePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnHeaderTemplatePropertyChanged(args);
 }
 
 void NumberBoxProperties::OnIsWrapEnabledPropertyChanged(

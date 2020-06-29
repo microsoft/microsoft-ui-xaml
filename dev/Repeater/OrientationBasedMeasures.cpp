@@ -1,32 +1,32 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
 #include "OrientationBasedMeasures.h"
 
-float winrt::Size::* OrientationBasedMeasures::Major() const
+float& OrientationBasedMeasures::Major(const winrt::Size &size)
 {
-    return m_orientation == ScrollOrientation::Vertical ? &winrt::Size::Height : &winrt::Size::Width;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Size&)size).Height : ((winrt::Size&)size).Width;
 }
 
-float winrt::Size::* OrientationBasedMeasures::Minor() const
+float& OrientationBasedMeasures::Minor(const winrt::Size& size)
 {
-    return m_orientation == ScrollOrientation::Vertical ? &winrt::Size::Width : &winrt::Size::Height;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Size&)size).Width : ((winrt::Size&)size).Height;
 }
 
-float winrt::Rect::* OrientationBasedMeasures::MajorSize() const
+float& OrientationBasedMeasures::MajorSize(const winrt::Rect& rect)
 {
-    return m_orientation == ScrollOrientation::Vertical ? &winrt::Rect::Height : &winrt::Rect::Width;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Rect&)rect).Height : ((winrt::Rect&)rect).Width;
 }
 
-float winrt::Rect::* OrientationBasedMeasures::MinorSize() const
+float& OrientationBasedMeasures::MinorSize(const winrt::Rect& rect)
 {
-    return m_orientation == ScrollOrientation::Vertical ? &winrt::Rect::Width : &winrt::Rect::Height;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Rect&)rect).Width : ((winrt::Rect&)rect).Height;
 }
 
-float winrt::Rect::* OrientationBasedMeasures::MajorStart() const
+float& OrientationBasedMeasures::MajorStart(const winrt::Rect& rect)
 {
-    return m_orientation == ScrollOrientation::Vertical ? &winrt::Rect::Y : &winrt::Rect::X;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Rect&)rect).Y : ((winrt::Rect&)rect).X;
 }
 
 float OrientationBasedMeasures::MajorEnd(const winrt::Rect& rect) const
@@ -35,9 +35,9 @@ float OrientationBasedMeasures::MajorEnd(const winrt::Rect& rect) const
         rect.Y + rect.Height : rect.X + rect.Width;
 }
 
-float winrt::Rect::* OrientationBasedMeasures::MinorStart() const
+float& OrientationBasedMeasures::MinorStart(const winrt::Rect& rect)
 {
-    return m_orientation == ScrollOrientation::Vertical ? &winrt::Rect::X : &winrt::Rect::Y;
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Rect&)rect).X : ((winrt::Rect&)rect).Y;
 }
 
 float OrientationBasedMeasures::MinorEnd(const winrt::Rect& rect) const

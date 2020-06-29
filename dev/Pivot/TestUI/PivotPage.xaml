@@ -13,10 +13,7 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Pivot x:Name="rootPivot" Title="PIVOT TITLE" HeaderFocusVisualPlacement="SelectedItemHeader">
             <Pivot.RightHeader>
-                <CommandBar ClosedDisplayMode="Compact">
-                    <AppBarButton Icon="Back" Label="Previous" />
-                    <AppBarButton Icon="Forward" Label="Next"/>
-                </CommandBar>
+                <TextBlock Text="This is the right header"/>
             </Pivot.RightHeader>
             <PivotItem Header="Pivot Item 1">
                 <TextBlock Text="Content of pivot item 1."/>

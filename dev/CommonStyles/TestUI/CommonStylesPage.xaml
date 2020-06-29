@@ -8,19 +8,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12"
+        HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible"
+        VerticalScrollMode="Disabled" HorizontalAlignment="Stretch">
         <StackPanel>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.Resources>
+            <TextBlock Text="Control samples" Style="{ThemeResource StandardGroupHeader}" HorizontalAlignment="Center"/>
+            <StackPanel x:Name="RootSampleControlsPanel" Orientation="Horizontal" HorizontalAlignment="Center" BorderBrush="Transparent">
+                <StackPanel.Resources>
                     <x:Double x:Key="CompareGridHeight">600</x:Double>
-                </Grid.Resources>
-                <StackPanel>
+                    <Style TargetType="StackPanel" x:Key="CompactPanelStyle">
+                        <Setter Property="Padding" Value="4" />
+                        <Setter Property="Margin" Value="4" />
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush" Value="{ThemeResource SystemChromeGrayColor}" />
+                    </Style>
+                </StackPanel.Resources>
+                
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <TextBlock Text="Compact sizing"/>
                     <Grid Height="{ThemeResource CompareGridHeight}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
@@ -44,8 +50,9 @@
                         <AutoSuggestBox Grid.Row="8" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="AutoSuggestBox" Header="AutoSuggestBox" TextChanged="AutoSuggestBox_TextChanged" />
                     </Grid>
                 </StackPanel>
-                <StackPanel Grid.Column="1">
-                     <Grid Height="{ThemeResource CompareGridHeight}">
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <TextBlock Text="Normal sizing"/>
+                    <Grid Height="{ThemeResource CompareGridHeight}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
@@ -88,7 +95,8 @@
                         <AutoSuggestBox Grid.Row="8" Header="AutoSuggestBox" VerticalAlignment="Top" TextChanged="AutoSuggestBox_TextChanged" />
                     </Grid>
                 </StackPanel>
-                <StackPanel Grid.Column="2">
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <TextBlock Text="Compact sizing"/>
                     <Grid Height="{ThemeResource CompareGridHeight}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="2*" />
@@ -136,7 +144,8 @@
                         <RichEditBox x:Name="RichEditBox" Grid.Row="6" Header="RichEditBox" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                     </Grid>
                 </StackPanel>
-                <StackPanel Grid.Column="3">
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <TextBlock Text="Normal sizing"/>
                     <Grid Height="{ThemeResource CompareGridHeight}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="2*" />
@@ -209,30 +218,52 @@
                         <RichEditBox Grid.Row="6" Header="RichEditBox" VerticalAlignment="Top" />
                     </Grid>
                 </StackPanel>
-            </Grid>
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <!-- If there are styles we need to ensure that are available, they can be placed below this TextBlock -->
+                    <TextBlock Text="Default style availability area" Style="{ThemeResource StandardGroupHeader}"/>
+
+                    <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
+                    <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
+
+                </StackPanel>
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <TextBlock  Text="Miscellaneous testing area" Style="{ThemeResource StandardGroupHeader}"/>
+                    <Button Width="200" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Button.Resources>
+                            <ResourceDictionary>
+                                <SolidColorBrush x:Key="ButtonForeground" Color="Red"></SolidColorBrush>
+                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Teal"></SolidColorBrush>
+                                <SolidColorBrush x:Key="ButtonForegroundPressed" Color="Aqua"></SolidColorBrush>
+                                <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="Green"></SolidColorBrush>
+                            </ResourceDictionary>
+                        </Button.Resources>
+                        <FontIcon Glyph="&#xE781;" />
+                    </Button>
+                </StackPanel>
+            </StackPanel>
             <StackPanel>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBox x:Name="DensityTestResult" AutomationProperties.Name="DensityTestResult" Header="Density Testing" Text="Result" />
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" BorderBrush="Red" BorderThickness="2">
-                        <Button x:Name="SliderDensityTest" AutomationProperties.Name="SliderDensityTest" Content="Slider" Click="SliderDensityTest_Click" />
-                        <Button x:Name="ToggleSwitchDensityTest" AutomationProperties.Name="ToggleSwitchDensityTest" Content="ToggleSwitch" Click="ToggleSwitchDensityTest_Click" />
-                        <Button x:Name="DatePickerDensityTest" AutomationProperties.Name="DatePickerDensityTest" Content="DatePicker" Click="DatePickerDensityTest_Click" />
-                        <Button x:Name="TimePickerDensityTest" AutomationProperties.Name="TimePickerDensityTest" Content="TimePicker" Click="TimePickerDensityTest_Click" />
-                        <Button x:Name="AutoSuggestBoxDensityTest" AutomationProperties.Name="AutoSuggestBoxDensityTest" Content="AutoSuggestBox" Click="AutoSuggestBoxDensityTest_Click" />
-                        <Button x:Name="ListViewItemDensityTest" AutomationProperties.Name="ListViewItemDensityTest" Content="ListViewItem" Click="ListViewItemDensityTest_Click" />
-                        <Button x:Name="TextBoxDensityTest" AutomationProperties.Name="TextBoxDensityTest" Content="TextBoxDensity" Click="TextBoxDensityTest_Click" />
-                        <Button x:Name="PasswordBoxDensityTest" AutomationProperties.Name="PasswordBoxDensityTest" Content="PasswordBoxDensity" Click="PasswordBoxDensityTest_Click" />
-                        <Button x:Name="ComboBoxDensityTest" AutomationProperties.Name="ComboBoxDensityTest" Content="ComboBoxDensity" Click="ComboBoxDensityTest_Click" />
-                        <Button x:Name="AppBarButtonDensityTest" AutomationProperties.Name="AppBarButtonDensityTest" Content="AppBarButtonDensity" Click="AppBarButtonDensityTest_Click" />
-                        <Button x:Name="AppBarToggleButtonDensityTest" AutomationProperties.Name="AppBarToggleButtonDensityTest" Content="AppBarToggleButtonDensity" Click="AppBarToggleButtonDensityTest_Click" />
-                        <Button x:Name="RichEditBoxDensityTest" AutomationProperties.Name="RichEditBoxDensityTest" Content="RichEditBoxDensity" Click="RichEditBoxDensityTest_Click" />
-                    </StackPanel>
-                </Grid>
+                <TextBlock Text="Validating" Style="{ThemeResource StandardGroupHeader}"/>
+                <TextBox x:Name="DensityTestResult" AutomationProperties.Name="DensityTestResult" Text="Result" Header="Test result"/>
+                <TextBlock Text="Control tests"/>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="2">
+                    <Button x:Name="SliderDensityTest" AutomationProperties.Name="SliderDensityTest" Content="Slider" Click="SliderDensityTest_Click" />
+                    <Button x:Name="ToggleSwitchDensityTest" AutomationProperties.Name="ToggleSwitchDensityTest" Content="ToggleSwitch" Click="ToggleSwitchDensityTest_Click" />
+                    <Button x:Name="DatePickerDensityTest" AutomationProperties.Name="DatePickerDensityTest" Content="DatePicker" Click="DatePickerDensityTest_Click" />
+                    <Button x:Name="TimePickerDensityTest" AutomationProperties.Name="TimePickerDensityTest" Content="TimePicker" Click="TimePickerDensityTest_Click" />
+                    <Button x:Name="AutoSuggestBoxDensityTest" AutomationProperties.Name="AutoSuggestBoxDensityTest" Content="AutoSuggestBox" Click="AutoSuggestBoxDensityTest_Click" />
+                    <Button x:Name="ListViewItemDensityTest" AutomationProperties.Name="ListViewItemDensityTest" Content="ListViewItem" Click="ListViewItemDensityTest_Click" />
+                    <Button x:Name="TextBoxDensityTest" AutomationProperties.Name="TextBoxDensityTest" Content="TextBoxDensity" Click="TextBoxDensityTest_Click" />
+                    <Button x:Name="PasswordBoxDensityTest" AutomationProperties.Name="PasswordBoxDensityTest" Content="PasswordBoxDensity" Click="PasswordBoxDensityTest_Click" />
+                    <Button x:Name="ComboBoxDensityTest" AutomationProperties.Name="ComboBoxDensityTest" Content="ComboBoxDensity" Click="ComboBoxDensityTest_Click" />
+                    <Button x:Name="AppBarButtonDensityTest" AutomationProperties.Name="AppBarButtonDensityTest" Content="AppBarButtonDensity" Click="AppBarButtonDensityTest_Click" />
+                    <Button x:Name="AppBarToggleButtonDensityTest" AutomationProperties.Name="AppBarToggleButtonDensityTest" Content="AppBarToggleButtonDensity" Click="AppBarToggleButtonDensityTest_Click" />
+                    <Button x:Name="RichEditBoxDensityTest" AutomationProperties.Name="RichEditBoxDensityTest" Content="RichEditBoxDensity" Click="RichEditBoxDensityTest_Click" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Content="Set blue background" Click="BlueBackground_Click"/>
+                    <Button Content="Set standard background" Click="StandardBackground_Click" Margin="8,0,0,0"/>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </local:TestPage>

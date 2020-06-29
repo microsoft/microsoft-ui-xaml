@@ -277,8 +277,14 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
 {
-    auto virtInfo = TryGetVirtualizationInfo(element);
-    return m_viewManager.GetElementIndex(virtInfo);
+    // Verify that element is actually a child of this ItemsRepeater
+    auto const parent = winrt::VisualTreeHelper::GetParent(element);
+    if (parent == *this)
+    {
+        auto virtInfo = TryGetVirtualizationInfo(element);
+        return m_viewManager.GetElementIndex(virtInfo);
+    }
+    return -1;
 }
 
 winrt::UIElement ItemsRepeater::GetElementFromIndexImpl(int index)
@@ -366,14 +372,17 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 
     if (property == s_ItemsSourceProperty)
     {
-        auto newValue = args.NewValue();
-        auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
-        if (newValue && !newDataSource)
+        if (args.NewValue() != args.OldValue())
         {
-            newDataSource = winrt::ItemsSourceView(newValue);
-        }
+            auto newValue = args.NewValue();
+            auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
+            if (newValue && !newDataSource)
+            {
+                newDataSource = winrt::ItemsSourceView(newValue);
+            }
 
-        OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+            OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+        }
     }
     else if (property == s_ItemTemplateProperty)
     {

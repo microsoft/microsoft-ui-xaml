@@ -48,6 +48,9 @@ public:
     winrt::IInspectable Data() const { return m_data.get(); }
     winrt::IDataTemplateComponent DataTemplateComponent() const { return m_dataTemplateComponent.get(); }
 
+    bool MustClearDataContext() const { return m_mustClearDataContext; }
+    void MustClearDataContext(bool mustClearDataContext) { m_mustClearDataContext = mustClearDataContext; }
+
     static constexpr int PhaseNotSpecified = std::numeric_limits<int>::min();
     static constexpr int PhaseReachedEnd = -1;
 
@@ -90,6 +93,7 @@ private:
     int m_phase{ PhaseNotSpecified };
     bool m_keepAlive{ false };
     bool m_autoRecycleCandidate{ false };
+    bool m_mustClearDataContext{ false };
 
     weak_ref<winrt::IInspectable> m_data;
     weak_ref<winrt::IDataTemplateComponent> m_dataTemplateComponent;

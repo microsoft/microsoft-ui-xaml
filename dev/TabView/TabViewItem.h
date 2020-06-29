@@ -39,6 +39,8 @@ public:
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
+    void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
+    void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
 
     int RepeatedIndex();
     void RepeatedIndex(int index);
@@ -48,10 +50,13 @@ public:
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
+    winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
+    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
 
     void UpdateCloseButton();
     void RequestClose();
     void OnIconSourceChanged();
+    void UpdateWidthModeVisualState();
 
     bool m_firstTimeSettingToolTip{ true };
 

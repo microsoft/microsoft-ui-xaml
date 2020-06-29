@@ -26,6 +26,7 @@ TwoPaneView::TwoPaneView()
     SetDefaultStyleKey(this);
 
     SizeChanged({ this, &TwoPaneView::OnSizeChanged });
+    m_windowSizeChangedRevoker = winrt::Window::Current().SizeChanged(winrt::auto_revoke, { this, &TwoPaneView::OnWindowSizeChanged });
 
     EnsureProperties();
 }
@@ -99,6 +100,11 @@ void TwoPaneView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const 
     }
 }
 
+void TwoPaneView::OnWindowSizeChanged(const winrt::IInspectable& sender, const winrt::WindowSizeChangedEventArgs& args)
+{
+    UpdateMode();
+}
+
 void TwoPaneView::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdateMode();
@@ -118,7 +124,7 @@ void TwoPaneView::UpdateMode()
     DisplayRegionHelperInfo info = DisplayRegionHelper::GetRegionInfo();
     winrt::Rect rcControl = GetControlRect();
     bool isInMultipleRegions = IsInMultipleRegions(info, rcControl);
-    
+
     if (isInMultipleRegions)
     {
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
@@ -253,7 +259,6 @@ bool TwoPaneView::IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect 
     {
         winrt::Rect rc1 = info.Regions[0];
         winrt::Rect rc2 = info.Regions[1];
-        winrt::Rect rcWindow = DisplayRegionHelper::WindowRect();
 
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
         {

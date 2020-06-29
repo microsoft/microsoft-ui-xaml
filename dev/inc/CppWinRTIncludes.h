@@ -3,6 +3,15 @@
 
 #pragma once
 
+// After updating to VS 16.4.3 the updated compiler contains a bug that is hit by C++/WinRT resulting in crashes
+// at runtime.
+// See https://github.com/microsoft/cppwinrt/issues/486
+// The workaround from the cppwinrt team is to define '__INTELLISENSE__', which allows us to avoid the compiler issue.
+// Once the underlying issue has been resolved, we should remove this workaround.
+// Tracked by: #1877 - Remove "#define __INTELLISENSE__" from CppWinRTIncludes.h once underlying issue with cppwinrt/msvc has been resolved 
+// Also remove the corresponding #undef at the bottom of this file.
+#define __INTELLISENSE__
+
 #include <winrt\base.h>
 #include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
@@ -14,6 +23,7 @@
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
 #include <winrt\Windows.Devices.Input.h>
+#include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
 #include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Graphics.Display.h>
@@ -23,6 +33,7 @@
 #include <winrt\Windows.System.Profile.h>
 #include <winrt\Windows.System.h>
 #include <winrt\Windows.System.Threading.h>
+#include <winrt\Windows.System.UserProfile.h>
 #include <winrt\Windows.UI.h>
 #include <winrt\Windows.UI.Composition.h>
 #include <winrt\Windows.UI.Composition.Effects.h>
@@ -84,6 +95,7 @@ namespace winrt
     using namespace ::winrt::Windows::Foundation::Collections;
     using namespace ::winrt::Windows::Foundation::Metadata;
     using namespace ::winrt::Windows::Foundation::Numerics;
+    using namespace ::winrt::Windows::Globalization;
     using namespace ::winrt::Windows::Globalization::NumberFormatting;
     using namespace ::winrt::Windows::Graphics::Display;
     using namespace ::winrt::Windows::Graphics::Imaging;
@@ -92,6 +104,7 @@ namespace winrt
     using namespace ::winrt::Windows::System;
     using namespace ::winrt::Windows::System::Power;
     using namespace ::winrt::Windows::System::Threading;
+    using namespace ::winrt::Windows::System::UserProfile;
     using namespace ::winrt::Windows::UI;
     using namespace ::winrt::Windows::UI::Composition;
     using namespace ::winrt::Windows::UI::Composition::Effects;
@@ -276,11 +289,12 @@ namespace winrt
     // using namespace ::winrt::Windows::UI::Xaml::Media;
     using ArcSegment = winrt::Windows::UI::Xaml::Media::ArcSegment;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
-    using Brush = winrt::Windows::UI::Xaml::Media::Brush;
+    using BrushMappingMode = winrt::Windows::UI::Xaml::Media::BrushMappingMode;
     using ElementCompositeMode = winrt::Windows::UI::Xaml::Media::ElementCompositeMode;
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
     using Geometry = winrt::Windows::UI::Xaml::Media::Geometry;
+    using GradientSpreadMethod = winrt::Windows::UI::Xaml::Media::GradientSpreadMethod;
     using GradientStop = ::winrt::Windows::UI::Xaml::Media::GradientStop;
     using ImageBrush = ::winrt::Windows::UI::Xaml::Media::ImageBrush;
     using ImageSource = ::winrt::Windows::UI::Xaml::Media::ImageSource;
@@ -299,7 +313,7 @@ namespace winrt
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;
-    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;
+    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;    
 
     // using namespace ::winrt::Windows::UI::Xaml::Media.Animation;
     using IStoryboard = ::winrt::Windows::UI::Xaml::Media::Animation::IStoryboard;
@@ -375,3 +389,5 @@ namespace winrt
     using IElementFactory = winrt::IInspectable;
 #endif
 }
+
+#undef __INTELLISENSE__

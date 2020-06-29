@@ -5,10 +5,22 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
     <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="ProgressRingForegroundThemeBrush" ResourceKey=" SystemControlHighlightAccentBrush" />
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="ProgressRingForegroundThemeBrush" ResourceKey="SystemControlHighlightAccentBrush" />
+            <StaticResource x:Key="ProgressRingBackgroundThemeBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <StaticResource x:Key="ProgressRingForegroundThemeBrush" ResourceKey="SystemControlHighlightAccentBrush" />
+            <StaticResource x:Key="ProgressRingBackgroundThemeBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="ProgressRingForegroundThemeBrush" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="ProgressRingBackgroundThemeBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <x:Double x:Key="ProgressRingStrokeThickness">4</x:Double>
+    
 </ResourceDictionary>

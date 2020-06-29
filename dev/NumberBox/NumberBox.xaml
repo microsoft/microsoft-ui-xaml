@@ -14,6 +14,7 @@
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
@@ -22,13 +23,13 @@
                             <VisualStateGroup x:Name="SpinButtonStates">
                                 <VisualState x:Name="SpinButtonsCollapsed" />
 
-                                <VisualState x:Name="SpinButtonsVisible">
-                                    <VisualState.Setters>
-                                        <Setter Target="DownSpinButton.Visibility" Value="Visible" />
-                                        <Setter Target="UpSpinButton.Visibility" Value="Visible" />
-                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
-                                    </VisualState.Setters>
-                                </VisualState>
+                                    <VisualState x:Name="SpinButtonsVisible">
+                                        <VisualState.Setters>
+                                            <Setter Target="DownSpinButton.Visibility" Value="Visible" />
+                                            <Setter Target="UpSpinButton.Visibility" Value="Visible" />
+                                            <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
 
                                 <VisualState x:Name="SpinButtonsPopup">
                                     <VisualState.Setters>
@@ -79,24 +80,42 @@
                             </ResourceDictionary>
                         </Grid.Resources>
 
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                            Grid.ColumnSpan="3"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            FontWeight="Normal"
+                            Foreground="{ThemeResource TextControlHeaderForeground}"
+                            Margin="{ThemeResource TextBoxTopHeaderMargin}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Top"
+                            Visibility="Collapsed"
+                            x:DeferLoadStrategy="Lazy" />
+
                         <TextBox x:Name="InputBox"
-                            Grid.Column="0"
-                            Header="{TemplateBinding Header}"
-                            HeaderTemplate="{TemplateBinding HeaderTemplate}"
+                            Grid.Row="1"
+                            InputScope="Number"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
                             TextReadingOrder="{TemplateBinding TextReadingOrder}"
                             PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
-                            contract7Present:Description="{TemplateBinding Description}"/>
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
 
                         <Popup x:Name="UpDownPopup"
+                            Grid.Row="1"
                             Grid.Column="1"
                             VerticalOffset="{ThemeResource NumberBoxPopupVerticalOffset}"
                             HorizontalOffset="{ThemeResource NumberBoxPopupHorizonalOffset}"
@@ -116,7 +135,6 @@
 
                                 <RepeatButton x:Name="PopupUpSpinButton"
                                     Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
-                                    Grid.Row="0"
                                     Content="&#xE70E;"/>
 
                                 <RepeatButton x:Name="PopupDownSpinButton"
@@ -127,6 +145,7 @@
                         </Popup>
 
                         <RepeatButton x:Name="UpSpinButton"
+                            Grid.Row="1"
                             Grid.Column="1"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
@@ -135,12 +154,20 @@
                             contract7Present:CornerRadius="0"/>
 
                         <RepeatButton x:Name="DownSpinButton"
+                            Grid.Row="1"
                             Grid.Column="2"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
                             Content="&#xE70D;"
                             Style="{StaticResource NumberBoxSpinButtonStyle}"
-                            contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+
+                        <ContentPresenter x:Name="DescriptionPresenter"
+                            Grid.Row="2"
+                            Grid.ColumnSpan="3"
+                            Content="{TemplateBinding Description}"
+                            Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -151,8 +178,7 @@
         <Style.Setters>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="MinWidth" Value="34"/>
-            <Setter Property="Height" Value="{ThemeResource TextControlThemeMinHeight}"/>
-            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
             <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxSpinButtonBorderThickness}"/>
@@ -167,7 +193,7 @@
             <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxPopupSpinButtonBorderThickness}"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>
     </Style>

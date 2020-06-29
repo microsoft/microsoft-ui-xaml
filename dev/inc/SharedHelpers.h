@@ -10,6 +10,7 @@ class SharedHelpers
 public:
     static bool IsAnimationsEnabled();
     static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
+    static winrt::IInspectable FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue = nullptr);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
     static bool IsInDesignModeV2();
@@ -41,8 +42,6 @@ public:
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
-    static bool IsApplicationViewGetDisplayRegionsAvailable();
-
     static bool IsControlCornerRadiusAvailable();
 
     static bool IsTranslationFacadeAvailable(const winrt::UIElement& element);
@@ -56,6 +55,8 @@ public:
     static bool IsThemeShadowAvailable();
 
     static bool IsIsLoadedAvailable();
+
+    static bool IsCompositionRadialGradientBrushAvailable();
 
     // Actual OS version checks
     static bool IsAPIContractV9Available(); // 19H2
@@ -307,6 +308,8 @@ public:
                 winrt::box_value(newValue));
         }
     }
+
+    static winrt::float4 RgbaColor(winrt::Color const& color);
 
 private:
     SharedHelpers() = default;

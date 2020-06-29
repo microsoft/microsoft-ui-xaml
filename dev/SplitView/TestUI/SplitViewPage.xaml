@@ -11,9 +11,12 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <SplitView IsPaneOpen="True"
-           DisplayMode="Inline"
-           OpenPaneLength="296">
+        <SplitView x:Name="splitView"
+                DisplayMode="Inline"
+                PaneClosed="Pane_Closed"
+                PaneOpened="Pane_Opened"
+                PanePlacement="Left"
+                OpenPaneLength="296">
             <SplitView.Pane>
                 <TextBlock Text="Pane"
                    FontSize="24"
@@ -22,10 +25,26 @@
             </SplitView.Pane>
 
             <Grid>
-                <TextBlock Text="Content"
-                   FontSize="24"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"/>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Content" Margin="0,0,0,8" FontSize="36"/>
+                    <StackPanel Style="{ThemeResource StandardGroupingStackPanel}">
+                        <TextBlock Text="Options" Margin="0,0,0,4" Style="{ThemeResource StandardGroupHeader}"/>
+                        <CheckBox x:Name="paneOpenCheckbox" Content="Pane open" IsChecked="True"
+                                Unchecked="PaneOpenCheckbox_CheckChanged"
+                                Checked="PaneOpenCheckbox_CheckChanged"/>
+                        <ToggleSwitch OffContent="Left" OnContent="Right" Header="Placement" Toggled="PanePlacement_Toggled"
+                            Margin="0,12,0,0" MinWidth="120" />
+                        <ComboBox x:Name="DisplayModeCombobox" SelectionChanged="DisplayModeCombobox_SelectionChanged"
+                            Width="196" SelectedIndex="0" Margin="0,4,0,0" VerticalAlignment="Center" Header="DisplayMode">
+                            <ComboBoxItem>Inline</ComboBoxItem>
+                            <ComboBoxItem>CompactInline</ComboBoxItem>
+                            <ComboBoxItem>Overlay</ComboBoxItem>
+                            <ComboBoxItem>CompactOverlay</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+
+                </StackPanel>
+                
             </Grid>
         </SplitView>
     </Grid>

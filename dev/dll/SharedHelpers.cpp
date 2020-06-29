@@ -143,14 +143,6 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
-{
-    static bool s_isApplicationViewGetDisplayRegionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
-    return s_isApplicationViewGetDisplayRegionsAvailable;
-}
-
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =
@@ -203,6 +195,12 @@ bool SharedHelpers::IsIsLoadedAvailable()
     static bool s_isAvailable =
         IsRS5OrHigher() ||
         winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.FrameworkElement", L"IsLoaded");
+    return s_isAvailable;
+}
+
+bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
+{
+    static bool s_isAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
     return s_isAvailable;
 }
 
@@ -441,6 +439,11 @@ winrt::IInspectable SharedHelpers::FindResource(const std::wstring_view& resourc
 {
     auto boxedResource = box_value(resource);
     return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : defaultValue;
+}
+
+winrt::IInspectable SharedHelpers::FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue)
+{
+    return SharedHelpers::FindResource(resource, winrt::Application::Current().Resources(), defaultValue);
 }
 
 // When checkVisibility is True, IsAncestor additionally checks if any UIElement from the 'child'
@@ -715,4 +718,10 @@ winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspe
     }
     
     return returnHString;
+}
+
+/* static */
+winrt::float4 SharedHelpers::RgbaColor(const winrt::Color& color)
+{
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }

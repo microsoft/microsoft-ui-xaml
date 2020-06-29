@@ -398,7 +398,6 @@
         </Setter>
     </Style>
 
-
     <Style TargetType="local:TabViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -410,6 +409,12 @@
                         Padding="{TemplateBinding Padding}"
                         Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
 
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="LeftColumn" Width="0"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition x:Name="RightColumn" Width="0"/>
+                        </Grid.ColumnDefinitions>
+                        
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
                         </Grid.RenderTransform>
@@ -445,6 +450,9 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
+                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -455,6 +463,9 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPointerOver}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
+                                        <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -465,6 +476,9 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPressed}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
+                                        <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -602,14 +616,59 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="TabWidthModes">
+                                <VisualState x:Name="StandardWidth"/>
+
+                                <VisualState x:Name="Compact">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconBox.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="ContentPresenter.Visibility" Value="Collapsed"/>
+                                        <Setter Target="IconColumn.Width" Value="{ThemeResource TabViewItemHeaderIconSize}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="CloseIconStates">
+                                <VisualState x:Name="CloseButtonVisible"/>
+                                <VisualState x:Name="CloseButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
+                        <Path 
+                            x:Name="LeftRadiusRender"
+                            x:Load="False"
+                            Grid.Column="0"
+                            Visibility="Collapsed"
+                            VerticalAlignment="Bottom"
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomLeft}"
+                            Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"
+                            Stretch="Uniform"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" /> 
+                        <Path
+                            x:Name="RightRadiusRender"
+                            x:Load="False"
+                            Grid.Column="2"
+                            Visibility="Collapsed"
+                            VerticalAlignment="Bottom"
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomRight}"
+                            Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"
+                            Stretch="Uniform"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
 
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"
+                            Grid.Column="1"
                             BorderBrush="{ThemeResource TabViewItemSeparator}"
                             BorderThickness="1"
-                            Margin="0,6,0,6"/>
+                            Margin="{ThemeResource TabViewItemSeparatorMargin}"/>
 
                         <Grid x:Name="TabContainer"
                             Grid.Column="1"
@@ -622,7 +681,7 @@
                             FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
@@ -647,6 +706,7 @@
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 FontWeight="{TemplateBinding FontWeight}"
                                 FontSize="{ThemeResource TabViewItemHeaderFontSize}"
+                                Foreground="{ThemeResource TabViewItemHeaderForeground}"
                                 OpticalMarginAlignment="TrimSideBearings"
                                 HighContrastAdjustment="None" />
 

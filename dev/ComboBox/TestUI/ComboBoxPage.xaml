@@ -11,6 +11,7 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <TextBlock Text="Sample ComboBoxes" Style="{ThemeResource StandardGroupHeader}"/>
         <TextBlock Text="ComboBox:"/>
         <ComboBox SelectedIndex="0">
             <ComboBoxItem Content="Item 1"/>
@@ -18,7 +19,7 @@
             <ComboBoxItem Content="Item 3"/>
         </ComboBox>
 
-        <contract7Present:TextBlock Text="ComboBox IsEditable==true:" Margin="0,20,0,0"/>
+        <contract7Present:TextBlock Text="ComboBox IsEditable=true:" Margin="0,20,0,0"/>
         <contract7Present:ComboBox SelectedIndex="0" IsEditable="True">
             <ComboBoxItem Content="Item 1"/>
             <ComboBoxItem Content="Item 2"/>

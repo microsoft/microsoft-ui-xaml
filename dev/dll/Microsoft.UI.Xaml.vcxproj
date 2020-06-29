@@ -10,8 +10,6 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.PGO.props" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\Build\PGO\mux.PGO.Instrument.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -36,7 +34,7 @@
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
     <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
     <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
-    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that 
+    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
          AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
          Use -ignore_velocity to have the feature attributes be ignored by the tool.
          -->
@@ -60,6 +58,8 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
+  <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="$(MSBuildProjectDirectory)\..\..\tools\MUXPGODatabase\PGO.version.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -101,8 +101,8 @@
     <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
-    <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true' Or $(FeatureScrollerEnabled) == 'productOnly'" />
-    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true' Or $(FeatureScrollViewerEnabled) == 'productOnly'" />
+    <Import Project="..\ScrollPresenter\ScrollPresenter.vcxitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true' Or $(FeatureScrollPresenterEnabled) == 'productOnly'" />
+    <Import Project="..\ScrollView\ScrollView.vcxitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true' Or $(FeatureScrollViewEnabled) == 'productOnly'" />
     <Import Project="..\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true' Or $(FeatureLightsEnabled) == 'productOnly'" />
     <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true' Or $(FeatureRepeaterEnabled) == 'productOnly'" />
     <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true' Or $(FeatureSwipeControlEnabled) == 'productOnly'" />
@@ -137,6 +137,7 @@
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'"/>
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
+    <Import Project="..\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -398,7 +399,7 @@
     </T4ParameterValues>
   </ItemGroup>
   <ItemGroup>
-    <!-- This natvis support is not ready for prime time 
+    <!-- This natvis support is not ready for prime time
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Platform\winrt\cppwinrt.natvis">
     </Natvis>
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
@@ -414,7 +415,7 @@
   <!-- We make it so that devs just include the en-us version of their string resources in the project. This is because
        we only want people editing the en-us version (it's the only file that's input to the localization process) and
        because if we use ** in the item target then the project shows 60+ 'resources.resw' files and it is completely unusable.
-       
+
        To work around this we take all the PRIResource items and find/replace 'en-us' to '**' -->
   <Target Name="ExpandEnUSPRIResourceToWildcards" BeforeTargets="_PrepareForBuild">
     <Message Text="Input PRIResource = @(PRIResource)" />
@@ -432,7 +433,7 @@
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />
   </Target>
-  <!-- Override the target which appends the XamlCompiler generated files to the ClCompile input list. 
+  <!-- Override the target which appends the XamlCompiler generated files to the ClCompile input list.
        Doing this makes it so that we get XBF generation but ignore the XamlCompiler outputs (which are
        in C++/CX format and do us no good. We are currently hand-authoring the necessary parts of our
        IXamlMetadataProvider implementation. -->
@@ -443,7 +444,7 @@
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191217.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\..\packages\MUXPGODatabase.0.0.2\build\MUXPGODatabase.targets" Condition="Exists('..\..\packages\MUXPGODatabase.0.0.2\build\MUXPGODatabase.targets')" />
+    <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -493,9 +494,9 @@
     <Message Text="Generating generic resources XAML file " />
     <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" N19H1Pages="@(NineteenH1StylePage)" PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.write.1u.tlog" />
     <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
-      PropertyGroup values are always evaluated even when their enclosing target is skipped,	
-      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
       to only set a property if the target actually runs. -->
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />
@@ -504,9 +505,9 @@
   <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
     <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)" RS3Pages="@(RS3ThemeResourcePage)" RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)" N19H1Pages="@(NineteenH1ThemeResourcePage)" PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.write.1u.tlog" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
-      PropertyGroup values are always evaluated even when their enclosing target is skipped,	
-      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
       to only set a property if the target actually runs. -->
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
@@ -515,9 +516,9 @@
   <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)" Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
     <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)" RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)" N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" PostfixForGeneratedFile="compact_themeresources" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.write.1u.tlog" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
-      PropertyGroup values are always evaluated even when their enclosing target is skipped,	
-      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
       to only set a property if the target actually runs. -->
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
@@ -631,7 +632,7 @@
     </ItemGroup>
   </Target>
   <!-- Need to invoke MDMerge again to produce the "public" metadata using MDMerge's -createPublicMetadata and -transformExperimental flags -->
-  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
+  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(IntDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
       <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>
