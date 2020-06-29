@@ -314,14 +314,8 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
             break;
 
         case winrt::NotifyCollectionChangedAction::Move:
-            auto oldIndex = args.OldStartingIndex();
-            auto newIndex = args.NewStartingIndex();
-            OnItemsRemoved(oldIndex, 1);
-            auto insertionIndex = newIndex;
-            if (newIndex > oldIndex) {
-                insertionIndex -= 1;
-            }
-            OnItemsAdded(insertionIndex, 1);
+            OnItemsRemoved(args.OldStartingIndex(), 1);
+            OnItemsAdded(args.NewStartingIndex(), 1);
             break;
         }
     }
