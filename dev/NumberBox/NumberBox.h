@@ -53,7 +53,6 @@ public:
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnLargeChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsWrapEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
