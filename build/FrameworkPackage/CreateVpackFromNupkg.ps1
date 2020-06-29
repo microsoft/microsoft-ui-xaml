@@ -86,6 +86,7 @@ $inputWinmdDir = Join-Path $nugetUnpacked "lib\uap10.0\"
 
 # We need to re-merge Microsoft.UI.Xaml.winmd against the razzle metadata instead of against the metadata from the public sdk:
 $mdMergeArgs = "-v -metadata_dir $osBuildMetadataDir -o $outputMetaDataDir -i $inputWinmdDir -partial -n:3 -createPublicMetadata -transformExperimental:transform"
+Write-Host "mdmerge $mdMergeArgs"
 Invoke-Expression "mdmerge $mdMergeArgs"
 if($LASTEXITCODE)
 {
@@ -149,4 +150,4 @@ Write-Host "    $outputPath"
 Write-Host "" 
 Write-Host "Push this vpack with the following command:"
 Write-Host "    vpack push /Name:Microsoft.UI.Xaml /SourceDirectory:$outputPath /VersionIncrementType:None /Major:$verMajor /Minor:$verMinor /Patch:$verPatch $verPrereleaseSwitch"
-Write-Host "Then update %SDXROOT%/build/Config/OSDependencies.Manifest in the OS repo to consume this new version."
+Write-Host "Then update %SDXROOT%\build\onecoreuap\internal\config\OSDependencies.Manifest in the OS repo to consume this new version."
