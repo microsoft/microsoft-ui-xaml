@@ -14,7 +14,7 @@ using System.Windows.Input;
 using Windows.Foundation;
 using Windows.UI.Composition;
 
-public class InfoBar
+namespace MUXControlsTestApp
 {
     public enum InfoBarCloseReason
     {

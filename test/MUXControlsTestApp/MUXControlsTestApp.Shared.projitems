@@ -162,6 +162,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\InfoBarTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+        <DependentUpon>InfoBarTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -188,6 +191,7 @@
   </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\InfoBar.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
     <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
@@ -301,6 +305,10 @@
     <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\InfoBarTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+        <SubType>Designer</SubType>
+        <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>

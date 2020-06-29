@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Shared;
-using InfoBar; 
+using Windows.UI.Popups;
 
 
 
