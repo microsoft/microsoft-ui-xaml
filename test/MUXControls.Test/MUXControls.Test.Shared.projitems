@@ -148,7 +148,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Common\InputHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\KeyboardHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollChangedEventWaiter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollerUIObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollPresenterUIObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\ValueChangedEventWaiter.cs" />

@@ -236,8 +236,8 @@
     <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
     <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
-    <FeatureScrollerEnabled>true</FeatureScrollerEnabled>
-    <FeatureScrollViewerEnabled>true</FeatureScrollViewerEnabled>
+    <FeatureScrollPresenterEnabled>true</FeatureScrollPresenterEnabled>
+    <FeatureScrollViewEnabled>true</FeatureScrollViewEnabled>
     <FeatureSliderEnabled>true</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
@@ -257,7 +257,7 @@
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
+    <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
     <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>

@@ -110,7 +110,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
 #endif
 
-#ifdef SCROLLER_INCLUDED
+#ifdef SCROLLPRESENTER_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
@@ -133,15 +133,15 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollByRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollControllerScrollFromRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController, struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Private::Controls::ScrollerTestHooksAnchorEvaluatedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Private::Controls::ScrollerTestHooksInteractionSourcesChangedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ScrollerAnchorRequestedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ScrollerBringingIntoViewEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ScrollAnimationStartingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ZoomAnimationStartingEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ScrollCompletedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ZoomCompletedEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksAnchorEvaluatedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Private::Controls::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingAnchorRequestedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingBringingIntoViewEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollAnimationStartingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingZoomAnimationStartingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Microsoft::UI::Xaml::Controls::ScrollingZoomCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollPresenter, struct winrt::Windows::Foundation::IInspectable>>();
 #endif
 
 #ifdef SWIPECONTROL_INCLUDED
@@ -184,7 +184,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizer, struct winrt::Microsoft::UI::Xaml::Controls::RefreshRequestedEventArgs>>();
 #endif
 
-#ifdef SCROLLVIEWER_INCLUDED
+#ifdef SCROLLVIEW_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ChainingMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::InputKind>>();

@@ -222,6 +222,8 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Reveal.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollPresenter.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollViewer.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Slider.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\SplitButton.png" />

@@ -29,6 +29,8 @@ public:
 
     void UpdateCompactPaneLength(double compactPaneLength,bool shouldUpdate);
 
+    void UpdateClosedCompactVisualState(bool isTopLevelItem, bool isClosedCompact);
+
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();

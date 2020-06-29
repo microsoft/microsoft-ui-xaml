@@ -248,11 +248,14 @@
     <Thickness x:Key="NavigationViewItemSeparatorMargin">16,10</Thickness>
     <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">16,10</Thickness>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">10,0</Thickness>
-    <Thickness x:Key="NavigationViewItemContentPresenterMargin">0,0,16,0</Thickness>
+    <Thickness x:Key="NavigationViewItemContentPresenterMargin">0,0,20,0</Thickness>
+    <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,16,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,0,16,0</Thickness>
-    <Thickness x:Key="NavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
+    <Thickness x:Key="NavigationViewItemExpandChevronMargin">-20,0,6,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
-    <Thickness x:Key="TopNavigationViewItemOnOverflowContentPresenterMargin">12,0,16,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowContentPresenterMargin">12,0,20,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowNoIconContentPresenterMargin">16,0,20,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,6,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
     
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
@@ -626,6 +629,15 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneAndTopLevelItemStates">
+                                <VisualState x:Name="NotClosedCompactAndTopLevelItem" />
+                                <VisualState x:Name="ClosedCompactAndTopLevelItem">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewCompactItemContentPresenterMargin}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Border
@@ -782,6 +794,14 @@
                                     <VisualState.Setters>
                                         <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
                                         <Setter Target="ExpandCollapseChevronRotateTransform.Angle" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="PaneAndTopLevelItemStates">
+                                <VisualState x:Name="NotClosedCompactAndTopLevelItem" />
+                                <VisualState x:Name="ClosedCompactAndTopLevelItem">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource NavigationViewCompactItemContentPresenterMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1408,7 +1428,7 @@
                                 <VisualState x:Name="ContentOnly">
                                     <VisualState.Setters>
                                         <Setter Target="IconBox.Visibility" Value="Collapsed" />
-                                        <Setter Target="ContentPresenter.Margin" Value="16,0" />
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource TopNavigationViewItemOnOverflowNoIconContentPresenterMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1482,6 +1502,7 @@
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
+                                    Margin="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronMargin}"
                                     Padding="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronPadding}"
                                     Background="Transparent">
                                     <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
