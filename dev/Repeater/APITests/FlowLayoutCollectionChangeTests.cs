@@ -351,7 +351,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 realized = VerifyRealizedRange(repeater, dataSource);
                 Verify.AreEqual(4, realized);
 
-                Log.Comment("Replace in realized range.");
+                Log.Comment("Move in realized range.");
                 elementsPrepared = 0;
                 elementsCleared = 0;
                 elementsIndexChanged = 0;
@@ -369,7 +369,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 realized = VerifyRealizedRange(repeater, dataSource);
                 Verify.AreEqual(4, realized);
 
-                Log.Comment("Replace after realized range");
+                Log.Comment("Move after realized range");
                 dataSource.Move(oldIndex: 8, newIndex: 9, reset: false);
                 repeater.UpdateLayout();
 
