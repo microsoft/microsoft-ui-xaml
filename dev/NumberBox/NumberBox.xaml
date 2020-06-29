@@ -111,6 +111,7 @@
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
                             TextReadingOrder="{TemplateBinding TextReadingOrder}"
+                            TextAlignment="{TemplateBinding TextAlignment}"
                             PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
 

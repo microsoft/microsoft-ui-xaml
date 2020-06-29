@@ -61,6 +61,8 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.Controls.Primitives.FlyoutBase SelectionFlyout;
     Windows.UI.Xaml.Media.SolidColorBrush SelectionHighlightColor;
     Windows.UI.Xaml.TextReadingOrder TextReadingOrder;
+    [MUX_DEFAULT_VALUE("winrt::TextAlignment::Left")]
+    Windows.UI.Xaml.TextAlignment TextAlignment;
     Boolean PreventKeyboardDisplayOnProgrammaticFocus;
     Object Description;
 
@@ -99,6 +101,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionHighlightColorProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextReadingOrderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TextAlignmentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PreventKeyboardDisplayOnProgrammaticFocusProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
 

@@ -37,6 +37,8 @@
 
             <CheckBox x:Name="WrapCheckBox" AutomationProperties.Name="WrapCheckBox" IsChecked="False" Content="Wrap Enabled"/>
 
+            <CheckBox x:Name="TextAlignmentCheckBox" AutomationProperties.Name="TextAlignmentCheckBox" IsChecked="False" Content="Align Right" Checked="TextAlignmentCheckBox_CheckChanged" Unchecked="TextAlignmentCheckBox_CheckChanged"/>
+
             <!-- Set Text instead of Value to verify that it works -->
             <controls:NumberBox x:Name="SmallChangeNumberBox" AutomationProperties.Name="SmallChangeNumberBox" Text="1" Header="SmallChange"/>
             <controls:NumberBox x:Name="LargeChangeNumberBox" AutomationProperties.Name="LargeChangeNumberBox" Text="10" Header="LargeChange"/>

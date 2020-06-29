@@ -61,6 +61,11 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void TextAlignmentCheckBox_CheckChanged(object sender, RoutedEventArgs e)
+        {
+            TestNumberBox.TextAlignment = (bool)TextAlignmentCheckBox.IsChecked ? TextAlignment.Right : TextAlignment.Left;
+        }
+
         private void MinCheckBox_CheckChanged(object sender, RoutedEventArgs e)
         {
             MinNumberBox.IsEnabled = (bool)MinCheckBox.IsChecked;

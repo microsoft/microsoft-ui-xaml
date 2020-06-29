@@ -29,6 +29,7 @@ GlobalDependencyProperty NumberBoxProperties::s_SelectionHighlightColorProperty{
 GlobalDependencyProperty NumberBoxProperties::s_SmallChangeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_TextAlignmentProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextReadingOrderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValidationModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
@@ -217,6 +218,17 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnTextPropertyChanged));
     }
+    if (!s_TextAlignmentProperty)
+    {
+        s_TextAlignmentProperty =
+            InitializeDependencyProperty(
+                L"TextAlignment",
+                winrt::name_of<winrt::TextAlignment>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::TextAlignment>::BoxValueIfNecessary(winrt::TextAlignment::Left),
+                nullptr);
+    }
     if (!s_TextReadingOrderProperty)
     {
         s_TextReadingOrderProperty =
@@ -270,6 +282,7 @@ void NumberBoxProperties::ClearProperties()
     s_SmallChangeProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
     s_TextProperty = nullptr;
+    s_TextAlignmentProperty = nullptr;
     s_TextReadingOrderProperty = nullptr;
     s_ValidationModeProperty = nullptr;
     s_ValueProperty = nullptr;
@@ -533,6 +546,16 @@ void NumberBoxProperties::Text(winrt::hstring const& value)
 winrt::hstring NumberBoxProperties::Text()
 {
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_TextProperty));
+}
+
+void NumberBoxProperties::TextAlignment(winrt::TextAlignment const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_TextAlignmentProperty, ValueHelper<winrt::TextAlignment>::BoxValueIfNecessary(value));
+}
+
+winrt::TextAlignment NumberBoxProperties::TextAlignment()
+{
+    return ValueHelper<winrt::TextAlignment>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_TextAlignmentProperty));
 }
 
 void NumberBoxProperties::TextReadingOrder(winrt::TextReadingOrder const& value)
