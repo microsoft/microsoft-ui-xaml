@@ -35,6 +35,151 @@
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="Padding" Value="8"/>
             </Style>
+
+            <Style TargetType="local:InfoBar" >
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="local:InfoBar">
+                            <Border
+                                x:Name="Container"
+                                Height="70"
+                                Width="1000"
+                                VerticalAlignment="Top"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="ButtonStates">
+                                        <VisualState x:Name="NoButtonsVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+                                                <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="CloseButtonVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                                <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="ActionButtonVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="ActionButton.Visibility" Value="Visible"/>
+                                                <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="BothButtonsVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                                <Setter Target="ActionButton.Visibility" Value="Visible"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="CloseButtonLocations">
+                                        <VisualState x:Name="DefaultCloseButton">
+                                            <VisualState.Setters>
+                                                <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="NoDefaultCloseButton">
+                                            <VisualState.Setters>
+                                                <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="SeverityLevels">
+                                        <VisualState x:Name="Critical">
+                                            <VisualState.Setters>
+                                                <Setter Target="MyBrush.Color" Value="#D13438"/>
+                                                <Setter Target="MyIcon.IconSource">
+                                                    <Setter.Value>
+                                                        <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xEA39;"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Warning">
+                                            <VisualState.Setters>
+                                                <Setter Target="MyBrush.Color" Value="#FF8C00"/>
+                                                <Setter Target="MyIcon.IconSource">
+                                                    <Setter.Value>
+                                                        <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Informational">
+                                            <VisualState.Setters>
+                                                <Setter Target="MyBrush.Color" Value="#0078D7"/>
+                                                <Setter Target="MyIcon.IconSource">
+                                                    <Setter.Value>
+                                                        <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Success">
+                                            <VisualState.Setters>
+                                                <Setter Target="MyBrush.Color" Value="#107C10"/>
+                                                <Setter Target="MyIcon.IconSource">
+                                                    <Setter.Value>
+                                                        <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xF13E;"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Default">
+                                            <VisualState.Setters>
+                                                <Setter Target="MyBrush.Color" Value="#69797E"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="None">
+                                            <VisualState.Setters>
+                                                <Setter Target="MyBrush.Color" Value="Transparent"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+
+                                <Grid x:Name="ContentRootGrid" >
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="7*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Rectangle x:Name="MyStatusColor"  Height="70" Width="50" Grid.Column="0" HorizontalAlignment="Left">
+                                        <Rectangle.Fill>
+                                            <SolidColorBrush x:Name="MyBrush" Color="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.StatusColor)}"/>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+
+                                    <IconSourceElement x:Name="MyIcon" IconSource="{TemplateBinding IconSource}" Grid.Column="1" HorizontalAlignment="Right" />
+
+                                    <TextBlock x:Name="MyTitle" Text="{TemplateBinding Title}" FontWeight="SemiBold" Grid.Column="2" TextWrapping ="WrapWholeWords" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                    <ScrollViewer Grid.Column="3" VerticalAlignment="Center">
+                                        <ContentPresenter x:Name="MyMessage" Content="{TemplateBinding Message}" TextWrapping="WrapWholeWords"/>
+                                    </ScrollViewer>
+
+
+                                    <Button Name="ActionButton" Content="{TemplateBinding ActionButtonContent}" Command="{TemplateBinding ActionButtonCommand}" Style="{TemplateBinding ActionButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="4"/>
+
+                                    <Button Name="AlternateCloseButton" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" Grid.Column="5">
+                                        <SymbolIcon Symbol="Cancel"/>
+                                    </Button>
+                                    <Button Name="CloseButton" Content ="{TemplateBinding CloseButtonContent}" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="5"/>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             
         </ResourceDictionary>
     </Application.Resources>
