@@ -91,7 +91,7 @@ void TabViewItem::OnApplyTemplate()
     UpdateWidthModeVisualState();
 }
 
-void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (IsSelected())
     {
@@ -224,12 +224,6 @@ void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::Ro
 void TabViewItem::OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateCloseButton();
-}
-
-void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateVisualState(true);
-    UpdateShadow();
 }
 
 void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
