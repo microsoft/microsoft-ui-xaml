@@ -179,18 +179,6 @@ unsealed runtimeclass TabViewItemTemplateSettings : Windows.UI.Xaml.DependencyOb
 
 }
 
-namespace MU_XCP_NAMESPACE
-{
-
-[WUXC_VERSION_MUXONLY]
-[webhosthidden]
-unsealed runtimeclass TabViewListView : Windows.UI.Xaml.Controls.ListView
-{
-    TabViewListView();
-}
-
-}
-
 namespace MU_XAP_NAMESPACE
 {
 

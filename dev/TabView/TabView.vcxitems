@@ -19,7 +19,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItemAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItemTemplateSettings.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TabViewListView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TabView.properties.cpp" />
@@ -29,7 +28,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewItemAutomationPeer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TabViewListView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TabView.xaml">

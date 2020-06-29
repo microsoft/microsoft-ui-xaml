@@ -116,7 +116,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:TabViewListView">
+    <!--<Style TargetType="primitives:TabViewListView">
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
@@ -180,7 +180,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
 
     <Style x:Name="TabScrollViewerStyle" TargetType="ScrollViewer">
         <Setter Property="Template">
