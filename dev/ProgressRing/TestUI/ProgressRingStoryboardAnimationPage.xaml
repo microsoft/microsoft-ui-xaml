@@ -36,7 +36,7 @@
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="ActiveStates">
                                     <VisualState x:Name="Inactive" />
-                                    <VisualState x:Name="IndeterminateActive">
+                                    <VisualState x:Name="Active">
                                         <Storyboard RepeatBehavior="Forever">
                                             <ObjectAnimationUsingKeyFrames Duration="0" Storyboard.TargetName="Ring" Storyboard.TargetProperty="Visibility">
                                                 <DiscreteObjectKeyFrame KeyTime="0">
@@ -137,7 +137,6 @@
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
-                                    <VisualState x:Name="DeterminateActive"/>
                                 </VisualStateGroup>
 
                             </VisualStateManager.VisualStateGroups>
@@ -221,6 +220,7 @@
                 Height="32"
                 Width="32"
                 IsActive="{x:Bind StoryboardAnimationIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                IsIndeterminate="True"
                 />
 
             <Grid Width="200px" HorizontalAlignment="Left">

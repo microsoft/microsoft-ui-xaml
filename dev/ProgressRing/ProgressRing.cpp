@@ -16,7 +16,7 @@ static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemCont
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
 static constexpr wstring_view s_BackgroundName{ L"Background"sv };
-static constexpr wstring_view s_IndeterminateActiveStateName{ L"IndeterminateActive"sv };
+static constexpr wstring_view s_ActiveStateName{ L"Active"sv };
 static constexpr wstring_view s_DeterminateActiveStateName{ L"DeterminateActive"sv };
 static constexpr wstring_view s_InactiveStateName{ L"Inactive"sv };
 
@@ -250,7 +250,7 @@ void ProgressRing::UpdateStates()
     {
         if (IsIndeterminate())
         {
-            winrt::VisualStateManager::GoToState(*this, s_IndeterminateActiveStateName, true);
+            winrt::VisualStateManager::GoToState(*this, s_ActiveStateName, true);
 
             if (auto&& indeterminatePlayer = m_indeterminatePlayer.get())
             {
