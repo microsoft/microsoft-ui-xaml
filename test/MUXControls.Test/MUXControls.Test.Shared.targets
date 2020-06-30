@@ -2,14 +2,12 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
-
   <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
      We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
      to non-public types.  So for now we'll just exclude these from the OS repo. -->
   <Import Project="..\..\dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <Import Project="..\..\dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <!-- -->
-
   <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="..\..\dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
   <Import Project="..\..\dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
@@ -41,4 +39,5 @@
   <Import Project="..\..\dev\TabView\InteractionTests\TabView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="..\..\dev\NumberBox\InteractionTests\NumberBox_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
 </Project>

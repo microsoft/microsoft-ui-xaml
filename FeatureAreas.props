@@ -27,7 +27,7 @@
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedVisualPlayerEnabled) == 'true'">
     <!-- We need the MyControl type from SplitButton test -->
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for AutoSuggestBox -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAutoSuggestBoxEnabled) == 'true'">
   </PropertyGroup>
@@ -40,18 +40,18 @@
   <!-- Dependencies for CheckBox -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCheckBoxEnabled) == 'true'">
   </PropertyGroup>
-    <!-- Dependencies for Collections -->
+  <!-- Dependencies for Collections -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCollectionsEnabled) == 'true'">
   </PropertyGroup>
-    <!-- Dependencies for ColorPicker -->
+  <!-- Dependencies for ColorPicker -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureColorPickerEnabled) == 'true'">
   </PropertyGroup>
-    <!-- Dependencies for ComboBox -->
+  <!-- Dependencies for ComboBox -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureComboBoxEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for CommandBarFlyout -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCommandBarFlyoutEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for CommonStyles -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureCommonStylesEnabled) == 'true'">
     <!-- Compact sizing uses these controls for testing -->
@@ -62,144 +62,143 @@
     <FeatureMenuBarEnabled>productOnly</FeatureMenuBarEnabled>
     <FeatureScrollerEnabled>productOnly</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>productOnly</FeatureScrollViewerEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ContentDialog -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureContentDialogEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for DatePicker -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureDatePickerEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for DropDownButton -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureDropDownButtonEnabled) == 'true'">
     <!-- We need the MyControl type from SplitButton test -->
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Effects -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureEffectsEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for FlipView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureFlipViewEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for IconSource -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureIconSourceEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Interactions -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInteractionsEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for LayoutPanel -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureLayoutPanelEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Lights -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureLightsEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Materials -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMaterialsEnabled) == 'true'">
     <FeatureColorPickerEnabled>productOnly</FeatureColorPickerEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for MenuBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMenuBarEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for MenuFlyout -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMenuFlyoutEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ParallaxView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureParallaxViewEnabled) == 'true'">
     <FeatureScrollerEnabled>productOnly</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>productOnly</FeatureScrollViewerEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for PersonPicture -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePersonPictureEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Pivot -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePivotEnabled) == 'true'">
   </PropertyGroup>
   <!-- Dependencies for PullToRefresh -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePullToRefreshEnabled) == 'true'">
     <FeatureTreeViewEnabled>productOnly</FeatureTreeViewEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for RadioButtons -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadioButtonsEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for RadioMenuFlyoutItem -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadioMenuFlyoutItemEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for RatingControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRatingControlEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Repeater -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRepeaterEnabled) == 'true'">
     <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
     <FeatureScrollBarEnabled>productOnly</FeatureScrollBarEnabled>
     <FeatureScrollerEnabled>productOnly</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>productOnly</FeatureScrollViewerEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ResourceHelper -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureResourceHelperEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ScrollBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureScrollBarEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Scroller -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureScrollerEnabled) == 'true'">
     <FeatureScrollBarEnabled>productOnly</FeatureScrollBarEnabled>
     <FeatureScrollViewerEnabled>productOnly</FeatureScrollViewerEnabled>
     <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
     <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ScrollViewer -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureScrollViewerEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Slider -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSliderEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for SplitButton -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSplitButtonEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for SplitView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSplitViewEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for SwipeControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSwipeControlEnabled) == 'true'">
     <FeatureColorPickerEnabled>productOnly</FeatureColorPickerEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for TabView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTabViewEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for TeachingTip -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTeachingTipEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for TimePicker -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTimePickerEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ToolTip -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureToolTipEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for TreeView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTreeViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for TwoPaneView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTwoPaneViewEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ProgressBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureProgressBarEnabled) == 'true'">
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for ProgressRing -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureProgressRingEnabled) == 'true'">
     <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
     <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
-  </PropertyGroup>  
-
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -255,6 +254,7 @@
     <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
     <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
+    <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
