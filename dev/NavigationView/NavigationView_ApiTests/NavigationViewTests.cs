@@ -483,6 +483,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyAutomationPeerExpandCollapsePatternBehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+
+                var menuItem1 = new NavigationViewItem();
+                var menuItem2 = new NavigationViewItem();
+                var menuItem3 = new NavigationViewItem();
+                var menuItem4 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+                menuItem2.Content = "Item 2";
+                menuItem3.Content = "Item 3";
+                menuItem4.Content = "Item 4";
+
+                menuItem2.MenuItems.Add(menuItem3);
+                menuItem4.HasUnrealizedChildren = true;
+
+                var expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.ExpandCollapse);
+
+                Verify.IsNull(expandPeer,"Verify NavigationViewItem with no children has no ExpandCollapse pattern");
+
+                expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem2).GetPattern(PatternInterface.ExpandCollapse);
+                Verify.IsNotNull(expandPeer,"Verify NavigationViewItem with children has an ExpandCollapse pattern provided");
+
+                expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem4).GetPattern(PatternInterface.ExpandCollapse);
+                Verify.IsNotNull(expandPeer,"Verify NavigationViewItem without children but with UnrealizedChildren set to true has an ExpandCollapse pattern provided");
+            });
+        }
+
+
+        [TestMethod]
         public void VerifySettingsItemToolTip()
         {
             RunOnUIThread.Execute(() =>

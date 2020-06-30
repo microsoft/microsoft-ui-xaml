@@ -69,6 +69,7 @@ public:
     void RotateExpandCollapseChevron(bool isExpanded);
     bool IsRepeaterVisible();
     void PropagateDepthToChildren(int depth);
+    bool HasChildren();
 
 private:
     void UpdateNavigationViewItemToolTip();
@@ -97,7 +98,6 @@ private:
     bool IsOnLeftNav();
     bool IsOnTopPrimary();
     bool HasChildren();
-
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
     void ReparentContent();
