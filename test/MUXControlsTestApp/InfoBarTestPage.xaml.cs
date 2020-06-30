@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -32,6 +33,7 @@ namespace MUXControlsTestApp.Shared
         String message;
         String actionButtonContent;
         String closeButtonContent;
+        Color color;
         bool open;
 
 
@@ -209,6 +211,26 @@ namespace MUXControlsTestApp.Shared
         private void IsOpenButton_Click(object sender, RoutedEventArgs e)
         {
             Test.IsOpen = open;
+        }
+
+        private void ColorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string iconName = e.AddedItems[0].ToString();
+
+            switch (iconName)
+            {
+                case "Purple":
+                    color = Color.FromArgb(255, 128, 0, 128);
+                    break;
+                case "No Color":
+                    color = Color.FromArgb(0, 0, 0, 0);
+                    break;
+            }
+        }
+
+        private void ColorButton_Click(object sender, RoutedEventArgs e)
+        {
+            Test.StatusColor = color;
         }
     }
 }

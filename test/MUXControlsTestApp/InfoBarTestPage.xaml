@@ -27,8 +27,9 @@
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Grid.Row="0">
                 <TextBlock>Severity Level</TextBlock>
                 <ComboBox Name="SeverityCombo" SelectionChanged="ComboBox_SelectionChanged">
                     <x:String>Critical</x:String>
@@ -41,6 +42,14 @@
                 <Button x:Name="SeverityButton" Click="SeverityButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
+                <TextBlock>Status Color</TextBlock>
+                <ComboBox Name="ColorCombo" SelectionChanged="ColorCombo_SelectionChanged">
+                    <x:String>Purple</x:String>
+                    <x:String>No Color</x:String>
+                </ComboBox>
+                <Button x:Name="ColorButton" Click="ColorButton_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="2">
                 <TextBlock>Severity Level</TextBlock>
                 <ComboBox x:Name="IconComboBox" SelectionChanged="IconComboBox_SelectionChanged">
                     <x:String>Pin Icon</x:String>
@@ -48,7 +57,7 @@
                 </ComboBox>
                 <Button x:Name="IconButton" Click="IconButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="2">
+            <StackPanel Orientation="Horizontal" Grid.Row="3">
                 <TextBlock>Title</TextBlock>
                 <ComboBox x:Name="TitleComboBox" SelectionChanged="TitleComboBox_SelectionChanged">
                     <x:String>Short Title</x:String>
@@ -57,7 +66,7 @@
                 </ComboBox>
                 <Button x:Name="TitleButton" Click="TitleButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="3">
+            <StackPanel Orientation="Horizontal" Grid.Row="4">
                 <TextBlock>Message</TextBlock>
                 <ComboBox x:Name="MessageComboBox" SelectionChanged="MessageComboBox_SelectionChanged">
                     <x:String>Short Message</x:String>
@@ -66,7 +75,7 @@
                 </ComboBox>
                 <Button x:Name="MessageButton" Click="MessageButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="4">
+            <StackPanel Orientation="Horizontal" Grid.Row="5">
                 <TextBlock>Close Button Content</TextBlock>
                 <ComboBox x:Name="CloseButtonContentComboBox" SelectionChanged="CloseButtonContentComboBox_SelectionChanged">
                     <x:String>Short Text</x:String>
@@ -75,7 +84,7 @@
                 </ComboBox>
                 <Button x:Name="CloseButtonContentButton" Click="CloseButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="5">
+            <StackPanel Orientation="Horizontal" Grid.Row="6">
                 <TextBlock>Action Button Content</TextBlock>
                 <ComboBox x:Name="ActionButtonContentComboBox" SelectionChanged="ActionButtonContentComboBox_SelectionChanged">
                     <x:String>Short Text</x:String>
@@ -84,7 +93,7 @@
                 </ComboBox>
                 <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="6">
+            <StackPanel Orientation="Horizontal" Grid.Row="7">
                 <TextBlock>Open</TextBlock>
                 <CheckBox Name="IsOpen" Content="IsOpen" Checked="IsOpen_Checked" Unchecked="IsOpen_Unchecked"/>
                 <Button x:Name="IsOpenButton" Click="IsOpenButton_Click" Content="Set"/>
