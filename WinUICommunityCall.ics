@@ -20,28 +20,28 @@ END:DAYLIGHT
 END:VTIMEZONE
 BEGIN:VEVENT
 CLASS:PUBLIC
-CREATED:20200612T233304Z
+CREATED:20200629T220303Z
 DESCRIPTION:Join us for our monthly WinUI Community Call where we bring out
 	 members of the WinUI team to update you on our progress\, demo cool new f
 	eatures\, and answer all of your questions about the platform. \n \nWatch 
-	on YouTube Live at 9AM PDT: https://youtu.be/iJoSMC3sHqM\n \n
-DTEND;TZID="Pacific Standard Time":20200617T100000
-DTSTAMP:20200612T233304Z
-DTSTART;TZID="Pacific Standard Time":20200617T090000
-LAST-MODIFIED:20200612T233304Z
+	on YouTube Live at 9AM PDT: https://youtu.be/lcnqqkYggCw\n \n
+DTEND;TZID="Pacific Standard Time":20200715T100000
+DTSTAMP:20200629T220303Z
+DTSTART;TZID="Pacific Standard Time":20200715T090000
+LAST-MODIFIED:20200629T220303Z
 PRIORITY:5
 SEQUENCE:0
-SUMMARY;LANGUAGE=en-us:WinUI Community Call - June Edition 
+SUMMARY;LANGUAGE=en-us:WinUI July Community Call
 TRANSP:OPAQUE
-UID:040000008200E00074C5B7101A82E0080000000080D6FCC1D640D601000000000000000
-	0100000000F6FBB2361B2FF488F879A4E4CC7314A
+UID:040000008200E00074C5B7101A82E00800000000E0AE0763264ED601000000000000000
+	0100000000A75DB7040E8AB4ABE7D5A49FACB1AD4
 X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml" 
 	xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-mic
 	rosoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/
 	12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head><meta name=ProgId c
 	ontent=Word.Document><meta name=Generator content="Microsoft Word 15"><met
 	a name=Originator content="Microsoft Word 15"><link rel=File-List href="ci
-	d:filelist.xml@01D640D6.C1F9A230"><!--[if gte mso 9]><xml>\n<o:OfficeDocum
+	d:filelist.xml@01D64E26.6307FD00"><!--[if gte mso 9]><xml>\n<o:OfficeDocum
 	entSettings>\n<o:AllowPNG/>\n</o:OfficeDocumentSettings>\n</xml><![endif]-
 	-><!--[if gte mso 9]><xml>\n<w:WordDocument>\n<w:SpellingState>Clean</w:Sp
 	ellingState>\n<w:TrackMoves/>\n<w:TrackFormatting/>\n<w:EnvelopeVis/>\n<w:
@@ -500,50 +500,51 @@ X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml"
 	ue" Name="Smart Link"/>\n</w:LatentStyles>\n</xml><![endif]--><style><!--\
 	n/* Font Definitions */\n@font-face\n	{font-family:"Cambria Math"\;\n	pano
 	se-1:2 4 5 3 5 4 6 3 2 4\;\n	mso-font-charset:0\;\n	mso-generic-font-famil
-	y:roman\;\n	mso-font-pitch:variable\;\n	mso-font-signature:3 0 0 0 1 0\;}\
-	n@font-face\n	{font-family:Calibri\;\n	panose-1:2 15 5 2 2 2 4 3 2 4\;\n	m
-	so-font-charset:0\;\n	mso-generic-font-family:swiss\;\n	mso-font-pitch:var
-	iable\;\n	mso-font-signature:-469750017 -1073732485 9 0 511 0\;}\n/* Style
-	 Definitions */\np.MsoNormal\, li.MsoNormal\, div.MsoNormal\n	{mso-style-u
-	nhide:no\;\n	mso-style-qformat:yes\;\n	mso-style-parent:""\;\n	margin:0in\
-	;\n	margin-bottom:.0001pt\;\n	mso-pagination:widow-orphan\;\n	font-size:11
-	.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-fareast-font-family:Cal
-	ibri\;}\na:link\, span.MsoHyperlink\n	{mso-style-priority:99\;\n	color:#05
-	63C1\;\n	text-decoration:underline\;\n	text-underline:single\;}\na:visited
-	\, span.MsoHyperlinkFollowed\n	{mso-style-noshow:yes\;\n	mso-style-priorit
-	y:99\;\n	color:#954F72\;\n	text-decoration:underline\;\n	text-underline:si
-	ngle\;}\nspan.EmailStyle17\n	{mso-style-type:personal-compose\;\n	mso-styl
-	e-noshow:yes\;\n	mso-style-unhide:no\;\n	mso-ansi-font-size:11.0pt\;\n	mso
-	-bidi-font-size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii
-	-font-family:Calibri\;\n	mso-fareast-font-family:Calibri\;\n	mso-hansi-fon
-	t-family:Calibri\;\n	mso-bidi-font-family:"Times New Roman"\;\n	color:wind
-	owtext\;}\n.MsoChpDefault\n	{mso-style-type:export-only\;\n	mso-default-pr
-	ops:yes\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:Ca
-	libri\;\n	mso-fareast-font-family:Calibri\;\n	mso-hansi-font-family:Calibr
-	i\;\n	mso-bidi-font-family:"Times New Roman"\;}\n@page WordSection1\n	{siz
-	e:8.5in 11.0in\;\n	margin:1.0in 1.0in 1.0in 1.0in\;\n	mso-header-margin:.5
-	in\;\n	mso-footer-margin:.5in\;\n	mso-paper-source:0\;}\ndiv.WordSection1\
-	n	{page:WordSection1\;}\n--></style><!--[if gte mso 10]><style>/* Style De
-	finitions */\ntable.MsoNormalTable\n	{mso-style-name:"Table Normal"\;\n	ms
-	o-tstyle-rowband-size:0\;\n	mso-tstyle-colband-size:0\;\n	mso-style-noshow
-	:yes\;\n	mso-style-priority:99\;\n	mso-style-parent:""\;\n	mso-padding-alt
-	:0in 5.4pt 0in 5.4pt\;\n	mso-para-margin:0in\;\n	mso-para-margin-bottom:.0
-	001pt\;\n	mso-pagination:widow-orphan\;\n	font-size:11.0pt\;\n	font-family
-	:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:Calibri\;\n	mso-hansi-fon
-	t-family:Calibri\;\n	mso-bidi-font-family:"Times New Roman"\;}\n</style><!
-	[endif]--><!--[if gte mso 9]><xml>\n<o:shapedefaults v:ext="edit" spidmax=
-	"1026" />\n</xml><![endif]--><!--[if gte mso 9]><xml>\n<o:shapelayout v:ex
-	t="edit">\n<o:idmap v:ext="edit" data="1" />\n</o:shapelayout></xml><![end
-	if]--></head><body lang=EN-US link="#0563C1" vlink="#954F72" style='tab-in
-	terval:.5in'><div class=WordSection1><p class=MsoNormal>Join us for our mo
-	nthly WinUI Community Call where we bring out members of the WinUI team to
-	 update you on our progress\, demo cool new features\, and answer all of y
-	our questions about the platform. <o:p></o:p></p><p class=MsoNormal><o:p>&
-	nbsp\;</o:p></p><p class=MsoNormal>Watch on YouTube Live at 9AM PDT: <a hr
-	ef="https://youtu.be/iJoSMC3sHqM">https://youtu.be/iJoSMC3sHqM</a><o:p></o
-	:p></p><p class=MsoNormal><span style='mso-ascii-font-family:Calibri\;mso-
-	hansi-font-family:Calibri\;mso-bidi-font-family:"Times New Roman"'><o:p>&n
-	bsp\;</o:p></span></p></div></body></html>
+	y:roman\;\n	mso-font-pitch:variable\;\n	mso-font-signature:-536869121 1107
+	305727 33554432 0 415 0\;}\n@font-face\n	{font-family:Calibri\;\n	panose-1
+	:2 15 5 2 2 2 4 3 2 4\;\n	mso-font-charset:0\;\n	mso-generic-font-family:s
+	wiss\;\n	mso-font-pitch:variable\;\n	mso-font-signature:-469750017 -107373
+	2485 9 0 511 0\;}\n/* Style Definitions */\np.MsoNormal\, li.MsoNormal\, d
+	iv.MsoNormal\n	{mso-style-unhide:no\;\n	mso-style-qformat:yes\;\n	mso-styl
+	e-parent:""\;\n	margin:0in\;\n	margin-bottom:.0001pt\;\n	mso-pagination:wi
+	dow-orphan\;\n	font-size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	
+	mso-fareast-font-family:Calibri\;}\na:link\, span.MsoHyperlink\n	{mso-styl
+	e-priority:99\;\n	color:#0563C1\;\n	text-decoration:underline\;\n	text-und
+	erline:single\;}\na:visited\, span.MsoHyperlinkFollowed\n	{mso-style-nosho
+	w:yes\;\n	mso-style-priority:99\;\n	color:#954F72\;\n	text-decoration:unde
+	rline\;\n	text-underline:single\;}\nspan.EmailStyle17\n	{mso-style-type:pe
+	rsonal-compose\;\n	mso-style-noshow:yes\;\n	mso-style-unhide:no\;\n	mso-an
+	si-font-size:11.0pt\;\n	mso-bidi-font-size:11.0pt\;\n	font-family:"Calibri
+	"\,sans-serif\;\n	mso-ascii-font-family:Calibri\;\n	mso-fareast-font-famil
+	y:Calibri\;\n	mso-hansi-font-family:Calibri\;\n	mso-bidi-font-family:"Time
+	s New Roman"\;\n	color:windowtext\;}\n.MsoChpDefault\n	{mso-style-type:exp
+	ort-only\;\n	mso-default-props:yes\;\n	font-family:"Calibri"\,sans-serif\;
+	\n	mso-ascii-font-family:Calibri\;\n	mso-fareast-font-family:Calibri\;\n	m
+	so-hansi-font-family:Calibri\;\n	mso-bidi-font-family:"Times New Roman"\;}
+	\n@page WordSection1\n	{size:8.5in 11.0in\;\n	margin:1.0in 1.0in 1.0in 1.0
+	in\;\n	mso-header-margin:.5in\;\n	mso-footer-margin:.5in\;\n	mso-paper-sou
+	rce:0\;}\ndiv.WordSection1\n	{page:WordSection1\;}\n--></style><!--[if gte
+	 mso 10]><style>/* Style Definitions */\ntable.MsoNormalTable\n	{mso-style
+	-name:"Table Normal"\;\n	mso-tstyle-rowband-size:0\;\n	mso-tstyle-colband-
+	size:0\;\n	mso-style-noshow:yes\;\n	mso-style-priority:99\;\n	mso-style-pa
+	rent:""\;\n	mso-padding-alt:0in 5.4pt 0in 5.4pt\;\n	mso-para-margin:0in\;\
+	n	mso-para-margin-bottom:.0001pt\;\n	mso-pagination:widow-orphan\;\n	font-
+	size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-famil
+	y:Calibri\;\n	mso-hansi-font-family:Calibri\;\n	mso-bidi-font-family:"Time
+	s New Roman"\;}\n</style><![endif]--><!--[if gte mso 9]><xml>\n<o:shapedef
+	aults v:ext="edit" spidmax="1026" />\n</xml><![endif]--><!--[if gte mso 9]
+	><xml>\n<o:shapelayout v:ext="edit">\n<o:idmap v:ext="edit" data="1" />\n<
+	/o:shapelayout></xml><![endif]--></head><body lang=EN-US link="#0563C1" vl
+	ink="#954F72" style='tab-interval:.5in'><div class=WordSection1><p class=M
+	soNormal>Join us for our monthly WinUI Community Call where we bring out m
+	embers of the WinUI team to update you on our progress\, demo cool new fea
+	tures\, and answer all of your questions about the platform. <o:p></o:p></
+	p><p class=MsoNormal><o:p>&nbsp\;</o:p></p><p class=MsoNormal>Watch on You
+	Tube Live at 9AM PDT: <a href="https://youtu.be/lcnqqkYggCw">https://youtu
+	.be/lcnqqkYggCw</a><o:p></o:p></p><p class=MsoNormal><span style='mso-asci
+	i-font-family:Calibri\;mso-fareast-font-family:Calibri\;mso-hansi-font-fam
+	ily:Calibri\;mso-bidi-font-family:"Times New Roman"'><o:p>&nbsp\;</o:p></s
+	pan></p></div></body></html>
 X-MICROSOFT-CDO-BUSYSTATUS:BUSY
 X-MICROSOFT-CDO-IMPORTANCE:1
 X-MICROSOFT-DISALLOW-COUNTER:FALSE
