@@ -632,6 +632,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_APITests", "dev\Tab
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NumberBox_APITests", "dev\NumberBox\APITests\NumberBox_APITests.shproj", "{80AF98CA-BC1D-4011-8460-5671799EC419}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoBar", "dev\InfoBar\InfoBar.vcxitems", "{C85C4B4B-63F3-4543-B2F2-BB8664259CC4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfoBar", "InfoBar", "{4F935F95-BCD6-4DEF-B897-7F5D8799206A}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_InteractionTests", "dev\InfoBar\InteractionTests\InfoBar_InteractionTests.shproj", "{8CA62B44-3673-4037-8D9C-934D42904BB9}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_TestUI", "dev\InfoBar\TestUI\InfoBar_TestUI.shproj", "{ABBC2446-9B41-4400-8CF6-AF2CF8C597B2}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -728,6 +736,7 @@ Global
 		dev\RadialGradientBrush\RadialGradientBrush.vcxitems*{8b056b8f-c1ab-4a80-bd17-deace9897e6a}*SharedItemsImports = 9
 		dev\MenuBar\MenuBar.vcxitems*{8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942}*SharedItemsImports = 9
 		dev\ProgressRing\InteractionTests\ProgressRing_InteractionTests.projitems*{8c2d60af-44bc-47da-8e44-d62e639bfc0a}*SharedItemsImports = 13
+		dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems*{8ca62b44-3673-4037-8d9c-934d42904bb9}*SharedItemsImports = 13
 		dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems*{8cd16537-aad0-4905-aa85-3face7f99034}*SharedItemsImports = 13
 		dev\TwoPaneView\TwoPaneView.vcxitems*{8d0e4610-b51d-45c1-8b82-240bd2f73a92}*SharedItemsImports = 9
 		dev\Repeater\APITests\Repeater_APITests.projitems*{8d2da979-6313-49e2-8cf3-b568436d2944}*SharedItemsImports = 13
@@ -749,6 +758,7 @@ Global
 		dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems*{a7f6d6c4-a5a9-43eb-930c-b766417a5e5c}*SharedItemsImports = 13
 		dev\Materials\Acrylic\TestUI\AcrylicBrush_TestUI.projitems*{a800e818-7212-4fd7-ae3a-1dcab539db87}*SharedItemsImports = 13
 		dev\CalendarView\APITests\CalendarView_APITests.projitems*{aa73fbeb-6b3b-490c-b582-3993f0040061}*SharedItemsImports = 13
+		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{abbc2446-9b41-4400-8cf6-af2cf8c597b2}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\AutoSuggestBox\AutoSuggestBox.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\CalendarDatePicker\CalendarDatePicker.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -830,6 +840,7 @@ Global
 		dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems*{c332ceaf-68b6-4980-b6f3-b15e350cdce0}*SharedItemsImports = 13
 		dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems*{c4421632-51bc-469d-bc49-f1cbd9269d49}*SharedItemsImports = 13
 		dev\CheckBox\CheckBox.vcxitems*{c5c4a801-1f48-461c-a817-233d5fbd77aa}*SharedItemsImports = 9
+		dev\InfoBar\InfoBar.vcxitems*{c85c4b4b-63f3-4543-b2f2-bb8664259cc4}*SharedItemsImports = 9
 		dev\ComboBox\APITests\ComboBox_APITests.projitems*{ca704a8c-2624-4630-89a0-d86cb1ee409a}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems*{cbaaccf6-a27d-40b3-980b-adf51a2ebb89}*SharedItemsImports = 13
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{cddf46ef-aa2d-4bb3-b33e-98b3dbb3c41b}*SharedItemsImports = 13
@@ -1573,6 +1584,10 @@ Global
 		{74D18B1B-5F6B-4534-945B-131E8E3206FB} = {0115F80C-AB97-412D-85D9-33A5188F8907}
 		{2F4E95E9-F729-481C-B9AA-C9BEC91AE395} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
 		{80AF98CA-BC1D-4011-8460-5671799EC419} = {B45B3F3E-6761-4CFC-9A8F-90F232DD28F2}
+		{C85C4B4B-63F3-4543-B2F2-BB8664259CC4} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
+		{4F935F95-BCD6-4DEF-B897-7F5D8799206A} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{8CA62B44-3673-4037-8D9C-934D42904BB9} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
+		{ABBC2446-9B41-4400-8CF6-AF2CF8C597B2} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
