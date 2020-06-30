@@ -161,7 +161,7 @@ namespace SolutionHelper
                 Console.WriteLine("Adding source");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems");
                 Console.WriteLine("Adding test UI");
-                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)/TestUI/$($controlName)_TestUI.shproj");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\TestUI\\$($controlName)_TestUI.shproj");
                 Console.WriteLine("Adding interactions test");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj");
                 Console.WriteLine("Finished adding projects, saving solution");
@@ -174,9 +174,18 @@ namespace SolutionHelper
 }
 "@
 
-# Load assemblies now
-[System.Reflection.Assembly]::LoadWithPartialName("envdte") | Out-Null
-[System.Reflection.Assembly]::LoadWithPartialName("envdte80") | Out-Null
+# Add vswhere path to environment paths
+$env:path += ';' + ${env:ProgramFiles(x86)} + "\Microsoft Visual Studio\Installer\"
+
+# Call vswhere to get the installation path
+$vspath = vswhere -property installationPath
+
+# Generate dll location
+$solutionPaths = $vspath + "\Common7\IDE\PublicAssemblies";
+
+# Load dll's
+[void]([System.Reflection.Assembly]::LoadFrom($solutionPaths + "\envdte.dll"))
+[void]([System.Reflection.Assembly]::LoadFrom($solutionPaths + "\envdte80.dll"))
 
 Add-Type -ReferencedAssemblies $assemblies -TypeDefinition $source -Language CSharp
 
