@@ -125,7 +125,7 @@ private:
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
-    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};

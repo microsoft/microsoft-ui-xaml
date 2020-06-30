@@ -144,9 +144,9 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
             }
             return MenuItems().as<winrt::IInspectable>();
         }();
-        m_itemsSourceViewChanged.revoke();
+        m_itemsSourceViewCollectionChangedRevoker.revoke();
         repeater.ItemsSource(itemsSource);
-        m_itemsSourceViewChanged = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
+        m_itemsSourceViewCollectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
     }
 }
 
@@ -926,6 +926,7 @@ void NavigationViewItem::UnhookEventsAndClearFields()
     m_repeaterElementPreparedRevoker.revoke();
     m_repeaterElementClearingRevoker.revoke();
     m_isEnabledChangedRevoker.revoke();
+    m_itemsSourceViewCollectionChangedRevoker.revoke();
 
     m_rootGrid.set(nullptr);
     m_navigationViewItemPresenter.set(nullptr);
