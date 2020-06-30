@@ -19,7 +19,7 @@
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualStateGroup.Transitions>
-                                        <VisualTransition From="IndeterminateActive" To="DeterminateActive">
+                                        <VisualTransition From="Active" To="DeterminateActive">
                                             <Storyboard>
                                                 <DoubleAnimation
                                                 Storyboard.TargetName="DeterminateLottiePlayer"
@@ -57,7 +57,7 @@
                                             Duration="0" />
                                         </Storyboard>
                                     </VisualState>
-                                    <VisualState x:Name="IndeterminateActive" />
+                                    <VisualState x:Name="Active" />
 
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>

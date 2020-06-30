@@ -61,9 +61,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
                 Verify.IsTrue(Convert.ToBoolean(isIsIndeterminateText.DocumentText));
 
-                Log.Comment("IsActive and IsIndeterminate set to true updates ProgressRing to IndeterminateActive state");
+                Log.Comment("IsActive and IsIndeterminate set to true updates ProgressRing to Active state");
 
-                Verify.AreEqual("IndeterminateActive", visualStateText.DocumentText);
+                Verify.AreEqual("Active", visualStateText.DocumentText);
 
                 Log.Comment("Verity that opacity is 1 when Active");
                 Verify.AreEqual("1", opacityText.DocumentText);
