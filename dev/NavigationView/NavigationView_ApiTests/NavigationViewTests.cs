@@ -797,6 +797,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Add a child to parentItem and set the MenuItemsSource as null. This should collapse the chevron
                 children.Add("Child 2");
+                Content.UpdateLayout();
+
+                // we are doing this so that when we set MenuItemsSource as null, we can check if the chevron's visibility really changes
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
                 parentItem.MenuItemsSource = null;
                 Content.UpdateLayout();
 
