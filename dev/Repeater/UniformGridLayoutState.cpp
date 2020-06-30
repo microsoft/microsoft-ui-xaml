@@ -153,6 +153,8 @@ void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingL
     if (m_cachedFirstElement)
     {
         bool shouldClear = false;
+        // We should only clear the first element, used by determine the size of all elements,
+        // if it was modified by the action or the whole collection was reset
         switch (args.Action())
         {
         case winrt::NotifyCollectionChangedAction::Add:

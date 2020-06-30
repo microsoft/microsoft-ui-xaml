@@ -25,7 +25,7 @@ namespace MUXControlsTestApp.Samples
             insertButton.Click += delegate { _dataSource.Insert(int.Parse(newStartIndex.Text), int.Parse(newCount.Text), resetMode.IsChecked ?? false); };
             removeButton.Click += delegate { _dataSource.Remove(int.Parse(oldStartIndex.Text), int.Parse(oldCount.Text), resetMode.IsChecked ?? false); };
             replaceButton.Click += delegate { _dataSource.Replace(int.Parse(oldStartIndex.Text), int.Parse(oldCount.Text), int.Parse(newCount.Text), resetMode.IsChecked ?? false); };
-            moveButton.Click += delegate { _dataSource.Move(int.Parse(oldStartIndex.Text), int.Parse(newStartIndex.Text), resetMode.IsChecked ?? false); };
+            moveButton.Click += delegate { _dataSource.Move(int.Parse(oldStartIndex.Text), int.Parse(newStartIndex.Text), int.Parse(oldCount.Text), resetMode.IsChecked ?? false); };
             resetButton.Click += delegate { _dataSource.Reset(); };
 
             repeater.ItemTemplate = elementFactory;
@@ -158,11 +158,11 @@ namespace MUXControlsTestApp.Samples
                 }
             }
 
-            public void Move(int oldIndex, int newIndex, bool reset)
+            public void Move(int oldIndex, int newIndex, int count, bool reset)
             {
-                var item = Inner[oldIndex];
-                Inner.RemoveAt(oldIndex);
-                Inner.Insert(newIndex, item);
+                var items = Inner.GetRange(oldIndex, count);
+                Inner.RemoveRange(oldIndex, count);
+                Inner.InsertRange(newIndex, items);
 
                 if (reset)
                 {
@@ -173,9 +173,9 @@ namespace MUXControlsTestApp.Samples
                     OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Move,
                         oldStartingIndex: oldIndex,
-                        oldItemsCount: 1,
+                        oldItemsCount: count,
                         newStartingIndex: newIndex,
-                        newItemsCount: 1));
+                        newItemsCount: count));
                 }
             }
 

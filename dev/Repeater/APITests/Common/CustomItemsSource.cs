@@ -99,12 +99,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
             }
         }
 
-        public void Move(int oldIndex, int newIndex, bool reset)
+        public void Move(int oldIndex, int newIndex, int count, bool reset)
         {
-
-            var item = Inner[oldIndex];
-            Inner.RemoveAt(oldIndex);
-            Inner.Insert(newIndex, item);
+            var items = Inner.GetRange(oldIndex, count);
+            Inner.RemoveRange(oldIndex, count);
+            Inner.InsertRange(newIndex, items);
 
             if (reset)
             {
@@ -115,9 +114,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
                 OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                     NotifyCollectionChangedAction.Move,
                     oldStartingIndex: oldIndex,
-                    oldItemsCount: 1,
+                    oldItemsCount: count,
                     newStartingIndex: newIndex,
-                    newItemsCount: 1));
+                    newItemsCount: count));
             }
         }
 

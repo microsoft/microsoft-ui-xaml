@@ -314,9 +314,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             ScrollViewer scrollViewer = null;
             ItemsRepeater repeater = null;
             var viewChangedEvent = new ManualResetEvent(false);
-            int elementsCleared = 0;
-            int elementsPrepared = 0;
-            int elementsIndexChanged = 0;
 
             RunOnUIThread.Execute(() =>
             {
@@ -328,12 +325,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         viewChangedEvent.Set();
                     }
                 };
-
-                repeater.ElementPrepared += (sender, args) => { elementsPrepared++; };
-                repeater.ElementIndexChanged += (sender, args) => { elementsIndexChanged++; };
-                repeater.ElementClearing += (sender, args) => { elementsCleared++; };
-
-                scrollViewer.ChangeView(null, 300, null, true);
+                scrollViewer.ChangeView(null, 400, null, true);
             });
 
             Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTime), "Waiting for ViewChanged.");
@@ -345,32 +337,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(4, realized);
 
                 Log.Comment("Move before realized range.");
-                dataSource.Move(oldIndex: 0, newIndex: 1, reset: false);
+                dataSource.Move(oldIndex: 0, newIndex: 1, count: 2, reset: false);
                 repeater.UpdateLayout();
 
                 realized = VerifyRealizedRange(repeater, dataSource);
                 Verify.AreEqual(4, realized);
 
                 Log.Comment("Move in realized range.");
-                elementsPrepared = 0;
-                elementsCleared = 0;
-                elementsIndexChanged = 0;
-                dataSource.Move(oldIndex: 5, newIndex: 6, reset: false);
+                dataSource.Move(oldIndex: 3, newIndex: 5, count: 2, reset: false);
                 repeater.UpdateLayout();
-
-                Log.Comment(elementsIndexChanged.ToString());
-                Log.Comment(elementsPrepared.ToString());
-                Log.Comment(elementsCleared.ToString());
-
-                Verify.AreEqual(0, elementsIndexChanged);
-                Verify.AreEqual(1, elementsPrepared);
-                Verify.AreEqual(1, elementsCleared);
 
                 realized = VerifyRealizedRange(repeater, dataSource);
                 Verify.AreEqual(4, realized);
 
                 Log.Comment("Move after realized range");
-                dataSource.Move(oldIndex: 8, newIndex: 9, reset: false);
+                dataSource.Move(oldIndex: 7, newIndex: 8, count: 2, reset: false);
                 repeater.UpdateLayout();
 
                 realized = VerifyRealizedRange(repeater, dataSource);
