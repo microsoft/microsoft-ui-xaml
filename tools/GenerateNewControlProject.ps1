@@ -7,8 +7,6 @@ Param(
     [string]$controlName
 )
 
-
-
 function FindAndReplaceInFile
 {
     Param($file, $regex, $replace)
