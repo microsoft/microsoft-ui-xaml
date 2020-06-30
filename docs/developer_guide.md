@@ -53,8 +53,7 @@ A full list of all areas can be found in the **FeatureArea.props** files. To inc
 <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
 ```
 
-When switching between the **MUXControls.sln** and **MUXControlsInnerLoop.sln**, make sure you either delete the **BuildOutput** folder in the solution's root directory or run `git clean -dfx`.
-This is because both solutions share the same build output locations (including objs, temporary files, generated files, etc.). These generated files aren't necessarily the same or compatible between the two solutions, so attempting to build without deleting them can cause clashes.
+When switching between the **MUXControls.sln** and **MUXControlsInnerLoop.sln**, make sure you either delete the **BuildOutput** folder in the solution's root directory or run `git clean -dfx` in order to delete some build files which are incorrectly determined to be up to date by MSBuild after the switch.
 Note that `git clean -dfx` deletes all untracked files, so it may also delete any changes you made. To see what would be deleted by that command without actually deleting anything, run `git clean -dfxn`.
 
 
