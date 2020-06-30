@@ -69,4 +69,4 @@ Copy-Item "build\helix\runtests.cmd" $payloadDir
 Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir"
 Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir"
 Copy-Item "version.props" "$payloadDir"
-Copy-Item "build\Helix\CopyVisualTreeMasters.ps1" "$payloadDir"
+Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"
