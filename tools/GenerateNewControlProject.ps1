@@ -1,8 +1,13 @@
 [CmdLetBinding()]
+# Example usage:
+# ./GenerateNewControlProject.ps1 MyControl
+#
 Param(
     [Parameter(Mandatory = $true)]
     [string]$controlName
 )
+
+
 
 function FindAndReplaceInFile
 {
@@ -137,7 +142,6 @@ namespace SolutionHelper
                 return;
             }
             var dte = (EnvDTE.DTE)System.Activator.CreateInstance(dteType);
-            var sln = (SolutionClass)dte.Solution;
             Solution2 solution = (Solution2)dte.Solution;
             Console.WriteLine("Got solution class");
 
@@ -172,6 +176,9 @@ namespace SolutionHelper
 }
 "@
 
+# Load assemblies now
+[System.Reflection.Assembly]::LoadWithPartialName("envdte") | Out-Null
+[System.Reflection.Assembly]::LoadWithPartialName("envdte80") | Out-Null
 
 Add-Type -ReferencedAssemblies $assemblies -TypeDefinition $source -Language CSharp
 
