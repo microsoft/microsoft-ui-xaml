@@ -780,7 +780,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
                 Content.UpdateLayout();
 
-                UIElement chevronUIElement = (UIElement)FindVisualChildByName(parentItem, "ExpandCollapseChevron");
+                UIElement chevronUIElement = (UIElement)VisualTreeUtils.FindVisualChildByName(parentItem, "ExpandCollapseChevron");
                 Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem has no children");
 
                 // Add a child to our NavigationView parentItem. This should make the chevron visible.
@@ -795,33 +795,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
             });
-        }
-
-        private static DependencyObject FindVisualChildByName(FrameworkElement parent, string name)
-        {
-            if (parent.Name == name)
-            {
-                return parent;
-            }
-
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-
-            for (int i = 0; i < childrenCount; i++)
-            {
-                FrameworkElement childAsFE = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
-
-                if (childAsFE != null)
-                {
-                    DependencyObject result = FindVisualChildByName(childAsFE, name);
-
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
         }
 
     }
