@@ -194,8 +194,8 @@ checks in order to pass on all versions.
 
 #### Visual tree verification tests
 
-##### Update visual tree masters
-Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and we use them as the baseline (master) for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with masters. The master files need to be updated to include your latest changes. Visual verification test automatically captures the new visual tree and uploads the dump to test pipeline artifacts. Here are the steps to replace existing masters with the new ones.
+##### Update visual tree verification files
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. Visual verification test automatically captures the new visual tree and uploads the dump to test pipeline artifacts. Here are the steps to replace existing verification files with the new ones.
 
 1. Find your test run.
 
@@ -203,7 +203,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     ![test fail page2](images/test_fail_page2.png)
 
-2. Download new masters.
+2. Download new verification files.
 
     ![drop folder](images/test_pipeline_drop.png)
     
@@ -211,7 +211,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
 3. Diff & replace
 
-    Diff the [old](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and new masters, make sure the changes are intended, replace the files and commit your changes.
+    Diff the [old](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and new verification files, make sure the changes are intended, replace the files and commit your changes.
 
 ##### Create new visual tree tests
 1. Write new test
@@ -220,25 +220,24 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
 2. Run the test locally
 
-    Run the test locally and make sure everything looks right. The test will fail, which is expected since the test is new and there's no master to compare against. A new master file should be generated in your Pictures folder (The test app doesn't have write access to other arbitrary folders ☹).
+    Run the test locally and make sure everything looks right. The test will fail, which is expected since the test is new and there's no verification file to compare against. A new verification file should be generated in your Pictures folder (The test app doesn't have write access to other arbitrary folders ☹).
 
 3. Queue a test run in pipeline
 
-    Local test run only gives you the visual tree dump for your host OS version. Some controls have different visual behaviors on different versions. To get master files for all supported OS versions, you'll need to start a test run in test pipeline.
+    Local test run only gives you the visual tree dump for your host OS version. Some controls have different visual behaviors on different versions. To get verification files for all supported OS versions, you'll need to start a test run in test pipeline.
 
     Go to the [build page](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) and select `WinUI-Public-MUX-PR` pipeline. Click the `Queue` button on top right corner, update `Branch/tag` TextBlock to be your working branch then click on `Run`.
 
     Outside contributors may not have permission to do this, just open a PR and one of our team members will queue a test run for you.
 
-4. Get the new master files.
+4. Get the new verification files.
 
-    The new masters will be uploaded to pipeline artifacts folder when test finishes. Continue the steps in `Update visual tree masters` section above to download and commit the new files.
+    The new verification files will be uploaded to pipeline artifacts folder when test finishes. Continue the steps in `Update visual tree verification files` section above to download and commit the new files.
 
 
 
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
-products and services. Note however that no data collection is performed
+products and services. Note however that no data collection is performed 
 when using your private builds.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
