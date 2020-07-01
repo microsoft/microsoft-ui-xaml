@@ -99,6 +99,8 @@
                             FontWeight="Normal"
                             Foreground="{ThemeResource TextControlHeaderForeground}"
                             Margin="{ThemeResource TextBoxTopHeaderMargin}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontFamily="{TemplateBinding FontFamily}"
                             TextWrapping="Wrap"
                             VerticalAlignment="Top"
                             Visibility="Collapsed"
@@ -106,11 +108,15 @@
 
                         <TextBox x:Name="InputBox"
                             Grid.Row="1"
+                            InputScope="Number"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
                             TextReadingOrder="{TemplateBinding TextReadingOrder}"
                             PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            FontFamily="{TemplateBinding FontFamily}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
 
                         <Popup x:Name="UpDownPopup"

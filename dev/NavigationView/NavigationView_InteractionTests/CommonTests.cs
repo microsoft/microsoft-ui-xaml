@@ -689,7 +689,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-
+        [TestMethod]
         public void MenuItemKeyboardInvokeTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -810,6 +810,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Verify.AreEqual(2, positionInSet, "Position in set, not including separator/header");
                     Verify.AreEqual(2, sizeOfSet, "Size of set");
                 }
+            }
+        }
+
+        [TestMethod]
+        public void HierarchyItemsAccessibilitySetAndLevelTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Setting focus to Menu Item 15");
+                UIObject menuItem15 = FindElement.ByName("Menu Item 15");
+                menuItem15.SetFocus();
+                Wait.ForIdle();
+
+                AutomationElement ae = AutomationElement.FocusedElement;
+                int positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                int sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+                int itemLevel = (int)ae.GetCurrentPropertyValue(AutomationElement.LevelProperty);
+
+                Verify.AreEqual(4, positionInSet, "Position in set");
+                Verify.AreEqual(15, sizeOfSet, "Size of set");
+                Verify.AreEqual(1, itemLevel, "Level of item");
+
+                Log.Comment("Expanding Menu Item 15.");
+                InputHelper.LeftClick(menuItem15);
+                Wait.ForIdle();
+
+                Log.Comment("Setting focus to Menu Item 17");
+                UIObject menuItem17 = FindElement.ByName("Menu Item 17");
+                menuItem17.SetFocus();
+                Wait.ForIdle();
+
+                ae = AutomationElement.FocusedElement;
+                positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+                itemLevel = (int)ae.GetCurrentPropertyValue(AutomationElement.LevelProperty);
+
+                Verify.AreEqual(2, positionInSet, "Position in set, not including separator/header");
+                Verify.AreEqual(3, sizeOfSet, "Size of set");
+                Verify.AreEqual(2, itemLevel, "Level of item");
             }
         }
 
@@ -1389,35 +1428,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 // TestFrame is disabled before the testcase. we should enable it and prepare for next test case
                 var testFrame = new CheckBox(FindElement.ById("TestFrameCheckbox"));
                 testFrame.Check();
-                Wait.ForIdle();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
-        public void EnsureNoCrashesInHorizontalFlipMenuItems()
-        {
-            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
-            foreach (var testScenario in testScenarios)
-            {
-                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
-                {
-                    var button = new Button(FindElement.ByName("FlipOrientationButton"));
-                    button.Invoke();
-                    Wait.ForIdle();
-                }
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
-        public void EnsureNoCrashesInHorizontalFlipMenuItemsSource()
-        {
-            // This navigates through to our test page
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top Nav Test" }))
-            {
-                var button = new Button(FindElement.ByName("FlipOrientationButton"));
-                button.Invoke();
                 Wait.ForIdle();
             }
         }
