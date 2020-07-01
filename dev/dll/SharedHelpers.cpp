@@ -5,6 +5,7 @@
 #include "common.h"
 #include "MUXControlsFactory.h"
 #include "SharedHelpers.h"
+#include <roapi.h>
 
 bool SharedHelpers::s_isOnXboxInitialized{ false };
 bool SharedHelpers::s_isOnXbox{ false };
@@ -268,7 +269,8 @@ bool SharedHelpers::IsInFrameworkPackage()
 
         winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
         winrt::IActivationFactory activationFactory;
-        if (SUCCEEDED(WINRT_RoGetActivationFactory(winrt::get_abi(typeName), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
+
+        if (SUCCEEDED(RoGetActivationFactory(static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
         {
             return true;
         }

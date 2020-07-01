@@ -152,6 +152,9 @@ void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingL
 {
     if (m_cachedFirstElement)
     {
+        // The first element of UniformGridLayout is special since we use its size to 
+        // determine the size of all the other elements. So if the first item has changed
+        // we will need to clear it and re-evalauate all the items with the new item size.
         bool shouldClear = false;
         switch (args.Action())
         {
@@ -172,7 +175,7 @@ void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingL
             break;
 
         case winrt::NotifyCollectionChangedAction::Move:
-            throw winrt::hresult_not_implemented();
+            shouldClear = args.NewStartingIndex() == 0 || args.OldStartingIndex() == 0;
             break;
         }
 
