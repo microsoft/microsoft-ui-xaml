@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
+using Windows.UI;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI;
-using System.Windows.Input;
 using Windows.Foundation;
-using Windows.UI.Composition;
+
 
 namespace MUXControlsTestApp
 {
@@ -21,6 +14,7 @@ namespace MUXControlsTestApp
         CloseButton,
         Programattic
     }
+
     public enum InfoBarSeverity
     {
         Critical,
@@ -49,7 +43,6 @@ namespace MUXControlsTestApp
         {
             get; set;
         }
-
     }
     public class InfoBarEventArgs : EventArgs
     {
@@ -66,11 +59,12 @@ namespace MUXControlsTestApp
         Border _myBorder;
 
         public event EventHandler<RoutedEventArgs> ActionButtonClick;
-        public event EventHandler<InfoBarEventArgs> CloseButtonClick;
+        public event TypedEventHandler<InfoBar, InfoBarEventArgs> CloseButtonClick;
         public event TypedEventHandler<InfoBar, InfoBarClosedEventArgs> Closed;
         public event TypedEventHandler<InfoBar, InfoBarClosingEventArgs> Closing;
 
         private InfoBarCloseReason lastCloseReason = InfoBarCloseReason.Programattic;
+        private bool alreadyRaised = false;
 
 
         public InfoBar()
@@ -101,6 +95,17 @@ namespace MUXControlsTestApp
             UpdateSeverityState();
             OnIsOpenChanged();
 
+            // Allows the user to override the default StatusColor and Icon of the Severity level
+            if (IconSource != null)
+            {
+                OnIconSourceChanged();
+            }
+            if (StatusColor != Color.FromArgb(0, 0, 0, 0))
+            {
+                OnStatusColorChanged();
+
+            }
+
             _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
@@ -123,7 +128,6 @@ namespace MUXControlsTestApp
             {
                 infoBar.OnIsOpenChanged();
             }
-
         }
 
 
@@ -301,25 +305,22 @@ namespace MUXControlsTestApp
 
 
 
-        // Event handlers for Close Button and Action Button
+        // Methods that invoke the event handlers for Close Button and Action Button
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
-
             lastCloseReason = InfoBarCloseReason.CloseButton;
-            InfoBarEventArgs newE = new InfoBarEventArgs();
+            InfoBarEventArgs args = new InfoBarEventArgs();
             if (CloseButtonClick != null)
             {
-                CloseButtonClick.Invoke(this, newE);
+                CloseButtonClick.Invoke(this, args);
             }
 
             //If the user sets IsHandled to true, they can override the behavior of CloseButtonClick
-            if (newE.IsHandled == false)
+            if (args.IsHandled == false)
             {
                 RaiseClosingEvent();
-                Open(IsOpen);
-                RaiseClosedEvent();
+                alreadyRaised = false;
             }
-
         }
 
 
@@ -333,10 +334,14 @@ namespace MUXControlsTestApp
                 Closing.Invoke(this, args);
             }
 
+            // If the developer did not want to cancel the closing of the InfoBar, the InfoBar will collapse and the ClosedEvent will proceed as usual. 
             if (!args.Cancel)
             {
+                alreadyRaised = true;
                 _myBorder.Visibility = Visibility.Collapsed;
                 IsOpen = false;
+                Open(IsOpen);
+                RaiseClosedEvent();
             }
             else
             {
@@ -344,8 +349,6 @@ namespace MUXControlsTestApp
                 // closing of this tip, so we need to revert the IsOpen property to true.
                 IsOpen = true;
             }
-
-
         }
 
 
@@ -357,7 +360,6 @@ namespace MUXControlsTestApp
             {
                 Closed.Invoke(this, args);
             }
-
         }
 
 
@@ -424,7 +426,6 @@ namespace MUXControlsTestApp
                 if (ActionButtonContent != null)
                 {
                     VisualStateManager.GoToState(this, "ActionButtonVisible", false);
-
                 }
                 else
                 {
@@ -440,14 +441,12 @@ namespace MUXControlsTestApp
             if (IsOpen)
             {
                 lastCloseReason = InfoBarCloseReason.Programattic;
-
+                Open(IsOpen);
             }
-            else
+            else if (!alreadyRaised)
             {
                 RaiseClosingEvent();
-                RaiseClosedEvent();
             }
-            Open(IsOpen);
         }
 
 
@@ -468,6 +467,19 @@ namespace MUXControlsTestApp
                     IsOpen = false;
                 }
             }
+        }
+
+        // Updates the IconSource to the user's chosen icon
+        void OnIconSourceChanged()
+        {
+            VisualStateManager.GoToState(this, "UserIconSource", false);
+        }
+
+
+        //Updates the StatusColor to the user's chosen color
+        void OnStatusColorChanged()
+        {
+            VisualStateManager.GoToState(this, "UserStatusColor", false);
         }
     }
 }

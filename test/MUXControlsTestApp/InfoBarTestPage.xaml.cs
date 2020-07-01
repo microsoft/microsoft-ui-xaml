@@ -1,20 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using MUXControlsTestApp.Shared;
-using Windows.UI.Popups;
 
 
 
@@ -25,8 +13,6 @@ namespace MUXControlsTestApp.Shared
     [TopLevelTestPage(Name = "InfoBar")]
     public sealed partial class InfoBarTestPage : Page
     {
-
-
         InfoBarSeverity severity;
         IconSource icon;
         String title;
@@ -40,6 +26,18 @@ namespace MUXControlsTestApp.Shared
         public InfoBarTestPage()
         {
             this.InitializeComponent();
+        }
+
+        private async void Test_Closing(InfoBar sender, InfoBarClosingEventArgs args)
+        {
+ 
+            await new MessageDialog("Thank you, mate im closing").ShowAsync();
+        }
+
+        private async void Test_Closed(InfoBar sender, InfoBarClosedEventArgs args)
+        {
+            //args.Cancel = true; 
+            await new MessageDialog("Thank you, mate im closed").ShowAsync();
         }
 
         private async void Test_ActionButtonClick(object sender, RoutedEventArgs e)
@@ -97,7 +95,6 @@ namespace MUXControlsTestApp.Shared
                     sym3.Symbol = new Symbol();
                     icon = sym3;
                     break;
-
             }
         }
 

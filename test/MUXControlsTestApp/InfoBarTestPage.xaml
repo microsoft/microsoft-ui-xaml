@@ -15,7 +15,7 @@
             <RowDefinition Height="3*"/>
             
         </Grid.RowDefinitions>
-        <local:InfoBar x:Name="Test" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Severity ="Critical" MaxHeight="150" >
+        <local:InfoBar x:Name="Test" StatusColor="Pink" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Severity ="Critical" MaxHeight="150" Closing="Test_Closing" Closed="Test_Closed">
 
         </local:InfoBar>
         <Grid Grid.Row="1">
@@ -50,7 +50,7 @@
                 <Button x:Name="ColorButton" Click="ColorButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="2">
-                <TextBlock>Severity Level</TextBlock>
+                <TextBlock>Icon</TextBlock>
                 <ComboBox x:Name="IconComboBox" SelectionChanged="IconComboBox_SelectionChanged">
                     <x:String>Pin Icon</x:String>
                     <x:String>No Icon</x:String>

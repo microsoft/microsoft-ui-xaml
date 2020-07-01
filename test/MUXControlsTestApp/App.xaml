@@ -140,6 +140,20 @@
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
+
+                                    <VisualStateGroup x:Name="UserCustomStates">
+                                        <VisualState x:Name="UserIconSource">
+                                            <VisualState.Setters>
+                                                <Setter Target="Icon.IconSource" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.IconSource)}"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="UserStatusColor">
+                                            <VisualState.Setters>
+                                                <Setter Target="Brush.Color" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.StatusColor)}"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    
                                 </VisualStateManager.VisualStateGroups>
 
                                 <Grid x:Name="ContentRootGrid" >
