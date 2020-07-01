@@ -85,9 +85,9 @@ The Microsoft.UI.Xaml 2.4 NuGet package requires your project to have TargetPlat
 
 Your app's users can be on any of the following supported Windows 10 versions:
 
-* Windows 10 1703 (Creators Update aka "Redstone 2") and newer (including Windows Insider Previews)
+* Windows 10 1703 - Build 15063 (Creators Update aka "Redstone 2") and newer (including Windows Insider Previews)
 
-Some features may have a reduced or slightly different user experience on older versions, particularly on Windows 10 versions before 1703. This should not impact overall usability.
+Some features may have a reduced or slightly different user experience on older versions.
 
 ## Roadmap
 
