@@ -28,18 +28,6 @@ namespace MUXControlsTestApp.Shared
             this.InitializeComponent();
         }
 
-        private async void Test_Closing(InfoBar sender, InfoBarClosingEventArgs args)
-        {
- 
-            await new MessageDialog("Thank you, mate im closing").ShowAsync();
-        }
-
-        private async void Test_Closed(InfoBar sender, InfoBarClosedEventArgs args)
-        {
-            //args.Cancel = true; 
-            await new MessageDialog("Thank you, mate im closed").ShowAsync();
-        }
-
         private async void Test_ActionButtonClick(object sender, RoutedEventArgs e)
         {
             await new MessageDialog("Thank you, mate").ShowAsync();

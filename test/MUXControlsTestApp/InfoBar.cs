@@ -105,7 +105,6 @@ namespace MUXControlsTestApp
                 OnStatusColorChanged();
 
             }
-
             _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
@@ -131,7 +130,6 @@ namespace MUXControlsTestApp
         }
 
 
-
         /* Open Properties
          * 
          */
@@ -155,8 +153,6 @@ namespace MUXControlsTestApp
             DependencyProperty.Register(nameof(ShowCloseButton), typeof(bool), typeof(InfoBar), new PropertyMetadata(true));
 
 
-
-
         /* Message Title Properties
          * 
          */
@@ -178,8 +174,6 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty MessageProperty =
             DependencyProperty.Register(nameof(Message), typeof(string), typeof(InfoBar), new PropertyMetadata(""));
-
-
 
 
         /* Action Button Properties
@@ -225,9 +219,6 @@ namespace MUXControlsTestApp
             DependencyProperty.Register(nameof(ActionButtonCommandParameter), typeof(object), typeof(InfoBar), new PropertyMetadata(null));
 
 
-
-
-
         /* Close Button Properties
          * 
          */
@@ -270,8 +261,6 @@ namespace MUXControlsTestApp
             DependencyProperty.Register(nameof(CloseButtonCommandParameter), typeof(object), typeof(InfoBar), new PropertyMetadata(null));
 
 
-
-
         /* Severity-Related Properties
         * 
         */
@@ -304,7 +293,6 @@ namespace MUXControlsTestApp
             DependencyProperty.Register(nameof(IconSource), typeof(IconSource), typeof(InfoBar), new PropertyMetadata(default));
 
 
-
         // Methods that invoke the event handlers for Close Button and Action Button
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
@@ -314,7 +302,6 @@ namespace MUXControlsTestApp
             {
                 CloseButtonClick.Invoke(this, args);
             }
-
             //If the user sets IsHandled to true, they can override the behavior of CloseButtonClick
             if (args.IsHandled == false)
             {
@@ -333,7 +320,6 @@ namespace MUXControlsTestApp
             {
                 Closing.Invoke(this, args);
             }
-
             // If the developer did not want to cancel the closing of the InfoBar, the InfoBar will collapse and the ClosedEvent will proceed as usual. 
             if (!args.Cancel)
             {
@@ -361,7 +347,6 @@ namespace MUXControlsTestApp
                 Closed.Invoke(this, args);
             }
         }
-
 
 
         // Updates Severity state of InfoBar
@@ -455,7 +440,6 @@ namespace MUXControlsTestApp
         {
             if (_myBorder != null)
             {
-
                 if (value)
                 {
                     _myBorder.Visibility = Visibility.Visible;
