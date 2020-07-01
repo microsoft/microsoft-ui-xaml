@@ -198,6 +198,7 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{ this };
+    tracker_ref<winrt::ItemsRepeaterScrollHost> m_itemsRepeaterScrollHost{ this };
 
     tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 

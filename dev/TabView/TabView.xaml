@@ -56,8 +56,8 @@
                                 ItemTemplate="{TemplateBinding TabItemTemplate}"
                                 ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}"/>-->
                             
-                            <local:ItemsRepeaterScrollHost Grid.Column="1">
-                                <ScrollViewer x:Name="ScrollViewer"  Style="{StaticResource TabScrollViewerStyle}">
+                            <local:ItemsRepeaterScrollHost x:Name="ItemsRepeaterScrollHost" Grid.Column="1">
+                                <ScrollViewer x:Name="ScrollViewer" Style="{StaticResource TabScrollViewerStyle}">
                                     <Grid x:Name="RepeaterGrid"
                                         Padding="{ThemeResource TabViewHeaderPadding}"
                                         AllowDrop="True">

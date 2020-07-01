@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -91,6 +91,7 @@ void TabView::OnApplyTemplate()
     }
 
     m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+    m_itemsRepeaterScrollHost.set(GetTemplateChildT<winrt::ItemsRepeaterScrollHost>(L"ItemsRepeaterScrollHost", controlProtected));
 
     /*### m_listView.set([this, controlProtected]() {
         auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
@@ -132,6 +133,21 @@ void TabView::OnApplyTemplate()
         }
         return repeater;
     }());
+
+    auto scrollViewer = GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected);
+    m_scrollViewer.set(scrollViewer);
+    if (scrollViewer)
+    {
+        if (SharedHelpers::IsIsLoadedAvailable() && scrollViewer.IsLoaded())
+        {
+            // This scenario occurs reliably for Terminal in XAML islands
+            OnScrollViewerLoaded(nullptr, nullptr);
+        }
+        else
+        {
+            m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
+        }
+    }
 
     m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnSelectionChanged });
 
@@ -418,6 +434,8 @@ void TabView::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         m_selectionModel.Source(repeater.ItemsSourceView());
         m_collectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &TabView::OnItemsChanged });
 
+        m_itemsPresenterSizeChangedRevoker = repeater.SizeChanged(winrt::auto_revoke, { this, &TabView::OnItemsPresenterSizeChanged });
+
         if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
         {
             UpdateSelectedItem();
@@ -447,6 +465,7 @@ void TabView::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             return itemsPresenter;
         }());
 
+        // Already moved all of this into the above area
         auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
         m_scrollViewer.set(scrollViewer);
         if (scrollViewer)
@@ -533,41 +552,25 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
     {
         auto&& decreaseButton = m_scrollDecreaseButton.get();
         auto&& increaseButton = m_scrollIncreaseButton.get();
-
-        constexpr auto minThreshold = 0.1;
-        auto horizontalOffset = scrollViewer.HorizontalOffset();
-        auto scrollableWidth = scrollViewer.ScrollableWidth();
-
-        if (abs(horizontalOffset - scrollableWidth) < minThreshold)
+        if (increaseButton && decreaseButton)
         {
-            if (decreaseButton)
+            constexpr auto minThreshold = 0.1;
+            auto horizontalOffset = scrollViewer.HorizontalOffset();
+            auto scrollableWidth = scrollViewer.ScrollableWidth();
+
+            if (abs(horizontalOffset - scrollableWidth) < minThreshold)
             {
                 decreaseButton.IsEnabled(true);
-            }
-            if (increaseButton)
-            {
                 increaseButton.IsEnabled(false);
             }
-        }
-        else if (abs(horizontalOffset) < minThreshold)
-        {
-            if (decreaseButton)
+            else if (abs(horizontalOffset) < minThreshold)
             {
                 decreaseButton.IsEnabled(false);
-            }
-            if (increaseButton)
-            {
                 increaseButton.IsEnabled(true);
             }
-        }
-        else
-        {
-            if (decreaseButton)
+            else
             {
                 decreaseButton.IsEnabled(true);
-            }
-            if (increaseButton)
-            {
                 increaseButton.IsEnabled(true);
             }
         }
@@ -590,40 +593,59 @@ void TabView::OnItemsChanged(const winrt::IInspectable& dataSource, const winrt:
     //m_tabItemsChangedEventSource(*this, args);
 
     int numItems = static_cast<int>(TabItems().Size());
-    if (args.Action() == winrt::NotifyCollectionChangedAction::Remove && numItems > 0)
+    if (args.Action() == winrt::NotifyCollectionChangedAction::Remove)
     {
-        if (SelectedIndex() == static_cast<int32_t>(args.OldStartingIndex()))
+        m_updateTabWidthOnPointerLeave = true;
+        if (numItems > 0)
         {
-            // Find the closest tab to select instead.
-            int startIndex = static_cast<int>(args.OldStartingIndex());
-            if (startIndex >= numItems)
+            // SelectedIndex might also already be -1
+            auto selectedIndex = SelectedIndex();
+            if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.OldStartingIndex()))
             {
-                startIndex = numItems - 1;
+                // Find the closest tab to select instead.
+                int startIndex = static_cast<int>(args.OldStartingIndex());
+                if (startIndex >= numItems)
+                {
+                    startIndex = numItems - 1;
+                }
+                int index = startIndex;
+
+                do
+                {
+                    auto nextItem = ContainerFromIndex(index).as<winrt::ListViewItem>();
+
+                    if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
+                    {
+                        // ### SelectedItem(TabItems().GetAt(index));
+                        m_selectionModel.Select(index);
+                        break;
+                    }
+
+                    // try the next item
+                    index++;
+                    if (index >= numItems)
+                    {
+                        index = 0;
+                    }
+                } while (index != startIndex);
             }
-            int index = startIndex;
 
-            do
+        }
+        // Last item removed, update sizes
+        // The index of the last element is "Size() - 1", but in TabItems, it is already removed.
+        if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
+        {
+            m_updateTabWidthOnPointerLeave = true;
+            if (args.OldStartingIndex() == (int32_t)TabItems().Size())
             {
-                auto nextItem = ContainerFromIndex(index).as<winrt::TabViewItem>();
-
-                if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
-                {
-                    //SelectedItem(Items().GetAt(index));
-                    m_selectionModel.Select(index);
-                    break;
-                }
-
-                // try the next item
-                index++;
-                if (index >= numItems)
-                {
-                    index = 0;
-                }
-            } while (index != startIndex);
+                UpdateTabWidths(true, false);
+            }
         }
     }
-
-    UpdateTabWidths();
+    else
+    {
+        UpdateTabWidths();
+    }
 }
 
 void TabView::OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args)
@@ -771,6 +793,7 @@ void TabView::RequestCloseTab(int index, winrt::TabViewItem const& container)
             internalTabViewItem->RaiseRequestClose(*args);
         }
     }
+    UpdateTabWidths(false);
 
     /*if (auto listView = m_listView.get())
     {
@@ -812,7 +835,7 @@ winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
     return __super::MeasureOverride(availableSize);
 }
 
-void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace)
+void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpace)
 {
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
 
@@ -890,23 +913,27 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                     if (requiredWidth >= availableWidth)
                     {
                         tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
-                        if (auto&& listview = m_listView.get())
+
+                        if (auto scrollViewer = m_scrollViewer.get())
                         {
-                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
+                            scrollViewer.HorizontalScrollBarVisibility(winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
                             UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
                         }
                     }
                     else
                     {
                         tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
-                        if (auto&& listview = m_listView.get())
+                        if (auto scrollViewer = m_scrollViewer.get())
                         {
                             if (shouldUpdateWidths && fillAllAvailableSpace)
                             {
-                                winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                                scrollViewer.HorizontalScrollBarVisibility(winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
                             }
                             else
                             {
+                                // When shouldUpdateWidths is false, that indicates that the user closed a tab but the mouse is still
+                                // over the TabView, in which case we don't want to remove the scroll buttons and move things out from
+                                // under the user. Instead, we can just disable both buttons until they mouse away.
                                 if (auto&& decreaseButton = m_scrollDecreaseButton.get())
                                 {
                                     decreaseButton.IsEnabled(false);
@@ -924,7 +951,29 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                     // Case: TabWidthMode "Compact" or "FitToContent"
                     tabColumn.MaxWidth(availableWidth);
                     tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
-                    if (auto&& listview = m_listView.get())
+
+                    if (auto repeaterScrollHost = m_itemsRepeaterScrollHost.get())
+                    {
+                        repeaterScrollHost.MaxWidth(availableWidth);
+
+                        if (auto scrollViewer = m_scrollViewer.get())
+                        {
+                            if (auto repeater = m_itemsRepeater.get())
+                            {
+                                // ### not quite right because of padding probably
+                                auto visible = repeater.ActualWidth() > availableWidth;
+                                scrollViewer.HorizontalScrollBarVisibility(visible
+                                    ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
+                                    : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                                if (visible)
+                                {
+                                    UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+                                }
+                            }
+                        }
+                    }
+
+                    /*if (auto&& listview = m_listView.get())
                     {
                         listview.MaxWidth(availableWidth);
 
@@ -940,7 +989,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                                 UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
