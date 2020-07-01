@@ -88,6 +88,7 @@ void TabViewItem::OnApplyTemplate()
     }
 
     UpdateCloseButton();
+    UpdateWidthModeVisualState();
 }
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -243,7 +244,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
         }
     }
 
-    if (auto toolTip = m_toolTip.get())
+    if (auto&& toolTip = m_toolTip.get())
     {
         // Update tooltip text to new header text
         auto headerContent = Header();

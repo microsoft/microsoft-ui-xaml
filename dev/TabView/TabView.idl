@@ -89,6 +89,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TabView, Windows.Foundation.Collections.IVectorChangedEventArgs> TabItemsChanged;
 
     // From ListView
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object TabItemsSource;
     Windows.Foundation.Collections.IVector<Object> TabItems{ get; };
 

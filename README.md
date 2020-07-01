@@ -8,6 +8,11 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 WinUI 2 is a library of controls that provides official native Microsoft UI controls and features for Windows [UWP apps](https://docs.microsoft.com/windows/uwp/index). WinUI 2 can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
 WinUI 3 is the next version of the WinUI framework, shipping later this year. It dramatically expands WinUI into a full UX framework, making WinUI available for all types of Windows apps – from Win32 to UWP – for use as the UI layer.
+ 
+## WinUI is a part of the Project Reunion family
+[Project Reunion](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. Project Reunion combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
+ 
+Other Project Reunion components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Project Reunion, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/ProjectReunion). 
 
 
 
@@ -21,13 +26,13 @@ You can watch them online here on YouTube at the [Windows Developer channel](htt
 
 Add the event to your calendar: [ICS calendar file](https://aka.ms/winuicommunitycall)
 
-## WinUI 3.0 Alpha (February 2020)
+## WinUI 3.0 Preview 1 (May 2020)
 
 As outlined in the [roadmap](docs/roadmap.md) we're currently working on WinUI 3.0, which will greatly expand the scope of WinUI to include the full native Windows UI platform.
 
-You can now [download an early build of WinUI 3.0 Alpha](https://docs.microsoft.com/uwp/toolkits/winui3/) to try out - we'd love your feedback!
+You can now [download an early build of WinUI 3.0 Preview 1](https://docs.microsoft.com/uwp/toolkits/winui3/) to try out - we'd love your feedback!
 
-For more info see the [discussion issue #1965](https://github.com/microsoft/microsoft-ui-xaml/issues/1965).
+For more info see the [discussion issue #2472](https://github.com/microsoft/microsoft-ui-xaml/issues/2472).
 
 ## Using WinUI
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.

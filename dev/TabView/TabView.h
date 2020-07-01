@@ -104,6 +104,7 @@ public:
 
     // Internal
     void OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnTabItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -148,15 +149,18 @@ private:
     void UpdateTabWidths(bool shouldUpdateWidths=true, bool fillAllAvailableSpace=true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
+    void UpdateListViewItemContainerTransitions();
 
+    void UnhookEventsAndClearFields();
+
+    void OnListViewDraggingPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     int GetItemCount();
 
-    bool updateTabWidthOnPointerLeave{ false };
-
-
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
+
+    bool m_updateTabWidthOnPointerLeave{ false };
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
@@ -179,6 +183,9 @@ private:
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
+
+    PropertyChanged_revoker m_listViewCanReorderItemsPropertyChangedRevoker{};
+    PropertyChanged_revoker m_listViewAllowDropPropertyChangedRevoker{};
 
     winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};

@@ -43,7 +43,7 @@
             <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
         </StackPanel>
         <Grid Grid.Row="1" BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
-            <controls:ScrollViewer
+            <controls:ScrollView
                 Padding="4" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                 <Grid
                     contract5Present:RowSpacing="10"
@@ -952,8 +952,7 @@
                         <controls:NumberBox muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}" SpinButtonPlacementMode="Compact"/>
                     </Grid>
                 </Grid>
-
-            </controls:ScrollViewer>
+            </controls:ScrollView>
         </Grid>
     </Grid>
 

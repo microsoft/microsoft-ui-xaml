@@ -59,6 +59,7 @@ public:
     void RotateExpandCollapseChevron(bool isExpanded);
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
+    bool HasChildren();
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
@@ -98,7 +99,6 @@ private:
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;
     bool IsOnTopPrimary() const;
-    bool HasChildren();
 
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
