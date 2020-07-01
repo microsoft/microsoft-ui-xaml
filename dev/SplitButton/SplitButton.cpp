@@ -217,15 +217,9 @@ void SplitButton::OpenFlyout()
             winrt::FlyoutShowOptions options{};
 
             // Flyout should only be at the bottom of the splitbutton so let's enforce it
-            if (flyout.Placement() == winrt::FlyoutPlacementMode::Top
-                || flyout.Placement() == winrt::FlyoutPlacementMode::TopEdgeAlignedLeft
-                || flyout.Placement() == winrt::FlyoutPlacementMode::TopEdgeAlignedRight
-                || flyout.Placement() == winrt::FlyoutPlacementMode::Left
-                || flyout.Placement() == winrt::FlyoutPlacementMode::LeftEdgeAlignedBottom
-                || flyout.Placement() == winrt::FlyoutPlacementMode::LeftEdgeAlignedTop
-                || flyout.Placement() == winrt::FlyoutPlacementMode::Right
-                || flyout.Placement() == winrt::FlyoutPlacementMode::RightEdgeAlignedBottom
-                || flyout.Placement() == winrt::FlyoutPlacementMode::RightEdgeAlignedTop)
+            if (!(flyout.Placement() == winrt::FlyoutPlacementMode::Bottom
+                || flyout.Placement() == winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft
+                || flyout.Placement() == winrt::FlyoutPlacementMode::BottomEdgeAlignedRight))
             {
                 options.Placement(winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft);
             }
