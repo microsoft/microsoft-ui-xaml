@@ -202,9 +202,23 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
 2. Download new verification files.
 
+    Depending on whether you are a Microsoft employee or an external contributor the download process will differ. Below you will find the download steps for each case.
+
+    ###### [For Microsoft employees]
+    
+    Microsoft employees can directly download the new masters in Azure Pipelines:
+    
+    ![drop folder](images/test_pipeline_drop.png)
+    
+    ![VisualTreeMasters folder](images/masters_folder.png)
+    
+    ###### [For external contributors]
+    
+    External contributors cannot directly download the new masters but instead have to download the entire generated drop archive to get the new masters:
+
     ![released artifacts](images/test_fail_page3.png)
 
-    ![drop folder](images/test_pipeline_drop-2.png)
+    ![drop folder-2](images/test_pipeline_drop-2.png)
     
     Note that the drop archive can be several hundreds of MB big (700 MB or bigger is not uncommon). Once you have downloaded the drop archive and unpacked it, you will find the updated visual tree masters in `drop/VisualTreeMasters/`.
 
