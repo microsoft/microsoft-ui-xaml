@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -743,7 +743,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     {
         auto ip = GetIndexPathForContainer(nvi);
 
-        // Determine if we will update collapse/expand which will happen on iff the item has children
+        // Determine if we will update collapse/expand which will happen iff the item has children
         if (DoesNavigationViewItemHaveChildren(nvi))
         {
             m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = true;
@@ -1953,7 +1953,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 );
             }
         }
-        m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
+        auto scopeGuard = gsl::finally([this]()
+        {
+            m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
+        });
 
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
