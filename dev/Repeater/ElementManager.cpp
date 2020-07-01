@@ -278,7 +278,7 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
             if (oldSize == newSize &&
                 oldStartIndex == newStartIndex &&
                 IsDataIndexRealized(oldStartIndex) &&
-                IsDataIndexRealized(oldStartIndex + oldSize -1))
+                IsDataIndexRealized(oldStartIndex + oldSize - 1))
             {
                 // Straight up replace of n items within the realization window.
                 // Removing and adding might causes us to lose the anchor causing us
@@ -314,7 +314,9 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
             break;
 
         case winrt::NotifyCollectionChangedAction::Move:
-            throw winrt::hresult_not_implemented();
+            int size = args.OldItems() != NULL ? args.OldItems().Size() : 1;
+            OnItemsRemoved(args.OldStartingIndex(), size);
+            OnItemsAdded(args.NewStartingIndex(), size);
             break;
         }
     }
