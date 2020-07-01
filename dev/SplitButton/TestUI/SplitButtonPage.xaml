@@ -91,7 +91,7 @@
 
                     <util:ControlStateViewer x:Name="ToggleControlStateViewer" Margin="0,6,0,0"/>
 
-                    <controls:SplitButton Content="Bottom center flyout (allowed)">
+                    <controls:SplitButton Content="Bottom center flyout">
                         <controls:SplitButton.Flyout>
                             <MenuFlyout Placement="Bottom">
                                 <MenuFlyoutItem Text="SubAction 1" />
@@ -100,7 +100,7 @@
                         </controls:SplitButton.Flyout>
                     </controls:SplitButton>
 
-                    <controls:SplitButton Content="Top aligned flyout (not allowed)">
+                    <controls:SplitButton Content="Top aligned flyout">
                         <controls:SplitButton.Flyout>
                             <MenuFlyout Placement="Top">
                                 <MenuFlyoutItem Text="SubAction 1" />
