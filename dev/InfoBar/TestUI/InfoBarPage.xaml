@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.InfoBarPage"
     x:Name="InfoBarTestPage"
@@ -8,11 +8,99 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel Orientation="Vertical">
-            <controls:InfoBar />
-        </StackPanel>
+    <Grid  Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="3*"/>
+
+        </Grid.RowDefinitions>
+        <local:InfoBar x:Name="Test" StatusColor="Pink" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Severity ="Critical" MaxHeight="150">
+
+        </local:InfoBar>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                <TextBlock>Severity Level</TextBlock>
+                <ComboBox Name="SeverityCombo" SelectionChanged="ComboBox_SelectionChanged">
+                    <x:String>Critical</x:String>
+                    <x:String>Warning</x:String>
+                    <x:String>Informational</x:String>
+                    <x:String>Success</x:String>
+                    <x:String>Default</x:String>
+                    <x:String>None</x:String>
+                </ComboBox>
+                <Button x:Name="SeverityButton" Click="SeverityButton_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                <TextBlock>Status Color</TextBlock>
+                <ComboBox Name="ColorCombo" SelectionChanged="ColorCombo_SelectionChanged">
+                    <x:String>Purple</x:String>
+                    <x:String>No Color</x:String>
+                </ComboBox>
+                <Button x:Name="ColorButton" Click="ColorButton_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                <TextBlock>Icon</TextBlock>
+                <ComboBox x:Name="IconComboBox" SelectionChanged="IconComboBox_SelectionChanged">
+                    <x:String>Pin Icon</x:String>
+                    <x:String>No Icon</x:String>
+                </ComboBox>
+                <Button x:Name="IconButton" Click="IconButton_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="3">
+                <TextBlock>Title</TextBlock>
+                <ComboBox x:Name="TitleComboBox" SelectionChanged="TitleComboBox_SelectionChanged">
+                    <x:String>Short Title</x:String>
+                    <x:String>Long Title</x:String>
+                    <x:String>No Title</x:String>
+                </ComboBox>
+                <Button x:Name="TitleButton" Click="TitleButton_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="4">
+                <TextBlock>Message</TextBlock>
+                <ComboBox x:Name="MessageComboBox" SelectionChanged="MessageComboBox_SelectionChanged">
+                    <x:String>Short Message</x:String>
+                    <x:String>Long Message</x:String>
+                    <x:String>No Message</x:String>
+                </ComboBox>
+                <Button x:Name="MessageButton" Click="MessageButton_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="5">
+                <TextBlock>Close Button Content</TextBlock>
+                <ComboBox x:Name="CloseButtonContentComboBox" SelectionChanged="CloseButtonContentComboBox_SelectionChanged">
+                    <x:String>Short Text</x:String>
+                    <x:String>Long Text</x:String>
+                    <x:String>No Text</x:String>
+                </ComboBox>
+                <Button x:Name="CloseButtonContentButton" Click="CloseButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="6">
+                <TextBlock>Action Button Content</TextBlock>
+                <ComboBox x:Name="ActionButtonContentComboBox" SelectionChanged="ActionButtonContentComboBox_SelectionChanged">
+                    <x:String>Short Text</x:String>
+                    <x:String>Long Text</x:String>
+                    <x:String>No Text</x:String>
+                </ComboBox>
+                <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="7">
+                <TextBlock>Open</TextBlock>
+                <CheckBox Name="IsOpen" Content="IsOpen" Checked="IsOpen_Checked" Unchecked="IsOpen_Unchecked"/>
+                <Button x:Name="IsOpenButton" Click="IsOpenButton_Click" Content="Set"/>
+            </StackPanel>
+        </Grid>
+
     </Grid>
 </local:TestPage>
