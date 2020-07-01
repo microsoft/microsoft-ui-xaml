@@ -1938,7 +1938,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
         // Selection changed and we need to notify UIA
         // HOWEVER expand collapse can also trigger if an item can expand/collapse
-        // There are multiple cases when selectino changes:
+        // There are multiple cases when selection changes:
         // - Through click on item with no children -> No expand/collapse change
         // - Through click on item with children -> Expand/collapse change
         // - Through API with item without children -> No expand/collapse change
