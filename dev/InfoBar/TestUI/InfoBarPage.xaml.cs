@@ -7,9 +7,6 @@ using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-
-using InfoBar = Microsoft.UI.Xaml.Controls.InfoBar;
-
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "InfoBar")]
@@ -25,7 +22,7 @@ namespace MUXControlsTestApp
         bool open;
 
 
-        public InfoBarTestPage()
+        public InfoBarPage()
         {
             this.InitializeComponent();
         }
