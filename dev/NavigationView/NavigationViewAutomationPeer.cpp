@@ -55,13 +55,15 @@ void NavigationViewAutomationPeer::RaiseSelectionChangedEvent(winrt::IInspectabl
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionPatternOnInvalidated))
     {
-        //RaiseAutomationEvent(winrt::AutomationEvents::SelectionPatternOnInvalidated);
-        //RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
-
-        // box_value(oldState) doesn't work here, use ReferenceWithABIRuntimeClassName to make Narrator can unbox it.
-        //RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
-        //    box_value(oldSelection),
-        //    box_value(newSelecttion)
-        //);
+        if (auto nv = Owner().try_as<winrt::NavigationView>())
+        {
+            if (auto nvi = winrt::get_self<NavigationView>(nv)->GetSelectedContainer())
+            {
+                if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(nvi))
+                {
+                    peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+                }
+            }
+        }
     }
 }

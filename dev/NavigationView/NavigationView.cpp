@@ -742,6 +742,12 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     if (updateSelection)
     {
         auto ip = GetIndexPathForContainer(nvi);
+
+        // Determine if we will update collapse/expand which will happen on iff the item has children
+        if (DoesNavigationViewItemHaveChildren(nvi))
+        {
+            m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = true;
+        }
         UpdateSelectionModelSelection(ip);
     }
 
@@ -1930,13 +1936,24 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
-        if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        // Selection changed and we need to notify UIA
+        // HOWEVER expand collapse can also trigger if an item can expand/collapse
+        // There are multiple cases when selectino changes:
+        // - Through click on item with no children -> No expand/collapse change
+        // - Through click on item with children -> Expand/collapse change
+        // - Through API with item without children -> No expand/collapse change
+        // - Through API with item with children -> No expand/collapse change
+        if (!m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise)
         {
-            auto navViewItemPeer = peer.as<winrt::NavigationViewAutomationPeer>();
-            winrt::get_self<NavigationViewAutomationPeer>(navViewItemPeer)->RaiseSelectionChangedEvent(
-                prevItem, nextItem
-            );
+            if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+            {
+                auto navViewItemPeer = peer.as<winrt::NavigationViewAutomationPeer>();
+                winrt::get_self<NavigationViewAutomationPeer>(navViewItemPeer)->RaiseSelectionChangedEvent(
+                    prevItem, nextItem
+                );
+            }
         }
+        m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
 
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
