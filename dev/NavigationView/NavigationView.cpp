@@ -1936,6 +1936,11 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
+        auto scopeGuard = gsl::finally([this]()
+        {
+            m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
+        });
+
         // Selection changed and we need to notify UIA
         // HOWEVER expand collapse can also trigger if an item can expand/collapse
         // There are multiple cases when selection changes:
@@ -1953,10 +1958,6 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 );
             }
         }
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
-        });
 
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
