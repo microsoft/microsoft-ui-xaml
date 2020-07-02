@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
         String closeButtonContent;
         Color color;
         bool open;
+        bool cancel;
 
 
         public InfoBarPage()
@@ -30,6 +31,11 @@ namespace MUXControlsTestApp
         private async void Test_ActionButtonClick(object sender, RoutedEventArgs e)
         {
             await new MessageDialog("Thank you, mate").ShowAsync();
+        }
+
+        private void Test_Closing(InfoBar sender, InfoBarClosingEventArgs args)
+        {
+            args.Cancel = cancel;
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -61,7 +67,7 @@ namespace MUXControlsTestApp
 
         private void SeverityButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.Severity = severity;
+            TestInfoBar.Severity = severity;
         }
 
         private void IconComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -87,7 +93,7 @@ namespace MUXControlsTestApp
 
         private void IconButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.IconSource = icon;
+            TestInfoBar.IconSource = icon;
         }
 
         private void TitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -103,14 +109,14 @@ namespace MUXControlsTestApp
                     title = "Long Title. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
                     break;
                 case "No Title":
-                    title = "";
+                    title = null;
                     break;
             }
         }
 
         private void TitleButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.Title = title;
+            TestInfoBar.Title = title;
         }
 
         private void MessageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -126,14 +132,14 @@ namespace MUXControlsTestApp
                     message = "Long Message. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
                     break;
                 case "No Message":
-                    message = "";
+                    message = null;
                     break;
             }
         }
 
         private void MessageButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.Message = message;
+            TestInfoBar.Message = message;
         }
 
         private void CloseButtonContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -149,14 +155,14 @@ namespace MUXControlsTestApp
                     closeButtonContent = "C:LongTextLorem ipsum dolor sit amet.";
                     break;
                 case "No Text":
-                    closeButtonContent = "";
+                    closeButtonContent = null;
                     break;
             }
         }
 
         private void CloseButtonContent_Click(object sender, RoutedEventArgs e)
         {
-            Test.CloseButtonContent = closeButtonContent;
+            TestInfoBar.CloseButtonContent = closeButtonContent;
         }
 
         private void ActionButtonContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -172,14 +178,14 @@ namespace MUXControlsTestApp
                     actionButtonContent = "A:LongTextLorem ipsum dolor sit amet.";
                     break;
                 case "No Text":
-                    actionButtonContent = "";
+                    actionButtonContent = null;
                     break;
             }
         }
 
         private void ActionButtonContent_Click(object sender, RoutedEventArgs e)
         {
-            Test.ActionButtonContent = actionButtonContent;
+            TestInfoBar.ActionButtonContent = actionButtonContent;
         }
 
         private void IsOpen_Checked(object sender, RoutedEventArgs e)
@@ -194,7 +200,7 @@ namespace MUXControlsTestApp
 
         private void IsOpenButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.IsOpen = open;
+            TestInfoBar.IsOpen = open;
         }
 
         private void ColorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -214,7 +220,17 @@ namespace MUXControlsTestApp
 
         private void ColorButton_Click(object sender, RoutedEventArgs e)
         {
-            Test.StatusColor = color;
+            TestInfoBar.StatusColor = color;
+        }
+
+        private void Cancel_Checked(object sender, RoutedEventArgs e)
+        {
+            cancel = true;
+        }
+
+        private void Cancel_Unchecked(object sender, RoutedEventArgs e)
+        {
+            cancel = false;
         }
     }
 }

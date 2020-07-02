@@ -42,21 +42,13 @@
                         <ControlTemplate TargetType="local:InfoBar">
                             <Border
                                 x:Name="Container"
-                                Height="70"
-                                Width="1000"
                                 VerticalAlignment="Top"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="Gray"
                                 BorderThickness="2">
-
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="ButtonStates">
-                                        <VisualState x:Name="NoButtonsVisible">
-                                            <VisualState.Setters>
-                                                <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
-                                                <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
+                                        <VisualState x:Name="NoButtonsVisible"/>
                                         <VisualState x:Name="CloseButtonVisible">
                                             <VisualState.Setters>
                                                 <Setter Target="CloseButton.Visibility" Value="Visible"/>
@@ -77,11 +69,7 @@
                                         </VisualState>
                                     </VisualStateGroup>
                                     <VisualStateGroup x:Name="CloseButtonLocations">
-                                        <VisualState x:Name="DefaultCloseButton">
-                                            <VisualState.Setters>
-                                                <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
+                                        <VisualState x:Name="DefaultCloseButton"/>
                                         <VisualState x:Name="NoDefaultCloseButton">
                                             <VisualState.Setters>
                                                 <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
@@ -129,18 +117,13 @@
                                                 </Setter>
                                             </VisualState.Setters>
                                         </VisualState>
-                                        <VisualState x:Name="Default">
-                                            <VisualState.Setters>
-                                                <Setter Target="Brush.Color" Value="#69797E"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
                                         <VisualState x:Name="None">
                                             <VisualState.Setters>
                                                 <Setter Target="Brush.Color" Value="Transparent"/>
                                             </VisualState.Setters>
                                         </VisualState>
+                                        <VisualState x:Name="Default"/>
                                     </VisualStateGroup>
-
                                     <VisualStateGroup x:Name="UserCustomStates">
                                         <VisualState x:Name="UserIconSource">
                                             <VisualState.Setters>
@@ -152,12 +135,19 @@
                                                 <Setter Target="Brush.Color" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.StatusColor)}"/>
                                             </VisualState.Setters>
                                         </VisualState>
+                                        <VisualState x:Name="NoCustomState"/>
                                     </VisualStateGroup>
-                                    
+                                    <VisualStateGroup x:Name="InfoBarVisibility">
+                                        <VisualState x:Name="Visible">
+                                            <VisualState.Setters>
+                                                <Setter Target="Container.Visibility" Value="Visible"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Collapsed"/>
+                                    </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
 
                                 <Grid x:Name="ContentRootGrid" >
-
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="1*"/>
                                         <ColumnDefinition Width="1*"/>
@@ -167,7 +157,7 @@
                                         <ColumnDefinition Width="1*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Rectangle x:Name="StatusColor"  Height="70" Width="50" Grid.Column="0" HorizontalAlignment="Left">
+                                    <Rectangle x:Name="StatusColor" Width="50" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
                                         <Rectangle.Fill>
                                             <SolidColorBrush x:Name="Brush" Color="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.StatusColor)}"/>
                                         </Rectangle.Fill>
@@ -188,7 +178,7 @@
                                     <Button Name="AlternateCloseButton" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" Grid.Column="5">
                                         <SymbolIcon Symbol="Cancel"/>
                                     </Button>
-                                    
+                                
                                     <Button Name="CloseButton" Content ="{TemplateBinding CloseButtonContent}" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="5"/>
                                 </Grid>
                             </Border>

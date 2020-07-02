@@ -56,7 +56,7 @@ namespace MUXControlsTestApp
         Button _actionButton;
         Button _alternateCloseButton;
         Button _closeButton;
-        Border _myBorder;
+        Border _myContainer;
 
         public event EventHandler<RoutedEventArgs> ActionButtonClick;
         public event TypedEventHandler<InfoBar, InfoBarEventArgs> CloseButtonClick;
@@ -89,7 +89,7 @@ namespace MUXControlsTestApp
             _alternateCloseButton = GetTemplateChild<Button>("AlternateCloseButton");
             _closeButton = GetTemplateChild<Button>("CloseButton");
             _actionButton = GetTemplateChild<Button>("ActionButton");
-            _myBorder = GetTemplateChild<Border>("Container");
+            _myContainer = GetTemplateChild<Border>("Container");
 
             UpdateButtonsState();
             UpdateSeverityState();
@@ -103,7 +103,6 @@ namespace MUXControlsTestApp
             if (StatusColor != Color.FromArgb(0, 0, 0, 0))
             {
                 OnStatusColorChanged();
-
             }
             _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
@@ -324,7 +323,7 @@ namespace MUXControlsTestApp
             if (!args.Cancel)
             {
                 alreadyRaised = true;
-                _myBorder.Visibility = Visibility.Collapsed;
+                _myContainer.Visibility = Visibility.Collapsed;
                 IsOpen = false;
                 Open(IsOpen);
                 RaiseClosedEvent();
@@ -398,11 +397,15 @@ namespace MUXControlsTestApp
                 {
                     VisualStateManager.GoToState(this, "ActionButtonVisible", false);
                     VisualStateManager.GoToState(this, "DefaultCloseButton", false);
+                    _alternateCloseButton.Visibility = Visibility.Visible;
                 }
                 else if (ActionButtonContent == null && CloseButtonContent == null)
                 {
                     VisualStateManager.GoToState(this, "NoButtonsVisible", false);
                     VisualStateManager.GoToState(this, "DefaultCloseButton", false);
+                    _closeButton.Visibility = Visibility.Collapsed;
+                    _actionButton.Visibility = Visibility.Collapsed;
+                    _alternateCloseButton.Visibility = Visibility.Visible;
                 }
             }
             else
@@ -431,6 +434,7 @@ namespace MUXControlsTestApp
             else if (!alreadyRaised)
             {
                 RaiseClosingEvent();
+                alreadyRaised = false; 
             }
         }
 
@@ -438,18 +442,16 @@ namespace MUXControlsTestApp
         // Opens or closes the InfoBar
         private void Open(bool value)
         {
-            if (_myBorder != null)
+            if (value)
             {
-                if (value)
-                {
-                    _myBorder.Visibility = Visibility.Visible;
-                    IsOpen = true;
-                }
-                else
-                {
-                    _myBorder.Visibility = Visibility.Collapsed;
-                    IsOpen = false;
-                }
+                VisualStateManager.GoToState(this, "Visible", false);
+                IsOpen = true;
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "Collapsed", false);
+                _myContainer.Visibility = Visibility.Collapsed;
+                IsOpen = false;
             }
         }
 
@@ -458,7 +460,6 @@ namespace MUXControlsTestApp
         {
             VisualStateManager.GoToState(this, "UserIconSource", false);
         }
-
 
         //Updates the StatusColor to the user's chosen color
         void OnStatusColorChanged()

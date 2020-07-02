@@ -15,10 +15,8 @@
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="3*"/>
-
         </Grid.RowDefinitions>
-        <local:InfoBar x:Name="Test" StatusColor="Pink" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Severity ="Critical" MaxHeight="150">
-
+        <local:InfoBar x:Name="TestInfoBar" StatusColor="Pink" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Closing="Test_Closing" Severity ="Critical" Width="1000">
         </local:InfoBar>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -95,11 +93,21 @@
                 </ComboBox>
                 <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="7">
-                <TextBlock>Open</TextBlock>
-                <CheckBox Name="IsOpen" Content="IsOpen" Checked="IsOpen_Checked" Unchecked="IsOpen_Unchecked"/>
-                <Button x:Name="IsOpenButton" Click="IsOpenButton_Click" Content="Set"/>
-            </StackPanel>
+            <Grid Grid.Row="7">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>Open</TextBlock>
+                    <CheckBox Name="IsOpen" Content="IsOpen" Checked="IsOpen_Checked" Unchecked="IsOpen_Unchecked"/>
+                    <Button x:Name="IsOpenButton" Click="IsOpenButton_Click" Content="Set"/>
+                </StackPanel>
+                <StackPanel Orientation = "Horizontal" Grid.Column="1">
+                    <TextBlock>Cancel Closing</TextBlock>
+                    <CheckBox Name="Cancel" Content="Cancel" Checked="Cancel_Checked" Unchecked="Cancel_Unchecked"/>
+                </StackPanel>
+            </Grid>
         </Grid>
 
     </Grid>
