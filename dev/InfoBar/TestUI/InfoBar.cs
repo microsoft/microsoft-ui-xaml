@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
 using Windows.UI;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -51,6 +50,7 @@ namespace MUXControlsTestApp
             get; set;
         }
     }
+
     public sealed class InfoBar : ContentControl
     {
         Button _actionButton;
@@ -66,23 +66,16 @@ namespace MUXControlsTestApp
         private InfoBarCloseReason lastCloseReason = InfoBarCloseReason.Programattic;
         private bool alreadyRaised = false;
 
-
         public InfoBar()
         {
             this.DefaultStyleKey = typeof(InfoBar);
         }
 
-
         T GetTemplateChild<T>(string name) where T : DependencyObject
         {
             var child = GetTemplateChild(name) as T;
-            if (child == null)
-            {
-                throw new NullReferenceException(name);
-            }
             return child;
         }
-
 
         protected override void OnApplyTemplate()
         {
@@ -109,7 +102,6 @@ namespace MUXControlsTestApp
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
         }
 
-
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             DependencyProperty property = e.Property;
@@ -128,7 +120,6 @@ namespace MUXControlsTestApp
             }
         }
 
-
         /* Open Properties
          * 
          */
@@ -141,7 +132,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty IsOpenProperty =
             DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(InfoBar), new PropertyMetadata(false, OnPropertyChanged));
 
-
         public bool ShowCloseButton
         {
             get { return (bool)GetValue(ShowCloseButtonProperty); }
@@ -150,7 +140,6 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty ShowCloseButtonProperty =
             DependencyProperty.Register(nameof(ShowCloseButton), typeof(bool), typeof(InfoBar), new PropertyMetadata(true));
-
 
         /* Message Title Properties
          * 
@@ -164,7 +153,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register(nameof(Title), typeof(string), typeof(InfoBar), new PropertyMetadata(""));
 
-
         public string Message
         {
             get { return (string)GetValue(MessageProperty); }
@@ -173,7 +161,6 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty MessageProperty =
             DependencyProperty.Register(nameof(Message), typeof(string), typeof(InfoBar), new PropertyMetadata(""));
-
 
         /* Action Button Properties
          * 
@@ -187,7 +174,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty ActionButtonContentProperty =
             DependencyProperty.Register(nameof(ActionButtonContent), typeof(object), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
 
-
         public Style ActionButtonStyle
         {
             get { return (Style)GetValue(ActionButtonStyleProperty); }
@@ -196,7 +182,6 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty ActionButtonStyleProperty =
             DependencyProperty.Register(nameof(ActionButtonStyle), typeof(Style), typeof(InfoBar), new PropertyMetadata(null));
-
 
         public ICommand ActionButtonCommand
         {
@@ -207,7 +192,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty ActionButtonCommandProperty =
             DependencyProperty.Register(nameof(ActionButtonCommand), typeof(ICommand), typeof(InfoBar), new PropertyMetadata(null));
 
-
         public object ActionButtonCommandParameter
         {
             get { return (object)GetValue(ActionButtonCommandParameterProperty); }
@@ -216,7 +200,6 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty ActionButtonCommandParameterProperty =
             DependencyProperty.Register(nameof(ActionButtonCommandParameter), typeof(object), typeof(InfoBar), new PropertyMetadata(null));
-
 
         /* Close Button Properties
          * 
@@ -239,7 +222,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty CloseButtonStyleProperty =
             DependencyProperty.Register(nameof(CloseButtonStyle), typeof(Style), typeof(InfoBar), new PropertyMetadata(null));
 
-
         public ICommand CloseButtonCommand
         {
             get { return (ICommand)GetValue(CloseButtonCommandProperty); }
@@ -249,7 +231,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty CloseButtonCommandProperty =
             DependencyProperty.Register(nameof(CloseButtonCommand), typeof(ICommand), typeof(InfoBar), new PropertyMetadata(null));
 
-
         public object CloseButtonCommandParameter
         {
             get { return (object)GetValue(CloseButtonCommandParameterProperty); }
@@ -258,7 +239,6 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty CloseButtonCommandParameterProperty =
             DependencyProperty.Register(nameof(CloseButtonCommandParameter), typeof(object), typeof(InfoBar), new PropertyMetadata(null));
-
 
         /* Severity-Related Properties
         * 
@@ -281,7 +261,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty StatusColorProperty =
             DependencyProperty.Register(nameof(StatusColor), typeof(Color), typeof(InfoBar), new PropertyMetadata(Color.FromArgb(0, 0, 0, 0)));
 
-
         public IconSource IconSource
         {
             get { return (IconSource)GetValue(IconSourceProperty); }
@@ -291,16 +270,12 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty IconSourceProperty =
             DependencyProperty.Register(nameof(IconSource), typeof(IconSource), typeof(InfoBar), new PropertyMetadata(default));
 
-
         // Methods that invoke the event handlers for Close Button and Action Button
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             lastCloseReason = InfoBarCloseReason.CloseButton;
             InfoBarEventArgs args = new InfoBarEventArgs();
-            if (CloseButtonClick != null)
-            {
-                CloseButtonClick.Invoke(this, args);
-            }
+            CloseButtonClick?.Invoke(this, args);
             //If the user sets IsHandled to true, they can override the behavior of CloseButtonClick
             if (args.IsHandled == false)
             {
@@ -309,16 +284,12 @@ namespace MUXControlsTestApp
             }
         }
 
-
         void RaiseClosingEvent()
         {
             InfoBarClosingEventArgs args = new InfoBarClosingEventArgs();
             args.Reason = lastCloseReason;
 
-            if (Closing != null)
-            {
-                Closing.Invoke(this, args);
-            }
+            Closing?.Invoke(this, args);
             // If the developer did not want to cancel the closing of the InfoBar, the InfoBar will collapse and the ClosedEvent will proceed as usual. 
             if (!args.Cancel)
             {
@@ -335,18 +306,12 @@ namespace MUXControlsTestApp
                 IsOpen = true;
             }
         }
-
-
         void RaiseClosedEvent()
         {
             InfoBarClosedEventArgs args = new InfoBarClosedEventArgs();
             args.Reason = lastCloseReason;
-            if (Closed != null)
-            {
-                Closed.Invoke(this, args);
-            }
+            Closed?.Invoke(this, args);
         }
-
 
         // Updates Severity state of InfoBar
         void UpdateSeverityState()
@@ -376,7 +341,6 @@ namespace MUXControlsTestApp
                 VisualStateManager.GoToState(this, "Default", false);
             }
         }
-
 
         // Updates visibility of buttons
         void UpdateButtonsState()
@@ -422,7 +386,6 @@ namespace MUXControlsTestApp
             }
         }
 
-
         // Updates if InfoBar is opened
         void OnIsOpenChanged()
         {
@@ -437,7 +400,6 @@ namespace MUXControlsTestApp
                 alreadyRaised = false; 
             }
         }
-
 
         // Opens or closes the InfoBar
         private void Open(bool value)

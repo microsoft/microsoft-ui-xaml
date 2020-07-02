@@ -22,7 +22,6 @@ namespace MUXControlsTestApp
         bool open;
         bool cancel;
 
-
         public InfoBarPage()
         {
             this.InitializeComponent();
