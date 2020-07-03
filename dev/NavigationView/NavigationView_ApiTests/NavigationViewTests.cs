@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -525,13 +525,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(
                     AutomationControlType.ListItem,
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
+                Verify.IsNotNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
 
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
                 Content.UpdateLayout();
                 Verify.AreEqual(
                     AutomationControlType.TabItem,
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
-
+                // Tabs should only provide SelectionItem pattern but not Invoke pattern
+                Verify.IsNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
             });
         }
 
