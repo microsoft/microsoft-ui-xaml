@@ -14,6 +14,9 @@ If attaching to a running app, in the "Attach to Process" dialog be sure to chan
 2. Run the repro.
 3. When the crash occurs and Visual Studio breaks in, select "Save Dump As..." from the Debug menu to save the dump.
 
+Note: In some cases, Visual Studio's Diagnostic Tools may cause a crash which only occurs when debugging in Visual Studio with the Diagnostic Tools enabled.
+This type of crash might manifest as a crash in your app, usually with a function name containing `Diagnostics` somewhere on the stack, or it may include a crash in a separate ScriptedSandbox64.exe process. If this situation appears to be happening, try turning off Tools | Options | Debugging | "Enable Diagnostic Tools while debugging" in Visual Studio settings and then run your scenario.
+
 ### Using WinDbg
 
 In [WinDbg](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools), use `.dump /ma <filename>` to save a full memory dump to the specified file when the crash happens.
