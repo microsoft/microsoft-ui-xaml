@@ -335,10 +335,10 @@
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
@@ -347,10 +347,10 @@
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewButtonBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <PointerDownThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>

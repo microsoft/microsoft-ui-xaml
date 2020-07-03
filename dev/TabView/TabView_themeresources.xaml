@@ -21,16 +21,16 @@
             <StaticResource x:Key="TabViewItemIconForegroundSelected"        ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TabViewItemIconForegroundPointerOver"     ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TabViewItemIconForegroundDisabled"        ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            
             <StaticResource x:Key="TabViewButtonBackground"                  ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundPressed"           ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundPointerOver"       ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="TabViewButtonBackgroundPressed"           ResourceKey="SystemAltMediumColor" />
+            <StaticResource x:Key="TabViewButtonBackgroundPointerOver"       ResourceKey="SystemAltMediumLowColor" />
             <StaticResource x:Key="TabViewButtonBackgroundDisabled"          ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundActiveTab"         ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewButtonForeground"                  ResourceKey="SystemControlBackgroundBaseMediumBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundPressed"           ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundPointerOver"       ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundPressed"           ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundPointerOver"       ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewButtonForegroundDisabled"          ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundActiveTab"         ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+
             <StaticResource x:Key="TabViewScrollButtonBackground"            ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                     ResourceKey="SystemControlForegroundBaseLowBrush" />
 
@@ -41,7 +41,6 @@
             <StaticResource x:Key="TabViewItemHeaderPressedCloseButtonBackground"           ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderPointerOverCloseButtonBackground"       ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderSelectedCloseButtonBackground"          ResourceKey="SystemControlTransparentBrush" />
-
             <StaticResource x:Key="TabViewItemHeaderCloseButtonForeground"                  ResourceKey="SystemControlBackgroundBaseMediumBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonForegroundPressed"           ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonForegroundPointerOver"       ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
@@ -67,16 +66,16 @@
             <StaticResource x:Key="TabViewItemIconForegroundSelected"        ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TabViewItemIconForegroundPointerOver"     ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TabViewItemIconForegroundDisabled"        ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            
             <StaticResource x:Key="TabViewButtonBackground"                  ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundPressed"           ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundPointerOver"       ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="TabViewButtonBackgroundPressed"           ResourceKey="SystemAltMediumColor" />
+            <StaticResource x:Key="TabViewButtonBackgroundPointerOver"       ResourceKey="SystemAltMediumLowColor" />
             <StaticResource x:Key="TabViewButtonBackgroundDisabled"          ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundActiveTab"         ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewButtonForeground"                  ResourceKey="SystemControlBackgroundBaseMediumBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundPressed"           ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundPointerOver"       ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundPressed"           ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundPointerOver"       ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewButtonForegroundDisabled"          ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundActiveTab"         ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+
             <StaticResource x:Key="TabViewScrollButtonBackground"            ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                     ResourceKey="SystemControlForegroundBaseLowBrush" />
 
@@ -115,16 +114,14 @@
             <StaticResource x:Key="TabViewItemIconForegroundDisabled"        ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             
             <StaticResource x:Key="TabViewButtonBackground"                  ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundPressed"           ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundPointerOver"       ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="TabViewButtonBackgroundPressed"           ResourceKey="SystemControlHighlightChromeHighBrush" />
+            <StaticResource x:Key="TabViewButtonBackgroundPointerOver"       ResourceKey="SystemControlHighlightChromeHighBrush" />
             <StaticResource x:Key="TabViewButtonBackgroundDisabled"          ResourceKey="SystemControlBackgroundBaseLowBrush" />
-            <StaticResource x:Key="TabViewButtonBackgroundActiveTab"         ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewButtonForeground"                  ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundPressed"           ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundPointerOver"       ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundPressed"           ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="TabViewButtonForegroundPointerOver"       ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="TabViewButtonForegroundDisabled"          ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="TabViewButtonForegroundActiveTab"         ResourceKey="SystemControlBackgroundBaseMediumBrush" />
-           
+
             <StaticResource x:Key="TabViewScrollButtonBackground"            ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                     ResourceKey="SystemControlForegroundBaseLowBrush" />
 
