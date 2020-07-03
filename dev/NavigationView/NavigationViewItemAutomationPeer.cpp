@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -47,7 +47,8 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
     if (pattern == winrt::PatternInterface::SelectionItem ||
-        pattern == winrt::PatternInterface::Invoke ||
+        // Only provide Invoke pattern when we are a ListItem i.e. not on top navigation
+        (pattern == winrt::PatternInterface::Invoke && !IsOnTopNavigation())||
         // Only provide expand collapse pattern if we have children!
         (pattern == winrt::PatternInterface::ExpandCollapse && HasChildren()))
     {
