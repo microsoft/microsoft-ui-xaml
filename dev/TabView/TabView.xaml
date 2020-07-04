@@ -626,7 +626,8 @@
                             VerticalAlignment="Bottom"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius}, Path=BottomLeft}"
                             Margin="{Binding Source={ThemeResource OverlayCornerRadius},
-                                Converter={StaticResource TabViewLeftInsetCornerConverter}}"                            Stretch="Uniform"
+                                Converter={StaticResource TabViewLeftInsetCornerConverter}}"
+                            Stretch="Uniform"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" /> 
                         <Path
