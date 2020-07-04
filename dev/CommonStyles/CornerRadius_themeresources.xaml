@@ -31,4 +31,7 @@
     <primitives:CornerRadiusToThicknessConverter x:Key="LeftThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromLeft"/>
     <primitives:CornerRadiusToThicknessConverter x:Key="RightThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromRight"/>
 
+    <primitives:CornerRadiusToFilteredMultipliedThicknessConverter x:Key="TabViewLeftInsetCornerConverter" Side="Left" Multiplier="-1"/>
+    <primitives:CornerRadiusToFilteredMultipliedThicknessConverter x:Key="TabViewRightInsetCornerConverter" Side="Right" Multiplier="-1"/>
+
 </ResourceDictionary>
