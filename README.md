@@ -88,13 +88,13 @@ Some features may have a reduced or slightly different user experience on older 
 
 For info on the WinUI release schedule and high level plans please see the [Windows UI Library Roadmap](docs/roadmap.md).
 
+## WinUI is a part of the Project Reunion family
+[Project Reunion](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. Project Reunion combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
+ 
+Other Project Reunion components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Project Reunion, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/ProjectReunion). 
+
 ## Data/Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our products and services. See the [privacy statement](privacy.md) for more details.
 
 For more information on telemetry implementation see the [developer guide](docs/developer_guide.md#Telemetry).
-
-## WinUI is a part of the Project Reunion family
-[Project Reunion](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. Project Reunion combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
- 
-Other Project Reunion components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Project Reunion, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/ProjectReunion). 
