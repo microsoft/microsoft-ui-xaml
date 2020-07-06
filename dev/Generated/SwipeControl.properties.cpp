@@ -113,7 +113,10 @@ void SwipeControlProperties::OnTopItemsPropertyChanged(
 
 void SwipeControlProperties::BottomItems(winrt::SwipeItems const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeControl*>(this)->SetValue(s_BottomItemsProperty, ValueHelper<winrt::SwipeItems>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeItems SwipeControlProperties::BottomItems()
@@ -123,7 +126,10 @@ winrt::SwipeItems SwipeControlProperties::BottomItems()
 
 void SwipeControlProperties::LeftItems(winrt::SwipeItems const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeControl*>(this)->SetValue(s_LeftItemsProperty, ValueHelper<winrt::SwipeItems>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeItems SwipeControlProperties::LeftItems()
@@ -133,7 +139,10 @@ winrt::SwipeItems SwipeControlProperties::LeftItems()
 
 void SwipeControlProperties::RightItems(winrt::SwipeItems const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeControl*>(this)->SetValue(s_RightItemsProperty, ValueHelper<winrt::SwipeItems>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeItems SwipeControlProperties::RightItems()
@@ -143,7 +152,10 @@ winrt::SwipeItems SwipeControlProperties::RightItems()
 
 void SwipeControlProperties::TopItems(winrt::SwipeItems const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeControl*>(this)->SetValue(s_TopItemsProperty, ValueHelper<winrt::SwipeItems>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeItems SwipeControlProperties::TopItems()

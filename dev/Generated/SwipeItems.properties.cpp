@@ -50,7 +50,10 @@ void SwipeItemsProperties::OnModePropertyChanged(
 
 void SwipeItemsProperties::Mode(winrt::SwipeMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItems*>(this)->SetValue(s_ModeProperty, ValueHelper<winrt::SwipeMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeMode SwipeItemsProperties::Mode()

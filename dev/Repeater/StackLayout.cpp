@@ -59,7 +59,7 @@ winrt::Size StackLayout::MeasureOverride(
 {
     GetAsStackState(context.LayoutState())->OnMeasureStart();
 
-    auto desiredSize = GetFlowAlgorithm(context).Measure(
+    const auto desiredSize = GetFlowAlgorithm(context).Measure(
         availableSize,
         context,
         false, /* isWrapping*/
@@ -76,7 +76,7 @@ winrt::Size StackLayout::ArrangeOverride(
     winrt::VirtualizingLayoutContext const& context,
     winrt::Size const& finalSize)
 {
-    auto value = GetFlowAlgorithm(context).Arrange(
+    const auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
         false, /* isWraping */
@@ -302,14 +302,14 @@ void StackLayout::Algorithm_OnElementMeasured(
 
 void StackLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto property = args.Property();
+    const auto property = args.Property();
     if (property == s_OrientationProperty)
     {
-        auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
+        const auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
         //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
         //Horizontal Orientation means we have a Horizontal ScrollOrientation.
-        ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical;
+        const ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
     else if (property == s_SpacingProperty)

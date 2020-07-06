@@ -195,7 +195,7 @@ winrt::IReference<bool> SelectionNode::IsSelectedWithPartial()
         const auto it = std::find_if(parentsChildren.cbegin(), parentsChildren.cend(), [this](const std::shared_ptr<SelectionNode>& node) { return node.get() == this; });
         if (it != parentsChildren.end())
         {
-            auto myIndexInParent = static_cast<int>(it - parentsChildren.begin());
+            const auto myIndexInParent = static_cast<int>(it - parentsChildren.begin());
             isSelected = m_parent->IsSelectedWithPartial(myIndexInParent);
         }
     }
@@ -287,7 +287,7 @@ void SelectionNode::SelectAll()
 {
     if (m_dataSource)
     {
-        auto size = m_dataSource.get().Count();
+        const auto size = m_dataSource.get().Count();
         if (size > 0)
         {
             SelectRange(IndexRange(0, size - 1), true /* select */);
@@ -342,7 +342,7 @@ void SelectionNode::AddRange(const IndexRange& addRange, bool raiseOnSelectionCh
     // TODO: Check for duplicates (Task 14107720)
     // TODO: Optimize by merging adjacent ranges (Task 14107720)
 
-    int oldCount = SelectedCount();
+    const int oldCount = SelectedCount();
 
     for (int i = addRange.Begin(); i <= addRange.End(); i++)
     {
@@ -365,7 +365,7 @@ void SelectionNode::AddRange(const IndexRange& addRange, bool raiseOnSelectionCh
 
 void SelectionNode::RemoveRange(const IndexRange& removeRange, bool raiseOnSelectionChanged)
 {
-    int oldCount = m_selectedCount;
+    const int oldCount = m_selectedCount;
 
     // TODO: Prevent overlap of Ranges in _selected (Task 14107720)
     for (int i = removeRange.Begin(); i <= removeRange.End(); i++)
@@ -417,19 +417,19 @@ void SelectionNode::RemoveRange(const IndexRange& removeRange, bool raiseOnSelec
             }
         }
 
-        bool change = ((toRemove.size() > 0) || (toAdd.size() > 0));
+        const bool change = ((toRemove.size() > 0) || (toAdd.size() > 0));
 
         if (change)
         {
             // Remove tagged ranges
-            for (IndexRange& remove : toRemove)
+            for (const IndexRange& remove : toRemove)
             {
                 auto iter = std::find(m_selected.begin(), m_selected.end(), remove);
                 m_selected.erase(iter);
             }
 
             // Add new ranges
-            for (IndexRange& add : toAdd)
+            for (const IndexRange& add : toAdd)
             {
                 m_selected.emplace_back(add);
             }
@@ -470,7 +470,7 @@ bool SelectionNode::Select(int index, bool select, bool raiseOnSelectionChanged)
             return true;
         }
 
-        auto range = IndexRange(index, index);
+        const auto range = IndexRange(index, index);
 
         if (select)
         {
@@ -718,13 +718,13 @@ winrt::IReference<bool> SelectionNode::ConvertToNullableBool(SelectionState isSe
 SelectionState SelectionNode::EvaluateIsSelectedBasedOnChildrenNodes()
 {
     SelectionState selectionState = SelectionState::NotSelected;
-    int realizedChildrenNodeCount = RealizedChildrenNodeCount();
+    const int realizedChildrenNodeCount = RealizedChildrenNodeCount();
     int selectedCount = SelectedCount();
 
     if (realizedChildrenNodeCount != 0 || selectedCount != 0)
     {
         // There are realized children or some selected leaves.
-        int dataCount = DataCount();
+        const int dataCount = DataCount();
         if (realizedChildrenNodeCount == 0 && selectedCount > 0)
         {
             // All nodes are leaves under it - we didn't create children nodes as an optimization.
@@ -737,7 +737,6 @@ SelectionState SelectionNode::EvaluateIsSelectedBasedOnChildrenNodes()
         {
             // There are child nodes, walk them individually and evaluate based on each child
             // being selected/not selected or partially selected.
-            bool isSelected = false;
             selectedCount = 0;
             int notSelectedCount = 0;
             for (int i = 0; i < ChildrenNodeCount(); i++)

@@ -176,7 +176,10 @@ void RadialGradientBrushProperties::OnSpreadMethodPropertyChanged(
 
 void RadialGradientBrushProperties::Center(winrt::Point const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_CenterProperty, ValueHelper<winrt::Point>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Point RadialGradientBrushProperties::Center()
@@ -186,7 +189,10 @@ winrt::Point RadialGradientBrushProperties::Center()
 
 void RadialGradientBrushProperties::GradientOrigin(winrt::Point const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_GradientOriginProperty, ValueHelper<winrt::Point>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Point RadialGradientBrushProperties::GradientOrigin()
@@ -196,7 +202,10 @@ winrt::Point RadialGradientBrushProperties::GradientOrigin()
 
 void RadialGradientBrushProperties::InterpolationSpace(winrt::CompositionColorSpace const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_InterpolationSpaceProperty, ValueHelper<winrt::CompositionColorSpace>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CompositionColorSpace RadialGradientBrushProperties::InterpolationSpace()
@@ -206,7 +215,10 @@ winrt::CompositionColorSpace RadialGradientBrushProperties::InterpolationSpace()
 
 void RadialGradientBrushProperties::MappingMode(winrt::BrushMappingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_MappingModeProperty, ValueHelper<winrt::BrushMappingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::BrushMappingMode RadialGradientBrushProperties::MappingMode()
@@ -216,7 +228,10 @@ winrt::BrushMappingMode RadialGradientBrushProperties::MappingMode()
 
 void RadialGradientBrushProperties::RadiusX(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_RadiusXProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double RadialGradientBrushProperties::RadiusX()
@@ -226,7 +241,10 @@ double RadialGradientBrushProperties::RadiusX()
 
 void RadialGradientBrushProperties::RadiusY(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_RadiusYProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double RadialGradientBrushProperties::RadiusY()
@@ -236,7 +254,10 @@ double RadialGradientBrushProperties::RadiusY()
 
 void RadialGradientBrushProperties::SpreadMethod(winrt::GradientSpreadMethod const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadialGradientBrush*>(this)->SetValue(s_SpreadMethodProperty, ValueHelper<winrt::GradientSpreadMethod>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::GradientSpreadMethod RadialGradientBrushProperties::SpreadMethod()

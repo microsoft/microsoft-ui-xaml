@@ -773,6 +773,8 @@ $@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);");
 @"void {0}Properties::{1}({2} {3}value)
 {{", ownerType.Name, prop.Name, prop.PropertyCppName, CppInputModifier(prop.PropertyType)));
                     string localName = "value";
+                    sb.AppendLine(@"    [[gsl::suppress(con)]]
+    {");
                     if (prop.PropertyValidationCallback != null)
                     {
                         localName = "coercedValue";
@@ -780,6 +782,7 @@ $@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);");
                         sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->{prop.PropertyValidationCallback}({localName});");
                     }
                     sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->SetValue(s_{prop.Name}Property, ValueHelper<{prop.PropertyCppName}>::BoxValueIfNecessary({localName}));
+    }}
 }}");
                     sb.AppendLine(String.Format(@"
 {0} {1}Properties::{2}()

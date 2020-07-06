@@ -198,7 +198,7 @@ void RefreshVisualizer::OnOrientationChangedImpl()
 void RefreshVisualizer::OnStateChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_INT_INT, METH_NAME, this, args.OldValue(), args.NewValue());
-    winrt::RefreshVisualizerState oldstate = m_state;
+    const winrt::RefreshVisualizerState oldstate = m_state;
     m_state = State();
     UpdateContent();
     RaiseRefreshStateChanged(oldstate, m_state);
@@ -259,9 +259,9 @@ void RefreshVisualizer::UpdateContent()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     if (m_content)
     {
-        winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
+        const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
 
-        winrt::Size contentSize = m_content.get().RenderSize();
+        const winrt::Size contentSize = m_content.get().RenderSize();
         contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         switch (m_state)
@@ -350,18 +350,18 @@ void RefreshVisualizer::ExecuteInteractingAnimations()
         }
 
         //Set up the InteractionRatioRotationAnimation
-        winrt::Size contentSize = m_content.get().RenderSize();
+        const winrt::Size contentSize = m_content.get().RenderSize();
         contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
-        winrt::hstring interactionRatioPropertyName = m_refreshInfoProvider.get().InteractionRatioCompositionProperty();
-        winrt::CompositionPropertySet interactionRatioPropertySet = m_refreshInfoProvider.get().CompositionProperties();
+        const winrt::hstring interactionRatioPropertyName = m_refreshInfoProvider.get().InteractionRatioCompositionProperty();
+        const winrt::CompositionPropertySet interactionRatioPropertySet = m_refreshInfoProvider.get().CompositionProperties();
 
-        winrt::ExpressionAnimation contentInteractionRatioRotationAnimation = m_compositor.get().CreateExpressionAnimation(
+        const winrt::ExpressionAnimation contentInteractionRatioRotationAnimation = m_compositor.get().CreateExpressionAnimation(
             L"startingRotationAngle + (Pi * (Clamp(RefreshInteractionRatioPropertySet." +
             static_cast<std::wstring>(interactionRatioPropertyName) +
             L", 0.0f, contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) / contentVisual.DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO) * 2)");
 
-        auto thresholdRatioName{ L"DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO"sv };
+        const auto thresholdRatioName{ L"DEFAULT_REFRESHINDICATOR_THRESHOLD_RATIO"sv };
         contentVisual.Properties().InsertScalar(thresholdRatioName, static_cast<float>(m_executionRatio));
         contentInteractionRatioRotationAnimation.SetReferenceParameter(L"contentVisual", contentVisual);
         contentInteractionRatioRotationAnimation.SetReferenceParameter(L"RefreshInteractionRatioPropertySet", interactionRatioPropertySet);
@@ -370,11 +370,11 @@ void RefreshVisualizer::ExecuteInteractingAnimations()
         contentVisual.StartAnimation(L"RotationAngle", contentInteractionRatioRotationAnimation);
 
         //Set up the InteractionRatioOpacityAnimation
-        winrt::ExpressionAnimation contentInteractionRatioOpacityAnimation = m_compositor.get().CreateExpressionAnimation(
+        const winrt::ExpressionAnimation contentInteractionRatioOpacityAnimation = m_compositor.get().CreateExpressionAnimation(
             L"((1.0f - contentVisual.MINIMUM_INDICATOR_OPACITY) * RefreshInteractionRatioPropertySet."
             + static_cast<std::wstring>(interactionRatioPropertyName) +
             L") + contentVisual.MINIMUM_INDICATOR_OPACITY");
-        auto minOpacityName{ L"MINIMUM_INDICATOR_OPACITY"sv };
+        const auto minOpacityName{ L"MINIMUM_INDICATOR_OPACITY"sv };
         contentVisual.Properties().InsertScalar(minOpacityName, MINIMUM_INDICATOR_OPACITY);
         contentInteractionRatioOpacityAnimation.SetReferenceParameter(L"contentVisual", contentVisual);
         contentInteractionRatioOpacityAnimation.SetReferenceParameter(L"RefreshInteractionRatioPropertySet", interactionRatioPropertySet);
@@ -440,18 +440,18 @@ void RefreshVisualizer::ExecuteScaleUpAnimation()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     if (m_content)
     {
-        winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
+        const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
         if (!m_compositor)
         {
             m_compositor.set(contentVisual.Compositor());
         }
 
-        winrt::Vector2KeyFrameAnimation contentScaleAnimation = m_compositor.get().CreateVector2KeyFrameAnimation();
+        const winrt::Vector2KeyFrameAnimation contentScaleAnimation = m_compositor.get().CreateVector2KeyFrameAnimation();
         contentScaleAnimation.InsertKeyFrame(0.5f, winrt::float2(1.50f, 1.50f));
         contentScaleAnimation.InsertKeyFrame(1.0f, winrt::float2(1.0f, 1.0f));
         contentScaleAnimation.Duration(300ms);
 
-        winrt::Size contentSize = m_content.get().RenderSize();
+        const winrt::Size contentSize = m_content.get().RenderSize();
         contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         contentVisual.StartAnimation(L"Scale.XY", contentScaleAnimation);
@@ -463,19 +463,19 @@ void RefreshVisualizer::ExecuteExecutingRotationAnimation()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     if (m_content)
     {
-        winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
+        const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
         if (!m_compositor)
         {
             m_compositor.set(contentVisual.Compositor());
         }
 
-        winrt::ScalarKeyFrameAnimation contentExecutionRotationAnimation = m_compositor.get().CreateScalarKeyFrameAnimation();
+        const winrt::ScalarKeyFrameAnimation contentExecutionRotationAnimation = m_compositor.get().CreateScalarKeyFrameAnimation();
         contentExecutionRotationAnimation.InsertKeyFrame(0.0f, m_startingRotationAngle, m_compositor.get().CreateLinearEasingFunction());
         contentExecutionRotationAnimation.InsertKeyFrame(1.0f, m_startingRotationAngle + (float)(2.0f * M_PI), m_compositor.get().CreateLinearEasingFunction());
         contentExecutionRotationAnimation.Duration(500ms);
         contentExecutionRotationAnimation.IterationBehavior(winrt::AnimationIterationBehavior::Forever);
 
-        winrt::Size contentSize = m_content.get().RenderSize();
+        const winrt::Size contentSize = m_content.get().RenderSize();
         contentVisual.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
 
         contentVisual.StartAnimation(L"RotationAngle", contentExecutionRotationAnimation);
@@ -494,7 +494,7 @@ void RefreshVisualizer::UpdateRefreshState(const winrt::RefreshVisualizerState& 
 void RefreshVisualizer::RaiseRefreshStateChanged(const winrt::RefreshVisualizerState& oldState, const winrt::RefreshVisualizerState& newState)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_INT_INT, METH_NAME, this, oldState, newState);
-    auto e = winrt::make<RefreshStateChangedEventArgs>(oldState, newState);
+    const auto e = winrt::make<RefreshStateChangedEventArgs>(oldState, newState);
     m_refreshStateChangedEventSource(*this, e);
 }
 
@@ -503,14 +503,14 @@ void RefreshVisualizer::RaiseRefreshRequested()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     com_ptr<RefreshVisualizer> strongThis = get_strong();
 
-    winrt::Deferral instance{ [strongThis]()
+    const winrt::Deferral instance{ [strongThis]()
         {
             strongThis->CheckThread();
             strongThis->RefreshCompleted();
         } 
     };
 
-    auto args = winrt::make_self<RefreshRequestedEventArgs>(instance);
+    const auto args = winrt::make_self<RefreshRequestedEventArgs>(instance);
 
     //This makes sure that everyone registered for this event can get access to the deferral
     //Otherwise someone could complete the deferral before someone else has had a chance to grab it
@@ -558,7 +558,7 @@ void RefreshVisualizer::RefreshInfoProvider_InteractingForRefreshChanged(const  
 void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(const winrt::IRefreshInfoProvider& /*sender*/, const winrt::RefreshInteractionRatioChangedEventArgs& e)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, e.InteractionRatio());
-    bool wasAtZero = m_interactionRatio == 0.0f;
+    const bool wasAtZero = m_interactionRatio == 0.0f;
     m_interactionRatio = e.InteractionRatio();
     if (m_isInteractingForRefresh)
     {
