@@ -1,4 +1,7 @@
 [CmdLetBinding()]
+# Example usage:
+# ./GenerateNewControlProject.ps1 MyControl
+#
 Param(
     [Parameter(Mandatory = $true)]
     [string]$controlName
@@ -137,7 +140,6 @@ namespace SolutionHelper
                 return;
             }
             var dte = (EnvDTE.DTE)System.Activator.CreateInstance(dteType);
-            var sln = (SolutionClass)dte.Solution;
             Solution2 solution = (Solution2)dte.Solution;
             Console.WriteLine("Got solution class");
 
@@ -159,7 +161,7 @@ namespace SolutionHelper
                 Console.WriteLine("Adding source");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems");
                 Console.WriteLine("Adding test UI");
-                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)/TestUI/$($controlName)_TestUI.shproj");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\TestUI\\$($controlName)_TestUI.shproj");
                 Console.WriteLine("Adding interactions test");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj");
                 Console.WriteLine("Finished adding projects, saving solution");
@@ -172,6 +174,18 @@ namespace SolutionHelper
 }
 "@
 
+# Add vswhere path to environment paths
+$env:path += ';' + ${env:ProgramFiles(x86)} + "\Microsoft Visual Studio\Installer\"
+
+# Call vswhere to get the installation path
+$vspath = vswhere -property installationPath
+
+# Generate dll location
+$solutionPaths = $vspath + "\Common7\IDE\PublicAssemblies";
+
+# Load dll's
+[void]([System.Reflection.Assembly]::LoadFrom($solutionPaths + "\envdte.dll"))
+[void]([System.Reflection.Assembly]::LoadFrom($solutionPaths + "\envdte80.dll"))
 
 Add-Type -ReferencedAssemblies $assemblies -TypeDefinition $source -Language CSharp
 

@@ -113,7 +113,10 @@ void FlowLayoutProperties::OnOrientationPropertyChanged(
 
 void FlowLayoutProperties::LineAlignment(winrt::FlowLayoutLineAlignment const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FlowLayout*>(this)->SetValue(s_LineAlignmentProperty, ValueHelper<winrt::FlowLayoutLineAlignment>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FlowLayoutLineAlignment FlowLayoutProperties::LineAlignment()
@@ -123,7 +126,10 @@ winrt::FlowLayoutLineAlignment FlowLayoutProperties::LineAlignment()
 
 void FlowLayoutProperties::MinColumnSpacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FlowLayout*>(this)->SetValue(s_MinColumnSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double FlowLayoutProperties::MinColumnSpacing()
@@ -133,7 +139,10 @@ double FlowLayoutProperties::MinColumnSpacing()
 
 void FlowLayoutProperties::MinRowSpacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FlowLayout*>(this)->SetValue(s_MinRowSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double FlowLayoutProperties::MinRowSpacing()
@@ -143,7 +152,10 @@ double FlowLayoutProperties::MinRowSpacing()
 
 void FlowLayoutProperties::Orientation(winrt::Orientation const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FlowLayout*>(this)->SetValue(s_OrientationProperty, ValueHelper<winrt::Orientation>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Orientation FlowLayoutProperties::Orientation()

@@ -21,8 +21,8 @@ winrt::IReference<bool> ScrollViewTestHooks::GetAutoHideScrollControllers(const 
 {
     if (scrollView && s_testHooks)
     {
-        auto hooks = EnsureGlobalTestHooks();
-        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollView);
+        const auto hooks = EnsureGlobalTestHooks();
+        const auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollView);
 
         if (iterator != hooks->m_autoHideScrollControllersMap.end())
         {
@@ -37,8 +37,8 @@ void ScrollViewTestHooks::SetAutoHideScrollControllers(const winrt::ScrollView& 
 {
     if (scrollView && (s_testHooks || value))
     {
-        auto hooks = EnsureGlobalTestHooks();
-        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollView);
+        const auto hooks = EnsureGlobalTestHooks();
+        const auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollView);
 
         if (iterator != hooks->m_autoHideScrollControllersMap.end())
         {

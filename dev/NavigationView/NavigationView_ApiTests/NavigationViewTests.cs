@@ -790,5 +790,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(true);
             });
         }
+
+        [TestMethod]
+        public void VerifyExpandCollapseChevronVisibility()
+        {
+            NavigationView navView = null;
+            NavigationViewItem parentItem = null;
+            ObservableCollection<string> children = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                Content = navView;
+
+                children = new ObservableCollection<string>();
+                parentItem = new NavigationViewItem() { Content = "ParentItem", MenuItemsSource = children };
+
+                navView.MenuItems.Add(parentItem);
+
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                UIElement chevronUIElement = (UIElement)VisualTreeUtils.FindVisualChildByName(parentItem, "ExpandCollapseChevron");
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem has no children");
+
+                // Add a child to parentItem through the MenuItemsSource API. This should make the chevron visible.
+                children.Add("Child 1");
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
+                // Remove all children of parentItem. This should collapse the chevron
+                children.Clear();
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
+
+                // Add a child to parentItem and set the MenuItemsSource as null. This should collapse the chevron
+                children.Add("Child 2");
+                Content.UpdateLayout();
+
+                // we are doing this so that when we set MenuItemsSource as null, we can check if the chevron's visibility really changes
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
+                parentItem.MenuItemsSource = null;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
+
+                // Add a child to parentItem through the MenuItems API. This should make the chevron visible.
+                parentItem.MenuItems.Add(new NavigationViewItem() { Content = "Child 3" });
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
+                // Remove all children of parentItem. This should collapse the chevron
+                parentItem.MenuItems.Clear();
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
+            });
+        }
+
     }
 }

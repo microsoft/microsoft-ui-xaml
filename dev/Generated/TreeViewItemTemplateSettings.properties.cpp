@@ -81,7 +81,10 @@ void TreeViewItemTemplateSettingsProperties::ClearProperties()
 
 void TreeViewItemTemplateSettingsProperties::CollapsedGlyphVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItemTemplateSettings*>(this)->SetValue(s_CollapsedGlyphVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility TreeViewItemTemplateSettingsProperties::CollapsedGlyphVisibility()
@@ -91,7 +94,10 @@ winrt::Visibility TreeViewItemTemplateSettingsProperties::CollapsedGlyphVisibili
 
 void TreeViewItemTemplateSettingsProperties::DragItemsCount(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItemTemplateSettings*>(this)->SetValue(s_DragItemsCountProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int TreeViewItemTemplateSettingsProperties::DragItemsCount()
@@ -101,7 +107,10 @@ int TreeViewItemTemplateSettingsProperties::DragItemsCount()
 
 void TreeViewItemTemplateSettingsProperties::ExpandedGlyphVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItemTemplateSettings*>(this)->SetValue(s_ExpandedGlyphVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility TreeViewItemTemplateSettingsProperties::ExpandedGlyphVisibility()
@@ -111,7 +120,10 @@ winrt::Visibility TreeViewItemTemplateSettingsProperties::ExpandedGlyphVisibilit
 
 void TreeViewItemTemplateSettingsProperties::Indentation(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItemTemplateSettings*>(this)->SetValue(s_IndentationProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness TreeViewItemTemplateSettingsProperties::Indentation()

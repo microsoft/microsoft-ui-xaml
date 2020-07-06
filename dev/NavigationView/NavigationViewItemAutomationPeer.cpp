@@ -205,7 +205,7 @@ void NavigationViewItemAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt:
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
+        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
             winrt::ExpandCollapseState::Collapsed :
             winrt::ExpandCollapseState::Expanded;
 
@@ -370,7 +370,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(Au
     {
         if (auto const itemsSourceView = parentRepeater.ItemsSourceView())
         {
-            auto numberOfElements = itemsSourceView.Count();
+            auto const numberOfElements = itemsSourceView.Count();
 
             for (int32_t i = 0; i < numberOfElements; i++)
             {

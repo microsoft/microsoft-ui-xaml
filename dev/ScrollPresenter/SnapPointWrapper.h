@@ -38,10 +38,10 @@ public:
     std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> GetUpdatedExpressionAnimationsForImpulse(
         bool isInertiaFromImpulse);
     void DetermineActualApplicableZone(
-        SnapPointWrapper<T>* previousSnapPointWrapper,
-        SnapPointWrapper<T>* nextSnapPointWrapper,
+        const SnapPointWrapper<T>* previousSnapPointWrapper,
+        const SnapPointWrapper<T>* nextSnapPointWrapper,
         bool forImpulseOnly);
-    void Combine(SnapPointWrapper<T>* snapPointWrapper);
+    void Combine(const SnapPointWrapper<T>* snapPointWrapper);
     double Evaluate(double value) const;
     bool SnapsAt(double value) const;
 
@@ -68,7 +68,7 @@ struct SnapPointWrapperComparator
         winrt::SnapPointBase winrtLeftSnapPoint = left->SnapPoint().as<winrt::SnapPointBase>();
         winrt::SnapPointBase winrtRightSnapPoint = right->SnapPoint().as<winrt::SnapPointBase>();
         SnapPointBase* leftSnapPoint = winrt::get_self<SnapPointBase>(winrtLeftSnapPoint);
-        SnapPointBase* rightSnapPoint = winrt::get_self<SnapPointBase>(winrtRightSnapPoint);
+        const SnapPointBase* rightSnapPoint = winrt::get_self<SnapPointBase>(winrtRightSnapPoint);
 
         return *leftSnapPoint < rightSnapPoint;
     }

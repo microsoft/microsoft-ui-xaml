@@ -102,7 +102,10 @@ void ColumnMajorUniformToLargestGridLayoutProperties::OnRowSpacingPropertyChange
 
 void ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_ColumnSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing()
@@ -112,9 +115,12 @@ double ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing()
 
 void ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     int coercedValue = value;
     static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->ValidateGreaterThanZero(coercedValue);
     static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_MaxColumnsProperty, ValueHelper<int>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 int ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns()
@@ -124,7 +130,10 @@ int ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns()
 
 void ColumnMajorUniformToLargestGridLayoutProperties::RowSpacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_RowSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ColumnMajorUniformToLargestGridLayoutProperties::RowSpacing()

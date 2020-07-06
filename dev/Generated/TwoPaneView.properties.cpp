@@ -232,7 +232,10 @@ void TwoPaneViewProperties::OnWideModeConfigurationPropertyChanged(
 
 void TwoPaneViewProperties::MinTallModeHeight(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_MinTallModeHeightProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double TwoPaneViewProperties::MinTallModeHeight()
@@ -242,7 +245,10 @@ double TwoPaneViewProperties::MinTallModeHeight()
 
 void TwoPaneViewProperties::MinWideModeWidth(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_MinWideModeWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double TwoPaneViewProperties::MinWideModeWidth()
@@ -252,7 +258,10 @@ double TwoPaneViewProperties::MinWideModeWidth()
 
 void TwoPaneViewProperties::Mode(winrt::TwoPaneViewMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_ModeProperty, ValueHelper<winrt::TwoPaneViewMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TwoPaneViewMode TwoPaneViewProperties::Mode()
@@ -262,7 +271,10 @@ winrt::TwoPaneViewMode TwoPaneViewProperties::Mode()
 
 void TwoPaneViewProperties::Pane1(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_Pane1Property, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement TwoPaneViewProperties::Pane1()
@@ -272,7 +284,10 @@ winrt::UIElement TwoPaneViewProperties::Pane1()
 
 void TwoPaneViewProperties::Pane1Length(winrt::GridLength const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_Pane1LengthProperty, ValueHelper<winrt::GridLength>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::GridLength TwoPaneViewProperties::Pane1Length()
@@ -282,7 +297,10 @@ winrt::GridLength TwoPaneViewProperties::Pane1Length()
 
 void TwoPaneViewProperties::Pane2(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_Pane2Property, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement TwoPaneViewProperties::Pane2()
@@ -292,7 +310,10 @@ winrt::UIElement TwoPaneViewProperties::Pane2()
 
 void TwoPaneViewProperties::Pane2Length(winrt::GridLength const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_Pane2LengthProperty, ValueHelper<winrt::GridLength>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::GridLength TwoPaneViewProperties::Pane2Length()
@@ -302,7 +323,10 @@ winrt::GridLength TwoPaneViewProperties::Pane2Length()
 
 void TwoPaneViewProperties::PanePriority(winrt::TwoPaneViewPriority const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_PanePriorityProperty, ValueHelper<winrt::TwoPaneViewPriority>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TwoPaneViewPriority TwoPaneViewProperties::PanePriority()
@@ -312,7 +336,10 @@ winrt::TwoPaneViewPriority TwoPaneViewProperties::PanePriority()
 
 void TwoPaneViewProperties::TallModeConfiguration(winrt::TwoPaneViewTallModeConfiguration const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_TallModeConfigurationProperty, ValueHelper<winrt::TwoPaneViewTallModeConfiguration>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TwoPaneViewTallModeConfiguration TwoPaneViewProperties::TallModeConfiguration()
@@ -322,7 +349,10 @@ winrt::TwoPaneViewTallModeConfiguration TwoPaneViewProperties::TallModeConfigura
 
 void TwoPaneViewProperties::WideModeConfiguration(winrt::TwoPaneViewWideModeConfiguration const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TwoPaneView*>(this)->SetValue(s_WideModeConfigurationProperty, ValueHelper<winrt::TwoPaneViewWideModeConfiguration>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TwoPaneViewWideModeConfiguration TwoPaneViewProperties::WideModeConfiguration()

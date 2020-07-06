@@ -107,7 +107,10 @@ void RatingItemFontInfoProperties::ClearProperties()
 
 void RatingItemFontInfoProperties::DisabledGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemFontInfo*>(this)->SetValue(s_DisabledGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingItemFontInfoProperties::DisabledGlyph()
@@ -117,7 +120,10 @@ winrt::hstring RatingItemFontInfoProperties::DisabledGlyph()
 
 void RatingItemFontInfoProperties::Glyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemFontInfo*>(this)->SetValue(s_GlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingItemFontInfoProperties::Glyph()
@@ -127,7 +133,10 @@ winrt::hstring RatingItemFontInfoProperties::Glyph()
 
 void RatingItemFontInfoProperties::PlaceholderGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemFontInfo*>(this)->SetValue(s_PlaceholderGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingItemFontInfoProperties::PlaceholderGlyph()
@@ -137,7 +146,10 @@ winrt::hstring RatingItemFontInfoProperties::PlaceholderGlyph()
 
 void RatingItemFontInfoProperties::PointerOverGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemFontInfo*>(this)->SetValue(s_PointerOverGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingItemFontInfoProperties::PointerOverGlyph()
@@ -147,7 +159,10 @@ winrt::hstring RatingItemFontInfoProperties::PointerOverGlyph()
 
 void RatingItemFontInfoProperties::PointerOverPlaceholderGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemFontInfo*>(this)->SetValue(s_PointerOverPlaceholderGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingItemFontInfoProperties::PointerOverPlaceholderGlyph()
@@ -157,7 +172,10 @@ winrt::hstring RatingItemFontInfoProperties::PointerOverPlaceholderGlyph()
 
 void RatingItemFontInfoProperties::UnsetGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemFontInfo*>(this)->SetValue(s_UnsetGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingItemFontInfoProperties::UnsetGlyph()

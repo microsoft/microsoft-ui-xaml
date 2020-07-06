@@ -42,7 +42,10 @@ void NavigationViewItemPresenterProperties::ClearProperties()
 
 void NavigationViewItemPresenterProperties::Icon(winrt::IconElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItemPresenter*>(this)->SetValue(s_IconProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconElement NavigationViewItemPresenterProperties::Icon()

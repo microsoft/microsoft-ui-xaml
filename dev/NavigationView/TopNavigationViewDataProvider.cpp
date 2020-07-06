@@ -188,7 +188,7 @@ void TopNavigationViewDataProvider::UpdateWidthForPrimaryItem(int indexInPrimary
     auto vector = GetVector(NavigationViewSplitVectorID::PrimaryList);
     if (vector)
     {
-        auto index = vector->IndexToIndexInOriginalVector(indexInPrimary);
+        const auto index = vector->IndexToIndexInOriginalVector(indexInPrimary);
         SetWidthForItem(index, width);
     }
 }
@@ -258,7 +258,7 @@ void TopNavigationViewDataProvider::OverflowButtonWidth(float width)
 
 bool TopNavigationViewDataProvider::IsItemSelectableInPrimaryList(const winrt::IInspectable& value)
 {
-    int index = IndexOf(value);
+    const int index = IndexOf(value);
     return (index != -1);
 }
 

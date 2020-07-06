@@ -266,7 +266,7 @@ bool TeachingTip::UpdateTail()
     // An effective placement of auto indicates that no tail should be shown.
     auto const [placement, tipDoesNotFit] = DetermineEffectivePlacement();
     m_currentEffectiveTailPlacementMode = placement;
-    auto&& tailVisibility = TailVisibility();
+    const auto tailVisibility = TailVisibility();
     if (tailVisibility == winrt::TeachingTipTailVisibility::Collapsed || (!m_target && tailVisibility != winrt::TeachingTipTailVisibility::Visible))
     {
         m_currentEffectiveTailPlacementMode = winrt::TeachingTipPlacementMode::Auto;
@@ -441,7 +441,7 @@ void TeachingTip::PositionPopup()
 
 bool TeachingTip::PositionTargetedPopup()
 {
-    bool tipDoesNotFit = UpdateTail();
+    const bool tipDoesNotFit = UpdateTail();
     auto const offset = PlacementMargin();
 
     auto const [tipHeight, tipWidth] = [this]()
@@ -548,7 +548,7 @@ bool TeachingTip::PositionUntargetedPopup()
         return std::make_tuple(0.0, 0.0);
     }();
 
-    bool tipDoesNotFit = UpdateTail();
+    const bool tipDoesNotFit = UpdateTail();
 
     auto const offset = PlacementMargin();
 
@@ -711,7 +711,7 @@ void TeachingTip::UpdateButtonsState()
 {
     auto const actionContent = ActionButtonContent();
     auto const closeContent = CloseButtonContent();
-    bool isLightDismiss = IsLightDismissEnabled();
+    const bool isLightDismiss = IsLightDismissEnabled();
     if (actionContent && closeContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
@@ -1122,7 +1122,7 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
                 auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, auto const& args) {
                     m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
                 });
-                bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
+                const bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
                 args.Handled(setFocus);
             }
         }
@@ -1189,7 +1189,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
             {
                 try
                 {
-                    if (auto&& package = winrt::ApplicationModel::Package::Current())
+                    if (const auto package = winrt::ApplicationModel::Package::Current())
                     {
                         return package.DisplayName();
                     }
@@ -1722,8 +1722,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     availability[winrt::TeachingTipPlacementMode::RightBottom] = true;
     availability[winrt::TeachingTipPlacementMode::Center] = true;
 
-    double tipHeight = contentHeight + TailShortSideLength();
-    double tipWidth = contentWidth + TailShortSideLength();
+    const double tipHeight = contentHeight + TailShortSideLength();
+    const double tipWidth = contentWidth + TailShortSideLength();
 
     // We try to avoid having the tail touch the HeroContent so rule out positions where this would be required
     if (HeroContent())
@@ -2115,7 +2115,7 @@ void TeachingTip::EstablishShadows()
                 m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
                 if (auto&& contentRootGrid = m_contentRootGrid.get())
                 {
-                    auto&& contentRootGridTranslation = contentRootGrid.Translation();
+                    const auto contentRootGridTranslation = contentRootGrid.Translation();
                     contentRootGrid.Translation({ contentRootGridTranslation.x, contentRootGridTranslation.y, m_contentElevation });
                 }
             }
