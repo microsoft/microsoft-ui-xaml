@@ -215,7 +215,6 @@ void SplitButton::OpenFlyout()
         if (SharedHelpers::IsFlyoutShowOptionsAvailable())
         {
             winrt::FlyoutShowOptions options{};
-            options.Placement(winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft);
             flyout.ShowAt(*this, options);
         }
         else
