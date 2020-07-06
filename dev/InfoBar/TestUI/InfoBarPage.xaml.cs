@@ -21,6 +21,7 @@ namespace MUXControlsTestApp
         Color color;
         bool open;
         bool cancel;
+        bool showClose;
 
         public InfoBarPage()
         {
@@ -230,6 +231,20 @@ namespace MUXControlsTestApp
         private void Cancel_Unchecked(object sender, RoutedEventArgs e)
         {
             cancel = false;
+        }
+        private void ShowClose_Checked(object sender, RoutedEventArgs e)
+        {
+            showClose = true;
+        }
+
+        private void ShowClose_Unchecked(object sender, RoutedEventArgs e)
+        {
+            showClose = false;
+        }
+
+        private void ShowCloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            TestInfoBar.ShowCloseButton = showClose;
         }
     }
 }

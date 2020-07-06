@@ -110,7 +110,7 @@ namespace MUXControlsTestApp
             {
                 infoBar.UpdateSeverityState();
             }
-            else if (property == ActionButtonContentProperty || property == CloseButtonContentProperty)
+            else if (property == ActionButtonContentProperty || property == CloseButtonContentProperty || property == ShowCloseButtonProperty)
             {
                 infoBar.UpdateButtonsState();
             }
@@ -139,7 +139,7 @@ namespace MUXControlsTestApp
         }
 
         public static readonly DependencyProperty ShowCloseButtonProperty =
-            DependencyProperty.Register(nameof(ShowCloseButton), typeof(bool), typeof(InfoBar), new PropertyMetadata(true));
+            DependencyProperty.Register(nameof(ShowCloseButton), typeof(bool), typeof(InfoBar), new PropertyMetadata(true, OnPropertyChanged));
 
         /* Message Title Properties
          * 
