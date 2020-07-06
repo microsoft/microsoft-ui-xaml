@@ -312,7 +312,10 @@ void TabViewProperties::OnTabWidthModePropertyChanged(
 
 void TabViewProperties::AddTabButtonCommand(winrt::ICommand const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_AddTabButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ICommand TabViewProperties::AddTabButtonCommand()
@@ -322,7 +325,10 @@ winrt::ICommand TabViewProperties::AddTabButtonCommand()
 
 void TabViewProperties::AddTabButtonCommandParameter(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_AddTabButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TabViewProperties::AddTabButtonCommandParameter()
@@ -332,7 +338,10 @@ winrt::IInspectable TabViewProperties::AddTabButtonCommandParameter()
 
 void TabViewProperties::AllowDropTabs(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_AllowDropTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TabViewProperties::AllowDropTabs()
@@ -342,7 +351,10 @@ bool TabViewProperties::AllowDropTabs()
 
 void TabViewProperties::CanDragTabs(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_CanDragTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TabViewProperties::CanDragTabs()
@@ -352,7 +364,10 @@ bool TabViewProperties::CanDragTabs()
 
 void TabViewProperties::CanReorderTabs(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_CanReorderTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TabViewProperties::CanReorderTabs()
@@ -362,7 +377,10 @@ bool TabViewProperties::CanReorderTabs()
 
 void TabViewProperties::CloseButtonOverlayMode(winrt::TabViewCloseButtonOverlayMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_CloseButtonOverlayModeProperty, ValueHelper<winrt::TabViewCloseButtonOverlayMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TabViewCloseButtonOverlayMode TabViewProperties::CloseButtonOverlayMode()
@@ -372,7 +390,10 @@ winrt::TabViewCloseButtonOverlayMode TabViewProperties::CloseButtonOverlayMode()
 
 void TabViewProperties::IsAddTabButtonVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_IsAddTabButtonVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TabViewProperties::IsAddTabButtonVisible()
@@ -382,7 +403,10 @@ bool TabViewProperties::IsAddTabButtonVisible()
 
 void TabViewProperties::SelectedIndex(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_SelectedIndexProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int TabViewProperties::SelectedIndex()
@@ -392,7 +416,10 @@ int TabViewProperties::SelectedIndex()
 
 void TabViewProperties::SelectedItem(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_SelectedItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TabViewProperties::SelectedItem()
@@ -402,7 +429,10 @@ winrt::IInspectable TabViewProperties::SelectedItem()
 
 void TabViewProperties::TabItems(winrt::IVector<winrt::IInspectable> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::IInspectable> TabViewProperties::TabItems()
@@ -412,7 +442,10 @@ winrt::IVector<winrt::IInspectable> TabViewProperties::TabItems()
 
 void TabViewProperties::TabItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TabViewProperties::TabItemsSource()
@@ -422,7 +455,10 @@ winrt::IInspectable TabViewProperties::TabItemsSource()
 
 void TabViewProperties::TabItemTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate TabViewProperties::TabItemTemplate()
@@ -432,7 +468,10 @@ winrt::DataTemplate TabViewProperties::TabItemTemplate()
 
 void TabViewProperties::TabItemTemplateSelector(winrt::DataTemplateSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplateSelector TabViewProperties::TabItemTemplateSelector()
@@ -442,7 +481,10 @@ winrt::DataTemplateSelector TabViewProperties::TabItemTemplateSelector()
 
 void TabViewProperties::TabStripFooter(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabStripFooterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TabViewProperties::TabStripFooter()
@@ -452,7 +494,10 @@ winrt::IInspectable TabViewProperties::TabStripFooter()
 
 void TabViewProperties::TabStripFooterTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabStripFooterTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate TabViewProperties::TabStripFooterTemplate()
@@ -462,7 +507,10 @@ winrt::DataTemplate TabViewProperties::TabStripFooterTemplate()
 
 void TabViewProperties::TabStripHeader(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabStripHeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TabViewProperties::TabStripHeader()
@@ -472,7 +520,10 @@ winrt::IInspectable TabViewProperties::TabStripHeader()
 
 void TabViewProperties::TabStripHeaderTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabStripHeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate TabViewProperties::TabStripHeaderTemplate()
@@ -482,7 +533,10 @@ winrt::DataTemplate TabViewProperties::TabStripHeaderTemplate()
 
 void TabViewProperties::TabWidthMode(winrt::TabViewWidthMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabView*>(this)->SetValue(s_TabWidthModeProperty, ValueHelper<winrt::TabViewWidthMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TabViewWidthMode TabViewProperties::TabWidthMode()

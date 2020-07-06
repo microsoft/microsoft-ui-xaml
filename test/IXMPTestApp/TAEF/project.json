@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.Net.Native.Compiler": "2.2.3",
     "Microsoft.NETCore.UniversalWindowsPlatform": "6.2.8",
-    "MUXCustomBuildTasks": "1.0.48",
+    "MUXCustomBuildTasks": "1.0.67",
     "TAEF.Redist.Wlk": "10.31.180822002"
   },
   "frameworks": {

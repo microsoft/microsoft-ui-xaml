@@ -375,7 +375,10 @@ void NumberBoxProperties::OnValuePropertyChanged(
 
 void NumberBoxProperties::AcceptsExpression(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_AcceptsExpressionProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NumberBoxProperties::AcceptsExpression()
@@ -385,7 +388,10 @@ bool NumberBoxProperties::AcceptsExpression()
 
 void NumberBoxProperties::Description(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_DescriptionProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NumberBoxProperties::Description()
@@ -395,7 +401,10 @@ winrt::IInspectable NumberBoxProperties::Description()
 
 void NumberBoxProperties::Header(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NumberBoxProperties::Header()
@@ -405,7 +414,10 @@ winrt::IInspectable NumberBoxProperties::Header()
 
 void NumberBoxProperties::HeaderTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate NumberBoxProperties::HeaderTemplate()
@@ -415,7 +427,10 @@ winrt::DataTemplate NumberBoxProperties::HeaderTemplate()
 
 void NumberBoxProperties::IsWrapEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_IsWrapEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NumberBoxProperties::IsWrapEnabled()
@@ -425,7 +440,10 @@ bool NumberBoxProperties::IsWrapEnabled()
 
 void NumberBoxProperties::LargeChange(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_LargeChangeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NumberBoxProperties::LargeChange()
@@ -435,7 +453,10 @@ double NumberBoxProperties::LargeChange()
 
 void NumberBoxProperties::Maximum(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_MaximumProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NumberBoxProperties::Maximum()
@@ -445,7 +466,10 @@ double NumberBoxProperties::Maximum()
 
 void NumberBoxProperties::Minimum(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_MinimumProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NumberBoxProperties::Minimum()
@@ -455,9 +479,12 @@ double NumberBoxProperties::Minimum()
 
 void NumberBoxProperties::NumberFormatter(winrt::INumberFormatter2 const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     winrt::INumberFormatter2 coercedValue = value;
     static_cast<NumberBox*>(this)->ValidateNumberFormatter(coercedValue);
     static_cast<NumberBox*>(this)->SetValue(s_NumberFormatterProperty, ValueHelper<winrt::INumberFormatter2>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 winrt::INumberFormatter2 NumberBoxProperties::NumberFormatter()
@@ -467,7 +494,10 @@ winrt::INumberFormatter2 NumberBoxProperties::NumberFormatter()
 
 void NumberBoxProperties::PlaceholderText(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_PlaceholderTextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring NumberBoxProperties::PlaceholderText()
@@ -477,7 +507,10 @@ winrt::hstring NumberBoxProperties::PlaceholderText()
 
 void NumberBoxProperties::PreventKeyboardDisplayOnProgrammaticFocus(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_PreventKeyboardDisplayOnProgrammaticFocusProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NumberBoxProperties::PreventKeyboardDisplayOnProgrammaticFocus()
@@ -487,7 +520,10 @@ bool NumberBoxProperties::PreventKeyboardDisplayOnProgrammaticFocus()
 
 void NumberBoxProperties::SelectionFlyout(winrt::FlyoutBase const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_SelectionFlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FlyoutBase NumberBoxProperties::SelectionFlyout()
@@ -497,7 +533,10 @@ winrt::FlyoutBase NumberBoxProperties::SelectionFlyout()
 
 void NumberBoxProperties::SelectionHighlightColor(winrt::SolidColorBrush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_SelectionHighlightColorProperty, ValueHelper<winrt::SolidColorBrush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SolidColorBrush NumberBoxProperties::SelectionHighlightColor()
@@ -507,7 +546,10 @@ winrt::SolidColorBrush NumberBoxProperties::SelectionHighlightColor()
 
 void NumberBoxProperties::SmallChange(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_SmallChangeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NumberBoxProperties::SmallChange()
@@ -517,7 +559,10 @@ double NumberBoxProperties::SmallChange()
 
 void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_SpinButtonPlacementModeProperty, ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NumberBoxSpinButtonPlacementMode NumberBoxProperties::SpinButtonPlacementMode()
@@ -527,7 +572,10 @@ winrt::NumberBoxSpinButtonPlacementMode NumberBoxProperties::SpinButtonPlacement
 
 void NumberBoxProperties::Text(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_TextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring NumberBoxProperties::Text()
@@ -537,7 +585,10 @@ winrt::hstring NumberBoxProperties::Text()
 
 void NumberBoxProperties::TextReadingOrder(winrt::TextReadingOrder const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_TextReadingOrderProperty, ValueHelper<winrt::TextReadingOrder>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TextReadingOrder NumberBoxProperties::TextReadingOrder()
@@ -547,7 +598,10 @@ winrt::TextReadingOrder NumberBoxProperties::TextReadingOrder()
 
 void NumberBoxProperties::ValidationMode(winrt::NumberBoxValidationMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_ValidationModeProperty, ValueHelper<winrt::NumberBoxValidationMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NumberBoxValidationMode NumberBoxProperties::ValidationMode()
@@ -557,7 +611,10 @@ winrt::NumberBoxValidationMode NumberBoxProperties::ValidationMode()
 
 void NumberBoxProperties::Value(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NumberBox*>(this)->SetValue(s_ValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NumberBoxProperties::Value()

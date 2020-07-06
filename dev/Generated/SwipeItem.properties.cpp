@@ -177,7 +177,10 @@ void SwipeItemProperties::OnTextPropertyChanged(
 
 void SwipeItemProperties::Background(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_BackgroundProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush SwipeItemProperties::Background()
@@ -187,7 +190,10 @@ winrt::Brush SwipeItemProperties::Background()
 
 void SwipeItemProperties::BehaviorOnInvoked(winrt::SwipeBehaviorOnInvoked const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_BehaviorOnInvokedProperty, ValueHelper<winrt::SwipeBehaviorOnInvoked>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeBehaviorOnInvoked SwipeItemProperties::BehaviorOnInvoked()
@@ -197,7 +203,10 @@ winrt::SwipeBehaviorOnInvoked SwipeItemProperties::BehaviorOnInvoked()
 
 void SwipeItemProperties::Command(winrt::ICommand const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_CommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ICommand SwipeItemProperties::Command()
@@ -207,7 +216,10 @@ winrt::ICommand SwipeItemProperties::Command()
 
 void SwipeItemProperties::CommandParameter(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_CommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable SwipeItemProperties::CommandParameter()
@@ -217,7 +229,10 @@ winrt::IInspectable SwipeItemProperties::CommandParameter()
 
 void SwipeItemProperties::Foreground(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_ForegroundProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush SwipeItemProperties::Foreground()
@@ -227,7 +242,10 @@ winrt::Brush SwipeItemProperties::Foreground()
 
 void SwipeItemProperties::IconSource(winrt::IconSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_IconSourceProperty, ValueHelper<winrt::IconSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconSource SwipeItemProperties::IconSource()
@@ -237,7 +255,10 @@ winrt::IconSource SwipeItemProperties::IconSource()
 
 void SwipeItemProperties::Text(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItem*>(this)->SetValue(s_TextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring SwipeItemProperties::Text()

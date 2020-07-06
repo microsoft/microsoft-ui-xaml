@@ -168,7 +168,10 @@ void AcrylicBrushProperties::OnTintTransitionDurationPropertyChanged(
 
 void AcrylicBrushProperties::AlwaysUseFallback(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AcrylicBrush*>(this)->SetValue(s_AlwaysUseFallbackProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AcrylicBrushProperties::AlwaysUseFallback()
@@ -178,7 +181,10 @@ bool AcrylicBrushProperties::AlwaysUseFallback()
 
 void AcrylicBrushProperties::BackgroundSource(winrt::AcrylicBackgroundSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AcrylicBrush*>(this)->SetValue(s_BackgroundSourceProperty, ValueHelper<winrt::AcrylicBackgroundSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::AcrylicBackgroundSource AcrylicBrushProperties::BackgroundSource()
@@ -188,7 +194,10 @@ winrt::AcrylicBackgroundSource AcrylicBrushProperties::BackgroundSource()
 
 void AcrylicBrushProperties::TintColor(winrt::Color const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AcrylicBrush*>(this)->SetValue(s_TintColorProperty, ValueHelper<winrt::Color>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Color AcrylicBrushProperties::TintColor()
@@ -198,9 +207,12 @@ winrt::Color AcrylicBrushProperties::TintColor()
 
 void AcrylicBrushProperties::TintLuminosityOpacity(winrt::IReference<double> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     winrt::IReference<double> coercedValue = value;
     static_cast<AcrylicBrush*>(this)->CoerceToZeroOneRange_Nullable(coercedValue);
     static_cast<AcrylicBrush*>(this)->SetValue(s_TintLuminosityOpacityProperty, ValueHelper<winrt::IReference<double>>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 winrt::IReference<double> AcrylicBrushProperties::TintLuminosityOpacity()
@@ -210,9 +222,12 @@ winrt::IReference<double> AcrylicBrushProperties::TintLuminosityOpacity()
 
 void AcrylicBrushProperties::TintOpacity(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<AcrylicBrush*>(this)->CoerceToZeroOneRange(coercedValue);
     static_cast<AcrylicBrush*>(this)->SetValue(s_TintOpacityProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double AcrylicBrushProperties::TintOpacity()
@@ -222,7 +237,10 @@ double AcrylicBrushProperties::TintOpacity()
 
 void AcrylicBrushProperties::TintTransitionDuration(winrt::TimeSpan const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AcrylicBrush*>(this)->SetValue(s_TintTransitionDurationProperty, ValueHelper<winrt::TimeSpan>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TimeSpan AcrylicBrushProperties::TintTransitionDuration()

@@ -20,7 +20,7 @@ void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
     if (m_appliedTemplate)
     {
         static auto groupName = L"NavigationSeparatorLineStates"sv;
-        auto stateName = (Position() != NavigationViewRepeaterPosition::TopPrimary && Position() != NavigationViewRepeaterPosition::TopFooter)
+        const auto stateName = (Position() != NavigationViewRepeaterPosition::TopPrimary && Position() != NavigationViewRepeaterPosition::TopFooter)
             ? m_isClosedCompact
                 ? L"HorizontalLineCompact"sv
                 : L"HorizontalLine"sv
@@ -77,7 +77,7 @@ void NavigationViewItemSeparator::UpdateItemIndentation()
     if (auto const rootGrid = m_rootGrid.get())
     {
         auto const oldMargin = rootGrid.Margin();
-        auto newLeftMargin = Depth() * c_itemIndentation;
+        const auto newLeftMargin = Depth() * c_itemIndentation;
         rootGrid.Margin({ static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom });
     }
 }

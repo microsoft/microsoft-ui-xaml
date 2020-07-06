@@ -189,7 +189,10 @@ void TreeViewProperties::OnSelectionModePropertyChanged(
 
 void TreeViewProperties::CanDragItems(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_CanDragItemsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewProperties::CanDragItems()
@@ -199,7 +202,10 @@ bool TreeViewProperties::CanDragItems()
 
 void TreeViewProperties::CanReorderItems(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_CanReorderItemsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewProperties::CanReorderItems()
@@ -209,7 +215,10 @@ bool TreeViewProperties::CanReorderItems()
 
 void TreeViewProperties::ItemContainerStyle(winrt::Style const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemContainerStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Style TreeViewProperties::ItemContainerStyle()
@@ -219,7 +228,10 @@ winrt::Style TreeViewProperties::ItemContainerStyle()
 
 void TreeViewProperties::ItemContainerStyleSelector(winrt::StyleSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemContainerStyleSelectorProperty, ValueHelper<winrt::StyleSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::StyleSelector TreeViewProperties::ItemContainerStyleSelector()
@@ -229,7 +241,10 @@ winrt::StyleSelector TreeViewProperties::ItemContainerStyleSelector()
 
 void TreeViewProperties::ItemContainerTransitions(winrt::TransitionCollection const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemContainerTransitionsProperty, ValueHelper<winrt::TransitionCollection>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TransitionCollection TreeViewProperties::ItemContainerTransitions()
@@ -239,7 +254,10 @@ winrt::TransitionCollection TreeViewProperties::ItemContainerTransitions()
 
 void TreeViewProperties::ItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TreeViewProperties::ItemsSource()
@@ -249,7 +267,10 @@ winrt::IInspectable TreeViewProperties::ItemsSource()
 
 void TreeViewProperties::ItemTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate TreeViewProperties::ItemTemplate()
@@ -259,7 +280,10 @@ winrt::DataTemplate TreeViewProperties::ItemTemplate()
 
 void TreeViewProperties::ItemTemplateSelector(winrt::DataTemplateSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplateSelector TreeViewProperties::ItemTemplateSelector()
@@ -269,7 +293,10 @@ winrt::DataTemplateSelector TreeViewProperties::ItemTemplateSelector()
 
 void TreeViewProperties::SelectedItem(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_SelectedItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TreeViewProperties::SelectedItem()
@@ -279,7 +306,10 @@ winrt::IInspectable TreeViewProperties::SelectedItem()
 
 void TreeViewProperties::SelectionMode(winrt::TreeViewSelectionMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_SelectionModeProperty, ValueHelper<winrt::TreeViewSelectionMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TreeViewSelectionMode TreeViewProperties::SelectionMode()

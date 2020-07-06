@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information.  -->
 <Page
     x:Class="MUXControlsTestApp.Samples.CollectionChangeDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,9 +8,13 @@
 
     <Page.Resources>
         <controls:RecyclePool x:Key="RecyclePool" />
-        <controls:RecyclingElementFactory x:Name="elementFactory"  RecyclePool="{StaticResource RecyclePool}">
+        <controls:RecyclingElementFactory x:Name="elementFactory" RecyclePool="{StaticResource RecyclePool}">
             <DataTemplate x:Key="Item" x:DataType="x:String">
-                <Button Content="{x:Bind}" Width="100" Height="100"  Click="OnItemClicked"/>
+                <Button
+                    Width="100"
+                    Height="100"
+                    Click="OnItemClicked"
+                    Content="{x:Bind}" />
             </DataTemplate>
         </controls:RecyclingElementFactory>
     </Page.Resources>
@@ -30,7 +34,7 @@
                 <TextBlock>OldStartingIndex:</TextBlock>
                 <TextBox x:Name="oldStartIndex" Text="0" />
                 <TextBlock>OldCount:</TextBlock>
-                <TextBox x:Name="oldCount" Text="0"/>
+                <TextBox x:Name="oldCount" Text="0" />
                 <TextBlock>NewStartingIndex:</TextBlock>
                 <TextBox x:Name="newStartIndex" Text="0" />
                 <TextBlock>NewCount:</TextBlock>
@@ -41,15 +45,20 @@
                 <Button x:Name="insertButton">Insert</Button>
                 <Button x:Name="removeButton">Remove</Button>
                 <Button x:Name="replaceButton">Replace</Button>
+                <Button x:Name="moveButton">Move</Button>
                 <Button x:Name="resetButton">Reset</Button>
             </StackPanel>
         </StackPanel>
 
-        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1">
             <ScrollViewer x:Name="scrollViewer">
                 <controls:ItemsRepeater x:Name="repeater">
                     <controls:ItemsRepeater.Layout>
-                        <controls:UniformGridLayout MinItemWidth="150" MinItemHeight="150" MinRowSpacing="10" MinColumnSpacing="10" />
+                        <controls:UniformGridLayout
+                            MinColumnSpacing="10"
+                            MinItemHeight="150"
+                            MinItemWidth="150"
+                            MinRowSpacing="10" />
                     </controls:ItemsRepeater.Layout>
                     <controls:ItemsRepeater.Animator>
                         <utils:DefaultElementAnimator />
@@ -57,13 +66,21 @@
                 </controls:ItemsRepeater>
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
-        
-        <controls:ItemsRepeater ItemsSource="{x:Bind ResettingListItems}" Grid.Row="2" x:Name="ResettingCollectionRepeater">
+
+        <controls:ItemsRepeater
+            x:Name="ResettingCollectionRepeater"
+            Grid.Row="2"
+            ItemsSource="{x:Bind ResettingListItems}">
             <controls:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
                     <Grid Width="300" HorizontalAlignment="Left">
-                        <Button Width="140" Height="40" HorizontalAlignment="Right" AutomationProperties.Name="{Binding}"
-                                Click="ResettingCollectionRemoveItemButton_ItemClick" Content="{Binding}"/>
+                        <Button
+                            Width="140"
+                            Height="40"
+                            HorizontalAlignment="Right"
+                            AutomationProperties.Name="{Binding}"
+                            Click="ResettingCollectionRemoveItemButton_ItemClick"
+                            Content="{Binding}" />
                     </Grid>
                 </DataTemplate>
             </controls:ItemsRepeater.ItemTemplate>

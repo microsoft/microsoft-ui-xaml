@@ -281,7 +281,7 @@
                                                 ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
-                                                        <Setter Property="Padding" Value="0,8" />
+                                                        <Setter Property="Padding" Value="{ThemeResource TopNavigationViewOverflowMenuPadding}" />
                                                         <!-- Set negative top margin to make the flyout align exactly with the button -->
                                                         <Setter Property="Margin" Value="0,-4,0,0" />
                                                     </Style>
@@ -603,7 +603,7 @@
                                     contract7Present:Placement="RightEdgeAlignedTop">
                                 <Flyout.FlyoutPresenterStyle>
                                     <Style TargetType="FlyoutPresenter">
-                                        <Setter Property="Padding" Value="0,8" />
+                                        <Setter Property="Padding" Value="{ThemeResource NavigationViewItemChildrenMenuFlyoutPadding}" />
                                         <!-- Set negative top margin to make the flyout align exactly with the button -->
                                         <Setter Property="Margin" Value="0,-4,0,0" />
                                     </Style>

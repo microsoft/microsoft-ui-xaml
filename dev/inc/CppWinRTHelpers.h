@@ -215,7 +215,7 @@ private:
 
 inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, winrt::DependencyPropertyChangedCallback const& callback)
 {
-    auto value = object.RegisterPropertyChangedCallback(dp, callback);
+    const auto value = object.RegisterPropertyChangedCallback(dp, callback);
     return { object, dp, value };
 }
 

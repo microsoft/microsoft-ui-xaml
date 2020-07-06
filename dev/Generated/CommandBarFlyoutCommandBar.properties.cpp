@@ -42,7 +42,10 @@ void CommandBarFlyoutCommandBarProperties::ClearProperties()
 
 void CommandBarFlyoutCommandBarProperties::FlyoutTemplateSettings(winrt::CommandBarFlyoutCommandBarTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBar*>(this)->SetValue(s_FlyoutTemplateSettingsProperty, ValueHelper<winrt::CommandBarFlyoutCommandBarTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CommandBarFlyoutCommandBarTemplateSettings CommandBarFlyoutCommandBarProperties::FlyoutTemplateSettings()
