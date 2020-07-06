@@ -38,27 +38,15 @@
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
                                 <VisualState x:Name="Inactive">
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="LayoutRoot"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0" />
-                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Opacity" Value="0" />
+                                    </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="DeterminateActive">
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="DeterminateLottiePlayer"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="IndeterminateLottiePlayer"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0" />
-                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="DeterminateLottiePlayer.Opacity" Value="1" />
+                                        <Setter Target="IndeterminateLottiePlayer.Opacity" Value="0" />
+                                    </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Active" />
 

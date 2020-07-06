@@ -97,7 +97,10 @@ bool ProgressRingProperties::IsActive()
 
 void ProgressRingProperties::IsIndeterminate(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRing*>(this)->SetValue(s_IsIndeterminateProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ProgressRingProperties::IsIndeterminate()
