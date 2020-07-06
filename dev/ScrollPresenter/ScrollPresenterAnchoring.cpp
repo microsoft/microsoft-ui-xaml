@@ -162,7 +162,7 @@ void ScrollPresenter::ComputeViewportAnchorPoint(
     *viewportAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *viewportAnchorPointVerticalOffset = DoubleUtil::NaN;
 
-    winrt::Rect viewportAnchorBounds{
+    const winrt::Rect viewportAnchorBounds{
         static_cast<float>(m_zoomedHorizontalOffset / m_zoomFactor),
         static_cast<float>(m_zoomedVerticalOffset / m_zoomFactor),
         static_cast<float>(viewportWidth / m_zoomFactor),

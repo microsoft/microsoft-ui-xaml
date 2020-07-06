@@ -52,10 +52,10 @@ winrt::Size LayoutPanel::MeasureOverride(winrt::Size const& availableSize)
     winrt::Size desiredSize{};
 
     // We adjust availableSize based on our Padding and BorderThickness:
-    auto padding = Padding();
-    auto borderThickness = BorderThickness();
-    auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
-    auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
+    const auto padding = Padding();
+    const auto borderThickness = BorderThickness();
+    const auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
+    const auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
 
     auto adjustedSize = availableSize;
     adjustedSize.Width -= effectiveHorizontalPadding;
@@ -77,7 +77,7 @@ winrt::Size LayoutPanel::MeasureOverride(winrt::Size const& availableSize)
         for (winrt::UIElement const& child : Children())
         {
             child.Measure(adjustedSize);
-            auto childDesiredSize = child.DesiredSize();
+            const auto childDesiredSize = child.DesiredSize();
             desiredSizeUnpadded.Width = std::max(desiredSizeUnpadded.Width, childDesiredSize.Width);
             desiredSizeUnpadded.Height = std::max(desiredSizeUnpadded.Height, childDesiredSize.Height);
         }
@@ -92,13 +92,13 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
     winrt::Size result = finalSize;
 
-    auto padding = Padding();
-    auto borderThickness = BorderThickness();
+    const auto padding = Padding();
+    const auto borderThickness = BorderThickness();
 
-    auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
-    auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
-    auto leftAdjustment = static_cast<float>(padding.Left + borderThickness.Left);
-    auto topAdjustment = static_cast<float>(padding.Top + borderThickness.Top);
+    const auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
+    const auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
+    const auto leftAdjustment = static_cast<float>(padding.Left + borderThickness.Left);
+    const auto topAdjustment = static_cast<float>(padding.Top + borderThickness.Top);
 
     auto adjustedSize = finalSize;
     adjustedSize.Width -= effectiveHorizontalPadding;
@@ -132,7 +132,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
     }
     else
     {
-        winrt::Rect arrangeRect = { leftAdjustment, topAdjustment, adjustedSize.Width, adjustedSize.Height };
+        const winrt::Rect arrangeRect = { leftAdjustment, topAdjustment, adjustedSize.Width, adjustedSize.Height };
         for (winrt::UIElement const& child : Children())
         {
             child.Arrange(arrangeRect);

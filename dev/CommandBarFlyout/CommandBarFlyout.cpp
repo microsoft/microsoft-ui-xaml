@@ -54,8 +54,8 @@ CommandBarFlyout::CommandBarFlyout()
                 // The only exception is buttons with flyouts - in that case, clicking on the button
                 // will just open the flyout rather than executing an action, so we don't want that to
                 // do anything.
-                int index = args.Index();
-                auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
+                const int index = args.Index();
+                const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
 
                 switch (args.CollectionChange())
                 {
@@ -263,7 +263,7 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
     m_secondaryToggleButtonCheckedRevokerByIndexMap.clear();
     m_secondaryToggleButtonUncheckedRevokerByIndexMap.clear();
 
-    auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
+    const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
 
     for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
     {

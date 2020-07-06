@@ -9,7 +9,7 @@
 class FocusHelper
 {
 public:
-    static bool IsGamepadNavigationDirection(winrt::VirtualKey key)
+    static bool constexpr IsGamepadNavigationDirection(winrt::VirtualKey key)
     {
         return key == winrt::VirtualKey::GamepadLeftThumbstickDown
             || key == winrt::VirtualKey::GamepadDPadDown
@@ -21,7 +21,7 @@ public:
             || key == winrt::VirtualKey::GamepadDPadLeft;
     }
 
-    static bool IsGamepadPageNavigationDirection(winrt::VirtualKey key)
+    static bool constexpr IsGamepadPageNavigationDirection(winrt::VirtualKey key)
     {
         return
             key == winrt::VirtualKey::GamepadLeftShoulder ||
@@ -30,7 +30,7 @@ public:
             key == winrt::VirtualKey::GamepadRightTrigger;
     }
 
-    static winrt::FocusNavigationDirection GetNavigationDirection(winrt::VirtualKey key)
+    static winrt::FocusNavigationDirection constexpr GetNavigationDirection(winrt::VirtualKey key)
     {
         winrt::FocusNavigationDirection direction = winrt::FocusNavigationDirection::None;
 
@@ -61,7 +61,7 @@ public:
         return direction;
     }
 
-    static winrt::FocusNavigationDirection GetPageNavigationDirection(winrt::VirtualKey key)
+    static winrt::FocusNavigationDirection constexpr GetPageNavigationDirection(winrt::VirtualKey key)
     {
         winrt::FocusNavigationDirection direction = winrt::FocusNavigationDirection::None;
 
@@ -84,7 +84,7 @@ public:
         return direction;
     }
 
-    static winrt::FocusNavigationDirection GetOppositeDirection(winrt::FocusNavigationDirection direction)
+    static winrt::FocusNavigationDirection constexpr GetOppositeDirection(winrt::FocusNavigationDirection direction)
     {
         winrt::FocusNavigationDirection oppositeDirection = winrt::FocusNavigationDirection::None;
         switch (direction)

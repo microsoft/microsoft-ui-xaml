@@ -128,7 +128,7 @@ void MenuBarItem::OnMenuBarItemPointerEntered(winrt::IInspectable const& sender,
 {
     if (auto menuBar = m_menuBar.get())
     {
-        auto flyoutOpen = (winrt::get_self<MenuBar>(menuBar)->IsFlyoutOpen());
+        const auto flyoutOpen = (winrt::get_self<MenuBar>(menuBar)->IsFlyoutOpen());
         if (flyoutOpen)
         {
             ShowMenuFlyout();
@@ -140,7 +140,7 @@ void MenuBarItem::OnMenuBarItemPointerPressed(winrt::IInspectable const& sender,
 {
     if (auto menuBar = m_menuBar.get())
     {
-        auto flyoutOpen = (winrt::get_self<MenuBar>(menuBar)->IsFlyoutOpen());
+        const auto flyoutOpen = (winrt::get_self<MenuBar>(menuBar)->IsFlyoutOpen());
         if (!flyoutOpen)
         {
             ShowMenuFlyout();
@@ -150,7 +150,7 @@ void MenuBarItem::OnMenuBarItemPointerPressed(winrt::IInspectable const& sender,
 
 void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    auto key = args.Key();
+    const auto key = args.Key();
     if (key == winrt::VirtualKey::Down
         || key == winrt::VirtualKey::Enter
         || key == winrt::VirtualKey::Space)
@@ -161,7 +161,7 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
 
 void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    auto key = args.Key();
+    const auto key = args.Key();
     if (key == winrt::VirtualKey::Right)
     {
         if (FlowDirection() == winrt::FlowDirection::RightToLeft)
@@ -190,7 +190,7 @@ void MenuBarItem::OnItemsVectorChanged(winrt::Collections::IObservableVector<win
 {
     if (auto flyout = m_flyout.safe_get())
     {
-        auto index = e.Index();
+        const auto index = e.Index();
         switch (e.CollectionChange())
         {
         case winrt::Collections::CollectionChange::ItemInserted:
@@ -216,8 +216,8 @@ void MenuBarItem::ShowMenuFlyout()
 {
     if (auto button = m_button.get())
     {
-        auto width = static_cast<float>(button.ActualWidth());
-        auto height = static_cast<float>(button.ActualHeight());
+        const auto width = static_cast<float>(button.ActualWidth());
+        const auto height = static_cast<float>(button.ActualHeight());
 
         if (SharedHelpers::IsFlyoutShowOptionsAvailable())
         {

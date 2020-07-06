@@ -98,7 +98,7 @@ public:
     void RemoveAt(int indexInOriginalVector)
     {
         MUX_ASSERT(indexInOriginalVector >= 0);        
-        auto index = static_cast<uint32_t>(IndexFromIndexInOriginalVector(indexInOriginalVector));
+        const auto index = static_cast<uint32_t>(IndexFromIndexInOriginalVector(indexInOriginalVector));
         MUX_ASSERT(index < m_indexesInOriginalVector.size());
         m_vector.get().RemoveAt(index);
         m_indexesInOriginalVector.erase(m_indexesInOriginalVector.begin() + index);
@@ -106,7 +106,7 @@ public:
 
     int IndexOf(const typename T& value)
     {
-        int indexInOriginalVector = m_indexFunctionFromDataSource(value);
+        const int indexInOriginalVector = m_indexFunctionFromDataSource(value);
         return IndexFromIndexInOriginalVector(indexInOriginalVector);
     }
 
@@ -212,9 +212,9 @@ public:
             // insert item to vector which matches with the newVectorID
             if (auto &toVector = m_splitVectors[static_cast<int>(newVectorID)])
             {
-                int pos = GetPreferIndex(index, newVectorID);
+                const int pos = GetPreferIndex(index, newVectorID);
 
-                auto value = GetAt(index);
+                const auto value = GetAt(index);
                 toVector->InsertAt(pos, index, value);
             }
         }
@@ -229,7 +229,7 @@ protected:
 
     int IndexOfImpl(const typename T& value, typename SplitVectorID vectorID)
     {
-        int indexInOriginalVector = IndexOf(value);
+        const int indexInOriginalVector = IndexOf(value);
         int index = -1;
         if (indexInOriginalVector != -1)
         {
@@ -336,10 +336,10 @@ private:
 
     void OnInsertAt(int index)
     {
-        auto vectorID = DefaultVectorIDOnInsert();
-        auto defaultAttachedData = DefaultAttachedData();
-        auto preferIndex = GetPreferIndex(index, vectorID);
-        auto data = GetAt(index);
+        const auto vectorID = DefaultVectorIDOnInsert();
+        const auto defaultAttachedData = DefaultAttachedData();
+        const auto preferIndex = GetPreferIndex(index, vectorID);
+        const auto data = GetAt(index);
 
         // Update mapping on all Vectors and Insert Item on vectorID vector;
         for (auto &vector: m_splitVectors)

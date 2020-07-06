@@ -105,7 +105,10 @@ void ProgressBarProperties::OnShowPausedPropertyChanged(
 
 void ProgressBarProperties::IsIndeterminate(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBar*>(this)->SetValue(s_IsIndeterminateProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ProgressBarProperties::IsIndeterminate()
@@ -115,7 +118,10 @@ bool ProgressBarProperties::IsIndeterminate()
 
 void ProgressBarProperties::ShowError(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBar*>(this)->SetValue(s_ShowErrorProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ProgressBarProperties::ShowError()
@@ -125,7 +131,10 @@ bool ProgressBarProperties::ShowError()
 
 void ProgressBarProperties::ShowPaused(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBar*>(this)->SetValue(s_ShowPausedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ProgressBarProperties::ShowPaused()
@@ -135,7 +144,10 @@ bool ProgressBarProperties::ShowPaused()
 
 void ProgressBarProperties::TemplateSettings(winrt::ProgressBarTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBar*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressBarTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ProgressBarTemplateSettings ProgressBarProperties::TemplateSettings()
