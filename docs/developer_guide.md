@@ -202,23 +202,25 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
 2. Download new verification files.
 
-    Depending on whether you are a Microsoft employee or an external contributor the download process will differ. Below you will find the download steps for each case.
+    First, open the published build artifacts:
+    
+    ![released artifacts](images/test_fail_page3-2.png)
+    
+    Then, depending on whether you are a Microsoft employee or an external contributor your next download steps will differ. Below you will find the steps outlined for each case.
 
     ###### [For Microsoft employees]
     
     Microsoft employees can directly download the new verification files in Azure Pipelines:
     
-    ![drop folder](images/test_pipeline_drop.png)
+    ![drop folder employee](images/test_pipeline_drop_employee.png)
     
-    ![verification files folder](images/masters_folder.png)
+    ![verification files employee](images/test_pipeline_drop_employee2.png)
     
     ###### [For external contributors]
     
     External contributors cannot directly download the new verification files but instead have to download the entire generated drop archive to get them:
 
-    ![released artifacts](images/test_fail_page3.png)
-
-    ![drop folder-2](images/test_pipeline_drop-2.png)
+    ![drop folder](images/test_pipeline_drop-2.png)
     
     Note that the drop archive can be several hundreds of MB big (700 MB or bigger is not uncommon). Once you have downloaded the drop archive and unpacked it, you will find the updated verification files in `drop/UpdatedVisualTreeVerificationFiles/`.
 
