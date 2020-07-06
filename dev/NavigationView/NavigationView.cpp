@@ -743,7 +743,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
         if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
         {
             auto settingsItem = m_settingsItem.get();
-            auto size = footerItems.Size();
+            const auto size = footerItems.Size();
 
             for (uint32_t i = 0; i < size; i++)
             {
@@ -2439,7 +2439,7 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
 
     if (auto itemsSourceView = parentIR.ItemsSourceView())
     {
-        auto lastIndex = itemsSourceView.Count() - 1;
+        const auto lastIndex = itemsSourceView.Count() - 1;
         if (auto lastElement = parentIR.TryGetElement(lastIndex))
         {
             if (auto controlLast = lastElement.try_as<winrt::Control>())
@@ -2645,13 +2645,13 @@ bool NavigationView::BumperNavigation(int offset)
         if (auto nvi = NavigationViewItemOrSettingsContentFromData(item))
         {
             auto indexPath = GetIndexPathForContainer(nvi);
-            auto isInFooter = indexPath.GetAt(0) == c_footerMenuBlockIndex;
+            const auto isInFooter = indexPath.GetAt(0) == c_footerMenuBlockIndex;
 
-            auto indexInMainList = isInFooter ? -1 : indexPath.GetAt(1);
-            auto indexInFooter = isInFooter ? indexPath.GetAt(1) : -1;
+            const auto indexInMainList = isInFooter ? -1 : indexPath.GetAt(1);
+            const auto indexInFooter = isInFooter ? indexPath.GetAt(1) : -1;
 
             auto topNavRepeater = m_topNavRepeater.get();
-            auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
+            const auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
 
             auto footerRepeater = m_topNavFooterMenuRepeater.get();
             auto footerItemsSize = FooterMenuItems().Size();
@@ -2851,7 +2851,7 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
         auto prevIndexPath = GetIndexPathForContainer(prev.try_as<winrt::NavigationViewItemBase>());
         auto nextIndexPath = GetIndexPathForContainer(next.try_as<winrt::NavigationViewItemBase>());
 
-        auto compare = prevIndexPath.CompareTo(nextIndexPath);
+        const auto compare = prevIndexPath.CompareTo(nextIndexPath);
 
         switch (compare)
         {
@@ -4220,7 +4220,7 @@ void NavigationView::UpdateSelectionForMenuItems()
     }
 }
 
-bool NavigationView::UpdateSelectedItemFormMenuItems(winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected)
+bool NavigationView::UpdateSelectedItemFormMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected)
 {
     for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
     {

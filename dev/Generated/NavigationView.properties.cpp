@@ -921,7 +921,10 @@ double NavigationViewProperties::ExpandedModeThresholdWidth()
 
 void NavigationViewProperties::FooterMenuItems(winrt::IVector<winrt::IInspectable> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::IInspectable> NavigationViewProperties::FooterMenuItems()
@@ -931,7 +934,10 @@ winrt::IVector<winrt::IInspectable> NavigationViewProperties::FooterMenuItems()
 
 void NavigationViewProperties::FooterMenuItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NavigationViewProperties::FooterMenuItemsSource()

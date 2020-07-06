@@ -238,7 +238,7 @@ private:
     void UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items);
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
-    bool UpdateSelectedItemFormMenuItems(winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
+    bool UpdateSelectedItemFormMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
     bool m_InitialNonForcedModeUpdate{ true };
 
     void UpdateRepeaterItemsSource(bool forceSelectionModelUpdate);

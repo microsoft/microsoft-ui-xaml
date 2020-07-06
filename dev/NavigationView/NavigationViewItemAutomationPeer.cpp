@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -261,7 +261,7 @@ bool NavigationViewItemAutomationPeer::IsSettingsItem()
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigation()
 {
-    auto position = GetNavigationViewRepeaterPosition();
+    const auto position = GetNavigationViewRepeaterPosition();
     return position != NavigationViewRepeaterPosition::LeftNav && position != NavigationViewRepeaterPosition::LeftFooter;
 }
 
@@ -272,7 +272,7 @@ bool NavigationViewItemAutomationPeer::IsOnTopNavigationOverflow()
 
 bool NavigationViewItemAutomationPeer::IsOnFooterNavigation()
 {
-    auto position = GetNavigationViewRepeaterPosition();
+    const auto position = GetNavigationViewRepeaterPosition();
     return position == NavigationViewRepeaterPosition::LeftFooter || position == NavigationViewRepeaterPosition::TopFooter;
 }
 
