@@ -14,10 +14,8 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusToFilteredMultipliedThicknessConverter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusToFilteredMultipliedThicknessConverter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusFilterConverter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.cpp" />
@@ -27,7 +25,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusToFilteredMultipliedThicknessConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.h" />
   </ItemGroup>
@@ -39,7 +36,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusToFilteredMultipliedThicknessConverter.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverters.idl" />
   </ItemGroup>

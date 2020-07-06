@@ -52,29 +52,3 @@ winrt::IconElement TabViewItemTemplateSettingsProperties::IconElement()
 {
     return ValueHelper<winrt::IconElement>::CastOrUnbox(static_cast<TabViewItemTemplateSettings*>(this)->GetValue(s_IconElementProperty));
 }
-
-void TabViewItemTemplateSettingsProperties::LeftInsetRadiusMargin(winrt::Thickness const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_LeftInsetRadiusMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::Thickness TabViewItemTemplateSettingsProperties::LeftInsetRadiusMargin()
-{
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<TabViewItemTemplateSettings*>(this)->GetValue(s_LeftInsetRadiusMarginProperty));
-}
-
-void TabViewItemTemplateSettingsProperties::RightInsetRadiusMargin(winrt::Thickness const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_RightInsetRadiusMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::Thickness TabViewItemTemplateSettingsProperties::RightInsetRadiusMargin()
-{
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<TabViewItemTemplateSettings*>(this)->GetValue(s_RightInsetRadiusMarginProperty));
-}
