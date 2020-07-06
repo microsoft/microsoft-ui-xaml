@@ -1936,29 +1936,31 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
-        auto scopeGuard = gsl::finally([this]()
         {
-            m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
-        });
-
-        // Selection changed and we need to notify UIA
-        // HOWEVER expand collapse can also trigger if an item can expand/collapse
-        // There are multiple cases when selection changes:
-        // - Through click on item with no children -> No expand/collapse change
-        // - Through click on item with children -> Expand/collapse change
-        // - Through API with item without children -> No expand/collapse change
-        // - Through API with item with children -> No expand/collapse change
-        if (!m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise)
-        {
-            if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+            auto scopeGuard = gsl::finally([this]()
             {
-                auto navViewItemPeer = peer.as<winrt::NavigationViewAutomationPeer>();
-                winrt::get_self<NavigationViewAutomationPeer>(navViewItemPeer)->RaiseSelectionChangedEvent(
-                    prevItem, nextItem
-                );
+                m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
+            });
+
+            // Selection changed and we need to notify UIA
+            // HOWEVER expand collapse can also trigger if an item can expand/collapse
+            // There are multiple cases when selection changes:
+            // - Through click on item with no children -> No expand/collapse change
+            // - Through click on item with children -> Expand/collapse change
+            // - Through API with item without children -> No expand/collapse change
+            // - Through API with item with children -> No expand/collapse change
+            if (!m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise)
+            {
+                if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+                {
+                    auto navViewItemPeer = peer.as<winrt::NavigationViewAutomationPeer>();
+                    winrt::get_self<NavigationViewAutomationPeer>(navViewItemPeer)->RaiseSelectionChangedEvent(
+                        prevItem, nextItem
+                    );
+                }
             }
         }
-
+        
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
 
