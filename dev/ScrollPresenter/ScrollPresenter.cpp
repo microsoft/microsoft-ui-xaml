@@ -675,7 +675,7 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
     //    No matter the ScrollPresenter's alignment, it does not grow larger than finalSize. viewport is finalSize again.
     // 3. m_availableSize <= finalSize, the ScrollPresenter is constrained and its Content is larger than or equal to
     //    the available size. viewport is the smaller & constrained m_availableSize.
-    winrt::Size viewport =
+    const winrt::Size viewport =
     {
         std::min(finalSize.Width, m_availableSize.Width),
         std::min(finalSize.Height, m_availableSize.Height)
