@@ -114,29 +114,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyTabViewItemUIABehavior()
         {
+            TabView tabView;
+
+            TabViewItem tvi0 = null;
+            TabViewItem tvi1 = null;
+            TabViewItem tvi2 = null;
             RunOnUIThread.Execute(() =>
             {
-                TabView tabView = new TabView();
+                tabView = new TabView();
                 Content = tabView;
 
-                var tvi0 = CreateTabViewItem("Item 0", Symbol.Add);
-                var tvi1 = CreateTabViewItem("Item 1", Symbol.AddFriend);
-                var tvi2 = CreateTabViewItem("Item 2");
+                tvi0 = CreateTabViewItem("Item 0", Symbol.Add);
+                tvi1 = CreateTabViewItem("Item 1", Symbol.AddFriend);
+                tvi2 = CreateTabViewItem("Item 2");
 
                 tabView.TabItems.Add(tvi0);
                 tabView.TabItems.Add(tvi1);
                 tabView.TabItems.Add(tvi2);
 
+                tabView.SelectedIndex = 0;
+                tabView.SelectedItem = tvi0;
                 Content.UpdateLayout();
+            });
 
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
                 var selectionItemProvider = GetProviderFromTVI(tvi0);
-                Verify.IsTrue(selectionItemProvider.IsSelected,"Item should have been selected");
+                Verify.IsTrue(selectionItemProvider.IsSelected,"Item should be selected");
 
                 selectionItemProvider = GetProviderFromTVI(tvi1);
-                Verify.IsFalse(selectionItemProvider.IsSelected, "Item not should have been selected");
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
 
+                Log.Comment("Change selection through automationpeer");
                 selectionItemProvider.Select();
                 Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
+                
+                selectionItemProvider = GetProviderFromTVI(tvi0);
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
             });
 
             static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)

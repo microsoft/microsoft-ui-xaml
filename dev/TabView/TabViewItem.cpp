@@ -93,6 +93,11 @@ void TabViewItem::OnApplyTemplate()
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+    if (const auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this))
+    {
+        peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+    }
+
     if (IsSelected())
     {
         SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));

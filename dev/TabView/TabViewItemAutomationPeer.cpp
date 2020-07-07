@@ -17,6 +17,15 @@ TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& o
 }
 
 // IAutomationPeerOverrides
+winrt::IInspectable TabViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
+{
+    if (patternInterface == winrt::PatternInterface::SelectionItem)
+    {
+        return *this;
+    }
+    return __super::GetPatternCore(patternInterface);
+}
+
 hstring TabViewItemAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::TabViewItem>();
@@ -46,6 +55,11 @@ winrt::hstring TabViewItemAutomationPeer::GetNameCore()
 
 bool TabViewItemAutomationPeer::IsSelected()
 {
+    if (auto tvi = Owner().try_as<TabViewItem>())
+    {
+        const bool returnValue = tvi->IsSelected();
+        return returnValue;
+    }
     return false;
 }
 
@@ -56,14 +70,22 @@ winrt::IRawElementProviderSimple TabViewItemAutomationPeer::SelectionContainer()
 
 void TabViewItemAutomationPeer::AddToSelection()
 {
+    Select();
 }
 
 void TabViewItemAutomationPeer::RemoveFromSelection()
 {
+    // Can't unselect in a TabView without knowing next selection
 }
 
 void TabViewItemAutomationPeer::Select()
 {
+    if (auto tabView = GetParenTabView().try_as<TabView>())
+    {
+        // Set selection by getting the item from the container
+        // and setting that as the new selected item.
+        tabView->SelectedItem(tabView->ItemFromContainer(Owner()));
+    }
 }
 
 winrt::TabView TabViewItemAutomationPeer::GetParenTabView()
