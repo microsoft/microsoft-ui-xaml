@@ -27,19 +27,19 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 
 void XamlControlsResources::UpdateSource()
 {
-    bool useCompactResources = UseCompactResources();
+    const bool useCompactResources = UseCompactResources();
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
     winrt::Uri uri{
         [useCompactResources]() -> hstring {
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
-            bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
-            bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
-            bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
-            bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+            const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
+            const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
+            const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
+            const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
-            bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
+            const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
@@ -94,12 +94,12 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             []() -> PCWSTR {
             
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
-            bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
-            bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
-            bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
-            bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+            const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
+            const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
+            const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
+            const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
-            bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
+            const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             if (isInFrameworkPackage)
             {
                 if (is19H1OrHigher)

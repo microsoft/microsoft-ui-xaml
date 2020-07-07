@@ -87,7 +87,7 @@ public:
     };
 
     // Acrylic Brush
-    static int BuildAcrylicBrushCompositionEffectFactoryKey(bool shouldBrushBeOpaque, bool useWindowAcrylic, bool useCrossFadeEffect);
+    static int constexpr BuildAcrylicBrushCompositionEffectFactoryKey(bool shouldBrushBeOpaque, bool useWindowAcrylic, bool useCrossFadeEffect);
     void AssertUniqueCompositorOrUpdate(const winrt::Compositor& compositor);
 
     // cache storage for AcrylicBrushEffectory

@@ -323,7 +323,10 @@ void ParallaxViewProperties::OnVerticalSourceStartOffsetPropertyChanged(
 
 void ParallaxViewProperties::Child(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_ChildProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement ParallaxViewProperties::Child()
@@ -333,7 +336,10 @@ winrt::UIElement ParallaxViewProperties::Child()
 
 void ParallaxViewProperties::HorizontalShift(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_HorizontalShiftProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::HorizontalShift()
@@ -343,7 +349,10 @@ double ParallaxViewProperties::HorizontalShift()
 
 void ParallaxViewProperties::HorizontalSourceEndOffset(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_HorizontalSourceEndOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::HorizontalSourceEndOffset()
@@ -353,7 +362,10 @@ double ParallaxViewProperties::HorizontalSourceEndOffset()
 
 void ParallaxViewProperties::HorizontalSourceOffsetKind(winrt::ParallaxSourceOffsetKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_HorizontalSourceOffsetKindProperty, ValueHelper<winrt::ParallaxSourceOffsetKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ParallaxSourceOffsetKind ParallaxViewProperties::HorizontalSourceOffsetKind()
@@ -363,7 +375,10 @@ winrt::ParallaxSourceOffsetKind ParallaxViewProperties::HorizontalSourceOffsetKi
 
 void ParallaxViewProperties::HorizontalSourceStartOffset(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_HorizontalSourceStartOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::HorizontalSourceStartOffset()
@@ -373,7 +388,10 @@ double ParallaxViewProperties::HorizontalSourceStartOffset()
 
 void ParallaxViewProperties::IsHorizontalShiftClamped(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_IsHorizontalShiftClampedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ParallaxViewProperties::IsHorizontalShiftClamped()
@@ -383,7 +401,10 @@ bool ParallaxViewProperties::IsHorizontalShiftClamped()
 
 void ParallaxViewProperties::IsVerticalShiftClamped(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_IsVerticalShiftClampedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ParallaxViewProperties::IsVerticalShiftClamped()
@@ -393,7 +414,10 @@ bool ParallaxViewProperties::IsVerticalShiftClamped()
 
 void ParallaxViewProperties::MaxHorizontalShiftRatio(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_MaxHorizontalShiftRatioProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::MaxHorizontalShiftRatio()
@@ -403,7 +427,10 @@ double ParallaxViewProperties::MaxHorizontalShiftRatio()
 
 void ParallaxViewProperties::MaxVerticalShiftRatio(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_MaxVerticalShiftRatioProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::MaxVerticalShiftRatio()
@@ -413,7 +440,10 @@ double ParallaxViewProperties::MaxVerticalShiftRatio()
 
 void ParallaxViewProperties::Source(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_SourceProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement ParallaxViewProperties::Source()
@@ -423,7 +453,10 @@ winrt::UIElement ParallaxViewProperties::Source()
 
 void ParallaxViewProperties::VerticalShift(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_VerticalShiftProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::VerticalShift()
@@ -433,7 +466,10 @@ double ParallaxViewProperties::VerticalShift()
 
 void ParallaxViewProperties::VerticalSourceEndOffset(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_VerticalSourceEndOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::VerticalSourceEndOffset()
@@ -443,7 +479,10 @@ double ParallaxViewProperties::VerticalSourceEndOffset()
 
 void ParallaxViewProperties::VerticalSourceOffsetKind(winrt::ParallaxSourceOffsetKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_VerticalSourceOffsetKindProperty, ValueHelper<winrt::ParallaxSourceOffsetKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ParallaxSourceOffsetKind ParallaxViewProperties::VerticalSourceOffsetKind()
@@ -453,7 +492,10 @@ winrt::ParallaxSourceOffsetKind ParallaxViewProperties::VerticalSourceOffsetKind
 
 void ParallaxViewProperties::VerticalSourceStartOffset(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ParallaxView*>(this)->SetValue(s_VerticalSourceStartOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ParallaxViewProperties::VerticalSourceStartOffset()

@@ -41,8 +41,8 @@ void ToggleSplitButton::OnIsCheckedChanged()
 
         if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
         {
-            auto newValue = IsChecked() ? winrt::ToggleState::On : winrt::ToggleState::Off;
-            auto oldValue = (newValue == winrt::ToggleState::On) ? winrt::ToggleState::Off : winrt::ToggleState::On;
+            const auto newValue = IsChecked() ? winrt::ToggleState::On : winrt::ToggleState::Off;
+            const auto oldValue = (newValue == winrt::ToggleState::On) ? winrt::ToggleState::Off : winrt::ToggleState::On;
             peer.RaisePropertyChangedEvent(winrt::TogglePatternIdentifiers::ToggleStateProperty(), box_value(oldValue), box_value(newValue));
         }
     }

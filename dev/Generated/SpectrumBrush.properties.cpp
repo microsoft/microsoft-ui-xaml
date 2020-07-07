@@ -92,7 +92,10 @@ void SpectrumBrushProperties::OnMinSurfacePropertyChanged(
 
 void SpectrumBrushProperties::MaxSurface(winrt::LoadedImageSurface const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SpectrumBrush*>(this)->SetValue(s_MaxSurfaceProperty, ValueHelper<winrt::LoadedImageSurface>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::LoadedImageSurface SpectrumBrushProperties::MaxSurface()
@@ -102,7 +105,10 @@ winrt::LoadedImageSurface SpectrumBrushProperties::MaxSurface()
 
 void SpectrumBrushProperties::MaxSurfaceOpacity(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SpectrumBrush*>(this)->SetValue(s_MaxSurfaceOpacityProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double SpectrumBrushProperties::MaxSurfaceOpacity()
@@ -112,7 +118,10 @@ double SpectrumBrushProperties::MaxSurfaceOpacity()
 
 void SpectrumBrushProperties::MinSurface(winrt::LoadedImageSurface const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SpectrumBrush*>(this)->SetValue(s_MinSurfaceProperty, ValueHelper<winrt::LoadedImageSurface>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::LoadedImageSurface SpectrumBrushProperties::MinSurface()

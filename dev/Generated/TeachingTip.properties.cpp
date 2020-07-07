@@ -474,7 +474,10 @@ void TeachingTipProperties::OnTitlePropertyChanged(
 
 void TeachingTipProperties::ActionButtonCommand(winrt::ICommand const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ICommand TeachingTipProperties::ActionButtonCommand()
@@ -484,7 +487,10 @@ winrt::ICommand TeachingTipProperties::ActionButtonCommand()
 
 void TeachingTipProperties::ActionButtonCommandParameter(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TeachingTipProperties::ActionButtonCommandParameter()
@@ -494,7 +500,10 @@ winrt::IInspectable TeachingTipProperties::ActionButtonCommandParameter()
 
 void TeachingTipProperties::ActionButtonContent(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TeachingTipProperties::ActionButtonContent()
@@ -504,7 +513,10 @@ winrt::IInspectable TeachingTipProperties::ActionButtonContent()
 
 void TeachingTipProperties::ActionButtonStyle(winrt::Style const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Style TeachingTipProperties::ActionButtonStyle()
@@ -514,7 +526,10 @@ winrt::Style TeachingTipProperties::ActionButtonStyle()
 
 void TeachingTipProperties::CloseButtonCommand(winrt::ICommand const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ICommand TeachingTipProperties::CloseButtonCommand()
@@ -524,7 +539,10 @@ winrt::ICommand TeachingTipProperties::CloseButtonCommand()
 
 void TeachingTipProperties::CloseButtonCommandParameter(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TeachingTipProperties::CloseButtonCommandParameter()
@@ -534,7 +552,10 @@ winrt::IInspectable TeachingTipProperties::CloseButtonCommandParameter()
 
 void TeachingTipProperties::CloseButtonContent(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TeachingTipProperties::CloseButtonContent()
@@ -544,7 +565,10 @@ winrt::IInspectable TeachingTipProperties::CloseButtonContent()
 
 void TeachingTipProperties::CloseButtonStyle(winrt::Style const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Style TeachingTipProperties::CloseButtonStyle()
@@ -554,7 +578,10 @@ winrt::Style TeachingTipProperties::CloseButtonStyle()
 
 void TeachingTipProperties::HeroContent(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_HeroContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement TeachingTipProperties::HeroContent()
@@ -564,7 +591,10 @@ winrt::UIElement TeachingTipProperties::HeroContent()
 
 void TeachingTipProperties::HeroContentPlacement(winrt::TeachingTipHeroContentPlacementMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_HeroContentPlacementProperty, ValueHelper<winrt::TeachingTipHeroContentPlacementMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TeachingTipHeroContentPlacementMode TeachingTipProperties::HeroContentPlacement()
@@ -574,7 +604,10 @@ winrt::TeachingTipHeroContentPlacementMode TeachingTipProperties::HeroContentPla
 
 void TeachingTipProperties::IconSource(winrt::IconSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_IconSourceProperty, ValueHelper<winrt::IconSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconSource TeachingTipProperties::IconSource()
@@ -584,7 +617,10 @@ winrt::IconSource TeachingTipProperties::IconSource()
 
 void TeachingTipProperties::IsLightDismissEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_IsLightDismissEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TeachingTipProperties::IsLightDismissEnabled()
@@ -594,7 +630,10 @@ bool TeachingTipProperties::IsLightDismissEnabled()
 
 void TeachingTipProperties::IsOpen(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_IsOpenProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TeachingTipProperties::IsOpen()
@@ -604,7 +643,10 @@ bool TeachingTipProperties::IsOpen()
 
 void TeachingTipProperties::PlacementMargin(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_PlacementMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness TeachingTipProperties::PlacementMargin()
@@ -614,7 +656,10 @@ winrt::Thickness TeachingTipProperties::PlacementMargin()
 
 void TeachingTipProperties::PreferredPlacement(winrt::TeachingTipPlacementMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_PreferredPlacementProperty, ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TeachingTipPlacementMode TeachingTipProperties::PreferredPlacement()
@@ -624,7 +669,10 @@ winrt::TeachingTipPlacementMode TeachingTipProperties::PreferredPlacement()
 
 void TeachingTipProperties::ShouldConstrainToRootBounds(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_ShouldConstrainToRootBoundsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TeachingTipProperties::ShouldConstrainToRootBounds()
@@ -634,7 +682,10 @@ bool TeachingTipProperties::ShouldConstrainToRootBounds()
 
 void TeachingTipProperties::Subtitle(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_SubtitleProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring TeachingTipProperties::Subtitle()
@@ -644,7 +695,10 @@ winrt::hstring TeachingTipProperties::Subtitle()
 
 void TeachingTipProperties::TailVisibility(winrt::TeachingTipTailVisibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_TailVisibilityProperty, ValueHelper<winrt::TeachingTipTailVisibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TeachingTipTailVisibility TeachingTipProperties::TailVisibility()
@@ -654,7 +708,10 @@ winrt::TeachingTipTailVisibility TeachingTipProperties::TailVisibility()
 
 void TeachingTipProperties::Target(winrt::FrameworkElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_TargetProperty, ValueHelper<winrt::FrameworkElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FrameworkElement TeachingTipProperties::Target()
@@ -664,7 +721,10 @@ winrt::FrameworkElement TeachingTipProperties::Target()
 
 void TeachingTipProperties::TemplateSettings(winrt::TeachingTipTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::TeachingTipTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TeachingTipTemplateSettings TeachingTipProperties::TemplateSettings()
@@ -674,7 +734,10 @@ winrt::TeachingTipTemplateSettings TeachingTipProperties::TemplateSettings()
 
 void TeachingTipProperties::Title(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTip*>(this)->SetValue(s_TitleProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring TeachingTipProperties::Title()
