@@ -153,7 +153,10 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty { get; };
     static Windows.UI.Xaml.DependencyProperty LayoutProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
+    }
     static Windows.UI.Xaml.DependencyProperty HorizontalCacheLengthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalCacheLengthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };

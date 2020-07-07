@@ -178,7 +178,10 @@ void ProgressBarTemplateSettingsProperties::ClearProperties()
 
 void ProgressBarTemplateSettingsProperties::ClipRect(winrt::RectangleGeometry const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ClipRectProperty, ValueHelper<winrt::RectangleGeometry>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RectangleGeometry ProgressBarTemplateSettingsProperties::ClipRect()
@@ -188,7 +191,10 @@ winrt::RectangleGeometry ProgressBarTemplateSettingsProperties::ClipRect()
 
 void ProgressBarTemplateSettingsProperties::Container2AnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_Container2AnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::Container2AnimationEndPosition()
@@ -198,7 +204,10 @@ double ProgressBarTemplateSettingsProperties::Container2AnimationEndPosition()
 
 void ProgressBarTemplateSettingsProperties::Container2AnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_Container2AnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::Container2AnimationStartPosition()
@@ -208,7 +217,10 @@ double ProgressBarTemplateSettingsProperties::Container2AnimationStartPosition()
 
 void ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition()
@@ -218,7 +230,10 @@ double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition()
 
 void ProgressBarTemplateSettingsProperties::ContainerAnimationMidPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationMidPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::ContainerAnimationMidPosition()
@@ -228,7 +243,10 @@ double ProgressBarTemplateSettingsProperties::ContainerAnimationMidPosition()
 
 void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition()
@@ -238,7 +256,10 @@ double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition()
 
 void ProgressBarTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CoreDispatcher ProgressBarTemplateSettingsProperties::Dispatcher()
@@ -248,7 +269,10 @@ winrt::CoreDispatcher ProgressBarTemplateSettingsProperties::Dispatcher()
 
 void ProgressBarTemplateSettingsProperties::EllipseAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::EllipseAnimationEndPosition()
@@ -258,7 +282,10 @@ double ProgressBarTemplateSettingsProperties::EllipseAnimationEndPosition()
 
 void ProgressBarTemplateSettingsProperties::EllipseAnimationWellPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseAnimationWellPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::EllipseAnimationWellPosition()
@@ -268,7 +295,10 @@ double ProgressBarTemplateSettingsProperties::EllipseAnimationWellPosition()
 
 void ProgressBarTemplateSettingsProperties::EllipseDiameter(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseDiameterProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::EllipseDiameter()
@@ -278,7 +308,10 @@ double ProgressBarTemplateSettingsProperties::EllipseDiameter()
 
 void ProgressBarTemplateSettingsProperties::EllipseOffset(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_EllipseOffsetProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::EllipseOffset()
@@ -288,7 +321,10 @@ double ProgressBarTemplateSettingsProperties::EllipseOffset()
 
 void ProgressBarTemplateSettingsProperties::IndicatorLengthDelta(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_IndicatorLengthDeltaProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressBarTemplateSettingsProperties::IndicatorLengthDelta()

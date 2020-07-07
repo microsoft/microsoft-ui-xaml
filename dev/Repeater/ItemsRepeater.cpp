@@ -462,10 +462,8 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
 // can be used to make logging a little easier to read.
 int ItemsRepeater::Indent()
 {
-    int indent = 1;
-
-    // Expensive, so we do it only in debug builds.
 #ifdef _DEBUG
+    // Expensive, so we do it only in debug builds.
     auto parent = this->Parent().as<winrt::FrameworkElement>();
     while (parent && !parent.try_as<winrt::ItemsRepeater>())
     {
@@ -475,11 +473,11 @@ int ItemsRepeater::Indent()
     if (parent)
     {
         auto parentRepeater = winrt::get_self<ItemsRepeater>(parent.as<winrt::ItemsRepeater>());
-        indent = parentRepeater->Indent();
+        return parentRepeater->Indent() * 4;
     }
 #endif
 
-    return indent * 4;
+    return 4;
 }
 
 void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)

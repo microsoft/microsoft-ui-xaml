@@ -177,15 +177,15 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
     // The order of saturation and value in the spectrum is reversed - the max value is at the bottom while the min value is at the top -
     // so we want left and up to be lower for hue, but higher for saturation and value.
     // This will ensure that the icon always moves in the direction of the key press.
-    IncrementDirection direction =
+    const IncrementDirection direction =
         (incrementChannel == winrt::ColorPickerHsvChannel::Hue && (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Up)) ||
         (incrementChannel != winrt::ColorPickerHsvChannel::Hue && (args.Key() == winrt::VirtualKey::Right || args.Key() == winrt::VirtualKey::Down)) ?
         IncrementDirection::Lower :
         IncrementDirection::Higher;
 
-    IncrementAmount amount = isControlDown ? IncrementAmount::Large : IncrementAmount::Small;
+    const IncrementAmount amount = isControlDown ? IncrementAmount::Large : IncrementAmount::Small;
 
-    winrt::float4 hsvColor = HsvColor();
+    const winrt::float4 hsvColor = HsvColor();
     UpdateColor(IncrementColorChannel(Hsv(hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), hsv::GetValue(hsvColor)), incrementChannel, direction, amount, true /* shouldWrap */, minBound, maxBound));
     args.Handled(true);
 }
@@ -260,10 +260,10 @@ void ColorSpectrum::OnColorChanged(winrt::DependencyPropertyChangedEventArgs con
     // If we're in the process of internally updating the color, then we don't want to respond to the Color property changing.
     if (!m_updatingColor)
     {
-        winrt::Color color = Color();
+        const winrt::Color color = Color();
 
         m_updatingHsvColor = true;
-        Hsv newHsv = RgbToHsv(Rgb(color.R / 255.0, color.G / 255.0, color.B / 255.0));
+        const Hsv newHsv = RgbToHsv(Rgb(color.R / 255.0, color.G / 255.0, color.B / 255.0));
         HsvColor(winrt::float4{ static_cast<float>(newHsv.h), static_cast<float>(newHsv.s), static_cast<float>(newHsv.v), static_cast<float>(color.A / 255.0) });
         m_updatingHsvColor = false;
 
@@ -287,10 +287,10 @@ void ColorSpectrum::OnHsvColorChanged(winrt::DependencyPropertyChangedEventArgs 
 
 void ColorSpectrum::SetColor()
 {
-    winrt::float4 hsvColor = HsvColor();
+    const winrt::float4 hsvColor = HsvColor();
 
     m_updatingColor = true;
-    Rgb newRgb = HsvToRgb(Hsv(hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), hsv::GetValue(hsvColor)));
+    const Rgb newRgb = HsvToRgb(Hsv(hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), hsv::GetValue(hsvColor)));
 
     Color(ColorFromRgba(newRgb, hsv::GetAlpha(hsvColor)));
 
@@ -303,7 +303,7 @@ void ColorSpectrum::SetColor()
 
 void ColorSpectrum::RaiseColorChanged()
 {
-    winrt::Color newColor = Color();
+    const winrt::Color newColor = Color();
 
     if (m_oldColor.A != newColor.A ||
         m_oldColor.R != newColor.R ||
@@ -336,8 +336,8 @@ void ColorSpectrum::RaiseColorChanged()
 
 void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    int minHue = MinHue();
-    int maxHue = MaxHue();
+    const int minHue = MinHue();
+    const int maxHue = MaxHue();
 
     if (minHue < 0 || minHue > 359)
     {
@@ -348,7 +348,7 @@ void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs
         throw winrt::hresult_invalid_argument(L"MaxHue must be between 0 and 359.");
     }
 
-    winrt::ColorSpectrumComponents components = Components();
+    const winrt::ColorSpectrumComponents components = Components();
 
     // If hue is one of the axes in the spectrum bitmap, then we'll need to regenerate it
     // if the maximum or minimum value has changed.
@@ -361,8 +361,8 @@ void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs
 
 void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    int minSaturation = MinSaturation();
-    int maxSaturation = MaxSaturation();
+    const int minSaturation = MinSaturation();
+    const int maxSaturation = MaxSaturation();
 
     if (minSaturation < 0 || minSaturation > 100)
     {
@@ -373,7 +373,7 @@ void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEv
         throw winrt::hresult_invalid_argument(L"MaxSaturation must be between 0 and 100.");
     }
 
-    winrt::ColorSpectrumComponents components = Components();
+    const winrt::ColorSpectrumComponents components = Components();
 
     // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
     // if the maximum or minimum value has changed.
@@ -386,8 +386,8 @@ void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEv
 
 void ColorSpectrum::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    int minValue = MinValue();
-    int maxValue = MaxValue();
+    const int minValue = MinValue();
+    const int maxValue = MaxValue();
 
     if (minValue < 0 || minValue > 100)
     {
@@ -398,7 +398,7 @@ void ColorSpectrum::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventAr
         throw winrt::hresult_invalid_argument(L"MaxValue must be between 0 and 100.");
     }
 
-    winrt::ColorSpectrumComponents components = Components();
+    const winrt::ColorSpectrumComponents components = Components();
 
     // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
     // if the maximum or minimum value has changed.
@@ -483,8 +483,8 @@ void ColorSpectrum::UpdateColor(Hsv newHsv)
     m_updatingColor = true;
     m_updatingHsvColor = true;
 
-    Rgb newRgb = HsvToRgb(newHsv);
-    float alpha = hsv::GetAlpha(HsvColor());
+    const Rgb newRgb = HsvToRgb(newHsv);
+    const float alpha = hsv::GetAlpha(HsvColor());
 
     Color(ColorFromRgba(newRgb, alpha));
     HsvColor({ static_cast<float>(newHsv.h), static_cast<float>(newHsv.s), static_cast<float>(newHsv.v), alpha });
@@ -509,10 +509,10 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
 
     double xPosition = point.Position().X;
     double yPosition = point.Position().Y;
-    double radius = min(m_imageWidthFromLastBitmapCreation, m_imageHeightFromLastBitmapCreation) / 2;
-    double distanceFromRadius = sqrt(pow(xPosition - radius, 2) + pow(yPosition - radius, 2));
+    const double radius = min(m_imageWidthFromLastBitmapCreation, m_imageHeightFromLastBitmapCreation) / 2;
+    const double distanceFromRadius = sqrt(pow(xPosition - radius, 2) + pow(yPosition - radius, 2));
 
-    auto shape = Shape();
+    const auto shape = Shape();
 
     // If the point is outside the circle, we should bring it back into the circle.
     if (distanceFromRadius > radius && shape == winrt::ColorSpectrumShape::Ring)
@@ -524,7 +524,7 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
     // Now we need to find the index into the array of HSL values at each point in the spectrum m_image.
     int x = static_cast<int>(round(xPosition));
     int y = static_cast<int>(round(yPosition));
-    int width = static_cast<int>(round(m_imageWidthFromLastBitmapCreation));
+    const int width = static_cast<int>(round(m_imageWidthFromLastBitmapCreation));
 
     if (x < 0)
     {
@@ -548,8 +548,8 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
     // We should keep the third where it already was.
     Hsv hsvAtPoint = m_hsvValues[y * width + x];
 
-    auto components = Components();
-    auto hsvColor = HsvColor();
+    const auto components = Components();
+    const auto hsvColor = HsvColor();
 
     switch (components)
     {
@@ -607,7 +607,7 @@ void ColorSpectrum::UpdateEllipse()
         double xPercent = 0;
         double yPercent = 0;
 
-        double hPercent = (hsv::GetHue(hsvColor) - m_minHueFromLastBitmapCreation) / (m_maxHueFromLastBitmapCreation - m_minHueFromLastBitmapCreation);
+        const double hPercent = (hsv::GetHue(hsvColor) - m_minHueFromLastBitmapCreation) / (m_maxHueFromLastBitmapCreation - m_minHueFromLastBitmapCreation);
         double sPercent = (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (m_maxSaturationFromLastBitmapCreation - m_minSaturationFromLastBitmapCreation);
         double vPercent = (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (m_maxValueFromLastBitmapCreation - m_minValueFromLastBitmapCreation);
 
@@ -665,7 +665,7 @@ void ColorSpectrum::UpdateEllipse()
         double thetaValue = 0;
         double rValue = 0;
 
-        double hThetaValue =
+        const double hThetaValue =
             m_maxHueFromLastBitmapCreation != m_minHueFromLastBitmapCreation ?
             360 * (hsv::GetHue(hsvColor) - m_minHueFromLastBitmapCreation) / (m_maxHueFromLastBitmapCreation - m_minHueFromLastBitmapCreation) :
             0;
@@ -677,7 +677,7 @@ void ColorSpectrum::UpdateEllipse()
             m_maxValueFromLastBitmapCreation != m_minValueFromLastBitmapCreation ?
             360 * (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (m_maxValueFromLastBitmapCreation - m_minValueFromLastBitmapCreation) :
             0;
-        double hRValue = m_maxHueFromLastBitmapCreation != m_minHueFromLastBitmapCreation ?
+        const double hRValue = m_maxHueFromLastBitmapCreation != m_minHueFromLastBitmapCreation ?
             (hsv::GetHue(hsvColor) - m_minHueFromLastBitmapCreation) / (m_maxHueFromLastBitmapCreation - m_minHueFromLastBitmapCreation) - 1 :
             0;
         double sRValue = m_maxSaturationFromLastBitmapCreation != m_minSaturationFromLastBitmapCreation ?
@@ -735,7 +735,7 @@ void ColorSpectrum::UpdateEllipse()
             break;
         }
 
-        double radius = min(m_imageWidthFromLastBitmapCreation, m_imageHeightFromLastBitmapCreation) / 2;
+        const double radius = min(m_imageWidthFromLastBitmapCreation, m_imageHeightFromLastBitmapCreation) / 2;
 
         xPosition = (cos((thetaValue * M_PI / 180) + M_PI) * radius * rValue) + radius;
         yPosition = (sin((thetaValue * M_PI / 180) + M_PI) * radius * rValue) + radius;
@@ -849,7 +849,7 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
         return;
     }
 
-    double minDimension = min(layoutRoot.ActualWidth(), layoutRoot.ActualHeight());
+    const double minDimension = min(layoutRoot.ActualWidth(), layoutRoot.ActualHeight());
 
     if (minDimension == 0)
     {
@@ -875,15 +875,15 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
     spectrumOverlayEllipse.Width(minDimension);
     spectrumOverlayEllipse.Height(minDimension);
 
-    winrt::float4 hsvColor = HsvColor();
-    int minHue = MinHue();
+    const winrt::float4 hsvColor = HsvColor();
+    const int minHue = MinHue();
     int maxHue = MaxHue();
-    int minSaturation = MinSaturation();
+    const int minSaturation = MinSaturation();
     int maxSaturation = MaxSaturation();
-    int minValue = MinValue();
+    const int minValue = MinValue();
     int maxValue = MaxValue();
-    winrt::ColorSpectrumShape shape = Shape();
-    winrt::ColorSpectrumComponents components = Components();
+    const winrt::ColorSpectrumShape shape = Shape();
+    const winrt::ColorSpectrumComponents components = Components();
 
     // If min >= max, then by convention, min is the only number that a property can have.
     if (minHue >= maxHue)
@@ -901,7 +901,7 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
         maxValue = minValue;
     }
 
-    Hsv hsv = { hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), hsv::GetValue(hsvColor) };
+    const Hsv hsv = { hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), hsv::GetValue(hsvColor) };
 
     // The middle 4 are only needed and used in the case of hue as the third dimension.
     // Saturation and luminosity need only a min and max.
@@ -913,8 +913,8 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
     shared_ptr<vector<::byte>> bgraMaxPixelData = make_shared<vector<::byte>>();
     shared_ptr<vector<Hsv>> newHsvValues = make_shared<vector<Hsv>>();
 
-    auto pixelCount = static_cast<size_t>(round(minDimension) * round(minDimension));
-    size_t pixelDataSize = pixelCount * 4;
+    const auto pixelCount = static_cast<size_t>(round(minDimension) * round(minDimension));
+    const size_t pixelDataSize = pixelCount * 4;
     bgraMinPixelData->reserve(pixelDataSize);
 
     // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
@@ -930,7 +930,7 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
     bgraMaxPixelData->reserve(pixelDataSize);
     newHsvValues->reserve(pixelCount);
 
-    int minDimensionInt = static_cast<int>(round(minDimension));
+    const int minDimensionInt = static_cast<int>(round(minDimension));
     winrt::WorkItemHandler workItemHandler(
         [minDimensionInt, hsv, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue, shape, components,
         bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData, newHsvValues]
@@ -1009,10 +1009,10 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
         strongThis->m_dispatcherHelper.RunAsync(
             [strongThis, minDimension, bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData, newHsvValues]()
         {
-            int pixelWidth = static_cast<int>(round(minDimension));
-            int pixelHeight = static_cast<int>(round(minDimension));
+            const int pixelWidth = static_cast<int>(round(minDimension));
+            const int pixelHeight = static_cast<int>(round(minDimension));
 
-            winrt::ColorSpectrumComponents components = strongThis->Components();
+            const winrt::ColorSpectrumComponents components = strongThis->Components();
 
             if (SharedHelpers::IsRS2OrHigher())
             {
@@ -1108,12 +1108,12 @@ void ColorSpectrum::FillPixelForBox(
     shared_ptr<vector<::byte>> bgraMaxPixelData,
     shared_ptr<vector<Hsv>> newHsvValues)
 {
-    double hMin = minHue;
-    double hMax = maxHue;
-    double sMin = minSaturation / 100.0;
-    double sMax = maxSaturation / 100.0;
-    double vMin = minValue / 100.0;
-    double vMax = maxValue / 100.0;
+    const double hMin = minHue;
+    const double hMax = maxHue;
+    const double sMin = minSaturation / 100.0;
+    const double sMax = maxSaturation / 100.0;
+    const double vMin = minValue / 100.0;
+    const double vMax = maxValue / 100.0;
 
     Hsv hsvMin = baseHsv;
     Hsv hsvMiddle1 = baseHsv;
@@ -1122,8 +1122,8 @@ void ColorSpectrum::FillPixelForBox(
     Hsv hsvMiddle4 = baseHsv;
     Hsv hsvMax = baseHsv;
 
-    double xPercent = (minDimension - 1 - x) / (minDimension - 1);
-    double yPercent = (minDimension - 1 - y) / (minDimension - 1);
+    const double xPercent = (minDimension - 1 - x) / (minDimension - 1);
+    const double yPercent = (minDimension - 1 - y) / (minDimension - 1);
 
     switch (components)
     {
@@ -1206,7 +1206,7 @@ void ColorSpectrum::FillPixelForBox(
 
     newHsvValues->push_back(hsvMin);
 
-    Rgb rgbMin = HsvToRgb(hsvMin);
+    const Rgb rgbMin = HsvToRgb(hsvMin);
     bgraMinPixelData->push_back(static_cast<::byte>(round(rgbMin.b * 255))); // b
     bgraMinPixelData->push_back(static_cast<::byte>(round(rgbMin.g * 255))); // g
     bgraMinPixelData->push_back(static_cast<::byte>(round(rgbMin.r * 255))); // r
@@ -1216,32 +1216,32 @@ void ColorSpectrum::FillPixelForBox(
     if (components == winrt::ColorSpectrumComponents::ValueSaturation ||
         components == winrt::ColorSpectrumComponents::SaturationValue)
     {
-        Rgb rgbMiddle1 = HsvToRgb(hsvMiddle1);
+        const Rgb rgbMiddle1 = HsvToRgb(hsvMiddle1);
         bgraMiddle1PixelData->push_back(static_cast<::byte>(round(rgbMiddle1.b * 255))); // b
         bgraMiddle1PixelData->push_back(static_cast<::byte>(round(rgbMiddle1.g * 255))); // g
         bgraMiddle1PixelData->push_back(static_cast<::byte>(round(rgbMiddle1.r * 255))); // r
         bgraMiddle1PixelData->push_back(255); // a - ignored
 
-        Rgb rgbMiddle2 = HsvToRgb(hsvMiddle2);
+        const Rgb rgbMiddle2 = HsvToRgb(hsvMiddle2);
         bgraMiddle2PixelData->push_back(static_cast<::byte>(round(rgbMiddle2.b * 255))); // b
         bgraMiddle2PixelData->push_back(static_cast<::byte>(round(rgbMiddle2.g * 255))); // g
         bgraMiddle2PixelData->push_back(static_cast<::byte>(round(rgbMiddle2.r * 255))); // r
         bgraMiddle2PixelData->push_back(255); // a - ignored
 
-        Rgb rgbMiddle3 = HsvToRgb(hsvMiddle3);
+        const Rgb rgbMiddle3 = HsvToRgb(hsvMiddle3);
         bgraMiddle3PixelData->push_back(static_cast<::byte>(round(rgbMiddle3.b * 255))); // b
         bgraMiddle3PixelData->push_back(static_cast<::byte>(round(rgbMiddle3.g * 255))); // g
         bgraMiddle3PixelData->push_back(static_cast<::byte>(round(rgbMiddle3.r * 255))); // r
         bgraMiddle3PixelData->push_back(255); // a - ignored
 
-        Rgb rgbMiddle4 = HsvToRgb(hsvMiddle4);
+        const Rgb rgbMiddle4 = HsvToRgb(hsvMiddle4);
         bgraMiddle4PixelData->push_back(static_cast<::byte>(round(rgbMiddle4.b * 255))); // b
         bgraMiddle4PixelData->push_back(static_cast<::byte>(round(rgbMiddle4.g * 255))); // g
         bgraMiddle4PixelData->push_back(static_cast<::byte>(round(rgbMiddle4.r * 255))); // r
         bgraMiddle4PixelData->push_back(255); // a - ignored
     }
 
-    Rgb rgbMax = HsvToRgb(hsvMax);
+    const Rgb rgbMax = HsvToRgb(hsvMax);
     bgraMaxPixelData->push_back(static_cast<::byte>(round(rgbMax.b * 255))); // b
     bgraMaxPixelData->push_back(static_cast<::byte>(round(rgbMax.g * 255))); // g
     bgraMaxPixelData->push_back(static_cast<::byte>(round(rgbMax.r * 255))); // r
@@ -1268,12 +1268,12 @@ void ColorSpectrum::FillPixelForRing(
     shared_ptr<vector<::byte>> bgraMaxPixelData,
     shared_ptr<vector<Hsv>> newHsvValues)
 {
-    double hMin = minHue;
-    double hMax = maxHue;
-    double sMin = minSaturation / 100.0;
-    double sMax = maxSaturation / 100.0;
-    double vMin = minValue / 100.0;
-    double vMax = maxValue / 100.0;
+    const double hMin = minHue;
+    const double hMax = maxHue;
+    const double sMin = minSaturation / 100.0;
+    const double sMax = maxSaturation / 100.0;
+    const double vMin = minValue / 100.0;
+    const double vMax = maxValue / 100.0;
 
     double distanceFromRadius = sqrt(pow(x - radius, 2) + pow(y - radius, 2));
 
@@ -1298,7 +1298,7 @@ void ColorSpectrum::FillPixelForRing(
     Hsv hsvMiddle4 = baseHsv;
     Hsv hsvMax = baseHsv;
 
-    double r = 1 - distanceFromRadius / radius;
+    const double r = 1 - distanceFromRadius / radius;
 
     double theta = atan2((radius - yToUse), (radius - xToUse)) * 180.0 / M_PI;
     theta += 180.0;
@@ -1309,7 +1309,7 @@ void ColorSpectrum::FillPixelForRing(
         theta -= 360;
     }
 
-    double thetaPercent = theta / 360;
+    const double thetaPercent = theta / 360;
 
     switch (components)
     {
@@ -1392,7 +1392,7 @@ void ColorSpectrum::FillPixelForRing(
 
     newHsvValues->push_back(hsvMin);
 
-    Rgb rgbMin = HsvToRgb(hsvMin);
+    const Rgb rgbMin = HsvToRgb(hsvMin);
     bgraMinPixelData->push_back(static_cast<::byte>(round(rgbMin.b * 255))); // b
     bgraMinPixelData->push_back(static_cast<::byte>(round(rgbMin.g * 255))); // g
     bgraMinPixelData->push_back(static_cast<::byte>(round(rgbMin.r * 255))); // r
@@ -1402,32 +1402,32 @@ void ColorSpectrum::FillPixelForRing(
     if (components == winrt::ColorSpectrumComponents::ValueSaturation ||
         components == winrt::ColorSpectrumComponents::SaturationValue)
     {
-        Rgb rgbMiddle1 = HsvToRgb(hsvMiddle1);
+        const Rgb rgbMiddle1 = HsvToRgb(hsvMiddle1);
         bgraMiddle1PixelData->push_back(static_cast<::byte>(round(rgbMiddle1.b * 255))); // b
         bgraMiddle1PixelData->push_back(static_cast<::byte>(round(rgbMiddle1.g * 255))); // g
         bgraMiddle1PixelData->push_back(static_cast<::byte>(round(rgbMiddle1.r * 255))); // r
         bgraMiddle1PixelData->push_back(255); // a
 
-        Rgb rgbMiddle2 = HsvToRgb(hsvMiddle2);
+        const Rgb rgbMiddle2 = HsvToRgb(hsvMiddle2);
         bgraMiddle2PixelData->push_back(static_cast<::byte>(round(rgbMiddle2.b * 255))); // b
         bgraMiddle2PixelData->push_back(static_cast<::byte>(round(rgbMiddle2.g * 255))); // g
         bgraMiddle2PixelData->push_back(static_cast<::byte>(round(rgbMiddle2.r * 255))); // r
         bgraMiddle2PixelData->push_back(255); // a
 
-        Rgb rgbMiddle3 = HsvToRgb(hsvMiddle3);
+        const Rgb rgbMiddle3 = HsvToRgb(hsvMiddle3);
         bgraMiddle3PixelData->push_back(static_cast<::byte>(round(rgbMiddle3.b * 255))); // b
         bgraMiddle3PixelData->push_back(static_cast<::byte>(round(rgbMiddle3.g * 255))); // g
         bgraMiddle3PixelData->push_back(static_cast<::byte>(round(rgbMiddle3.r * 255))); // r
         bgraMiddle3PixelData->push_back(255); // a
 
-        Rgb rgbMiddle4 = HsvToRgb(hsvMiddle4);
+        const Rgb rgbMiddle4 = HsvToRgb(hsvMiddle4);
         bgraMiddle4PixelData->push_back(static_cast<::byte>(round(rgbMiddle4.b * 255))); // b
         bgraMiddle4PixelData->push_back(static_cast<::byte>(round(rgbMiddle4.g * 255))); // g
         bgraMiddle4PixelData->push_back(static_cast<::byte>(round(rgbMiddle4.r * 255))); // r
         bgraMiddle4PixelData->push_back(255); // a
     }
 
-    Rgb rgbMax = HsvToRgb(hsvMax);
+    const Rgb rgbMax = HsvToRgb(hsvMax);
     bgraMaxPixelData->push_back(static_cast<::byte>(round(rgbMax.b * 255))); // b
     bgraMaxPixelData->push_back(static_cast<::byte>(round(rgbMax.g * 255))); // g
     bgraMaxPixelData->push_back(static_cast<::byte>(round(rgbMax.r * 255))); // r
@@ -1448,8 +1448,8 @@ void ColorSpectrum::UpdateBitmapSources()
     auto&& spectrumRectangle = m_spectrumRectangle.get();
     auto&& spectrumEllipse = m_spectrumEllipse.get();
 
-    winrt::float4 hsvColor = HsvColor();
-    winrt::ColorSpectrumComponents components = Components();
+    const winrt::float4 hsvColor = HsvColor();
+    const winrt::ColorSpectrumComponents components = Components();
 
     // We'll set the base image and the overlay image based on which component is our third dimension.
     // If it's saturation or luminosity, then the base image is that dimension at its minimum value,
@@ -1553,7 +1553,7 @@ void ColorSpectrum::UpdateBitmapSources()
 
             winrt::SpectrumBrush spectrumBrush{ winrt::make<SpectrumBrush>() };
 
-            double sextant = hsv::GetHue(hsvColor) / 60.0;
+            const double sextant = hsv::GetHue(hsvColor) / 60.0;
 
             if (sextant < 1)
             {
@@ -1605,7 +1605,7 @@ void ColorSpectrum::UpdateBitmapSources()
             winrt::ImageBrush spectrumBrush;
             winrt::ImageBrush spectrumOverlayBrush;
 
-            double sextant = hsv::GetHue(hsvColor) / 60.0;
+            const double sextant = hsv::GetHue(hsvColor) / 60.0;
 
             if (sextant < 1)
             {
@@ -1673,8 +1673,8 @@ bool ColorSpectrum::SelectionEllipseShouldBeLight()
     if (Components() == winrt::ColorSpectrumComponents::HueSaturation ||
         Components() == winrt::ColorSpectrumComponents::SaturationHue)
     {
-        winrt::float4 hsvColor = HsvColor();
-        Rgb color = HsvToRgb(Hsv(hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), 1.0));
+        const winrt::float4 hsvColor = HsvColor();
+        const Rgb color = HsvToRgb(Hsv(hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), 1.0));
         displayedColor = ColorFromRgba(color, hsv::GetAlpha(hsvColor));
     }
     else
@@ -1682,9 +1682,9 @@ bool ColorSpectrum::SelectionEllipseShouldBeLight()
         displayedColor = Color();
     }
 
-    double rg = displayedColor.R <= 10 ? displayedColor.R / 3294.0 : pow(displayedColor.R / 269.0 + 0.0513, 2.4);
-    double gg = displayedColor.G <= 10 ? displayedColor.G / 3294.0 : pow(displayedColor.G / 269.0 + 0.0513, 2.4);
-    double bg = displayedColor.B <= 10 ? displayedColor.B / 3294.0 : pow(displayedColor.B / 269.0 + 0.0513, 2.4);
+    const double rg = displayedColor.R <= 10 ? displayedColor.R / 3294.0 : pow(displayedColor.R / 269.0 + 0.0513, 2.4);
+    const double gg = displayedColor.G <= 10 ? displayedColor.G / 3294.0 : pow(displayedColor.G / 269.0 + 0.0513, 2.4);
+    const double bg = displayedColor.B <= 10 ? displayedColor.B / 3294.0 : pow(displayedColor.B / 269.0 + 0.0513, 2.4);
 
     return 0.2126 * rg + 0.7152 * gg + 0.0722 * bg <= 0.5;
 }

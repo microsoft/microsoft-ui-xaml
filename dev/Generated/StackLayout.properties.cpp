@@ -92,7 +92,10 @@ void StackLayoutProperties::OnSpacingPropertyChanged(
 
 void StackLayoutProperties::DisableVirtualization(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<StackLayout*>(this)->SetValue(s_DisableVirtualizationProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool StackLayoutProperties::DisableVirtualization()
@@ -102,7 +105,10 @@ bool StackLayoutProperties::DisableVirtualization()
 
 void StackLayoutProperties::Orientation(winrt::Orientation const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<StackLayout*>(this)->SetValue(s_OrientationProperty, ValueHelper<winrt::Orientation>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Orientation StackLayoutProperties::Orientation()
@@ -112,7 +118,10 @@ winrt::Orientation StackLayoutProperties::Orientation()
 
 void StackLayoutProperties::Spacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<StackLayout*>(this)->SetValue(s_SpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double StackLayoutProperties::Spacing()

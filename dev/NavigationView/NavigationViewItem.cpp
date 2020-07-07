@@ -144,8 +144,15 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
             }
             return MenuItems().as<winrt::IInspectable>();
         }();
+        m_itemsSourceViewCollectionChangedRevoker.revoke();
         repeater.ItemsSource(itemsSource);
+        m_itemsSourceViewCollectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
     }
+}
+
+void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
+{
+    UpdateVisualStateForChevron();
 }
  
 winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
@@ -174,12 +181,12 @@ void NavigationViewItem::OnSplitViewPropertyChanged(const winrt::DependencyObjec
 
 void NavigationViewItem::UpdateCompactPaneLength()
 {
-    if (auto splitView = GetSplitView())
+    if (const auto splitView = GetSplitView())
     {
         SetValue(s_CompactPaneLengthProperty, winrt::PropertyValue::CreateDouble(splitView.CompactPaneLength()));
 
         // Only update when on left
-        if (auto presenter = GetPresenter())
+        if (const auto presenter = GetPresenter())
         {
             presenter->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
         }
@@ -188,11 +195,18 @@ void NavigationViewItem::UpdateCompactPaneLength()
 
 void NavigationViewItem::UpdateIsClosedCompact()
 {
-    if (auto splitView = GetSplitView())
+    if (const auto splitView = GetSplitView())
     {
         // Check if the pane is closed and if the splitview is in either compact mode.
-        m_isClosedCompact = !splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+        m_isClosedCompact = !splitView.IsPaneOpen()
+            && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
+
         UpdateVisualState(true /*useTransitions*/);
+
+        if (const auto presenter = GetPresenter())
+        {
+            presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
+        }
     }
 }
 
@@ -217,7 +231,7 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
 void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newContent)
 {
     auto potentialString = newContent.try_as<winrt::IPropertyValue>();
-    bool stringableToolTip = (potentialString && potentialString.Type() == winrt::PropertyType::String);
+    const bool stringableToolTip = (potentialString && potentialString.Type() == winrt::PropertyType::String);
     
     winrt::IInspectable newToolTipContent{ nullptr };
     if (stringableToolTip)
@@ -281,7 +295,7 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
 
 void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
 {
-    auto position = Position();
+    const auto position = Position();
     auto stateName = c_OnLeftNavigation;
 
     bool handled = false;
@@ -337,7 +351,7 @@ void NavigationViewItem::UpdateVisualStateForToolTip()
     // If ToolTip TemplatePart is detected, fallback to old logic and apply ToolTip on TemplatePart.
     if (auto toolTip = m_toolTip.get())
     {
-        auto shouldEnableToolTip = ShouldEnableToolTip();
+        const auto shouldEnableToolTip = ShouldEnableToolTip();
         auto toolTipContent = m_suggestedToolTipContent.get();
         if (shouldEnableToolTip && toolTipContent)
         {
@@ -358,51 +372,53 @@ void NavigationViewItem::UpdateVisualStateForToolTip()
 
 void NavigationViewItem::UpdateVisualStateForPointer()
 {
+    const auto isEnabled = IsEnabled();
+    const auto enabledStateValue = isEnabled ? c_enabled : c_disabled;
     // DisabledStates and CommonStates
-    auto enabledStateValue = c_enabled;
-    bool isSelected = IsSelected();
-    auto selectedStateValue = c_normal;
-    if (IsEnabled())
+    const auto selectedStateValue = [this, isEnabled, isSelected = IsSelected()]()
     {
-        if (isSelected)
+        if (isEnabled)
         {
-            if (m_isPressed)
+            if (isSelected)
             {
-                selectedStateValue = c_pressedSelected;
+                if (m_isPressed)
+                {
+                    return c_pressedSelected;
+                }
+                else if (m_isPointerOver)
+                {
+                    return c_pointerOverSelected;
+                }
+                else
+                {
+                    return c_selected;
+                }
             }
             else if (m_isPointerOver)
             {
-                selectedStateValue = c_pointerOverSelected;
+                if (m_isPressed)
+                {
+                    return c_pressed;
+                }
+                else
+                {
+                    return c_pointerOver;
+                }
             }
-            else
+            else if (m_isPressed)
             {
-                selectedStateValue = c_selected;
+                return c_pressed;
             }
         }
-        else if (m_isPointerOver)
+        else
         {
-            if (m_isPressed)
+            if (isSelected)
             {
-                selectedStateValue = c_pressed;
-            }
-            else
-            {
-                selectedStateValue = c_pointerOver;
+                return c_selected;
             }
         }
-        else if (m_isPressed)
-        {
-            selectedStateValue = c_pressed;
-        }
-    }
-    else
-    {
-        enabledStateValue = c_disabled;
-        if (isSelected)
-        {
-            selectedStateValue = c_selected;
-        }
-    }
+        return c_normal;
+    }();
 
     // There are scenarios where the presenter may not exist.
     // For example, the top nav settings item. In that case,
@@ -428,8 +444,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
     UpdateVisualStateForNavigationViewPositionChange();
 
-    bool shouldShowIcon = ShouldShowIcon();
-    bool shouldShowContent = ShouldShowContent();
+    const bool shouldShowIcon = ShouldShowIcon();
+    const bool shouldShowContent = ShouldShowContent();
   
     if (IsOnLeftNav())
     {
@@ -461,7 +477,7 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 
 bool NavigationViewItem::HasChildren()
 {
-    return MenuItems().Size() > 0 || MenuItemsSource() != nullptr || HasUnrealizedChildren();
+    return MenuItems().Size() > 0 || (MenuItemsSource() != nullptr && m_repeater.get().ItemsSourceView().Count() > 0) || HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
@@ -516,8 +532,8 @@ void NavigationViewItem::ShowHideChildren()
 {
     if (auto const repeater = m_repeater.get())
     {
-        bool shouldShowChildren = IsExpanded();
-        auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+        const bool shouldShowChildren = IsExpanded();
+        const auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
         repeater.Visibility(visibility);
 
         if (ShouldRepeaterShowInFlyout())
@@ -596,7 +612,7 @@ void NavigationViewItem::UpdateItemIndentation()
     // Update item indentation based on its depth
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto newLeftMargin = Depth() * c_itemIndentation;
+        const auto newLeftMargin = Depth() * c_itemIndentation;
         winrt::get_self<NavigationViewItemPresenter>(presenter)->UpdateContentLeftIndentation(static_cast<double>(newLeftMargin));
     }
 }
@@ -662,7 +678,7 @@ void NavigationViewItem::OnGotFocus(winrt::RoutedEventArgs const& e)
         // It's used to support bluebar have difference appearance between focused and focused+selection. 
         // For example, we can move the SelectionIndicator 3px up when focused and selected to make sure focus rectange doesn't override SelectionIndicator. 
         // If it's a pointer or programatic, no focus rectangle, so no action
-        auto focusState = originalSource.FocusState();
+        const auto focusState = originalSource.FocusState();
         if (focusState == winrt::FocusState::Keyboard)
         {
             m_hasKeyboardFocus = true;
@@ -912,6 +928,7 @@ void NavigationViewItem::UnhookEventsAndClearFields()
     m_repeaterElementPreparedRevoker.revoke();
     m_repeaterElementClearingRevoker.revoke();
     m_isEnabledChangedRevoker.revoke();
+    m_itemsSourceViewCollectionChangedRevoker.revoke();
 
     m_rootGrid.set(nullptr);
     m_navigationViewItemPresenter.set(nullptr);

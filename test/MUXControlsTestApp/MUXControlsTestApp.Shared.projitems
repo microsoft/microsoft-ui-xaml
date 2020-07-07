@@ -222,6 +222,8 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Reveal.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollPresenter.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollViewer.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Slider.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\SplitButton.png" />
@@ -285,7 +287,7 @@
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_unset.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\SMPTE_WallpaperHD.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Properties\App.rd.xml" />
-    <Content Include="$(MSBuildThisFileDirectory)\master\*.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)\verification\*.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
   </ItemGroup>
   <ItemGroup>

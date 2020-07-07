@@ -28,7 +28,7 @@ bool BuildTreeScheduler::ShouldYield()
 
 void BuildTreeScheduler::OnRendering(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-      bool budgetReached = ShouldYield();
+    const bool budgetReached = ShouldYield();
     if (!budgetReached && m_pendingWork.size() > 0)
     {
         // Sort in descending order of priority and work from the end of the list to avoid moving around during erase.

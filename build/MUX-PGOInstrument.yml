@@ -65,11 +65,11 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
-        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+        openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
-        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+        openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:

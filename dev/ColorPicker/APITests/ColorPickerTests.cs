@@ -278,7 +278,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
             TestUtilities.SetAsVisualTreeRoot(colorPicker);
 
-            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, masterFilePrefix: "ColorPicker");
+            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, verificationFileNamePrefix: "ColorPicker");
         }
 
         // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
