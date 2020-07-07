@@ -88,15 +88,6 @@ namespace MUXControlsTestApp
             UpdateSeverityState();
             OnIsOpenChanged();
 
-            // Allows the user to override the default StatusColor and Icon of the Severity level
-            if (IconSource != null)
-            {
-                OnIconSourceChanged();
-            }
-            if (StatusColor != Color.FromArgb(0, 0, 0, 0))
-            {
-                OnStatusColorChanged();
-            }
             _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
@@ -117,6 +108,10 @@ namespace MUXControlsTestApp
             else if (property == IsOpenProperty)
             {
                 infoBar.OnIsOpenChanged();
+            }
+            else if (property == IconSourceProperty)
+            {
+                infoBar.OnIconChanged();
             }
         }
 
@@ -268,7 +263,7 @@ namespace MUXControlsTestApp
         }
 
         public static readonly DependencyProperty IconSourceProperty =
-            DependencyProperty.Register(nameof(IconSource), typeof(IconSource), typeof(InfoBar), new PropertyMetadata(default));
+            DependencyProperty.Register(nameof(IconSource), typeof(IconSource), typeof(InfoBar), new PropertyMetadata(default, OnPropertyChanged));
 
         // Methods that invoke the event handlers for Close Button and Action Button
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
@@ -313,9 +308,22 @@ namespace MUXControlsTestApp
             Closed?.Invoke(this, args);
         }
 
+        void OnIconChanged()
+        {
+            if (IconSource != null)
+            {
+                VisualStateManager.GoToState(this, "UserIconVisible", false);
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "StandardIconVisible", false);
+            }
+        }
+
         // Updates Severity state of InfoBar
         void UpdateSeverityState()
         {
+            OnIconChanged();
             if (Severity == InfoBarSeverity.Critical)
             {
                 VisualStateManager.GoToState(this, "Critical", false);
@@ -415,18 +423,6 @@ namespace MUXControlsTestApp
                 _myContainer.Visibility = Visibility.Collapsed;
                 IsOpen = false;
             }
-        }
-
-        // Updates the IconSource to the user's chosen icon
-        void OnIconSourceChanged()
-        {
-            VisualStateManager.GoToState(this, "UserIconSource", false);
-        }
-
-        //Updates the StatusColor to the user's chosen color
-        void OnStatusColorChanged()
-        {
-            VisualStateManager.GoToState(this, "UserStatusColor", false);
         }
     }
 }

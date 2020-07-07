@@ -258,7 +258,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
-	  <DefineConstants Condition="$(FeatureInfoBarEnabled) =='true'">$(DefineConstants);FEATURE_INFOBAR_ENABLED</DefineConstants>
+    <DefineConstants Condition="$(FeatureInfoBarEnabled) =='true'">$(DefineConstants);FEATURE_INFOBAR_ENABLED</DefineConstants>
     <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>
