@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Media;
 using Common;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
+using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Automation.Provider;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -83,6 +86,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyTabWidthVisualStates(tabView.TabItems, false);
             });
         }
+
+        [TestMethod]
+        public void VerifyUIABehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TabView tabView = new TabView();
+                Content = tabView;
+
+                tabView.TabItems.Add(CreateTabViewItem("Item 0", Symbol.Add));
+                tabView.TabItems.Add(CreateTabViewItem("Item 1", Symbol.AddFriend));
+                tabView.TabItems.Add(CreateTabViewItem("Item 2"));
+
+                Content.UpdateLayout();
+
+                var tabViewPeer = FrameworkElementAutomationPeer.CreatePeerForElement(tabView);
+                Verify.IsNotNull(tabViewPeer);
+                var tabViewSelectionPattern = tabViewPeer.GetPattern(PatternInterface.Selection);
+                Verify.IsNotNull(tabViewSelectionPattern);
+                var selectionProvider = tabViewSelectionPattern as ISelectionProvider;
+                // Tab controls must require selection
+                Verify.IsTrue(selectionProvider.IsSelectionRequired);
+            });
+        }
+
 
         private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
         {
