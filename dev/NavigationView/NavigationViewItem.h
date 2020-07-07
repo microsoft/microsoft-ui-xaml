@@ -97,7 +97,6 @@ private:
     bool ShouldEnableToolTip();
     bool IsOnLeftNav();
     bool IsOnTopPrimary();
-    bool HasChildren();
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
     void ReparentContent();
