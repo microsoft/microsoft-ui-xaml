@@ -27,7 +27,6 @@ winrt::AutomationControlType TabViewItemAutomationPeer::GetAutomationControlType
     return winrt::AutomationControlType::TabItem;
 }
 
-
 winrt::hstring TabViewItemAutomationPeer::GetNameCore()
 {
     winrt::hstring returnHString = __super::GetNameCore();
@@ -42,4 +41,36 @@ winrt::hstring TabViewItemAutomationPeer::GetNameCore()
     }
 
     return returnHString;
+}
+
+
+bool TabViewItemAutomationPeer::IsSelected()
+{
+    return false;
+}
+
+winrt::IRawElementProviderSimple TabViewItemAutomationPeer::SelectionContainer()
+{
+    return nullptr;
+}
+
+void TabViewItemAutomationPeer::AddToSelection()
+{
+}
+
+void TabViewItemAutomationPeer::RemoveFromSelection()
+{
+}
+
+void TabViewItemAutomationPeer::Select()
+{
+}
+
+winrt::TabView TabViewItemAutomationPeer::GetParenTabView()
+{
+    if (auto tvi = Owner().try_as<winrt::TabViewItem>())
+    {
+        return winrt::get_self<TabViewItem>(tvi)->GetParentTabView();
+    }
+    return nullptr;
 }

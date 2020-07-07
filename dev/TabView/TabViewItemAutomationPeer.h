@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -7,7 +7,9 @@
 #include "TabViewItemAutomationPeer.g.h"
 
 class TabViewItemAutomationPeer :
-    public ReferenceTracker<TabViewItemAutomationPeer, winrt::implementation::TabViewItemAutomationPeerT>
+    public ReferenceTracker < TabViewItemAutomationPeer,
+    winrt::implementation::TabViewItemAutomationPeerT,
+    winrt::ISelectionItemProvider >
 {
 
 public:
@@ -17,4 +19,14 @@ public:
     winrt::hstring GetNameCore();
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+
+    // ISelectionItemProvider
+    bool IsSelected();
+    winrt::IRawElementProviderSimple SelectionContainer();
+    void AddToSelection();
+    void RemoveFromSelection();
+    void Select();
+
+private:
+    winrt::TabView GetParenTabView();
 };
