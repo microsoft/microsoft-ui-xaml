@@ -36,7 +36,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
             TestUtilities.SetAsVisualTreeRoot(calendarView);
 
-            VisualTreeTestHelper.VerifyVisualTree(root: calendarView, masterFilePrefix: "CalendarView");
+            VisualTreeTestHelper.VerifyVisualTree(root: calendarView, verificationFileNamePrefix: "CalendarView");
         }
     }
 }

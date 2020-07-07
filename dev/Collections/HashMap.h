@@ -51,7 +51,7 @@ public:
     {
         ++m_mutationCount;
         auto it = FindKey(key);
-        bool found = (it != m_map.end());
+        const bool found = (it != m_map.end());
         if (found)
         {
             it->second = tracker_ref<V>{ this, value };

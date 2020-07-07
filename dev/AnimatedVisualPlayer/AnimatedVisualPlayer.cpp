@@ -23,7 +23,7 @@ AnimatedVisualPlayer::AnimationPlay::AnimationPlay(
     // Save the play duration as time.
     // If toProgress is less than fromProgress the animation will wrap around,
     // so the time is calculated as fromProgress..end + start..toProgress.
-    auto durationAsProgress = fromProgress > toProgress ? ((1 - fromProgress) + toProgress) : (toProgress - fromProgress);
+    const auto durationAsProgress = fromProgress > toProgress ? ((1 - fromProgress) + toProgress) : (toProgress - fromProgress);
     // NOTE: this relies on the Duration() being set on the owner.
     m_playDuration = std::chrono::duration_cast<winrt::TimeSpan>(m_owner.Duration() * durationAsProgress);
 }
@@ -63,7 +63,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         if (m_fromProgress > m_toProgress)
         {
             // Play to the end.
-            auto timeToEnd = (1 - m_fromProgress) / ((1 - m_fromProgress) + m_toProgress);
+            const auto timeToEnd = (1 - m_fromProgress) / ((1 - m_fromProgress) + m_toProgress);
             animation.InsertKeyFrame(timeToEnd, 1, linearEasing);
             // Jump to the beginning.
             animation.InsertKeyFrame(::nextafterf(timeToEnd, 1), 0, linearEasing);
@@ -101,7 +101,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         }
 
         // Set the playback rate.
-        auto playbackRate = static_cast<float>(m_owner.PlaybackRate());
+        const auto playbackRate = static_cast<float>(m_owner.PlaybackRate());
         m_controller.PlaybackRate(playbackRate);
 
         if (playbackRate < 0)
@@ -452,8 +452,8 @@ winrt::Size AnimatedVisualPlayer::MeasureOverride(winrt::Size const& availableSi
         if (availableSize.Width != std::numeric_limits<double>::infinity() && availableSize.Height != std::numeric_limits<double>::infinity())
         {
             // Scale so there is no space around the edge.
-            auto widthScale = availableSize.Width / m_animatedVisualSize.x;
-            auto heightScale = availableSize.Height / m_animatedVisualSize.y;
+            const auto widthScale = availableSize.Width / m_animatedVisualSize.x;
+            const auto heightScale = availableSize.Height / m_animatedVisualSize.y;
             auto measuredSize = (heightScale < widthScale)
                 ? winrt::Size{ availableSize.Width, m_animatedVisualSize.y * widthScale }
                 : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
@@ -473,8 +473,8 @@ winrt::Size AnimatedVisualPlayer::MeasureOverride(winrt::Size const& availableSi
 
         // Uniform scaling.
         // Scale so that one dimension fits exactly and no dimension exceeds the boundary.
-    auto widthScale = ((availableSize.Width == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Width) / m_animatedVisualSize.x;
-    auto heightScale = ((availableSize.Height == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Height) / m_animatedVisualSize.y;
+    const auto widthScale = ((availableSize.Width == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Width) / m_animatedVisualSize.x;
+    const auto heightScale = ((availableSize.Height == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Height) / m_animatedVisualSize.y;
     return (heightScale > widthScale)
         ? winrt::Size{ availableSize.Width, m_animatedVisualSize.y * widthScale }
         : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
@@ -504,7 +504,7 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
     }
     else
     {
-        auto stretch = Stretch();
+        const auto stretch = Stretch();
         if (stretch == winrt::Stretch::None)
         {
             // Do not scale, do not center.
@@ -552,8 +552,8 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
             };
 
             // Center the animation within the available space.
-            auto offset = (finalSize - (m_animatedVisualSize * scale)) / 2;
-            auto z = 0.0F;
+            const auto offset = (finalSize - (m_animatedVisualSize * scale)) / 2;
+            const auto z = 0.0F;
             m_rootVisual.Offset({ offset, z });
 
             // Adjust the position of the clip.
@@ -566,7 +566,7 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
     }
 
     m_rootVisual.Size(arrangedSize);
-    auto z = 1.0F;
+    const auto z = 1.0F;
     m_rootVisual.Scale({ scale, z });
 
     return finalSize;
@@ -604,7 +604,7 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
     }
 
     // Used to detect reentrance.
-    auto version = ++m_playAsyncVersion;
+    const auto version = ++m_playAsyncVersion;
 
     // Cause any other plays to return. 
     // WARNING - this call may cause reentrance via the IsPlaying DP.
@@ -729,9 +729,9 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
     if (newValue && IsAnimatedVisualLoaded() && !m_nowPlaying)
     {
         // Start playing immediately.
-        auto from = 0;
-        auto to = 1;
-        auto looped = true;
+        const auto from = 0;
+        const auto to = 1;
+        const auto looped = true;
         auto ignore = PlayAsync(from, to, looped);
     }
 }
@@ -907,9 +907,9 @@ void AnimatedVisualPlayer::UpdateContent()
     else if (AutoPlay())
     {
         // Start playing immediately.
-        auto from = 0;
-        auto to = 1;
-        auto looped = true;
+        const auto from = 0;
+        const auto to = 1;
+        const auto looped = true;
         // NOTE: If !IsAnimatedVisualLoaded() then this is a no-op.
         auto ignore = PlayAsync(from, to, looped);
     }

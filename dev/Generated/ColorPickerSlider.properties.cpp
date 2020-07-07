@@ -42,7 +42,10 @@ void ColorPickerSliderProperties::ClearProperties()
 
 void ColorPickerSliderProperties::ColorChannel(winrt::ColorPickerHsvChannel const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPickerSlider*>(this)->SetValue(s_ColorChannelProperty, ValueHelper<winrt::ColorPickerHsvChannel>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ColorPickerHsvChannel ColorPickerSliderProperties::ColorChannel()

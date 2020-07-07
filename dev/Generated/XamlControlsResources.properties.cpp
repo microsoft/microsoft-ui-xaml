@@ -50,7 +50,10 @@ void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
 
 void XamlControlsResourcesProperties::UseCompactResources(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<XamlControlsResources*>(this)->SetValue(s_UseCompactResourcesProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool XamlControlsResourcesProperties::UseCompactResources()

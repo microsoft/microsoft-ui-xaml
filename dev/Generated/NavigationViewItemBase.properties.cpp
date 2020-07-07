@@ -50,7 +50,10 @@ void NavigationViewItemBaseProperties::OnIsSelectedPropertyChanged(
 
 void NavigationViewItemBaseProperties::IsSelected(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItemBase*>(this)->SetValue(s_IsSelectedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewItemBaseProperties::IsSelected()
