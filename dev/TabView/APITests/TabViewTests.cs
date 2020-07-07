@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -88,7 +88,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyUIABehavior()
+        public void VerifyTabViewUIABehavior()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -111,6 +111,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyTabViewItemUIABehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TabView tabView = new TabView();
+                Content = tabView;
+
+                var tvi0 = CreateTabViewItem("Item 0", Symbol.Add);
+                var tvi1 = CreateTabViewItem("Item 1", Symbol.AddFriend);
+                var tvi2 = CreateTabViewItem("Item 2");
+
+                tabView.TabItems.Add(tvi0);
+                tabView.TabItems.Add(tvi1);
+                tabView.TabItems.Add(tvi2);
+
+                Content.UpdateLayout();
+
+                var selectionItemProvider = GetProviderFromTVI(tvi0);
+                Verify.IsTrue(selectionItemProvider.IsSelected,"Item should have been selected");
+
+                selectionItemProvider = GetProviderFromTVI(tvi1);
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item not should have been selected");
+
+                selectionItemProvider.Select();
+                Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
+            });
+
+            static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
+            {
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                var provider = peer.GetPattern(PatternInterface.SelectionItem)
+                                as ISelectionItemProvider;
+                Verify.IsNotNull(provider);
+                return provider;
+            }
+        }
 
         private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
         {
