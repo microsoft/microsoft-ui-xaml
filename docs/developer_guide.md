@@ -223,13 +223,13 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
     
     Open the `LinksToHelixTestFiles.html` file in the opened drop folder.
     
-    ![drop folder employee](images/test_pipeline_drop_employee.png)
+    ![drop folder employee](images/test_pipeline_drop2.png)
     
     You will now see download links to the new verification files:
     
-    ![verification files employee](images/test_pipeline_drop_employee2.png)
+    ![verification files employee](images/test_pipeline_verificationfiles_links.png)
     
-    Finally, click on the links and download the files.
+    Finally, click on the links and download the files (like `ComboBox-4.xml`).
 
 3. Diff & replace
 
