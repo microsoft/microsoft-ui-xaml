@@ -108,6 +108,12 @@
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
   </PropertyGroup>  
+  <!-- Dependencies for Pager -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+    <FeatureNumberBoxEnabled>productOnly</FeatureNumberBoxEnabled>
+    <FeatureComboBoxEnabled>productOnly</FeatureComboBoxEnabled>
+  </PropertyGroup>
   <!-- Dependencies for ParallaxView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureParallaxViewEnabled) == 'true'">
     <FeatureScrollerEnabled>productOnly</FeatureScrollerEnabled>
@@ -227,6 +233,7 @@
     <FeatureMenuFlyoutEnabled>true</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
     <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
+    <FeaturePagerEnabled>true</FeaturePagerEnabled>
     <FeatureParallaxViewEnabled>true</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>true</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>true</FeaturePivotEnabled>
