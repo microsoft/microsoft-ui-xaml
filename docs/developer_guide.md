@@ -209,23 +209,27 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
     
     ![released artifacts](images/test_fail_page3.png)
     
-    Then, depending on whether you are a Microsoft employee or an external contributor your next download steps will differ. Below you will find the steps outlined for each case.
-
     ###### [For Microsoft employees]
     
-    Microsoft employees can directly download the new verification files in Azure Pipelines:
-    
-    ![drop folder employee](images/test_pipeline_drop_employee.png)
-    
-    ![verification files employee](images/test_pipeline_drop_employee2.png)
+    If you are a Microsoft employee, you can directly view the content of the created `drop` folder containing the updated verification files in Azure Pipelines.
     
     ###### [For external contributors]
     
-    External contributors cannot directly download the new verification files but instead have to download the entire generated drop archive to get them:
+    If you are an external contributor, you cannot directly download the new verification files but instead have to download the entire generated **drop** archive and unpack it (its size can be around 1 GB):
 
-    ![drop folder](images/test_pipeline_drop.png)
+    ![drop folder](images/test_pipeline_drop.png) 
     
-    Note that the drop archive can be several hundreds of MB big (700 MB or bigger is not uncommon). Once you have downloaded the drop archive and unpacked it, you will find the updated verification files in `drop/UpdatedVisualTreeVerificationFiles/`.
+    The next steps are the same for both Microsoft employees and external contributors:
+    
+    Open the `LinksToHelixTestFiles.html` file in the opened drop folder.
+    
+    ![drop folder employee](images/test_pipeline_drop_employee.png)
+    
+    You will now see download links to the new verification files:
+    
+    ![verification files employee](images/test_pipeline_drop_employee2.png)
+    
+    Finally, click on the links and download the files.
 
 3. Diff & replace
 
