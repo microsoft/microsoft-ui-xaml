@@ -324,7 +324,7 @@ winrt::Rect UniformGridLayout::GetLayoutRectForDataIndex(
     const int indexInRow = index - (rowIndex * itemsPerLine);
 
     auto gridState = GetAsGridState(context.LayoutState());
-    winrt::Rect bounds = MinorMajorRect(
+    const winrt::Rect bounds = MinorMajorRect(
         indexInRow * GetMinorSizeWithSpacing(context) + MinorStart(lastExtent),
         rowIndex * GetMajorSizeWithSpacing(context) + MajorStart(lastExtent),
         GetScrollOrientation() == ScrollOrientation::Vertical ? static_cast<float>(gridState->EffectiveItemWidth()) : static_cast<float>(gridState->EffectiveItemHeight()),

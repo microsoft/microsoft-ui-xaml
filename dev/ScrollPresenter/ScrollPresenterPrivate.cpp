@@ -69,7 +69,7 @@ winrt::Rect ScrollPresenter::GetRelativeViewport(
 
     ComputeMinMaxPositions(m_zoomFactor, &minPosition, nullptr);
 
-    winrt::Rect result = { (minPosition.x - m_contentLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
+    const winrt::Rect result = { (minPosition.x - m_contentLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
         (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
         viewportWidth, viewportHeight };
 
