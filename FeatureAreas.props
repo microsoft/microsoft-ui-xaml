@@ -45,6 +45,7 @@
   </PropertyGroup>
     <!-- Dependencies for ColorPicker -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureColorPickerEnabled) == 'true'">
+    <FeatureSliderEnabled>productOnly</FeatureSliderEnabled>
   </PropertyGroup>
     <!-- Dependencies for ComboBox -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureComboBoxEnabled) == 'true'">
