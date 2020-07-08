@@ -309,7 +309,7 @@ void ColorPicker::OnColorChanged(winrt::DependencyPropertyChangedEventArgs const
     // aside from raising the ColorChanged event.
     if (!m_updatingColor)
     {
-        winrt::Color color = Color();
+        const winrt::Color color = Color();
 
         m_currentRgb = Rgb(color.R / 255.0, color.G / 255.0, color.B / 255.0);
         m_currentAlpha = color.A / 255.0;
@@ -364,8 +364,8 @@ void ColorPicker::OnPartVisibilityChanged(winrt::DependencyPropertyChangedEventA
 
 void ColorPicker::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    int minHue = MinHue();
-    int maxHue = MaxHue();
+    const int minHue = MinHue();
+    const int maxHue = MaxHue();
 
     if (minHue < 0 || minHue > 359)
     {
@@ -384,8 +384,8 @@ void ColorPicker::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs c
 
 void ColorPicker::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    int minSaturation = MinSaturation();
-    int maxSaturation = MaxSaturation();
+    const int minSaturation = MinSaturation();
+    const int maxSaturation = MaxSaturation();
 
     if (minSaturation < 0 || minSaturation > 100)
     {
@@ -404,8 +404,8 @@ void ColorPicker::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEven
 
 void ColorPicker::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    int minValue = MinValue();
-    int maxValue = MaxValue();
+    const int minValue = MinValue();
+    const int maxValue = MaxValue();
 
     if (minValue < 0 || minValue > 100)
     {
@@ -431,8 +431,8 @@ void ColorPicker::OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChan
 void ColorPicker::UpdateVisualState(bool useTransitions)
 {
     winrt::IReference<winrt::Color> previousColor = PreviousColor();
-    bool isAlphaEnabled = IsAlphaEnabled();
-    bool isColorSpectrumVisible = IsColorSpectrumVisible();
+    const bool isAlphaEnabled = IsAlphaEnabled();
+    const bool isColorSpectrumVisible = IsColorSpectrumVisible();
 
     const wchar_t *previousColorStateName;
 
@@ -466,7 +466,7 @@ void ColorPicker::UpdateVisualState(bool useTransitions)
 
 void ColorPicker::InitializeColor()
 {
-    auto color = Color();
+    const auto color = Color();
 
     m_currentRgb = Rgb(color.R / 255.0, color.G / 255.0, color.B / 255.0);
     m_currentHsv = RgbToHsv(m_currentRgb);
@@ -548,7 +548,7 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
 
     if (auto&& colorPreviewRectangle = m_colorPreviewRectangle.get())
     {
-        auto color = Color();
+        const auto color = Color();
 
         colorPreviewRectangle.Fill(winrt::SolidColorBrush(color));
     }
@@ -651,7 +651,7 @@ void ColorPicker::OnColorSpectrumColorChanged(const winrt::ColorSpectrum& sender
         return;
     }
 
-    auto hsvColor = sender.HsvColor();
+    const auto hsvColor = sender.HsvColor();
     UpdateColor(Hsv(hsv::GetHue(hsvColor), hsv::GetSaturation(hsvColor), hsv::GetValue(hsvColor)), ColorUpdateReason::ColorSpectrumColorChanged);
 }
 
@@ -700,7 +700,7 @@ void ColorPicker::OnThirdDimensionSliderValueChanged(winrt::IInspectable const& 
         return;
     }
 
-    winrt::ColorSpectrumComponents components = ColorSpectrumComponents();
+    const winrt::ColorSpectrumComponents components = ColorSpectrumComponents();
 
     double h = m_currentHsv.h;
     double s = m_currentHsv.s;
@@ -921,7 +921,7 @@ void ColorPicker::OnAlphaTextChanging(winrt::TextBox const& /*sender*/, winrt::T
     {
         // If the user hasn't entered a %, we'll do that for them, keeping the cursor
         // where it was before.
-        int cursorPosition = alphaTextBox.SelectionStart() + alphaTextBox.SelectionLength();
+        const int cursorPosition = alphaTextBox.SelectionStart() + alphaTextBox.SelectionLength();
 
         const wchar_t* s = alphaTextBox.Text().begin() + alphaTextBox.Text().size() - 1;
 
@@ -969,7 +969,7 @@ void ColorPicker::OnHexTextChanging(winrt::TextBox const& /*sender*/, winrt::Tex
 
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
-    bool isAlphaEnabled = IsAlphaEnabled();
+    const bool isAlphaEnabled = IsAlphaEnabled();
     auto [rgbValue, alphaValue] = [this, isAlphaEnabled]() {
         return isAlphaEnabled ?
             HexToRgba(m_hexTextBox.get().Text()) :
@@ -1005,12 +1005,12 @@ winrt::hstring ColorPicker::GetCurrentHexValue()
 
 Rgb ColorPicker::ApplyConstraintsToRgbColor(const Rgb &rgb)
 {
-    double minHue = MinHue();
-    double maxHue = MaxHue();
-    double minSaturation = MinSaturation() / 100.0;
-    double maxSaturation = MaxSaturation() / 100.0;
-    double minValue = MinValue() / 100.0;
-    double maxValue = MaxValue() / 100.0;
+    const double minHue = MinHue();
+    const double maxHue = MaxHue();
+    const double minSaturation = MinSaturation() / 100.0;
+    const double maxSaturation = MaxSaturation() / 100.0;
+    const double minValue = MinValue() / 100.0;
+    const double maxValue = MaxValue() / 100.0;
 
     Hsv hsv = RgbToHsv(rgb);
 
@@ -1043,7 +1043,7 @@ void ColorPicker::UpdateThirdDimensionSlider()
     case winrt::ColorSpectrumComponents::HueValue:
     case winrt::ColorSpectrumComponents::ValueHue:
     {
-        int minSaturation = MinSaturation();
+        const int minSaturation = MinSaturation();
         int maxSaturation = MaxSaturation();
 
         thirdDimensionSlider.Minimum(minSaturation);
@@ -1065,7 +1065,7 @@ void ColorPicker::UpdateThirdDimensionSlider()
     case winrt::ColorSpectrumComponents::HueSaturation:
     case winrt::ColorSpectrumComponents::SaturationHue:
     {
-        int minValue = MinValue();
+        const int minValue = MinValue();
         int maxValue = MaxValue();
 
         thirdDimensionSlider.Minimum(minValue);
@@ -1087,7 +1087,7 @@ void ColorPicker::UpdateThirdDimensionSlider()
     case winrt::ColorSpectrumComponents::ValueSaturation:
     case winrt::ColorSpectrumComponents::SaturationValue:
     {
-        int minHue = MinHue();
+        const int minHue = MinHue();
         int maxHue = MaxHue();
 
         thirdDimensionSlider.Minimum(minHue);
@@ -1101,8 +1101,8 @@ void ColorPicker::UpdateThirdDimensionSlider()
             maxHue = minHue;
         }
 
-        double minOffset = minHue / 359.0;
-        double maxOffset = maxHue / 359.0;
+        const double minOffset = minHue / 359.0;
+        const double maxOffset = maxHue / 359.0;
 
         // With unclamped hue values, we have six different gradient stops, corresponding to red, yellow, green, cyan, blue, and purple.
         // However, with clamped hue values, we may not need all of those gradient stops.
@@ -1113,7 +1113,7 @@ void ColorPicker::UpdateThirdDimensionSlider()
 
         for (int sextant = 1; sextant <= 5; sextant++)
         {
-            double offset = sextant / 6.0;
+            const double offset = sextant / 6.0;
 
             if (minOffset < offset && maxOffset > offset)
             {
@@ -1187,8 +1187,8 @@ void ColorPicker::CreateColorPreviewCheckeredBackground()
     {
         if (m_colorPreviewRectangleCheckeredBackgroundImageBrush.get())
         {
-            int width = static_cast<int>(round(colorPreviewRectangleGrid.ActualWidth()));
-            int height = static_cast<int>(round(colorPreviewRectangleGrid.ActualHeight()));
+            const int width = static_cast<int>(round(colorPreviewRectangleGrid.ActualWidth()));
+            const int height = static_cast<int>(round(colorPreviewRectangleGrid.ActualHeight()));
             shared_ptr<vector<::byte>> bgraCheckeredPixelData = make_shared<vector<::byte>>();
             auto strongThis = get_strong();
 
@@ -1215,8 +1215,8 @@ void ColorPicker::CreateAlphaSliderCheckeredBackground()
     {
         if (m_alphaSliderCheckeredBackgroundImageBrush.get())
         {
-            int width = static_cast<int>(round(alphaSliderBackgroundRectangle.ActualWidth()));
-            int height = static_cast<int>(round(alphaSliderBackgroundRectangle.ActualHeight()));
+            const int width = static_cast<int>(round(alphaSliderBackgroundRectangle.ActualWidth()));
+            const int height = static_cast<int>(round(alphaSliderBackgroundRectangle.ActualHeight()));
             shared_ptr<vector<::byte>> bgraCheckeredPixelData = make_shared<vector<::byte>>();
             auto strongThis = get_strong();
 
@@ -1239,7 +1239,7 @@ void ColorPicker::AddGradientStop(const winrt::LinearGradientBrush& brush, doubl
 {
     winrt::GradientStop stop;
 
-    Rgb rgbColor = HsvToRgb(hsvColor);
+    const Rgb rgbColor = HsvToRgb(hsvColor);
 
     stop.Color(winrt::ColorHelper::FromArgb(
         static_cast<unsigned char>(round(alpha * 255)),

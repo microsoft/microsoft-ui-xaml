@@ -63,7 +63,10 @@ void ProgressRingProperties::OnIsActivePropertyChanged(
 
 void ProgressRingProperties::IsActive(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRing*>(this)->SetValue(s_IsActiveProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ProgressRingProperties::IsActive()
@@ -73,7 +76,10 @@ bool ProgressRingProperties::IsActive()
 
 void ProgressRingProperties::TemplateSettings(winrt::ProgressRingTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRing*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressRingTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ProgressRingTemplateSettings ProgressRingProperties::TemplateSettings()

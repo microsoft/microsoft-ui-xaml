@@ -42,7 +42,10 @@ void CornerRadiusToThicknessConverterProperties::ClearProperties()
 
 void CornerRadiusToThicknessConverterProperties::ConversionKind(winrt::CornerRadiusToThicknessConverterKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CornerRadiusToThicknessConverter*>(this)->SetValue(s_ConversionKindProperty, ValueHelper<winrt::CornerRadiusToThicknessConverterKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CornerRadiusToThicknessConverterKind CornerRadiusToThicknessConverterProperties::ConversionKind()

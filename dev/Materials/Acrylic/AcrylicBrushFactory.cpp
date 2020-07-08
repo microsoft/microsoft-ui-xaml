@@ -17,7 +17,7 @@ winrt::CompositionEffectBrush AcrylicBrushFactory::CreateBackdropAcrylicEffectBr
     bool willTintColorAlwaysBeOpaque)
 {
     // Pass nullptr to let it auto-calculate luminosity opacity.
-    winrt::Color initialLuminosityColor = GetLuminosityColor(initialTintColor, nullptr);
+    const winrt::Color initialLuminosityColor = GetLuminosityColor(initialTintColor, nullptr);
 
     return CreateBackdropAcrylicEffectBrushWithLuminosity(
         compositor,
@@ -28,7 +28,7 @@ winrt::CompositionEffectBrush AcrylicBrushFactory::CreateBackdropAcrylicEffectBr
 
     // Update tintColor's alpha with the modifier
     winrt::Color tintColor = initialTintColor;
-    double tintOpacityModifier = GetTintOpacityModifier(tintColor);
+    const double tintOpacityModifier = GetTintOpacityModifier(tintColor);
     tintColor.A = static_cast<uint8_t>(round(tintOpacityModifier * tintColor.A));
 
     return AcrylicBrush::CreateAcrylicBrushWorker(
@@ -50,7 +50,7 @@ winrt::CompositionEffectBrush AcrylicBrushFactory::CreateBackdropAcrylicEffectBr
 {
     // Update tintColor's alpha with the modifier
     winrt::Color tintColor = initialTintColor;
-    double tintOpacityModifier = GetTintOpacityModifier(tintColor);
+    const double tintOpacityModifier = GetTintOpacityModifier(tintColor);
     tintColor.A = static_cast<uint8_t>(round(tintOpacityModifier * tintColor.A));
 
     return AcrylicBrush::CreateAcrylicBrushWorker(

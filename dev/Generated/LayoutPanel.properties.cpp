@@ -134,7 +134,10 @@ void LayoutPanelProperties::OnPaddingPropertyChanged(
 
 void LayoutPanelProperties::BorderBrush(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<LayoutPanel*>(this)->SetValue(s_BorderBrushProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush LayoutPanelProperties::BorderBrush()
@@ -144,7 +147,10 @@ winrt::Brush LayoutPanelProperties::BorderBrush()
 
 void LayoutPanelProperties::BorderThickness(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<LayoutPanel*>(this)->SetValue(s_BorderThicknessProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness LayoutPanelProperties::BorderThickness()
@@ -154,7 +160,10 @@ winrt::Thickness LayoutPanelProperties::BorderThickness()
 
 void LayoutPanelProperties::CornerRadius(winrt::CornerRadius const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<LayoutPanel*>(this)->SetValue(s_CornerRadiusProperty, ValueHelper<winrt::CornerRadius>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CornerRadius LayoutPanelProperties::CornerRadius()
@@ -164,7 +173,10 @@ winrt::CornerRadius LayoutPanelProperties::CornerRadius()
 
 void LayoutPanelProperties::Layout(winrt::Layout const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<LayoutPanel*>(this)->SetValue(s_LayoutProperty, ValueHelper<winrt::Layout>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Layout LayoutPanelProperties::Layout()
@@ -174,7 +186,10 @@ winrt::Layout LayoutPanelProperties::Layout()
 
 void LayoutPanelProperties::Padding(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<LayoutPanel*>(this)->SetValue(s_PaddingProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness LayoutPanelProperties::Padding()

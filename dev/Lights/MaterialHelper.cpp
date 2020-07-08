@@ -22,8 +22,8 @@ bool MaterialHelperBase::SimulateDisabledByPolicy()
 /* static */
 void MaterialHelperBase::SimulateDisabledByPolicy(bool value)
 {
-    auto instance = LifetimeHandler::GetMaterialHelperInstance();
-    bool oldValue = instance->m_simulateDisabledByPolicy;
+    const auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    const bool oldValue = instance->m_simulateDisabledByPolicy;
     if (oldValue != value)
     {
         instance->m_simulateDisabledByPolicy = value;
@@ -45,8 +45,8 @@ bool MaterialHelperBase::IgnoreAreEffectsFast()
 /* static */
 void MaterialHelperBase::IgnoreAreEffectsFast(bool value)
 {
-    auto instance = LifetimeHandler::GetMaterialHelperInstance();
-    bool oldValue = instance->m_ignoreAreEffectsFast;
+    const auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    const bool oldValue = instance->m_ignoreAreEffectsFast;
     if (oldValue != value)
     {
         instance->m_ignoreAreEffectsFast = value;
@@ -134,7 +134,7 @@ winrt::CompositionEffectFactory MaterialHelperBase::GetOrCreateAcrylicBrushCompo
         auto instance = LifetimeHandler::GetMaterialHelperInstance();
         instance->AssertUniqueCompositorOrUpdate(compositor);
 
-        auto key = BuildAcrylicBrushCompositionEffectFactoryKey(shouldBrushBeOpaque, useWindowAcrylic, useCrossFadeEffect);
+        const auto key = BuildAcrylicBrushCompositionEffectFactoryKey(shouldBrushBeOpaque, useWindowAcrylic, useCrossFadeEffect);
         auto value = instance->m_acrylicBrushCompositionEffectFactoryCache[key];
         if (value)
         {
@@ -184,7 +184,7 @@ MaterialHelperBase::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
 }
 
 /* static */
-int MaterialHelperBase::BuildAcrylicBrushCompositionEffectFactoryKey(
+int constexpr MaterialHelperBase::BuildAcrylicBrushCompositionEffectFactoryKey(
     bool shouldBrushBeOpaque,
     bool useWindowAcrylic,
     bool useCrossFadeEffect)
@@ -822,7 +822,7 @@ void MaterialHelper::OnUISettingsChanged(const winrt::UISettings& /*sender*/, co
 // reload the noise surface to prevent noise from being scaled
 void MaterialHelper::OnDpiChanged(const winrt::IInspectable& sender, const winrt::IInspectable& /*args*/)
 {
-    float previousLogicalDpi = m_logicalDpi;
+    const auto previousLogicalDpi = m_logicalDpi;
 
     try
     {
@@ -894,9 +894,9 @@ void MaterialHelper::OnVisibilityChanged(const winrt::CoreWindow&, const winrt::
 // experience severe rendering lag in resize scenarios (Bug 13289165).
 void MaterialHelper::OnSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
-    bool isFullScreenOrTabletMode = IsFullScreenOrTabletMode();
+    const bool isFullScreenOrTabletMode = IsFullScreenOrTabletMode();
 
-    auto strongThis = get_strong();
+    const auto strongThis = get_strong();
     m_sizeChangedListeners(strongThis, isFullScreenOrTabletMode);
 }
 
@@ -904,11 +904,11 @@ void MaterialHelper::UpdatePolicyStatus(bool onUIThread)
 {
     auto strongThis = get_strong();
     auto callback = [strongThis, this]() {
-        bool isEnergySaverMode = m_energySaverStatusChangedRevokerValid ? winrt::PowerManager::EnergySaverStatus() == winrt::EnergySaverStatus::On : true;
-        bool areEffectsFast = m_compositionCapabilities ? (m_compositionCapabilities.AreEffectsFast() || m_ignoreAreEffectsFast) : false;
-        bool advancedEffectsEnabled = m_uiSettings ? m_uiSettings.AdvancedEffectsEnabled() : true;
+        const bool isEnergySaverMode = m_energySaverStatusChangedRevokerValid ? winrt::PowerManager::EnergySaverStatus() == winrt::EnergySaverStatus::On : true;
+        const bool areEffectsFast = m_compositionCapabilities ? (m_compositionCapabilities.AreEffectsFast() || m_ignoreAreEffectsFast) : false;
+        const bool advancedEffectsEnabled = m_uiSettings ? m_uiSettings.AdvancedEffectsEnabled() : true;
 
-        bool isDisabledByPolicy = m_simulateDisabledByPolicy || (isEnergySaverMode || !areEffectsFast || !advancedEffectsEnabled);
+        const bool isDisabledByPolicy = m_simulateDisabledByPolicy || (isEnergySaverMode || !areEffectsFast || !advancedEffectsEnabled);
 
         if (m_isDisabledByMaterialPolicy != isDisabledByPolicy)
         {
@@ -1023,8 +1023,8 @@ bool MaterialHelper::IsFullScreenOrTabletMode()
             instance->m_uiViewSettings = winrt::ViewManagement::UIViewSettings::GetForCurrentView();
         }
 
-        bool isFullScreenMode = instance->m_applicationView.IsFullScreenMode();
-        bool isTabletMode = instance->m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
+        const bool isFullScreenMode = instance->m_applicationView.IsFullScreenMode();
+        const bool isTabletMode = instance->m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
 
         return isFullScreenMode || isTabletMode;
     }

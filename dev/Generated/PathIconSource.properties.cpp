@@ -44,7 +44,10 @@ void PathIconSourceProperties::ClearProperties()
 
 void PathIconSourceProperties::Data(winrt::Geometry const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PathIconSource*>(this)->SetValue(s_DataProperty, ValueHelper<winrt::Geometry>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Geometry PathIconSourceProperties::Data()

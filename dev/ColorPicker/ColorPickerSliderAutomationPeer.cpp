@@ -46,8 +46,8 @@ winrt::hstring ColorPickerSliderAutomationPeer::Value()
 
     if (owningColorPicker)
     {
-        winrt::Color color = owningColorPicker.Color();
-        double sliderValue = owner.Value();
+        const winrt::Color color = owningColorPicker.Color();
+        const double sliderValue = owner.Value();
 
         return GetValueString(color, static_cast<int>(round(sliderValue)));
     }
