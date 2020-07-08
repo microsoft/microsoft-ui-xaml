@@ -3,6 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp">
 
+    <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusColor" Color="#D13438"/>
+    <SolidColorBrush x:Key="InfoBarSeverityWarningStatusColor" Color="#FF8C00"/>
+    <SolidColorBrush x:Key="InfoBarSeverityInformationalStatusColor" Color="#0078D7"/>
+    <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusColor" Color="#107C10"/>
+    <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusColor" Color="#69797E"/>
+    
     <Style TargetType="local:InfoBar" >
         <Setter Property="Template">
             <Setter.Value>
@@ -46,7 +52,7 @@
                             <VisualStateGroup x:Name="SeverityLevels">
                                 <VisualState x:Name="Critical">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardBrush.Color" Value="#D13438"/>
+                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityCriticalStatusColor}"/>
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xEA39;"/>
@@ -56,7 +62,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardBrush.Color" Value="#FF8C00"/>
+                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityWarningStatusColor}"/>
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;"/>
@@ -66,7 +72,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Informational">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardBrush.Color" Value="#0078D7"/>
+                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityInformationalStatusColor}"/>
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;"/>
@@ -76,7 +82,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardBrush.Color" Value="#107C10"/>
+                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeveritySuccessStatusColor}"/>
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xF13E;"/>
@@ -86,7 +92,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
-                                        <Setter Target="StandardBrush.Color" Value="#69797E"/>
+                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityDefaultStatusColor}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="None"/>
