@@ -99,20 +99,20 @@ void ProgressRing::OnForegroundColorPropertyChanged(const winrt::DependencyObjec
 {
     if (auto&& player = m_player.get())
     {
-        if (auto const progressRing = player.Source())
+        if (auto const progressRingAnimation = player.Source())
         {
             if (IsIndeterminate())
             {
                 if (!IndeterminateSource())
                 {
-                    SetLottieForegroundColor(progressRing);
+                    SetLottieForegroundColor(progressRingAnimation);
                 }
             }
             else
             {
                 if (!DeterminateSource())
                 {
-                    SetLottieForegroundColor(progressRing);
+                    SetLottieForegroundColor(progressRingAnimation);
                 }
             }
         }
@@ -133,20 +133,20 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
 {
     if (auto&& player = m_player.get())
     {
-        if (auto const progressRing = player.Source())
+        if (auto const progressRingAnimation = player.Source())
         {
             if (IsIndeterminate())
             {
                 if (!IndeterminateSource())
                 {
-                    SetLottieBackgroundColor(progressRing);
+                    SetLottieBackgroundColor(progressRingAnimation);
                 }
             }
             else
             {
                 if (!DeterminateSource())
                 {
-                    SetLottieBackgroundColor(progressRing);
+                    SetLottieBackgroundColor(progressRingAnimation);
                 }
             }
         }
@@ -184,10 +184,10 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
             {
                 player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
 
-                if (const auto progressRing = player.Source())
+                if (const auto progressRingAnimation = player.Source())
                 {
-                    SetLottieForegroundColor(progressRing);
-                    SetLottieBackgroundColor(progressRing);
+                    SetLottieForegroundColor(progressRingAnimation);
+                    SetLottieBackgroundColor(progressRingAnimation);
                 }
             }
             else
@@ -201,10 +201,10 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
             {
                 player.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
 
-                if (const auto progressRing = player.Source())
+                if (const auto progressRingAnimation = player.Source())
                 {
-                    SetLottieForegroundColor(progressRing);
-                    SetLottieBackgroundColor(progressRing);
+                    SetLottieForegroundColor(progressRingAnimation);
+                    SetLottieBackgroundColor(progressRingAnimation);
                 }
             }
             else
@@ -232,9 +232,9 @@ void ProgressRing::SetLottieForegroundColor(const winrt::IAnimatedVisualSource a
         }
     }();
 
-    if (const auto progressRing = animatedVisualSource.try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+    if (const auto progressRingAnimation = animatedVisualSource.try_as<AnimatedVisuals::ProgressRingIndeterminate>())
     {
-        progressRing->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
+        progressRingAnimation->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
     }
 }
 
@@ -255,9 +255,9 @@ void ProgressRing::SetLottieBackgroundColor(const winrt::IAnimatedVisualSource a
         }
     }();
 
-    if (const auto progressRing = animatedVisualSource.try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+    if (const auto progressRingAnimation = animatedVisualSource.try_as<AnimatedVisuals::ProgressRingIndeterminate>())
     {
-        progressRing->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, SharedHelpers::RgbaColor(backgroundColor));
+        progressRingAnimation->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, SharedHelpers::RgbaColor(backgroundColor));
     }
 }
 
