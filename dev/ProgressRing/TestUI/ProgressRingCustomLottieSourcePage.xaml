@@ -11,61 +11,6 @@
 
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
-        <Style TargetType="controls:ProgressRing">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="controls:ProgressRing">
-                        <Grid x:Name="LayoutRoot" Background="Transparent">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualStateGroup.Transitions>
-                                        <VisualTransition From="Active" To="DeterminateActive">
-                                            <Storyboard>
-                                                <DoubleAnimation
-                                                Storyboard.TargetName="DeterminateLottiePlayer"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="1"
-                                                Duration="0:0:0.15" />
-                                                <DoubleAnimation
-                                                Storyboard.TargetName="IndeterminateLottiePlayer"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="0"
-                                                Duration="0:0:0.15" />
-                                            </Storyboard>
-                                        </VisualTransition>
-                                    </VisualStateGroup.Transitions>
-                                    <VisualState x:Name="Inactive">
-                                        <VisualState.Setters>
-                                            <Setter Target="LayoutRoot.Opacity" Value="0" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="DeterminateActive">
-                                        <VisualState.Setters>
-                                            <Setter Target="DeterminateLottiePlayer.Opacity" Value="1" />
-                                            <Setter Target="IndeterminateLottiePlayer.Opacity" Value="0" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Active" />
-
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-
-                            <!--Determinate AnimatedVisualPlayer for Lottie-->
-                            <controls:AnimatedVisualPlayer x:Name="DeterminateLottiePlayer" AutoPlay="false" Stretch="fill" Opacity="0">
-                                <!--Define custom Lottie animation-->
-                                <animatedvisuals:ProgressRingDeterminate />
-                            </controls:AnimatedVisualPlayer>
-                            
-                            <!--Indeterminate AnimatedVisualPlayer for Lottie-->
-                            <controls:AnimatedVisualPlayer x:Name="IndeterminateLottiePlayer" AutoPlay="false" Stretch="fill">
-                                <!--Define custom Lottie animation-->
-                                <animatedvisuals:ProgressRingDeterminate />
-                            </controls:AnimatedVisualPlayer>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Page.Resources>
     
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -75,7 +20,20 @@
                 x:Name="TestCustomLottieSourceProgressRing"
                 IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-            />
+            >
+                <!--Define custom Lottie animation for Determinate-->
+                
+                <controls:ProgressRing.DeterminateSource>
+                    <animatedvisuals:ProgressRingDeterminate/>
+                </controls:ProgressRing.DeterminateSource>
+
+                <!--Define custom Lottie animation for Indeterminate-->
+
+                <controls:ProgressRing.IndeterminateSource>
+                    <animatedvisuals:ProgressRingDeterminate/>
+                </controls:ProgressRing.IndeterminateSource>
+
+            </controls:ProgressRing>
 
             <Grid Width="200px" HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>

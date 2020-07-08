@@ -24,13 +24,13 @@ namespace MUXControlsTestApp
             commonStatesGroup.CurrentStateChanged += this.ProgressRingCustomLottieSourcePage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
 
-            for (int i = 0; i < commonStatesGroup.Transitions[0].Storyboard.Children.Count; i++)
-            {
-                // Change the animation to 0 duration to avoid timing issues in the test.
-                commonStatesGroup.Transitions[0].Storyboard.Children[i].Duration = new Duration(TimeSpan.FromSeconds(0));
-            }
+            //for (int i = 0; i < commonStatesGroup.Transitions[0].Storyboard.Children.Count; i++)
+            //{
+            //    // Change the animation to 0 duration to avoid timing issues in the test.
+            //    commonStatesGroup.Transitions[0].Storyboard.Children[i].Duration = new Duration(TimeSpan.FromSeconds(0));
+            //}
 
-            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 1);
+            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
@@ -43,7 +43,7 @@ namespace MUXControlsTestApp
             VisualStateText.Text = e.NewState.Name;
 
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestCustomLottieSourceProgressRing, 0);
-            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 1);
+            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
         }
