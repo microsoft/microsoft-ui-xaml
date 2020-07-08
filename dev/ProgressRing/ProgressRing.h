@@ -27,6 +27,8 @@ public:
 
     void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnDeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnIndeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);

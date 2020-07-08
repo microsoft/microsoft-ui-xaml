@@ -26,11 +26,19 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBa
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsIndeterminate{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IAnimatedVisualSource DeterminateSource{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IAnimatedVisualSource IndeterminateSource{ get; set; };
+
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     ProgressRingTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
 }
 
 }

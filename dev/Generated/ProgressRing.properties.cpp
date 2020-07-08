@@ -13,6 +13,8 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "ProgressRing.g.cpp"
 
+GlobalDependencyProperty ProgressRingProperties::s_DeterminateSourceProperty{ nullptr };
+GlobalDependencyProperty ProgressRingProperties::s_IndeterminateSourceProperty{ nullptr };
 GlobalDependencyProperty ProgressRingProperties::s_IsActiveProperty{ nullptr };
 GlobalDependencyProperty ProgressRingProperties::s_IsIndeterminateProperty{ nullptr };
 GlobalDependencyProperty ProgressRingProperties::s_TemplateSettingsProperty{ nullptr };
@@ -24,6 +26,28 @@ ProgressRingProperties::ProgressRingProperties()
 
 void ProgressRingProperties::EnsureProperties()
 {
+    if (!s_DeterminateSourceProperty)
+    {
+        s_DeterminateSourceProperty =
+            InitializeDependencyProperty(
+                L"DeterminateSource",
+                winrt::name_of<winrt::IAnimatedVisualSource>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IAnimatedVisualSource>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnDeterminateSourcePropertyChanged));
+    }
+    if (!s_IndeterminateSourceProperty)
+    {
+        s_IndeterminateSourceProperty =
+            InitializeDependencyProperty(
+                L"IndeterminateSource",
+                winrt::name_of<winrt::IAnimatedVisualSource>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IAnimatedVisualSource>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnIndeterminateSourcePropertyChanged));
+    }
     if (!s_IsActiveProperty)
     {
         s_IsActiveProperty =
@@ -61,9 +85,27 @@ void ProgressRingProperties::EnsureProperties()
 
 void ProgressRingProperties::ClearProperties()
 {
+    s_DeterminateSourceProperty = nullptr;
+    s_IndeterminateSourceProperty = nullptr;
     s_IsActiveProperty = nullptr;
     s_IsIndeterminateProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
+}
+
+void ProgressRingProperties::OnDeterminateSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ProgressRing>();
+    winrt::get_self<ProgressRing>(owner)->OnDeterminateSourcePropertyChanged(args);
+}
+
+void ProgressRingProperties::OnIndeterminateSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ProgressRing>();
+    winrt::get_self<ProgressRing>(owner)->OnIndeterminateSourcePropertyChanged(args);
 }
 
 void ProgressRingProperties::OnIsActivePropertyChanged(
@@ -80,6 +122,32 @@ void ProgressRingProperties::OnIsIndeterminatePropertyChanged(
 {
     auto owner = sender.as<winrt::ProgressRing>();
     winrt::get_self<ProgressRing>(owner)->OnIsIndeterminatePropertyChanged(args);
+}
+
+void ProgressRingProperties::DeterminateSource(winrt::IAnimatedVisualSource const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<ProgressRing*>(this)->SetValue(s_DeterminateSourceProperty, ValueHelper<winrt::IAnimatedVisualSource>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IAnimatedVisualSource ProgressRingProperties::DeterminateSource()
+{
+    return ValueHelper<winrt::IAnimatedVisualSource>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_DeterminateSourceProperty));
+}
+
+void ProgressRingProperties::IndeterminateSource(winrt::IAnimatedVisualSource const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<ProgressRing*>(this)->SetValue(s_IndeterminateSourceProperty, ValueHelper<winrt::IAnimatedVisualSource>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IAnimatedVisualSource ProgressRingProperties::IndeterminateSource()
+{
+    return ValueHelper<winrt::IAnimatedVisualSource>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_IndeterminateSourceProperty));
 }
 
 void ProgressRingProperties::IsActive(bool value)

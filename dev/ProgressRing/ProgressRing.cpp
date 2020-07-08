@@ -64,6 +64,16 @@ void ProgressRing::OnApplyTemplate()
     UpdateStates();
 }
 
+void ProgressRing::OnDeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+{
+
+}
+
+void ProgressRing::OnIndeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+{
+
+}
+
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     ApplyTemplateSettings();
