@@ -122,7 +122,10 @@ void FontIconSourceProperties::ClearProperties()
 
 void FontIconSourceProperties::FontFamily(winrt::FontFamily const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontFamilyProperty, ValueHelper<winrt::FontFamily>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FontFamily FontIconSourceProperties::FontFamily()
@@ -132,7 +135,10 @@ winrt::FontFamily FontIconSourceProperties::FontFamily()
 
 void FontIconSourceProperties::FontSize(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontSizeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double FontIconSourceProperties::FontSize()
@@ -142,7 +148,10 @@ double FontIconSourceProperties::FontSize()
 
 void FontIconSourceProperties::FontStyle(winrt::FontStyle const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontStyleProperty, ValueHelper<winrt::FontStyle>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FontStyle FontIconSourceProperties::FontStyle()
@@ -152,7 +161,10 @@ winrt::FontStyle FontIconSourceProperties::FontStyle()
 
 void FontIconSourceProperties::FontWeight(winrt::FontWeight const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontWeightProperty, ValueHelper<winrt::FontWeight>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FontWeight FontIconSourceProperties::FontWeight()
@@ -162,7 +174,10 @@ winrt::FontWeight FontIconSourceProperties::FontWeight()
 
 void FontIconSourceProperties::Glyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_GlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring FontIconSourceProperties::Glyph()
@@ -172,7 +187,10 @@ winrt::hstring FontIconSourceProperties::Glyph()
 
 void FontIconSourceProperties::IsTextScaleFactorEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_IsTextScaleFactorEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool FontIconSourceProperties::IsTextScaleFactorEnabled()
@@ -182,7 +200,10 @@ bool FontIconSourceProperties::IsTextScaleFactorEnabled()
 
 void FontIconSourceProperties::MirroredWhenRightToLeft(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_MirroredWhenRightToLeftProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool FontIconSourceProperties::MirroredWhenRightToLeft()

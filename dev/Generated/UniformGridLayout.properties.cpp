@@ -197,7 +197,10 @@ void UniformGridLayoutProperties::OnOrientationPropertyChanged(
 
 void UniformGridLayoutProperties::ItemsJustification(winrt::UniformGridLayoutItemsJustification const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_ItemsJustificationProperty, ValueHelper<winrt::UniformGridLayoutItemsJustification>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UniformGridLayoutItemsJustification UniformGridLayoutProperties::ItemsJustification()
@@ -207,7 +210,10 @@ winrt::UniformGridLayoutItemsJustification UniformGridLayoutProperties::ItemsJus
 
 void UniformGridLayoutProperties::ItemsStretch(winrt::UniformGridLayoutItemsStretch const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_ItemsStretchProperty, ValueHelper<winrt::UniformGridLayoutItemsStretch>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UniformGridLayoutItemsStretch UniformGridLayoutProperties::ItemsStretch()
@@ -217,7 +223,10 @@ winrt::UniformGridLayoutItemsStretch UniformGridLayoutProperties::ItemsStretch()
 
 void UniformGridLayoutProperties::MaximumRowsOrColumns(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_MaximumRowsOrColumnsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int UniformGridLayoutProperties::MaximumRowsOrColumns()
@@ -227,7 +236,10 @@ int UniformGridLayoutProperties::MaximumRowsOrColumns()
 
 void UniformGridLayoutProperties::MinColumnSpacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_MinColumnSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double UniformGridLayoutProperties::MinColumnSpacing()
@@ -237,7 +249,10 @@ double UniformGridLayoutProperties::MinColumnSpacing()
 
 void UniformGridLayoutProperties::MinItemHeight(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_MinItemHeightProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double UniformGridLayoutProperties::MinItemHeight()
@@ -247,7 +262,10 @@ double UniformGridLayoutProperties::MinItemHeight()
 
 void UniformGridLayoutProperties::MinItemWidth(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_MinItemWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double UniformGridLayoutProperties::MinItemWidth()
@@ -257,7 +275,10 @@ double UniformGridLayoutProperties::MinItemWidth()
 
 void UniformGridLayoutProperties::MinRowSpacing(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_MinRowSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double UniformGridLayoutProperties::MinRowSpacing()
@@ -267,7 +288,10 @@ double UniformGridLayoutProperties::MinRowSpacing()
 
 void UniformGridLayoutProperties::Orientation(winrt::Orientation const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<UniformGridLayout*>(this)->SetValue(s_OrientationProperty, ValueHelper<winrt::Orientation>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Orientation UniformGridLayoutProperties::Orientation()

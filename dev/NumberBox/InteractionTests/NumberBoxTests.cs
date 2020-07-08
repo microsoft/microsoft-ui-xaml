@@ -581,6 +581,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifyRightClickForContextMenuDoesNotDeselectText()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
+
+                Log.Comment("Verify that focusing the NumberBox selects the text");
+                numBox.SetFocus();
+                Wait.ForIdle();
+                Wait.ForSeconds(3);
+                Edit edit = FindTextBox(numBox);
+                Verify.AreEqual("0", edit.GetTextSelection());
+
+                Log.Comment("Verify that right-clicking on the NumberBox's input field (to bring up the context menu) does not clear the selection");
+                // (15, 15): Just some offset large enough to make sure the right-click below will actually bring up the context menu
+                InputHelper.RightClick(edit, 15, 15);
+                Wait.ForIdle();
+
+                Verify.AreEqual("0", edit.GetTextSelection());
+            }
+        }
+
 
         Button FindButton(UIObject parent, string buttonName)
         {

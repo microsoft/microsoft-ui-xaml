@@ -61,7 +61,10 @@ void PersonPictureTemplateSettingsProperties::ClearProperties()
 
 void PersonPictureTemplateSettingsProperties::ActualImageBrush(winrt::ImageBrush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_ActualImageBrushProperty, ValueHelper<winrt::ImageBrush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageBrush PersonPictureTemplateSettingsProperties::ActualImageBrush()
@@ -71,7 +74,10 @@ winrt::ImageBrush PersonPictureTemplateSettingsProperties::ActualImageBrush()
 
 void PersonPictureTemplateSettingsProperties::ActualInitials(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_ActualInitialsProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring PersonPictureTemplateSettingsProperties::ActualInitials()
@@ -81,7 +87,10 @@ winrt::hstring PersonPictureTemplateSettingsProperties::ActualInitials()
 
 void PersonPictureTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CoreDispatcher PersonPictureTemplateSettingsProperties::Dispatcher()

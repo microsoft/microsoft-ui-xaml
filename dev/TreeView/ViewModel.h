@@ -103,9 +103,9 @@ private:
     int AddNodeDescendantsToView(const winrt::TreeViewNode& value, unsigned int index, int offset);
     void RemoveNodeAndDescendantsFromView(const winrt::TreeViewNode& value);
     void RemoveNodesAndDescendentsWithFlatIndexRange(unsigned int startIndex, unsigned int stopIndex);
-    int GetNextIndexInFlatTree(const winrt::TreeViewNode& indexNode);
-    unsigned int IndexOfNextSibling(winrt::TreeViewNode& childNode);
-    unsigned int GetExpandedDescendantCount(winrt::TreeViewNode& parentNode);
+    int GetNextIndexInFlatTree(winrt::TreeViewNode const& indexNode);
+    unsigned int IndexOfNextSibling(winrt::TreeViewNode const& childNode);
+    unsigned int GetExpandedDescendantCount(winrt::TreeViewNode const& parentNode);
     void UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeNodeSelectionState const& selectionState);
     void UpdateSelectionStateOfDescendants(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
     void UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targetNode);
