@@ -64,12 +64,12 @@ void ProgressRing::OnApplyTemplate()
 
 void ProgressRing::OnDeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-
+    SetAnimatedVisualPlayerSource();
 }
 
 void ProgressRing::OnIndeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-
+    SetAnimatedVisualPlayerSource();
 }
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -79,7 +79,10 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
 
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    UpdateLottieProgress();
+    if (!IsIndeterminate())
+    {
+        UpdateLottieProgress();
+    }
 }
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -98,7 +101,20 @@ void ProgressRing::OnForegroundColorPropertyChanged(const winrt::DependencyObjec
     {
         if (auto const progressRing = player.Source())
         {
-            SetLottieForegroundColor(progressRing);
+            if (IsIndeterminate())
+            {
+                if (!IndeterminateSource())
+                {
+                    SetLottieForegroundColor(progressRing);
+                }
+            }
+            else
+            {
+                if (!DeterminateSource())
+                {
+                    SetLottieForegroundColor(progressRing);
+                }
+            }
         }
     }
 }
@@ -119,7 +135,20 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
     {
         if (auto const progressRing = player.Source())
         {
-            SetLottieBackgroundColor(progressRing);
+            if (IsIndeterminate())
+            {
+                if (!IndeterminateSource())
+                {
+                    SetLottieBackgroundColor(progressRing);
+                }
+            }
+            else
+            {
+                if (!DeterminateSource())
+                {
+                    SetLottieBackgroundColor(progressRing);
+                }
+            }
         }
     }
 }
@@ -149,34 +178,40 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 {
     if (auto&& player = m_player.get())
     {
-            if (IsIndeterminate())
+        if (IsIndeterminate())
+        {
+            if (!IndeterminateSource())
             {
-                if (!IndeterminateSource())
+                player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
+
+                if (const auto progressRing = player.Source())
                 {
-                    player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
-                }
-                else
-                {
-                    player.Source(IndeterminateSource());
+                    SetLottieForegroundColor(progressRing);
+                    SetLottieBackgroundColor(progressRing);
                 }
             }
             else
             {
-                if (!DeterminateSource())
+                player.Source(IndeterminateSource());
+            }
+        }
+        else
+        {
+            if (!DeterminateSource())
+            {
+                player.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
+
+                if (const auto progressRing = player.Source())
                 {
-                    player.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
-                }
-                else
-                {
-                    player.Source(DeterminateSource());
+                    SetLottieForegroundColor(progressRing);
+                    SetLottieBackgroundColor(progressRing);
                 }
             }
-
-            /*if (const auto progressRing = player.Source())
+            else
             {
-                SetLottieForegroundColor(progressRing);
-                SetLottieBackgroundColor(progressRing);
-            }*/
+                player.Source(DeterminateSource());
+            }
+        }      
     }
 }
 
