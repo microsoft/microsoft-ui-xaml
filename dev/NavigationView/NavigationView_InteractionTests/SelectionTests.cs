@@ -373,13 +373,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 // Select apps
                 using (var waiter = new ValueChangedEventWaiter(invokeResult))
                 {
-                    apps.Invoke();
+                    apps.Click();
                     waiter.Wait();
                 }
 
                 Verify.AreEqual(selectResult.Value, "Apps");
 
-                setInvalidSelectedItemButton.Invoke();
+                setInvalidSelectedItemButton.Click();
                 Wait.ForIdle();
 
                 Verify.AreEqual(selectResult.Value, "Null");

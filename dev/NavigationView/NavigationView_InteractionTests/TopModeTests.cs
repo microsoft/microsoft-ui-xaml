@@ -108,7 +108,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 Log.Comment("Add a long navigationview item which text includes " + longNavItemPartialContent);
                 Button button = new Button(FindElement.ByName("AddLongNavItem"));
-                button.Invoke();
+                button.Click();
                 Wait.ForIdle();
 
                 var count = GetTopNavigationItems(TopNavPosition.Primary).Count;

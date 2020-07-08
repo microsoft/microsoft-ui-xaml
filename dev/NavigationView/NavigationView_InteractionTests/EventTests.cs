@@ -305,12 +305,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var result = new TextBlock(FindElement.ByName("MyLocationResult"));
 
                 Log.Comment("Click on MyLocation Item and verify it's on Frame1");
-                myLocationButton.Invoke();
+                myLocationButton.Click();
                 Wait.ForIdle();
                 Verify.AreEqual(result.GetText(), "Frame1");
 
                 Log.Comment("Click on SwitchFrame");
-                switchFrameButton.Invoke();
+                switchFrameButton.Click();
                 Wait.ForIdle();
 
                 // tree structure changed and rebuild the cache.
@@ -318,7 +318,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 Log.Comment("Click on MyLocation Item and verify it's on Frame2");
                 myLocationButton = FindElement.ByName<Button>("MyLocation");
-                myLocationButton.Invoke();
+                myLocationButton.Click();
                 Wait.ForIdle();
                 Verify.AreEqual(result.GetText(), "Frame2");
             }
