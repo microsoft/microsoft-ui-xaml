@@ -64,6 +64,8 @@
             <StaticResource x:Key="ComboBoxForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundPointerOver" ResourceKey="SystemControlPageTextBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundPressed" ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -171,6 +173,8 @@
             <StaticResource x:Key="ComboBoxForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundPointerOver" ResourceKey="SystemControlPageTextBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundPressed" ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -304,6 +308,8 @@
             <StaticResource x:Key="ComboBoxForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ComboBoxHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundPointerOver" ResourceKey="SystemControlPageTextBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundPressed" ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -476,7 +482,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxBorderBrushDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxHeaderForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundDisabled}" />
@@ -613,6 +619,7 @@
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             FlowDirection="{TemplateBinding FlowDirection}"
+                            Foreground="{ThemeResource ComboBoxHeaderForeground}"
                             FontWeight="{ThemeResource ComboBoxHeaderThemeFontWeight}"
                             Margin="{ThemeResource ComboBoxTopHeaderMargin}"
                             TextWrapping="Wrap"
