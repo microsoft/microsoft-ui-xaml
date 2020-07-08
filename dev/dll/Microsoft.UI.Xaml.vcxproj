@@ -246,6 +246,8 @@
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <ConformanceMode>true</ConformanceMode>
+      <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
+      <MultiProcessorCompilation Condition="'$(TF_BUILD)'=='True'">false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

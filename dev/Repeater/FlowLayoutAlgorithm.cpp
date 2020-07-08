@@ -135,7 +135,7 @@ winrt::Size FlowLayoutAlgorithm::MeasureElement(
 {
     const auto measureSize = m_algorithmCallbacks->Algorithm_GetMeasureSize(index, availableSize, context);
     element.Measure(measureSize);
-    auto provisionalArrangeSize = m_algorithmCallbacks->Algorithm_GetProvisionalArrangeSize(index, measureSize, element.DesiredSize(), context);
+    const auto provisionalArrangeSize = m_algorithmCallbacks->Algorithm_GetProvisionalArrangeSize(index, measureSize, element.DesiredSize(), context);
     m_algorithmCallbacks->Algorithm_OnElementMeasured(element, index, availableSize, measureSize, element.DesiredSize(), provisionalArrangeSize, context);
 
     return provisionalArrangeSize;
@@ -503,7 +503,7 @@ winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize
         lastBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(last);
     }
 
-    winrt::Rect extent = m_algorithmCallbacks->Algorithm_GetExtent(
+    const winrt::Rect extent = m_algorithmCallbacks->Algorithm_GetExtent(
         availableSize,
         m_context.get(),
         firstRealizedElement,
