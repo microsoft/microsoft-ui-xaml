@@ -10,8 +10,7 @@
 #include "math.h"
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
-static constexpr wstring_view s_IndeterminateLottiePlayerName{ L"IndeterminateLottiePlayer"sv };
-static constexpr wstring_view s_DeterminateLottiePlayerName{ L"DeterminateLottiePlayer"sv };
+static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };

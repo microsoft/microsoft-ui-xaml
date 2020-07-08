@@ -46,8 +46,7 @@ private:
     void UpdateLottieProgress();
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
-    tracker_ref<winrt::AnimatedVisualPlayer> m_determinatePlayer{ this };
-    tracker_ref<winrt::AnimatedVisualPlayer> m_indeterminatePlayer{ this };
+    tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
 
     double m_oldValue{ 0 };
 };
