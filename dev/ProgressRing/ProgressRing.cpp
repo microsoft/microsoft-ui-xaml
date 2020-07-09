@@ -46,16 +46,7 @@ void ProgressRing::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
-
-    m_player.set([this, controlProtected]()
-        {
-            auto const indeterminateplayer = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
-            if (indeterminateplayer)
-            {
-                indeterminateplayer.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
-            }
-            return indeterminateplayer;
-        }());
+    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
 
     SetAnimatedVisualPlayerSource();
     UpdateLottieProgress();
@@ -153,17 +144,6 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
     }
 }
 
-void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
-{
-    if (auto&& player = m_player.get())
-    {
-        if (player.Opacity() == 0)
-        {
-            player.Stop();
-        }
-    }
-}
-
 void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateStates();
@@ -180,8 +160,10 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
     {
         if (IsIndeterminate())
         {
+            // Check if custom indeterminate animation source is set.
             if (!IndeterminateSource())
             {
+                // Set default indeterminate animation source.
                 player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
 
                 if (const auto progressRingAnimation = player.Source())
@@ -192,13 +174,16 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
             }
             else
             {
+                // Set custom indeterminate animation source.
                 player.Source(IndeterminateSource());
             }
         }
         else
         {
+            // Check if custom determinate animation source is set.
             if (!DeterminateSource())
             {
+                // Set default determinate animation source.
                 player.Source(winrt::make<AnimatedVisuals::ProgressRingDeterminate>());
 
                 if (const auto progressRingAnimation = player.Source())
@@ -209,6 +194,7 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
             }
             else
             {
+                // Set custom indeterminate animation source.
                 player.Source(DeterminateSource());
             }
         }      
