@@ -194,7 +194,7 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
             }
             else
             {
-                // Set custom indeterminate animation source.
+                // Set custom determinate animation source.
                 player.Source(DeterminateSource());
             }
         }      
@@ -269,6 +269,7 @@ void ProgressRing::UpdateStates()
         {
             winrt::VisualStateManager::GoToState(*this, s_ActiveStateName, true);
 
+            // Swap player source to indeterminate.
             SetAnimatedVisualPlayerSource();
 
             if (auto&& player = m_player.get())
@@ -280,6 +281,7 @@ void ProgressRing::UpdateStates()
         {
             winrt::VisualStateManager::GoToState(*this, s_DeterminateActiveStateName, true);
 
+            // Swap player source to determinate.
             SetAnimatedVisualPlayerSource();
             UpdateLottieProgress();
         }   
