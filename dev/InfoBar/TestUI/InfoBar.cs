@@ -43,7 +43,7 @@ namespace MUXControlsTestApp
             get; set;
         }
     }
-    public class InfoBarEventArgs : EventArgs
+    public class CloseButtonClickEventArgs : EventArgs
     {
         public bool IsHandled
         {
@@ -59,7 +59,7 @@ namespace MUXControlsTestApp
         Border _myContainer;
 
         public event EventHandler<RoutedEventArgs> ActionButtonClick;
-        public event TypedEventHandler<InfoBar, InfoBarEventArgs> CloseButtonClick;
+        public event TypedEventHandler<InfoBar, CloseButtonClickEventArgs> CloseButtonClick;
         public event TypedEventHandler<InfoBar, InfoBarClosedEventArgs> Closed;
         public event TypedEventHandler<InfoBar, InfoBarClosingEventArgs> Closing;
 
@@ -269,7 +269,7 @@ namespace MUXControlsTestApp
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             lastCloseReason = InfoBarCloseReason.CloseButton;
-            InfoBarEventArgs args = new InfoBarEventArgs();
+            CloseButtonClickEventArgs args = new CloseButtonClickEventArgs();
             CloseButtonClick?.Invoke(this, args);
             //If the user sets IsHandled to true, they can override the behavior of CloseButtonClick
             if (args.IsHandled == false)
