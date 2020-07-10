@@ -44,11 +44,17 @@
                                         <SymbolIcon Symbol="Back"/>
                                     </Button>
                                     <Button x:Name="ToggleThemeButton"
-                                        VerticalAlignment="Stretch"
+                                        VerticalAlignment="Stretch" Margin="0,0,4,0"
                                         Style="{ThemeResource AccentButtonStyle}"
                                         AutomationProperties.AutomationId="__ToggleThemeButton" 
                                         Content="Toggle theme">
                                     </Button>
+                                    <Button
+                                        x:Name="SwitchCIDimensionsButton"
+                                        VerticalAlignment="Stretch" Margin="0,0,4,0"
+                                        Style="{ThemeResource AccentButtonStyle}"
+                                        AutomationProperties.AutomationId="__SwitchCIDimensions"
+                                        Content="Switch to CI dimension"/>
 
                                     <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.AutomationId="__CurrentPage"  FontSize="18" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 </StackPanel>
@@ -82,6 +88,7 @@
                             </Grid>
 
                             <ContentPresenter Grid.Row="2"
+                                    x:Name="PagePresenter"
                                     Content="{TemplateBinding Content}"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"

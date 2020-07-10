@@ -25,6 +25,7 @@ namespace MUXControlsTestApp
         private Button _goBackInvokerButton = null;
         private Button _goFullScreenInvokerButton = null;
         private Button _toggleThemeButton = null;
+        private Button _switchCIDimensionsButton = null;
         private Button _closeAppInvokerButton = null;
         private Button _waitForIdleInvokerButton = null;
         private CheckBox _idleStateEnteredCheckBox = null;
@@ -36,6 +37,7 @@ namespace MUXControlsTestApp
         private CheckBox _debuggerAttachedCheckBox = null;
         private TextBox _unhandledExceptionReportingTextBox = null;
         private Type _mainPageType = null;
+        private ContentPresenter _pagePresenter = null;
 
         public TestFrame(Type mainPageType)
         {
@@ -96,6 +98,11 @@ namespace MUXControlsTestApp
             _toggleThemeButton = (Button)GetTemplateChild("ToggleThemeButton");
             _toggleThemeButton.Click += ToggleThemeButton_Click;
 
+            _pagePresenter = (ContentPresenter)GetTemplateChild("PagePresenter");
+
+            _switchCIDimensionsButton = (Button)GetTemplateChild("SwitchCIDimensionsButton");
+            _switchCIDimensionsButton.Click += SwitchCIDimensionsButton_Click;
+
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
 
@@ -126,6 +133,22 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
 
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
+        }
+
+        private void SwitchCIDimensionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(Math.Abs(_pagePresenter.MaxWidth - 1024) < 5)
+            {
+                // We are already in "CI mode"
+                _pagePresenter.MaxWidth = float.MaxValue;
+                _pagePresenter.MaxHeight = float.MaxValue;
+            }
+            else
+            {
+                // Not CI mode, so enter it now
+                _pagePresenter.MaxWidth = 1024;
+                _pagePresenter.MaxHeight = 664;
+            }
         }
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
