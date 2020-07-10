@@ -171,17 +171,12 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
   <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
-  <PropertyGroup Condition="
-    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
-    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
-    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
-    ">
+  <PropertyGroup Condition="     ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR     ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR     ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')     ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\..\build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -250,6 +245,8 @@
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <ConformanceMode>true</ConformanceMode>
+      <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
+      <MultiProcessorCompilation Condition="'$(TF_BUILD)'=='True'">false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -429,7 +426,7 @@
       <PRIResource Remove="@(PRIResource)" />
     </ItemGroup>
     <!-- Use CreateItem to expand all the ** to individual full paths -->
-    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
+    <CreateItem Include="@(PRIResourceExpanded -&gt; '%(Replaced)')">
       <Output TaskParameter="Include" ItemName="PRIResource" />
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />
@@ -463,7 +460,7 @@
     <ItemGroup>
       <UndefinedPage Include="@(SharedPage)" Condition="'%(Version)' == 'Undefined' Or '%(Type)' == 'Undefined'" />
     </ItemGroup>
-    <Error File="@(UndefinedPage -> '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
+    <Error File="@(UndefinedPage -&gt; '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
     <ItemGroup>
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '1'" />
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '2'" />
