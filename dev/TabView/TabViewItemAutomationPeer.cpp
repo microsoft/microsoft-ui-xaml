@@ -80,19 +80,8 @@ void TabViewItemAutomationPeer::RemoveFromSelection()
 
 void TabViewItemAutomationPeer::Select()
 {
-    if (auto tabView = GetParenTabView().try_as<TabView>())
+    if (auto owner = Owner().try_as<TabViewItem>().get())
     {
-        // Set selection by getting the item from the container
-        // and setting that as the new selected item.
-        tabView->SelectedItem(tabView->ItemFromContainer(Owner()));
+        owner->IsSelected(true);
     }
-}
-
-winrt::TabView TabViewItemAutomationPeer::GetParenTabView()
-{
-    if (auto tvi = Owner().try_as<winrt::TabViewItem>())
-    {
-        return winrt::get_self<TabViewItem>(tvi)->GetParentTabView();
-    }
-    return nullptr;
 }

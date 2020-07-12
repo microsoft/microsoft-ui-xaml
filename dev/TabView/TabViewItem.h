@@ -41,9 +41,6 @@ public:
     void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
     void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
 
-    winrt::TabView GetParentTabView();
-    void SetParentTabView(winrt::TabView const& tabView);
-
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
@@ -75,6 +72,4 @@ public:
 
     void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
-
-    winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };
 };

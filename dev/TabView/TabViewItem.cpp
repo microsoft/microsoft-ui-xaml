@@ -151,16 +151,6 @@ void TabViewItem::OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverl
     UpdateCloseButton();
 }
 
-winrt::TabView TabViewItem::GetParentTabView()
-{
-    return m_parentTabView.get();
-}
-
-void TabViewItem::SetParentTabView(winrt::TabView const& tabView)
-{
-    m_parentTabView = winrt::make_weak(tabView);
-}
-
 void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
 {
     m_tabViewWidthMode = mode;

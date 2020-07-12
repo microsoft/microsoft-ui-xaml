@@ -638,7 +638,6 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
             if (const auto newItem = TabItems().GetAt(args.Index()).try_as<TabViewItem>())
             {
                 newItem->OnTabViewWidthModeChanged(TabWidthMode());
-                newItem->SetParentTabView(*this);
             }
             UpdateTabWidths();
         }
