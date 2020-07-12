@@ -55,6 +55,8 @@
                     <MenuFlyoutItem Text="Word Wrap"/>
                     <MenuFlyoutItem Text="Font..."/>
                 </muxc:MenuBarItem>
+
+                <muxc:MenuBarItem Title="No children"/>
             </muxc:MenuBar>
 
             <TextBlock Text="Custom sized menu bar" Margin="0,6,0,0"/>
