@@ -108,5 +108,9 @@ namespace MUXControlsTestApp
             EmptyMenuBar.Items.Add(mainMenuBarHelp);
         }
 
+        private void RemoveItemsFromOneChildrenItem_Click(object sender, RoutedEventArgs e)
+        {
+            OneChildrenFlyoutMenuBarItem.Items.Clear();
+        }
     }
 }

@@ -56,7 +56,10 @@
                     <MenuFlyoutItem Text="Font..."/>
                 </muxc:MenuBarItem>
 
-                <muxc:MenuBarItem Title="No children"/>
+                <muxc:MenuBarItem Title="No children" AutomationProperties.Name="NoChildrenFlyout"/>
+                <muxc:MenuBarItem Title="One children" AutomationProperties.Name="OneChildrenFlyout" x:Name="OneChildrenFlyoutMenuBarItem">
+                    <MenuFlyoutItem Text="Sometext"/>
+                </muxc:MenuBarItem>
             </muxc:MenuBar>
 
             <TextBlock Text="Custom sized menu bar" Margin="0,6,0,0"/>
@@ -80,6 +83,7 @@
             <Button x:Name="AddFlyoutItemButton" AutomationProperties.Name="AddFlyoutItemButton" Click="AddFlyoutItem_Click" Content="Add Flyout Item"/>
             <Button x:Name="RemoveFlyoutItemButton" AutomationProperties.Name="RemoveFlyoutItemButton" Click="RemoveFlyoutItem_Click" Content="Remove Flyout Item"/>
             <Button x:Name="AddItemsToEmptyMenuBar" AutomationProperties.Name="AddItemsToEmptyMenuBar" Click="AddMenuBarToEmptyMenuBarItem_Click" Content="Add a menu item to the empty menu bar"/>
+            <Button x:Name="RemoveItemsFromOneChildrenItem" AutomationProperties.Name="RemoveItemsFromOneChildrenItem" Click="RemoveItemsFromOneChildrenItem_Click" Content="Remove items from One Children item"/>
         </StackPanel>
         <StackPanel Grid.Row="3">
             <TextBlock Text="Test output" Style="{ThemeResource StandardGroupHeader}"/>
