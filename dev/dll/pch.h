@@ -71,7 +71,7 @@
 // and many appear in multiple compilation units so the work is duplicated across invocations of the compiler. I used the
 // MSVC compiler option "/d1reportTime" to get a dump of all the work and then searched for "pinterface_guid" invocations to
 // determine the set of things to put here.
-void specialize_guids()
+void constexpr specialize_guids()
 {
     winrt::guid_of<struct winrt::Windows::Foundation::AsyncOperationCompletedHandler<bool>>();
     winrt::guid_of<struct winrt::Windows::Foundation::AsyncOperationCompletedHandler<struct winrt::hstring>>();

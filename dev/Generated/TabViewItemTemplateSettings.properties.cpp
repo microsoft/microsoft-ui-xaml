@@ -68,7 +68,10 @@ void TabViewItemTemplateSettingsProperties::ClearProperties()
 
 void TabViewItemTemplateSettingsProperties::IconElement(winrt::IconElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_IconElementProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconElement TabViewItemTemplateSettingsProperties::IconElement()
@@ -78,7 +81,10 @@ winrt::IconElement TabViewItemTemplateSettingsProperties::IconElement()
 
 void TabViewItemTemplateSettingsProperties::LeftInsetRadiusMargin(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_LeftInsetRadiusMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness TabViewItemTemplateSettingsProperties::LeftInsetRadiusMargin()
@@ -88,7 +94,10 @@ winrt::Thickness TabViewItemTemplateSettingsProperties::LeftInsetRadiusMargin()
 
 void TabViewItemTemplateSettingsProperties::RightInsetRadiusMargin(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_RightInsetRadiusMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness TabViewItemTemplateSettingsProperties::RightInsetRadiusMargin()

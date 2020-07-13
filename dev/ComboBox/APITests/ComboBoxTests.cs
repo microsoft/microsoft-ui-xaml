@@ -101,7 +101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
 
-            VisualTreeTestHelper.VerifyVisualTree(root: comboBox, masterFilePrefix: "ComboBox");
+            VisualTreeTestHelper.VerifyVisualTree(root: comboBox, verificationFileNamePrefix: "ComboBox");
         }
 
         private ComboBox SetupComboBox(bool useContent = true)

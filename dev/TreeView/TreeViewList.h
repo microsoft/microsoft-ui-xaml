@@ -43,25 +43,25 @@ public:
     std::vector<winrt::TreeViewNode> GetRootsOfSelectedSubtrees() const;
     int FlatIndex(const winrt::TreeViewNode& node) const;
     bool IsFlatIndexValid(int index) const;
-    unsigned int RemoveNodeFromParent(const winrt::TreeViewNode& node);
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
-    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
-    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
-    winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
+    unsigned int RemoveNodeFromParent(const winrt::TreeViewNode& node) const;
+    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container) const;
+    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node) const;
+    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item) const;
+    winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node) const;
     com_ptr<ViewModel> ListViewModel() const;
     void ListViewModel(com_ptr<ViewModel> viewModel);
-    winrt::TreeViewNode DraggedTreeViewNode();
+    winrt::TreeViewNode DraggedTreeViewNode() const;
     void DraggedTreeViewNode(winrt::TreeViewNode const& node);
-    bool IsContentMode();
+    bool IsContentMode() const;
 
 private:
-    bool IsIndexValid(int index);
-    hstring GetAutomationName(int index);
-    hstring BuildEffectString(hstring priorString, hstring afterString, hstring dragString, hstring dragOverString);
-    unsigned int IndexInParent(const winrt::TreeViewNode& node);
+    bool IsIndexValid(int index) const;
+    hstring GetAutomationName(int index) const;
+    hstring BuildEffectString(hstring priorString, hstring afterString, hstring dragString, hstring dragOverString) const;
+    unsigned int IndexInParent(const winrt::TreeViewNode& node) const;
     winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode GetRootOfSelection(const winrt::TreeViewNode& node) const;
-    void MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode);
+    void MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode) const;
 
     tracker_ref<winrt::TreeViewItem> m_draggedOverItem{ this };
     winrt::hstring m_dropTargetDropEffectString;
