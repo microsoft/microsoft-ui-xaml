@@ -4017,7 +4017,10 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
 
 void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer)
 {
-    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer))
+    if (IsPaneOpen() &&
+        DisplayMode() != winrt::NavigationViewDisplayMode::Expanded &&
+        !DoesNavigationViewItemHaveChildren(selectedContainer) &&
+        !m_shouldIgnoreNextSelectionChange)
     {
         ClosePane();
     }
