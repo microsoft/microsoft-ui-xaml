@@ -55,5 +55,19 @@ namespace MUXControlsTestApp
         {
             NavView.PaneDisplayMode = NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? NavigationViewPaneDisplayMode.Auto : NavigationViewPaneDisplayMode.Top;
         }
+
+        private void NavView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        {
+            var children = (StackPanel)args.SelectedItemContainer.Content;
+            var customer = (Customer)args.SelectedItem;
+            if(children != null && customer != null)
+            {
+                SelectionEventResult.Text = "Passed";
+            }
+            else
+            {
+                SelectionEventResult.Text = "Failed";
+            }
+        }
     }
 }

@@ -115,15 +115,15 @@ void TwoPaneView::UpdateMode()
     // Don't bother running this logic until after we hit OnApplyTemplate.
     if (!m_loaded) return;
 
-    double controlWidth = ActualWidth();
-    double controlHeight = ActualHeight();
+    const double controlWidth = ActualWidth();
+    const double controlHeight = ActualHeight();
 
     ViewMode newMode = (PanePriority() == winrt::TwoPaneViewPriority::Pane1) ? ViewMode::Pane1Only : ViewMode::Pane2Only;
 
     // Calculate new mode
-    DisplayRegionHelperInfo info = DisplayRegionHelper::GetRegionInfo();
-    winrt::Rect rcControl = GetControlRect();
-    bool isInMultipleRegions = IsInMultipleRegions(info, rcControl);
+    const DisplayRegionHelperInfo info = DisplayRegionHelper::GetRegionInfo();
+    const winrt::Rect rcControl = GetControlRect();
+    const bool isInMultipleRegions = IsInMultipleRegions(info, rcControl);
 
     if (isInMultipleRegions)
     {
@@ -222,9 +222,9 @@ void TwoPaneView::UpdateRowsColumns(ViewMode newMode, DisplayRegionHelperInfo in
         // Handle regions
         if (IsInMultipleRegions(info, rcControl) && newMode != ViewMode::Pane1Only && newMode != ViewMode::Pane2Only)
         {
-            winrt::Rect rc1 = info.Regions[0];
-            winrt::Rect rc2 = info.Regions[1];
-            winrt::Rect rcWindow = DisplayRegionHelper::WindowRect();
+            const winrt::Rect rc1 = info.Regions[0];
+            const winrt::Rect rc2 = info.Regions[1];
+            const winrt::Rect rcWindow = DisplayRegionHelper::WindowRect();
 
             if (info.Mode == winrt::TwoPaneViewMode::Wide)
             {
@@ -257,8 +257,8 @@ bool TwoPaneView::IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect 
 
     if (info.Mode != winrt::TwoPaneViewMode::SinglePane)
     {
-        winrt::Rect rc1 = info.Regions[0];
-        winrt::Rect rc2 = info.Regions[1];
+        const winrt::Rect rc1 = info.Regions[0];
+        const winrt::Rect rc2 = info.Regions[1];
 
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
         {

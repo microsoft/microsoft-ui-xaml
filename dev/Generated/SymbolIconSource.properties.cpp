@@ -44,7 +44,10 @@ void SymbolIconSourceProperties::ClearProperties()
 
 void SymbolIconSourceProperties::Symbol(winrt::Symbol const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SymbolIconSource*>(this)->SetValue(s_SymbolProperty, ValueHelper<winrt::Symbol>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Symbol SymbolIconSourceProperties::Symbol()

@@ -346,7 +346,7 @@ void ScrollBarController::UnhookScrollBarPropertyChanged()
 #if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
 void ScrollBarController::UpdateAreScrollControllerInteractionsAllowed()
 {
-    bool oldAreScrollControllerInteractionsAllowed = m_areScrollControllerInteractionsAllowed;
+    const bool oldAreScrollControllerInteractionsAllowed = m_areScrollControllerInteractionsAllowed;
 
     m_areScrollControllerInteractionsAllowed =
         m_scrollBar &&
@@ -436,7 +436,7 @@ void ScrollBarController::OnScroll(
     const winrt::IInspectable& /*sender*/,
     const winrt::ScrollEventArgs& args)
 {
-    winrt::ScrollEventType scrollEventType = args.ScrollEventType();
+    const auto scrollEventType = args.ScrollEventType();
 
     SCROLLVIEW_TRACE_VERBOSE(
         nullptr,

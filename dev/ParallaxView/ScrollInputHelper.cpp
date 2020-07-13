@@ -61,15 +61,15 @@ winrt::hstring ScrollInputHelper::GetSourceScalePropertyName() const
 // Returns the offset of the scrolled element in relation to its owning source.
 double ScrollInputHelper::GetOffsetFromScrollContentElement(const winrt::UIElement& element, winrt::Orientation orientation) const
 {
-    winrt::UIElement scrollContentElement = GetScrollContentElement();
+    const winrt::UIElement scrollContentElement = GetScrollContentElement();
 
     if (!scrollContentElement)
     {
         return 0.0;
     }
 
-    winrt::GeneralTransform gt = element.TransformToVisual(scrollContentElement);
-    winrt::Windows::Foundation::Point elementOffset = gt.TransformPoint(winrt::Windows::Foundation::Point(0, 0));
+    const winrt::GeneralTransform gt = element.TransformToVisual(scrollContentElement);
+    const winrt::Windows::Foundation::Point elementOffset = gt.TransformPoint(winrt::Windows::Foundation::Point(0, 0));
 
     return orientation == winrt::Orientation::Horizontal ? elementOffset.X : elementOffset.Y;
 }
@@ -202,7 +202,7 @@ void ScrollInputHelper::GetChildScrollPresenterOrScrollViewer(
 
     if (rootElement)
     {
-        int childCount = winrt::VisualTreeHelper::GetChildrenCount(rootElement);
+        const int childCount = winrt::VisualTreeHelper::GetChildrenCount(rootElement);
         for (int i = 0; i < childCount; i++)
         {
             winrt::DependencyObject current = winrt::VisualTreeHelper::GetChild(rootElement, i);
@@ -301,8 +301,8 @@ void ScrollInputHelper::UpdateOutOfBoundsPanSize()
 {
     if (m_scrollPresenter || m_scrollViewer)
     {
-        double viewportWith = GetViewportSize(winrt::Orientation::Horizontal);
-        double viewportHeight = GetViewportSize(winrt::Orientation::Vertical);
+        const double viewportWith = GetViewportSize(winrt::Orientation::Horizontal);
+        const double viewportHeight = GetViewportSize(winrt::Orientation::Vertical);
 
         if (m_scrollViewer && GetEffectiveZoomMode() == winrt::FxZoomMode::Disabled)
         {
@@ -344,7 +344,7 @@ void ScrollInputHelper::UpdateContentSize()
         winrt::CompositionPropertySet scrollPresenterPropertySet = scrollPresenter.ExpressionAnimationSources();
         winrt::float2 extent{};
 
-        winrt::CompositionGetValueStatus status = scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_extentSourcePropertyName, extent);
+        const winrt::CompositionGetValueStatus status = scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_extentSourcePropertyName, extent);
         if (status == winrt::CompositionGetValueStatus::Succeeded)
         {
             m_contentSize.Width = extent.x;
@@ -353,8 +353,8 @@ void ScrollInputHelper::UpdateContentSize()
         return;
     }
     auto scrollViewer = m_scrollViewer.get();
-    float extentWidth = static_cast<float>(scrollViewer.ExtentWidth());
-    float extentHeight = static_cast<float>(scrollViewer.ExtentHeight());
+    const float extentWidth = static_cast<float>(scrollViewer.ExtentWidth());
+    const float extentHeight = static_cast<float>(scrollViewer.ExtentHeight());
 
     winrt::UIElement scrollContentElement = GetScrollContentElement();
     winrt::ItemsPresenter itemsPresenter = scrollContentElement ? (scrollContentElement.try_as<winrt::ItemsPresenter>()) : nullptr;
@@ -381,8 +381,8 @@ void ScrollInputHelper::UpdateContentSize()
                 // VirtualizingStackPanel are handled specially because the ScrollViewer.ExtentWidth/ExtentHeight is unit-based instead
                 // of pixel-based in the virtualized dimension. The computed size accounts for the potential margins, header and footer.
                 double virtualizingSize = 0.0;
-                winrt::Thickness vspMargin = virtualizingStackPanel.Margin();
-                winrt::Thickness itMargin = itemsPresenter.Margin();
+                const winrt::Thickness vspMargin = virtualizingStackPanel.Margin();
+                const winrt::Thickness itMargin = itemsPresenter.Margin();
 
                 if (virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal)
                 {
@@ -454,7 +454,7 @@ void ScrollInputHelper::UpdateViewportSize()
         winrt::CompositionPropertySet scrollPresenterPropertySet = scrollPresenter.ExpressionAnimationSources();
         winrt::float2 viewport{};
 
-        winrt::CompositionGetValueStatus status = scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_viewportSourcePropertyName, viewport);
+        const winrt::CompositionGetValueStatus status = scrollPresenterPropertySet.TryGetVector2(ScrollPresenter::s_viewportSourcePropertyName, viewport);
         if (status == winrt::CompositionGetValueStatus::Succeeded)
         {
             m_viewportSize.Width = viewport.x;
@@ -488,7 +488,7 @@ void ScrollInputHelper::UpdateViewportSize()
                         {
                             // VirtualizingStackPanel are handled specially because the ScrollViewer.ViewportWidth/ViewportHeight is unit-based instead
                             // of pixel-based in the virtualized dimension. The computed size accounts for the potential margins.
-                            winrt::Thickness itMargin = itemsPresenter.Margin();
+                            const winrt::Thickness itMargin = itemsPresenter.Margin();
 
                             if (virtualizingStackPanel.Orientation() == winrt::Orientation::Horizontal)
                             {
@@ -902,15 +902,15 @@ void ScrollInputHelper::StopInternalExpressionAnimations()
 void ScrollInputHelper::ProcessSourceElementChange(bool allowSourceElementLoadedHookup)
 {
     winrt::CompositionPropertySet oldSourcePropertySet = m_sourcePropertySet;
-    bool oldIsTargetElementInSource = m_isTargetElementInSource;
-    double oldViewportWidth = GetViewportSize(winrt::Orientation::Horizontal);
-    double oldViewportHeight = GetViewportSize(winrt::Orientation::Vertical);
-    double oldContentWidth = GetContentSize(winrt::Orientation::Horizontal);
-    double oldContentHeight = GetContentSize(winrt::Orientation::Vertical);
-    double oldUnderpanWidth = GetMaxUnderpanOffset(winrt::Orientation::Horizontal);
-    double oldUnderpanHeight = GetMaxUnderpanOffset(winrt::Orientation::Vertical);
-    double oldOverpanWidth = GetMaxOverpanOffset(winrt::Orientation::Horizontal);
-    double oldOverpanHeight = GetMaxOverpanOffset(winrt::Orientation::Vertical);
+    const bool oldIsTargetElementInSource = m_isTargetElementInSource;
+    const double oldViewportWidth = GetViewportSize(winrt::Orientation::Horizontal);
+    const double oldViewportHeight = GetViewportSize(winrt::Orientation::Vertical);
+    const double oldContentWidth = GetContentSize(winrt::Orientation::Horizontal);
+    const double oldContentHeight = GetContentSize(winrt::Orientation::Vertical);
+    const double oldUnderpanWidth = GetMaxUnderpanOffset(winrt::Orientation::Horizontal);
+    const double oldUnderpanHeight = GetMaxUnderpanOffset(winrt::Orientation::Vertical);
+    const double oldOverpanWidth = GetMaxOverpanOffset(winrt::Orientation::Horizontal);
+    const double oldOverpanHeight = GetMaxOverpanOffset(winrt::Orientation::Vertical);
 
     UnhookSourceElementLoaded();
 
@@ -923,13 +923,13 @@ void ScrollInputHelper::ProcessSourceElementChange(bool allowSourceElementLoaded
     }
     else
     {
-        bool horizontalInfoChanged =
+        const bool horizontalInfoChanged =
             oldViewportWidth != GetViewportSize(winrt::Orientation::Horizontal) ||
             oldContentWidth != GetContentSize(winrt::Orientation::Horizontal) ||
             oldUnderpanWidth != GetMaxUnderpanOffset(winrt::Orientation::Horizontal) ||
             oldOverpanWidth != GetMaxOverpanOffset(winrt::Orientation::Horizontal);
 
-        bool verticalInfoChanged =
+        const bool verticalInfoChanged =
             oldViewportHeight != GetViewportSize(winrt::Orientation::Vertical) ||
             oldContentHeight != GetContentSize(winrt::Orientation::Vertical) ||
             oldUnderpanHeight != GetMaxUnderpanOffset(winrt::Orientation::Vertical) ||
@@ -944,7 +944,7 @@ void ScrollInputHelper::ProcessSourceElementChange(bool allowSourceElementLoaded
 
 void ScrollInputHelper::ProcessTargetElementChange()
 {
-    bool oldIsTargetElementInSource = m_isTargetElementInSource;
+    const bool oldIsTargetElementInSource = m_isTargetElementInSource;
 
     UpdateIsTargetElementInSource();
 
@@ -961,13 +961,13 @@ void ScrollInputHelper::ProcessTargetElementChange()
 // Invoked when the ScrollViewer.Content or ScrollPresenter.Content size changed.
 void ScrollInputHelper::ProcessContentSizeChange()
 {
-    double oldContentWidth = GetContentSize(winrt::Orientation::Horizontal);
-    double oldContentHeight = GetContentSize(winrt::Orientation::Vertical);
+    const double oldContentWidth = GetContentSize(winrt::Orientation::Horizontal);
+    const double oldContentHeight = GetContentSize(winrt::Orientation::Vertical);
 
     UpdateContentSize();
 
-    double newContentWidth = GetContentSize(winrt::Orientation::Horizontal);
-    double newContentHeight = GetContentSize(winrt::Orientation::Vertical);
+    const double newContentWidth = GetContentSize(winrt::Orientation::Horizontal);
+    const double newContentHeight = GetContentSize(winrt::Orientation::Vertical);
 
     if (oldContentWidth != newContentWidth || oldContentHeight != newContentHeight)
     {
@@ -1127,22 +1127,22 @@ void ScrollInputHelper::ProcessScrollViewerZoomModeChange()
 
 void ScrollInputHelper::OnSourceSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& /*args*/)
 {
-    double oldViewportWidth = GetViewportSize(winrt::Orientation::Horizontal);
-    double oldViewportHeight = GetViewportSize(winrt::Orientation::Vertical);
-    double oldUnderpanWidth = GetMaxUnderpanOffset(winrt::Orientation::Horizontal);
-    double oldUnderpanHeight = GetMaxUnderpanOffset(winrt::Orientation::Vertical);
-    double oldOverpanWidth = GetMaxOverpanOffset(winrt::Orientation::Horizontal);
-    double oldOverpanHeight = GetMaxOverpanOffset(winrt::Orientation::Vertical);
+    const double oldViewportWidth = GetViewportSize(winrt::Orientation::Horizontal);
+    const double oldViewportHeight = GetViewportSize(winrt::Orientation::Vertical);
+    const double oldUnderpanWidth = GetMaxUnderpanOffset(winrt::Orientation::Horizontal);
+    const double oldUnderpanHeight = GetMaxUnderpanOffset(winrt::Orientation::Vertical);
+    const double oldOverpanWidth = GetMaxOverpanOffset(winrt::Orientation::Horizontal);
+    const double oldOverpanHeight = GetMaxOverpanOffset(winrt::Orientation::Vertical);
 
     UpdateViewportSize();
     UpdateOutOfBoundsPanSize();
 
-    bool horizontalInfoChanged =
+    const bool horizontalInfoChanged =
         oldViewportWidth != GetViewportSize(winrt::Orientation::Horizontal) ||
         oldUnderpanWidth != GetMaxUnderpanOffset(winrt::Orientation::Horizontal) ||
         oldOverpanWidth != GetMaxOverpanOffset(winrt::Orientation::Horizontal);
 
-    bool verticalInfoChanged =
+    const bool verticalInfoChanged =
         oldViewportHeight != GetViewportSize(winrt::Orientation::Vertical) ||
         oldUnderpanHeight != GetMaxUnderpanOffset(winrt::Orientation::Vertical) ||
         oldOverpanHeight != GetMaxOverpanOffset(winrt::Orientation::Vertical);
@@ -1182,15 +1182,15 @@ void ScrollInputHelper::OnScrollViewerDirectManipulationCompleted(const winrt::I
 
     if (m_targetElement)
     {
-        winrt::FxZoomMode newZoomMode = GetEffectiveZoomMode();
+        const winrt::FxZoomMode newZoomMode = GetEffectiveZoomMode();
 
         if (oldZoomMode != newZoomMode)
         {
             ProcessScrollViewerZoomModeChange();
         }
 
-        winrt::HorizontalAlignment newEffectiveHorizontalAlignment = GetEffectiveHorizontalAlignment();
-        winrt::VerticalAlignment newEffectiveVerticalAlignment = GetEffectiveVerticalAlignment();
+        const winrt::HorizontalAlignment newEffectiveHorizontalAlignment = GetEffectiveHorizontalAlignment();
+        const winrt::VerticalAlignment newEffectiveVerticalAlignment = GetEffectiveVerticalAlignment();
 
         if (oldEffectiveHorizontalAlignment != newEffectiveHorizontalAlignment || oldEffectiveVerticalAlignment != newEffectiveVerticalAlignment)
         {

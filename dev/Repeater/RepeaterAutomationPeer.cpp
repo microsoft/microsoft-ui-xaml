@@ -21,9 +21,9 @@ RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater const& owner
 
 winrt::IVector<winrt::AutomationPeer> RepeaterAutomationPeer::GetChildrenCore()
 {
-    auto repeater = Owner().as<winrt::ItemsRepeater>();
-    auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
-    unsigned peerCount = childrenPeers.Size();
+    const auto repeater = Owner().as<winrt::ItemsRepeater>();
+    const auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
+    const unsigned peerCount = childrenPeers.Size();
 
     std::vector<std::pair<int /* index */, winrt::AutomationPeer>> realizedPeers;
     realizedPeers.reserve(static_cast<int>(peerCount));

@@ -29,8 +29,8 @@ void StackLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutCon
 
 void StackLayoutState::OnElementMeasured(int elementIndex, double majorSize, double minorSize)
 {
-    int estimationBufferIndex = elementIndex % m_estimationBuffer.size();
-    bool alreadyMeasured = m_estimationBuffer[estimationBufferIndex] != 0;
+    const int estimationBufferIndex = elementIndex % m_estimationBuffer.size();
+    const bool alreadyMeasured = m_estimationBuffer[estimationBufferIndex] != 0;
     if (!alreadyMeasured)
     {
         m_totalElementsMeasured++;

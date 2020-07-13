@@ -221,10 +221,10 @@ winrt::Rect FlowLayout::GetExtent(
         }
         else
         {
-            auto lineSpacing = LineSpacing();
-            auto minItemSpacing = MinItemSpacing();
+            const auto lineSpacing = LineSpacing();
+            const auto minItemSpacing = MinItemSpacing();
             // We dont have anything realized. make an educated guess.
-            int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
+            const int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
                 std::isfinite(availableSizeMinor) ?
                 MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
@@ -374,7 +374,7 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
         //Note: For FlowLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
         //i.e. the properties are the inverse of each other.
-        ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
+        const auto scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
     else if (property == s_MinColumnSpacingProperty)
@@ -412,7 +412,7 @@ double FlowLayout::GetAverageLineInfo(
         const auto desiredSize = flowState->FlowAlgorithm().MeasureElement(tmpElement, 0, availableSize, context);
         context.RecycleElement(tmpElement);
 
-        int estimatedCountInLine = std::max(1, static_cast<int>(Minor(availableSize) / Minor(desiredSize)));
+        const int estimatedCountInLine = std::max(1, static_cast<int>(Minor(availableSize) / Minor(desiredSize)));
         flowState->OnLineArranged(0, estimatedCountInLine, Major(desiredSize), context);
         flowState->SpecialElementDesiredSize(desiredSize);
     }

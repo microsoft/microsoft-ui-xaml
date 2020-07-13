@@ -119,7 +119,10 @@ void TabViewItemProperties::OnIsClosablePropertyChanged(
 
 void TabViewItemProperties::Header(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItem*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TabViewItemProperties::Header()
@@ -129,7 +132,10 @@ winrt::IInspectable TabViewItemProperties::Header()
 
 void TabViewItemProperties::HeaderTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItem*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate TabViewItemProperties::HeaderTemplate()
@@ -139,7 +145,10 @@ winrt::DataTemplate TabViewItemProperties::HeaderTemplate()
 
 void TabViewItemProperties::IconSource(winrt::IconSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItem*>(this)->SetValue(s_IconSourceProperty, ValueHelper<winrt::IconSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconSource TabViewItemProperties::IconSource()
@@ -149,7 +158,10 @@ winrt::IconSource TabViewItemProperties::IconSource()
 
 void TabViewItemProperties::IsClosable(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItem*>(this)->SetValue(s_IsClosableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TabViewItemProperties::IsClosable()
@@ -159,7 +171,10 @@ bool TabViewItemProperties::IsClosable()
 
 void TabViewItemProperties::TabViewTemplateSettings(winrt::TabViewItemTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItem*>(this)->SetValue(s_TabViewTemplateSettingsProperty, ValueHelper<winrt::TabViewItemTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TabViewItemTemplateSettings TabViewItemProperties::TabViewTemplateSettings()

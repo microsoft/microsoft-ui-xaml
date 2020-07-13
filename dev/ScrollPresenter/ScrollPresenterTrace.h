@@ -108,7 +108,7 @@ public:
         va_list args;
         va_start(args, message);
         WCHAR buffer[1024]{};
-        HRESULT hr = StringCchVPrintfW(buffer, ARRAYSIZE(buffer), message, args);
+        const HRESULT hr = StringCchVPrintfW(buffer, ARRAYSIZE(buffer), message, args);
         if (SUCCEEDED(hr) || hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER))
         {
             if (includeTraceLogging)
