@@ -49,12 +49,11 @@
                                         AutomationProperties.AutomationId="__ToggleThemeButton" 
                                         Content="Toggle theme">
                                     </Button>
-                                    <Button
-                                        x:Name="SwitchCIDimensionsButton"
+                                    <ToggleButton
+                                        x:Name="InnerFrameInLabDimensions"
                                         VerticalAlignment="Stretch" Margin="0,0,4,0"
-                                        Style="{ThemeResource AccentButtonStyle}"
-                                        AutomationProperties.AutomationId="__SwitchCIDimensions"
-                                        Content="Switch to CI dimension"/>
+                                        AutomationProperties.AutomationId="__InnerFrameInLabDimensions"
+                                        Content="Render innerframe in lab dimensions"/>
 
                                     <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.AutomationId="__CurrentPage"  FontSize="18" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 </StackPanel>

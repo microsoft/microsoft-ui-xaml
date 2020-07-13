@@ -9,6 +9,7 @@ using Windows.Graphics.Display;
 using Windows.System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 
 // The Templated Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -25,7 +26,7 @@ namespace MUXControlsTestApp
         private Button _goBackInvokerButton = null;
         private Button _goFullScreenInvokerButton = null;
         private Button _toggleThemeButton = null;
-        private Button _switchCIDimensionsButton = null;
+        private ToggleButton _innerFrameInLabDimensions = null;
         private Button _closeAppInvokerButton = null;
         private Button _waitForIdleInvokerButton = null;
         private CheckBox _idleStateEnteredCheckBox = null;
@@ -100,8 +101,8 @@ namespace MUXControlsTestApp
 
             _pagePresenter = (ContentPresenter)GetTemplateChild("PagePresenter");
 
-            _switchCIDimensionsButton = (Button)GetTemplateChild("SwitchCIDimensionsButton");
-            _switchCIDimensionsButton.Click += SwitchCIDimensionsButton_Click;
+            _innerFrameInLabDimensions = (ToggleButton)GetTemplateChild("InnerFrameInLabDimensions");
+            _innerFrameInLabDimensions.Click += _innerFrameInLabDimensions_Click;
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
@@ -135,13 +136,13 @@ namespace MUXControlsTestApp
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
         }
 
-        private void SwitchCIDimensionsButton_Click(object sender, RoutedEventArgs e)
+        private void _innerFrameInLabDimensions_Click(object sender, RoutedEventArgs e)
         {
             if(Math.Abs(_pagePresenter.MaxWidth - 1024) < 5)
             {
                 // We are already in "CI mode"
-                _pagePresenter.MaxWidth = float.MaxValue;
-                _pagePresenter.MaxHeight = float.MaxValue;
+                _pagePresenter.ClearValue(MaxWidthProperty);
+                _pagePresenter.ClearValue(MaxHeightProperty);
             }
             else
             {
