@@ -66,7 +66,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyVisualTree()
         {
             var autoSuggestBox = SetupAutoSuggestBox();
-            VisualTreeTestHelper.VerifyVisualTree(root: autoSuggestBox, masterFilePrefix: "AutoSuggestBox");
+            VisualTreeTestHelper.VerifyVisualTree(root: autoSuggestBox, verificationFileNamePrefix: "AutoSuggestBox");
         }
 
         private AutoSuggestBox SetupAutoSuggestBox()

@@ -58,6 +58,7 @@ public:
     void RotateExpandCollapseChevron(bool isExpanded);
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
+    bool HasChildren();
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
@@ -97,9 +98,9 @@ private:
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;
     bool IsOnTopPrimary() const;
-    bool HasChildren();
 
     void UpdateRepeaterItemsSource();
+    void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
     void UpdateItemIndentation();
@@ -124,6 +125,7 @@ private:
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};

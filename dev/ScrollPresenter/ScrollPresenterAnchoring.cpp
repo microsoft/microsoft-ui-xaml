@@ -162,7 +162,7 @@ void ScrollPresenter::ComputeViewportAnchorPoint(
     *viewportAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *viewportAnchorPointVerticalOffset = DoubleUtil::NaN;
 
-    winrt::Rect viewportAnchorBounds{
+    const winrt::Rect viewportAnchorBounds{
         static_cast<float>(m_zoomedHorizontalOffset / m_zoomFactor),
         static_cast<float>(m_zoomedVerticalOffset / m_zoomFactor),
         static_cast<float>(viewportWidth / m_zoomFactor),
@@ -262,7 +262,7 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
         MUX_ASSERT(isnan(viewportAnchorPointVerticalOffset) == isnan(elementAnchorPointVerticalOffset));
 
         // Rounding the distance to 6 precision digits to avoid layout cycles due to float/double conversions.
-        winrt::Size viewportToElementAnchorPointsDistance = winrt::Size{
+        const winrt::Size viewportToElementAnchorPointsDistance = winrt::Size{
             isnan(viewportAnchorPointHorizontalOffset) ?
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointHorizontalOffset - viewportAnchorPointHorizontalOffset) * 1000000) / 1000000),
             isnan(viewportAnchorPointVerticalOffset) ?

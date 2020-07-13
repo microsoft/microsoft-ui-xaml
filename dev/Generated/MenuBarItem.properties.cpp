@@ -55,7 +55,10 @@ void MenuBarItemProperties::ClearProperties()
 
 void MenuBarItemProperties::Items(winrt::IVector<winrt::MenuFlyoutItemBase> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<MenuBarItem*>(this)->SetValue(s_ItemsProperty, ValueHelper<winrt::IVector<winrt::MenuFlyoutItemBase>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::MenuFlyoutItemBase> MenuBarItemProperties::Items()
@@ -65,7 +68,10 @@ winrt::IVector<winrt::MenuFlyoutItemBase> MenuBarItemProperties::Items()
 
 void MenuBarItemProperties::Title(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<MenuBarItem*>(this)->SetValue(s_TitleProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring MenuBarItemProperties::Title()
