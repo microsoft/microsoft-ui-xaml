@@ -27,4 +27,7 @@ public:
     void AddToSelection();
     void RemoveFromSelection();
     void Select();
+
+private:
+    winrt::TabView GetParentTabView();
 };

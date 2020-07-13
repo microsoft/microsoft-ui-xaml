@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -57,14 +57,17 @@ bool TabViewItemAutomationPeer::IsSelected()
 {
     if (auto tvi = Owner().try_as<TabViewItem>())
     {
-        const bool returnValue = tvi->IsSelected();
-        return returnValue;
+        return tvi->IsSelected();
     }
     return false;
 }
 
 winrt::IRawElementProviderSimple TabViewItemAutomationPeer::SelectionContainer()
 {
+    if (const auto parent = GetParentTabView())
+    {
+        return ProviderFromPeer(winrt::FrameworkElementAutomationPeer::CreatePeerForElement(parent));
+    }
     return nullptr;
 }
 
