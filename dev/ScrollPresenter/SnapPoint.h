@@ -38,8 +38,8 @@ public:
 #endif
 
     //Internal
-    bool operator< (SnapPointBase* snapPoint);
-    bool operator== (SnapPointBase* snapPoint);
+    bool operator< (const SnapPointBase* snapPoint);
+    bool operator== (const SnapPointBase* snapPoint);
 
     virtual winrt::ExpressionAnimation CreateRestingPointExpression(
         double ignoredValue,
@@ -62,13 +62,13 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const = 0;
-    virtual SnapPointSortPredicate SortPredicate() = 0;
+    virtual SnapPointSortPredicate SortPredicate() const = 0;
     virtual std::tuple<double, double> DetermineActualApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint) = 0;
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint) = 0;
     virtual std::tuple<double, double> DetermineActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue) = 0;
@@ -195,13 +195,13 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    SnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate() const;
     std::tuple<double, double> DetermineActualApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint);
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint);
     std::tuple<double, double> DetermineActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
@@ -221,15 +221,15 @@ public:
 private:
     double ActualValue() const;
     double DetermineMinActualApplicableZone(
-        SnapPointBase* previousSnapPoint) const;
+        const SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
+        const SnapPointBase* previousSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
-        SnapPointBase* nextSnapPoint) const;
+        const SnapPointBase* nextSnapPoint) const;
     double DetermineMaxActualImpulseApplicableZone(
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double nextIgnoredValue) const;
 
@@ -284,13 +284,13 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    SnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate() const;
     std::tuple<double, double> DetermineActualApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint);
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint);
     std::tuple<double, double> DetermineActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
@@ -314,15 +314,15 @@ private:
     double DetermineFirstRepeatedSnapPointValue() const;
     double DetermineLastRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
-        SnapPointBase* previousSnapPoint) const;
+        const SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
+        const SnapPointBase* previousSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
-        SnapPointBase* nextSnapPoint) const;
+        const SnapPointBase* nextSnapPoint) const;
     double DetermineMaxActualImpulseApplicableZone(
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double nextIgnoredValue) const;
     void ValidateConstructorParameters(
@@ -388,13 +388,13 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    SnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate() const;
     std::tuple<double, double> DetermineActualApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint);
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint);
     std::tuple<double, double> DetermineActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
@@ -413,15 +413,15 @@ public:
 
 private:
     double DetermineMinActualApplicableZone(
-        SnapPointBase* previousSnapPoint) const;
+        const SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
+        const SnapPointBase* previousSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
-        SnapPointBase* nextSnapPoint) const;
+        const SnapPointBase* nextSnapPoint) const;
     double DetermineMaxActualImpulseApplicableZone(
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double nextIgnoredValue) const;
 
@@ -474,13 +474,13 @@ public:
         winrt::ExpressionAnimation const& restingValueExpressionAnimation,
         double ignoredValue,
         std::tuple<double, double> actualImpulseApplicableZone) const;
-    SnapPointSortPredicate SortPredicate();
+    SnapPointSortPredicate SortPredicate() const;
     std::tuple<double, double> DetermineActualApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint);
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint);
     std::tuple<double, double> DetermineActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* previousSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
@@ -501,15 +501,15 @@ private:
     double DetermineFirstRepeatedSnapPointValue() const;
     double DetermineLastRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
-        SnapPointBase* previousSnapPoint) const;
+        const SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(
-        SnapPointBase* previousSnapPoint,
+        const SnapPointBase* previousSnapPoint,
         double currentIgnoredValue,
         double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
-        SnapPointBase* nextSnapPoint) const;
+        const SnapPointBase* nextSnapPoint) const;
     double DetermineMaxActualImpulseApplicableZone(
-        SnapPointBase* nextSnapPoint,
+        const SnapPointBase* nextSnapPoint,
         double currentIgnoredValue,
         double nextIgnoredValue) const;
     void ValidateConstructorParameters(

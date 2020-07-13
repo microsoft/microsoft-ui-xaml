@@ -74,7 +74,10 @@ void ProgressRingTemplateSettingsProperties::ClearProperties()
 
 void ProgressRingTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CoreDispatcher ProgressRingTemplateSettingsProperties::Dispatcher()
@@ -84,7 +87,10 @@ winrt::CoreDispatcher ProgressRingTemplateSettingsProperties::Dispatcher()
 
 void ProgressRingTemplateSettingsProperties::EllipseDiameter(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_EllipseDiameterProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressRingTemplateSettingsProperties::EllipseDiameter()
@@ -94,7 +100,10 @@ double ProgressRingTemplateSettingsProperties::EllipseDiameter()
 
 void ProgressRingTemplateSettingsProperties::EllipseOffset(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_EllipseOffsetProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness ProgressRingTemplateSettingsProperties::EllipseOffset()
@@ -104,7 +113,10 @@ winrt::Thickness ProgressRingTemplateSettingsProperties::EllipseOffset()
 
 void ProgressRingTemplateSettingsProperties::MaxSideLength(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ProgressRingTemplateSettings*>(this)->SetValue(s_MaxSideLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ProgressRingTemplateSettingsProperties::MaxSideLength()

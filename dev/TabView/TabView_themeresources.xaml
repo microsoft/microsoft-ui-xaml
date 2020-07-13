@@ -116,4 +116,6 @@
 
     <x:Double x:Key="TabViewShadowDepth">16</x:Double>
 
+    <Thickness x:Key="TabViewItemSeparatorMargin">0,6,0,6</Thickness>
+
 </ResourceDictionary>

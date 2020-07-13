@@ -257,7 +257,11 @@
     <Thickness x:Key="TopNavigationViewItemOnOverflowNoIconContentPresenterMargin">16,0,20,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,6,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronPadding">12,0,12,0</Thickness>
-    
+
+    <!-- The two resources below must be defined at the app level in order to take effect. -->
+    <Thickness x:Key="TopNavigationViewOverflowMenuPadding">0,8</Thickness>
+    <Thickness x:Key="NavigationViewItemChildrenMenuFlyoutPadding">0,8</Thickness>
+
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">

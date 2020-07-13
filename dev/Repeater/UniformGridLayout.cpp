@@ -61,7 +61,7 @@ winrt::Size UniformGridLayout::MeasureOverride(
     auto gridState = GetAsGridState(context.LayoutState());
     gridState->EnsureElementSize(availableSize, context, m_minItemWidth, m_minItemHeight, m_itemsStretch, Orientation(), MinRowSpacing(), MinColumnSpacing(), m_maximumRowsOrColumns);
 
-    auto desiredSize = GetFlowAlgorithm(context).Measure(
+    const auto desiredSize = GetFlowAlgorithm(context).Measure(
         availableSize,
         context,
         true, /* isWrapping*/
@@ -83,7 +83,7 @@ winrt::Size UniformGridLayout::ArrangeOverride(
     winrt::VirtualizingLayoutContext const& context,
     winrt::Size const& finalSize)
 {
-    auto value = GetFlowAlgorithm(context).Arrange(
+    const auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
         true /* isWrapping */,
@@ -132,8 +132,8 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForRealization
     winrt::Rect bounds = winrt::Rect{ NAN, NAN, NAN, NAN };
     int anchorIndex = -1;
 
-    int itemsCount = context.ItemCount();
-    auto realizationRect = context.RealizationRect();
+    const int itemsCount = context.ItemCount();
+    const auto realizationRect = context.RealizationRect();
     if (itemsCount > 0 && MajorSize(realizationRect) > 0)
     {
         const auto gridState = GetAsGridState(context.LayoutState());
@@ -167,13 +167,13 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForTargetEleme
 {
     int index = -1;
     double offset = NAN;
-    int count = context.ItemCount();
+    const int count = context.ItemCount();
     if (targetIndex >= 0 && targetIndex < count)
     {
-        int itemsPerLine = std::min( // note use of unsigned ints
+        const int itemsPerLine = std::min( // note use of unsigned ints
             std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
             std::max(1u, m_maximumRowsOrColumns));
-        int indexOfFirstInLine = (targetIndex / itemsPerLine) * itemsPerLine;
+        const int indexOfFirstInLine = (targetIndex / itemsPerLine) * itemsPerLine;
         index = indexOfFirstInLine;
         auto state = GetAsGridState(context.LayoutState());
         offset = MajorStart(GetLayoutRectForDataIndex(availableSize, indexOfFirstInLine, state->FlowAlgorithm().LastExtent(), context));
@@ -256,7 +256,7 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
 
         //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
         //i.e. the properties are the inverse of each other.
-        ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
+        const auto scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
     else if (property == s_MinColumnSpacingProperty)
@@ -295,8 +295,8 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
 
 float UniformGridLayout::GetMinorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context)
 {
-    auto minItemSpacing = MinItemSpacing();
-    auto gridState = GetAsGridState(context.LayoutState());
+    const auto minItemSpacing = MinItemSpacing();
+    const auto gridState = GetAsGridState(context.LayoutState());
     return GetScrollOrientation() == ScrollOrientation::Vertical ?
         static_cast<float>(gridState->EffectiveItemWidth() + minItemSpacing) :
         static_cast<float>(gridState->EffectiveItemHeight() + minItemSpacing);
@@ -304,8 +304,8 @@ float UniformGridLayout::GetMinorSizeWithSpacing(winrt::VirtualizingLayoutContex
 
 float UniformGridLayout::GetMajorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context)
 {
-    auto lineSpacing = LineSpacing();
-    auto gridState = GetAsGridState(context.LayoutState());
+    const auto lineSpacing = LineSpacing();
+    const auto gridState = GetAsGridState(context.LayoutState());
     return GetScrollOrientation() == ScrollOrientation::Vertical ?
         static_cast<float>(gridState->EffectiveItemHeight() + lineSpacing) :
         static_cast<float>(gridState->EffectiveItemWidth() + lineSpacing);
@@ -317,14 +317,14 @@ winrt::Rect UniformGridLayout::GetLayoutRectForDataIndex(
     const winrt::Rect& lastExtent,
     const winrt::VirtualizingLayoutContext& context)
 {
-    int itemsPerLine = std::min( //note use of unsigned ints
+    const int itemsPerLine = std::min( //note use of unsigned ints
         std::max(1u, static_cast<unsigned int>(Minor(availableSize) / GetMinorSizeWithSpacing(context))),
         std::max(1u, m_maximumRowsOrColumns));
-    int rowIndex = static_cast<int>(index / itemsPerLine);
-    int indexInRow = index - (rowIndex * itemsPerLine);
+    const int rowIndex = static_cast<int>(index / itemsPerLine);
+    const int indexInRow = index - (rowIndex * itemsPerLine);
 
     auto gridState = GetAsGridState(context.LayoutState());
-    winrt::Rect bounds = MinorMajorRect(
+    const winrt::Rect bounds = MinorMajorRect(
         indexInRow * GetMinorSizeWithSpacing(context) + MinorStart(lastExtent),
         rowIndex * GetMajorSizeWithSpacing(context) + MajorStart(lastExtent),
         GetScrollOrientation() == ScrollOrientation::Vertical ? static_cast<float>(gridState->EffectiveItemWidth()) : static_cast<float>(gridState->EffectiveItemHeight()),

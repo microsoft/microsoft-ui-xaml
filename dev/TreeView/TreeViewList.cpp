@@ -30,7 +30,7 @@ void TreeViewList::ListViewModel(com_ptr<ViewModel> viewModel)
     m_viewModel.set(viewModel);
 }
 
-winrt::TreeViewNode TreeViewList::DraggedTreeViewNode()
+winrt::TreeViewNode TreeViewList::DraggedTreeViewNode() const
 {
     return m_draggedTreeViewNode.get();
 }
@@ -133,8 +133,8 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
             {
                 // Multiselect drag and drop. In the selected items, find all the selected subtrees 
                 // and move each of those subtrees.
-                auto selectedRootNodes = GetRootsOfSelectedSubtrees();
-                auto selectionSize = selectedRootNodes.size();
+                const auto selectedRootNodes = GetRootsOfSelectedSubtrees();
+                const auto selectionSize = selectedRootNodes.size();
 
                 // Loop through in reverse order because we are inserting above the previous item to get the order correct.
                 for (int i = static_cast<int>(selectedRootNodes.size()) - 1; i >= 0; --i)
@@ -155,14 +155,14 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
     __super::OnDrop(e);
 }
 
-void TreeViewList::MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode)
+void TreeViewList::MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode) const
 {
-    int nodeFlatIndex = FlatIndex(node);
+    const int nodeFlatIndex = FlatIndex(node);
     if (insertAtNode != node && IsFlatIndexValid(nodeFlatIndex))
     {
         RemoveNodeFromParent(node);
 
-        int insertOffset = nodeFlatIndex < m_emptySlotIndex ? 1 : 0;
+        const int insertOffset = nodeFlatIndex < m_emptySlotIndex ? 1 : 0;
         // if the insertAtNode is a parent that is expanded
         // insert as the first child
         if (insertAtNode.IsExpanded() && insertOffset == 1)
@@ -173,7 +173,7 @@ void TreeViewList::MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeView
         {
             // Add the item to the new parent (parent of the insertAtNode)
             auto children = winrt::get_self<TreeViewNodeVector>(insertAtNode.Parent().Children());
-            int insertNodeIndexInParent = IndexInParent(insertAtNode);
+            const int insertNodeIndexInParent = IndexInParent(insertAtNode);
             children->InsertAt(insertNodeIndexInParent + insertOffset, node);
         }
     }
@@ -192,8 +192,8 @@ void TreeViewList::OnDragOver(winrt::DragEventArgs const& args)
             int aboveIndex = -1;
             int belowIndex = -1;
             auto itemsSource = ListViewModel();
-            int size = itemsSource->Size();
-            auto point = args.GetPosition(insertionPanel.as<winrt::UIElement>());
+            const int size = itemsSource->Size();
+            const auto point = args.GetPosition(insertionPanel.as<winrt::UIElement>());
             insertionPanel.GetInsertionIndexes(point, aboveIndex, belowIndex);
 
             // a value of -1 means we're inserting at the end of the list or before the last item
@@ -222,8 +222,8 @@ void TreeViewList::OnDragOver(winrt::DragEventArgs const& args)
                     const int indexToUse = (static_cast<int>(draggedIndex) < belowIndex) ? belowIndex : (belowIndex - 1);
                     if (auto item = ContainerFromIndex(indexToUse))
                     {
-                        auto treeViewItem = item.as<winrt::TreeViewItem>();
-                        auto pointInsideItem = args.GetPosition(treeViewItem.as<winrt::UIElement>());
+                        const auto treeViewItem = item.as<winrt::TreeViewItem>();
+                        const auto pointInsideItem = args.GetPosition(treeViewItem.as<winrt::UIElement>());
 
                         // if the point is in the top half of the item
                         // we need to insert before that item
@@ -322,14 +322,14 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
 {
     auto itemNode = winrt::get_self<TreeViewNode>(NodeFromContainer(element));
     winrt::TreeViewItem itemContainer = element.as<winrt::TreeViewItem>();
-    auto selectionState = itemNode->SelectionState();
+    const auto selectionState = itemNode->SelectionState();
 
     //Set the expanded property to match that of the Node, and enable Drop by default
     itemContainer.AllowDrop(true);
 
     if (IsContentMode())
     {
-        bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
+        const bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
         if (itemContainer.IsExpanded() != itemNode->IsExpanded()) {
             const DispatcherHelper dispatcher{ *this };
@@ -516,7 +516,7 @@ bool TreeViewList::IsMultiselect() const
 bool TreeViewList::IsMutiSelectWithSelectedItems() const
 {
     auto selectedItems = ListViewModel()->GetSelectedNodes();
-    bool isMutiSelect = m_isMultiselectEnabled &&  selectedItems.Size() > 0;
+    const bool isMutiSelect = m_isMultiselectEnabled &&  selectedItems.Size() > 0;
     return isMutiSelect;
 }
 
@@ -567,7 +567,7 @@ bool TreeViewList::IsFlatIndexValid(int index) const
     return index >= 0 && index < static_cast<int>(ListViewModel()->Size());
 }
 
-unsigned int TreeViewList::RemoveNodeFromParent(const winrt::TreeViewNode& node)
+unsigned int TreeViewList::RemoveNodeFromParent(const winrt::TreeViewNode& node) const
 {
     unsigned int indexInParent = 0;
     auto children = winrt::get_self<TreeViewNodeVector>(node.Parent().Children());
@@ -579,12 +579,12 @@ unsigned int TreeViewList::RemoveNodeFromParent(const winrt::TreeViewNode& node)
     return indexInParent;
 }
 
-bool TreeViewList::IsIndexValid(int index)
+bool TreeViewList::IsIndexValid(int index) const
 {
     return index >= 0 && index < (int)Items().Size();
 }
 
-hstring TreeViewList::GetAutomationName(int index)
+hstring TreeViewList::GetAutomationName(int index) const
 {
     winrt::TreeViewItem item{ nullptr };
     hstring automationName = L"";
@@ -610,7 +610,7 @@ hstring TreeViewList::GetAutomationName(int index)
     return automationName;
 }
 
-hstring TreeViewList::BuildEffectString(hstring priorString, hstring afterString, hstring dragString, hstring dragOverString)
+hstring TreeViewList::BuildEffectString(hstring priorString, hstring afterString, hstring dragString, hstring dragOverString) const
 {
     hstring resultString;
     if (!priorString.empty() && !afterString.empty())
@@ -647,7 +647,7 @@ hstring TreeViewList::BuildEffectString(hstring priorString, hstring afterString
     return resultString;
 }
 
-unsigned int TreeViewList::IndexInParent(const winrt::TreeViewNode& node)
+unsigned int TreeViewList::IndexInParent(const winrt::TreeViewNode& node) const
 {
     unsigned int indexInParent;
     node.Parent().Children().IndexOf(node, indexInParent);
@@ -670,9 +670,9 @@ winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& 
     return current;
 }
 
-winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject const& container)
+winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject const& container) const
 {
-    int index = container ? IndexFromContainer(container) : -1;
+    const int index = container ? IndexFromContainer(container) : -1;
     if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
     {
         return NodeAtFlatIndex(index);
@@ -680,7 +680,7 @@ winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject cons
     return nullptr;
 }
 
-winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
+winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node) const
 {
     if (!node)
     {
@@ -690,19 +690,19 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
     return IsContentMode() ? ContainerFromItem(node.Content()) : ContainerFromItem(node);
 }
 
-winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
+winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item) const
 {
     return IsContentMode() ?
         ListViewModel().get()->GetAssociatedNode(item) :
         item.try_as<winrt::TreeViewNode>();
 }
 
-winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
+winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node) const
 {
     return (IsContentMode() && node) ? node.Content() : static_cast<winrt::IInspectable>(node);
 }
 
-bool TreeViewList::IsContentMode()
+bool TreeViewList::IsContentMode() const
 {
     if (auto viewModel = ListViewModel())
     {

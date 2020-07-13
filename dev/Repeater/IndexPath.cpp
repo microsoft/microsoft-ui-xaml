@@ -52,10 +52,10 @@ int32_t IndexPath::GetAt(int index)
 
 int32_t IndexPath::CompareTo(winrt::IndexPath const& rhs)
 {
-    auto rhsPath = winrt::get_self<IndexPath>(rhs);
+    const auto rhsPath = winrt::get_self<IndexPath>(rhs);
     int compareResult = 0;
-    int lhsCount = static_cast<int>(m_path.size());
-    int rhsCount = static_cast<int>(rhsPath->m_path.size());
+    const int lhsCount = static_cast<int>(m_path.size());
+    const int rhsCount = static_cast<int>(rhsPath->m_path.size());
 
     if (lhsCount == 0 || rhsCount == 0)
     {
@@ -98,7 +98,7 @@ int32_t IndexPath::CompareTo(winrt::IndexPath const& rhs)
 hstring IndexPath::ToString()
 {
     std::wstring result = L"R";
-    for (int index : m_path)
+    for (const int index : m_path)
     {
         result.append(L".");
         result = result + std::to_wstring(index);

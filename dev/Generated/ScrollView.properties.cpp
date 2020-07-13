@@ -540,7 +540,10 @@ void ScrollViewProperties::OnZoomModePropertyChanged(
 
 void ScrollViewProperties::ComputedHorizontalScrollBarVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_ComputedHorizontalScrollBarVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility ScrollViewProperties::ComputedHorizontalScrollBarVisibility()
@@ -550,7 +553,10 @@ winrt::Visibility ScrollViewProperties::ComputedHorizontalScrollBarVisibility()
 
 void ScrollViewProperties::ComputedVerticalScrollBarVisibility(winrt::Visibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_ComputedVerticalScrollBarVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Visibility ScrollViewProperties::ComputedVerticalScrollBarVisibility()
@@ -560,7 +566,10 @@ winrt::Visibility ScrollViewProperties::ComputedVerticalScrollBarVisibility()
 
 void ScrollViewProperties::Content(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_ContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement ScrollViewProperties::Content()
@@ -570,7 +579,10 @@ winrt::UIElement ScrollViewProperties::Content()
 
 void ScrollViewProperties::ContentOrientation(winrt::ContentOrientation const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ContentOrientation ScrollViewProperties::ContentOrientation()
@@ -580,9 +592,12 @@ winrt::ContentOrientation ScrollViewProperties::ContentOrientation()
 
 void ScrollViewProperties::HorizontalAnchorRatio(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<ScrollView*>(this)->ValidateAnchorRatio(coercedValue);
     static_cast<ScrollView*>(this)->SetValue(s_HorizontalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollViewProperties::HorizontalAnchorRatio()
@@ -592,7 +607,10 @@ double ScrollViewProperties::HorizontalAnchorRatio()
 
 void ScrollViewProperties::HorizontalScrollBarVisibility(winrt::ScrollBarVisibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_HorizontalScrollBarVisibilityProperty, ValueHelper<winrt::ScrollBarVisibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ScrollBarVisibility ScrollViewProperties::HorizontalScrollBarVisibility()
@@ -602,7 +620,10 @@ winrt::ScrollBarVisibility ScrollViewProperties::HorizontalScrollBarVisibility()
 
 void ScrollViewProperties::HorizontalScrollChainingMode(winrt::ChainingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_HorizontalScrollChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ChainingMode ScrollViewProperties::HorizontalScrollChainingMode()
@@ -612,7 +633,10 @@ winrt::ChainingMode ScrollViewProperties::HorizontalScrollChainingMode()
 
 void ScrollViewProperties::HorizontalScrollController(winrt::IScrollController const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_HorizontalScrollControllerProperty, ValueHelper<winrt::IScrollController>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IScrollController ScrollViewProperties::HorizontalScrollController()
@@ -622,7 +646,10 @@ winrt::IScrollController ScrollViewProperties::HorizontalScrollController()
 
 void ScrollViewProperties::HorizontalScrollMode(winrt::ScrollMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_HorizontalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ScrollMode ScrollViewProperties::HorizontalScrollMode()
@@ -632,7 +659,10 @@ winrt::ScrollMode ScrollViewProperties::HorizontalScrollMode()
 
 void ScrollViewProperties::HorizontalScrollRailingMode(winrt::RailingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_HorizontalScrollRailingModeProperty, ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RailingMode ScrollViewProperties::HorizontalScrollRailingMode()
@@ -642,7 +672,10 @@ winrt::RailingMode ScrollViewProperties::HorizontalScrollRailingMode()
 
 void ScrollViewProperties::IgnoredInputKind(winrt::InputKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_IgnoredInputKindProperty, ValueHelper<winrt::InputKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::InputKind ScrollViewProperties::IgnoredInputKind()
@@ -652,9 +685,12 @@ winrt::InputKind ScrollViewProperties::IgnoredInputKind()
 
 void ScrollViewProperties::MaxZoomFactor(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<ScrollView*>(this)->ValidateZoomFactoryBoundary(coercedValue);
     static_cast<ScrollView*>(this)->SetValue(s_MaxZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollViewProperties::MaxZoomFactor()
@@ -664,9 +700,12 @@ double ScrollViewProperties::MaxZoomFactor()
 
 void ScrollViewProperties::MinZoomFactor(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<ScrollView*>(this)->ValidateZoomFactoryBoundary(coercedValue);
     static_cast<ScrollView*>(this)->SetValue(s_MinZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollViewProperties::MinZoomFactor()
@@ -677,9 +716,12 @@ double ScrollViewProperties::MinZoomFactor()
 
 void ScrollViewProperties::VerticalAnchorRatio(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<ScrollView*>(this)->ValidateAnchorRatio(coercedValue);
     static_cast<ScrollView*>(this)->SetValue(s_VerticalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double ScrollViewProperties::VerticalAnchorRatio()
@@ -689,7 +731,10 @@ double ScrollViewProperties::VerticalAnchorRatio()
 
 void ScrollViewProperties::VerticalScrollBarVisibility(winrt::ScrollBarVisibility const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_VerticalScrollBarVisibilityProperty, ValueHelper<winrt::ScrollBarVisibility>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ScrollBarVisibility ScrollViewProperties::VerticalScrollBarVisibility()
@@ -699,7 +744,10 @@ winrt::ScrollBarVisibility ScrollViewProperties::VerticalScrollBarVisibility()
 
 void ScrollViewProperties::VerticalScrollChainingMode(winrt::ChainingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_VerticalScrollChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ChainingMode ScrollViewProperties::VerticalScrollChainingMode()
@@ -709,7 +757,10 @@ winrt::ChainingMode ScrollViewProperties::VerticalScrollChainingMode()
 
 void ScrollViewProperties::VerticalScrollController(winrt::IScrollController const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_VerticalScrollControllerProperty, ValueHelper<winrt::IScrollController>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IScrollController ScrollViewProperties::VerticalScrollController()
@@ -719,7 +770,10 @@ winrt::IScrollController ScrollViewProperties::VerticalScrollController()
 
 void ScrollViewProperties::VerticalScrollMode(winrt::ScrollMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_VerticalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ScrollMode ScrollViewProperties::VerticalScrollMode()
@@ -729,7 +783,10 @@ winrt::ScrollMode ScrollViewProperties::VerticalScrollMode()
 
 void ScrollViewProperties::VerticalScrollRailingMode(winrt::RailingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_VerticalScrollRailingModeProperty, ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RailingMode ScrollViewProperties::VerticalScrollRailingMode()
@@ -739,7 +796,10 @@ winrt::RailingMode ScrollViewProperties::VerticalScrollRailingMode()
 
 void ScrollViewProperties::ZoomChainingMode(winrt::ChainingMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_ZoomChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ChainingMode ScrollViewProperties::ZoomChainingMode()
@@ -749,7 +809,10 @@ winrt::ChainingMode ScrollViewProperties::ZoomChainingMode()
 
 void ScrollViewProperties::ZoomMode(winrt::ZoomMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ScrollView*>(this)->SetValue(s_ZoomModeProperty, ValueHelper<winrt::ZoomMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ZoomMode ScrollViewProperties::ZoomMode()

@@ -21,12 +21,13 @@ class TreeView :
 public:
     TreeView();
     winrt::IVector<winrt::TreeViewNode> RootNodes();
-    TreeViewList* ListControl();
+    const TreeViewList* ListControl() const;
+    TreeViewList* MutableListControl();
 
     winrt::IInspectable ItemFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
-    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container) const;
+    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node) const;
 
     void SelectedNode(winrt::TreeViewNode const& node);
     winrt::TreeViewNode SelectedNode();

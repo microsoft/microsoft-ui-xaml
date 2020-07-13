@@ -57,7 +57,7 @@ template <typename T, bool isNoTrackerRef> struct TStorageWrapperImpl
 {
     using Holder = typename tracker_ref<T>;
 
-    static Holder wrap(const T& value, ITrackerHandleManager* trackerHandleManager)
+    static Holder wrap(const T& value, const ITrackerHandleManager* trackerHandleManager)
     {
         Holder holder{ trackerHandleManager };
         holder.set(value);
@@ -306,7 +306,7 @@ protected:
     {
         return Wrapper::wrap(value, GetTrackerHandlerManager());
     }
-    inline typename T_type unwrap(T_Storage& hold, bool useSafeGet = false)
+    inline typename T_type unwrap(T_Storage const& hold, bool useSafeGet = false)
     {
         return Wrapper::unwrap(hold, useSafeGet);
     }
