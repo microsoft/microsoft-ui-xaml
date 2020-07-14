@@ -19,9 +19,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\IThemedAnimatedVisualSource.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
