@@ -17,7 +17,6 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\IThemedAnimatedVisualSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.h" />
