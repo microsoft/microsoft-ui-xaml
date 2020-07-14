@@ -147,6 +147,6 @@ $verPrereleaseSwitch = If ($isPrerelease) {"/Prerelease:prerelease"} Else {""}
 Write-Host "Created the vpack in this directory:"
 Write-Host "    $outputPath" 
 Write-Host "" 
-Write-Host "Push this vpack with the following command:"
+Write-Host "Push this vpack by running the following command (from razzle):"
 Write-Host "    vpack push /Name:Microsoft.UI.Xaml /SourceDirectory:$outputPath /VersionIncrementType:None /Major:$verMajor /Minor:$verMinor /Patch:$verPatch $verPrereleaseSwitch"
-Write-Host "Then update %SDXROOT%/build/Config/OSDependencies.Manifest in the OS repo to consume this new version."
+Write-Host "Then update %SDXROOT%/build/onecoreuap/internal/config/OSDependencies.Manifest in the OS repo to consume this new version."
