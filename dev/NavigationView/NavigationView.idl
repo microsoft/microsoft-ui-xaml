@@ -352,6 +352,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
     [WUXC_VERSION_MUXONLY]
     {
         [MUX_DEFAULT_VALUE("false")]
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Boolean IsExpanded{ get; set; };
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("false")]

@@ -83,7 +83,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
     if (!s_MenuItemsProperty)
     {
@@ -147,6 +147,14 @@ void NavigationViewItemProperties::OnIconPropertyChanged(
 {
     auto owner = sender.as<winrt::NavigationViewItem>();
     winrt::get_self<NavigationViewItem>(owner)->OnIconPropertyChanged(args);
+}
+
+void NavigationViewItemProperties::OnIsExpandedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnIsExpandedPropertyChanged(args);
 }
 
 void NavigationViewItemProperties::OnMenuItemsPropertyChanged(

@@ -889,8 +889,14 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     const bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
     {
-        const auto indexPath = GetIndexPathForContainer(nvi);
-        UpdateSelectionModelSelection(indexPath);
+        const auto ip = GetIndexPathForContainer(nvi);
+
+        // Determine if we will update collapse/expand which will happen iff the item has children
+        if (DoesNavigationViewItemHaveChildren(nvi))
+        {
+            m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = true;
+        }
+        UpdateSelectionModelSelection(ip);
     }
 
     // Item was invoked but already selected, so raise event here.
@@ -2072,13 +2078,38 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
+        {
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise = false;
+            });
+
+            // Selection changed and we need to notify UIA
+            // HOWEVER expand collapse can also trigger if an item can expand/collapse
+            // There are multiple cases when selection changes:
+            // - Through click on item with no children -> No expand/collapse change
+            // - Through click on item with children -> Expand/collapse change
+            // - Through API with item without children -> No expand/collapse change
+            // - Through API with item with children -> No expand/collapse change
+            if (!m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise)
+            {
+                if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+                {
+                    auto navViewItemPeer = peer.as<winrt::NavigationViewAutomationPeer>();
+                    winrt::get_self<NavigationViewAutomationPeer>(navViewItemPeer)->RaiseSelectionChangedEvent(
+                        prevItem, nextItem
+                    );
+                }
+            }
+        }
+        
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(nextItem);
 
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
-        }    
+        }
     }
 }
 
@@ -4260,7 +4291,10 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
 
 void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer)
 {
-    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer))
+    if (IsPaneOpen() &&
+        DisplayMode() != winrt::NavigationViewDisplayMode::Expanded &&
+        !DoesNavigationViewItemHaveChildren(selectedContainer) &&
+        !m_shouldIgnoreNextSelectionChange)
     {
         ClosePane();
     }

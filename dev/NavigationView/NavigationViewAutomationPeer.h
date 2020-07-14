@@ -23,5 +23,7 @@ public:
     bool IsSelectionRequired();
     winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
 
+    void RaiseSelectionChangedEvent(winrt::IInspectable const& oldSelection, winrt::IInspectable const& newSelecttion);
+
 private:
 };
