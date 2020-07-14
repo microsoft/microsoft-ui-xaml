@@ -50,3 +50,20 @@ winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProv
     }
     return {};
 }
+
+void NavigationViewAutomationPeer::RaiseSelectionChangedEvent(winrt::IInspectable const& oldSelection, winrt::IInspectable const& newSelecttion)
+{
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionPatternOnInvalidated))
+    {
+        if (auto nv = Owner().try_as<winrt::NavigationView>())
+        {
+            if (auto nvi = winrt::get_self<NavigationView>(nv)->GetSelectedContainer())
+            {
+                if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(nvi))
+                {
+                    peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+                }
+            }
+        }
+    }
+}
