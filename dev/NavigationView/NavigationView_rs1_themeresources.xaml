@@ -231,7 +231,8 @@
     <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
     <x:Double x:Key="NavigationViewCompactPaneLength">40</x:Double>
     <x:Double x:Key="NavigationViewTopPaneHeight">40</x:Double>
-   
+    <x:Double x:Key="NavigationViewTopModeContentPaneMinWidth">48</x:Double>
+    
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">40</x:Double>
     <x:Double x:Key="NavigationViewPaneHeaderRowMinHeight">4</x:Double>
 

@@ -233,7 +233,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*" MinWidth="48"/>
+                                        <ColumnDefinition Width="*" MinWidth="{ThemeResource NavigationViewTopModeContentPaneMinWidth}"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
