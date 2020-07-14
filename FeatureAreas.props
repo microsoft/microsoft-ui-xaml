@@ -268,6 +268,7 @@
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
     <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
+    <DefineConstants Condition="$(FeaturePagerEnabled) =='true'">$(DefineConstants);FEATURE_PAGER_ENABLED</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>
 </Project>

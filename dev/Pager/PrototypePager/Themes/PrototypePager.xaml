@@ -1,0 +1,185 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:local1="using:MUXControlsTestApp.Scripts">
+
+
+    <local1:Int32ToDoubleConverter x:Key="IntToDouble"/>
+    <local1:IntToStrConverter x:Key="IntToStr"/>
+    <local1:Int32MinusOneConverter x:Key="IntMinusOne"/>
+
+    <DataTemplate x:Key="IntToButton">
+        <Button Content="{Binding}" MinWidth="35"
+                Background="White"
+                Foreground="Black"/>
+    </DataTemplate>
+
+    <Style TargetType="local:PrototypePager">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:PrototypePager">
+                    <Grid
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="FirstPageButtonStates">
+                                <VisualState x:Name="FirstPageButtonVisible"/>
+                                <VisualState x:Name="FirstPageButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="FirstPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="PreviousPageButtonStates">
+                                <VisualState x:Name="PreviousPageButtonVisible"/>
+                                <VisualState x:Name="PreviousPageButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PreviousPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="NextPageButtonStates">
+                                <VisualState x:Name="NextPageButtonVisible"/>
+                                <VisualState x:Name="NextPageButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="NextPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="LastPageButtonStates">
+                                <VisualState x:Name="LastPageButtonVisible"/>
+                                <VisualState x:Name="LastPageButtonCollapsed">
+                                        <VisualState.Setters>
+                                            <Setter Target="LastPageButton.Visibility" Value="Collapsed"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                            </VisualStateGroup>
+                                <VisualStateGroup x:Name="PagerDisplayModeStates">
+                                <VisualState x:Name="NumberBoxVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PageNumberBox.IsEnabled" Value="True"/>
+                                        <Setter Target="BoxPanels.Visibility" Value="Visible"/>
+                                        <Setter Target="PageNumberBox.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ComboBoxVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PageComboBox.IsEnabled" Value="True"/>
+                                        <Setter Target="BoxPanels.Visibility" Value="Visible"/>
+                                        <Setter Target="PageComboBox.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ButtonPanelVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="BoxPanels.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PageNumberBox.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PageComboBox.Visibility" Value="Collapsed"/>
+                                        <Setter Target="ButtonPanelDisplay.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                           
+
+                            <!--Spacing="{TemplateBinding Spacing}"-->
+                            <StackPanel x:Name="BackButtons"
+                                        Orientation="Horizontal"
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Right">
+                                <Button x:Name="FirstPageButton"
+                                        IsEnabled="False"
+                                        Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Content="&#xE892;"/>
+                                <TextBlock x:Name="FirstPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           Text="{TemplateBinding FirstPageButtonText}"
+                                           Visibility="{Binding ElementName=FirstPageButton, Path=Visibility}"/>
+                                <Button x:Name="PreviousPageButton"
+                                        IsEnabled="{Binding ElementName=FirstPageButton, Path=IsEnabled}"
+                                        Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Content="&#xE76B;"/>
+                                <TextBlock x:Name="PreviousPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           Text="{TemplateBinding PreviousPageButtonText}"
+                                           Visibility="{Binding ElementName=PreviousPageButton, Path=Visibility}"/>
+                            </StackPanel>
+                            <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{TemplateBinding PrefixText}" />
+                                    <!--NumberBox Display-->
+                                    <controls:NumberBox x:Name="PageNumberBox"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToDouble}, Path=NumberOfPages}"
+                                                    Minimum="1"
+                                                    Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToDouble}, Path=SelectedIndex, Mode=TwoWay}"
+                                                    SmallChange="1"
+                                                    LargeChange="5"
+                                                    IsEnabled="False"
+                                                    Visibility="Collapsed" />
+                                    <!--ComboBox Display-->
+                                    <ComboBox x:Name="PageComboBox"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          SelectedIndex="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntMinusOne}, Path=SelectedIndex, Mode=TwoWay}"
+                                          ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
+                                          IsEnabled="False"
+                                          Visibility="Collapsed"/>
+                                    <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="of"/>
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToStr}, Path=NumberOfPages}"/>
+                                </StackPanel>
+                                <StackPanel x:Name="ButtonPanelDisplay"
+                                            Orientation="Horizontal"
+                                            Visibility="Collapsed"
+                                            Grid.Row="0" Grid.Column="1">
+                                    <ScrollViewer x:Name="ButtonPanelViewer"
+                                              HorizontalScrollBarVisibility="Hidden" HorizontalScrollMode="Disabled"
+                                              VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled" >
+                                        <controls:ItemsRepeater x:Name="ButtonPanelItemsRepeater"
+                                        ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
+                                        ItemTemplate="{StaticResource IntToButton}">
+                                            <controls:ItemsRepeater.Layout>
+                                                <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
+                                            </controls:ItemsRepeater.Layout>
+                                        </controls:ItemsRepeater>
+                                    </ScrollViewer>
+                                </StackPanel>
+                            <StackPanel Orientation="Horizontal" x:Name="ForwardButtons"
+                                        Grid.Row="0" Grid.Column="2"
+                                        HorizontalAlignment="Left">
+                                <TextBlock x:Name="NextPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           Text="{TemplateBinding NextPageButtonText}"
+                                           Visibility="{Binding ElementName=NextPageButton, Path=Visibility}"/>
+                                <Button x:Name="NextPageButton"
+                                        Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Content="&#xE76C;"
+                                        IsEnabled="{Binding ElementName=LastPageButton, Path=IsEnabled}"/>
+                                <TextBlock x:Name="LastPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           Text="{TemplateBinding LastPageButtonText}"
+                                           Visibility="{Binding ElementName=LastPageButton, Path=Visibility}"/>
+                                <Button x:Name="LastPageButton"
+                                        Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Content="&#xE893;"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+</ResourceDictionary>

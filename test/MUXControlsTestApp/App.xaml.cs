@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+
+#define FEATURE_PAGER_ENABLED
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +18,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Common;
+
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -204,6 +208,10 @@ namespace MUXControlsTestApp
             // Since the resource is only available with ScrollView feature enabled, try this but expect it to fail sometimes
 #if FEATURE_SCROLLPRESENTER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
+
+#if FEATURE_PAGER_ENABLED
+            AppendResourceToMergedDictionaries("PrototypePager.xaml");
 #endif
 
             // For test purposes, add styles that disable long animations.

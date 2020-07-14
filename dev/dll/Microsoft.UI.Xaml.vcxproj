@@ -172,11 +172,7 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
   <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
-  <PropertyGroup Condition="
-    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
-    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
-    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
-    ">
+  <PropertyGroup Condition="&#xD;&#xA;    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR&#xD;&#xA;    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR&#xD;&#xA;    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')&#xD;&#xA;    ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
@@ -407,6 +403,12 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
+    <Page Update="C:\Users\t-gavazq\Desktop\localMicrosoftFork\microsoft-ui-xaml\dev\Pager\Pager.xaml">
+      <FileType>Document</FileType>
+    </Page>
+    <Page Update="C:\Users\t-gavazq\Desktop\localMicrosoftFork\microsoft-ui-xaml\dev\Pager\Pager_CPP.xaml">
+      <FileType>Document</FileType>
+    </Page>
     <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
       <FileType>Document</FileType>
     </Page>

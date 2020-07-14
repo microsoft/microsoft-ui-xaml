@@ -9,12 +9,19 @@
     <Import_RootNamespace>PrototypePager</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Pager.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Pager.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\PrototypePager.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Scripts\ButtonVisibilityModeConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Scripts\Int32ToDoubleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Scripts\IntToStrConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Scripts\Int32MinusOneConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Scripts\PageChangedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Methods.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Properties.cs" />
   </ItemGroup>
 </Project>
