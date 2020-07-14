@@ -47,8 +47,6 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
     if (pattern == winrt::PatternInterface::SelectionItem ||
-        // Only provide Invoke pattern when we are a ListItem i.e. not on top navigation
-        (pattern == winrt::PatternInterface::Invoke && !IsOnTopNavigation())||
         // Only provide expand collapse pattern if we have children!
         (pattern == winrt::PatternInterface::ExpandCollapse && HasChildren()))
     {
