@@ -110,7 +110,7 @@ winrt::Rect DisplayRegionHelper::WindowRect()
     {
         // Return the bounds of the simulated window
         winrt::FrameworkElement window = DisplayRegionHelper::WindowElement().as<winrt::FrameworkElement>();
-        winrt::Rect rc = {
+        const winrt::Rect rc = {
             0, 0,
             (float)window.ActualWidth(),
             (float)window.ActualHeight() };

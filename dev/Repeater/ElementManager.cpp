@@ -29,7 +29,7 @@ void ElementManager::OnBeginMeasure(const ScrollOrientation& orientation)
         {
             // If we are initialized with a non-virtualizing context, make sure that
             // we have enough space to hold the bounds for all the elements.
-            int count = m_context.ItemCount();
+            const int count = m_context.ItemCount();
             if (static_cast<int>(m_realizedElementLayoutBounds.size()) != count)
             {
                 // Make sure there is enough space for the bounds.
@@ -55,7 +55,7 @@ winrt::UIElement ElementManager::GetAt(int realizedIndex)
         if (!m_realizedElements[realizedIndex])
         {
             // Sentinel. Create the element now since we need it.
-            int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
+            const int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
             REPEATER_TRACE_INFO(L"Creating element for sentinal with data index %d. \n", dataIndex);
             element = m_context.GetOrCreateElementAt(dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
             m_realizedElements[realizedIndex] = tracker_ref<winrt::UIElement>{ m_owner, element };
@@ -107,14 +107,14 @@ void ElementManager::ClearRealizedRange(int realizedIndex, int count)
     {
         // Clear from the edges so that ItemsRepeater can optimize on maintaining 
         // realized indices without walking through all the children every time.
-        int index = realizedIndex == 0 ? realizedIndex + i : (realizedIndex + count - 1) - i;
+        const int index = realizedIndex == 0 ? realizedIndex + i : (realizedIndex + count - 1) - i;
         if (auto elementRef = m_realizedElements[index])
         {
             m_context.RecycleElement(elementRef.get());
         }
     }
 
-    int endIndex = realizedIndex + count;
+    const int endIndex = realizedIndex + count;
     m_realizedElements.erase(m_realizedElements.begin() + realizedIndex, m_realizedElements.begin() + endIndex);
     m_realizedElementLayoutBounds.erase(m_realizedElementLayoutBounds.begin() + realizedIndex, m_realizedElementLayoutBounds.begin() + endIndex);
 
@@ -133,7 +133,7 @@ void ElementManager::DiscardElementsOutsideWindow(bool forward, int startIndex)
     if (IsDataIndexRealized(startIndex))
     {
         MUX_ASSERT(IsVirtualizingContext());
-        int rangeIndex = GetRealizedRangeIndexFromDataIndex(startIndex);
+        const int rangeIndex = GetRealizedRangeIndexFromDataIndex(startIndex);
 
         if (forward)
         {
@@ -155,13 +155,13 @@ void ElementManager::ClearRealizedRange()
 
 winrt::Rect ElementManager::GetLayoutBoundsForDataIndex(int dataIndex) const
 {
-    int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
+    const int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
     return m_realizedElementLayoutBounds[realizedIndex];
 }
 
 void ElementManager::SetLayoutBoundsForDataIndex(int dataIndex, const winrt::Rect& bounds)
 {
-    int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
+    const int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
     m_realizedElementLayoutBounds[realizedIndex] = bounds;
 }
 
@@ -181,7 +181,7 @@ bool ElementManager::IsDataIndexRealized(int index) const
 {
     if (IsVirtualizingContext())
     {
-        int realizedCount = GetRealizedElementCount();
+        const int realizedCount = GetRealizedElementCount();
         return
             realizedCount > 0 &&
             GetDataIndexFromRealizedRangeIndex(0) <= index &&
@@ -234,18 +234,18 @@ bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOr
     bool intersects = false;
     if (m_realizedElementLayoutBounds.size() > 0)
     {
-        auto firstElementBounds = GetLayoutBoundsForRealizedIndex(0);
-        auto lastElementBounds = GetLayoutBoundsForRealizedIndex(GetRealizedElementCount() - 1);
+        const auto firstElementBounds = GetLayoutBoundsForRealizedIndex(0);
+        const auto lastElementBounds = GetLayoutBoundsForRealizedIndex(GetRealizedElementCount() - 1);
 
-        auto effectiveOrientation = scrollOrientationSameAsFlow ?
+        const auto effectiveOrientation = scrollOrientationSameAsFlow ?
             (orientation == ScrollOrientation::Vertical ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical) :
             orientation;
 
 
-        auto windowStart = effectiveOrientation == ScrollOrientation::Vertical ? window.Y : window.X;
-        auto windowEnd = effectiveOrientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
-        auto firstElementStart = effectiveOrientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
-        auto lastElementEnd = effectiveOrientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
+        const auto windowStart = effectiveOrientation == ScrollOrientation::Vertical ? window.Y : window.X;
+        const auto windowEnd = effectiveOrientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
+        const auto firstElementStart = effectiveOrientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
+        const auto lastElementEnd = effectiveOrientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
 
         intersects =
             firstElementStart <= windowEnd &&
@@ -270,10 +270,10 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
 
         case winrt::NotifyCollectionChangedAction::Replace:
         {
-            int oldSize = args.OldItems().Size();
-            int newSize = args.NewItems().Size();
-            int oldStartIndex = args.OldStartingIndex();
-            int newStartIndex = args.NewStartingIndex();
+            const int oldSize = args.OldItems().Size();
+            const int newSize = args.NewItems().Size();
+            const int oldStartIndex = args.OldStartingIndex();
+            const int newStartIndex = args.NewStartingIndex();
 
             if (oldSize == newSize &&
                 oldStartIndex == newStartIndex &&
@@ -285,7 +285,7 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
                 // to throw away all containers and start from scratch.
                 // Instead, we can just clear those items and set the element to
                 // null (sentinel) and let the next measure get new containers for them.
-                auto startRealizedIndex = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
+                const auto startRealizedIndex = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
                 for (int realizedIndex = startRealizedIndex; realizedIndex < startRealizedIndex + oldSize; realizedIndex++)
                 {
                     if (auto elementRef = m_realizedElements[realizedIndex])
@@ -407,10 +407,10 @@ void ElementManager::DiscardElementsOutsideWindow(const winrt::Rect& window, con
 /* static */
 bool ElementManager::Intersects(const winrt::Rect& lhs, const winrt::Rect& rhs, const ScrollOrientation& orientation)
 {
-    auto lhsStart = orientation == ScrollOrientation::Vertical ? lhs.Y : lhs.X;
-    auto lhsEnd = orientation == ScrollOrientation::Vertical ? lhs.Y + lhs.Height : lhs.X + lhs.Width;
-    auto rhsStart = orientation == ScrollOrientation::Vertical ? rhs.Y : rhs.X;
-    auto rhsEnd = orientation == ScrollOrientation::Vertical ? rhs.Y + rhs.Height : rhs.X + rhs.Width;
+    const auto lhsStart = orientation == ScrollOrientation::Vertical ? lhs.Y : lhs.X;
+    const auto lhsEnd = orientation == ScrollOrientation::Vertical ? lhs.Y + lhs.Height : lhs.X + lhs.Width;
+    const auto rhsStart = orientation == ScrollOrientation::Vertical ? rhs.Y : rhs.X;
+    const auto rhsEnd = orientation == ScrollOrientation::Vertical ? rhs.Y + rhs.Height : rhs.X + rhs.Width;
 
     return lhsEnd >= rhsStart && lhsStart <= rhsEnd;
 }
@@ -469,8 +469,8 @@ bool ElementManager::IsVirtualizingContext() const
 {
     if (m_context)
     {
-        auto rect = m_context.RealizationRect();
-        bool hasInfiniteSize = (rect.Height == std::numeric_limits<float>::infinity() || rect.Width == std::numeric_limits<float>::infinity());
+        const auto rect = m_context.RealizationRect();
+        const bool hasInfiniteSize = (rect.Height == std::numeric_limits<float>::infinity() || rect.Width == std::numeric_limits<float>::infinity());
         return !hasInfiniteSize;
     }
     return false;

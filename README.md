@@ -9,13 +9,6 @@ WinUI 2 is a library of controls that provides official native Microsoft UI cont
 
 WinUI 3 is the next version of the WinUI framework, shipping later this year. It dramatically expands WinUI into a full UX framework, making WinUI available for all types of Windows apps – from Win32 to UWP – for use as the UI layer.
  
-## WinUI is a part of the Project Reunion family
-[Project Reunion](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. Project Reunion combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
- 
-Other Project Reunion components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Project Reunion, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/ProjectReunion). 
-
-
-
 ## WinUI Community Calls
 
 The WinUI community call is your monthly opportunity to learn about native UX development for Windows with WinUI.
@@ -59,6 +52,8 @@ To view the WinUI controls in an interactive format, check out the Xaml Controls
 * Get the XAML Controls Gallery app from the [Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT)
 * Get the source code on [GitHub](https://github.com/Microsoft/Xaml-Controls-Gallery)
 
+[WinUI](https://microsoft.github.io/microsoft-ui-xaml/) also has its own website where you can learn more about it.
+
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
 
@@ -92,6 +87,11 @@ Some features may have a reduced or slightly different user experience on older 
 ## Roadmap
 
 For info on the WinUI release schedule and high level plans please see the [Windows UI Library Roadmap](docs/roadmap.md).
+
+## WinUI is a part of the Project Reunion family
+[Project Reunion](https://github.com/microsoft/ProjectReunion) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. Project Reunion combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
+ 
+Other Project Reunion components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Project Reunion, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/ProjectReunion). 
 
 ## Data/Telemetry
 

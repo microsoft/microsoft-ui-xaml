@@ -58,7 +58,7 @@ double RatingControl::ItemSpacing()
     // when stars get bigger, the spacing will become smaller.
     // Therefore we should include TextScaleFactor when calculating item spacing
     // in order to get correct total width and star center positions.
-    double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
+    const double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
     return c_defaultItemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
 }
 
@@ -218,8 +218,8 @@ void RatingControl::UpdateRatingItemsAppearance()
     {
         // TODO: MSFT 11521414 - complete disabled state functionality
 
-        double placeholderValue = PlaceholderValue();
-        double ratingValue = Value();
+        const double placeholderValue = PlaceholderValue();
+        const double ratingValue = Value();
         double value = 0.0;
        
         if (m_isPointerOver)
@@ -303,16 +303,16 @@ void RatingControl::UpdateRatingItemsAppearance()
 
 void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElement, int starIndex)
 { 
-    winrt::Visual uiElementVisual = winrt::ElementCompositionPreview::GetElementVisual(uiElement);
-    winrt::Compositor comp = uiElementVisual.Compositor();
+    const winrt::Visual uiElementVisual = winrt::ElementCompositionPreview::GetElementVisual(uiElement);
+    const winrt::Compositor comp = uiElementVisual.Compositor();
 
     // starsScaleFocalPoint is updated in OnPointerMovedOverBackgroundStackPanel.
     // This expression uses the horizontal delta between pointer position and star center to calculate the star scale.
     // Star gets larger when pointer is closer to its center, and gets smaller when pointer moves further away.
-    winrt::ExpressionAnimation ea = comp.CreateExpressionAnimation(
+    const winrt::ExpressionAnimation ea = comp.CreateExpressionAnimation(
         L"max( (-0.0005 * sharedPropertySet.pointerScalar * ((starCenterX - sharedPropertySet.starsScaleFocalPoint)*(starCenterX - sharedPropertySet.starsScaleFocalPoint))) + 1.0*sharedPropertySet.pointerScalar, 0.5)"
     );
-    auto starCenter = static_cast<float>(CalculateStarCenter(starIndex));
+    const auto starCenter = static_cast<float>(CalculateStarCenter(starIndex));
     ea.SetScalarParameter(L"starCenterX", starCenter);
     ea.SetReferenceParameter(L"sharedPropertySet", m_sharedPointerPropertySet);
 
@@ -472,8 +472,8 @@ winrt::ImageSource RatingControl::GetNextImageIfNull(winrt::ImageSource image, R
 
 void RatingControl::ResetControlWidth()
 {
-    double newWidth = CalculateTotalRatingControlWidth();
-    winrt::Control thisAsControl = *this;
+    const double newWidth = CalculateTotalRatingControlWidth();
+    const winrt::Control thisAsControl = *this;
     thisAsControl.Width(newWidth);
 }
 
@@ -515,7 +515,7 @@ void RatingControl::ChangeRatingBy(double change, bool originatedFromMouse)
 void RatingControl::SetRatingTo(double newRating, bool originatedFromMouse)
 {
     double ratingValue = 0.0;
-    double oldRatingValue = Value();
+    const double oldRatingValue = Value();
 
     ratingValue = std::min(newRating, static_cast<double>(MaxRating()));
     ratingValue = std::max(ratingValue, 0.0);
@@ -545,7 +545,7 @@ void RatingControl::SetRatingTo(double newRating, bool originatedFromMouse)
 
         if (SharedHelpers::IsRS1OrHigher() && IsFocusEngaged() && SharedHelpers::IsAnimationsEnabled())
         {
-            double focalPoint = CalculateStarCenter((int)(ratingValue - 1.0));
+            const double focalPoint = CalculateStarCenter((int)(ratingValue - 1.0));
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
         }
 
@@ -582,8 +582,8 @@ void RatingControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == s_PlaceholderValueProperty || property == s_ValueProperty)
     {
-        auto value = winrt::unbox_value<double>(args.NewValue());
-        auto coercedValue = CoerceValueBetweenMinAndMax(value);
+        const auto value = winrt::unbox_value<double>(args.NewValue());
+        const auto coercedValue = CoerceValueBetweenMinAndMax(value);
         if (value != coercedValue)
         {
             SetValue(property, winrt::box_value(coercedValue));
@@ -761,8 +761,8 @@ void RatingControl::OnPointerMovedOverBackgroundStackPanel(const winrt::IInspect
 {
     if (!IsReadOnly())
     {
-        auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
-        float xPosition = point.Position().X;
+        const auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
+        const float xPosition = point.Position().X;
         if (SharedHelpers::IsAnimationsEnabled())
         {
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", xPosition);
@@ -837,10 +837,10 @@ void RatingControl::OnPointerReleasedBackgroundStackPanel(const winrt::IInspecta
 {
     if (!IsReadOnly())
     {
-        auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
-        auto xPosition = point.Position().X;
+        const auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
+        const auto xPosition = point.Position().X;
 
-        double mousePercentage = xPosition / CalculateActualRatingWidth();
+        const double mousePercentage = xPosition / CalculateActualRatingWidth();
         SetRatingTo(ceil(mousePercentage * MaxRating()), true);
 
         if (SharedHelpers::IsRS1OrHigher())
@@ -858,8 +858,8 @@ void RatingControl::OnPointerReleasedBackgroundStackPanel(const winrt::IInspecta
 
 double RatingControl::CalculateTotalRatingControlWidth()
 {
-    double ratingStarsWidth = CalculateActualRatingWidth();
-    auto captionAsWinRT = unbox_value<winrt::hstring>(GetValue(s_CaptionProperty));
+    const double ratingStarsWidth = CalculateActualRatingWidth();
+    const auto captionAsWinRT = unbox_value<winrt::hstring>(GetValue(s_CaptionProperty));
     double textSpacing = 0.0;
 
     if (captionAsWinRT.size() > 0)
@@ -1092,7 +1092,7 @@ void RatingControl::EnterGamepadEngagementMode()
     
     if (SharedHelpers::IsAnimationsEnabled())
     {
-        double focalPoint = CalculateStarCenter((int)(currentValue - 1.0));
+        const double focalPoint = CalculateStarCenter((int)(currentValue - 1.0));
         m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
     }
 }

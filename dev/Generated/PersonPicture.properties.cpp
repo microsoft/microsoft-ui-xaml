@@ -260,7 +260,10 @@ void PersonPictureProperties::OnTemplateSettingsPropertyChanged(
 
 void PersonPictureProperties::BadgeGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_BadgeGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring PersonPictureProperties::BadgeGlyph()
@@ -270,7 +273,10 @@ winrt::hstring PersonPictureProperties::BadgeGlyph()
 
 void PersonPictureProperties::BadgeImageSource(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_BadgeImageSourceProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource PersonPictureProperties::BadgeImageSource()
@@ -280,7 +286,10 @@ winrt::ImageSource PersonPictureProperties::BadgeImageSource()
 
 void PersonPictureProperties::BadgeNumber(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_BadgeNumberProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int PersonPictureProperties::BadgeNumber()
@@ -290,7 +299,10 @@ int PersonPictureProperties::BadgeNumber()
 
 void PersonPictureProperties::BadgeText(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_BadgeTextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring PersonPictureProperties::BadgeText()
@@ -300,7 +312,10 @@ winrt::hstring PersonPictureProperties::BadgeText()
 
 void PersonPictureProperties::Contact(winrt::Contact const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_ContactProperty, ValueHelper<winrt::Contact>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Contact PersonPictureProperties::Contact()
@@ -310,7 +325,10 @@ winrt::Contact PersonPictureProperties::Contact()
 
 void PersonPictureProperties::DisplayName(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_DisplayNameProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring PersonPictureProperties::DisplayName()
@@ -320,7 +338,10 @@ winrt::hstring PersonPictureProperties::DisplayName()
 
 void PersonPictureProperties::Initials(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_InitialsProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring PersonPictureProperties::Initials()
@@ -330,7 +351,10 @@ winrt::hstring PersonPictureProperties::Initials()
 
 void PersonPictureProperties::IsGroup(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_IsGroupProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool PersonPictureProperties::IsGroup()
@@ -340,7 +364,10 @@ bool PersonPictureProperties::IsGroup()
 
 void PersonPictureProperties::PreferSmallImage(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_PreferSmallImageProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool PersonPictureProperties::PreferSmallImage()
@@ -350,7 +377,10 @@ bool PersonPictureProperties::PreferSmallImage()
 
 void PersonPictureProperties::ProfilePicture(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_ProfilePictureProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource PersonPictureProperties::ProfilePicture()
@@ -360,7 +390,10 @@ winrt::ImageSource PersonPictureProperties::ProfilePicture()
 
 void PersonPictureProperties::TemplateSettings(winrt::PersonPictureTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<PersonPicture*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::PersonPictureTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::PersonPictureTemplateSettings PersonPictureProperties::TemplateSettings()

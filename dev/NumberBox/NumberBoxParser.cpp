@@ -17,7 +17,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, const wi
     while (input[0] != '\0')
     {
         // Skip spaces
-        auto nextChar = input[0];
+        const auto nextChar = input[0];
         if (nextChar != L' ')
         {
             if (expectNumber)
@@ -92,7 +92,7 @@ std::tuple<double, size_t> NumberBoxParser::GetNextNumber(const std::wstring& in
     return { std::numeric_limits<double>::quiet_NaN(), 0 };
 }
 
-int NumberBoxParser::GetPrecedenceValue(wchar_t c)
+int constexpr NumberBoxParser::GetPrecedenceValue(wchar_t c)
 {
     int opPrecedence = 0;
     if (c == L'*' || c == L'/')
