@@ -113,7 +113,7 @@
                                 <VisualState x:Name="OverflowButtonWithLabel" />
                                 <VisualState x:Name="OverflowButtonNoLabel">
                                     <VisualState.Setters>
-                                        <Setter Target="TopNavOverflowButton.Style" Value="{ThemeResource NavigationViewOverflowButtonNoLabelStyleWhenPaneOnTop}" />
+                                        <Setter Target="TopNavOverflowButton.Style" Value="{ThemeResource TopNavigationViewPaneCustomContentMinWidth}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
