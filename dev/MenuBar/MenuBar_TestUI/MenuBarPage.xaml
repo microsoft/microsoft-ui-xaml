@@ -50,16 +50,17 @@
                         <MenuFlyoutItem Text="Item 3"/>
                     </MenuFlyoutSubItem>
                 </muxc:MenuBarItem>
+                
+                <muxc:MenuBarItem Title="No children" AutomationProperties.Name="NoChildrenFlyout"/>
+                <muxc:MenuBarItem Title="One children" AutomationProperties.Name="OneChildrenFlyout" x:Name="OneChildrenFlyoutMenuBarItem">
+                    <MenuFlyoutItem Text="Sometext"/>
+                </muxc:MenuBarItem>
 
                 <muxc:MenuBarItem Title="Format">
                     <MenuFlyoutItem Text="Word Wrap"/>
                     <MenuFlyoutItem Text="Font..."/>
                 </muxc:MenuBarItem>
 
-                <muxc:MenuBarItem Title="No children" AutomationProperties.Name="NoChildrenFlyout"/>
-                <muxc:MenuBarItem Title="One children" AutomationProperties.Name="OneChildrenFlyout" x:Name="OneChildrenFlyoutMenuBarItem">
-                    <MenuFlyoutItem Text="Sometext"/>
-                </muxc:MenuBarItem>
             </muxc:MenuBar>
 
             <TextBlock Text="Custom sized menu bar" Margin="0,6,0,0"/>
