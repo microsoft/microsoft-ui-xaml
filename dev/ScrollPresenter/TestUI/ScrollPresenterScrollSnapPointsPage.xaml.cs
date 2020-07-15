@@ -18,8 +18,8 @@ using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 
 using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
@@ -218,7 +218,7 @@ namespace MUXControlsTestApp
             try
             {
                 double changeAmount = Convert.ToDouble(txtScrollPresenterOffsetChange.Text);
-                markupScrollPresenter.ScrollFrom(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
+                markupScrollPresenter.AddScrollVelocity(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
             }
             catch (Exception ex)
             {
@@ -229,8 +229,8 @@ namespace MUXControlsTestApp
         private void BtnOffsetPlus10With_Click(object sender, RoutedEventArgs e)
         {
             try
-            { 
-                markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Default));
+            {
+                markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -241,8 +241,8 @@ namespace MUXControlsTestApp
         private void BtnOffsetPlus10Without_Click(object sender, RoutedEventArgs e)
         {
             try
-            {                
-                markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
+            {
+                markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {
@@ -273,7 +273,7 @@ namespace MUXControlsTestApp
             }
             if (argsAreValid)
             {
-                for (int i=minColumn; i < snapPointColumns; i++)
+                for (int i = minColumn; i < snapPointColumns; i++)
                 {
                     Grid snapPointColumn = ((Grid)this.stackPanel.Children[i]);
                     bool isOccupied = false;

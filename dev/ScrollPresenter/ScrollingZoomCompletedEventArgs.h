@@ -20,14 +20,14 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IZoomCompletedEventArgs overrides
-    winrt::ZoomInfo ZoomInfo();
+    // IScrollingZoomCompletedEventArgs overrides
+    int32_t CorrelationId();
     ScrollPresenterViewChangeResult Result();
 
-    void ZoomFactorChangeId(int32_t zoomFactorChangeId);
+    void ZoomFactorChangeCorrelationId(int32_t zoomFactorChangeCorrelationId);
     void Result(ScrollPresenterViewChangeResult result);
 
 private:
-    int32_t m_zoomFactorChangeId{ -1 };
+    int32_t m_zoomFactorChangeCorrelationId{ -1 };
     ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

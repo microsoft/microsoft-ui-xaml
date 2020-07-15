@@ -26,10 +26,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
@@ -169,7 +169,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -188,7 +188,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -282,7 +282,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -301,7 +301,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -382,7 +382,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 double horizontalOffset = orientation == Orientation.Vertical ? 0.0 : 1.0;
                 double verticalOffset = orientation == Orientation.Vertical ? 1.0 : 0.0;
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -448,7 +448,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -467,7 +467,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -526,7 +526,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -545,7 +545,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -615,13 +615,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scrollPresenter.Name = "scrollPresenter";
             if (orientation == Orientation.Vertical)
             {
-                scrollPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                 scrollPresenter.Width = c_defaultAnchoringUIScrollPresenterConstrainedSize;
                 scrollPresenter.Height = c_defaultAnchoringUIScrollPresenterNonConstrainedSize;
             }
             else
             {
-                scrollPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 scrollPresenter.Width = c_defaultAnchoringUIScrollPresenterNonConstrainedSize;
                 scrollPresenter.Height = c_defaultAnchoringUIScrollPresenterConstrainedSize;
             }
@@ -774,7 +774,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 WaitForEvent("Waiting for ScrollPresenter.Loaded event", scrollPresenterLoadedEvent);
                 IdleSynchronizer.Wait();
 
-                ScrollTo(scrollPresenter, 0.0, 600.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ScrollTo(scrollPresenter, 0.0, 600.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -828,8 +828,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
-                    ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
-                    ScrollTo(scrollPresenter, 0.0, 250.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                    ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore);
+                    ScrollTo(scrollPresenter, 0.0, 250.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                     ItemsRepeater repeater = null;
                     TestDataSource dataSource = null;
@@ -919,7 +919,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsNotNull(scrollPresenter);
             scrollPresenter.Name = "scrollPresenter";
-            scrollPresenter.ContentOrientation = ContentOrientation.Vertical;
+            scrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
             scrollPresenter.Width = 400;
             scrollPresenter.Height = 600;
             scrollPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
