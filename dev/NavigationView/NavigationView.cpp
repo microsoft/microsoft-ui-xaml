@@ -347,6 +347,11 @@ void NavigationView::OnApplyTemplate()
 {
     // Stop update anything because of PropertyChange during OnApplyTemplate. Update them all together at the end of this function
     m_appliedTemplate = false;
+    auto scopeGuard = gsl::finally([this]()
+        {
+            m_fromOnApplyTemplate = false;
+        });
+    m_fromOnApplyTemplate = true;
 
     UnhookEventsAndClearFields();
 
@@ -2328,7 +2333,18 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
         {
             winrt::VisualStateManager::GoToState(*this, visualStateName, false /*useTransitions*/);
         }
-        splitView.DisplayMode(splitViewDisplayMode);
+
+        // Updating the splitview 'DisplayMode' property in some diplaymodes causes children to be added to the popup root.
+        // This causes an exception if the NavigationView is in the popup root itself (as SplitView is trying to add children to the tree while it is being measured).
+        // Due to this, we want to defer updating this property for all calls coming from `OnApplyTemplate`to the OnLoaded function.
+        if (m_fromOnApplyTemplate)
+        {
+            m_updateVisualStateForDisplayModeFromOnLoaded = true;
+        }
+        else
+        {
+            splitView.DisplayMode(splitViewDisplayMode);
+        }
     }
 }
 
@@ -3789,6 +3805,12 @@ void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::Routed
 
 void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
+    if (m_updateVisualStateForDisplayModeFromOnLoaded)
+    {
+        m_updateVisualStateForDisplayModeFromOnLoaded = false;
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
+    }
+
     if (auto coreTitleBar = m_coreTitleBar.get())
     {
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
