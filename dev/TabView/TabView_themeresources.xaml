@@ -11,6 +11,7 @@
             <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SystemControlBackgroundAltHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="SystemAltMediumLowColor" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="SystemAltMediumColor" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -57,6 +58,7 @@
             <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SystemControlBackgroundAltHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="SystemAltMediumLowColor" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="SystemAltMediumColor" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -103,6 +105,7 @@
             <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"                     ResourceKey="SystemControlHighlightChromeHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"                  ResourceKey="SystemControlHighlightChromeHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"                      ResourceKey="SystemControlHighlightChromeHighBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundDisabled"                     ResourceKey="SystemControlBackgroundBaseLowBrush" />      
             <StaticResource x:Key="TabViewItemHeaderForeground"                             ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPressed"                      ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"                     ResourceKey="SystemControlHighlightAltBaseHighBrush" />
