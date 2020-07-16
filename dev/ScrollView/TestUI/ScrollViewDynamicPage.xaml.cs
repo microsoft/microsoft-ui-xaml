@@ -698,6 +698,28 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnGetCurrentAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (scrollView.CurrentAnchor == null)
+                {
+                    txtCurrentAnchor.Text = "null";
+                }
+                else
+                {
+                    FrameworkElement currentAnchorAsFE = scrollView.CurrentAnchor as FrameworkElement;
+
+                    txtCurrentAnchor.Text = currentAnchorAsFE == null ? "UIElement" : currentAnchorAsFE.Name;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstLogs.Items.Add(ex.ToString());
+            }
+        }
+
         private void CmbHorizontalScrollBarVisibility_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try

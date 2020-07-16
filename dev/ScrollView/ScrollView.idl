@@ -20,6 +20,7 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     ScrollView();
 
     Windows.UI.Xaml.UIElement Content { get; set; };
+    Windows.UI.Xaml.UIElement CurrentAnchor { get; };
     Windows.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };

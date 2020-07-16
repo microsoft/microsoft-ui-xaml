@@ -87,6 +87,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment("Verifying ScrollView default property values");
                 Verify.IsNull(scrollView.Content);
+                Verify.IsNull(scrollView.CurrentAnchor);
                 Verify.IsNull(ScrollViewTestHooks.GetScrollPresenterPart(scrollView));
 #if USE_SCROLLMODE_AUTO
                 Verify.AreEqual(c_defaultComputedHorizontalScrollMode, scrollView.ComputedHorizontalScrollMode);
@@ -227,6 +228,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Verifying ScrollView property values after Loaded event");
                     Verify.AreEqual(rectangleScrollViewContent, scrollView.Content);
+                    Verify.IsNull(scrollView.CurrentAnchor);
                     Verify.IsNotNull(ScrollViewTestHooks.GetScrollPresenterPart(scrollView));
                     Verify.AreEqual(rectangleScrollViewContent, ScrollViewTestHooks.GetScrollPresenterPart(scrollView).Content);
                     Verify.AreEqual(c_defaultUIScrollViewContentWidth, scrollView.ExtentWidth);
@@ -491,6 +493,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollView.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
                         Verify.IsNull(args.AnchorElement);
+                        Verify.IsNull(sender.CurrentAnchor);
                         Verify.AreEqual(expectedAnchorCandidatesCount, args.AnchorCandidates.Count);
                         scrollViewAnchorRequestedEvent.Set();
                     };
@@ -524,6 +527,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 WaitForEvent("Waiting for AnchorRequested event", scrollViewAnchorRequestedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("ScrollView CurrentAnchor is " + (scrollView.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNull(scrollView.CurrentAnchor);
+                    Verify.AreEqual(scrollView.CurrentAnchor, scrollPresenter.CurrentAnchor);
+                });
             }
         }
 

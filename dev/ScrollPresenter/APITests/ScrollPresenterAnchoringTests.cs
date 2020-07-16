@@ -196,11 +196,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        Log.Comment("ViewChanged - CurrentAnchor is " + (sender.CurrentAnchor == null ? "null" : "non-null"));
                         if ((orientation == Orientation.Vertical && expectedFinalOffset == sender.VerticalOffset) ||
                             (orientation == Orientation.Horizontal && expectedFinalOffset == sender.HorizontalOffset))
                         {
                             scrollPresenterViewChangedEvent.Set();
-                        }                        
+                        }
+                    };
+
+                    scrollPresenter.AnchorRequested += delegate (ScrollPresenter sender, ScrollingAnchorRequestedEventArgs args)
+                    {
+                        Log.Comment("AnchorRequested - AnchorCandidates.Count={0}", args.AnchorCandidates.Count);
                     };
 
                     Log.Comment("Inserting child at far edge");
@@ -238,6 +244,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("ScrollPresenter offset change expected");
                     Verify.AreEqual(scrollPresenter.HorizontalOffset, horizontalOffset);
                     Verify.AreEqual(scrollPresenter.VerticalOffset, verticalOffset);
+
+                    Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNull(scrollPresenter.CurrentAnchor);
                 });
             }
         }
@@ -309,7 +318,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        Log.Comment("ViewChanged - CurrentAnchor is " + (sender.CurrentAnchor == null ? "null" : "non-null"));
                         scrollPresenterViewChangedEvent.Set();
+                    };
+
+                    scrollPresenter.AnchorRequested += delegate (ScrollPresenter sender, ScrollingAnchorRequestedEventArgs args)
+                    {
+                        Log.Comment("AnchorRequested - AnchorCandidates.Count={0}", args.AnchorCandidates.Count);
                     };
 
                     if (orientation == Orientation.Vertical)
@@ -341,6 +356,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("ScrollPresenter offset change expected");
                     Verify.AreEqual(scrollPresenter.HorizontalOffset, horizontalOffset);
                     Verify.AreEqual(scrollPresenter.VerticalOffset, verticalOffset);
+
+                    Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNull(scrollPresenter.CurrentAnchor);
                 });
             }
         }
@@ -390,6 +408,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        Log.Comment("ViewChanged - CurrentAnchor is " + (sender.CurrentAnchor == null ? "null" : "non-null"));
                         scrollPresenterViewChangedEvent.Set();
                     };
 
@@ -411,6 +430,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.AreEqual(127.0, scrollPresenter.HorizontalOffset);
                     }
+
+                    Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNotNull(scrollPresenter.CurrentAnchor);
                 });
             }
         }
@@ -488,6 +510,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.AreEqual(scrollPresenter.HorizontalOffset, horizontalOffset);
                     }
+
+                    Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNotNull(scrollPresenter.CurrentAnchor);
                 });
             }
         }
@@ -556,6 +581,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        Log.Comment("ViewChanged - CurrentAnchor is " + (sender.CurrentAnchor == null ? "null" : "non-null"));
                         scrollPresenterViewChangedEvent.Set();
                     };
 
@@ -587,6 +613,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.AreEqual(scrollPresenter.HorizontalOffset, horizontalOffset - viewportSizeChange / 2.0);
                     }
+
+                    Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNotNull(scrollPresenter.CurrentAnchor);
                 });
             }
         }
@@ -753,6 +782,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        Log.Comment("ViewChanged - CurrentAnchor is " + (sender.CurrentAnchor == null ? "null" : "non-null"));
                         if ((reduceAnchorOffset && sender.VerticalOffset == 400) ||
                             (!reduceAnchorOffset && sender.VerticalOffset == 500))
                         {
@@ -762,7 +792,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     scrollPresenter.AnchorRequested += delegate (ScrollPresenter sender, ScrollingAnchorRequestedEventArgs args)
                     {
-                        Log.Comment("ScrollPresenter.AnchorRequested event handler. Forcing the red Border to be the ScrollPresenter anchor.");
+                        Log.Comment("AnchorRequested - Forcing the red Border to be the ScrollPresenter anchor.");
                         args.AnchorElement = anchorElement;
                         scrollPresenterAnchorRequestedEvent.Set();
                     };
@@ -797,6 +827,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.AreEqual(reduceAnchorOffset ? 400 : 500, scrollPresenter.VerticalOffset);
+
+                    Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNotNull(scrollPresenter.CurrentAnchor);
                 });
             }
         }
@@ -869,6 +902,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollPresenter offset change expected");
                         Verify.AreEqual(250.0, scrollPresenter.VerticalOffset);
+
+                        Log.Comment("ScrollPresenter CurrentAnchor is " + (scrollPresenter.CurrentAnchor == null ? "null" : "non-null"));
+                        Verify.IsNotNull(scrollPresenter.CurrentAnchor);
                     });
                 }
             }
