@@ -305,24 +305,24 @@ namespace MUXControlsTestApp.Utilities
             }
 
             public CompositionAnimation GetScrollAnimation(
-                int info,
+                int correlationId,
                 Vector2 currentPosition,
                 CompositionAnimation defaultAnimation)
             {
                 RaiseLogMessage(
                     "UniScrollController: GetScrollAnimation for Orientation=" + Orientation +
-                    " with OffsetsChangeCorrelationId=" + info + ", currentPosition=" + currentPosition);
+                    " with OffsetsChangeCorrelationId=" + correlationId + ", currentPosition=" + currentPosition);
                 return defaultAnimation;
             }
 
             public void NotifyScrollCompleted(
-                int info)
+                int correlationId)
             {
                 RaiseLogMessage(
                     "UniScrollController: NotifyScrollCompleted for Orientation=" + Orientation +
-                    " with OffsetsChangeCorrelationId=" + info);
+                    " with OffsetsChangeCorrelationId=" + correlationId);
 
-                ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info));
+                ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(correlationId));
             }
 
             internal bool UpdateAreScrollControllerInteractionsAllowed()

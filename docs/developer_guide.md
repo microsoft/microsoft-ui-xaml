@@ -205,9 +205,31 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
 2. Download new verification files.
 
-    ![drop folder](images/test_pipeline_drop.png)
+    First, open the published build artifacts:
     
-    ![VisualTreeMasters folder](images/masters_folder.png)
+    ![released artifacts](images/test_fail_page3.png)
+    
+    ###### [For Microsoft employees]
+    
+    If you are a Microsoft employee, you can directly view the content of the created `drop` folder containing the updated verification files in Azure Pipelines.
+    
+    ###### [For external contributors]
+    
+    If you are an external contributor, you cannot directly download the new verification files but instead have to download the entire generated **drop** archive and unpack it (its size can be around 1 GB):
+
+    ![drop folder](images/test_pipeline_drop.png) 
+    
+    The next steps are the same for both Microsoft employees and external contributors:
+    
+    Open the `LinksToHelixTestFiles.html` file in the opened drop folder.
+    
+    ![drop folder employee](images/test_pipeline_drop2.png)
+    
+    You will now see download links to the new verification files:
+    
+    ![verification files employee](images/test_pipeline_verificationfiles_links.png)
+    
+    Finally, click on the links and download the files (like `ComboBox-4.xml`).
 
 3. Diff & replace
 

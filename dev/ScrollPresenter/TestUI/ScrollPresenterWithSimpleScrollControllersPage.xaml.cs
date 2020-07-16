@@ -722,20 +722,20 @@ namespace MUXControlsTestApp
         }
 
         public CompositionAnimation GetScrollAnimation(
-            int info,
+            int correlationId,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
             LogMessage(
                 "ScrollBarController: GetScrollAnimation for Orientation=" + Orientation +
-                " with offsetChangeCorrelationId=" + info + ", currentPosition=" + currentPosition);
+                " with offsetChangeCorrelationId=" + correlationId + ", currentPosition=" + currentPosition);
             return null;
         }
 
         public void NotifyScrollCompleted(
-            int info)
+            int correlationId)
         {
-            int offsetChangeCorrelationId = info;
+            int offsetChangeCorrelationId = correlationId;
 
             LogMessage(
                 "ScrollBarController: NotifyScrollCompleted for Orientation=" + Orientation +

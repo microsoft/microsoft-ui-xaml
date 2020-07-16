@@ -168,25 +168,25 @@ void ScrollBarController::SetValues(
 }
 
 winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
-    int info,
+    int correlationId,
     winrt::float2 const& currentPosition,
     winrt::CompositionAnimation const& defaultAnimation)
 {
-    SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info);
+    SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 
     // Using the consumer's default animation.
     return nullptr;
 }
 
 void ScrollBarController::NotifyScrollCompleted(
-    int info)
+    int correlationId)
 {
     SCROLLVIEW_TRACE_INFO(
         nullptr,
         TRACE_MSG_METH_INT,
         METH_NAME,
         this,
-        info);
+        correlationId);
 
     MUX_ASSERT(m_operationsCount > 0);
     m_operationsCount--;

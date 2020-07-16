@@ -24,11 +24,7 @@ TabViewItem::TabViewItem()
 
 void TabViewItem::OnApplyTemplate()
 {
-    auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
     auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
-
-    templateSettings->LeftInsetRadiusMargin(winrt::Thickness({ -popupRadius.BottomLeft,0,0,0 }));
-    templateSettings->RightInsetRadiusMargin(winrt::Thickness({0,0,-popupRadius.BottomRight,0}));
 
     winrt::IControlProtected controlProtected{ *this };
 

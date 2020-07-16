@@ -335,13 +335,13 @@ namespace MUXControlsTestApp.Utilities
         }
 
         public CompositionAnimation GetScrollAnimation(
-            int info,
+            int correlationId,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
             RaiseLogMessage(
                 "CompositionScrollController: GetScrollAnimation for Orientation=" + Orientation +
-                " with OffsetsChangeCorrelationId=" + info + ", currentPosition=" + currentPosition);
+                " with OffsetsChangeCorrelationId=" + correlationId + ", currentPosition=" + currentPosition);
 
             try
             {
@@ -353,7 +353,7 @@ namespace MUXControlsTestApp.Utilities
 
                     if (OffsetChangeAnimationType != AnimationType.Default)
                     {
-                        OperationInfo oi = operations[info];
+                        OperationInfo oi = operations[correlationId];
                         float positionTarget = (float)oi.OffsetTarget;
                         float otherOrientationPosition = orientation == Orientation.Horizontal ? currentPosition.Y : currentPosition.X;
 
@@ -454,9 +454,9 @@ namespace MUXControlsTestApp.Utilities
         }
 
         public void NotifyScrollCompleted(
-            int info)
+            int correlationId)
         {
-            int offsetChangeCorrelationId = info;
+            int offsetChangeCorrelationId = correlationId;
 
             RaiseLogMessage(
                 "CompositionScrollController: NotifyScrollCompleted for Orientation=" + Orientation +

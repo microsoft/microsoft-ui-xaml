@@ -58,7 +58,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const ScrollingScrollMode c_defaultVerticalScrollMode = ScrollingScrollMode.Enabled;
 #endif
         private const ScrollingChainMode c_defaultZoomChainMode = ScrollingChainMode.Auto;
-        private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
+        private const ScrollingZoomMode c_defaultZoomMode = ScrollingZoomMode.Disabled;
         private const ScrollingInputKinds c_defaultIgnoredInputKinds = ScrollingInputKinds.None;
         private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.Both;
         private const double c_defaultMinZoomFactor = 0.1;
@@ -173,10 +173,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(ScrollingChainMode.Never, scrollPresenter.VerticalScrollChainMode);
                 Verify.AreEqual(ScrollingRailMode.Disabled, scrollPresenter.HorizontalScrollRailMode);
                 Verify.AreEqual(ScrollingRailMode.Disabled, scrollPresenter.VerticalScrollRailMode);
-                Verify.AreEqual(ScrollMode.Disabled, scrollPresenter.HorizontalScrollMode);
-                Verify.AreEqual(ScrollMode.Disabled, scrollPresenter.VerticalScrollMode);
+                Verify.AreEqual(ScrollingScrollMode.Disabled, scrollPresenter.HorizontalScrollMode);
+                Verify.AreEqual(ScrollingScrollMode.Disabled, scrollPresenter.VerticalScrollMode);
                 Verify.AreEqual(ScrollingChainMode.Never, scrollPresenter.ZoomChainMode);
-                Verify.AreEqual(ZoomMode.Enabled, scrollPresenter.ZoomMode);
+                Verify.AreEqual(ScrollingZoomMode.Enabled, scrollPresenter.ZoomMode);
                 Verify.AreEqual(ScrollingInputKinds.MouseWheel, scrollPresenter.IgnoredInputKinds);
                 Verify.AreEqual(ScrollingContentOrientation.Horizontal, scrollPresenter.ContentOrientation);
                 Verify.AreEqual(0.5f, scrollPresenter.MinZoomFactor);
