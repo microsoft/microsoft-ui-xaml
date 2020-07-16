@@ -6689,7 +6689,7 @@ void ScrollPresenter::ProcessOffsetsChange(
         }
         else
         {
-            winrt::float2 targetPosition = ComputePositionFromOffsets(zoomedHorizontalOffset, zoomedVerticalOffset);
+            const winrt::float2 targetPosition = ComputePositionFromOffsets(zoomedHorizontalOffset, zoomedVerticalOffset);
 
             SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
                 L"TryUpdatePosition", TypeLogging::Float2ToString(targetPosition).c_str());
