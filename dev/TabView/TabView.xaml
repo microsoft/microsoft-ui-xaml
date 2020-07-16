@@ -279,16 +279,6 @@
                                         <PointerDownThemeAnimation Storyboard.TargetName="ContentPresenter"/>
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewItemHeaderCloseButtonBackgroundDisabled}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabViewItemHeaderCloseButtonForegroundDisabled}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                     </ContentPresenter>
@@ -470,6 +460,8 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewButtonForegroundDisabled}" />
+                                        <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderDisabledCloseButtonBackground}" />
+                                        <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewItemHeaderDisabledCloseButtonForeground}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
