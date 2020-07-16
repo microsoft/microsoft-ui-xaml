@@ -19,15 +19,15 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IZoomAnimationStartingEventArgs overrides
+    // IScrollingZoomAnimationStartingEventArgs overrides
     winrt::float2 CenterPoint();
     float StartZoomFactor();
     float EndZoomFactor();
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
-    winrt::ZoomInfo ZoomInfo();
+    int32_t CorrelationId();
 
-    void SetZoomFactorChangeId(int32_t zoomFactorChangeId);
+    void SetZoomFactorChangeCorrelationId(int32_t zoomFactorChangeCorrelationId);
     winrt::CompositionAnimation GetAnimation() const;
     void SetAnimation(const winrt::CompositionAnimation& animation);
     void SetCenterPoint(const winrt::float2& centerPoint);
@@ -39,5 +39,5 @@ private:
     winrt::float2 m_centerPoint{ };
     float m_startZoomFactor{ 1.0f };
     float m_endZoomFactor{ 1.0f };
-    int32_t m_zoomFactorChangeId{ -1 };
+    int32_t m_zoomFactorChangeCorrelationId{ -1 };
 };

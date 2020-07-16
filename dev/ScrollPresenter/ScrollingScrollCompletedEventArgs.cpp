@@ -5,9 +5,9 @@
 #include "common.h"
 #include "ScrollingScrollCompletedEventArgs.h"
 
-winrt::ScrollInfo ScrollingScrollCompletedEventArgs::ScrollInfo()
+int32_t ScrollingScrollCompletedEventArgs::CorrelationId()
 {
-    return winrt::ScrollInfo{ m_offsetsChangeId };
+    return m_offsetsChangeCorrelationId;
 }
 
 ScrollPresenterViewChangeResult ScrollingScrollCompletedEventArgs::Result()
@@ -15,9 +15,9 @@ ScrollPresenterViewChangeResult ScrollingScrollCompletedEventArgs::Result()
     return m_result;
 }
 
-void ScrollingScrollCompletedEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingScrollCompletedEventArgs::OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId)
 {
-    m_offsetsChangeId = offsetsChangeId;
+    m_offsetsChangeCorrelationId = offsetsChangeCorrelationId;
 }
 
 void ScrollingScrollCompletedEventArgs::Result(ScrollPresenterViewChangeResult result)

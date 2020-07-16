@@ -15,15 +15,14 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
-using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ScrollControllerAddScrollVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
 {
@@ -349,7 +348,7 @@ namespace MUXControlsTestApp
                         horizontalScrollController.InteractionInfoChanged -= OnInteractionInfoChanged;
                         horizontalScrollController.ScrollToRequested -= OnScrollToRequested;
                         horizontalScrollController.ScrollByRequested -= OnScrollByRequested;
-                        horizontalScrollController.ScrollFromRequested -= OnScrollFromRequested;
+                        horizontalScrollController.AddScrollVelocityRequested -= OnAddScrollVelocityRequested;
                         LogMessage("CanvasScrollControllerConsumer: old HorizontalScrollController events unhooked");
                     }
 
@@ -361,7 +360,7 @@ namespace MUXControlsTestApp
                         horizontalScrollController.InteractionInfoChanged += OnInteractionInfoChanged;
                         horizontalScrollController.ScrollToRequested += OnScrollToRequested;
                         horizontalScrollController.ScrollByRequested += OnScrollByRequested;
-                        horizontalScrollController.ScrollFromRequested += OnScrollFromRequested;
+                        horizontalScrollController.AddScrollVelocityRequested += OnAddScrollVelocityRequested;
                         LogMessage("CanvasScrollControllerConsumer: new HorizontalScrollController events hooked");
 
                         horizontalScrollController.SetValues(
@@ -390,7 +389,7 @@ namespace MUXControlsTestApp
                         verticalScrollController.InteractionInfoChanged -= OnInteractionInfoChanged;
                         verticalScrollController.ScrollToRequested -= OnScrollToRequested;
                         verticalScrollController.ScrollByRequested -= OnScrollByRequested;
-                        verticalScrollController.ScrollFromRequested -= OnScrollFromRequested;
+                        verticalScrollController.AddScrollVelocityRequested -= OnAddScrollVelocityRequested;
                         LogMessage("CanvasScrollControllerConsumer: old VerticalScrollController events unhooked");
                     }
 
@@ -402,7 +401,7 @@ namespace MUXControlsTestApp
                         verticalScrollController.InteractionInfoChanged += OnInteractionInfoChanged;
                         verticalScrollController.ScrollToRequested += OnScrollToRequested;
                         verticalScrollController.ScrollByRequested += OnScrollByRequested;
-                        verticalScrollController.ScrollFromRequested += OnScrollFromRequested;
+                        verticalScrollController.AddScrollVelocityRequested += OnAddScrollVelocityRequested;
                         LogMessage("CanvasScrollControllerConsumer: new VerticalScrollController events hooked");
 
                         verticalScrollController.SetValues(
@@ -454,7 +453,7 @@ namespace MUXControlsTestApp
                 LogMessage("CanvasScrollControllerConsumer: OnScrollToRequested for HorizontalScrollController");
                 LogMessage("Offset=" + e.Offset + ", AnimationMode=" + e.Options.AnimationMode + ", SnapPointsMode=" + e.Options.SnapPointsMode);
 
-                if (e.Options.AnimationMode == AnimationMode.Disabled)
+                if (e.Options.AnimationMode == ScrollingAnimationMode.Disabled)
                 {
                     Canvas.SetLeft(scrolledElement, -e.Offset);
                 }
@@ -464,7 +463,7 @@ namespace MUXControlsTestApp
                 LogMessage("CanvasScrollControllerConsumer: OnScrollToRequested for VerticalScrollController");
                 LogMessage("Offset=" + e.Offset + ", AnimationMode=" + e.Options.AnimationMode + ", SnapPointsMode=" + e.Options.SnapPointsMode);
 
-                if (e.Options.AnimationMode == AnimationMode.Disabled)
+                if (e.Options.AnimationMode == ScrollingAnimationMode.Disabled)
                 {
                     Canvas.SetTop(scrolledElement, -e.Offset);
                 }
@@ -488,19 +487,19 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void OnScrollFromRequested(IScrollController sender, ScrollControllerScrollFromRequestedEventArgs e)
+        private void OnAddScrollVelocityRequested(IScrollController sender, ScrollControllerAddScrollVelocityRequestedEventArgs e)
         {
             if (sender == horizontalScrollController)
             {
-                LogMessage("CanvasScrollControllerConsumer: OnScrollFromRequested for HorizontalScrollController");
+                LogMessage("CanvasScrollControllerConsumer: OnAddScrollVelocityRequested for HorizontalScrollController");
             }
             else if (sender == verticalScrollController)
             {
-                LogMessage("CanvasScrollControllerConsumer: OnScrollFromRequested for VerticalScrollController");
+                LogMessage("CanvasScrollControllerConsumer: OnAddScrollVelocityRequested for VerticalScrollController");
             }
             else
             {
-                LogMessage("CanvasScrollControllerConsumer: OnScrollFromRequested for unknown sender");
+                LogMessage("CanvasScrollControllerConsumer: OnAddScrollVelocityRequested for unknown sender");
             }
         }
 
@@ -574,15 +573,15 @@ namespace MUXControlsTestApp
         private int operationsCount = 0;
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
-        private List<int> lstScrollToIds = new List<int>();
-        private List<int> lstScrollByIds = new List<int>();
-        private List<int> lstScrollFromIds = new List<int>();
+        private List<int> lstScrollToCorrelationIds = new List<int>();
+        private List<int> lstScrollByCorrelationIds = new List<int>();
+        private List<int> lstAddScrollVelocityCorrelationIds = new List<int>();
 
         public event TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
         public event TypedEventHandler<IScrollController, object> InteractionInfoChanged;
         public event TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
         public event TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
-        public event TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
+        public event TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
 
         public ScrollBarController(ScrollBar scrollBar, ListBox logList, bool isLogging)
         {
@@ -645,16 +644,16 @@ namespace MUXControlsTestApp
             private set;
         }
 
-        public bool IsInteractionVisualRailEnabled
+        public bool IsInteractionElementRailEnabled
         {
             get
             {
-                // Unused because InteractionVisual returns null.
+                // Unused because InteractionElement returns null.
                 return false;
             }
         }
 
-        public Visual InteractionVisual
+        public UIElement InteractionElement
         {
             get
             {
@@ -662,7 +661,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        public Orientation InteractionVisualScrollOrientation
+        public Orientation InteractionElementScrollOrientation
         {
             get
             {
@@ -690,15 +689,15 @@ namespace MUXControlsTestApp
             }
             scrollBarTrackDim *= (1.0 - (scrollBar.ViewportSize / (scrollBar.Maximum - scrollBar.Minimum + scrollBar.ViewportSize)));
 
-            If InteractionVisual returned a non-null value, the multiplierPropertyName scalar would have to be set to this value:
+            If InteractionElement returned a non-null value, the multiplierPropertyName scalar would have to be set to this value:
                 (float)((scrollBar.Maximum - scrollBar.Minimum) / scrollBarTrackDim);
             */
         }
 
-        public void SetScrollMode(ScrollMode scrollMode)
+        public void SetScrollMode(ScrollingScrollMode scrollMode)
         {
             LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
-            AreScrollControllerInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+            AreScrollControllerInteractionsAllowed = scrollMode != ScrollingScrollMode.Disabled && IsEnabled;
         }
 
         public void SetValues(
@@ -723,38 +722,38 @@ namespace MUXControlsTestApp
         }
 
         public CompositionAnimation GetScrollAnimation(
-            ScrollInfo info,
+            int correlationId,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
             LogMessage(
                 "ScrollBarController: GetScrollAnimation for Orientation=" + Orientation +
-                " with offsetChangeId=" + info.OffsetsChangeId + ", currentPosition=" + currentPosition);
+                " with offsetChangeCorrelationId=" + correlationId + ", currentPosition=" + currentPosition);
             return null;
         }
 
-        public void OnScrollCompleted(
-            ScrollInfo info)
+        public void NotifyScrollCompleted(
+            int correlationId)
         {
-            int offsetChangeId = info.OffsetsChangeId;
+            int offsetChangeCorrelationId = correlationId;
 
             LogMessage(
-                "ScrollBarController: OnScrollCompleted for Orientation=" + Orientation +
-                " with offsetChangeId=" + offsetChangeId);
+                "ScrollBarController: NotifyScrollCompleted for Orientation=" + Orientation +
+                " with offsetChangeCorrelationId=" + offsetChangeCorrelationId);
 
-            if (lstScrollToIds.Contains(offsetChangeId))
+            if (lstScrollToCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollToIds.Remove(offsetChangeId);
+                lstScrollToCorrelationIds.Remove(offsetChangeCorrelationId);
                 operationsCount--;
             }
-            else if (lstScrollByIds.Contains(offsetChangeId))
+            else if (lstScrollByCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollByIds.Remove(offsetChangeId);
+                lstScrollByCorrelationIds.Remove(offsetChangeCorrelationId);
                 operationsCount--;
             }
-            else if (lstScrollFromIds.Contains(offsetChangeId))
+            else if (lstAddScrollVelocityCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollFromIds.Remove(offsetChangeId);
+                lstAddScrollVelocityCorrelationIds.Remove(offsetChangeCorrelationId);
                 operationsCount--;
             }
         }
@@ -785,9 +784,9 @@ namespace MUXControlsTestApp
                         AreScrollerInteractionsAllowed = false;
                     }
 
-                    int offsetChangeId = RaiseScrollToRequested(
+                    int offsetChangeCorrelationId = RaiseScrollToRequested(
                         e.NewValue,
-                        AnimationMode.Disabled);
+                        ScrollingAnimationMode.Disabled);
                     break;
             }
         }
@@ -812,7 +811,7 @@ namespace MUXControlsTestApp
 
         private int RaiseScrollToRequested(
             double offset,
-            AnimationMode animationMode)
+            ScrollingAnimationMode animationMode)
         {
             LogMessage("ScrollBarController: RaiseScrollToRequested for Orientation=" + Orientation + " with offset=" + offset + ", animationMode=" + animationMode);
             if (ScrollToRequested != null)
@@ -820,21 +819,21 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollToRequestedEventArgs e = 
                     new ScrollControllerScrollToRequestedEventArgs(
                         offset,
-                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
-                if (e.Info.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.Info.OffsetsChangeId))
+                if (e.CorrelationId != -1 && !lstScrollToCorrelationIds.Contains(e.CorrelationId))
                 {
                     operationsCount++;
-                    lstScrollToIds.Add(e.Info.OffsetsChangeId);
+                    lstScrollToCorrelationIds.Add(e.CorrelationId);
                 }
-                return e.Info.OffsetsChangeId;
+                return e.CorrelationId;
             }
             return -1;
         }
 
         private int RaiseScrollByRequested(
             double offsetDelta,
-            AnimationMode animationMode)
+            ScrollingAnimationMode animationMode)
         {
             LogMessage("ScrollBarController: RaiseScrollByRequested for Orientation=" + Orientation + " with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);
             if (ScrollToRequested != null)
@@ -842,35 +841,35 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollByRequestedEventArgs e =
                     new ScrollControllerScrollByRequestedEventArgs(
                         offsetDelta,
-                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
-                if (e.Info.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.Info.OffsetsChangeId))
+                if (e.CorrelationId != -1 && !lstScrollByCorrelationIds.Contains(e.CorrelationId))
                 {
                     operationsCount++;
-                    lstScrollByIds.Add(e.Info.OffsetsChangeId);
+                    lstScrollByCorrelationIds.Add(e.CorrelationId);
                 }
-                return e.Info.OffsetsChangeId;
+                return e.CorrelationId;
             }
             return -1;
         }
 
-        private int RaiseScrollFromRequested(
+        private int RaiseAddScrollVelocityRequested(
             float offsetVelocity, float? inertiaDecayRate)
         {
-            LogMessage("ScrollBarController: RaiseScrollFromRequested for Orientation=" + Orientation + " with offsetVelocity=" + offsetVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
-            if (ScrollFromRequested != null)
+            LogMessage("ScrollBarController: RaiseAddScrollVelocityRequested for Orientation=" + Orientation + " with offsetVelocity=" + offsetVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
+            if (AddScrollVelocityRequested != null)
             {
-                ScrollControllerScrollFromRequestedEventArgs e = 
-                    new ScrollControllerScrollFromRequestedEventArgs(
+                ScrollControllerAddScrollVelocityRequestedEventArgs e = 
+                    new ScrollControllerAddScrollVelocityRequestedEventArgs(
                         offsetVelocity,
                         inertiaDecayRate);
-                ScrollFromRequested(this, e);
-                if (e.Info.OffsetsChangeId != -1 && !lstScrollFromIds.Contains(e.Info.OffsetsChangeId))
+                AddScrollVelocityRequested(this, e);
+                if (e.CorrelationId != -1 && !lstAddScrollVelocityCorrelationIds.Contains(e.CorrelationId))
                 {
                     operationsCount++;
-                    lstScrollFromIds.Add(e.Info.OffsetsChangeId);
+                    lstAddScrollVelocityCorrelationIds.Add(e.CorrelationId);
                 }
-                return e.Info.OffsetsChangeId;
+                return e.CorrelationId;
             }
             return -1;
         }

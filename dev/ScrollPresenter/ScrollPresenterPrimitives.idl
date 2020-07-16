@@ -25,8 +25,8 @@ enum ScrollSnapPointsAlignment
 [marshaling_behavior(agile)]
 [threading(both)]
 unsealed runtimeclass SnapPointBase
-    // All composable classes must derrive from a Windows base class to pass WACK.
-    : Windows.UI.Xaml.DependencyObject
+// All composable classes must derrive from a Windows base class to pass WACK.
+: Windows.UI.Xaml.DependencyObject
 {
 #ifdef ApplicableRangeType
     Double ApplicableRange { get; };
@@ -154,7 +154,7 @@ runtimeclass ScrollControllerScrollToRequestedEventArgs
 
     Double Offset { get; };
     MU_XC_NAMESPACE.ScrollingScrollOptions Options { get; };
-    MU_XC_NAMESPACE.ScrollInfo Info { get; set; };
+    Int32 CorrelationId { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -165,18 +165,18 @@ runtimeclass ScrollControllerScrollByRequestedEventArgs
 
     Double OffsetDelta { get; };
     MU_XC_NAMESPACE.ScrollingScrollOptions Options { get; };
-    MU_XC_NAMESPACE.ScrollInfo Info { get; set; };
+    Int32 CorrelationId { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollControllerScrollFromRequestedEventArgs
+runtimeclass ScrollControllerAddScrollVelocityRequestedEventArgs
 {
-    ScrollControllerScrollFromRequestedEventArgs(Single offsetVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
+    ScrollControllerAddScrollVelocityRequestedEventArgs(Single offsetVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
 
     Single OffsetVelocity { get; };
     Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
-    MU_XC_NAMESPACE.ScrollInfo Info { get; set; };
+    Int32 CorrelationId { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -196,17 +196,17 @@ interface IScrollController
     Boolean AreScrollControllerInteractionsAllowed { get; };
     Boolean AreScrollerInteractionsAllowed { get; };
     Boolean IsInteracting { get; };
-    Boolean IsInteractionVisualRailEnabled { get; };
-    Windows.UI.Composition.Visual InteractionVisual { get; };
-    Windows.UI.Xaml.Controls.Orientation InteractionVisualScrollOrientation { get; };
+    Boolean IsInteractionElementRailEnabled { get; };
+    Windows.UI.Xaml.UIElement InteractionElement { get; };
+    Windows.UI.Xaml.Controls.Orientation InteractionElementScrollOrientation { get; };
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
-    void SetScrollMode(MU_XC_NAMESPACE.ScrollMode scrollMode);
+    void SetScrollMode(MU_XC_NAMESPACE.ScrollingScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
-    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(MU_XC_NAMESPACE.ScrollInfo info, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
-    void OnScrollCompleted(MU_XC_NAMESPACE.ScrollInfo info);
+    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 correlationId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
+    void NotifyScrollCompleted(Int32 correlationId);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
-    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, Object> InteractionInfoChanged;
 }
@@ -233,38 +233,38 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
     Double ScrollableWidth { get; };
     Double ScrollableHeight { get; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultContentOrientation")]
-    MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultHorizontalScrollChainingMode")]
-    MU_XC_NAMESPACE.ChainingMode HorizontalScrollChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultVerticalScrollChainingMode")]
-    MU_XC_NAMESPACE.ChainingMode VerticalScrollChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultHorizontalScrollRailingMode")]
-    MU_XC_NAMESPACE.RailingMode HorizontalScrollRailingMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultVerticalScrollRailingMode")]
-    MU_XC_NAMESPACE.RailingMode VerticalScrollRailingMode { get; set; };
+    MU_XC_NAMESPACE.ScrollingContentOrientation ContentOrientation { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultHorizontalScrollChainMode")]
+    MU_XC_NAMESPACE.ScrollingChainMode HorizontalScrollChainMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultVerticalScrollChainMode")]
+    MU_XC_NAMESPACE.ScrollingChainMode VerticalScrollChainMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultHorizontalScrollRailMode")]
+    MU_XC_NAMESPACE.ScrollingRailMode HorizontalScrollRailMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultVerticalScrollRailMode")]
+    MU_XC_NAMESPACE.ScrollingRailMode VerticalScrollRailMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultHorizontalScrollMode")]
-    MU_XC_NAMESPACE.ScrollMode HorizontalScrollMode { get; set; };
+    MU_XC_NAMESPACE.ScrollingScrollMode HorizontalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultVerticalScrollMode")]
-    MU_XC_NAMESPACE.ScrollMode VerticalScrollMode { get; set; };
+    MU_XC_NAMESPACE.ScrollingScrollMode VerticalScrollMode { get; set; };
 #ifdef USE_SCROLLMODE_AUTO
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultComputedHorizontalScrollMode")]
-    MU_XC_NAMESPACE.ScrollMode ComputedHorizontalScrollMode { get; };
+    MU_XC_NAMESPACE.ScrollingScrollMode ComputedHorizontalScrollMode { get; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultComputedVerticalScrollMode")]
-    MU_XC_NAMESPACE.ScrollMode ComputedVerticalScrollMode { get; };
+    MU_XC_NAMESPACE.ScrollingScrollMode ComputedVerticalScrollMode { get; };
 #endif
-    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultZoomChainingMode")]
-    MU_XC_NAMESPACE.ChainingMode ZoomChainingMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultZoomChainMode")]
+    MU_XC_NAMESPACE.ScrollingChainMode ZoomChainMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultZoomMode")]
-    MU_XC_NAMESPACE.ZoomMode ZoomMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultIgnoredInputKind")]
-    MU_XC_NAMESPACE.InputKind IgnoredInputKind { get; set; };
+    MU_XC_NAMESPACE.ScrollingZoomMode ZoomMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultIgnoredInputKinds")]
+    MU_XC_NAMESPACE.ScrollingInputKinds IgnoredInputKinds { get; set; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultMaxZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MaxZoomFactor { get; set; };
-    MU_XC_NAMESPACE.InteractionState State { get; };
+    MU_XC_NAMESPACE.ScrollingInteractionState State { get; };
     IScrollController HorizontalScrollController { get; set; };
     IScrollController VerticalScrollController { get; set; };
     [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultAnchorRatio")]
@@ -277,45 +277,45 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> VerticalSnapPoints { get; };
     Windows.Foundation.Collections.IVector<ZoomSnapPointBase> ZoomSnapPoints { get; };
     [method_name("ScrollTo")]
-    MU_XC_NAMESPACE.ScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset);
     [method_name("ScrollToWithOptions")]
-    MU_XC_NAMESPACE.ScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset,
         MU_XC_NAMESPACE.ScrollingScrollOptions options);
     [method_name("ScrollBy")]
-    MU_XC_NAMESPACE.ScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta);
     [method_name("ScrollByWithOptions")]
-    MU_XC_NAMESPACE.ScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         MU_XC_NAMESPACE.ScrollingScrollOptions options);
-    MU_XC_NAMESPACE.ScrollInfo ScrollFrom(
+    Int32 AddScrollVelocity(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
     [method_name("ZoomTo")]
-    MU_XC_NAMESPACE.ZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomToWithOptions")]
-    MU_XC_NAMESPACE.ZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         MU_XC_NAMESPACE.ScrollingZoomOptions options);
     [method_name("ZoomBy")]
-    MU_XC_NAMESPACE.ZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomByWithOptions")]
-    MU_XC_NAMESPACE.ZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         MU_XC_NAMESPACE.ScrollingZoomOptions options);
-    MU_XC_NAMESPACE.ZoomInfo ZoomFrom(
+    Int32 AddZoomVelocity(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
@@ -333,19 +333,19 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainingModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty VerticalScrollChainingModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailingModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty VerticalScrollRailingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollChainModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollRailModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollModeProperty { get; };
 #ifdef USE_SCROLLMODE_AUTO
     static Windows.UI.Xaml.DependencyProperty ComputedHorizontalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ComputedVerticalScrollModeProperty { get; };
 #endif
-    static Windows.UI.Xaml.DependencyProperty ZoomChainingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ZoomChainModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ZoomModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IgnoredInputKindProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IgnoredInputKindsProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };

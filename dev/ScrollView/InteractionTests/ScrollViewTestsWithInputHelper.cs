@@ -312,7 +312,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies keyboard input is ignored when ScrollView.IgnoredInputKind is Keyboard.")]
+        [TestProperty("Description", "Verifies keyboard input is ignored when ScrollView.IgnoredInputKinds is Keyboard.")]
         public void VerifyScrollViewIgnoresKeyboardInput()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
@@ -328,13 +328,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetupScrollViewTestWithImage("51", out img51, out scrollPresenter51);
 
-                Log.Comment("Retrieving cmbIgnoredInputKind");
-                ComboBox cmbIgnoredInputKind = new ComboBox(FindElement.ByName("cmbIgnoredInputKind"));
-                Verify.IsNotNull(cmbIgnoredInputKind, "Verifying that cmbIgnoredInputKind was found");
+                Log.Comment("Retrieving cmbIgnoredInputKinds");
+                ComboBox cmbIgnoredInputKinds = new ComboBox(FindElement.ByName("cmbIgnoredInputKinds"));
+                Verify.IsNotNull(cmbIgnoredInputKinds, "Verifying that cmbIgnoredInputKinds was found");
 
-                Log.Comment("Changing ScrollView.IgnoredInputKind to Keyboard");
-                cmbIgnoredInputKind.SelectItemByName("Keyboard");
-                Log.Comment("Selection is now {0}", cmbIgnoredInputKind.Selection[0].Name);
+                Log.Comment("Changing ScrollView.IgnoredInputKinds to Keyboard");
+                cmbIgnoredInputKinds.SelectItemByName("Keyboard");
+                Log.Comment("Selection is now {0}", cmbIgnoredInputKinds.Selection[0].Name);
 
                 Log.Comment("Pressing Down key");
                 KeyboardHelper.PressKey(scrollPresenter51, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
@@ -524,7 +524,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies gamepad input is ignored when ScrollView.IgnoredInputKind is Gamepad.")]
+        [TestProperty("Description", "Verifies gamepad input is ignored when ScrollView.IgnoredInputKinds is Gamepad.")]
         public void VerifyScrollViewIgnoresGamepadInput()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
@@ -540,13 +540,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetupScrollViewTestWithImage("51", out img51, out scrollPresenter51);
 
-                Log.Comment("Retrieving cmbIgnoredInputKind");
-                ComboBox cmbIgnoredInputKind = new ComboBox(FindElement.ByName("cmbIgnoredInputKind"));
-                Verify.IsNotNull(cmbIgnoredInputKind, "Verifying that cmbIgnoredInputKind was found");
+                Log.Comment("Retrieving cmbIgnoredInputKinds");
+                ComboBox cmbIgnoredInputKinds = new ComboBox(FindElement.ByName("cmbIgnoredInputKinds"));
+                Verify.IsNotNull(cmbIgnoredInputKinds, "Verifying that cmbIgnoredInputKinds was found");
 
-                Log.Comment("Changing ScrollView.IgnoredInputKind to Gamepad");
-                cmbIgnoredInputKind.SelectItemByName("Gamepad");
-                Log.Comment("Selection is now {0}", cmbIgnoredInputKind.Selection[0].Name);
+                Log.Comment("Changing ScrollView.IgnoredInputKinds to Gamepad");
+                cmbIgnoredInputKinds.SelectItemByName("Gamepad");
+                Log.Comment("Selection is now {0}", cmbIgnoredInputKinds.Selection[0].Name);
 
                 Log.Comment("Pressing LeftThumbstick Down");
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickDown);
