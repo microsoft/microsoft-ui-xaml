@@ -269,7 +269,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        public void SettingsItemInvokeTest()
+        public void SettingsItemClickTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
@@ -281,11 +281,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     settingsItem.SetFocus();
                     Wait.ForIdle();
 
-                    AutomationElement ae = AutomationElement.FocusedElement;
-                    InvokePattern invokePattern = ae.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
-
-                    Log.Comment("Invoking settings");
-                    invokePattern.Invoke();
+                    Log.Comment("Click settings");
+                    settingsItem.Click();
                     Wait.ForIdle();
 
                     Log.Comment("Verify settings is selected");

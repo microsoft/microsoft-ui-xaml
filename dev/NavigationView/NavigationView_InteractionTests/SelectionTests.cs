@@ -212,7 +212,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
 
                 var settings = new Button(FindElement.ByName("Settings"));
-                settings.Invoke();
+                settings.Click();
                 Wait.ForIdle();
 
                 Log.Comment("Verify the top settings item is selected.");
