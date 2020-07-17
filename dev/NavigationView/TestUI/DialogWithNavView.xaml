@@ -8,8 +8,8 @@
     xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Title="TITLE"
-    PrimaryButtonText="Button1"
-    SecondaryButtonText="Button2"
+    PrimaryButtonText="Button1ContentDialog"
+    SecondaryButtonText="Button2ContentDialog"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     SecondaryButtonClick="ContentDialog_SecondaryButtonClick">
 
