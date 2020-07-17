@@ -40,6 +40,19 @@ ScrollView::~ScrollView()
 
 #pragma region IScrollView
 
+winrt::UIElement ScrollView::CurrentAnchor()
+{
+    if (auto scrollPresenter = m_scrollPresenter.get())
+    {
+        if (const auto scrollPresenterAsAnchorProvider = scrollPresenter.try_as<winrt::Controls::IScrollAnchorProvider>())
+        {
+            return scrollPresenterAsAnchorProvider.CurrentAnchor();
+        }
+    }
+
+    return nullptr;
+}
+
 winrt::CompositionPropertySet ScrollView::ExpressionAnimationSources()
 {
     if (auto scrollPresenter = m_scrollPresenter.get())
