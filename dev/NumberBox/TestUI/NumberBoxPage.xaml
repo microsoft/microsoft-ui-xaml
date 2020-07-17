@@ -41,6 +41,16 @@
                 <ComboBoxItem Content="Inline" />
             </ComboBox>
 
+            <ComboBox x:Name="TextAlignmentComboBox"
+                      AutomationProperties.Name="TextAlignmentComboBox"
+                      Header="TextAlignment"
+                      SelectedIndex="0"
+                      SelectionChanged="TextAlignment_Changed">
+                <ComboBoxItem Content="Left" />
+                <ComboBoxItem Content="Center" />
+                <ComboBoxItem Content="Right" />
+            </ComboBox>
+
             <CheckBox x:Name="EnabledCheckBox"
                       AutomationProperties.Name="EnabledCheckBox"
                       Content="Enabled"
@@ -151,16 +161,7 @@
                         contract5Present:Spacing="4"
                         Orientation="Vertical">
                 <!--  Standard NumberBox test UI  -->
-                <StackPanel contract5Present:Spacing="4">
-
-                    <!--  TextAlignment  -->
-                    <controls:NumberBox Header="Right TextAlignment"
-                                        TextAlignment="Right"
-                                        Value="123" />
-                    <controls:NumberBox Header="Center TextAlignment"
-                                        TextAlignment="Center"
-                                        Value="456" />
-
+                <StackPanel>
 
                     <controls:NumberBox x:Name="TestNumberBox"
                                         MinWidth="150"
