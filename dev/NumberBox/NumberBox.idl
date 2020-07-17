@@ -60,7 +60,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     String PlaceholderText;
     Windows.UI.Xaml.Controls.Primitives.FlyoutBase SelectionFlyout;
     Windows.UI.Xaml.Media.SolidColorBrush SelectionHighlightColor;
-    Windows.UI.Xaml.TextAlignment TextAlignment;
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.UI.Xaml.TextAlignment TextAlignment;
+    }
+
     Windows.UI.Xaml.TextReadingOrder TextReadingOrder;
     Boolean PreventKeyboardDisplayOnProgrammaticFocus;
     Object Description;
