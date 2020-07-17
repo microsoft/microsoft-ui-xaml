@@ -104,7 +104,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionHighlightColorProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty TextAlignmentProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty TextAlignmentProperty{ get; };
+    }
+
     static Windows.UI.Xaml.DependencyProperty TextReadingOrderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PreventKeyboardDisplayOnProgrammaticFocusProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
