@@ -114,7 +114,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyTabViewItemUIABehavior()
         {
-            TabView tabView;
+            TabView tabView = null;
 
             TabViewItem tvi0 = null;
             TabViewItem tvi1 = null;
@@ -153,6 +153,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 
                 selectionItemProvider = GetProviderFromTVI(tvi0);
                 Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
+
+                Verify.IsNotNull(selectionItemProvider.SelectionContainer);
             });
 
             static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
