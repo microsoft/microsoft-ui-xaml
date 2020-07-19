@@ -63,6 +63,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 
     [WUXC_VERSION_PREVIEW]
     {
+        [MUX_DEFAULT_VALUE("winrt::TextAlignment::Left")]
         Windows.UI.Xaml.TextAlignment TextAlignment;
     }
 
