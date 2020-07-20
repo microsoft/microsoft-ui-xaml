@@ -138,17 +138,17 @@ namespace MUXControlsTestApp
 
         private void _innerFrameInLabDimensions_Click(object sender, RoutedEventArgs e)
         {
-            if(Math.Abs(_pagePresenter.MaxWidth - 1024) < 5)
-            {
-                // We are already in "CI mode"
-                _pagePresenter.ClearValue(MaxWidthProperty);
-                _pagePresenter.ClearValue(MaxHeightProperty);
-            }
-            else
+            if(double.IsInfinity(_pagePresenter.MaxWidth))
             {
                 // Not CI mode, so enter it now
                 _pagePresenter.MaxWidth = 1024;
                 _pagePresenter.MaxHeight = 664;
+            }
+            else
+            {
+                // We are already in "CI mode"
+                _pagePresenter.ClearValue(MaxWidthProperty);
+                _pagePresenter.ClearValue(MaxHeightProperty);
             }
         }
 
