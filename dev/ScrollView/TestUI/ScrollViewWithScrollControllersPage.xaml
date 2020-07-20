@@ -17,15 +17,15 @@
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="UseSystemFocusVisuals" Value="True"/>
             <Setter Property="ContentOrientation" Value="Vertical"/>
-            <Setter Property="HorizontalScrollChainingMode" Value="Auto"/>
+            <Setter Property="HorizontalScrollChainMode" Value="Auto"/>
             <Setter Property="HorizontalScrollMode" Value="Enabled"/>
-            <Setter Property="HorizontalScrollRailingMode" Value="Enabled"/>
-            <Setter Property="VerticalScrollChainingMode" Value="Auto"/>
+            <Setter Property="HorizontalScrollRailMode" Value="Enabled"/>
+            <Setter Property="VerticalScrollChainMode" Value="Auto"/>
             <Setter Property="VerticalScrollMode" Value="Enabled"/>
-            <Setter Property="VerticalScrollRailingMode" Value="Enabled"/>
-            <Setter Property="ZoomChainingMode" Value="Auto"/>
+            <Setter Property="VerticalScrollRailMode" Value="Enabled"/>
+            <Setter Property="ZoomChainMode" Value="Auto"/>
             <Setter Property="ZoomMode" Value="Disabled"/>
-            <Setter Property="IgnoredInputKind" Value="None"/>
+            <Setter Property="IgnoredInputKinds" Value="None"/>
             <Setter Property="MinZoomFactor" Value="0.1"/>
             <Setter Property="MaxZoomFactor" Value="10.0"/>
             <Setter Property="HorizontalAnchorRatio" Value="0.0"/>
@@ -48,15 +48,15 @@
                                 Content="{TemplateBinding Content}"
                                 ContentOrientation="{TemplateBinding ContentOrientation}"
                                 Margin="{TemplateBinding Padding}"
-                                HorizontalScrollChainingMode="{TemplateBinding HorizontalScrollChainingMode}"
+                                HorizontalScrollChainMode="{TemplateBinding HorizontalScrollChainMode}"
                                 HorizontalScrollMode="{TemplateBinding HorizontalScrollMode}"
-                                HorizontalScrollRailingMode="{TemplateBinding HorizontalScrollRailingMode}"
-                                VerticalScrollChainingMode="{TemplateBinding VerticalScrollChainingMode}"
+                                HorizontalScrollRailMode="{TemplateBinding HorizontalScrollRailMode}"
+                                VerticalScrollChainMode="{TemplateBinding VerticalScrollChainMode}"
                                 VerticalScrollMode="{TemplateBinding VerticalScrollMode}"
-                                VerticalScrollRailingMode="{TemplateBinding VerticalScrollRailingMode}"
-                                ZoomChainingMode="{TemplateBinding ZoomChainingMode}"
+                                VerticalScrollRailMode="{TemplateBinding VerticalScrollRailMode}"
+                                ZoomChainMode="{TemplateBinding ZoomChainMode}"
                                 ZoomMode="{TemplateBinding ZoomMode}"
-                                IgnoredInputKind="{TemplateBinding IgnoredInputKind}"
+                                IgnoredInputKinds="{TemplateBinding IgnoredInputKinds}"
                                 MinZoomFactor="{TemplateBinding MinZoomFactor}"
                                 MaxZoomFactor="{TemplateBinding MaxZoomFactor}"
                                 HorizontalAnchorRatio="{TemplateBinding HorizontalAnchorRatio}"

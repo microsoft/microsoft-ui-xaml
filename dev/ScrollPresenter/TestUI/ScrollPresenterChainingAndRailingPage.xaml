@@ -73,15 +73,15 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
-                <ComboBox x:Name="cmbHorizontalScrollRailingMode3" AutomationProperties.Name="cmbHorizontalScrollRailingMode3" 
-                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                <TextBlock Text="HorizontalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                <ComboBox x:Name="cmbHorizontalScrollRailMode3" AutomationProperties.Name="cmbHorizontalScrollRailMode3" 
+                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
                     <ComboBoxItem>Enabled</ComboBoxItem>
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
-                <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
-                <ComboBox x:Name="cmbVerticalScrollRailingMode3" AutomationProperties.Name="cmbVerticalScrollRailingMode3"
-                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                <TextBlock Text="VerticalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                <ComboBox x:Name="cmbVerticalScrollRailMode3" AutomationProperties.Name="cmbVerticalScrollRailMode3"
+                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
                     <ComboBoxItem>Enabled</ComboBoxItem>
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
@@ -105,33 +105,33 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="HorizontalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
-                        <ComboBox x:Name="cmbHorizontalScrollChainingMode2" AutomationProperties.Name="cmbHorizontalScrollChainingMode2" 
-                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                        <TextBlock Text="HorizontalScrollChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                        <ComboBox x:Name="cmbHorizontalScrollChainMode2" AutomationProperties.Name="cmbHorizontalScrollChainMode2" 
+                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
                             <ComboBoxItem>True</ComboBoxItem>
                             <ComboBoxItem>False</ComboBoxItem>
                         </ComboBox>
-                        <TextBlock Text="VerticalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
-                        <ComboBox x:Name="cmbVerticalScrollChainingMode2" AutomationProperties.Name="cmbVerticalScrollChainingMode2"
-                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                        <TextBlock Text="VerticalScrollChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                        <ComboBox x:Name="cmbVerticalScrollChainMode2" AutomationProperties.Name="cmbVerticalScrollChainMode2"
+                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
                             <ComboBoxItem>True</ComboBoxItem>
                             <ComboBoxItem>False</ComboBoxItem>
                         </ComboBox>
-                        <TextBlock Text="ZoomChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
-                        <ComboBox x:Name="cmbZoomChainingMode2" AutomationProperties.Name="cmbZoomChainingMode2" SelectedIndex="0"
-                            SelectionChanged="CmbZoomChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
+                        <TextBlock Text="ZoomChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+                        <ComboBox x:Name="cmbZoomChainMode2" AutomationProperties.Name="cmbZoomChainMode2" SelectedIndex="0"
+                            SelectionChanged="CmbZoomChainMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
                             <ComboBoxItem>True</ComboBoxItem>
                             <ComboBoxItem>False</ComboBoxItem>
                         </ComboBox>
-                        <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
-                        <ComboBox x:Name="cmbHorizontalScrollRailingMode2" AutomationProperties.Name="cmbHorizontalScrollRailingMode2"
-                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
+                        <TextBlock Text="HorizontalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
+                        <ComboBox x:Name="cmbHorizontalScrollRailMode2" AutomationProperties.Name="cmbHorizontalScrollRailMode2"
+                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
                             <ComboBoxItem>True</ComboBoxItem>
                             <ComboBoxItem>False</ComboBoxItem>
                         </ComboBox>
-                        <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
-                        <ComboBox x:Name="cmbVerticalScrollRailingMode2" AutomationProperties.Name="cmbVerticalScrollRailingMode2"
-                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
+                        <TextBlock Text="VerticalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
+                        <ComboBox x:Name="cmbVerticalScrollRailMode2" AutomationProperties.Name="cmbVerticalScrollRailMode2"
+                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
                             <ComboBoxItem>True</ComboBoxItem>
                             <ComboBoxItem>False</ComboBoxItem>
                         </ComboBox>
@@ -153,36 +153,36 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="HorizontalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
-                                <ComboBox x:Name="cmbHorizontalScrollChainingMode1" AutomationProperties.Name="cmbHorizontalScrollChainingMode1"
-                                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                                <TextBlock Text="HorizontalScrollChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                                <ComboBox x:Name="cmbHorizontalScrollChainMode1" AutomationProperties.Name="cmbHorizontalScrollChainMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
                                     <ComboBoxItem>Auto</ComboBoxItem>
                                     <ComboBoxItem>Always</ComboBoxItem>
                                     <ComboBoxItem>Never</ComboBoxItem>
                                 </ComboBox>
-                                <TextBlock Text="VerticalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
-                                <ComboBox x:Name="cmbVerticalScrollChainingMode1" AutomationProperties.Name="cmbVerticalScrollChainingMode1"
-                                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                                <TextBlock Text="VerticalScrollChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                                <ComboBox x:Name="cmbVerticalScrollChainMode1" AutomationProperties.Name="cmbVerticalScrollChainMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
                                     <ComboBoxItem>Auto</ComboBoxItem>
                                     <ComboBoxItem>Always</ComboBoxItem>
                                     <ComboBoxItem>Never</ComboBoxItem>
                                 </ComboBox>
-                                <TextBlock Text="ZoomChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
-                                <ComboBox x:Name="cmbZoomChainingMode1" AutomationProperties.Name="cmbZoomChainingMode1"
-                                    SelectedIndex="0" SelectionChanged="CmbZoomChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
+                                <TextBlock Text="ZoomChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+                                <ComboBox x:Name="cmbZoomChainMode1" AutomationProperties.Name="cmbZoomChainMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbZoomChainMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
                                     <ComboBoxItem>Auto</ComboBoxItem>
                                     <ComboBoxItem>Always</ComboBoxItem>
                                     <ComboBoxItem>Never</ComboBoxItem>
                                 </ComboBox>
-                                <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
-                                <ComboBox x:Name="cmbHorizontalScrollRailingMode1" AutomationProperties.Name="cmbHorizontalScrollRailingMode1"
-                                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
+                                <TextBlock Text="HorizontalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
+                                <ComboBox x:Name="cmbHorizontalScrollRailMode1" AutomationProperties.Name="cmbHorizontalScrollRailMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
                                     <ComboBoxItem>Enabled</ComboBoxItem>
                                     <ComboBoxItem>Disabled</ComboBoxItem>
                                 </ComboBox>
-                                <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
-                                <ComboBox x:Name="cmbVerticalScrollRailingMode1" AutomationProperties.Name="cmbVerticalScrollRailingMode1"
-                                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
+                                <TextBlock Text="VerticalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
+                                <ComboBox x:Name="cmbVerticalScrollRailMode1" AutomationProperties.Name="cmbVerticalScrollRailMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
                                     <ComboBoxItem>Enabled</ComboBoxItem>
                                     <ComboBoxItem>Disabled</ComboBoxItem>
                                 </ComboBox>
@@ -202,36 +202,36 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Text="HorizontalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
-                                        <ComboBox x:Name="cmbHorizontalScrollChainingMode0" AutomationProperties.Name="cmbHorizontalScrollChainingMode0"
-                                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                                        <TextBlock Text="HorizontalScrollChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                                        <ComboBox x:Name="cmbHorizontalScrollChainMode0" AutomationProperties.Name="cmbHorizontalScrollChainMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
                                             <ComboBoxItem>Auto</ComboBoxItem>
                                             <ComboBoxItem>Always</ComboBoxItem>
                                             <ComboBoxItem>Never</ComboBoxItem>
                                         </ComboBox>
-                                        <TextBlock Text="VerticalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
-                                        <ComboBox x:Name="cmbVerticalScrollChainingMode0" AutomationProperties.Name="cmbVerticalScrollChainingMode0"
-                                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                                        <TextBlock Text="VerticalScrollChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                                        <ComboBox x:Name="cmbVerticalScrollChainMode0" AutomationProperties.Name="cmbVerticalScrollChainMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
                                             <ComboBoxItem>Auto</ComboBoxItem>
                                             <ComboBoxItem>Always</ComboBoxItem>
                                             <ComboBoxItem>Never</ComboBoxItem>
                                         </ComboBox>
-                                        <TextBlock Text="ZoomChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
-                                        <ComboBox x:Name="cmbZoomChainingMode0" AutomationProperties.Name="cmbZoomChainingMode0"
-                                            SelectedIndex="0" SelectionChanged="CmbZoomChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
+                                        <TextBlock Text="ZoomChainMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+                                        <ComboBox x:Name="cmbZoomChainMode0" AutomationProperties.Name="cmbZoomChainMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbZoomChainMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
                                             <ComboBoxItem>Auto</ComboBoxItem>
                                             <ComboBoxItem>Always</ComboBoxItem>
                                             <ComboBoxItem>Never</ComboBoxItem>
                                         </ComboBox>
-                                        <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
-                                        <ComboBox x:Name="cmbHorizontalScrollRailingMode0" AutomationProperties.Name="cmbHorizontalScrollRailingMode0"
-                                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
+                                        <TextBlock Text="HorizontalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
+                                        <ComboBox x:Name="cmbHorizontalScrollRailMode0" AutomationProperties.Name="cmbHorizontalScrollRailMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
                                             <ComboBoxItem>Enabled</ComboBoxItem>
                                             <ComboBoxItem>Disabled</ComboBoxItem>
                                         </ComboBox>
-                                        <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
-                                        <ComboBox x:Name="cmbVerticalScrollRailingMode0" AutomationProperties.Name="cmbVerticalScrollRailingMode0"
-                                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
+                                        <TextBlock Text="VerticalScrollRailMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
+                                        <ComboBox x:Name="cmbVerticalScrollRailMode0" AutomationProperties.Name="cmbVerticalScrollRailMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
                                             <ComboBoxItem>Enabled</ComboBoxItem>
                                             <ComboBoxItem>Disabled</ComboBoxItem>
                                         </ComboBox>

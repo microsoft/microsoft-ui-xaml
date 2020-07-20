@@ -9,12 +9,12 @@
 
 bool ScrollPresenter::IsHorizontallyScrollable()
 {
-    return m_contentOrientation != winrt::ContentOrientation::Vertical;
+    return m_contentOrientation != winrt::ScrollingContentOrientation::Vertical;
 }
 
 bool ScrollPresenter::IsVerticallyScrollable()
 {
-    return m_contentOrientation != winrt::ContentOrientation::Horizontal;
+    return m_contentOrientation != winrt::ScrollingContentOrientation::Horizontal;
 }
 
 winrt::event_token ScrollPresenter::ViewportChanged(winrt::ViewportChangedEventHandler const& value)

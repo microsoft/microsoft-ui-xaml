@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
 {
@@ -103,7 +103,7 @@ namespace MUXControlsTestApp
             ComboBox cmbHorizontalScrollController = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? cmbHorizontalScrollController1 : cmbHorizontalScrollController2;
             ScrollPresenter scrollPresenter = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? scrollPresenter1 : scrollPresenter2;
 
-            scrollPresenter.HorizontalScrollMode = ScrollMode.Enabled;
+            scrollPresenter.HorizontalScrollMode = ScrollingScrollMode.Enabled;
             switch (cmbHorizontalScrollController.SelectedIndex)
             {
                 case 1:
@@ -121,7 +121,7 @@ namespace MUXControlsTestApp
             ComboBox cmbHorizontalScrollController = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? cmbHorizontalScrollController1 : cmbHorizontalScrollController2;
             ScrollPresenter scrollPresenter = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? scrollPresenter1 : scrollPresenter2;
 
-            scrollPresenter.HorizontalScrollMode = ScrollMode.Disabled;
+            scrollPresenter.HorizontalScrollMode = ScrollingScrollMode.Disabled;
             switch (cmbHorizontalScrollController.SelectedIndex)
             {
                 case 1:
@@ -139,7 +139,7 @@ namespace MUXControlsTestApp
             ComboBox cmbVerticalScrollController = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? cmbVerticalScrollController1 : cmbVerticalScrollController2;
             ScrollPresenter scrollPresenter = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? scrollPresenter1 : scrollPresenter2;
 
-            scrollPresenter.VerticalScrollMode = ScrollMode.Enabled;
+            scrollPresenter.VerticalScrollMode = ScrollingScrollMode.Enabled;
             switch (cmbVerticalScrollController.SelectedIndex)
             {
                 case 1:
@@ -157,7 +157,7 @@ namespace MUXControlsTestApp
             ComboBox cmbVerticalScrollController = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? cmbVerticalScrollController1 : cmbVerticalScrollController2;
             ScrollPresenter scrollPresenter = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? scrollPresenter1 : scrollPresenter2;
 
-            scrollPresenter.VerticalScrollMode = ScrollMode.Disabled;
+            scrollPresenter.VerticalScrollMode = ScrollingScrollMode.Disabled;
             switch (cmbVerticalScrollController.SelectedIndex)
             {
                 case 1:

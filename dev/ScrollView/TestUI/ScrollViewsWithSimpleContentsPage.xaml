@@ -74,9 +74,9 @@
             <TextBox x:Name="txtScrollPresenterVerticalOffset" AutomationProperties.AutomationId="txtScrollPresenterVerticalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="ZoomFactor:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <TextBox x:Name="txtScrollPresenterZoomFactor" AutomationProperties.AutomationId="txtScrollPresenterZoomFactor" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
-            <TextBlock Text="IgnoredInputKind:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbIgnoredInputKind" AutomationProperties.Name="cmbIgnoredInputKind" VerticalAlignment="Center"
-                    SelectedIndex="0" SelectionChanged="CmbIgnoredInputKind_SelectionChanged" Width="140" IsEnabled="False" IsTabStop="False">
+            <TextBlock Text="IgnoredInputKinds:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbIgnoredInputKinds" AutomationProperties.Name="cmbIgnoredInputKinds" VerticalAlignment="Center"
+                    SelectedIndex="0" SelectionChanged="CmbIgnoredInputKinds_SelectionChanged" Width="140" IsEnabled="False" IsTabStop="False">
                 <ComboBoxItem/>
                 <ComboBoxItem>None</ComboBoxItem>
                 <ComboBoxItem>Touch</ComboBoxItem>
@@ -135,7 +135,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controls:ScrollView x:Name="scrollView51" AutomationProperties.Name="scrollView51" IsTabStop="True"
-                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                ContentOrientation="None" HorizontalScrollRailMode="Disabled" VerticalScrollRailMode="Disabled">
                 <Image x:Name="img51" AutomationProperties.Name="img51" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollView>
         </Border>
@@ -174,7 +174,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controls:ScrollView x:Name="scrollView52" AutomationProperties.Name="scrollView52"
-                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                ContentOrientation="None" HorizontalScrollRailMode="Disabled" VerticalScrollRailMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img52" AutomationProperties.Name="img52" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollView>
         </Border>

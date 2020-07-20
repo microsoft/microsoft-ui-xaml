@@ -18,8 +18,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
@@ -306,7 +306,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             // Jump to absolute offsets
-            ScrollTo(scrollPresenter, 60.0, 0.0, AnimationMode.Disabled, SnapPointsMode.Default);
+            ScrollTo(scrollPresenter, 60.0, 0.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Default);
 
             // Add scroll repeated snap point with different offset and start.
             RunOnUIThread.Execute(() =>
@@ -322,7 +322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Flick with horizontal offset velocity to naturally land around offset 15.
-            ScrollFrom(scrollPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+            AddScrollVelocity(scrollPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -356,8 +356,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 zoomFactor: 6.0f,
                 centerPointX: 690.0f,
                 centerPointY: 340.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Default);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Default);
 
             // Add zoom repeated snap point with different offset and start.
             RunOnUIThread.Execute(() =>
@@ -372,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Flick with zoom factor velocity to naturally land around factor 1.5.
-            ZoomFrom(scrollPresenter,
+            AddZoomVelocity(scrollPresenter,
                 zoomFactorVelocity: -5.0f,
                 inertiaDecayRate: 0.6675f,
                 centerPointX: 150.0f,

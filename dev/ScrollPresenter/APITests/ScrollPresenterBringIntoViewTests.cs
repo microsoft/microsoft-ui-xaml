@@ -23,9 +23,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs;
 using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
@@ -812,7 +812,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollPresenterViewChangedEvent = new AutoResetEvent(false);
             AutoResetEvent bringIntoViewCompletedEvent = new AutoResetEvent(false);
-            int bringIntoViewChangeId = -1;
+            int bringIntoViewChangeCorrelationId = -1;
 
             RunOnUIThread.Execute(() =>
             {
@@ -825,12 +825,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalZoomFactor != 1.0f)
             {
-                ZoomTo(scrollPresenter, originalZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollPresenter, originalZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalHorizontalOffset != 0 || originalVerticalOffset != 0)
             {
-                ScrollTo(scrollPresenter, originalHorizontalOffset, originalVerticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, originalHorizontalOffset, originalVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
@@ -845,16 +845,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollPresenter.ScrollCompleted += delegate (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
                 {
                     ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
-                    Log.Comment("ScrollPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
-                    if (bringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
+                    Log.Comment("ScrollPresenter bring-into-view OffsetsChangeCorrelationId={0} completed with Result={1}", args.CorrelationId, result);
+                    if (bringIntoViewChangeCorrelationId == args.CorrelationId)
                         bringIntoViewCompletedEvent.Set();
                 };
 
                 scrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
-                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
-                    bringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
+                    Log.Comment("ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeCorrelationId={3}, SnapPointsMode={4}",
+                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.CorrelationId, args.SnapPointsMode);
+                    bringIntoViewChangeCorrelationId = args.CorrelationId;
 
                     if (applyOptionsInBringingIntoViewHandler && options != null)
                     {
@@ -872,7 +872,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollPresenter.BringingIntoView - Applying mandatory snap points");
                         AddSnapPoints(scrollPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
-                        args.SnapPointsMode = SnapPointsMode.Default;
+                        args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
@@ -936,8 +936,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             AutoResetEvent innerScrollPresenterViewChangedEvent = new AutoResetEvent(false);
             AutoResetEvent outerBringIntoViewCompletedEvent = new AutoResetEvent(false);
             AutoResetEvent innerBringIntoViewCompletedEvent = new AutoResetEvent(false);
-            int outerBringIntoViewChangeId = -1;
-            int innerBringIntoViewChangeId = -1;
+            int outerBringIntoViewChangeCorrelationId = -1;
+            int innerBringIntoViewChangeCorrelationId = -1;
 
             RunOnUIThread.Execute(() =>
             {
@@ -952,22 +952,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalOuterZoomFactor != 1.0f)
             {
-                ZoomTo(outerScrollPresenter, originalOuterZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(outerScrollPresenter, originalOuterZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalOuterHorizontalOffset != 0 || originalOuterVerticalOffset != 0)
             {
-                ScrollTo(outerScrollPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(outerScrollPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             if (originalInnerZoomFactor != 1.0f)
             {
-                ZoomTo(innerScrollPresenter, originalInnerZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(innerScrollPresenter, originalInnerZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalInnerHorizontalOffset != 0 || originalInnerVerticalOffset != 0)
             {
-                ScrollTo(innerScrollPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(innerScrollPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
@@ -983,22 +983,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                    Log.Comment("Inner ScrollPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
-                    if (innerBringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
+                    Log.Comment("Inner ScrollPresenter bring-into-view OffsetsChangeCorrelationId={0} completed with Result={1}", args.CorrelationId, result);
+                    if (innerBringIntoViewChangeCorrelationId == args.CorrelationId)
                         innerBringIntoViewCompletedEvent.Set();
                 };
 
                 innerScrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Inner ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
-                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
-                    innerBringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
+                    Log.Comment("Inner ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeCorrelationId={3}, SnapPointsMode={4}",
+                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.CorrelationId, args.SnapPointsMode);
+                    innerBringIntoViewChangeCorrelationId = args.CorrelationId;
 
                     if (applySnapPointsInBringingIntoViewHandler)
                     {
                         Log.Comment("ScrollPresenter.BringingIntoView - Applying mandatory snap points");
                         AddSnapPoints(scrollPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
-                        args.SnapPointsMode = SnapPointsMode.Default;
+                        args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
@@ -1012,22 +1012,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 outerScrollPresenter.ScrollCompleted += delegate (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
                 {
                     ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
-                    Log.Comment("Outer ScrollPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
-                    if (outerBringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
+                    Log.Comment("Outer ScrollPresenter bring-into-view OffsetsChangeCorrelationId={0} completed with Result={1}", args.CorrelationId, result);
+                    if (outerBringIntoViewChangeCorrelationId == args.CorrelationId)
                         outerBringIntoViewCompletedEvent.Set();
                 };
 
                 outerScrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Outer ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
-                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
-                    outerBringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
+                    Log.Comment("Outer ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeCorrelationId={3}, SnapPointsMode={4}",
+                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.CorrelationId, args.SnapPointsMode);
+                    outerBringIntoViewChangeCorrelationId = args.CorrelationId;
 
                     if (applySnapPointsInBringingIntoViewHandler)
                     {
                         Log.Comment("ScrollPresenter.BringingIntoView - Applying mandatory snap points");
                         AddSnapPoints(scrollPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
-                        args.SnapPointsMode = SnapPointsMode.Default;
+                        args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
@@ -1170,13 +1170,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scrollPresenter.Name = "scrollPresenter";
             if (orientation == Orientation.Vertical)
             {
-                scrollPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                 scrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
                 scrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
             }
             else
             {
-                scrollPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 scrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
                 scrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
             }
@@ -1196,8 +1196,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             scrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
             {
-                Log.Comment("ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
-                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
+                Log.Comment("ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeCorrelationId={3}",
+                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.CorrelationId);
                 Log.Comment("RequestEventArgs - AnimationDesired={0}, Handled={1}, HorizontalAlignmentRatio={2}, VerticalAlignmentRatio={3}",
                     args.RequestEventArgs.AnimationDesired,
                     args.RequestEventArgs.Handled,
@@ -1309,13 +1309,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             outerScrollPresenter.Name = "outerScrollPresenter";
             if (orientation == Orientation.Vertical)
             {
-                outerScrollPresenter.ContentOrientation = ContentOrientation.Vertical;
+                outerScrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                 outerScrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
                 outerScrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
             }
             else
             {
-                outerScrollPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                outerScrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 outerScrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
                 outerScrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
             }
@@ -1339,8 +1339,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             outerScrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
             {
-                Log.Comment("Outer ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
-                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
+                Log.Comment("Outer ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeCorrelationId={3}, SnapPointsMode={4}",
+                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.CorrelationId, args.SnapPointsMode);
                 Log.Comment("RequestEventArgs - AnimationDesired={0}, Handled={1}, HorizontalAlignmentRatio={2}, VerticalAlignmentRatio={3}",
                     args.RequestEventArgs.AnimationDesired,
                     args.RequestEventArgs.Handled,

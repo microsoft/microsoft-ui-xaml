@@ -97,7 +97,7 @@ foreach ($testRun in $testRuns.value)
 
                     $destination = "$visualTreeVerificationFolder\$($verificationFile.Name)"
                     Write-Host "Copying $($verificationFile.Name) to $destination"
-                    $link = "$($masterFile.Link)$accessTokenParam"
+                    $link = "$($verificationFile.Link)$accessTokenParam"
                     $webClient.DownloadFile($link, $destination)
                 }
 

@@ -20,14 +20,14 @@ public:
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollCompletedEventArgs overrides
-    winrt::ScrollInfo ScrollInfo();
+    // IScrollingScrollCompletedEventArgs overrides
+    int32_t CorrelationId();
     ScrollPresenterViewChangeResult Result();
 
-    void OffsetsChangeId(int32_t offsetsChangeId);
+    void OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId);
     void Result(ScrollPresenterViewChangeResult result);
 
 private:
-    int32_t m_offsetsChangeId{ -1 };
+    int32_t m_offsetsChangeCorrelationId{ -1 };
     ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

@@ -3,7 +3,7 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollBarVisibility
+enum ScrollingScrollBarVisibility
 {
     Auto = 0,
     Visible = 1,
@@ -20,6 +20,7 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     ScrollView();
 
     Windows.UI.Xaml.UIElement Content { get; set; };
+    Windows.UI.Xaml.UIElement CurrentAnchor { get; };
     Windows.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };
@@ -30,43 +31,41 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     Double ViewportHeight{ get; };
     Double ScrollableWidth{ get; };
     Double ScrollableHeight{ get; };
-    InteractionState State { get; };
-    MU_XCP_NAMESPACE.IScrollController HorizontalScrollController { get; };
-    MU_XCP_NAMESPACE.IScrollController VerticalScrollController { get; };
+    ScrollingInteractionState State { get; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultHorizontalScrollBarVisibility")]
-    ScrollBarVisibility HorizontalScrollBarVisibility { get; set; };
+    ScrollingScrollBarVisibility HorizontalScrollBarVisibility { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultVerticalScrollBarVisibility")]
-    ScrollBarVisibility VerticalScrollBarVisibility { get; set; };
+    ScrollingScrollBarVisibility VerticalScrollBarVisibility { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultContentOrientation")]
-    ContentOrientation ContentOrientation { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollView::s_defaultHorizontalScrollChainingMode")]
-    ChainingMode HorizontalScrollChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollView::s_defaultVerticalScrollChainingMode")]
-    ChainingMode VerticalScrollChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollView::s_defaultHorizontalScrollRailingMode")]
-    RailingMode HorizontalScrollRailingMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollView::s_defaultVerticalScrollRailingMode")]
-    RailingMode VerticalScrollRailingMode { get; set; };
+    ScrollingContentOrientation ContentOrientation { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollView::s_defaultHorizontalScrollChainMode")]
+    ScrollingChainMode HorizontalScrollChainMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollView::s_defaultVerticalScrollChainMode")]
+    ScrollingChainMode VerticalScrollChainMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollView::s_defaultHorizontalScrollRailMode")]
+    ScrollingRailMode HorizontalScrollRailMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollView::s_defaultVerticalScrollRailMode")]
+    ScrollingRailMode VerticalScrollRailMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultHorizontalScrollMode")]
-    ScrollMode HorizontalScrollMode { get; set; };
+    ScrollingScrollMode HorizontalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultVerticalScrollMode")]
-    ScrollMode VerticalScrollMode { get; set; };
+    ScrollingScrollMode VerticalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultComputedHorizontalScrollBarVisibility")]
     Windows.UI.Xaml.Visibility ComputedHorizontalScrollBarVisibility{ get; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultComputedVerticalScrollBarVisibility")]
     Windows.UI.Xaml.Visibility ComputedVerticalScrollBarVisibility{ get; };
 #ifdef USE_SCROLLMODE_AUTO
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultComputedHorizontalScrollMode")]
-    ScrollMode ComputedHorizontalScrollMode { get; };
+    ScrollingScrollMode ComputedHorizontalScrollMode { get; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultComputedVerticalScrollMode")]
-    ScrollMode ComputedVerticalScrollMode { get; };
+    ScrollingScrollMode ComputedVerticalScrollMode { get; };
 #endif
-    [MUX_DEFAULT_VALUE("ScrollView::s_defaultZoomChainingMode")]
-    ChainingMode ZoomChainingMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollView::s_defaultZoomChainMode")]
+    ScrollingChainMode ZoomChainMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultZoomMode")]
-    ZoomMode ZoomMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollView::s_defaultIgnoredInputKind")]
-    InputKind IgnoredInputKind { get; set; };
+    ScrollingZoomMode ZoomMode { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollView::s_defaultIgnoredInputKinds")]
+    ScrollingInputKinds IgnoredInputKinds { get; set; };
     [MUX_DEFAULT_VALUE("ScrollView::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
@@ -82,45 +81,45 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     void RegisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     void UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     [method_name("ScrollTo")]
-    ScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset);
     [method_name("ScrollToWithOptions")]
-    ScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset,
         ScrollingScrollOptions options);
     [method_name("ScrollBy")]
-    ScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta);
     [method_name("ScrollByWithOptions")]
-    ScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         ScrollingScrollOptions options);
-    ScrollInfo ScrollFrom(
+    Int32 AddScrollVelocity(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
     [method_name("ZoomTo")]
-    ZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomToWithOptions")]
-    ZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         ScrollingZoomOptions options);
     [method_name("ZoomBy")]
-    ZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomByWithOptions")]
-    ZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         ScrollingZoomOptions options);
-    ZoomInfo ZoomFrom(
+    Int32 AddZoomVelocity(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
@@ -138,15 +137,13 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };
     [MUX_PROPERTY_TYPE("winrt::ScrollPresenter")]
     static Windows.UI.Xaml.DependencyProperty ScrollPresenterProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty HorizontalScrollControllerProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty VerticalScrollControllerProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollBarVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollBarVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainingModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty VerticalScrollChainingModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailingModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty VerticalScrollRailingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollChainModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollRailModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ComputedHorizontalScrollBarVisibilityProperty{ get; };
@@ -155,9 +152,9 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ComputedHorizontalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ComputedVerticalScrollModeProperty { get; };
 #endif
-    static Windows.UI.Xaml.DependencyProperty ZoomChainingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ZoomChainModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ZoomModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IgnoredInputKindProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IgnoredInputKindsProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
