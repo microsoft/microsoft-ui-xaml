@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Shapes;
 using Common;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
 {
@@ -328,8 +328,8 @@ namespace MUXControlsTestApp
             s.Height = 300;
             s.Background = new SolidColorBrush(Windows.UI.Colors.LightBlue);
             s.Margin = new Thickness(4);
-            s.HorizontalScrollMode = ScrollMode.Enabled;
-            s.VerticalScrollMode = ScrollMode.Enabled;
+            s.HorizontalScrollMode = ScrollingScrollMode.Enabled;
+            s.VerticalScrollMode = ScrollingScrollMode.Enabled;
             s.Content = rectSC;
             s.ViewChanged += ScrollPresenter_ViewChanged;
 

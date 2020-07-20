@@ -3,21 +3,7 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-struct ScrollInfo 
-{ 
-    Int32 OffsetsChangeId;
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-struct ZoomInfo
-{
-    Int32 ZoomFactorChangeId;
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-enum ContentOrientation
+enum ScrollingContentOrientation
 {
     Vertical = 0,
     Horizontal = 1,
@@ -27,7 +13,7 @@ enum ContentOrientation
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum InteractionState
+enum ScrollingInteractionState
 {
     Idle = 0,
     Interaction = 1,
@@ -37,7 +23,7 @@ enum InteractionState
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollMode
+enum ScrollingScrollMode
 {
     Enabled = 0,
     Disabled = 1,
@@ -48,7 +34,7 @@ enum ScrollMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ZoomMode
+enum ScrollingZoomMode
 {
     Enabled = 0,
     Disabled = 1,
@@ -56,7 +42,7 @@ enum ZoomMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ChainingMode
+enum ScrollingChainMode
 {
     Auto = 0,
     Always = 1,
@@ -65,7 +51,7 @@ enum ChainingMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum RailingMode
+enum ScrollingRailMode
 {
     Enabled = 0,
     Disabled = 1,
@@ -74,7 +60,7 @@ enum RailingMode
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [flags]
-enum InputKind
+enum ScrollingInputKinds
 {
     None = 0,
     Touch = 1,
@@ -87,7 +73,7 @@ enum InputKind
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum AnimationMode 
+enum ScrollingAnimationMode
 { 
    Disabled = 0,
    Enabled = 1,
@@ -96,7 +82,7 @@ enum AnimationMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum SnapPointsMode
+enum ScrollingSnapPointsMode
 {
     Default = 0,
     Ignore = 1,
@@ -108,11 +94,11 @@ enum SnapPointsMode
 [threading(both)]
 unsealed runtimeclass ScrollingScrollOptions
 {
-    ScrollingScrollOptions(AnimationMode animationMode);
-    ScrollingScrollOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+    ScrollingScrollOptions(ScrollingAnimationMode animationMode);
+    ScrollingScrollOptions(ScrollingAnimationMode animationMode, ScrollingSnapPointsMode snapPointsMode);
  
-    AnimationMode AnimationMode { get; set; };
-    SnapPointsMode SnapPointsMode { get; set; };
+    ScrollingAnimationMode AnimationMode { get; set; };
+    ScrollingSnapPointsMode SnapPointsMode { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -121,11 +107,11 @@ unsealed runtimeclass ScrollingScrollOptions
 [threading(both)]
 unsealed runtimeclass ScrollingZoomOptions
 {
-    ScrollingZoomOptions(AnimationMode animationMode);
-    ScrollingZoomOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+    ScrollingZoomOptions(ScrollingAnimationMode animationMode);
+    ScrollingZoomOptions(ScrollingAnimationMode animationMode, ScrollingSnapPointsMode snapPointsMode);
 
-    AnimationMode AnimationMode { get; set; };
-    SnapPointsMode SnapPointsMode { get; set; };
+    ScrollingAnimationMode AnimationMode { get; set; };
+    ScrollingSnapPointsMode SnapPointsMode { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -135,7 +121,7 @@ runtimeclass ScrollingScrollAnimationStartingEventArgs
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Windows.Foundation.Numerics.Vector2 StartPosition { get; };
     Windows.Foundation.Numerics.Vector2 EndPosition { get; };
-    ScrollInfo ScrollInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -146,32 +132,32 @@ runtimeclass ScrollingZoomAnimationStartingEventArgs
     Single StartZoomFactor { get; };
     Single EndZoomFactor { get; };
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
-    ZoomInfo ZoomInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingScrollCompletedEventArgs
 {
-    ScrollInfo ScrollInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingZoomCompletedEventArgs
 {
-    ZoomInfo ZoomInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingBringingIntoViewEventArgs
 {
-    SnapPointsMode SnapPointsMode { get; set; };
+    ScrollingSnapPointsMode SnapPointsMode { get; set; };
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
     Double TargetHorizontalOffset { get; };
     Double TargetVerticalOffset { get; };
-    ScrollInfo ScrollInfo { get; };
+    Int32 CorrelationId { get; };
     Boolean Cancel { get; set; };
 }
 

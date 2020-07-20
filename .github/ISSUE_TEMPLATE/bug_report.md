@@ -31,7 +31,8 @@ NuGet package version:
 Examples
 [Microsoft.UI.Xaml 2.4.0]
 [Microsoft.UI.Xaml.2.4.0-prerelease.200506001]
-[Microsoft.WinUI 3.0.0-preview1.200515.3]
+[Microsoft.WinUI 3.0.0-preview1.200515.3] If you seeing your issue in preview1, please try preview2.
+[Microsoft.WinUI 3.0.0-preview2.200713.0]
 -->
 
 <!-- Which Windows versions did you see the issue on? Leave blank if you didn't try that version. -->

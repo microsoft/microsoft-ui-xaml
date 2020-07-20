@@ -53,6 +53,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -83,41 +84,45 @@
             <Button x:Name="btnGetHeight" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHeight_Click"/>
             <Button x:Name="btnSetHeight" Content="S" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHeight_Click"/>
 
-            <TextBlock x:Name="tblCollapsedAnchorElement" Grid.Row="5" Grid.Column="0"/>
-            <TextBlock Text="AnchorElement:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbAnchorElement" Grid.Row="5" Grid.Column="1" Margin="1,0,1,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbAnchorElement_SelectionChanged">
+            <TextBlock Text="CurrentAnchor:" Grid.Row="5" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtCurrentAnchor" Grid.Row="5" Grid.Column="1" Margin="1" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetCurrentAnchor" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnGetCurrentAnchor_Click"/>
+
+            <TextBlock x:Name="tblCollapsedAnchorElement" Grid.Row="6" Grid.Column="0"/>
+            <TextBlock Text="AnchorElement:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbAnchorElement" Grid.Row="6" Grid.Column="1" Margin="1,0,1,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbAnchorElement_SelectionChanged">
                 <ComboBoxItem>Null</ComboBoxItem>
                 <ComboBoxItem>External</ComboBoxItem>
                 <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Border</ComboBoxItem>
                 <ComboBoxItem>Item</ComboBoxItem>
             </ComboBox>
-            <Button x:Name="btnGetAnchorElement" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetAnchorElement_Click"/>
-            <Button x:Name="btnSetAnchorElement" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetAnchorElement_Click"/>
+            <Button x:Name="btnGetAnchorElement" Content="G" Margin="1" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetAnchorElement_Click"/>
+            <Button x:Name="btnSetAnchorElement" Content="S" Margin="1" Grid.Row="6" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetAnchorElement_Click"/>
 
-            <TextBlock x:Name="tblItemIndex" Text="Item Index:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"/>
-            <TextBox x:Name="txtItemIndex" Text="0" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <TextBlock x:Name="tblItemIndex" Text="Item Index:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <TextBox x:Name="txtItemIndex" Text="0" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed"/>
 
-            <TextBlock Text="ScrollPresenter Methods" Grid.ColumnSpan="4" Foreground="Red" Grid.Row="7" Margin="0,4,0,0"/>
+            <TextBlock Text="ScrollPresenter Methods" Grid.ColumnSpan="4" Foreground="Red" Grid.Row="8" Margin="0,4,0,0"/>
 
-            <Button x:Name="btnInvalidateArrange" Content="InvalidateArrange" Margin="1" Grid.Row="8" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInvalidateArrange_Click"/>
+            <Button x:Name="btnInvalidateArrange" Content="InvalidateArrange" Margin="1" Grid.Row="9" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInvalidateArrange_Click"/>
 
-            <TextBlock Text="ScrollTo Options" Grid.Row="9" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
-            <TextBlock Text="Offset:" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtCOAO" Text="0" Grid.Column="1" Grid.Row="10" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
-            <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="11" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="11" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <TextBlock Text="ScrollTo Options" Grid.Row="10" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
+            <TextBlock Text="Offset:" Grid.Column="0" Grid.Row="11" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtCOAO" Text="0" Grid.Column="1" Grid.Row="11" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
+            <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="12" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="12" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                 <TextBox x:Name="txtStockOffsetsChangeDuration" IsReadOnly="True" Margin="1"/>
                 <TextBox x:Name="txtOverriddenOffsetsChangeDuration" Margin="1"/>
             </StackPanel>
-            <Button x:Name="btnScrollTo" Content="ScrollTo" Grid.ColumnSpan="4" Grid.Row="12" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollTo_Click"/>
+            <Button x:Name="btnScrollTo" Content="ScrollTo" Grid.ColumnSpan="4" Grid.Row="13" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollTo_Click"/>
 
-            <TextBlock Text="ScrollFrom Options" Grid.Row="13" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
-            <TextBlock Text="Velocity:" Grid.Column="0" Grid.Row="14" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtCOWAVAV" Text="0" Grid.Column="1" Grid.Row="14" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
-            <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="15" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtCOWAVAIDR" Text="null" Grid.Column="1" Grid.Row="15" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
-            <Button x:Name="btnScrollFrom" Content="ScrollFrom" Grid.ColumnSpan="4" Grid.Row="16" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollFrom_Click"/>
+            <TextBlock Text="AddScrollVelocity Options" Grid.Row="14" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
+            <TextBlock Text="Velocity:" Grid.Column="0" Grid.Row="15" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtCOWAVAV" Text="0" Grid.Column="1" Grid.Row="15" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
+            <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="16" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtCOWAVAIDR" Text="null" Grid.Column="1" Grid.Row="16" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
+            <Button x:Name="btnAddScrollVelocity" Content="AddScrollVelocity" Grid.ColumnSpan="4" Grid.Row="17" Margin="1" HorizontalAlignment="Stretch" Click="BtnAddScrollVelocity_Click"/>
         </Grid>
 
         <Grid Grid.Row="1" Grid.Column="2" Margin="1" Padding="6">

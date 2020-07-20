@@ -8,10 +8,10 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingChainMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using ScrollingRailMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
@@ -23,7 +23,7 @@ namespace MUXControlsTestApp
     public sealed partial class ScrollPresenterChainingAndRailingPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
-        private int scrollPresenter3ZoomFactorChangeId = -1;
+        private int scrollPresenter3ZoomFactorChangeCorrelationId = -1;
 
         public ScrollPresenterChainingAndRailingPage()
         {
@@ -81,18 +81,18 @@ namespace MUXControlsTestApp
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
-            if (args.ZoomInfo.ZoomFactorChangeId == scrollPresenter3ZoomFactorChangeId)
+            if (args.CorrelationId == scrollPresenter3ZoomFactorChangeCorrelationId)
                 this.txtResetStatus.Text = "Views reset";
         }
 
-        private void CmbHorizontalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
             if (scrollPresenter != null)
             {
-                scrollPresenter.HorizontalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollPresenter.HorizontalScrollChainMode = (ScrollingChainMode)cmb.SelectedIndex;
             }
             else
             {
@@ -104,14 +104,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbVerticalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
             if (scrollPresenter != null)
             {
-                scrollPresenter.VerticalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollPresenter.VerticalScrollChainMode = (ScrollingChainMode)cmb.SelectedIndex;
             }
             else
             {
@@ -123,14 +123,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbZoomChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbZoomChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
             if (scrollPresenter != null)
             {
-                scrollPresenter.ZoomChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollPresenter.ZoomChainMode = (ScrollingChainMode)cmb.SelectedIndex;
             }
             else
             {
@@ -142,14 +142,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbHorizontalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
             if (scrollPresenter != null)
             {
-                scrollPresenter.HorizontalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
+                scrollPresenter.HorizontalScrollRailMode = (ScrollingRailMode)cmb.SelectedIndex;
             }
             else
             {
@@ -161,14 +161,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbVerticalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollPresenter scrollPresenter = GetScrollPresenterWithSuffix(suffix);
             if (scrollPresenter != null)
             {
-                scrollPresenter.VerticalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
+                scrollPresenter.VerticalScrollRailMode = (ScrollingRailMode)cmb.SelectedIndex;
             }
             else
             {
@@ -212,25 +212,25 @@ namespace MUXControlsTestApp
             if (scrollPresenter == null)
                 return;
 
-            ComboBox cmb = FindName("cmbHorizontalScrollChainingMode" + suffix) as ComboBox;
+            ComboBox cmb = FindName("cmbHorizontalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollPresenter.HorizontalScrollChainingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.HorizontalScrollChainMode;
 
-            cmb = FindName("cmbVerticalScrollChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollPresenter.VerticalScrollChainingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.VerticalScrollChainMode;
 
-            cmb = FindName("cmbZoomChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbZoomChainMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollPresenter.ZoomChainingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.ZoomChainMode;
 
-            cmb = FindName("cmbHorizontalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbHorizontalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollPresenter.HorizontalScrollRailingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.HorizontalScrollRailMode;
 
-            cmb = FindName("cmbVerticalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollPresenter.VerticalScrollRailingMode;
+                cmb.SelectedIndex = (int)scrollPresenter.VerticalScrollRailMode;
         }
 
         private void InitializeUIFromScrollViewer(string suffix)
@@ -239,23 +239,23 @@ namespace MUXControlsTestApp
             if (scrollViewer == null)
                 return;
 
-            ComboBox cmb = FindName("cmbHorizontalScrollChainingMode" + suffix) as ComboBox;
+            ComboBox cmb = FindName("cmbHorizontalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsHorizontalScrollChainingEnabled ? 0 : 1;
 
-            cmb = FindName("cmbVerticalScrollChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsVerticalScrollChainingEnabled ? 0 : 1;
 
-            cmb = FindName("cmbZoomChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbZoomChainMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsZoomChainingEnabled ? 0 : 1;
 
-            cmb = FindName("cmbHorizontalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbHorizontalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsHorizontalRailEnabled ? 0 : 1;
 
-            cmb = FindName("cmbVerticalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsVerticalRailEnabled ? 0 : 1;
         }
@@ -278,15 +278,15 @@ namespace MUXControlsTestApp
                 scrollPresenter.ScrollTo(
                     0.0,
                     0.0,
-                    new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                    new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
 
-                int viewChangeId = scrollPresenter.ZoomTo(
+                int viewChangeCorrelationId = scrollPresenter.ZoomTo(
                     1.0f,
                     System.Numerics.Vector2.Zero,
-                    new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                    new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
 
                 if (this.scrollPresenter3 == scrollPresenter)
-                    scrollPresenter3ZoomFactorChangeId = viewChangeId;
+                    scrollPresenter3ZoomFactorChangeCorrelationId = viewChangeCorrelationId;
             }
             else
             {

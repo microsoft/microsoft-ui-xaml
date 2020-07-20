@@ -5,9 +5,9 @@
 #include "common.h"
 #include "ScrollingZoomCompletedEventArgs.h"
 
-winrt::ZoomInfo ScrollingZoomCompletedEventArgs::ZoomInfo()
+int32_t ScrollingZoomCompletedEventArgs::CorrelationId()
 {
-    return winrt::ZoomInfo{ m_zoomFactorChangeId };
+    return m_zoomFactorChangeCorrelationId;
 }
 
 ScrollPresenterViewChangeResult ScrollingZoomCompletedEventArgs::Result()
@@ -15,9 +15,9 @@ ScrollPresenterViewChangeResult ScrollingZoomCompletedEventArgs::Result()
     return m_result;
 }
 
-void ScrollingZoomCompletedEventArgs::ZoomFactorChangeId(int32_t zoomFactorChangeId)
+void ScrollingZoomCompletedEventArgs::ZoomFactorChangeCorrelationId(int32_t zoomFactorChangeCorrelationId)
 {
-    m_zoomFactorChangeId = zoomFactorChangeId;
+    m_zoomFactorChangeCorrelationId = zoomFactorChangeCorrelationId;
 }
 
 void ScrollingZoomCompletedEventArgs::Result(ScrollPresenterViewChangeResult result)

@@ -22,14 +22,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
-using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
+using ScrollingChainMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using ScrollingRailMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
 using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollViewTestHooks = Microsoft.UI.Private.Controls.ScrollViewTestHooks;
@@ -42,23 +42,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
 
-        private const InputKind c_defaultIgnoredInputKind = InputKind.None;
-        private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
-        private const ChainingMode c_defaultVerticalScrollChainingMode = ChainingMode.Auto;
-        private const RailingMode c_defaultHorizontalScrollRailingMode = RailingMode.Enabled;
-        private const RailingMode c_defaultVerticalScrollRailingMode = RailingMode.Enabled;
+        private const ScrollingInputKinds c_defaultIgnoredInputKinds = ScrollingInputKinds.None;
+        private const ScrollingChainMode c_defaultHorizontalScrollChainMode = ScrollingChainMode.Auto;
+        private const ScrollingChainMode c_defaultVerticalScrollChainMode = ScrollingChainMode.Auto;
+        private const ScrollingRailMode c_defaultHorizontalScrollRailMode = ScrollingRailMode.Enabled;
+        private const ScrollingRailMode c_defaultVerticalScrollRailMode = ScrollingRailMode.Enabled;
 #if USE_SCROLLMODE_AUTO
-        private const ScrollMode c_defaultComputedHorizontalScrollMode = ScrollMode.Disabled;
-        private const ScrollMode c_defaultComputedVerticalScrollMode = ScrollMode.Disabled;
-        private const ScrollMode c_defaultHorizontalScrollMode = ScrollMode.Auto;
-        private const ScrollMode c_defaultVerticalScrollMode = ScrollMode.Auto;
+        private const ScrollingScrollMode c_defaultComputedHorizontalScrollMode = ScrollingScrollMode.Disabled;
+        private const ScrollingScrollMode c_defaultComputedVerticalScrollMode = ScrollingScrollMode.Disabled;
+        private const ScrollingScrollMode c_defaultHorizontalScrollMode = ScrollingScrollMode.Auto;
+        private const ScrollingScrollMode c_defaultVerticalScrollMode = ScrollingScrollMode.Auto;
 #else
-        private const ScrollMode c_defaultHorizontalScrollMode = ScrollMode.Enabled;
-        private const ScrollMode c_defaultVerticalScrollMode = ScrollMode.Enabled;
+        private const ScrollingScrollMode c_defaultHorizontalScrollMode = ScrollingScrollMode.Enabled;
+        private const ScrollingScrollMode c_defaultVerticalScrollMode = ScrollingScrollMode.Enabled;
 #endif
-        private const ChainingMode c_defaultZoomChainingMode = ChainingMode.Auto;
-        private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
-        private const ContentOrientation c_defaultContentOrientation = ContentOrientation.Vertical;
+        private const ScrollingChainMode c_defaultZoomChainMode = ScrollingChainMode.Auto;
+        private const ScrollingZoomMode c_defaultZoomMode = ScrollingZoomMode.Disabled;
+        private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.Vertical;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultMaxZoomFactor = 10.0;
         private const double c_defaultAnchorRatio = 0.0;
@@ -87,35 +87,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment("Verifying ScrollView default property values");
                 Verify.IsNull(scrollView.Content);
+                Verify.IsNull(scrollView.CurrentAnchor);
                 Verify.IsNull(ScrollViewTestHooks.GetScrollPresenterPart(scrollView));
-                Verify.IsNull(scrollView.HorizontalScrollController);
-                Verify.IsNull(scrollView.VerticalScrollController);
 #if USE_SCROLLMODE_AUTO
-                Verify.AreEqual(scrollView.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
-                Verify.AreEqual(scrollView.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
+                Verify.AreEqual(c_defaultComputedHorizontalScrollMode, scrollView.ComputedHorizontalScrollMode);
+                Verify.AreEqual(c_defaultComputedVerticalScrollMode, scrollView.ComputedVerticalScrollMode);
 #endif
-                Verify.AreEqual(scrollView.IgnoredInputKind, c_defaultIgnoredInputKind);
-                Verify.AreEqual(scrollView.ContentOrientation, c_defaultContentOrientation);
-                Verify.AreEqual(scrollView.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
-                Verify.AreEqual(scrollView.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
-                Verify.AreEqual(scrollView.HorizontalScrollRailingMode, c_defaultHorizontalScrollRailingMode);
-                Verify.AreEqual(scrollView.VerticalScrollRailingMode, c_defaultVerticalScrollRailingMode);
-                Verify.AreEqual(scrollView.HorizontalScrollMode, c_defaultHorizontalScrollMode);
-                Verify.AreEqual(scrollView.VerticalScrollMode, c_defaultVerticalScrollMode);
-                Verify.AreEqual(scrollView.ZoomMode, c_defaultZoomMode);
-                Verify.AreEqual(scrollView.ZoomChainingMode, c_defaultZoomChainingMode);
+                Verify.AreEqual(c_defaultIgnoredInputKinds, scrollView.IgnoredInputKinds);
+                Verify.AreEqual(c_defaultContentOrientation, scrollView.ContentOrientation);
+                Verify.AreEqual(c_defaultHorizontalScrollChainMode, scrollView.HorizontalScrollChainMode);
+                Verify.AreEqual(c_defaultVerticalScrollChainMode, scrollView.VerticalScrollChainMode);
+                Verify.AreEqual(c_defaultHorizontalScrollRailMode, scrollView.HorizontalScrollRailMode);
+                Verify.AreEqual(c_defaultVerticalScrollRailMode, scrollView.VerticalScrollRailMode);
+                Verify.AreEqual(c_defaultHorizontalScrollMode, scrollView.HorizontalScrollMode);
+                Verify.AreEqual(c_defaultVerticalScrollMode, scrollView.VerticalScrollMode);
+                Verify.AreEqual(c_defaultZoomMode, scrollView.ZoomMode);
+                Verify.AreEqual(c_defaultZoomChainMode, scrollView.ZoomChainMode);
                 Verify.IsGreaterThan(scrollView.MinZoomFactor, c_defaultMinZoomFactor - c_epsilon);
                 Verify.IsLessThan(scrollView.MinZoomFactor, c_defaultMinZoomFactor + c_epsilon);
                 Verify.IsGreaterThan(scrollView.MaxZoomFactor, c_defaultMaxZoomFactor - c_epsilon);
                 Verify.IsLessThan(scrollView.MaxZoomFactor, c_defaultMaxZoomFactor + c_epsilon);
-                Verify.AreEqual(scrollView.HorizontalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scrollView.VerticalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scrollView.ExtentWidth, 0.0);
-                Verify.AreEqual(scrollView.ExtentHeight, 0.0);
-                Verify.AreEqual(scrollView.ViewportWidth, 0.0);
-                Verify.AreEqual(scrollView.ViewportHeight, 0.0);
-                Verify.AreEqual(scrollView.ScrollableWidth, 0.0);
-                Verify.AreEqual(scrollView.ScrollableHeight, 0.0);
+                Verify.AreEqual(c_defaultAnchorRatio, scrollView.HorizontalAnchorRatio);
+                Verify.AreEqual(c_defaultAnchorRatio, scrollView.VerticalAnchorRatio);
+                Verify.AreEqual(0.0, scrollView.ExtentWidth);
+                Verify.AreEqual(0.0, scrollView.ExtentHeight);
+                Verify.AreEqual(0.0, scrollView.ViewportWidth);
+                Verify.AreEqual(0.0, scrollView.ViewportHeight);
+                Verify.AreEqual(0.0, scrollView.ScrollableWidth);
+                Verify.AreEqual(0.0, scrollView.ScrollableHeight);
             });
         }
 
@@ -149,34 +148,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting ScrollPresenter-cloned properties to non-default values");
-                    scrollView.IgnoredInputKind = InputKind.MouseWheel | InputKind.Pen;
-                    scrollView.ContentOrientation = ContentOrientation.Horizontal;
-                    scrollView.HorizontalScrollChainingMode = ChainingMode.Always;
-                    scrollView.VerticalScrollChainingMode = ChainingMode.Never;
-                    scrollView.HorizontalScrollRailingMode = RailingMode.Disabled;
-                    scrollView.VerticalScrollRailingMode = RailingMode.Disabled;
-                    scrollView.HorizontalScrollMode = ScrollMode.Enabled;
-                    scrollView.VerticalScrollMode = ScrollMode.Disabled;
-                    scrollView.ZoomMode = ZoomMode.Enabled;
-                    scrollView.ZoomChainingMode = ChainingMode.Never;
+                    scrollView.IgnoredInputKinds = ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen;
+                    scrollView.ContentOrientation = ScrollingContentOrientation.Horizontal;
+                    scrollView.HorizontalScrollChainMode = ScrollingChainMode.Always;
+                    scrollView.VerticalScrollChainMode = ScrollingChainMode.Never;
+                    scrollView.HorizontalScrollRailMode = ScrollingRailMode.Disabled;
+                    scrollView.VerticalScrollRailMode = ScrollingRailMode.Disabled;
+                    scrollView.HorizontalScrollMode = ScrollingScrollMode.Enabled;
+                    scrollView.VerticalScrollMode = ScrollingScrollMode.Disabled;
+                    scrollView.ZoomMode = ScrollingZoomMode.Enabled;
+                    scrollView.ZoomChainMode = ScrollingChainMode.Never;
                     scrollView.MinZoomFactor = 2.0;
                     scrollView.MaxZoomFactor = 8.0;
 
                     Log.Comment("Verifying ScrollPresenter-cloned non-default properties");
-                    Verify.AreEqual(scrollView.IgnoredInputKind, InputKind.MouseWheel | InputKind.Pen);
-                    Verify.AreEqual(scrollView.ContentOrientation, ContentOrientation.Horizontal);
-                    Verify.AreEqual(scrollView.HorizontalScrollChainingMode, ChainingMode.Always);
-                    Verify.AreEqual(scrollView.VerticalScrollChainingMode, ChainingMode.Never);
-                    Verify.AreEqual(scrollView.HorizontalScrollRailingMode, RailingMode.Disabled);
-                    Verify.AreEqual(scrollView.VerticalScrollRailingMode, RailingMode.Disabled);
-                    Verify.AreEqual(scrollView.HorizontalScrollMode, ScrollMode.Enabled);
-                    Verify.AreEqual(scrollView.VerticalScrollMode, ScrollMode.Disabled);
+                    Verify.AreEqual(ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen, scrollView.IgnoredInputKinds);
+                    Verify.AreEqual(ScrollingContentOrientation.Horizontal, scrollView.ContentOrientation);
+                    Verify.AreEqual(ScrollingChainMode.Always, scrollView.HorizontalScrollChainMode);
+                    Verify.AreEqual(ScrollingChainMode.Never, scrollView.VerticalScrollChainMode);
+                    Verify.AreEqual(ScrollingRailMode.Disabled, scrollView.HorizontalScrollRailMode);
+                    Verify.AreEqual(ScrollingRailMode.Disabled, scrollView.VerticalScrollRailMode);
+                    Verify.AreEqual(ScrollingScrollMode.Enabled, scrollView.HorizontalScrollMode);
+                    Verify.AreEqual(ScrollingScrollMode.Disabled, scrollView.VerticalScrollMode);
 #if USE_SCROLLMODE_AUTO
-                    Verify.AreEqual(scrollView.ComputedHorizontalScrollMode, ScrollMode.Enabled);
-                    Verify.AreEqual(scrollView.ComputedVerticalScrollMode, ScrollMode.Disabled);
+                    Verify.AreEqual(ScrollingScrollMode.Enabled, scrollView.ComputedHorizontalScrollMode);
+                    Verify.AreEqual(ScrollingScrollMode.Disabled, scrollView.ComputedVerticalScrollMode);
 #endif
-                    Verify.AreEqual(scrollView.ZoomMode, ZoomMode.Enabled);
-                    Verify.AreEqual(scrollView.ZoomChainingMode, ChainingMode.Never);
+                    Verify.AreEqual(ScrollingZoomMode.Enabled, scrollView.ZoomMode);
+                    Verify.AreEqual(ScrollingChainMode.Never, scrollView.ZoomChainMode);
                     Verify.IsGreaterThan(scrollView.MinZoomFactor, 2.0 - c_epsilon);
                     Verify.IsLessThan(scrollView.MinZoomFactor, 2.0 + c_epsilon);
                     Verify.IsGreaterThan(scrollView.MaxZoomFactor, 8.0 - c_epsilon);
@@ -228,17 +227,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Verifying ScrollView property values after Loaded event");
-                    Verify.AreEqual(scrollView.Content, rectangleScrollViewContent);
+                    Verify.AreEqual(rectangleScrollViewContent, scrollView.Content);
+                    Verify.IsNull(scrollView.CurrentAnchor);
                     Verify.IsNotNull(ScrollViewTestHooks.GetScrollPresenterPart(scrollView));
-                    Verify.AreEqual(ScrollViewTestHooks.GetScrollPresenterPart(scrollView).Content, rectangleScrollViewContent);
-                    Verify.IsNotNull(scrollView.HorizontalScrollController);
-                    Verify.IsNotNull(scrollView.VerticalScrollController);
-                    Verify.AreEqual(scrollView.ExtentWidth, c_defaultUIScrollViewContentWidth);
-                    Verify.AreEqual(scrollView.ExtentHeight, c_defaultUIScrollViewContentHeight);
-                    Verify.AreEqual(scrollView.ViewportWidth, c_defaultUIScrollViewWidth);
-                    Verify.AreEqual(scrollView.ViewportHeight, c_defaultUIScrollViewHeight);
-                    Verify.AreEqual(scrollView.ScrollableWidth, c_defaultUIScrollViewContentWidth - c_defaultUIScrollViewWidth);
-                    Verify.AreEqual(scrollView.ScrollableHeight, c_defaultUIScrollViewContentHeight - c_defaultUIScrollViewHeight);
+                    Verify.AreEqual(rectangleScrollViewContent, ScrollViewTestHooks.GetScrollPresenterPart(scrollView).Content);
+                    Verify.AreEqual(c_defaultUIScrollViewContentWidth, scrollView.ExtentWidth);
+                    Verify.AreEqual(c_defaultUIScrollViewContentHeight, scrollView.ExtentHeight);
+                    Verify.AreEqual(c_defaultUIScrollViewWidth, scrollView.ViewportWidth);
+                    Verify.AreEqual(c_defaultUIScrollViewHeight, scrollView.ViewportHeight);
+                    Verify.AreEqual(c_defaultUIScrollViewContentWidth - c_defaultUIScrollViewWidth, scrollView.ScrollableWidth);
+                    Verify.AreEqual(c_defaultUIScrollViewContentHeight - c_defaultUIScrollViewHeight, scrollView.ScrollableHeight);
 
                     Log.Comment("Resetting window content and ScrollView");
                     Content = null;
@@ -495,6 +493,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollView.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
                         Verify.IsNull(args.AnchorElement);
+                        Verify.IsNull(sender.CurrentAnchor);
                         Verify.AreEqual(expectedAnchorCandidatesCount, args.AnchorCandidates.Count);
                         scrollViewAnchorRequestedEvent.Set();
                     };
@@ -528,6 +527,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 WaitForEvent("Waiting for AnchorRequested event", scrollViewAnchorRequestedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("ScrollView CurrentAnchor is " + (scrollView.CurrentAnchor == null ? "null" : "non-null"));
+                    Verify.IsNull(scrollView.CurrentAnchor);
+                    Verify.AreEqual(scrollView.CurrentAnchor, scrollPresenter.CurrentAnchor);
+                });
             }
         }
 
