@@ -10,9 +10,10 @@
 
 #include "NumberBoxAutomationPeer.properties.cpp"
 
-NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBox const& owner)
+NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBoxTextBox const& owner)
     : ReferenceTracker(owner)
 {
+    // ### get NumberBox from owner.
 }
 
 // IAutomationPeerOverrides
@@ -35,6 +36,8 @@ hstring NumberBoxAutomationPeer::GetNameCore()
 {
     winrt::hstring name = __super::GetNameCore();
 
+    // ### this needs to be fixed
+
     if (name.empty())
     {
         if (auto numberBox = Owner().try_as<winrt::NumberBox>())
@@ -55,9 +58,14 @@ com_ptr<NumberBox> NumberBoxAutomationPeer::GetImpl()
 {
     com_ptr<NumberBox> impl = nullptr;
 
-    if (auto numberBox = Owner().try_as<winrt::NumberBox>())
+    if (auto numberBoxTextBox = Owner().try_as<winrt::NumberBoxTextBox>())
     {
-        impl = winrt::get_self<NumberBox>(numberBox)->get_strong();
+        auto numberBox = SharedHelpers::GetAncestorOfType<winrt::NumberBox>(winrt::VisualTreeHelper::GetParent(numberBoxTextBox));
+        if (numberBox)
+        {
+            impl = winrt::get_self<NumberBox>(numberBox)->get_strong();
+        }
+
     }
 
     return impl;

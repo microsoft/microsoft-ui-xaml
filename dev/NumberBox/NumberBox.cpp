@@ -102,10 +102,10 @@ double NumberBox::Value()
     return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_ValueProperty));
 }
 
-winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()
-{
-    return winrt::make<NumberBoxAutomationPeer>(*this);
-}
+//winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()
+//{
+//    return winrt::make<NumberBoxAutomationPeer>(*this);
+//}
 
 void NumberBox::OnApplyTemplate()
 {
@@ -248,10 +248,11 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
             m_valueChangedEventSource(*this, *valueChangedArgs);
 
             // Fire value property change for UIA
-            if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
-            {
-                winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
-            }
+            //if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+            //{
+                // ### well this is going to be a problem
+                //winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
+            //}
         }
 
         UpdateTextToValue();

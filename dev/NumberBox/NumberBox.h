@@ -37,7 +37,7 @@ public:
     double Value();
 
     // IUIElement
-    virtual winrt::AutomationPeer OnCreateAutomationPeer();
+    //virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
     // IFrameworkElement
     void OnApplyTemplate();

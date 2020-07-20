@@ -112,14 +112,26 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 
 }
 
+namespace MU_XCP_NAMESPACE
+{
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass NumberBoxTextBox : Windows.UI.Xaml.Controls.TextBox
+{
+    NumberBoxTextBox();
+}
+
+}
+
 namespace MU_XAP_NAMESPACE
 {
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass NumberBoxAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+unsealed runtimeclass NumberBoxAutomationPeer : Windows.UI.Xaml.Automation.Peers.TextBoxAutomationPeer
 {
-    NumberBoxAutomationPeer(MU_XC_NAMESPACE.NumberBox owner);
+    NumberBoxAutomationPeer(MU_XCP_NAMESPACE.NumberBoxTextBox owner);
 }
 
 }

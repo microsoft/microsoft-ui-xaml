@@ -41,6 +41,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        /*public RangeValueSpinner GetNumberBox(string name)
+        {
+            UIObject parentNumberBox = FindElement.ByName("TestNumberBox");
+            if (parentNumberBox != null)
+            {
+                parentNumberBox.
+            }
+
+            return null;
+        }*/
+
         [TestMethod]
         public void UpDownTest()
         {

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "NumberBox.h"
+#include "NumberBoxTextBox.h"
 #include "NumberBoxAutomationPeer.g.h"
 
 class NumberBoxAutomationPeer :
@@ -11,7 +12,7 @@ class NumberBoxAutomationPeer :
 {
 
 public:
-    NumberBoxAutomationPeer(winrt::NumberBox const& owner);
+    NumberBoxAutomationPeer(winrt::NumberBoxTextBox const& owner);
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
