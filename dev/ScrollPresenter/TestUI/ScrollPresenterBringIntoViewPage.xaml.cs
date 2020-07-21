@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs;
@@ -127,7 +127,7 @@ namespace MUXControlsTestApp
         {
             string asyncEventMessage = "BringingIntoView ScrollPresenter=" + sender.Name;
             asyncEventMessage += ", TargetHorizontalOffset=" + args.TargetHorizontalOffset + ", TargetVerticalOffset=" + args.TargetVerticalOffset;
-            asyncEventMessage += ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId;
+            asyncEventMessage += ", OffsetsChangeCorrelationId=" + args.CorrelationId;
             asyncEventMessage += ", SnapPointsMode=" + args.SnapPointsMode;
             asyncEventMessage += ", RequestEventArgs.AnimationDesired=" + args.RequestEventArgs.AnimationDesired + ", RequestEventArgs.Handled=" + args.RequestEventArgs.Handled;
             asyncEventMessage += ", RequestEventArgs.HorizontalAlignmentRatio=" + args.RequestEventArgs.HorizontalAlignmentRatio + ", RequestEventArgs.VerticalAlignmentRatio=" + args.RequestEventArgs.VerticalAlignmentRatio;
@@ -140,7 +140,7 @@ namespace MUXControlsTestApp
                 asyncEventMessage += (args.RequestEventArgs.OriginalSource as FrameworkElement).Name;
             AppendAsyncEventMessage(asyncEventMessage);
 
-            args.SnapPointsMode = chkIgnoreSnapPoints.IsChecked == true ? SnapPointsMode.Ignore : SnapPointsMode.Default;
+            args.SnapPointsMode = chkIgnoreSnapPoints.IsChecked == true ? ScrollingSnapPointsMode.Ignore : ScrollingSnapPointsMode.Default;
 
             if (chkCancelOperationInBringingIntoView.IsChecked == true)
             {
@@ -154,7 +154,7 @@ namespace MUXControlsTestApp
             {
                 if (chkLogBringIntoViewRequestedEvents.IsChecked == true)
                 {
-                    AppendAsyncEventMessage("ScrollAnimationStarting ScrollPresenter=" + sender.Name + ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
+                    AppendAsyncEventMessage("ScrollAnimationStarting ScrollPresenter=" + sender.Name + ", OffsetsChangeCorrelationId=" + args.CorrelationId);
                 }
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
@@ -225,7 +225,7 @@ namespace MUXControlsTestApp
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            AppendAsyncEventMessage("ScrollCompleted ScrollPresenter=" + sender.Name + ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            AppendAsyncEventMessage("ScrollCompleted ScrollPresenter=" + sender.Name + ", OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)

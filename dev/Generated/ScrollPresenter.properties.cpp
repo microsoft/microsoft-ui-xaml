@@ -17,17 +17,17 @@ GlobalDependencyProperty ScrollPresenterProperties::s_BackgroundProperty{ nullpt
 GlobalDependencyProperty ScrollPresenterProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_ContentOrientationProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_HorizontalAnchorRatioProperty{ nullptr };
-GlobalDependencyProperty ScrollPresenterProperties::s_HorizontalScrollChainingModeProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_HorizontalScrollChainModeProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_HorizontalScrollModeProperty{ nullptr };
-GlobalDependencyProperty ScrollPresenterProperties::s_HorizontalScrollRailingModeProperty{ nullptr };
-GlobalDependencyProperty ScrollPresenterProperties::s_IgnoredInputKindProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_HorizontalScrollRailModeProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_IgnoredInputKindsProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_MaxZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_MinZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_VerticalAnchorRatioProperty{ nullptr };
-GlobalDependencyProperty ScrollPresenterProperties::s_VerticalScrollChainingModeProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_VerticalScrollChainModeProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_VerticalScrollModeProperty{ nullptr };
-GlobalDependencyProperty ScrollPresenterProperties::s_VerticalScrollRailingModeProperty{ nullptr };
-GlobalDependencyProperty ScrollPresenterProperties::s_ZoomChainingModeProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_VerticalScrollRailModeProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_ZoomChainModeProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_ZoomModeProperty{ nullptr };
 
 ScrollPresenterProperties::ScrollPresenterProperties()
@@ -73,10 +73,10 @@ void ScrollPresenterProperties::EnsureProperties()
         s_ContentOrientationProperty =
             InitializeDependencyProperty(
                 L"ContentOrientation",
-                winrt::name_of<winrt::ContentOrientation>(),
+                winrt::name_of<winrt::ScrollingContentOrientation>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(ScrollPresenter::s_defaultContentOrientation),
+                ValueHelper<winrt::ScrollingContentOrientation>::BoxValueIfNecessary(ScrollPresenter::s_defaultContentOrientation),
                 winrt::PropertyChangedCallback(&OnContentOrientationPropertyChanged));
     }
     if (!s_HorizontalAnchorRatioProperty)
@@ -90,49 +90,49 @@ void ScrollPresenterProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(ScrollPresenter::s_defaultAnchorRatio),
                 winrt::PropertyChangedCallback(&OnHorizontalAnchorRatioPropertyChanged));
     }
-    if (!s_HorizontalScrollChainingModeProperty)
+    if (!s_HorizontalScrollChainModeProperty)
     {
-        s_HorizontalScrollChainingModeProperty =
+        s_HorizontalScrollChainModeProperty =
             InitializeDependencyProperty(
-                L"HorizontalScrollChainingMode",
-                winrt::name_of<winrt::ChainingMode>(),
+                L"HorizontalScrollChainMode",
+                winrt::name_of<winrt::ScrollingChainMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultHorizontalScrollChainingMode),
-                winrt::PropertyChangedCallback(&OnHorizontalScrollChainingModePropertyChanged));
+                ValueHelper<winrt::ScrollingChainMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultHorizontalScrollChainMode),
+                winrt::PropertyChangedCallback(&OnHorizontalScrollChainModePropertyChanged));
     }
     if (!s_HorizontalScrollModeProperty)
     {
         s_HorizontalScrollModeProperty =
             InitializeDependencyProperty(
                 L"HorizontalScrollMode",
-                winrt::name_of<winrt::ScrollMode>(),
+                winrt::name_of<winrt::ScrollingScrollMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultHorizontalScrollMode),
+                ValueHelper<winrt::ScrollingScrollMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultHorizontalScrollMode),
                 winrt::PropertyChangedCallback(&OnHorizontalScrollModePropertyChanged));
     }
-    if (!s_HorizontalScrollRailingModeProperty)
+    if (!s_HorizontalScrollRailModeProperty)
     {
-        s_HorizontalScrollRailingModeProperty =
+        s_HorizontalScrollRailModeProperty =
             InitializeDependencyProperty(
-                L"HorizontalScrollRailingMode",
-                winrt::name_of<winrt::RailingMode>(),
+                L"HorizontalScrollRailMode",
+                winrt::name_of<winrt::ScrollingRailMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultHorizontalScrollRailingMode),
-                winrt::PropertyChangedCallback(&OnHorizontalScrollRailingModePropertyChanged));
+                ValueHelper<winrt::ScrollingRailMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultHorizontalScrollRailMode),
+                winrt::PropertyChangedCallback(&OnHorizontalScrollRailModePropertyChanged));
     }
-    if (!s_IgnoredInputKindProperty)
+    if (!s_IgnoredInputKindsProperty)
     {
-        s_IgnoredInputKindProperty =
+        s_IgnoredInputKindsProperty =
             InitializeDependencyProperty(
-                L"IgnoredInputKind",
-                winrt::name_of<winrt::InputKind>(),
+                L"IgnoredInputKinds",
+                winrt::name_of<winrt::ScrollingInputKinds>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::InputKind>::BoxValueIfNecessary(ScrollPresenter::s_defaultIgnoredInputKind),
-                winrt::PropertyChangedCallback(&OnIgnoredInputKindPropertyChanged));
+                ValueHelper<winrt::ScrollingInputKinds>::BoxValueIfNecessary(ScrollPresenter::s_defaultIgnoredInputKinds),
+                winrt::PropertyChangedCallback(&OnIgnoredInputKindsPropertyChanged));
     }
     if (!s_MaxZoomFactorProperty)
     {
@@ -167,59 +167,59 @@ void ScrollPresenterProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(ScrollPresenter::s_defaultAnchorRatio),
                 winrt::PropertyChangedCallback(&OnVerticalAnchorRatioPropertyChanged));
     }
-    if (!s_VerticalScrollChainingModeProperty)
+    if (!s_VerticalScrollChainModeProperty)
     {
-        s_VerticalScrollChainingModeProperty =
+        s_VerticalScrollChainModeProperty =
             InitializeDependencyProperty(
-                L"VerticalScrollChainingMode",
-                winrt::name_of<winrt::ChainingMode>(),
+                L"VerticalScrollChainMode",
+                winrt::name_of<winrt::ScrollingChainMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultVerticalScrollChainingMode),
-                winrt::PropertyChangedCallback(&OnVerticalScrollChainingModePropertyChanged));
+                ValueHelper<winrt::ScrollingChainMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultVerticalScrollChainMode),
+                winrt::PropertyChangedCallback(&OnVerticalScrollChainModePropertyChanged));
     }
     if (!s_VerticalScrollModeProperty)
     {
         s_VerticalScrollModeProperty =
             InitializeDependencyProperty(
                 L"VerticalScrollMode",
-                winrt::name_of<winrt::ScrollMode>(),
+                winrt::name_of<winrt::ScrollingScrollMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultVerticalScrollMode),
+                ValueHelper<winrt::ScrollingScrollMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultVerticalScrollMode),
                 winrt::PropertyChangedCallback(&OnVerticalScrollModePropertyChanged));
     }
-    if (!s_VerticalScrollRailingModeProperty)
+    if (!s_VerticalScrollRailModeProperty)
     {
-        s_VerticalScrollRailingModeProperty =
+        s_VerticalScrollRailModeProperty =
             InitializeDependencyProperty(
-                L"VerticalScrollRailingMode",
-                winrt::name_of<winrt::RailingMode>(),
+                L"VerticalScrollRailMode",
+                winrt::name_of<winrt::ScrollingRailMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultVerticalScrollRailingMode),
-                winrt::PropertyChangedCallback(&OnVerticalScrollRailingModePropertyChanged));
+                ValueHelper<winrt::ScrollingRailMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultVerticalScrollRailMode),
+                winrt::PropertyChangedCallback(&OnVerticalScrollRailModePropertyChanged));
     }
-    if (!s_ZoomChainingModeProperty)
+    if (!s_ZoomChainModeProperty)
     {
-        s_ZoomChainingModeProperty =
+        s_ZoomChainModeProperty =
             InitializeDependencyProperty(
-                L"ZoomChainingMode",
-                winrt::name_of<winrt::ChainingMode>(),
+                L"ZoomChainMode",
+                winrt::name_of<winrt::ScrollingChainMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultZoomChainingMode),
-                winrt::PropertyChangedCallback(&OnZoomChainingModePropertyChanged));
+                ValueHelper<winrt::ScrollingChainMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultZoomChainMode),
+                winrt::PropertyChangedCallback(&OnZoomChainModePropertyChanged));
     }
     if (!s_ZoomModeProperty)
     {
         s_ZoomModeProperty =
             InitializeDependencyProperty(
                 L"ZoomMode",
-                winrt::name_of<winrt::ZoomMode>(),
+                winrt::name_of<winrt::ScrollingZoomMode>(),
                 winrt::name_of<winrt::ScrollPresenter>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ZoomMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultZoomMode),
+                ValueHelper<winrt::ScrollingZoomMode>::BoxValueIfNecessary(ScrollPresenter::s_defaultZoomMode),
                 winrt::PropertyChangedCallback(&OnZoomModePropertyChanged));
     }
 }
@@ -230,17 +230,17 @@ void ScrollPresenterProperties::ClearProperties()
     s_ContentProperty = nullptr;
     s_ContentOrientationProperty = nullptr;
     s_HorizontalAnchorRatioProperty = nullptr;
-    s_HorizontalScrollChainingModeProperty = nullptr;
+    s_HorizontalScrollChainModeProperty = nullptr;
     s_HorizontalScrollModeProperty = nullptr;
-    s_HorizontalScrollRailingModeProperty = nullptr;
-    s_IgnoredInputKindProperty = nullptr;
+    s_HorizontalScrollRailModeProperty = nullptr;
+    s_IgnoredInputKindsProperty = nullptr;
     s_MaxZoomFactorProperty = nullptr;
     s_MinZoomFactorProperty = nullptr;
     s_VerticalAnchorRatioProperty = nullptr;
-    s_VerticalScrollChainingModeProperty = nullptr;
+    s_VerticalScrollChainModeProperty = nullptr;
     s_VerticalScrollModeProperty = nullptr;
-    s_VerticalScrollRailingModeProperty = nullptr;
-    s_ZoomChainingModeProperty = nullptr;
+    s_VerticalScrollRailModeProperty = nullptr;
+    s_ZoomChainModeProperty = nullptr;
     s_ZoomModeProperty = nullptr;
 }
 
@@ -286,7 +286,7 @@ void ScrollPresenterProperties::OnHorizontalAnchorRatioPropertyChanged(
     winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollPresenterProperties::OnHorizontalScrollChainingModePropertyChanged(
+void ScrollPresenterProperties::OnHorizontalScrollChainModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -302,7 +302,7 @@ void ScrollPresenterProperties::OnHorizontalScrollModePropertyChanged(
     winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollPresenterProperties::OnHorizontalScrollRailingModePropertyChanged(
+void ScrollPresenterProperties::OnHorizontalScrollRailModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -310,7 +310,7 @@ void ScrollPresenterProperties::OnHorizontalScrollRailingModePropertyChanged(
     winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollPresenterProperties::OnIgnoredInputKindPropertyChanged(
+void ScrollPresenterProperties::OnIgnoredInputKindsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -372,7 +372,7 @@ void ScrollPresenterProperties::OnVerticalAnchorRatioPropertyChanged(
     winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollPresenterProperties::OnVerticalScrollChainingModePropertyChanged(
+void ScrollPresenterProperties::OnVerticalScrollChainModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -388,7 +388,7 @@ void ScrollPresenterProperties::OnVerticalScrollModePropertyChanged(
     winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollPresenterProperties::OnVerticalScrollRailingModePropertyChanged(
+void ScrollPresenterProperties::OnVerticalScrollRailModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -396,7 +396,7 @@ void ScrollPresenterProperties::OnVerticalScrollRailingModePropertyChanged(
     winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollPresenterProperties::OnZoomChainingModePropertyChanged(
+void ScrollPresenterProperties::OnZoomChainModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -438,17 +438,17 @@ winrt::UIElement ScrollPresenterProperties::Content()
     return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ContentProperty));
 }
 
-void ScrollPresenterProperties::ContentOrientation(winrt::ContentOrientation const& value)
+void ScrollPresenterProperties::ContentOrientation(winrt::ScrollingContentOrientation const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ScrollingContentOrientation>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ContentOrientation ScrollPresenterProperties::ContentOrientation()
+winrt::ScrollingContentOrientation ScrollPresenterProperties::ContentOrientation()
 {
-    return ValueHelper<winrt::ContentOrientation>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ContentOrientationProperty));
+    return ValueHelper<winrt::ScrollingContentOrientation>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ContentOrientationProperty));
 }
 
 void ScrollPresenterProperties::HorizontalAnchorRatio(double value)
@@ -466,56 +466,56 @@ double ScrollPresenterProperties::HorizontalAnchorRatio()
     return ValueHelper<double>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalAnchorRatioProperty));
 }
 
-void ScrollPresenterProperties::HorizontalScrollChainingMode(winrt::ChainingMode const& value)
+void ScrollPresenterProperties::HorizontalScrollChainMode(winrt::ScrollingChainMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_HorizontalScrollChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_HorizontalScrollChainModeProperty, ValueHelper<winrt::ScrollingChainMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ChainingMode ScrollPresenterProperties::HorizontalScrollChainingMode()
+winrt::ScrollingChainMode ScrollPresenterProperties::HorizontalScrollChainMode()
 {
-    return ValueHelper<winrt::ChainingMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalScrollChainingModeProperty));
+    return ValueHelper<winrt::ScrollingChainMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalScrollChainModeProperty));
 }
 
-void ScrollPresenterProperties::HorizontalScrollMode(winrt::ScrollMode const& value)
+void ScrollPresenterProperties::HorizontalScrollMode(winrt::ScrollingScrollMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_HorizontalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_HorizontalScrollModeProperty, ValueHelper<winrt::ScrollingScrollMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ScrollMode ScrollPresenterProperties::HorizontalScrollMode()
+winrt::ScrollingScrollMode ScrollPresenterProperties::HorizontalScrollMode()
 {
-    return ValueHelper<winrt::ScrollMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalScrollModeProperty));
+    return ValueHelper<winrt::ScrollingScrollMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalScrollModeProperty));
 }
 
-void ScrollPresenterProperties::HorizontalScrollRailingMode(winrt::RailingMode const& value)
+void ScrollPresenterProperties::HorizontalScrollRailMode(winrt::ScrollingRailMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_HorizontalScrollRailingModeProperty, ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_HorizontalScrollRailModeProperty, ValueHelper<winrt::ScrollingRailMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::RailingMode ScrollPresenterProperties::HorizontalScrollRailingMode()
+winrt::ScrollingRailMode ScrollPresenterProperties::HorizontalScrollRailMode()
 {
-    return ValueHelper<winrt::RailingMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalScrollRailingModeProperty));
+    return ValueHelper<winrt::ScrollingRailMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_HorizontalScrollRailModeProperty));
 }
 
-void ScrollPresenterProperties::IgnoredInputKind(winrt::InputKind const& value)
+void ScrollPresenterProperties::IgnoredInputKinds(winrt::ScrollingInputKinds const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_IgnoredInputKindProperty, ValueHelper<winrt::InputKind>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_IgnoredInputKindsProperty, ValueHelper<winrt::ScrollingInputKinds>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::InputKind ScrollPresenterProperties::IgnoredInputKind()
+winrt::ScrollingInputKinds ScrollPresenterProperties::IgnoredInputKinds()
 {
-    return ValueHelper<winrt::InputKind>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_IgnoredInputKindProperty));
+    return ValueHelper<winrt::ScrollingInputKinds>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_IgnoredInputKindsProperty));
 }
 
 void ScrollPresenterProperties::MaxZoomFactor(double value)
@@ -563,69 +563,69 @@ double ScrollPresenterProperties::VerticalAnchorRatio()
     return ValueHelper<double>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalAnchorRatioProperty));
 }
 
-void ScrollPresenterProperties::VerticalScrollChainingMode(winrt::ChainingMode const& value)
+void ScrollPresenterProperties::VerticalScrollChainMode(winrt::ScrollingChainMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_VerticalScrollChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_VerticalScrollChainModeProperty, ValueHelper<winrt::ScrollingChainMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ChainingMode ScrollPresenterProperties::VerticalScrollChainingMode()
+winrt::ScrollingChainMode ScrollPresenterProperties::VerticalScrollChainMode()
 {
-    return ValueHelper<winrt::ChainingMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalScrollChainingModeProperty));
+    return ValueHelper<winrt::ScrollingChainMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalScrollChainModeProperty));
 }
 
-void ScrollPresenterProperties::VerticalScrollMode(winrt::ScrollMode const& value)
+void ScrollPresenterProperties::VerticalScrollMode(winrt::ScrollingScrollMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_VerticalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_VerticalScrollModeProperty, ValueHelper<winrt::ScrollingScrollMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ScrollMode ScrollPresenterProperties::VerticalScrollMode()
+winrt::ScrollingScrollMode ScrollPresenterProperties::VerticalScrollMode()
 {
-    return ValueHelper<winrt::ScrollMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalScrollModeProperty));
+    return ValueHelper<winrt::ScrollingScrollMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalScrollModeProperty));
 }
 
-void ScrollPresenterProperties::VerticalScrollRailingMode(winrt::RailingMode const& value)
+void ScrollPresenterProperties::VerticalScrollRailMode(winrt::ScrollingRailMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_VerticalScrollRailingModeProperty, ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_VerticalScrollRailModeProperty, ValueHelper<winrt::ScrollingRailMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::RailingMode ScrollPresenterProperties::VerticalScrollRailingMode()
+winrt::ScrollingRailMode ScrollPresenterProperties::VerticalScrollRailMode()
 {
-    return ValueHelper<winrt::RailingMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalScrollRailingModeProperty));
+    return ValueHelper<winrt::ScrollingRailMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_VerticalScrollRailModeProperty));
 }
 
-void ScrollPresenterProperties::ZoomChainingMode(winrt::ChainingMode const& value)
+void ScrollPresenterProperties::ZoomChainMode(winrt::ScrollingChainMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_ZoomChainingModeProperty, ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_ZoomChainModeProperty, ValueHelper<winrt::ScrollingChainMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ChainingMode ScrollPresenterProperties::ZoomChainingMode()
+winrt::ScrollingChainMode ScrollPresenterProperties::ZoomChainMode()
 {
-    return ValueHelper<winrt::ChainingMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ZoomChainingModeProperty));
+    return ValueHelper<winrt::ScrollingChainMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ZoomChainModeProperty));
 }
 
-void ScrollPresenterProperties::ZoomMode(winrt::ZoomMode const& value)
+void ScrollPresenterProperties::ZoomMode(winrt::ScrollingZoomMode const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<ScrollPresenter*>(this)->SetValue(s_ZoomModeProperty, ValueHelper<winrt::ZoomMode>::BoxValueIfNecessary(value));
+    static_cast<ScrollPresenter*>(this)->SetValue(s_ZoomModeProperty, ValueHelper<winrt::ScrollingZoomMode>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ZoomMode ScrollPresenterProperties::ZoomMode()
+winrt::ScrollingZoomMode ScrollPresenterProperties::ZoomMode()
 {
-    return ValueHelper<winrt::ZoomMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ZoomModeProperty));
+    return ValueHelper<winrt::ScrollingZoomMode>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_ZoomModeProperty));
 }
 
 winrt::event_token ScrollPresenterProperties::AnchorRequested(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollingAnchorRequestedEventArgs> const& value)

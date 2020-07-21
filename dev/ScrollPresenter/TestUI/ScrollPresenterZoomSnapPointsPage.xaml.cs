@@ -10,8 +10,8 @@ using Windows.UI.Xaml.Navigation;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
 using RepeatedZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
@@ -160,7 +160,7 @@ namespace MUXControlsTestApp
             try
             {
                 float changeAmount = Convert.ToSingle(txtScrollPresenterZoomFactorChange.Text);
-                markupScrollPresenter.ZoomFrom(changeAmount + 0.05f, null, null);
+                markupScrollPresenter.AddZoomVelocity(changeAmount + 0.05f, null, null);
             }
             catch (Exception ex)
             {
@@ -171,8 +171,8 @@ namespace MUXControlsTestApp
         private void BtnZoomFactorPlus1With_Click(object sender, RoutedEventArgs e)
         {
             try
-            { 
-                markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(AnimationMode.Auto, SnapPointsMode.Default));
+            {
+                markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -183,8 +183,8 @@ namespace MUXControlsTestApp
         private void BtnZoomFactorPlus1Without_Click(object sender, RoutedEventArgs e)
         {
             try
-            {                
-                markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
+            {
+                markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {

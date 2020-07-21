@@ -22,9 +22,9 @@ void ScrollingScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnim
     m_animation = value;
 }
 
-winrt::ScrollInfo ScrollingScrollAnimationStartingEventArgs::ScrollInfo()
+int32_t ScrollingScrollAnimationStartingEventArgs::CorrelationId()
 {
-    return winrt::ScrollInfo{ m_offsetsChangeId };
+    return m_offsetsChangeCorrelationId;
 }
 
 winrt::float2 ScrollingScrollAnimationStartingEventArgs::StartPosition()
@@ -37,9 +37,9 @@ winrt::float2 ScrollingScrollAnimationStartingEventArgs::EndPosition()
     return m_endPosition;
 }
 
-void ScrollingScrollAnimationStartingEventArgs::SetOffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingScrollAnimationStartingEventArgs::SetOffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId)
 {
-    m_offsetsChangeId = offsetsChangeId;
+    m_offsetsChangeCorrelationId = offsetsChangeCorrelationId;
 }
 
 winrt::CompositionAnimation ScrollingScrollAnimationStartingEventArgs::GetAnimation() const

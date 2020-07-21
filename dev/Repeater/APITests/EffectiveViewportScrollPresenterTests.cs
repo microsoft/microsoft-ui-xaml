@@ -35,14 +35,14 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrollingSurface;
 using ConfigurationChangedEventHandler = Microsoft.UI.Private.Controls.ConfigurationChangedEventHandler;
 using PostArrangeEventHandler = Microsoft.UI.Private.Controls.PostArrangeEventHandler;
@@ -105,7 +105,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                scrollPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                scrollPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -115,7 +115,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
 
-                scrollPresenter.ZoomTo(2.0f, Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                scrollPresenter.ZoomTo(2.0f, Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(zoomCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -156,7 +156,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 horizontalScrollPresenter = new ScrollPresenter
                 {
                     Content = repeater,
-                    ContentOrientation = ContentOrientation.Horizontal
+                    ContentOrientation = ScrollingContentOrientation.Horizontal
                 };
 
                 // Placing a Grid in between two ScrollPresenter controls to avoid
@@ -169,7 +169,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Content = grid,
                     Width = 200,
                     Height = 200,
-                    ContentOrientation = ContentOrientation.Vertical
+                    ContentOrientation = ScrollingContentOrientation.Vertical
                 };
 
                 Content = verticalScrollPresenter;
@@ -194,7 +194,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                verticalScrollPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                verticalScrollPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(verticalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -206,7 +206,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 // Max viewport offset is (300, 300). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
-                horizontalScrollPresenter.ScrollTo(400.0, 100.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                horizontalScrollPresenter.ScrollTo(400.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(horizontalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
