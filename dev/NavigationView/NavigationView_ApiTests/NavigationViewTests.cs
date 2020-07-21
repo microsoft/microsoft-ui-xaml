@@ -525,13 +525,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(
                     AutomationControlType.ListItem,
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
+                Verify.IsNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
 
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
                 Content.UpdateLayout();
                 Verify.AreEqual(
                     AutomationControlType.TabItem,
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
-
+                // Tabs should only provide SelectionItem pattern but not Invoke pattern
+                Verify.IsNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
             });
         }
 
