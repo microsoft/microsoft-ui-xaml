@@ -101,7 +101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void SelectionFollowFocusTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
                 Log.Warning("Test is disabled on RS1 and earlier because SingleSelectionFollowFocus on RS2.");
                 return;
