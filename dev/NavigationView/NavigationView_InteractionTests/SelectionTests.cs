@@ -103,7 +103,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
-                Log.Warning("Test is disabled on RS1 and earlier because SingleSelectionFollowFocus on RS2.");
+                Log.Warning("Test is disabled on RS2 and earlier because SingleSelectionFollowFocus isn't on RS1 and scrollviewer handles arrow keys on RS2.");
                 return;
             }
             var testScenarios = RegressionTestScenario.BuildTopNavRegressionTestScenarios();
