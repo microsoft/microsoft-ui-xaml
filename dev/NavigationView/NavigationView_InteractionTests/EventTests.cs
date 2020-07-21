@@ -269,7 +269,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        public void SettingsItemInvokeTest()
+        public void SettingsItemClickTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
@@ -281,11 +281,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     settingsItem.SetFocus();
                     Wait.ForIdle();
 
-                    AutomationElement ae = AutomationElement.FocusedElement;
-                    InvokePattern invokePattern = ae.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
-
-                    Log.Comment("Invoking settings");
-                    invokePattern.Invoke();
+                    Log.Comment("Click settings");
+                    settingsItem.Click();
                     Wait.ForIdle();
 
                     Log.Comment("Verify settings is selected");
@@ -305,12 +302,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var result = new TextBlock(FindElement.ByName("MyLocationResult"));
 
                 Log.Comment("Click on MyLocation Item and verify it's on Frame1");
-                myLocationButton.Invoke();
+                myLocationButton.Click();
                 Wait.ForIdle();
                 Verify.AreEqual(result.GetText(), "Frame1");
 
                 Log.Comment("Click on SwitchFrame");
-                switchFrameButton.Invoke();
+                switchFrameButton.Click();
                 Wait.ForIdle();
 
                 // tree structure changed and rebuild the cache.
@@ -318,7 +315,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 Log.Comment("Click on MyLocation Item and verify it's on Frame2");
                 myLocationButton = FindElement.ByName<Button>("MyLocation");
-                myLocationButton.Invoke();
+                myLocationButton.Click();
                 Wait.ForIdle();
                 Verify.AreEqual(result.GetText(), "Frame2");
             }

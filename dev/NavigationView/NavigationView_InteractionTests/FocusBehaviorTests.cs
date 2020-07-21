@@ -47,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
 
                 var leftSettingsItem = new Button(FindElement.ByName("Settings"));
-                leftSettingsItem.Invoke();
+                leftSettingsItem.Click();
 
                 Log.Comment("Verify the left settings item is selected.");
                 readSettingsSelectedButton.Invoke();
@@ -115,7 +115,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Wait.ForIdle();
 
                 var topSettingsItem = new Button(FindElement.ByName("SettingsTopNavPaneItem"));
-                topSettingsItem.Invoke();
+                topSettingsItem.Click();
 
                 Log.Comment("Verify the top settings item is selected.");
                 readSettingsSelectedButton.Invoke();

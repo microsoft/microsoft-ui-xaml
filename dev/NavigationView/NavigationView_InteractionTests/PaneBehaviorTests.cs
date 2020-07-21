@@ -108,7 +108,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Log.Comment("Invoke Music item to close the pane");
                     var music = new Button(FindElement.ByName("Music"));
-                    music.Invoke();
+                    music.Click();
                     Wait.ForIdle();
 
                     Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after invoking Music item");
