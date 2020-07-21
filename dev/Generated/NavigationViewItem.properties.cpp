@@ -83,7 +83,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
     if (!s_MenuItemsProperty)
     {
@@ -149,6 +149,14 @@ void NavigationViewItemProperties::OnIconPropertyChanged(
     winrt::get_self<NavigationViewItem>(owner)->OnIconPropertyChanged(args);
 }
 
+void NavigationViewItemProperties::OnIsExpandedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnIsExpandedPropertyChanged(args);
+}
+
 void NavigationViewItemProperties::OnMenuItemsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -167,7 +175,10 @@ void NavigationViewItemProperties::OnMenuItemsSourcePropertyChanged(
 
 void NavigationViewItemProperties::CompactPaneLength(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_CompactPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double NavigationViewItemProperties::CompactPaneLength()
@@ -177,7 +188,10 @@ double NavigationViewItemProperties::CompactPaneLength()
 
 void NavigationViewItemProperties::HasUnrealizedChildren(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_HasUnrealizedChildrenProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewItemProperties::HasUnrealizedChildren()
@@ -187,7 +201,10 @@ bool NavigationViewItemProperties::HasUnrealizedChildren()
 
 void NavigationViewItemProperties::Icon(winrt::IconElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_IconProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconElement NavigationViewItemProperties::Icon()
@@ -197,7 +214,10 @@ winrt::IconElement NavigationViewItemProperties::Icon()
 
 void NavigationViewItemProperties::IsChildSelected(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_IsChildSelectedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewItemProperties::IsChildSelected()
@@ -207,7 +227,10 @@ bool NavigationViewItemProperties::IsChildSelected()
 
 void NavigationViewItemProperties::IsExpanded(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_IsExpandedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewItemProperties::IsExpanded()
@@ -217,7 +240,10 @@ bool NavigationViewItemProperties::IsExpanded()
 
 void NavigationViewItemProperties::MenuItems(winrt::IVector<winrt::IInspectable> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_MenuItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::IInspectable> NavigationViewItemProperties::MenuItems()
@@ -227,7 +253,10 @@ winrt::IVector<winrt::IInspectable> NavigationViewItemProperties::MenuItems()
 
 void NavigationViewItemProperties::MenuItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_MenuItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NavigationViewItemProperties::MenuItemsSource()
@@ -237,7 +266,10 @@ winrt::IInspectable NavigationViewItemProperties::MenuItemsSource()
 
 void NavigationViewItemProperties::SelectsOnInvoked(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItem*>(this)->SetValue(s_SelectsOnInvokedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewItemProperties::SelectsOnInvoked()

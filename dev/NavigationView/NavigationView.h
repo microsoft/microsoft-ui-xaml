@@ -441,5 +441,7 @@ private:
     bool m_isOpenPaneForInteraction{ false };
 
     bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
+
+    bool m_shouldIgnoreUIASelectionRaiseAsExpandCollapseWillRaise{ false };
 };
 

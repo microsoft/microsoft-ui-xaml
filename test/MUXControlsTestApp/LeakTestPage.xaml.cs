@@ -10,7 +10,7 @@ using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 
 namespace MUXControlsTestApp
 {
@@ -42,7 +42,7 @@ namespace MUXControlsTestApp
         RatingControl _rating;
         ColorPicker _colorPicker;
         NavigationView _navigationView;
-        Scroller _scroller;
+        ScrollPresenter _scroller;
 
         public EventCycleTest(bool addToTree = true)
         {
@@ -61,8 +61,8 @@ namespace MUXControlsTestApp
             var item = new NavigationViewItem();
             _navigationView.MenuItems.Add(item);
             
-            _scroller = new Scroller();
-            _scroller.ViewChanged += OnScrollerViewChanged;
+            _scroller = new ScrollPresenter();
+            _scroller.ViewChanged += OnScrollPresenterViewChanged;
             if (addToTree) Children.Add(_scroller);
         }
 
@@ -78,7 +78,7 @@ namespace MUXControlsTestApp
         {
         }
         
-        private void OnScrollerViewChanged(Scroller sender, object args)
+        private void OnScrollPresenterViewChanged(ScrollPresenter sender, object args)
         {
         }
 

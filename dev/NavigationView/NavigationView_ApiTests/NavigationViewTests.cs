@@ -158,13 +158,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             using(VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
             {
-                // Generate a basic NavigationView master file for all the pane display modes
+                // Generate a basic NavigationView verification file for all the pane display modes
                 foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
                 {
                     var filePrefix = "NavigationView" + paneDisplayMode;
                     NavigationViewPaneDisplayMode displayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
 
-                    // We can skip generating a master file for Left mode since Auto is achieving the same result.
+                    // We can skip generating a verification file for Left mode since Auto is achieving the same result.
                     if (displayMode == NavigationViewPaneDisplayMode.Left)
                     {
                         continue;
@@ -172,20 +172,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
                     var navigationView = SetupNavigationView(displayMode);
-                    visualTreeVerifier.VerifyVisualTreeNoException(root: navigationView, masterFilePrefix: filePrefix);
+                    visualTreeVerifier.VerifyVisualTreeNoException(root: navigationView, verificationFileNamePrefix: filePrefix);
                 }
 
                 Log.Comment($"Verify visual tree for NavigationViewScrolling");
                 var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, verificationFileNamePrefix: "NavigationViewScrolling");
                 
                 Log.Comment($"Verify visual tree for NavigationViewLeftPaneContent");
                 var leftNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewPaneContent, masterFilePrefix: "NavigationViewLeftPaneContent");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewPaneContent, verificationFileNamePrefix: "NavigationViewLeftPaneContent");
 
                 Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
                 var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, masterFilePrefix: "NavigationViewTopPaneContent");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, verificationFileNamePrefix: "NavigationViewTopPaneContent");
             }
         }
 
@@ -525,15 +525,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(
                     AutomationControlType.ListItem,
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
+                Verify.IsNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
 
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
                 Content.UpdateLayout();
                 Verify.AreEqual(
                     AutomationControlType.TabItem,
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
-
+                // Tabs should only provide SelectionItem pattern but not Invoke pattern
+                Verify.IsNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
             });
         }
+
+        [TestMethod]
+        public void VerifyAutomationPeerExpandCollapsePatternBehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+
+                var menuItem1 = new NavigationViewItem();
+                var menuItem2 = new NavigationViewItem();
+                var menuItem3 = new NavigationViewItem();
+                var menuItem4 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+                menuItem2.Content = "Item 2";
+                menuItem3.Content = "Item 3";
+                menuItem4.Content = "Item 4";
+
+                menuItem2.MenuItems.Add(menuItem3);
+                menuItem4.HasUnrealizedChildren = true;
+
+                var expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.ExpandCollapse);
+
+                Verify.IsNull(expandPeer,"Verify NavigationViewItem with no children has no ExpandCollapse pattern");
+
+                expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem2).GetPattern(PatternInterface.ExpandCollapse);
+                Verify.IsNotNull(expandPeer,"Verify NavigationViewItem with children has an ExpandCollapse pattern provided");
+
+                expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem4).GetPattern(PatternInterface.ExpandCollapse);
+                Verify.IsNotNull(expandPeer,"Verify NavigationViewItem without children but with UnrealizedChildren set to true has an ExpandCollapse pattern provided");
+            });
+        }
+
 
         [TestMethod]
         public void VerifySettingsItemToolTip()
@@ -619,7 +652,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
         }
 
-        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)
+        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string verificationFileNamePrefix)
         {
             UIElement headerContent = null;
 
@@ -637,7 +670,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             VisualTreeTestHelper.VerifyVisualTree(
                 root: headerContent,
-                masterFilePrefix: masterFilePrefix);
+                verificationFileNamePrefix: verificationFileNamePrefix);
         }
 
         [TestMethod]
@@ -759,5 +792,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(true);
             });
         }
+
+        [TestMethod]
+        public void VerifyExpandCollapseChevronVisibility()
+        {
+            NavigationView navView = null;
+            NavigationViewItem parentItem = null;
+            ObservableCollection<string> children = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                Content = navView;
+
+                children = new ObservableCollection<string>();
+                parentItem = new NavigationViewItem() { Content = "ParentItem", MenuItemsSource = children };
+
+                navView.MenuItems.Add(parentItem);
+
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                UIElement chevronUIElement = (UIElement)VisualTreeUtils.FindVisualChildByName(parentItem, "ExpandCollapseChevron");
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem has no children");
+
+                // Add a child to parentItem through the MenuItemsSource API. This should make the chevron visible.
+                children.Add("Child 1");
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
+                // Remove all children of parentItem. This should collapse the chevron
+                children.Clear();
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
+
+                // Add a child to parentItem and set the MenuItemsSource as null. This should collapse the chevron
+                children.Add("Child 2");
+                Content.UpdateLayout();
+
+                // we are doing this so that when we set MenuItemsSource as null, we can check if the chevron's visibility really changes
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
+                parentItem.MenuItemsSource = null;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
+
+                // Add a child to parentItem through the MenuItems API. This should make the chevron visible.
+                parentItem.MenuItems.Add(new NavigationViewItem() { Content = "Child 3" });
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Visible, "chevron should have been visible as NavViewItem now has children");
+
+                // Remove all children of parentItem. This should collapse the chevron
+                parentItem.MenuItems.Clear();
+                Content.UpdateLayout();
+
+                Verify.IsTrue(chevronUIElement.Visibility == Visibility.Collapsed, "chevron should have been collapsed as NavViewItem no longer has children");
+            });
+        }
+
     }
 }

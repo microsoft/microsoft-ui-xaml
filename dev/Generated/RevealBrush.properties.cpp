@@ -105,7 +105,10 @@ void RevealBrushProperties::OnTargetThemePropertyChanged(
 
 void RevealBrushProperties::AlwaysUseFallback(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RevealBrush*>(this)->SetValue(s_AlwaysUseFallbackProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool RevealBrushProperties::AlwaysUseFallback()
@@ -115,7 +118,10 @@ bool RevealBrushProperties::AlwaysUseFallback()
 
 void RevealBrushProperties::Color(winrt::Color const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RevealBrush*>(this)->SetValue(s_ColorProperty, ValueHelper<winrt::Color>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Color RevealBrushProperties::Color()
@@ -136,7 +142,10 @@ winrt::RevealBrushState RevealBrushProperties::GetState(winrt::UIElement const& 
 
 void RevealBrushProperties::TargetTheme(winrt::ApplicationTheme const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RevealBrush*>(this)->SetValue(s_TargetThemeProperty, ValueHelper<winrt::ApplicationTheme>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ApplicationTheme RevealBrushProperties::TargetTheme()

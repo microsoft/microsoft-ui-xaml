@@ -17,7 +17,7 @@ namespace MUXControlsTestApp.Samples
     public sealed partial class CollectionChangeDemo : Page
     {
         MyDataSource _dataSource = new MyDataSource(Enumerable.Range(0, 10).Select(i => i.ToString()).ToList());
-        public List<object> ResettingListItems { get; set; } = new List<object> { "item0","item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
+        public List<object> ResettingListItems { get; set; } = new List<object> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
         public CollectionChangeDemo()
         {
             this.InitializeComponent();
@@ -25,6 +25,7 @@ namespace MUXControlsTestApp.Samples
             insertButton.Click += delegate { _dataSource.Insert(int.Parse(newStartIndex.Text), int.Parse(newCount.Text), resetMode.IsChecked ?? false); };
             removeButton.Click += delegate { _dataSource.Remove(int.Parse(oldStartIndex.Text), int.Parse(oldCount.Text), resetMode.IsChecked ?? false); };
             replaceButton.Click += delegate { _dataSource.Replace(int.Parse(oldStartIndex.Text), int.Parse(oldCount.Text), int.Parse(newCount.Text), resetMode.IsChecked ?? false); };
+            moveButton.Click += delegate { _dataSource.Move(int.Parse(oldStartIndex.Text), int.Parse(newStartIndex.Text), int.Parse(oldCount.Text), resetMode.IsChecked ?? false); };
             resetButton.Click += delegate { _dataSource.Reset(); };
 
             repeater.ItemTemplate = elementFactory;
@@ -154,6 +155,27 @@ namespace MUXControlsTestApp.Samples
                         oldItemsCount: oldCount,
                         newStartingIndex: index,
                         newItemsCount: newCount));
+                }
+            }
+
+            public void Move(int oldIndex, int newIndex, int count, bool reset)
+            {
+                var items = Inner.GetRange(oldIndex, count);
+                Inner.RemoveRange(oldIndex, count);
+                Inner.InsertRange(newIndex, items);
+
+                if (reset)
+                {
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                }
+                else
+                {
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        NotifyCollectionChangedAction.Move,
+                        oldStartingIndex: oldIndex,
+                        oldItemsCount: count,
+                        newStartingIndex: newIndex,
+                        newItemsCount: count));
                 }
             }
 
