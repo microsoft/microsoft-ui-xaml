@@ -226,6 +226,7 @@
     </ResourceDictionary.ThemeDictionaries>
     
     <Thickness x:Key="NavigationViewAutoSuggestBoxMargin">10,0,16,0</Thickness>
+    <Thickness x:Key="TopNavigationViewAutoSuggestBoxMargin">12,0,12,0</Thickness>
     <x:Double x:Key="PaneToggleButtonSize">40</x:Double>
     <x:Double x:Key="PaneToggleButtonHeight">40</x:Double>
     <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
@@ -245,9 +246,12 @@
     <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
     <Thickness x:Key="NavigationViewHeaderMargin">12,5,0,11</Thickness>
     <Thickness x:Key="NavigationViewPaneTitlePresenterMargin">8,4,0,0</Thickness>
+    <Thickness x:Key="NavigationViewItemMargin">0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemMargin">0</Thickness>
     <Thickness x:Key="NavigationViewItemSeparatorMargin">16,10</Thickness>
     <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">16,10</Thickness>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">10,0</Thickness>
+    <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
     <Thickness x:Key="NavigationViewItemContentPresenterMargin">0,0,20,0</Thickness>
     <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,16,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,0,16,0</Thickness>
