@@ -89,6 +89,11 @@ void TabViewItem::OnApplyTemplate()
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+    if (const auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this))
+    {
+        peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+    }
+
     if (IsSelected())
     {
         SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));
@@ -140,6 +145,16 @@ void TabViewItem::OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverl
 {
     m_closeButtonOverlayMode = mode;
     UpdateCloseButton();
+}
+
+winrt::TabView TabViewItem::GetParentTabView()
+{
+    return m_parentTabView.get();
+}
+
+void TabViewItem::SetParentTabView(winrt::TabView const& tabView)
+{
+    m_parentTabView = winrt::make_weak(tabView);
 }
 
 void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)

@@ -672,6 +672,28 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnGetCurrentAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (scrollPresenter.CurrentAnchor == null)
+                {
+                    txtCurrentAnchor.Text = "null";
+                }
+                else
+                {
+                    FrameworkElement currentAnchorAsFE = scrollPresenter.CurrentAnchor as FrameworkElement;
+
+                    txtCurrentAnchor.Text = currentAnchorAsFE == null ? "UIElement" : currentAnchorAsFE.Name;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
+            }
+        }
+
         private void BtnGetAnchorElement_Click(object sender, RoutedEventArgs e)
         {
             try

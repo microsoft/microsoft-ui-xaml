@@ -410,21 +410,14 @@
                 {
                     WriteLine("xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)");
                     WriteLine("{");
-                    if(winRtType.ListWinRtTypes[0].WinmdType.IsPrimitive)
-                    {
-                       WriteLine(string.Format("    collection.as<{0}>().Append(unbox_value<{1}>(value));", winRtType.CppWinRtName, winRtType.ListWinRtTypes[0].CppWinRtName));
-                    }
-                    else
-                    {
-                        WriteLine(string.Format("    collection.as<{0}>().Append(value.as<{1}>());", winRtType.CppWinRtName, winRtType.ListWinRtTypes[0].CppWinRtName));
-                    }
+                    WriteLine(string.Format("    collection.as<{0}>().Append(unbox_value<{1}>(value));", winRtType.CppWinRtName, winRtType.ListWinRtTypes[0].CppWinRtName));
                     WriteLine("});\r\n");
                 }
                 else if(winRtType.IsMap)
                 {
                     WriteLine("xamlType->SetAddToMapFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& map, winrt::IInspectable const& key, winrt::IInspectable const& value)");
                     WriteLine("{");
-                    WriteLine(string.Format("    map.as<{0}>().Insert(unbox_value<{1}>(key), value.as<{2}>());", winRtType.CppWinRtName, winRtType.MapWinRtTypes[0].CppWinRtName, winRtType.MapWinRtTypes[1].CppWinRtName));
+                    WriteLine(string.Format("    map.as<{0}>().Insert(unbox_value<{1}>(key), unbox_value<{2}>(value));", winRtType.CppWinRtName, winRtType.MapWinRtTypes[0].CppWinRtName, winRtType.MapWinRtTypes[1].CppWinRtName));
                     WriteLine("});\r\n");
                 }
 

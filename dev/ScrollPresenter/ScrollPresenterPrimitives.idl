@@ -216,7 +216,9 @@ interface IScrollController
 [contentproperty("Content")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
+unsealed runtimeclass ScrollPresenter :
+    Windows.UI.Xaml.FrameworkElement,
+    Windows.UI.Xaml.Controls.IScrollAnchorProvider
 {
     ScrollPresenter();
 

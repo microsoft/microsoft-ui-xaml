@@ -146,35 +146,39 @@
                 <ComboBoxItem>Viewbox</ComboBoxItem>
             </ComboBox>
 
-            <TextBlock Text="HorizontalScrollBarVisibility:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbHorizontalScrollBarVisibility" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollBarVisibility_SelectionChanged">
+            <TextBlock Text="CurrentAnchor:" Grid.Row="5" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtCurrentAnchor" Grid.Row="5" Grid.Column="1" Margin="1" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetCurrentAnchor" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnGetCurrentAnchor_Click"/>
+
+            <TextBlock Text="HorizontalScrollBarVisibility:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbHorizontalScrollBarVisibility" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollBarVisibility_SelectionChanged">
                 <ComboBoxItem>Auto</ComboBoxItem>
                 <ComboBoxItem>Visible</ComboBoxItem>
                 <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
 
-            <TextBlock Text="VerticalScrollBarVisibility:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbVerticalScrollBarVisibility" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollBarVisibility_SelectionChanged">
+            <TextBlock Text="VerticalScrollBarVisibility:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbVerticalScrollBarVisibility" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollBarVisibility_SelectionChanged">
                 <ComboBoxItem>Auto</ComboBoxItem>
                 <ComboBoxItem>Visible</ComboBoxItem>
                 <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
 
-            <TextBlock Text="Margin:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtMargin" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-            <Button x:Name="btnGetMargin" Content="G" Margin="1" Grid.Row="7" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetMargin_Click"/>
-            <Button x:Name="btnSetMargin" Content="S" Margin="1" Grid.Row="7" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetMargin_Click"/>
+            <TextBlock Text="Margin:" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtMargin" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetMargin" Content="G" Margin="1" Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetMargin_Click"/>
+            <Button x:Name="btnSetMargin" Content="S" Margin="1" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetMargin_Click"/>
 
-            <TextBlock Text="Padding:" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtPadding" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-            <Button x:Name="btnGetPadding" Content="G" Margin="1" Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetPadding_Click"/>
-            <Button x:Name="btnSetPadding" Content="S" Margin="1" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetPadding_Click"/>
+            <TextBlock Text="Padding:" Grid.Row="9" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtPadding" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetPadding" Content="G" Margin="1" Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetPadding_Click"/>
+            <Button x:Name="btnSetPadding" Content="S" Margin="1" Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetPadding_Click"/>
 
-            <CheckBox x:Name="chkIsEnabled" Content="IsEnabled?" Grid.Row="9" Grid.ColumnSpan="4" Checked="ChkIsEnabled_Checked" Unchecked="ChkIsEnabled_Unchecked"/>
-            <CheckBox x:Name="chkIsTabStop" Content="IsTabStop?" Grid.Row="10" Grid.ColumnSpan="4" Checked="ChkIsTabStop_Checked" Unchecked="ChkIsTabStop_Unchecked"/>
+            <CheckBox x:Name="chkIsEnabled" Content="IsEnabled?" Grid.Row="10" Grid.ColumnSpan="4" Checked="ChkIsEnabled_Checked" Unchecked="ChkIsEnabled_Unchecked"/>
+            <CheckBox x:Name="chkIsTabStop" Content="IsTabStop?" Grid.Row="11" Grid.ColumnSpan="4" Checked="ChkIsTabStop_Checked" Unchecked="ChkIsTabStop_Unchecked"/>
 
-            <TextBlock Text="XYFocusKeyboardNavigation:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbXYFocusKeyboardNavigation" Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbXYFocusKeyboardNavigation_SelectionChanged">
+            <TextBlock Text="XYFocusKeyboardNavigation:" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbXYFocusKeyboardNavigation" Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbXYFocusKeyboardNavigation_SelectionChanged">
                 <ComboBoxItem>Auto</ComboBoxItem>
                 <ComboBoxItem>Enabled</ComboBoxItem>
                 <ComboBoxItem>Disabled</ComboBoxItem>

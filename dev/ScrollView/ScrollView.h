@@ -47,6 +47,7 @@ public:
 
 #pragma region IScrollView
 
+    winrt::UIElement CurrentAnchor();
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
     double HorizontalOffset();
