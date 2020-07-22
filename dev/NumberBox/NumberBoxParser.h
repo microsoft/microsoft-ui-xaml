@@ -8,7 +8,7 @@
 #include <regex>
 #include <stack>
 
-enum MathTokenType
+enum class MathTokenType
 {
     Numeric,
     Operator,
@@ -34,7 +34,7 @@ class NumberBoxParser
         static std::vector<MathToken> GetTokens(const wchar_t *input, const winrt::INumberParser& numberParser);
 
         static std::tuple<double, size_t> GetNextNumber(const std::wstring& input, const winrt::INumberParser& numberParser);
-        static int GetPrecedenceValue(wchar_t c);
+        static int constexpr GetPrecedenceValue(wchar_t c);
 
         static std::vector<MathToken> ConvertInfixToPostfix(const std::vector<MathToken>& tokens);
 

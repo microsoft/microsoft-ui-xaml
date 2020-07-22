@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TeachingTipTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(TeachingTipTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TeachingTipTemplateSettings)
+}
+
+#include "TeachingTipTemplateSettings.g.cpp"
 
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_IconElementProperty{ nullptr };
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopLeftHighlightMarginProperty{ nullptr };
@@ -63,7 +68,10 @@ void TeachingTipTemplateSettingsProperties::ClearProperties()
 
 void TeachingTipTemplateSettingsProperties::IconElement(winrt::IconElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTipTemplateSettings*>(this)->SetValue(s_IconElementProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconElement TeachingTipTemplateSettingsProperties::IconElement()
@@ -73,7 +81,10 @@ winrt::IconElement TeachingTipTemplateSettingsProperties::IconElement()
 
 void TeachingTipTemplateSettingsProperties::TopLeftHighlightMargin(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTipTemplateSettings*>(this)->SetValue(s_TopLeftHighlightMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness TeachingTipTemplateSettingsProperties::TopLeftHighlightMargin()
@@ -83,7 +94,10 @@ winrt::Thickness TeachingTipTemplateSettingsProperties::TopLeftHighlightMargin()
 
 void TeachingTipTemplateSettingsProperties::TopRightHighlightMargin(winrt::Thickness const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TeachingTipTemplateSettings*>(this)->SetValue(s_TopRightHighlightMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Thickness TeachingTipTemplateSettingsProperties::TopRightHighlightMargin()

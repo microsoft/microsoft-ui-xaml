@@ -10,8 +10,11 @@ runtimeclass CornerRadiusToThicknessConverter : Windows.UI.Xaml.DependencyObject
 
     [MUX_DEFAULT_VALUE("winrt::CornerRadiusToThicknessConverterKind::FilterLeftAndRightFromTop")]
     CornerRadiusToThicknessConverterKind  ConversionKind{ get; set; };
+    [MUX_DEFAULT_VALUE("1.0f")]
+    Double Multiplier{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty ConversionKindProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MultiplierProperty{ get; };
 };
 
 [WUXC_VERSION_MUXONLY]
@@ -22,6 +25,14 @@ enum CornerRadiusToThicknessConverterKind
     FilterTopAndBottomFromRight,
     FilterLeftAndRightFromTop,
     FilterLeftAndRightFromBottom,
+    FilterTopFromTopLeft,
+    FilterTopFromTopRight,
+    FilterRightFromTopRight,
+    FilterRightFromBottomRight,
+    FilterBottomFromBottomRight,
+    FilterBottomFromBottomLeft,
+    FilterLeftFromBottomLeft,
+    FilterLeftFromTopLeft,
 };
 
 }

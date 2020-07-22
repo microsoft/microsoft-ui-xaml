@@ -7,7 +7,7 @@
 #include "ButtonInteraction.h"
 #include "ButtonInteractionInvokedEventArgs.h"
 
-CppWinRTActivatableClassWithBasicFactory(ButtonInteraction);
+#include "ButtonInteraction.properties.cpp"
 
 winrt::ButtonInteractionInvokeMode ButtonInteraction::InvokeMode()
 {
@@ -16,8 +16,7 @@ winrt::ButtonInteractionInvokeMode ButtonInteraction::InvokeMode()
 
 void ButtonInteraction::InvokeMode(winrt::ButtonInteractionInvokeMode const& value)
 {
-
-    auto invokeMode = value;
+    const auto invokeMode = value;
     if (invokeMode != m_invokeMode)
     {
         m_invokeMode = value;
@@ -33,16 +32,6 @@ bool ButtonInteraction::IsHovering()
 bool ButtonInteraction::IsPressing()
 {
     return m_isPressing;
-}
-
-winrt::event_token ButtonInteraction::Invoked(winrt::TypedEventHandler<winrt::ButtonInteraction, winrt::ButtonInteractionInvokedEventArgs> const& value)
-{
-    return m_invokedEventSource.add(value);
-}
-
-void ButtonInteraction::Invoked(winrt::event_token const& token)
-{
-    m_invokedEventSource.remove(token);
 }
 
 winrt::event_token ButtonInteraction::PropertyChanged(winrt::PropertyChangedEventHandler const& value)
@@ -163,10 +152,10 @@ void ButtonInteraction::OnPointerPressed(winrt::UIElement const& sender, winrt::
 
 void ButtonInteraction::OnPointerReleased(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    auto target = sender;
-    auto pointerArgs = args;
+    const auto target = sender;
+    const auto pointerArgs = args;
 
-    bool wasPressing = m_isPressing;
+    const bool wasPressing = m_isPressing;
 
     UpdateIsPressing(false);
 

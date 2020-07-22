@@ -102,9 +102,9 @@ void TreeViewNode::UpdateHasChildren()
 
 void TreeViewNode::ChildVectorChanged(winrt::IObservableVector<winrt::TreeViewNode> const& sender, winrt::IInspectable const& args)
 {
-    auto wArgs = args.as<winrt::IVectorChangedEventArgs>();
-    winrt::CollectionChange collectionChange = wArgs.CollectionChange();
-    unsigned int index = args.as<winrt::IVectorChangedEventArgs>().Index();
+    const auto wArgs = args.as<winrt::IVectorChangedEventArgs>();
+    const winrt::CollectionChange collectionChange = wArgs.CollectionChange();
+    const unsigned int index = args.as<winrt::IVectorChangedEventArgs>().Index();
     UpdateHasChildren();
     RaiseChildrenChanged(collectionChange, index);
 }
@@ -230,14 +230,14 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
 {
     if (!AreChildrenNodesEqualToItemsSource())
     {
-        auto children = winrt::get_self<TreeViewNodeVector>(Children());
-        children->Clear(false /* updateItemsSource */);
+        const auto children = winrt::get_self<TreeViewNodeVector>(Children());
+        children->Clear(false /* updateItemsSource */, false /* updateIsExpanded */);
 
-        auto size = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
+        const auto size = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
         for (auto i = 0; i < size; i++)
         {
-            auto item = m_itemsDataSource.GetAt(i);
-            auto node = winrt::make_self<TreeViewNode>();
+            const auto item = m_itemsDataSource.GetAt(i);
+            const auto node = winrt::make_self<TreeViewNode>();
             node->Content(item);
             node->IsContentMode(true);
             children->Append(*node, false /* updateItemsSource */);
@@ -247,9 +247,9 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
 
 bool TreeViewNode::AreChildrenNodesEqualToItemsSource()
 {
-    auto children = Children();
-    UINT32 childrenCount = children ? children.Size() : 0;
-    UINT32 itemsSourceCount = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
+    const auto children = Children();
+    const UINT32 childrenCount = children ? children.Size() : 0;
+    const UINT32 itemsSourceCount = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
 
     if (childrenCount != itemsSourceCount)
     {
@@ -383,11 +383,11 @@ void TreeViewNodeVector::InsertAt(unsigned int index, winrt::TreeViewNode const&
 
 void TreeViewNodeVector::SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource)
 {
-    RemoveAt(index, updateItemsSource);
+    RemoveAt(index, updateItemsSource,false /* updateIsExpanded */);
     InsertAt(index, item, updateItemsSource);
 }
 
-void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
+void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource,bool updateIsExpanded)
 {
     auto inner = GetVectorInnerImpl();
     auto targetNode = inner->GetAt(index);
@@ -402,19 +402,32 @@ void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
             source.RemoveAt(index);
         }
     }
+
+    // No children, so close parent if not requested otherwise
+    if (updateIsExpanded && inner->Size() == 0)
+    {
+        if (const auto& ownerNode = m_parent.get())
+        {
+            // Only set IsExpanded to false if we are not the root node
+            if (const auto& ownerParent = ownerNode.Parent())
+            {
+                ownerNode.IsExpanded(false);
+            }
+        }
+    }
 }
 
 void TreeViewNodeVector::RemoveAtEnd(bool updateItemsSource)
 {
-    auto index = GetVectorInnerImpl()->Size() - 1;
+    const auto index = GetVectorInnerImpl()->Size() - 1;
     RemoveAt(updateItemsSource);
 }
 
 void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource)
 {
-    auto inner = GetVectorInnerImpl();
+    const auto inner = GetVectorInnerImpl();
 
-    auto count = inner->Size();
+    const auto count = inner->Size();
     if (count > 0)
     {
         Clear(updateItemsSource);
@@ -435,10 +448,10 @@ void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const>
     }
 }
 
-void TreeViewNodeVector::Clear(bool updateItemsSource)
+void TreeViewNodeVector::Clear(bool updateItemsSource,bool updateIsExpanded)
 {
-    auto inner = GetVectorInnerImpl();
-    auto count = inner->Size();
+    const auto inner = GetVectorInnerImpl();
+    const auto count = inner->Size();
 
     if (count > 0)
     {
@@ -455,6 +468,18 @@ void TreeViewNodeVector::Clear(bool updateItemsSource)
             if (auto itemsSource = GetWritableParentItemsSource())
             {
                 itemsSource.Clear();
+            }
+        }
+    }
+
+    if (updateIsExpanded)
+    {
+        if(const auto& ownerNode = m_parent.get())
+        {
+            // Only set IsExpanded to false if we are not the root node
+            if (const auto& ownerParent = ownerNode.Parent())
+            {
+                ownerNode.IsExpanded(false);
             }
         }
     }

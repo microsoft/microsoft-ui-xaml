@@ -6,7 +6,12 @@
 #include "common.h"
 #include "IconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(IconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(IconSource)
+}
+
+#include "IconSource.g.cpp"
 
 GlobalDependencyProperty IconSourceProperties::s_ForegroundProperty{ nullptr };
 
@@ -37,7 +42,10 @@ void IconSourceProperties::ClearProperties()
 
 void IconSourceProperties::Foreground(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<IconSource*>(this)->SetValue(s_ForegroundProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush IconSourceProperties::Foreground()

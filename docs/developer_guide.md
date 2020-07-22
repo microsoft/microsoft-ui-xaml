@@ -1,4 +1,4 @@
-﻿# Developer Guide
+# Developer Guide
 
 This guide provides instructions on how to build the repo and implement 
 improvements.
@@ -19,6 +19,11 @@ Additional reading:
 
 Install latest VS2019 (16.1 or later) from here: http://visualstudio.com/downloads
 
+Include the following workloads:
+* .NET desktop development
+* Desktop Development with C++
+* Universal Windows Platform development
+
 #### SDK
 
 While WinUI is designed to work against many versions of Windows, you will need 
@@ -27,21 +32,74 @@ a fairly recent SDK in order to build WinUI. It's required that you install the
 all the boxes when prompted), or you can manually download them from here: 
 https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
-<!-- 
-You will also need to install The Windows 10 Insider SDK 18323. The easiest way 
-to install this is to run the Install-WindowsSdkISO.ps1 script from this repo in
-an Administrator Powershell window:
-
- `.\build\Install-WindowsSdkISO.ps1 18323` -->
 
 ## Building the repository
 
+Building the solution **MUXControls.sln** will build all projects. 
 Generally you will want to set your configuration to **Debug**, **x64**, and 
-select **MUXControlsTestApp** as your startup project in Visual Studio.
+select **MUXControlsTestApp** as your startup project in Visual Studio. To retrieve the appropriate dependencies, right click on the solution in the Solution Explorer and select "Restore NuGet Packages". 
+
+If you want to work on a single control/project, instead of using the **MUXControls.sln**, you can open the **MUXControlsInnerLoop.sln**.
+
+#### Working with the MUXControlsInnerLoop solution
+To work on a specific feature or control using the **MUXControlInnerLoop.sln** you will need to modify the **InnerLoopAreas.props** file to include the desired controls and projects. For example, to work in the ItemsRepeater using the InnerLoop, you will need to add
+```xml
+<FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
+```
+to the **InnerLoopAreas.props** file.
+
+A full list of all areas can be found in the **FeatureArea.props** files. To include a component in the `Microsoft.UI.Xaml.dll` but not add it to the MUXControlsTestApp, you add it with `productOnly` instead of `true`: 
+```xml
+<FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+```
+
+When switching between the **MUXControls.sln** and **MUXControlsInnerLoop.sln**, make sure you either delete the **BuildOutput** folder in the solution's root directory or run `git clean -dfx` in order to delete some build files which are incorrectly determined to be up to date by MSBuild after the switch.
+Note that `git clean -dfx` deletes all untracked files, so it may also delete any changes you made. To see what would be deleted by that command without actually deleting anything, run `git clean -dfxn`.
+
+
+If you use the inner loop solution, please avoid pushing changes to the inner loop solution or **InnerLoopAreas.props** files.
+This can be avoided by running the following commands in git:
+```
+git update-index --skip-worktree InnerLoopAreas.props
+git update-index --skip-worktree MUXControlsInnerLoop.sln
+```
 
 ### Creating a NuGet package
 
-> More information will be coming on this soon
+To create a NuGet package for a given build flavor (release/debug) and build arch (x64/x86/ARM/ARM64), first you need to build the solution in that configuration.
+
+After building the solution in the desired configuration, you can run the `build-nupkg.ps1` script that will run the required steps.
+The script takes the following arguments:
+#### -BuildOutput
+The path to the microsoft-ui-xaml BuildOutput folder
+#### -BuildFlavor
+The flavor to use for nuget build (`debug` or `release`). Defaults to `release`.
+#### -BuildArch
+The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`. Defaults to `x86`.
+#### -OutputDir
+The folder where the nuget package will be generated in
+#### -SkipFrameworkPackage
+Can be specified to skip building a framework package. Defaults to `False`.
+In order to generate framework packages, you need to generate package appx files. 
+This can be done using the `MakeAllAppx.cmd` located in the same folder as `build-nupkg.ps1`.
+
+
+Example usage (running from root of repository folder):
+```
+// Builds a NuGet package with debug binaries and arch x64 into the folder "NuGetPackage"
+.\build\NuSpecs\build-nupkg.ps1 -BuildOutput "..\..\BuildOutput" -BuildFlavor "debug" -BuildArch "x64" -OutputDir "..\..\NugetPackage"
+```
+
+> Note: To use debug build outputs as nuget package, you need to change [this line](https://github.com/microsoft/microsoft-ui-xaml/blob/7d2cd793a0154580f1dd0c9685c461198e05f207/dev/dll/Microsoft.UI.Xaml.vcxproj#L35) in `microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.vcxproj` from
+> ```xml
+> <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf> 
+> ``` 
+> to 
+> ```xml
+> <DisableEmbeddedXbf>false</DisableEmbeddedXbf> 
+> ```
+> to allow building of .pri files in debug mode, which are needed for the NuGet package.
+
 
 ## Testing
 
@@ -79,7 +137,7 @@ MUXControls.ReleaseTest, NugetPackageTestApp (C#) and NugetPackageTestAppCX
 
 Test classes for this are in MUXControls.ReleaseTest, and they share test 
 infrastructure with MUX so you can write tests in the same way as in MUX. 
-The only difference is you’ll have to specify the TestType in ClassInitialize 
+The only difference is you'll have to specify the TestType in ClassInitialize 
 and TestCleanup (TestType.Nuget for NugetPackageTestApp and TestType.NugetCX 
 for NugetPackageTestAppCX). 
 ```
@@ -94,7 +152,7 @@ public void TestCleanup()
 }
 ```
 The test apps are using released versions of MUX NuGet package locally. In [CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20), 
-the test pipeline will generate a NuGet package for each build, and there’s a 
+the test pipeline will generate a NuGet package for each build, and there's a 
 separate pipeline configured to consume the generated package from latest 
 build and run MUXControl.ReleaseTest.
 
@@ -136,8 +194,8 @@ checks in order to pass on all versions.
 
 #### Visual tree verification tests
 
-##### Update visual tree masters
-Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and we use them as the baseline (master) for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with masters. The master files need to be updated to include your latest changes. Visual verification test automatically captures the new visual tree and uploads the dump to test pipeline artifacts. Here are the steps to replace existing masters with the new ones.
+##### Update visual tree verification files
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. Visual verification test automatically captures the new visual tree and uploads the dump to test pipeline artifacts. Here are the steps to replace existing verification files with the new ones.
 
 1. Find your test run.
 
@@ -145,15 +203,37 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     ![test fail page2](images/test_fail_page2.png)
 
-2. Download new masters.
+2. Download new verification files.
 
-    ![drop folder](images/test_pipeline_drop.png)
+    First, open the published build artifacts:
     
-    ![VisualTreeMasters folder](images/masters_folder.png)
+    ![released artifacts](images/test_fail_page3.png)
+    
+    ###### [For Microsoft employees]
+    
+    If you are a Microsoft employee, you can directly view the content of the created `drop` folder containing the updated verification files in Azure Pipelines.
+    
+    ###### [For external contributors]
+    
+    If you are an external contributor, you cannot directly download the new verification files but instead have to download the entire generated **drop** archive and unpack it (its size can be around 1 GB):
+
+    ![drop folder](images/test_pipeline_drop.png) 
+    
+    The next steps are the same for both Microsoft employees and external contributors:
+    
+    Open the `LinksToHelixTestFiles.html` file in the opened drop folder.
+    
+    ![drop folder employee](images/test_pipeline_drop2.png)
+    
+    You will now see download links to the new verification files:
+    
+    ![verification files employee](images/test_pipeline_verificationfiles_links.png)
+    
+    Finally, click on the links and download the files (like `ComboBox-4.xml`).
 
 3. Diff & replace
 
-    Diff the [old](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and new masters, make sure the changes are intended, replace the files and commit your changes.
+    Diff the [old](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and new verification files, make sure the changes are intended, replace the files and commit your changes.
 
 ##### Create new visual tree tests
 1. Write new test
@@ -162,34 +242,24 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
 2. Run the test locally
 
-    Run the test locally and make sure everything looks right. The test will fail, which is expected since the test is new and there's no master to compare against. A new master file should be generated in your Pictures folder (The test app doesn't have write access to other arbitrary folders ☹).
+    Run the test locally and make sure everything looks right. The test will fail, which is expected since the test is new and there's no verification file to compare against. A new verification file should be generated in your Pictures folder (The test app doesn't have write access to other arbitrary folders ☹).
 
 3. Queue a test run in pipeline
 
-    Local test run only gives you the visual tree dump for your host OS version. Some controls have different visual behaviors on different versions. To get master files for all supported OS versions, you'll need to start a test run in test pipeline.
+    Local test run only gives you the visual tree dump for your host OS version. Some controls have different visual behaviors on different versions. To get verification files for all supported OS versions, you'll need to start a test run in test pipeline.
 
     Go to the [build page](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) and select `WinUI-Public-MUX-PR` pipeline. Click the `Queue` button on top right corner, update `Branch/tag` TextBlock to be your working branch then click on `Run`.
 
     Outside contributors may not have permission to do this, just open a PR and one of our team members will queue a test run for you.
 
-4. Get the new master files.
+4. Get the new verification files.
 
-    The new masters will be uploaded to pipeline artifacts folder when test finishes. Continue the steps in `Update visual tree masters` section above to download and commit the new files.
+    The new verification files will be uploaded to pipeline artifacts folder when test finishes. Continue the steps in `Update visual tree verification files` section above to download and commit the new files.
 
 
 
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
-products and services. Note however that no data collection is performed by default
-when using your private builds. An environment variable called "EmitTelemetryEvents"
-must be defined during the build for data collection to be turned on.
-
-When using the Build.cmd script, you can use its /EmitTelemetryEvents option to define
-that variable.
-Or when building in Visual Studio, you can first define the environment variable in a
-Command Prompt window and then launch the solution from there:
-
-1. In a Command Prompt window, set the required environment variable: set EmitTelemetryEvents=true
-2. Then from that same Command Prompt, open the Visual Studio solution: MUXControls.sln
-3. Recompile the solution in Visual Studio. The build will use that environment variable.
+products and services. Note however that no data collection is performed 
+when using your private builds.

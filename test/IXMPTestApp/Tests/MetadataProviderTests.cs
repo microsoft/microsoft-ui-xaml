@@ -55,30 +55,36 @@ namespace IXMPTestApp.Tests
                         <Rectangle Width='100' Height='100' Fill='Red' />
                     </controls:ParallaxView>");
 
-                Log.Comment("Loading ItemsRepeater...");
-                XamlReader.Load(@"
-                    <controls:ItemsRepeaterScrollHost
-                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                        <ScrollViewer>
-                            <controls:ItemsRepeater Name='repeater'>
-                                <controls:ItemsRepeater.Layout>
-                                    <controls:StackLayout Orientation='Vertical' Spacing='10' />
-                                </controls:ItemsRepeater.Layout>
-                                <controls:ItemsRepeater.ItemTemplate>
-                                    <controls:RecyclingElementFactory>
-                                        <controls:RecyclingElementFactory.RecyclePool>
-                                            <controls:RecyclePool />
-                                        </controls:RecyclingElementFactory.RecyclePool>
-                                        <DataTemplate x:Key='Primary'>
-                                            <TextBlock Text='{Binding}' />
-                                        </DataTemplate>
-                                    </controls:RecyclingElementFactory>
-                                </controls:ItemsRepeater.ItemTemplate>
-                            </controls:ItemsRepeater>
-                        </ScrollViewer>
-                    </controls:ItemsRepeaterScrollHost>");
+
+                // This test case is disabled in Debug configuration due to:
+                // Bug #1725: RecyclingElementFactory.Templates cannot be set from Xaml on RS4 and below in debug configuration (using reflection provider) 
+                if (!PlatformConfiguration.IsDebugBuildConfiguration())
+                {
+                    Log.Comment("Loading ItemsRepeater...");
+                    XamlReader.Load(@"
+                        <controls:ItemsRepeaterScrollHost
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                            <ScrollViewer>
+                                <controls:ItemsRepeater Name='repeater'>
+                                    <controls:ItemsRepeater.Layout>
+                                        <controls:StackLayout Orientation='Vertical' Spacing='10' />
+                                    </controls:ItemsRepeater.Layout>
+                                    <controls:ItemsRepeater.ItemTemplate>
+                                        <controls:RecyclingElementFactory>
+                                            <controls:RecyclingElementFactory.RecyclePool>
+                                                <controls:RecyclePool />
+                                            </controls:RecyclingElementFactory.RecyclePool>
+                                            <DataTemplate x:Key='Primary'>
+                                                <TextBlock Text='{Binding}' />
+                                            </DataTemplate>
+                                        </controls:RecyclingElementFactory>
+                                    </controls:ItemsRepeater.ItemTemplate>
+                                </controls:ItemsRepeater>
+                            </ScrollViewer>
+                        </controls:ItemsRepeaterScrollHost>");
+                }
 
                 Log.Comment("Loading SwipeControl...");
                 XamlReader.Load(@"

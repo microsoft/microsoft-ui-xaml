@@ -7,6 +7,8 @@
 #include "RevealHoverLight.h"
 #include "RevealBorderLight.h"
 
+#include "RevealTestApi.properties.cpp"
+
 RevealTestApi::RevealTestApi()
 {
 #ifndef BUILD_WINDOWS

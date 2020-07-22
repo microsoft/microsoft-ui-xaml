@@ -34,6 +34,8 @@ public:
     static winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement(const winrt::TeachingTip& teachingTip);
     static double GetVerticalOffset(const winrt::TeachingTip& teachingTip);
     static double GetHorizontalOffset(const winrt::TeachingTip& teachingTip);
+    static winrt::Visibility GetTitleVisibility(const winrt::TeachingTip& teachingTip);
+    static winrt::Visibility GetSubtitleVisibility(const winrt::TeachingTip& teachingTip);
 
     static void NotifyOpenedStatusChanged(const winrt::TeachingTip& sender);
     static winrt::event_token OpenedStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
@@ -55,6 +57,14 @@ public:
     static winrt::event_token OffsetChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
     static void OffsetChanged(winrt::event_token const& token);
 
+    static void NotifyTitleVisibilityChanged(const winrt::TeachingTip& sender);
+    static winrt::event_token TitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
+    static void TitleVisibilityChanged(winrt::event_token const& token);
+
+    static void NotifySubtitleVisibilityChanged(const winrt::TeachingTip& sender);
+    static winrt::event_token SubtitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
+    static void SubtitleVisibilityChanged(winrt::event_token const& token);
+
     static winrt::Popup GetPopup(const winrt::TeachingTip& teachingTip);
 
 private:
@@ -64,6 +74,6 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectivePlacementChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectiveHeroContentPlacementChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_offsetChangedEventSource;
+    winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_titleVisibilityChangedEventSource;
+    winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_subtitleVisibilityChangedEventSource;
 };
-
-CppWinRTActivatableClassWithBasicFactory(TeachingTipTestHooks)

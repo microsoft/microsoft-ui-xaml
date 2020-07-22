@@ -3,33 +3,32 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
-    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)">
 
     <Style TargetType="local:RadioButtons" BasedOn="{StaticResource DefaultRadioButtonsStyle}" />
 
     <Style x:Key="DefaultRadioButtonsStyle" TargetType="local:RadioButtons">
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Once" />
+        <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
+        <contract5Present:Setter Property="TabNavigation" Value="Once" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:RadioButtons">
-                    <primitives:RadioButtonsListView x:Name="InnerListView"
-                        SelectionMode="Single"
-                        ItemContainerStyle="{StaticResource RadioButtonsItemStyle}"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                        Header="{TemplateBinding Header}">
-
-                        <primitives:RadioButtonsListView.ItemContainerTransitions>
-                            <TransitionCollection/>
-                        </primitives:RadioButtonsListView.ItemContainerTransitions>
-
-                        <primitives:RadioButtonsListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="{TemplateBinding MaximumColumns}"/>
-                            </ItemsPanelTemplate>
-                        </primitives:RadioButtonsListView.ItemsPanel>
-                    </primitives:RadioButtonsListView>
-                </ControlTemplate>
+                    <StackPanel>
+                        <ContentPresenter
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+                        <local:ItemsRepeater x:Name="InnerRepeater" ItemTemplate="{TemplateBinding ItemTemplate}">
+                            <local:ItemsRepeater.Layout>
+                                <primitives:ColumnMajorUniformToLargestGridLayout
+                                    MaxColumns="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaxColumns}"
+                                    ColumnSpacing="{ThemeResource RadioButtonsColumnSpacing}"
+                                    RowSpacing="{ThemeResource RadioButtonsRowSpacing}"/>
+                            </local:ItemsRepeater.Layout>
+                        </local:ItemsRepeater>
+                    </StackPanel>
+                    </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>

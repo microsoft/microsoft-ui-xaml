@@ -6,7 +6,12 @@
 #include "common.h"
 #include "XamlAmbientLight.h"
 
-CppWinRTActivatableClassWithDPFactory(XamlAmbientLight)
+namespace winrt::Microsoft::UI::Private::Media
+{
+    CppWinRTActivatableClassWithDPFactory(XamlAmbientLight)
+}
+
+#include "XamlAmbientLight.g.cpp"
 
 GlobalDependencyProperty XamlAmbientLightProperties::s_ColorProperty{ nullptr };
 GlobalDependencyProperty XamlAmbientLightProperties::s_IsTargetProperty{ nullptr };
@@ -58,7 +63,10 @@ void XamlAmbientLightProperties::OnColorPropertyChanged(
 
 void XamlAmbientLightProperties::Color(winrt::Color const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<XamlAmbientLight*>(this)->SetValue(s_ColorProperty, ValueHelper<winrt::Color>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Color XamlAmbientLightProperties::Color()

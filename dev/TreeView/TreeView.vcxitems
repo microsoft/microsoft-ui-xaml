@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemDataAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemInvokedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewList.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewSelectionChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewModel.h" />
   </ItemGroup>
   <ItemGroup>
@@ -48,13 +49,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemDataAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemInvokedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewList.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewSelectionChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TreeView.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
   </ItemGroup>
-  <ItemGroup >
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TreeView.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

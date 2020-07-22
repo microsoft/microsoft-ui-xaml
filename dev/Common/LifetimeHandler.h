@@ -32,9 +32,9 @@ private:
 #ifdef TWOPANEVIEW_INCLUDED
     com_ptr<DisplayRegionHelper> m_displayRegionHelper;
 #endif
-    ~LifetimeHandler();
 public:
-    LifetimeHandler() = default; // Trying to make this private gives: cannot access private member declared in class 'LifeTimeHandler'
+    LifetimeHandler() = default;
+    ~LifetimeHandler();
 
 #ifdef REPEATER_INCLUDED
     static com_ptr<CachedVisualTreeHelpers> GetCachedVisualTreeHelpersInstance();

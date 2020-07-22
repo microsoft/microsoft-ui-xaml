@@ -16,6 +16,7 @@ public:
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
+    hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // IRangeValueProvider
@@ -33,4 +34,3 @@ private:
     com_ptr<NumberBox> GetImpl();
 };
 
-CppWinRTActivatableClassWithBasicFactory(NumberBoxAutomationPeer);

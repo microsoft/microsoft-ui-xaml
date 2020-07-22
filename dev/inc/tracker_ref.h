@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "SharedHelpers.h"
+
 struct __declspec(novtable) ITrackerHandleManager
 {
     virtual ~ITrackerHandleManager() = default;
@@ -78,13 +80,6 @@ struct __declspec(novtable) ITrackerHandleManager
     bool m_wasEnsureCalled{};
 #endif
 
-    // Specifies if this instance is composed by an outer object.
-    // Only returns true if this is an AggregableComObject<T> instance.
-    virtual bool IsComposed()
-    {
-        return false;
-    }
-
 protected:
     ::ITrackerOwner* m_trackerOwnerInnerNoRef{ nullptr };
 };
@@ -128,9 +123,10 @@ enum class TrackerRefFallback
     FallbackToComPtrBeforeRS4
 };
 
-template<typename T, TrackerRefFallback fallback = TrackerRefFallback::None, typename RawStorageT = ::IUnknown*, typename IUnknownAccessorT = typename IUnknownAccessor<T>>
+template<typename T, TrackerRefFallback fallback = TrackerRefFallback::None, typename RawStorageT = ::IUnknown*>
 class tracker_ref sealed
 {
+    using IUnknownAccessorT = typename IUnknownAccessor<T>;
 public:
     explicit tracker_ref(const ITrackerHandleManager* owner)
     {
@@ -183,7 +179,7 @@ public:
     // carefully so that we don't end up with two tracker_ref instances
     // with the same data.
     // Move constructor.
-    tracker_ref(tracker_ref&& other)
+    tracker_ref(tracker_ref&& other) noexcept
         : m_owner(std::move(other.m_owner))
         , m_handle(std::move(other.m_handle))
         , m_valueNoRef(std::move(other.m_valueNoRef))
@@ -193,7 +189,7 @@ public:
         other.m_valueNoRef = nullptr;
     }
     // Move assignment operator.
-    tracker_ref& operator=(tracker_ref&& other)
+    tracker_ref& operator=(tracker_ref&& other) noexcept
     {
         if (this != std::addressof(other))
         {

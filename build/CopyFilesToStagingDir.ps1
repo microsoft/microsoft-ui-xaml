@@ -40,12 +40,10 @@ PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.Fr
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
 
-# pgosweep and vcruntime are required to run pgo instrumented test run. They are placed from the 
+# pgosweep and vcruntime are required to run pgo instrumented test run. They are placed from the
 # cx test app instead of releasetest.dll since these are architecture specific and the ReleaseTest assembly is AnyCPU.
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\pgosweep.exe $FullPublishDir\Test\
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vcruntime140.dll $FullPublishDir\Test\
-# save the pgd file to artifacts, we will need this to merge pgc files and compile the next time around
-PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pgd $FullPublishDir\Microsoft.UI.Xaml\
 
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
@@ -65,10 +63,10 @@ if($PublishAppxFiles)
 # Publish pdbs:
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pdb $symbolsOutputDir
-PublishFile -IfExists $FullBuildOutput\IXMPTestApp\IXMPTestApp.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\IXMPTestApp.TAEF\IXMPTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXTestUtilities\MUXTestUtilities.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControls.Test\MUXControls.Test.pdb $symbolsOutputDir
-PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp\MUXControlsTestApp.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp.TAEF\MUXControlsTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppWPF\MUXControlsTestAppWPF.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\TestAppCX\TestAppCX.pdb $symbolsOutputDir

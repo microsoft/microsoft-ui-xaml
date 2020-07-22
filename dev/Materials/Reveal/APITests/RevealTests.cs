@@ -22,7 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class RevealTests
+    public class RevealTests : ApiTestBase
     {
         //[TestMethod] TODO: Re-enable once issue #644 is fixed.
         public void ValidateAppBarButtonRevealStyles()
@@ -53,12 +53,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 toggleButtonLabelsOnRight = (AppBarToggleButton)cmdBar.PrimaryCommands[1];
                 toggleButtonOverflow = (AppBarToggleButton)cmdBar.SecondaryCommands[1];
 
-                MUXControlsTestApp.App.TestContentRoot = cmdBar;
-            });
-            IdleSynchronizer.Wait();
+                Content = cmdBar;
+                Content.UpdateLayout();
 
-            RunOnUIThread.Execute(() =>
-            {
                 const double expectedLabelsOnRightWidth = 84;
                 const double expectedOverflowWidth = 264;
 

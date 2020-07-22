@@ -6,6 +6,7 @@
 #include "ComboBoxHelper.h"
 #include "DispatcherHelper.h"
 #include "CornerRadiusFilterConverter.h"
+#include "ResourceAccessor.h"
 
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
@@ -93,8 +94,8 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
 {
     if (comboBox.IsEditable())
     {
-        auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(comboBox, box_value(c_controlCornerRadiusKey)));
-        auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(comboBox, box_value(c_overlayCornerRadiusKey)));
+        auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(comboBox, box_value(c_controlCornerRadiusKey)));
+        auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(comboBox, box_value(c_overlayCornerRadiusKey)));
 
         if (winrt::IControl7 comboBoxControl7 = comboBox)
         {
@@ -103,13 +104,13 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
 
         if (isDropDownOpen)
         {
-            bool isOpenDown = IsPopupOpenDown(comboBox);
+            const bool isOpenDown = IsPopupOpenDown(comboBox);
             auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
-            auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
+            const auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
             popupRadius = cornerRadiusConverter->Convert(popupRadius, popupRadiusFilter);
 
-            auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
+            const auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
             textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
         }
 
@@ -142,15 +143,10 @@ bool ComboBoxHelper::IsPopupOpenDown(const winrt::ComboBox& comboBox)
     {
         if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_editableTextName, comboBox))
         {
-            auto transform = popupBorder.TransformToVisual(textBox);
-            auto popupTop = transform.TransformPoint(winrt::Point(0, 0));
+            const auto transform = popupBorder.TransformToVisual(textBox);
+            const auto popupTop = transform.TransformPoint(winrt::Point(0, 0));
             verticalOffset = popupTop.Y;
         }
     }
     return verticalOffset > 0;
-}
-
-winrt::IInspectable ComboBoxHelper::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
-{
-    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "BitmapIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(BitmapIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(BitmapIconSource)
+}
+
+#include "BitmapIconSource.g.cpp"
 
 GlobalDependencyProperty BitmapIconSourceProperties::s_ShowAsMonochromeProperty{ nullptr };
 GlobalDependencyProperty BitmapIconSourceProperties::s_UriSourceProperty{ nullptr };
@@ -52,7 +57,10 @@ void BitmapIconSourceProperties::ClearProperties()
 
 void BitmapIconSourceProperties::ShowAsMonochrome(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<BitmapIconSource*>(this)->SetValue(s_ShowAsMonochromeProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool BitmapIconSourceProperties::ShowAsMonochrome()
@@ -62,7 +70,10 @@ bool BitmapIconSourceProperties::ShowAsMonochrome()
 
 void BitmapIconSourceProperties::UriSource(winrt::Uri const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<BitmapIconSource*>(this)->SetValue(s_UriSourceProperty, ValueHelper<winrt::Uri>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Uri BitmapIconSourceProperties::UriSource()

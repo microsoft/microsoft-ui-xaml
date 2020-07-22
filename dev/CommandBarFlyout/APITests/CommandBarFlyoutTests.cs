@@ -28,14 +28,8 @@ using CommandBarFlyout = Microsoft.UI.Xaml.Controls.CommandBarFlyout;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class CommandBarFlyoutTests
+    public class CommandBarFlyoutTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         [TestProperty("Description", "Verifies the CommandBarFlyout's default properties.")]
         public void VerifyFlyoutDefaultPropertyValues()
@@ -299,9 +293,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 flyout.SecondaryCommands.Add(new AppBarButton() { Label = "Item 25" });
 
                 flyoutTarget = new Button() { Content = "Click for flyout" };
+                Content = flyoutTarget;
+                Content.UpdateLayout();
             });
-
-            TestUtilities.SetAsVisualTreeRoot(flyoutTarget);
 
             OpenFlyout(flyout, flyoutTarget);
 
@@ -358,9 +352,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 commandBarFlyoutTarget = new Button() { Content = "Click for flyout" };
+                Content = commandBarFlyoutTarget;
+                Content.UpdateLayout();
             });
 
-            TestUtilities.SetAsVisualTreeRoot(commandBarFlyoutTarget);
             flyout = commandBarFlyout;
             flyoutTarget = commandBarFlyoutTarget;
         }

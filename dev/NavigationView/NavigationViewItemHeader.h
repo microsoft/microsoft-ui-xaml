@@ -20,6 +20,8 @@ public:
 private:
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateIsClosedCompact();
+    void UpdateItemIndentation();
+    void OnNavigationViewItemBaseDepthChanged() override;
 
     void UpdateVisualState(bool useTransitions);
 
@@ -27,5 +29,7 @@ private:
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
+
+    tracker_ref<winrt::Grid> m_rootGrid{ this };
 
 };

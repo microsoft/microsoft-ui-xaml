@@ -5,5 +5,6 @@
 
 #include "RecyclePool.h"
 
-CppWinRTActivatableClassWithDPFactory(RecyclePool)
+#include "RecyclePool.properties.cpp"
+
 

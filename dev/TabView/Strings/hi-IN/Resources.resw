@@ -129,4 +129,20 @@
     <value>टैब बंद करें</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
+    <value>टैब बंद करें</value>
+    <comment>Tooltip for the close button on each tab.</comment>
+  </data>
+  <data name="TabViewCloseButtonTooltipWithKA" xml:space="preserve">
+    <value>टैब बंद करें (Ctrl+F4)</value>
+    <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
+  </data>
+  <data name="TabViewScrollDecreaseButtonTooltip" xml:space="preserve">
+    <value>टैब सूची को पीछे स्क्रॉल करें</value>
+    <comment>Tooltip for the tab list scroll decrease button.</comment>
+  </data>
+  <data name="TabViewScrollIncreaseButtonTooltip" xml:space="preserve">
+    <value>टैब सूची को आगे स्क्रॉल करें</value>
+    <comment>Tooltip for the tab list scroll increase button.</comment>
+  </data>
 </root>

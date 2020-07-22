@@ -53,9 +53,6 @@
   <PropertyGroup Condition="$(UseInternalSDK) == 'true'">
     <DefineConstants>$(DefineConstants);USE_INTERNAL_SDK</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="$(EmitTelemetryEvents) == 'true'">
-    <DefineConstants>$(DefineConstants);EMIT_TELEMETRY_EVENTS</DefineConstants>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="$(MUXFinalRelease) == 'false'">
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE</PreprocessorDefinitions>
@@ -71,11 +68,6 @@
     <Midl>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);USE_INSIDER_SDK</PreprocessorDefinitions>
     </Midl>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="$(EmitTelemetryEvents) == 'true'">
-    <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMIT_TELEMETRY_EVENTS</PreprocessorDefinitions>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(BuildingWithBuildExe) == 'true'">
     <ClCompile>

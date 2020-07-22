@@ -1,9 +1,14 @@
 [CmdletBinding()]
 param(
+    [ValidateSet("Debug", "Release")]
     [String]$Flavor = "Debug",
+
+    [ValidateSet("x86", "x64")]
     [String]$Platform = "x86",
+
     [switch]$NoBuild,
     [String]$BuildId,
+    
     [ValidateSet("DevTest", "NugetPkgTests", "FrameworkPkgTests")]
     [string]$TestSuite = "DevTest"
 )

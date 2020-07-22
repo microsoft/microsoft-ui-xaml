@@ -32,14 +32,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class CommonStylesApiTests
+    public class CommonStylesApiTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void VerifyUseCompactResourcesAPI()
         {
@@ -125,7 +119,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 try
                 {
                     Log.Comment($"Verify visual tree for {control}");
-                    VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), masterFilePrefix: control);
+                    VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), verificationFileNamePrefix: control);
                 }
                 catch (Exception e)
                 {
@@ -141,6 +135,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled due to #2210: Unreliable test: CommonStylesApiTests.VerifyVisualTreeForCommandBarOverflowMenu
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
@@ -168,26 +163,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 commandBar = (CommandBar)root.FindName("TestCommandBar");
                 Verify.IsNotNull(commandBar);
-            });
-
-            TestUtilities.SetAsVisualTreeRoot(root);
-
-            RunOnUIThread.Execute(() => {
+                Content = root;
+                Content.UpdateLayout();
                 commandBar.IsOpen = true;
-            });
-
-            MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => {
+                Content.UpdateLayout();
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 Verify.IsNotNull(popup);
                 overflowContent = popup.Child;
             });
 
             var visualTreeDumperFilter = new VisualTreeDumper.DefaultFilter();
-            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxWidth");
-            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxHeight");
-            VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
+            visualTreeDumperFilter.PropertyNameAllowedList.Remove("MaxWidth");
+            visualTreeDumperFilter.PropertyNameAllowedList.Remove("MaxHeight");
+            VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, verificationFileNamePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
         }
 
         private string XamlStringForControl(string controlName)
@@ -225,7 +213,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             </StackPanel>
                        </Grid>";
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml, 
-                masterFilePrefix: "VerifyVisualTreeForAppBarAndAppBarToggleButton");
+                verificationFileNamePrefix: "VerifyVisualTreeForAppBarAndAppBarToggleButton");
         }
 
         [TestMethod]
@@ -239,7 +227,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             var xaml = @"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
                        </Grid>";
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml, 
-                masterFilePrefix: "VerifyVisualTreeExampleLoadAndVerifyForAllThemes",
+                verificationFileNamePrefix: "VerifyVisualTreeExampleLoadAndVerifyForAllThemes",
                 theme: Theme.All);
         }
 
@@ -259,7 +247,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 (root as FrameworkElement).RequestedTheme = ElementTheme.Dark;
             });
             VisualTreeTestHelper.VerifyVisualTree(root: root,
-                masterFilePrefix: "VerifyVisualTreeExampleLoadAndVerifyForDarkThemeWithCustomName");
+                verificationFileNamePrefix: "VerifyVisualTreeExampleLoadAndVerifyForDarkThemeWithCustomName");
         }
 
         [TestMethod]
@@ -274,7 +262,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                        </Grid>";
             UIElement root = VisualTreeTestHelper.SetupVisualTree(xaml);
             VisualTreeTestHelper.VerifyVisualTree(root: root,
-                masterFilePrefix: "VerifyVisualTreeExampleForLightTheme",
+                verificationFileNamePrefix: "VerifyVisualTreeExampleForLightTheme",
                 theme: Theme.Light);
         }
 
@@ -292,7 +280,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                        </Grid>";
 
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
-                masterFilePrefix: "VerifyVisualTreeExampleWithCustomerFilter",
+                verificationFileNamePrefix: "VerifyVisualTreeExampleWithCustomerFilter",
                 filter: new CustomizedFilter());
         }
 
@@ -310,16 +298,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                        </Grid>";
 
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
-                masterFilePrefix: "VerifyVisualTreeExampleWithCustomerPropertyValueTranslator",
+                verificationFileNamePrefix: "VerifyVisualTreeExampleWithCustomerPropertyValueTranslator",
                 translator: new CustomizedTranslator());
         }
 
         class CustomizedFilter : VisualTreeDumper.IFilter
         {
 
-            private static readonly string[] _propertyNamePostfixBlackList = new string[] { "Property", "Transitions", "Template", "Style", "Selector" };
+            private static readonly string[] _propertyNamePostfixBlockList = new string[] { "Property", "Transitions", "Template", "Style", "Selector" };
 
-            private static readonly string[] _propertyNameBlackList = new string[] { "Interactions", "ColumnDefinitions", "RowDefinitions",
+            private static readonly string[] _propertyNameBlockList = new string[] { "Interactions", "ColumnDefinitions", "RowDefinitions",
             "Children", "Resources", "Transitions", "Dispatcher", "TemplateSettings", "ContentTemplate", "ContentTransitions",
             "ContentTemplateSelector", "Content", "ContentTemplateRoot", "XYFocusUp", "XYFocusRight", "XYFocusLeft", "Parent",
             "Triggers", "RequestedTheme", "XamlRoot", "IsLoaded", "BaseUri", "Resources"};
@@ -406,8 +394,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             public bool ShouldVisitProperty(string propertyName)
             {
-                return (_propertyNamePostfixBlackList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
-                    !_propertyNameBlackList.Contains(propertyName);
+                return (_propertyNamePostfixBlockList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
+                    !_propertyNameBlockList.Contains(propertyName);
             }
         }
 

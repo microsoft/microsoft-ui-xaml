@@ -6,7 +6,12 @@
 #include "common.h"
 #include "AnimatedVisualPlayer.h"
 
-CppWinRTActivatableClassWithDPFactory(AnimatedVisualPlayer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(AnimatedVisualPlayer)
+}
+
+#include "AnimatedVisualPlayer.g.cpp"
 
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };
@@ -181,7 +186,10 @@ void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
 
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AutoPlayProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AnimatedVisualPlayerProperties::AutoPlay()
@@ -191,7 +199,10 @@ bool AnimatedVisualPlayerProperties::AutoPlay()
 
 void AnimatedVisualPlayerProperties::Diagnostics(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_DiagnosticsProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable AnimatedVisualPlayerProperties::Diagnostics()
@@ -201,7 +212,10 @@ winrt::IInspectable AnimatedVisualPlayerProperties::Diagnostics()
 
 void AnimatedVisualPlayerProperties::Duration(winrt::TimeSpan const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_DurationProperty, ValueHelper<winrt::TimeSpan>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TimeSpan AnimatedVisualPlayerProperties::Duration()
@@ -211,7 +225,10 @@ winrt::TimeSpan AnimatedVisualPlayerProperties::Duration()
 
 void AnimatedVisualPlayerProperties::FallbackContent(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_FallbackContentProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate AnimatedVisualPlayerProperties::FallbackContent()
@@ -221,7 +238,10 @@ winrt::DataTemplate AnimatedVisualPlayerProperties::FallbackContent()
 
 void AnimatedVisualPlayerProperties::IsAnimatedVisualLoaded(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_IsAnimatedVisualLoadedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AnimatedVisualPlayerProperties::IsAnimatedVisualLoaded()
@@ -231,7 +251,10 @@ bool AnimatedVisualPlayerProperties::IsAnimatedVisualLoaded()
 
 void AnimatedVisualPlayerProperties::IsPlaying(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_IsPlayingProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AnimatedVisualPlayerProperties::IsPlaying()
@@ -241,7 +264,10 @@ bool AnimatedVisualPlayerProperties::IsPlaying()
 
 void AnimatedVisualPlayerProperties::PlaybackRate(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_PlaybackRateProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double AnimatedVisualPlayerProperties::PlaybackRate()
@@ -251,7 +277,10 @@ double AnimatedVisualPlayerProperties::PlaybackRate()
 
 void AnimatedVisualPlayerProperties::Source(winrt::IAnimatedVisualSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_SourceProperty, ValueHelper<winrt::IAnimatedVisualSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IAnimatedVisualSource AnimatedVisualPlayerProperties::Source()
@@ -261,7 +290,10 @@ winrt::IAnimatedVisualSource AnimatedVisualPlayerProperties::Source()
 
 void AnimatedVisualPlayerProperties::Stretch(winrt::Stretch const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_StretchProperty, ValueHelper<winrt::Stretch>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Stretch AnimatedVisualPlayerProperties::Stretch()

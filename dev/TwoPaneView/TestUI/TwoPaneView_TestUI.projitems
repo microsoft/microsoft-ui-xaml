@@ -10,7 +10,9 @@
     <Import_RootNamespace>TwoPaneView_Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)TwoPaneViewPage.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TwoPaneViewPage.xaml.cs" >
+      <DependentUpon>TwoPaneViewPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)\TwoPaneViewPage.xaml">

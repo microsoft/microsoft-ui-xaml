@@ -6,7 +6,12 @@
 #include "common.h"
 #include "XamlControlsResources.h"
 
-CppWinRTActivatableClassWithDPFactory(XamlControlsResources)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(XamlControlsResources)
+}
+
+#include "XamlControlsResources.g.cpp"
 
 GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactResourcesProperty{ nullptr };
 
@@ -45,7 +50,10 @@ void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
 
 void XamlControlsResourcesProperties::UseCompactResources(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<XamlControlsResources*>(this)->SetValue(s_UseCompactResourcesProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool XamlControlsResourcesProperties::UseCompactResources()

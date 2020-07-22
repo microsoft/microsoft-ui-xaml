@@ -113,6 +113,13 @@ namespace MUXControlsTestApp
             get;
         } = new List<FlowDirection>() { FlowDirection.LeftToRight, FlowDirection.RightToLeft };
 
+        public List<Tuple<ApplicationHighContrastAdjustment, string>> AppHighContrastAdjustments
+        {
+            get;
+        } = new List<Tuple<ApplicationHighContrastAdjustment, string>> {
+            new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.Auto, "Auto (unaware)"),
+            new Tuple<ApplicationHighContrastAdjustment, string>(ApplicationHighContrastAdjustment.None, "None (high-contrast aware)") };
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -134,6 +141,13 @@ namespace MUXControlsTestApp
                 AutomationProperties.SetAutomationId(item, flowDirection.ToString());
             }
 
+            foreach (var adjustment in AppHighContrastAdjustments)
+            {
+                var item = new ComboBoxItem { Content = adjustment.Item2, Tag = adjustment.Item1 };
+                AppHighContrastAdjustmentChooser.Items.Add(item);
+                AutomationProperties.SetAutomationId(item, (string)item.Content);
+            }
+
             // This setting is persisted across multiple openings of an app, so we always want to initialize it to en-US
             // in case the app crashed while in a different language or otherwise was not able to set it back.
             MUXControlsTestApp.App.LanguageOverride = "en-US";
@@ -142,6 +156,7 @@ namespace MUXControlsTestApp
             LanguageChooser.SelectedIndex = locales.IndexOf("en-US");
             LongAnimationsDisabled.IsChecked = MUXControlsTestApp.App.DisableLongAnimations;
             FlowDirectionChooser.SelectedIndex = FlowDirections.IndexOf(GetRootFlowDirection());
+            AppHighContrastAdjustmentChooser.SelectedIndex = AppHighContrastAdjustments.FindIndex(a => a.Item1 == ApplicationHighContrastAdjustment.Auto); // default to unaware
 
             // App remembers ExtendViewIntoTitleBar and the value persists true if test case aborted and didn't change it back
             // Always set it to false when app restarted
@@ -197,6 +212,10 @@ namespace MUXControlsTestApp
         
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            // This method gets called when we navigate to MainPage.
+            // Now we should unload the scroller dictionary!
+            App.RemoveResourceDictionaryFromMergedDictionaries(App.AdditionStylesXaml);
+
             LanguageChooser.SelectedItem = MUXControlsTestApp.App.LanguageOverride;
 
             var testContentLoadedCheckBox = SearchVisualTree(this.Frame, "TestContentLoadedCheckBox") as CheckBox;
@@ -232,6 +251,11 @@ namespace MUXControlsTestApp
             {
                 root.FlowDirection = (FlowDirection)((ComboBoxItem)FlowDirectionChooser.SelectedItem).Tag;
             }
+        }
+
+        private void AppHighContrastAdjustmentChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            App.Current.HighContrastAdjustment = (ApplicationHighContrastAdjustment)((ComboBoxItem)AppHighContrastAdjustmentChooser.SelectedItem).Tag;
         }
 
         private FlowDirection GetRootFlowDirection()

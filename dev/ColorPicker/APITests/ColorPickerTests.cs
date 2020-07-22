@@ -36,19 +36,8 @@ using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlCont
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ColorPickerTests
+    public class ColorPickerTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment("TestCleanup: Restore TestContentRoot to null");
-                // Put things back the way we found them.
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
-
         [TestMethod]
         public void ColorPickerTest()
         {
@@ -289,7 +278,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
             TestUtilities.SetAsVisualTreeRoot(colorPicker);
 
-            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, masterFilePrefix: "ColorPicker");
+            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, verificationFileNamePrefix: "ColorPicker");
         }
 
         // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
@@ -310,9 +299,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     });
                 };
 
-                StackPanel root = new StackPanel();
-                root.Children.Add(element);
-                MUXControlsTestApp.App.TestContentRoot = root;
+                Content = element;
+                Content.UpdateLayout();
             });
 
             spectrumLoadedEvent.WaitOne();

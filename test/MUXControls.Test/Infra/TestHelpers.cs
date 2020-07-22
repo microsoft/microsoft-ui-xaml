@@ -30,7 +30,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     {
         private bool AttemptRestartOnDispose { get; set; }
         private int OpenedTestPages = 0;
-        private static bool IsTestSetupHelperInUse = false;
 
         public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
             :this(new[] { testName }, languageOverride, attemptRestartOnDispose)
@@ -40,13 +39,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         // registering the test in TestInventory.cs in the test app project.
         public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true)
         {
-            // Only allow one TestSetupHelper instance to run in the process, since nested TestSetupHelpers causes problems during retry.
-            if(IsTestSetupHelperInUse)
-            {
-                throw new Exception("Don't nest TestSetupHelpers, use TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
-            }
-            IsTestSetupHelperInUse = true;
-
             // If a test crashes, it can take a little bit of time before we can 
             // restart the app again especially if watson is collecting dumps. Adding a 
             // delayed retry can help avoid the case where we might otherwise fail a slew of
@@ -228,7 +220,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
-            IsTestSetupHelperInUse = false;
 
             while(OpenedTestPages > 0)
             {

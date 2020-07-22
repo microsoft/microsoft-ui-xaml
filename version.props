@@ -3,7 +3,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MUXVersionMajor>2</MUXVersionMajor>
-    <MUXVersionMinor>3</MUXVersionMinor>
+    <MUXVersionMinor>5</MUXVersionMinor>
+    <MUXVersionPatch>0</MUXVersionPatch>
     <MUXVersionBuild Condition="$(MUXVersionBuild) == ''">0</MUXVersionBuild>
     <MUXVersionRevision Condition="$(MUXVersionRevision) == ''">0</MUXVersionRevision>
   </PropertyGroup>
@@ -13,6 +14,7 @@
         %(PreprocessorDefinitions);
         MUX_VERSION_MAJOR=$(MUXVersionMajor);
         MUX_VERSION_MINOR=$(MUXVersionMinor);
+        MUX_VERSION_PATCH=$(MUXVersionPatch);
         MUX_VERSION_BUILD=$(MUXVersionBuild);
         MUX_VERSION_REVISION=$(MUXVersionRevision);
       </PreprocessorDefinitions>
@@ -22,6 +24,7 @@
         %(PreprocessorDefinitions);
         MUX_VERSION_MAJOR=$(MUXVersionMajor);
         MUX_VERSION_MINOR=$(MUXVersionMinor);
+        MUX_VERSION_PATCH=$(MUXVersionPatch);
         MUX_VERSION_BUILD=$(MUXVersionBuild);
         MUX_VERSION_REVISION=$(MUXVersionRevision);
       </PreprocessorDefinitions>

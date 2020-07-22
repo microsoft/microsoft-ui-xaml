@@ -5,8 +5,14 @@
 #include "RuntimeProfiler.h"
 #include "TraceLogging.h"
 
+#pragma warning(push)
+#pragma warning(disable : 26812)
+
 #define DEFINE_PROFILEGROUP(name, group, size) \
     CMethodProfileGroup<size>        name(group)
+
+// defined in dllmain.cpp with values from version.h
+extern const char *g_BinaryVersion;
 
 namespace RuntimeProfiler {
 
@@ -15,8 +21,8 @@ namespace RuntimeProfiler {
     struct FunctionTelemetryCount
     {
         volatile LONG      *pInstanceCount{ nullptr };
-        volatile UINT16     uTypeIndex;
-        volatile UINT16     uMethodIndex;
+        volatile UINT16     uTypeIndex{};
+        volatile UINT16     uMethodIndex{};
     };
 
     class CMethodProfileGroupBase
@@ -52,7 +58,7 @@ namespace RuntimeProfiler {
             static_assert(sizeof(LONG) == sizeof(UINT32), "Since we're using InterlockedIncrement, make sure that this is the same size independent of build flavors.");
             
             //  Zero-based index
-            LONG WriteIndex = ::InterlockedIncrement(&m_cMethods) - 1;
+            const LONG WriteIndex = ::InterlockedIncrement(&m_cMethods) - 1;
             
             if (WriteIndex < (LONG)(m_Counts.max_size()))
             {
@@ -81,8 +87,8 @@ namespace RuntimeProfiler {
                 return;
             }
 
-            UINT32      ArraySize = (UINT32)(m_Counts.max_size());
-            bool        bOverflow = ((UINT32)(m_cMethods) >= ArraySize);
+            const UINT32      ArraySize = (UINT32)(m_Counts.max_size());
+            const bool        bOverflow = ((UINT32)(m_cMethods) >= ArraySize);
             UINT32      cMethods = (UINT32)m_cMethods;
             bool        bStringOverflow = false;
             UINT16      cMethodsLogged = 0;
@@ -117,11 +123,9 @@ namespace RuntimeProfiler {
             
                 if (0 != cHits)
                 {
-                    HRESULT     hr;
-                    
                     //  We're using id's instead.  The entry in the list will
                     //  look like '[type index|method index]:count'
-                    hr = StringCchPrintfExW(
+                    const HRESULT hr = StringCchPrintfExW(
                             pszDest,
                             cchDest,
                             &pszDest,
@@ -158,7 +162,8 @@ namespace RuntimeProfiler {
             TraceLoggingWrite(  
                 g_hTelemetryProvider,  
                 "RuntimeProfiler",
-                TraceLoggingDescription("XAML methods that have been called."),  
+                TraceLoggingDescription("XAML methods that have been called."),
+                TraceLoggingString(g_BinaryVersion, "BinaryVersion"),
                 TraceLoggingWideString(OutputBuffer, "ApiCounts"),
                 TraceLoggingUInt32(((UINT32)m_group), "ProfileGroupId"),
                 TraceLoggingUInt32(((UINT32)cMethods),"TotalCount"),
@@ -283,3 +288,5 @@ STDAPI_(void) SendTelemetryOnSuspend() noexcept
 {
     RuntimeProfiler::FireEvent(true);
 }
+
+#pragma warning(pop)

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ColorPickerSlider.h"
 
-CppWinRTActivatableClassWithDPFactory(ColorPickerSlider)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(ColorPickerSlider)
+}
+
+#include "ColorPickerSlider.g.cpp"
 
 GlobalDependencyProperty ColorPickerSliderProperties::s_ColorChannelProperty{ nullptr };
 
@@ -37,7 +42,10 @@ void ColorPickerSliderProperties::ClearProperties()
 
 void ColorPickerSliderProperties::ColorChannel(winrt::ColorPickerHsvChannel const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPickerSlider*>(this)->SetValue(s_ColorChannelProperty, ValueHelper<winrt::ColorPickerHsvChannel>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ColorPickerHsvChannel ColorPickerSliderProperties::ColorChannel()

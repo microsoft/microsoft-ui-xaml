@@ -64,7 +64,7 @@ void PersonPicture::LoadImageAsync(
                     strongThis->m_profilePictureReadAsync.set(nullptr);
                 }));
             }
-            catch (winrt::hresult_error &e)
+            catch (const winrt::hresult_error &e)
             {
                 strongThis->m_profilePictureReadAsync.set(nullptr);
 
@@ -222,7 +222,7 @@ void PersonPicture::UpdateBadgeNumber()
         return;
     }
 
-    int badgeNumber = BadgeNumber();
+    const int badgeNumber = BadgeNumber();
 
     if (badgeNumber <= 0)
     {
@@ -367,7 +367,7 @@ void PersonPicture::UpdateAutomationName()
 
 winrt::hstring PersonPicture::GetLocalizedPluralBadgeItemStringResource(unsigned int numericValue)
 {
-    UINT32 valueMod10 = numericValue % 10;
+    const UINT32 valueMod10 = numericValue % 10;
     winrt::hstring value;
 
     if (numericValue == 1)  // Singular
@@ -563,8 +563,8 @@ void PersonPicture::OnContactChanged(winrt::DependencyPropertyChangedEventArgs c
 void PersonPicture::OnSizeChanged(winrt::IInspectable const& /*sender*/, const winrt::SizeChangedEventArgs &args)
 {
     {
-        bool widthChanged = (args.NewSize().Width != args.PreviousSize().Width);
-        bool heightChanged = (args.NewSize().Height != args.PreviousSize().Height);
+        const bool widthChanged = (args.NewSize().Width != args.PreviousSize().Width);
+        const bool heightChanged = (args.NewSize().Height != args.PreviousSize().Height);
         double newSize;
 
         if (widthChanged && heightChanged)
@@ -594,7 +594,7 @@ void PersonPicture::OnSizeChanged(winrt::IInspectable const& /*sender*/, const w
     // font size to be 42% of the container. Since it's circular, 42% of either Width or Height.
     // Note that we cap it to a minimum of 1, since a font size of less than 1 is an invalid value
     // that will result in a failure.
-    double fontSize = std::max(1.0, Width() * .42);
+    const double fontSize = std::max(1.0, Width() * .42);
 
     if (auto initialsTextBlock = m_initialsTextBlock.get())
     {
@@ -606,7 +606,7 @@ void PersonPicture::OnSizeChanged(winrt::IInspectable const& /*sender*/, const w
         // Maintain badging circle and font size by enforcing the new size on both Width and Height.
         // Design guidelines have specified the font size to be 60% of the badging plate, and we want to keep 
         // badging plate to be about 50% of the control so that don't block the initial/profile picture.
-        double newSize = (args.NewSize().Width < args.NewSize().Height) ? args.NewSize().Width : args.NewSize().Height;
+        const double newSize = (args.NewSize().Width < args.NewSize().Height) ? args.NewSize().Width : args.NewSize().Height;
         m_badgingEllipse.get().Height(newSize * 0.5);
         m_badgingEllipse.get().Width(newSize * 0.5);
         m_badgingBackgroundEllipse.get().Height(newSize * 0.5);

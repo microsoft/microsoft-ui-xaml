@@ -4,16 +4,8 @@
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Markup;
-using Windows.UI;
-using System.Windows.Input;
-
-using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
-//using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Data;
-using System.Numerics;
 using Windows.UI.Xaml.Shapes;
 
 namespace MUXControlsTestApp
@@ -24,7 +16,9 @@ namespace MUXControlsTestApp
         public ProgressBarPage()
         {
             this.InitializeComponent();
-            Loaded += ProgressBarPage_Loaded;  
+            Loaded += ProgressBarPage_Loaded;
+
+            NavigateToReTemplatePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ProgressBarReTemplatePage), 0); };
         }
 
         private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
@@ -36,7 +30,8 @@ namespace MUXControlsTestApp
 
             var progressBarRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
             var clip = VisualTreeHelper.GetChild(progressBarRoot, 0);
-            var indicator = (Rectangle)VisualTreeHelper.GetChild(clip, 0);
+            var stackPanel = VisualTreeHelper.GetChild(clip, 0);
+            var indicator = (Rectangle)VisualTreeHelper.GetChild(stackPanel, 0);
 
             indicator.SizeChanged += this.Indicator_SizeChanged;
             IndicatorWidthText.Text = indicator.ActualWidth.ToString();
@@ -79,7 +74,7 @@ namespace MUXControlsTestApp
             else
             {
                 TestProgressBar.Value += 1;
-            }           
+            }
         }
 
         public void UpdatePadding_Click(object sender, RoutedEventArgs e)

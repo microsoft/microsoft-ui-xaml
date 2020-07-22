@@ -6,7 +6,12 @@
 #include "common.h"
 #include "NavigationViewItemPresenter.h"
 
-CppWinRTActivatableClassWithDPFactory(NavigationViewItemPresenter)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(NavigationViewItemPresenter)
+}
+
+#include "NavigationViewItemPresenter.g.cpp"
 
 GlobalDependencyProperty NavigationViewItemPresenterProperties::s_IconProperty{ nullptr };
 
@@ -37,7 +42,10 @@ void NavigationViewItemPresenterProperties::ClearProperties()
 
 void NavigationViewItemPresenterProperties::Icon(winrt::IconElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationViewItemPresenter*>(this)->SetValue(s_IconProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconElement NavigationViewItemPresenterProperties::Icon()

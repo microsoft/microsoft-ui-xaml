@@ -8,7 +8,7 @@
 #include "FlowLayoutAlgorithm.h"
 #include "UniformGridLayoutState.h"
 
-CppWinRTActivatableClassWithBasicFactory(UniformGridLayoutState);
+#include "UniformGridLayoutState.properties.cpp"
 
 void UniformGridLayoutState::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,
@@ -65,7 +65,7 @@ void UniformGridLayoutState::EnsureElementSize(
             SetSize(m_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
 
             // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
-            bool added = m_flowAlgorithm.TryAddElement0(m_cachedFirstElement);
+            const bool added = m_flowAlgorithm.TryAddElement0(m_cachedFirstElement);
             if (added)
             {
                 m_cachedFirstElement = nullptr;
@@ -93,19 +93,19 @@ void UniformGridLayoutState::SetSize(
     m_effectiveItemWidth = (std::isnan(layoutItemWidth) ? UIElement.DesiredSize().Width : layoutItemWidth);
     m_effectiveItemHeight = (std::isnan(LayoutItemHeight) ? UIElement.DesiredSize().Height : LayoutItemHeight);
 
-    auto availableSizeMinor = orientation == winrt::Orientation::Horizontal ? availableSize.Width : availableSize.Height;
-    auto minorItemSpacing = orientation == winrt::Orientation::Vertical ? minRowSpacing : minColumnSpacing;
+    const auto availableSizeMinor = orientation == winrt::Orientation::Horizontal ? availableSize.Width : availableSize.Height;
+    const auto minorItemSpacing = orientation == winrt::Orientation::Vertical ? minRowSpacing : minColumnSpacing;
 
-    auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
+    const auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
 
     double extraMinorPixelsForEachItem = 0.0;
     if (std::isfinite(availableSizeMinor))
     {
-        auto numItemsPerColumn = std::min(
+        const auto numItemsPerColumn = std::min(
             maxItemsPerLine,
             static_cast<unsigned int>(std::max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing))));
-        auto usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
-        auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
+        const auto usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
+        const auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
         extraMinorPixelsForEachItem = remainingSpace / ((int)numItemsPerColumn);
     }
 
@@ -122,8 +122,8 @@ void UniformGridLayoutState::SetSize(
     }
     else if (stretch == winrt::UniformGridLayoutItemsStretch::Uniform)
     {
-        auto itemSizeMajor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemHeight : m_effectiveItemWidth;
-        auto extraMajorPixelsForEachItem = itemSizeMajor * (extraMinorPixelsForEachItem / itemSizeMinor);
+        const auto itemSizeMajor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemHeight : m_effectiveItemWidth;
+        const auto extraMajorPixelsForEachItem = itemSizeMajor * (extraMinorPixelsForEachItem / itemSizeMinor);
         if (orientation == winrt::Orientation::Horizontal)
         {
             m_effectiveItemWidth += extraMinorPixelsForEachItem;
@@ -152,6 +152,9 @@ void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingL
 {
     if (m_cachedFirstElement)
     {
+        // The first element of UniformGridLayout is special since we use its size to 
+        // determine the size of all the other elements. So if the first item has changed
+        // we will need to clear it and re-evalauate all the items with the new item size.
         bool shouldClear = false;
         switch (args.Action())
         {
@@ -172,7 +175,7 @@ void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingL
             break;
 
         case winrt::NotifyCollectionChangedAction::Move:
-            throw winrt::hresult_not_implemented();
+            shouldClear = args.NewStartingIndex() == 0 || args.OldStartingIndex() == 0;
             break;
         }
 

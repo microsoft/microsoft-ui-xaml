@@ -63,7 +63,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     [TestClass]
-    public class LightConfigurationTests
+    public class LightConfigurationTests : ApiTestBase
     {
         MediaPlayerElement _mpe;
         AutoResetEvent _mediaFullScreened;
@@ -230,7 +230,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 else
                 {
-                    MUXControlsTestApp.App.TestContentRoot = mySPRoot;
+                    Content = mySPRoot;
                 }
             });
             IdleSynchronizer.Wait();
@@ -253,7 +253,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                     else
                     {
-                        MUXControlsTestApp.App.TestContentRoot = newSPRoot;
+                        Content = newSPRoot;
                     }
                 });
                 IdleSynchronizer.Wait();
@@ -323,7 +323,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 if (whichView == CoreApplication.MainView)
                 {
-                    MUXControlsTestApp.App.TestContentRoot = null;
+                    Content = null;
                 }
                 else
                 {

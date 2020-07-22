@@ -25,5 +25,3 @@ public:
 private:
     com_ptr<DropDownButton> GetImpl();
 };
-
-CppWinRTActivatableClassWithBasicFactory(DropDownButtonAutomationPeer);

@@ -9,9 +9,14 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
-        <CalendarDatePicker/>
-        <CalendarDatePicker Header="WithHeader"/>
+    <StackPanel Margin="12">
+        <TextBlock Text="Sample CalenderDatePicker" Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+            <CalendarDatePicker Margin="0,23,40,0"/>
+            <CalendarDatePicker Header="CalenderDatePicker with header" Margin="0,0,40,0"/>
+            <!-- With custom placeholder text -->
+            <CalendarDatePicker PlaceholderText="Pick a date" Margin="0,23,0,0"/>
+        </StackPanel>
     </StackPanel>
 
 </local:TestPage>

@@ -72,7 +72,7 @@ winrt::hstring InitialsGenerator::InitialsFromContactObject(const winrt::Contact
 
 winrt::hstring InitialsGenerator::InitialsFromDisplayName(const wstring_view &contactDisplayName)
 {
-    CharacterType type = GetCharacterType(contactDisplayName);
+    const CharacterType type = GetCharacterType(contactDisplayName);
 
     // We'll attempt to make initials only if we recognize a name in the Standard character set.
     if (type == CharacterType::Standard)
@@ -130,7 +130,7 @@ std::wstring InitialsGenerator::GetFirstFullCharacter(const std::wstring &str)
 
     while (start < str.size())
     {
-        wchar_t character = str.at(start);
+        const wchar_t character = str.at(start);
 
         // Omit ! " # $ % & ' ( ) * + , - . /
         if ((character >= 0x0021) && (character <= 0x002F))
@@ -169,7 +169,7 @@ std::wstring InitialsGenerator::GetFirstFullCharacter(const std::wstring &str)
 
     while (index < str.size())
     {
-        wchar_t character = str.at(index);
+        const wchar_t character = str.at(index);
 
         // Combining Diacritical Marks -- Official Unicode character block
         if ((character < 0x0300) || (character > 0x036F))
@@ -181,7 +181,7 @@ std::wstring InitialsGenerator::GetFirstFullCharacter(const std::wstring &str)
     }
 
     // Determine number of diacritics by adjusting for our initial offset.
-    unsigned int strLength = index - start;
+    const unsigned int strLength = index - start;
 
     std::wstring result(&str.at(start), strLength);
     return result;
@@ -221,14 +221,14 @@ void InitialsGenerator::StripTrailingBrackets(std::wstring &source)
         return;
     }
 
-    for (auto delimiter : delimiters)
+    for (const auto delimiter : delimiters)
     {
         if (source[source.length() - 1] != delimiter[1])
         {
             continue;
         }
 
-        auto start = source.find_last_of(delimiter[0]);
+        const auto start = source.find_last_of(delimiter[0]);
         if (start == std::string::npos)
         {
             continue;
@@ -255,8 +255,8 @@ CharacterType InitialsGenerator::GetCharacterType(const wstring_view &str)
             break;
         }
 
-        wchar_t character = str.data()[i];
-        CharacterType evaluationResult = GetCharacterType(character);
+        const wchar_t character = str.data()[i];
+        const CharacterType evaluationResult = GetCharacterType(character);
 
         // In mix-match scenarios, we'll want to follow this order of precedence:
         // Glyph > Symbolic > Roman
@@ -291,7 +291,7 @@ CharacterType InitialsGenerator::GetCharacterType(const wstring_view &str)
 
 CharacterType InitialsGenerator::GetCharacterType(wchar_t character)
 {
-    // To ensure predictable behavior, we're currently operating on a whitelist of character sets.
+    // To ensure predictable behavior, we're currently operating on an allowed list of character sets.
     //
     // Each block below is a HEX range in the official Unicode spec, which defines a set
     // of Unicode characters. Changes to the character sets would only be made by Unicode, and

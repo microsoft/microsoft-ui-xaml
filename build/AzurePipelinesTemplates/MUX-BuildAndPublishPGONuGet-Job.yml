@@ -1,0 +1,54 @@
+parameters:
+  dependsOn: ''
+  pgdFile: Microsoft.UI.Xaml.pgd
+  pgoArtifact: PGO
+
+jobs:
+- job: BuildAndPublishPGONuGet
+  dependsOn: ${{ parameters.dependsOn }}
+  pool:
+    vmImage: 'windows-2019'
+  variables:
+    artifactsPath: $(Build.SourcesDirectory)\Artifacts
+    pgoToolsPath: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+    nuspecPath: $(pgoToolsPath)\NuSpecs
+    nuspecFilename: PGO.nuspec
+
+  steps:
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: ${{ parameters.pgoArtifact }}
+      downloadPath: $(artifactsPath)
+
+  - task: CopyFiles@2
+    displayName: 'Copy pgd files to NuGet build directory'
+    inputs:
+      sourceFolder: $(artifactsPath)\${{ parameters.pgoArtifact }}
+      contents: '**\${{ parameters.pgdFile }}'
+      targetFolder: $(nuspecPath)\tools
+
+  - task: powershell@2
+    displayName: 'Generate NuSpec file'
+    inputs:
+      targetType: filePath
+      filePath: $(pgoToolsPath)\generate-nuspec.ps1
+      workingDirectory: $(pgoToolsPath)
+      arguments: $(nuspecPath)\$(nuspecFilename).template $(nuspecPath)\$(nuspecFilename)
+
+  - task: CmdLine@1
+    displayName: 'Build NuGet package'
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
+      arguments: pack "$(nuspecPath)\$(nuspecFilename)" -BasePath "$(nuspecPath)" -OutputDirectory "$(Build.ArtifactStagingDirectory)" -properties PROGRAMFILES="%ProgramFiles(x86)%"
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: ${{ parameters.pgoArtifact }}
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet push'
+    inputs:
+      command: push
+      publishVstsFeed: 66f07283-7714-4cbf-be8f-73dfb782cfdc/1ea232aa-2b5d-4b2d-a163-a803b8f889db
+      packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg

@@ -9,9 +9,11 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
+    <StackPanel Margin="12">
+        <TextBlock Text="Sample Slider" Style="{ThemeResource StandardGroupHeader}"/>
         <Slider/>
-        <Slider Header="WithHeader"/>
+        <Slider Header="Slider with header"/>
+        <Slider Header="Slider with preset values" Value="25" Minimum="0" Maximum="50"/>
     </StackPanel>
 
 </local:TestPage>

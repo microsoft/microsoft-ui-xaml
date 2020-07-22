@@ -3,6 +3,7 @@
 
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
@@ -90,6 +91,26 @@ namespace MUXControlsTestApp
         {
             var testFrame = Window.Current.Content as TestFrame;
             testFrame.ChangeBarVisibility(Visibility.Collapsed);
+        }
+
+        private void AddMenuBarToEmptyMenuBarItem_Click(object sender, RoutedEventArgs e)
+        {
+            int eCount = EmptyMenuBar.Items.Count;
+            MenuBarItem mainMenuBarHelp = new MenuBarItem();
+            mainMenuBarHelp.Title = "Help" + eCount;
+            mainMenuBarHelp.SetValue(AutomationProperties.NameProperty, "Help" + eCount);
+            MenuFlyoutItem newFlyout = new MenuFlyoutItem() { Text = "Add" + eCount };
+            // UIA Name for interaction test
+            newFlyout.SetValue(AutomationProperties.NameProperty, "Add" + eCount);
+            mainMenuBarHelp.Items.Add(newFlyout);
+
+            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Remove" + eCount });
+            EmptyMenuBar.Items.Add(mainMenuBarHelp);
+        }
+
+        private void RemoveItemsFromOneChildrenItem_Click(object sender, RoutedEventArgs e)
+        {
+            OneChildrenFlyoutMenuBarItem.Items.Clear();
         }
     }
 }

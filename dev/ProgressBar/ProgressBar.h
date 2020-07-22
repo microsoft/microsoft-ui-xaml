@@ -19,6 +19,7 @@ class ProgressBar :
 public:
     ProgressBar();
 
+    winrt::AutomationPeer OnCreateAutomationPeer();
     // IFrameworkElement
     void OnApplyTemplate();
 
@@ -28,7 +29,7 @@ public:
     void OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    void OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnIndicatorWidthComponentChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     void SetProgressBarIndicatorWidth();
     void UpdateStates();
@@ -39,14 +40,19 @@ private:
     winrt::Rectangle::Loaded_revoker m_progressBarIndicatorRevoker{};
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
-    tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
-
-    bool m_shouldUpdateWidthBasedTemplateSettings = false;
+    tracker_ref<winrt::Rectangle> m_determinateProgressBarIndicator{ this };
+    tracker_ref<winrt::Rectangle> m_indeterminateProgressBarIndicator{ this };
+    tracker_ref<winrt::Rectangle> m_indeterminateProgressBarIndicator2{ this };
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
-    static constexpr wstring_view s_ProgressBarIndicatorName{ L"ProgressBarIndicator" };
+    static constexpr wstring_view s_DeterminateProgressBarIndicatorName{ L"DeterminateProgressBarIndicator" };
+    static constexpr wstring_view s_IndeterminateProgressBarIndicatorName{ L"IndeterminateProgressBarIndicator" };
+    static constexpr wstring_view s_IndeterminateProgressBarIndicator2Name{ L"IndeterminateProgressBarIndicator2" };
     static constexpr wstring_view s_ErrorStateName{ L"Error" };
     static constexpr wstring_view s_PausedStateName{ L"Paused" };
     static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
+    static constexpr wstring_view s_IndeterminateErrorStateName{ L"IndeterminateError" };
+    static constexpr wstring_view s_IndeterminatePausedStateName{ L"IndeterminatePaused" };
     static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
+    static constexpr wstring_view s_UpdatingStateName{ L"Updating" };
 };

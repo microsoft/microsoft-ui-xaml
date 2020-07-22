@@ -648,44 +648,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        public void ValidateUnhandledKeysOnNonTransientFlyoutDoNotCloseFlyout()
-        {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
-            {
-                Log.Warning("Test is disabled pre-19H1 because the bug fix needed to support this were not available pre-19H1.");
-                return;
-            }
-
-            using (var setup = new TextCommandBarFlyoutTestSetupHelper())
-            {
-                Log.Comment("Give focus to the RichEditBox.");
-                FocusHelper.SetFocus(FindElement.ById("RichEditBox"));
-
-                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Bold")))
-                {
-                    Log.Comment("Double-tap to select a word and bring up the context menu. The Bold button should get focus.");
-                    KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
-                    waiter.Wait();
-                }
-
-                Log.Comment("Press the down arrow key. Focus should stay in the flyout.");
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-
-                Log.Comment("Press the up arrow key. Focus should stay in the flyout.");
-                KeyboardHelper.PressKey(Key.Up);
-                Wait.ForIdle();
-                
-                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromId("RichEditBox")))
-                {
-                    Log.Comment("Use Escape to close the context menu. The RichEditBox should now have focus.");
-                    KeyboardHelper.PressKey(Key.Escape);
-                    waiter.Wait();
-                }
-            }
-        }
-
         private void OpenFlyoutOn(string textControlName, bool asTransient)
         {
             Log.Comment("Opening text control flyout on the {0} in {1} mode.", textControlName, asTransient ? "transient" : "standard");

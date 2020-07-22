@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeViewItem.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeViewItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeViewItem)
+}
+
+#include "TreeViewItem.g.cpp"
 
 GlobalDependencyProperty TreeViewItemProperties::s_CollapsedGlyphProperty{ nullptr };
 GlobalDependencyProperty TreeViewItemProperties::s_ExpandedGlyphProperty{ nullptr };
@@ -165,7 +170,10 @@ void TreeViewItemProperties::OnItemsSourcePropertyChanged(
 
 void TreeViewItemProperties::CollapsedGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_CollapsedGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring TreeViewItemProperties::CollapsedGlyph()
@@ -175,7 +183,10 @@ winrt::hstring TreeViewItemProperties::CollapsedGlyph()
 
 void TreeViewItemProperties::ExpandedGlyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_ExpandedGlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring TreeViewItemProperties::ExpandedGlyph()
@@ -185,7 +196,10 @@ winrt::hstring TreeViewItemProperties::ExpandedGlyph()
 
 void TreeViewItemProperties::GlyphBrush(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_GlyphBrushProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush TreeViewItemProperties::GlyphBrush()
@@ -195,7 +209,10 @@ winrt::Brush TreeViewItemProperties::GlyphBrush()
 
 void TreeViewItemProperties::GlyphOpacity(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_GlyphOpacityProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double TreeViewItemProperties::GlyphOpacity()
@@ -205,7 +222,10 @@ double TreeViewItemProperties::GlyphOpacity()
 
 void TreeViewItemProperties::GlyphSize(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_GlyphSizeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double TreeViewItemProperties::GlyphSize()
@@ -215,7 +235,10 @@ double TreeViewItemProperties::GlyphSize()
 
 void TreeViewItemProperties::HasUnrealizedChildren(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_HasUnrealizedChildrenProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewItemProperties::HasUnrealizedChildren()
@@ -225,7 +248,10 @@ bool TreeViewItemProperties::HasUnrealizedChildren()
 
 void TreeViewItemProperties::IsExpanded(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_IsExpandedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewItemProperties::IsExpanded()
@@ -235,7 +261,10 @@ bool TreeViewItemProperties::IsExpanded()
 
 void TreeViewItemProperties::ItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_ItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TreeViewItemProperties::ItemsSource()
@@ -245,7 +274,10 @@ winrt::IInspectable TreeViewItemProperties::ItemsSource()
 
 void TreeViewItemProperties::TreeViewItemTemplateSettings(winrt::TreeViewItemTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewItem*>(this)->SetValue(s_TreeViewItemTemplateSettingsProperty, ValueHelper<winrt::TreeViewItemTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TreeViewItemTemplateSettings TreeViewItemProperties::TreeViewItemTemplateSettings()

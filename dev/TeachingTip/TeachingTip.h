@@ -40,6 +40,8 @@ public:
     winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
     double GetHorizontalOffset();
     double GetVerticalOffset();
+    winrt::Visibility GetTitleVisibility();
+    winrt::Visibility GetSubtitleVisibility();
     void SetUseTestWindowBounds(bool useTestWindowBounds);
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
     void SetUseTestScreenBounds(bool useTestScreenBounds);
@@ -146,6 +148,7 @@ private:
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
     void TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint);
+    bool ToggleVisibilityForEmptyContent(const winrt::UIElement& element, const winrt::hstring& content);
 
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
@@ -172,6 +175,8 @@ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
+    tracker_ref<winrt::UIElement> m_titleTextBox{ this };
+    tracker_ref<winrt::UIElement> m_subtitleTextBox{ this };
 
     weak_ref<winrt::DependencyObject> m_previouslyFocusedElement{ };
 
@@ -218,22 +223,22 @@ private:
 
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
-    static bool IsPlacementTop(winrt::TeachingTipPlacementMode placement) {
+    static bool constexpr IsPlacementTop(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Top ||
             placement == winrt::TeachingTipPlacementMode::TopLeft ||
             placement == winrt::TeachingTipPlacementMode::TopRight;
     }
-    static bool IsPlacementBottom(winrt::TeachingTipPlacementMode placement) {
+    static bool constexpr IsPlacementBottom(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Bottom ||
             placement == winrt::TeachingTipPlacementMode::BottomLeft ||
             placement == winrt::TeachingTipPlacementMode::BottomRight;
     }
-    static bool IsPlacementLeft(winrt::TeachingTipPlacementMode placement) {
+    static bool constexpr IsPlacementLeft(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Left ||
             placement == winrt::TeachingTipPlacementMode::LeftTop ||
             placement == winrt::TeachingTipPlacementMode::LeftBottom;
     }
-    static bool IsPlacementRight(winrt::TeachingTipPlacementMode placement) {
+    static bool constexpr IsPlacementRight(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Right ||
             placement == winrt::TeachingTipPlacementMode::RightTop ||
             placement == winrt::TeachingTipPlacementMode::RightBottom;
@@ -243,19 +248,19 @@ private:
     inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 3, 0 }; }
     inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 3, 0 }; }
     inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 3, 0 }; }
-    static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
+    static inline winrt::Thickness constexpr OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
     inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
     inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
     inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
-    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 3, 0 }; }
+    static inline winrt::Thickness constexpr TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 3, 0 }; }
     // Shifted by one since the tail edge's border is not accounted for automatically.
-    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 2, 0 }; }
-    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 2, 1, 3, 0 }; }
+    static inline winrt::Thickness constexpr LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 2, 0 }; }
+    static inline winrt::Thickness constexpr RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 2, 1, 3, 0 }; }
 
-    static inline double UntargetedTipFarPlacementOffset(float farWindowCoordinateInCoreWindowSpace, double tipSize, double offset) { return farWindowCoordinateInCoreWindowSpace - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
-    static inline double UntargetedTipCenterPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, float farWindowCoordinateInCoreWindowSpace, double tipSize, double nearOffset, double farOffset) { return ((nearWindowCoordinateInCoreWindowSpace + farWindowCoordinateInCoreWindowSpace) / 2)  - (tipSize / 2) + nearOffset - farOffset; }
-    static inline double UntargetedTipNearPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, double offset) { return s_untargetedTipWindowEdgeMargin + nearWindowCoordinateInCoreWindowSpace + offset; }
+    static inline double constexpr UntargetedTipFarPlacementOffset(float farWindowCoordinateInCoreWindowSpace, double tipSize, double offset) { return farWindowCoordinateInCoreWindowSpace - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
+    static inline double constexpr UntargetedTipCenterPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, float farWindowCoordinateInCoreWindowSpace, double tipSize, double nearOffset, double farOffset) { return ((nearWindowCoordinateInCoreWindowSpace + farWindowCoordinateInCoreWindowSpace) / 2)  - (tipSize / 2) + nearOffset - farOffset; }
+    static inline double constexpr UntargetedTipNearPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, double offset) { return s_untargetedTipWindowEdgeMargin + nearWindowCoordinateInCoreWindowSpace + offset; }
 
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };

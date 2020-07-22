@@ -9,22 +9,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
-        <StackPanel>
-            <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" AutomationProperties.Name="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Create Reveal content from Markup"/>
-                <TextBlock Text="TestResult: "/>
-                <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200"/>
-            </StackPanel>
-            <controls:NavigationView>
-                <controls:NavigationView.MenuItems>
-                    <controls:NavigationViewItem Content="New"/>
-                </controls:NavigationView.MenuItems>
-                <CommandBar>
-                    <AppBarButton Icon="Accept" Label="Accept" />
-                </CommandBar>
-            </controls:NavigationView>
+    <StackPanel Margin="12">
+        <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" AutomationProperties.Name="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Create Reveal content from Markup"/>
+            <TextBlock Text="TestResult: "/>
+            <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200"/>
         </StackPanel>
-    </Grid>
+        <controls:NavigationView>
+            <controls:NavigationView.MenuItems>
+                <controls:NavigationViewItem Content="New"/>
+            </controls:NavigationView.MenuItems>
+            <CommandBar>
+                <AppBarButton Icon="Accept" Label="Accept" />
+            </CommandBar>
+        </controls:NavigationView>
+    </StackPanel>
 </local:TestPage>

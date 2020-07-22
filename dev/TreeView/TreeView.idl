@@ -87,6 +87,19 @@ runtimeclass TreeViewDragItemsCompletedEventArgs
 {
     Windows.ApplicationModel.DataTransfer.DataPackageOperation DropResult{ get; };
     Windows.Foundation.Collections.IVectorView<Object> Items{ get; };
+
+    [WUXC_VERSION_MUXONLY]
+    {
+        Object NewParentItem{ get; };
+    }
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass TreeViewSelectionChangedEventArgs
+{
+    Windows.Foundation.Collections.IVector<Object> AddedItems{ get; };
+    Windows.Foundation.Collections.IVector<Object> RemovedItems{ get; };
 }
 
 [WUXC_VERSION_RS4]
@@ -119,6 +132,11 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TreeView, TreeViewItemInvokedEventArgs> ItemInvoked;
     event Windows.Foundation.TypedEventHandler<TreeView, TreeViewExpandingEventArgs> Expanding;
     event Windows.Foundation.TypedEventHandler<TreeView, TreeViewCollapsedEventArgs> Collapsed;
+    [WUXC_VERSION_PREVIEW]
+    {
+        event Windows.Foundation.TypedEventHandler<TreeView, TreeViewSelectionChangedEventArgs> SelectionChanged;
+        static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
+    }
 
     static Windows.UI.Xaml.DependencyProperty SelectionModeProperty{ get; };
 
@@ -156,6 +174,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     [WUXC_VERSION_MUXONLY]
     {
         TreeViewNode SelectedNode{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Object SelectedItem{ get; set; };
         Windows.Foundation.Collections.IVector<Object> SelectedItems{ get; };
     }

@@ -25,7 +25,7 @@ using ScrollViewerIRefreshInfoProviderAdapter = Microsoft.UI.Private.Controls.Sc
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ScrollViewerAdapterTests
+    public class ScrollViewerAdapterTests : ApiTestBase
     {
         [TestMethod]
         public void CanInstantiate()
@@ -54,14 +54,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 ScrollViewer sv = new ScrollViewer();
                 sv.Content = 1;
-                MUXControlsTestApp.App.TestContentRoot = sv;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                ScrollViewer sv = (ScrollViewer)MUXControlsTestApp.App.TestContentRoot;
+                Content = sv;
+                Content.UpdateLayout();
                 ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 Verify.IsNotNull(adapter);
                 Verify.Throws<ArgumentException>(() => { adapter.Adapt(sv, new Size(1.0, 1.0)); });
@@ -76,15 +70,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 ScrollViewer sv = new ScrollViewer();
                 sv.Loaded += (object sender, RoutedEventArgs e) => { resetEvent.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = sv;
-            });
-
-            IdleSynchronizer.Wait();
-            resetEvent.WaitOne();
-
-            RunOnUIThread.Execute(() =>
-            {
-                ScrollViewer sv = (ScrollViewer)MUXControlsTestApp.App.TestContentRoot;
+                Content = sv;
+                Content.UpdateLayout();
                 Verify.IsNull(sv.Content);
                 ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 Verify.IsNotNull(adapter);
@@ -102,15 +89,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 sv.Content = new Button();
                 sv.Loaded += (object sender, RoutedEventArgs e) => { resetEvent.Set(); };
 
-                MUXControlsTestApp.App.TestContentRoot = sv;
-            });
-
-            IdleSynchronizer.Wait();
-            resetEvent.WaitOne();
-
-            RunOnUIThread.Execute(() =>
-            {
-                ScrollViewer sv = (ScrollViewer)MUXControlsTestApp.App.TestContentRoot;
+                Content = sv;
+                Content.UpdateLayout();
                 ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 adapter.Adapt(sv, new Size(1.0, 1.0));
             });
@@ -120,27 +100,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void AdaptOnSVWithoutWaitingForLoaded()
         {
             var objects = new Dictionary<string, WeakReference>();
-            var resetEvent = new AutoResetEvent(false);
-            ScrollViewerIRefreshInfoProviderAdapter adapter;
             RunOnUIThread.Execute(() =>
             {
                 ScrollViewer sv = new ScrollViewer();
                 objects["sv"] = new WeakReference(sv);
                 sv.Content = new Button();
-                sv.Loaded += (object sender, RoutedEventArgs e) => { resetEvent.Set(); };
-                adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
+                var adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 objects["adapter"] = new WeakReference(adapter);
                 adapter.Adapt(sv, new Size(1.0, 1.0));
-                MUXControlsTestApp.App.TestContentRoot = sv;
-            });
-            
-            IdleSynchronizer.Wait();
-            resetEvent.WaitOne();
+                Content = sv;
+                Content.UpdateLayout();
 
-            RunOnUIThread.Execute(() =>
-            {
                 adapter = null;
-                MUXControlsTestApp.App.TestContentRoot = null;
+                Content = null;
             });
             
             IdleSynchronizer.Wait();

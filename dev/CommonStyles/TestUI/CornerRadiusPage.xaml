@@ -14,908 +14,946 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:muxContract7Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Grid>
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Slider
-            Header="ControlCornerRadius"
-            Orientation="Horizontal"
-            Grid.Column="0"
-            Maximum="20"
-            Value="{x:Bind ControlCornerRadiusSize, Mode=TwoWay}"
-            Margin="10,0"/>
+        <StackPanel>
+            <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
 
-        <Slider
-            Header="OverlayCornerRadius"
-            Orientation="Horizontal"
-            Grid.Column="1"
-            Maximum="20"
-            Value="{x:Bind OverlayCornerRadiusSize, Mode=TwoWay}"
-            Margin="10,0"/>
+            <StackPanel Orientation="Horizontal">
+                <Slider
+                    Header="ControlCornerRadius"
+                    Orientation="Horizontal"
+                    Grid.Column="0"
+                    Maximum="20"
+                    Value="{x:Bind ControlCornerRadiusSize, Mode=TwoWay}"
+                    Margin="10,0"/>
 
-        <controls:ScrollViewer
-            Grid.Row="1" Grid.ColumnSpan="2"
-            muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                <Slider
+                    Header="OverlayCornerRadius"
+                    Orientation="Horizontal"
+                    Grid.Column="1"
+                    Maximum="20"
+                    Value="{x:Bind OverlayCornerRadiusSize, Mode=TwoWay}"
+                    Margin="10,0"/>
+            </StackPanel>
 
-            <Grid
-                contract5Present:RowSpacing="10"
-                contract5Present:ColumnSpacing="10">
-                <Grid.Resources>
-                    <Style x:Key="SideHeader" TargetType="TextBlock">
-                        <Setter Property="HorizontalAlignment" Value="Right"/>
-                        <Setter Property="Grid.Column" Value="0"/>
-                    </Style>
-                    <Style x:Key="LeftColumn" TargetType="Grid">
-                        <Setter Property="HorizontalAlignment" Value="Left"/>
-                        <Setter Property="VerticalAlignment" Value="Top"/>
-                        <Setter Property="Grid.Column" Value="1"/>
-                    </Style>
-                    <Style x:Key="RightColumn" TargetType="Grid">
-                        <Setter Property="HorizontalAlignment" Value="Left"/>
-                        <Setter Property="VerticalAlignment" Value="Top"/>
-                        <Setter Property="Grid.Column" Value="2"/>
-                    </Style>
-                </Grid.Resources>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Text="Normal" Grid.Column="1" Style="{StaticResource BaseTextBlockStyle}"/>
-                <TextBlock Text="CornerRadius" Grid.Column="2" Style="{StaticResource BaseTextBlockStyle}"/>
-
-                <TextBlock Grid.Row="5" Text="ListBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="5" Style="{StaticResource LeftColumn}">
-                    <ListBox>
-                        <ListBoxItem Content="Item 1"/>
-                        <ListBoxItem Content="Item 2"/>
-                        <ListBoxItem Content="Item 3"/>
-                    </ListBox>
-                </Grid>
-                <Grid Grid.Row="5" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center">N/A</TextBlock>
-                </Grid>
-
-                <TextBlock Grid.Row="6" Text="ComboBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="6" Style="{StaticResource LeftColumn}">
+            <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
+        </StackPanel>
+        <Grid Grid.Row="1" BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+            <controls:ScrollView
+                Padding="4" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                <Grid
+                    contract5Present:RowSpacing="10"
+                    contract5Present:ColumnSpacing="10">
                     <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        <Style x:Key="SideHeader" TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Setter Property="Grid.Column" Value="0"/>
+                        </Style>
+                        <Style x:Key="LeftColumn" TargetType="Grid">
+                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                            <Setter Property="VerticalAlignment" Value="Top"/>
+                            <Setter Property="Grid.Column" Value="1"/>
+                        </Style>
+                        <Style x:Key="RightColumn" TargetType="Grid">
+                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                            <Setter Property="VerticalAlignment" Value="Top"/>
+                            <Setter Property="Grid.Column" Value="2"/>
+                        </Style>
                     </Grid.Resources>
-                    <ComboBox>
-                        <ComboBoxItem Content="Item 1"/>
-                        <ComboBoxItem Content="Item 2"/>
-                        <ComboBoxItem Content="Item 3"/>
-                    </ComboBox>
-                </Grid>
-                <Grid Grid.Row="6" Style="{StaticResource RightColumn}">
-                    <ComboBox contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <ComboBoxItem Content="Item 1"/>
-                        <ComboBoxItem Content="Item 2"/>
-                        <ComboBoxItem Content="Item 3"/>
-                    </ComboBox>
-                </Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="7" Text="ComboBox (IsEditable)" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="7" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <ComboBox contract7Present:IsEditable="True">
-                        <ComboBoxItem Content="Item 1"/>
-                        <ComboBoxItem Content="Item 2"/>
-                        <ComboBoxItem Content="Item 3"/>
-                    </ComboBox>
-                </Grid>
-                <Grid Grid.Row="7" Style="{StaticResource RightColumn}">
-                    <ComboBox contract7Present:IsEditable="True" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <ComboBoxItem Content="Item 1"/>
-                        <ComboBoxItem Content="Item 2"/>
-                        <ComboBoxItem Content="Item 3"/>
-                    </ComboBox>
-                </Grid>
+                    <TextBlock Text="Normal" Grid.Column="1" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <TextBlock Text="CornerRadius" Grid.Column="2" Style="{StaticResource BaseTextBlockStyle}"/>
 
-                <TextBlock Grid.Row="8" Text="AutoSuggestBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="8" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}"/>
-                </Grid>
-                <Grid Grid.Row="8" Style="{StaticResource RightColumn}">
-                    <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="5" Text="ListBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="5" Style="{StaticResource LeftColumn}">
+                        <ListBox>
+                            <ListBoxItem Content="Item 1"/>
+                            <ListBoxItem Content="Item 2"/>
+                            <ListBoxItem Content="Item 3"/>
+                        </ListBox>
+                    </Grid>
+                    <Grid Grid.Row="5" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="9" Text="DatePicker" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="9" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <DatePicker />
-                </Grid>
-                <Grid Grid.Row="9" Style="{StaticResource RightColumn}">
-                    <DatePicker contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="6" Text="ComboBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="6" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <ComboBox>
+                            <ComboBoxItem Content="Item 1"/>
+                            <ComboBoxItem Content="Item 2"/>
+                            <ComboBoxItem Content="Item 3"/>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Grid.Row="6" Style="{StaticResource RightColumn}">
+                        <ComboBox contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <ComboBoxItem Content="Item 1"/>
+                            <ComboBoxItem Content="Item 2"/>
+                            <ComboBoxItem Content="Item 3"/>
+                        </ComboBox>
+                    </Grid>
 
-                <TextBlock Grid.Row="10" Text="TimePicker" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="10" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <TimePicker/>
-                </Grid>
-                <Grid Grid.Row="10" Style="{StaticResource RightColumn}">
-                    <TimePicker contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="7" Text="ComboBox (IsEditable)" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="7" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <ComboBox contract7Present:IsEditable="True">
+                            <ComboBoxItem Content="Item 1"/>
+                            <ComboBoxItem Content="Item 2"/>
+                            <ComboBoxItem Content="Item 3"/>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Grid.Row="7" Style="{StaticResource RightColumn}">
+                        <ComboBox contract7Present:IsEditable="True" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <ComboBoxItem Content="Item 1"/>
+                            <ComboBoxItem Content="Item 2"/>
+                            <ComboBoxItem Content="Item 3"/>
+                        </ComboBox>
+                    </Grid>
 
-                <TextBlock Grid.Row="11" Text="CommandBar" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="11" Style="{StaticResource LeftColumn}">
-                    <CommandBar>
-                        <AppBarButton Icon="AddFriend"/>
-                        <AppBarButton Icon="World" Label="World"/>
-                        <AppBarToggleButton Icon="Volume" Label="Volume"/>
-                        <CommandBar.SecondaryCommands>
-                            <AppBarButton Label="Like"/>
-                            <AppBarButton Label="Dislike"/>
-                            <AppBarToggleButton Label="Toggle"/>
-                        </CommandBar.SecondaryCommands>
-                        <CommandBar.Content>
-                            <TextBlock Text="Hello World" Margin="12"/>
-                        </CommandBar.Content>
-                    </CommandBar>
-                </Grid>
-                <Grid Grid.Row="11" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="8" Text="AutoSuggestBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="8" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}"/>
+                    </Grid>
+                    <Grid Grid.Row="8" Style="{StaticResource RightColumn}">
+                        <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="12" Text="Flyout" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="12" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <Button Content="Click me">
-                        <Button.Flyout>
-                            <Flyout>
-                                <TextBlock Text="Hello World"/>
-                            </Flyout>
-                        </Button.Flyout>
-                        <Button.ContextFlyout>
-                            <Flyout>
-                                <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
-                            </Flyout>
-                        </Button.ContextFlyout>
-                    </Button>
-                </Grid>
-                <Grid Grid.Row="12" Style="{StaticResource RightColumn}">
-                    <Button Content="Click me">
-                        <Button.Flyout>
-                            <Flyout>
-                                <Flyout.FlyoutPresenterStyle>
-                                    <contract7Present:Style TargetType="FlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="4"/>
-                                    </contract7Present:Style>
-                                </Flyout.FlyoutPresenterStyle>
-                                <TextBlock Text="Hello World"/>
-                            </Flyout>
-                        </Button.Flyout>
-                        <Button.ContextFlyout>
-                            <Flyout>
-                                <Flyout.FlyoutPresenterStyle>
-                                    <contract7Present:Style TargetType="FlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="4"/>
-                                    </contract7Present:Style>
-                                </Flyout.FlyoutPresenterStyle>
-                                <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
-                            </Flyout>
-                        </Button.ContextFlyout>
-                    </Button>
-                </Grid>
+                    <TextBlock Grid.Row="9" Text="DatePicker" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="9" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <DatePicker />
+                    </Grid>
+                    <Grid Grid.Row="9" Style="{StaticResource RightColumn}">
+                        <DatePicker contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="13" Text="MenuFlyout" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="13" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <Button Content="Click me">
-                        <Button.Flyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Share" >
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xE72D;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Copy" Icon="Copy" />
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" />
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Rename" />
-                                <MenuFlyoutItem Text="Select" />
-                            </MenuFlyout>
-                        </Button.Flyout>
-                        <Button.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Share" >
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xE72D;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Copy" Icon="Copy" />
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" />
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Rename" />
-                                <MenuFlyoutItem Text="Select" />
-                            </MenuFlyout>
-                        </Button.ContextFlyout>
-                    </Button>
-                </Grid>
-                <Grid Grid.Row="13" Style="{StaticResource RightColumn}">
-                    <Button Content="Click me">
-                        <Button.Flyout>
-                            <MenuFlyout>
-                                <MenuFlyout.MenuFlyoutPresenterStyle>
-                                    <contract7Present:Style TargetType="MenuFlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="4"/>
-                                    </contract7Present:Style>
-                                </MenuFlyout.MenuFlyoutPresenterStyle>
-                                <MenuFlyoutItem Text="Share" >
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xE72D;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Copy" Icon="Copy" />
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" />
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Rename" />
-                                <MenuFlyoutItem Text="Select" />
-                            </MenuFlyout>
-                        </Button.Flyout>
-                        <Button.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyout.MenuFlyoutPresenterStyle>
-                                    <contract7Present:Style TargetType="MenuFlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="4"/>
-                                    </contract7Present:Style>
-                                </MenuFlyout.MenuFlyoutPresenterStyle>
-                                <MenuFlyoutItem Text="Share" >
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xE72D;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Copy" Icon="Copy" />
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" />
-                                <MenuFlyoutSeparator />
-                                <MenuFlyoutItem Text="Rename" />
-                                <MenuFlyoutItem Text="Select" />
-                            </MenuFlyout>
-                        </Button.ContextFlyout>
-                    </Button>
-                </Grid>
+                    <TextBlock Grid.Row="10" Text="TimePicker" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="10" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <TimePicker/>
+                    </Grid>
+                    <Grid Grid.Row="10" Style="{StaticResource RightColumn}">
+                        <TimePicker contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="14" Text="ContentDialog" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="14" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <Button Content="Click me" Click="ShowDialog_Click"/>
-                </Grid>
-                <Grid Grid.Row="14" Style="{StaticResource RightColumn}">
-                    <Button Content="Click me" Click="ShowRoundedDialog_Click"/>
-                </Grid>
+                    <TextBlock Grid.Row="11" Text="CommandBar" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="11" Style="{StaticResource LeftColumn}">
+                        <CommandBar>
+                            <AppBarButton Icon="AddFriend"/>
+                            <AppBarButton Icon="World" Label="World"/>
+                            <AppBarToggleButton Icon="Volume" Label="Volume"/>
+                            <CommandBar.SecondaryCommands>
+                                <AppBarButton Label="Like"/>
+                                <AppBarButton Label="Dislike"/>
+                                <AppBarToggleButton Label="Toggle"/>
+                            </CommandBar.SecondaryCommands>
+                            <CommandBar.Content>
+                                <TextBlock Text="Hello World" Margin="12"/>
+                            </CommandBar.Content>
+                        </CommandBar>
+                    </Grid>
+                    <Grid Grid.Row="11" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="15" Text="ToolTip" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="15" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <ToolTip>
-                        <TextBlock Text="Hello world"/>
-                    </ToolTip>
-                </Grid>
-                <Grid Grid.Row="15" Style="{StaticResource RightColumn}">
-                    <ToolTip contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <TextBlock Text="Hello world"/>
-                    </ToolTip>
-                </Grid>
+                    <TextBlock Grid.Row="12" Text="Flyout" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="12" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <Button Content="Click me">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <TextBlock Text="Hello World"/>
+                                </Flyout>
+                            </Button.Flyout>
+                            <Button.ContextFlyout>
+                                <Flyout>
+                                    <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
+                                </Flyout>
+                            </Button.ContextFlyout>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="12" Style="{StaticResource RightColumn}">
+                        <Button Content="Click me">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <Flyout.FlyoutPresenterStyle>
+                                        <contract7Present:Style TargetType="FlyoutPresenter">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </contract7Present:Style>
+                                    </Flyout.FlyoutPresenterStyle>
+                                    <TextBlock Text="Hello World"/>
+                                </Flyout>
+                            </Button.Flyout>
+                            <Button.ContextFlyout>
+                                <Flyout>
+                                    <Flyout.FlyoutPresenterStyle>
+                                        <contract7Present:Style TargetType="FlyoutPresenter">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </contract7Present:Style>
+                                    </Flyout.FlyoutPresenterStyle>
+                                    <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
+                                </Flyout>
+                            </Button.ContextFlyout>
+                        </Button>
+                    </Grid>
 
-                <TextBlock Grid.Row="17" Text="CalendarView" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="17" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <CalendarView/>
-                </Grid>
-                <Grid Grid.Row="17" Style="{StaticResource RightColumn}">
-                    <CalendarView contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="13" Text="MenuFlyout" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="13" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <Button Content="Click me">
+                            <Button.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Share" >
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE72D;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Copy" Icon="Copy" />
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="Rename" />
+                                    <MenuFlyoutItem Text="Select" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                            <Button.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Share" >
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE72D;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Copy" Icon="Copy" />
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="Rename" />
+                                    <MenuFlyoutItem Text="Select" />
+                                </MenuFlyout>
+                            </Button.ContextFlyout>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="13" Style="{StaticResource RightColumn}">
+                        <Button Content="Click me">
+                            <Button.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyout.MenuFlyoutPresenterStyle>
+                                        <contract7Present:Style TargetType="MenuFlyoutPresenter">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </contract7Present:Style>
+                                    </MenuFlyout.MenuFlyoutPresenterStyle>
+                                    <MenuFlyoutItem Text="Share" >
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE72D;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Copy" Icon="Copy" />
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="Rename" />
+                                    <MenuFlyoutItem Text="Select" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                            <Button.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyout.MenuFlyoutPresenterStyle>
+                                        <contract7Present:Style TargetType="MenuFlyoutPresenter">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </contract7Present:Style>
+                                    </MenuFlyout.MenuFlyoutPresenterStyle>
+                                    <MenuFlyoutItem Text="Share" >
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE72D;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Copy" Icon="Copy" />
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="Rename" />
+                                    <MenuFlyoutItem Text="Select" />
+                                </MenuFlyout>
+                            </Button.ContextFlyout>
+                        </Button>
+                    </Grid>
 
-                <TextBlock Grid.Row="18" Text="CalendarDatePicker" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="18" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <CalendarDatePicker/>
-                </Grid>
-                <Grid Grid.Row="18" Style="{StaticResource RightColumn}">
-                    <CalendarDatePicker contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="14" Text="ContentDialog" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="14" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <Button Content="Click me" Click="ShowDialog_Click"/>
+                    </Grid>
+                    <Grid Grid.Row="14" Style="{StaticResource RightColumn}">
+                        <Button Content="Click me" Click="ShowRoundedDialog_Click"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="20" Text="ToggleSwitch" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="20" Style="{StaticResource LeftColumn}">
-                    <ToggleSwitch/>
-                </Grid>
-                <Grid Grid.Row="20" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="15" Text="ToolTip" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="15" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <ToolTip>
+                            <TextBlock Text="Hello world"/>
+                        </ToolTip>
+                    </Grid>
+                    <Grid Grid.Row="15" Style="{StaticResource RightColumn}">
+                        <ToolTip contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <TextBlock Text="Hello world"/>
+                        </ToolTip>
+                    </Grid>
 
-                <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="200">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
-                    </Grid.Resources>
-                    <Slider Orientation="Horizontal"/>
-                </Grid>
-                <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="200">
-                    <Slider Orientation="Horizontal" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="17" Text="CalendarView" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="17" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <CalendarView/>
+                    </Grid>
+                    <Grid Grid.Row="17" Style="{StaticResource RightColumn}">
+                        <CalendarView contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="22" Text="Slider" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="22" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
-                    </Grid.Resources>
-                    <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside"/>
-                </Grid>
-                <Grid Grid.Row="22" Style="{StaticResource RightColumn}">
-                    <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="18" Text="CalendarDatePicker" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="18" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <CalendarDatePicker/>
+                    </Grid>
+                    <Grid Grid.Row="18" Style="{StaticResource RightColumn}">
+                        <CalendarDatePicker contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="23" Text="" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="100">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
-                    </Grid.Resources>
-                    <Slider Orientation="Vertical"/>
-                </Grid>
-                <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="100">
-                    <Slider Orientation="Vertical" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="20" Text="ToggleSwitch" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="20" Style="{StaticResource LeftColumn}">
+                        <ToggleSwitch/>
+                    </Grid>
+                    <Grid Grid.Row="20" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="24" Text="" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="24" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
-                    </Grid.Resources>
-                    <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside"/>
-                </Grid>
-                <Grid Grid.Row="24" Style="{StaticResource RightColumn}">
-                    <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="200">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                            <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                        </Grid.Resources>
+                        <Slider Orientation="Horizontal"/>
+                    </Grid>
+                    <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="200">
+                        <Slider Orientation="Horizontal" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="25" Text="AppBar" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="25" Style="{StaticResource LeftColumn}">
-                    <AppBar>
-                        <AppBarButton Icon="World"/>
-                    </AppBar>
-                </Grid>
-                <Grid Grid.Row="25" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="22" Text="Slider" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="22" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                            <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                        </Grid.Resources>
+                        <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside"/>
+                    </Grid>
+                    <Grid Grid.Row="22" Style="{StaticResource RightColumn}">
+                        <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="26" Text="MenuBar" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="26" Style="{StaticResource LeftColumn}">
-                    <controls:MenuBar>
-                        <controls:MenuBarItem Title="One">
-                            <controls:MenuBarItem.Items>
-                                <MenuFlyoutItem Text="A"/>
-                                <MenuFlyoutItem Text="B"/>
-                                <MenuFlyoutItem Text="C"/>
-                            </controls:MenuBarItem.Items>
-                        </controls:MenuBarItem>
-                        <controls:MenuBarItem Title="Two">
-                            <controls:MenuBarItem.Items>
-                                <MenuFlyoutItem Text="1"/>
-                                <MenuFlyoutItem Text="2"/>
-                                <MenuFlyoutItem Text="3"/>
-                            </controls:MenuBarItem.Items>
-                        </controls:MenuBarItem>
-                        <controls:MenuBarItem Title="Three">
-                            <controls:MenuBarItem.Items>
-                                <MenuFlyoutItem Text="i"/>
-                                <MenuFlyoutItem Text="ii"/>
-                                <MenuFlyoutItem Text="iii"/>
-                            </controls:MenuBarItem.Items>
-                        </controls:MenuBarItem>
-                    </controls:MenuBar>
-                </Grid>
-                <Grid Grid.Row="26" Style="{StaticResource RightColumn}">
-                    <controls:MenuBar muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <controls:MenuBarItem Title="One">
-                            <controls:MenuBarItem.Items>
-                                <MenuFlyoutItem Text="A"/>
-                                <MenuFlyoutItem Text="B"/>
-                                <MenuFlyoutItem Text="C"/>
-                            </controls:MenuBarItem.Items>
-                        </controls:MenuBarItem>
-                        <controls:MenuBarItem Title="Two">
-                            <controls:MenuBarItem.Items>
-                                <MenuFlyoutItem Text="1"/>
-                                <MenuFlyoutItem Text="2"/>
-                                <MenuFlyoutItem Text="3"/>
-                            </controls:MenuBarItem.Items>
-                        </controls:MenuBarItem>
-                        <controls:MenuBarItem Title="Three">
-                            <controls:MenuBarItem.Items>
-                                <MenuFlyoutItem Text="i"/>
-                                <MenuFlyoutItem Text="ii"/>
-                                <MenuFlyoutItem Text="iii"/>
-                            </controls:MenuBarItem.Items>
-                        </controls:MenuBarItem>
-                    </controls:MenuBar>
-                </Grid>
+                    <TextBlock Grid.Row="23" Text="" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="100">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                            <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                        </Grid.Resources>
+                        <Slider Orientation="Vertical"/>
+                    </Grid>
+                    <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="100">
+                        <Slider Orientation="Vertical" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="31" Text="ProgressBar" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="100">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <ProgressBar Minimum="0" Maximum="100" Value="50"/>
-                </Grid>
-                <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="100">
-                    <ProgressBar Minimum="0" Maximum="100" Value="50" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="24" Text="" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="24" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                            <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                        </Grid.Resources>
+                        <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside"/>
+                    </Grid>
+                    <Grid Grid.Row="24" Style="{StaticResource RightColumn}">
+                        <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="32" Text="TextBlock" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="32" Style="{StaticResource LeftColumn}">
-                    <TextBlock Text="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="32" Style="{StaticResource RightColumn}">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="25" Text="AppBar" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="25" Style="{StaticResource LeftColumn}">
+                        <AppBar>
+                            <AppBarButton Icon="World"/>
+                        </AppBar>
+                    </Grid>
+                    <Grid Grid.Row="25" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="33" Text="RichTextBlock" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="33" Style="{StaticResource LeftColumn}">
-                    <RichTextBlock>
-                        <Paragraph>
-                            Hello World
-                        </Paragraph>
-                    </RichTextBlock>
-                </Grid>
-                <Grid Grid.Row="33" Style="{StaticResource RightColumn}">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="26" Text="MenuBar" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="26" Style="{StaticResource LeftColumn}">
+                        <controls:MenuBar>
+                            <controls:MenuBarItem Title="One">
+                                <controls:MenuBarItem.Items>
+                                    <MenuFlyoutItem Text="A"/>
+                                    <MenuFlyoutItem Text="B"/>
+                                    <MenuFlyoutItem Text="C"/>
+                                </controls:MenuBarItem.Items>
+                            </controls:MenuBarItem>
+                            <controls:MenuBarItem Title="Two">
+                                <controls:MenuBarItem.Items>
+                                    <MenuFlyoutItem Text="1"/>
+                                    <MenuFlyoutItem Text="2"/>
+                                    <MenuFlyoutItem Text="3"/>
+                                </controls:MenuBarItem.Items>
+                            </controls:MenuBarItem>
+                            <controls:MenuBarItem Title="Three">
+                                <controls:MenuBarItem.Items>
+                                    <MenuFlyoutItem Text="i"/>
+                                    <MenuFlyoutItem Text="ii"/>
+                                    <MenuFlyoutItem Text="iii"/>
+                                </controls:MenuBarItem.Items>
+                            </controls:MenuBarItem>
+                        </controls:MenuBar>
+                    </Grid>
+                    <Grid Grid.Row="26" Style="{StaticResource RightColumn}">
+                        <controls:MenuBar muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <controls:MenuBarItem Title="One">
+                                <controls:MenuBarItem.Items>
+                                    <MenuFlyoutItem Text="A"/>
+                                    <MenuFlyoutItem Text="B"/>
+                                    <MenuFlyoutItem Text="C"/>
+                                </controls:MenuBarItem.Items>
+                            </controls:MenuBarItem>
+                            <controls:MenuBarItem Title="Two">
+                                <controls:MenuBarItem.Items>
+                                    <MenuFlyoutItem Text="1"/>
+                                    <MenuFlyoutItem Text="2"/>
+                                    <MenuFlyoutItem Text="3"/>
+                                </controls:MenuBarItem.Items>
+                            </controls:MenuBarItem>
+                            <controls:MenuBarItem Title="Three">
+                                <controls:MenuBarItem.Items>
+                                    <MenuFlyoutItem Text="i"/>
+                                    <MenuFlyoutItem Text="ii"/>
+                                    <MenuFlyoutItem Text="iii"/>
+                                </controls:MenuBarItem.Items>
+                            </controls:MenuBarItem>
+                        </controls:MenuBar>
+                    </Grid>
 
-                <TextBlock Grid.Row="34" Text="CheckBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="34" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <CheckBox Content="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="34" Style="{StaticResource RightColumn}">
-                    <CheckBox Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="31" Text="ProgressBar" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="100">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <ProgressBar Minimum="0" Maximum="100" Value="50"/>
+                    </Grid>
+                    <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="100">
+                        <ProgressBar Minimum="0" Maximum="100" Value="50" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="35" Text="Button" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="35" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <Button Content="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="35" Style="{StaticResource RightColumn}">
-                    <Button Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="32" Text="TextBlock" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="32" Style="{StaticResource LeftColumn}">
+                        <TextBlock Text="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="32" Style="{StaticResource RightColumn}">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="36" Text="TextBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="36" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <TextBox Text="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="36" Style="{StaticResource RightColumn}">
-                    <TextBox Text="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="33" Text="RichTextBlock" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="33" Style="{StaticResource LeftColumn}">
+                        <RichTextBlock>
+                            <Paragraph>
+                                Hello World
+                            </Paragraph>
+                        </RichTextBlock>
+                    </Grid>
+                    <Grid Grid.Row="33" Style="{StaticResource RightColumn}">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="37" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="37" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <PasswordBox Password="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="37" Style="{StaticResource RightColumn}">
-                    <PasswordBox Password="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="34" Text="CheckBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="34" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <CheckBox Content="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="34" Style="{StaticResource RightColumn}">
+                        <CheckBox Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="38" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="38" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <RichEditBox/>
-                </Grid>
-                <Grid Grid.Row="38" Style="{StaticResource RightColumn}">
-                    <RichEditBox contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
-                <TextBlock Grid.Row="39" Text="FlipView" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="39" Style="{StaticResource LeftColumn}" Width="200" Height="200">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <FlipView>
-                        <Grid Background="Red"/>
-                        <Grid Background="Green"/>
-                        <Grid Background="Blue"/>
-                    </FlipView>
-                </Grid>
-                <Grid Grid.Row="39" Style="{StaticResource RightColumn}" Width="200" Height="200">
-                    <FlipView contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <Grid Background="Red"/>
-                        <Grid Background="Green"/>
-                        <Grid Background="Blue"/>
-                    </FlipView>
-                </Grid>
+                    <TextBlock Grid.Row="35" Text="Button" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="35" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <Button Content="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="35" Style="{StaticResource RightColumn}">
+                        <Button Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="40" Text="RadioButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="40" Style="{StaticResource LeftColumn}">
-                    <StackPanel Orientation="Vertical">
-                        <RadioButton Content="Item 1"/>
-                        <RadioButton Content="Item 2"/>
-                        <RadioButton Content="Item 3"/>
-                    </StackPanel>
-                </Grid>
-                <Grid Grid.Row="40" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="36" Text="TextBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="36" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <TextBox Text="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="36" Style="{StaticResource RightColumn}">
+                        <TextBox Text="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="41" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="41" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <ToggleButton Content="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="41" Style="{StaticResource RightColumn}">
-                    <ToggleButton Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="37" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="37" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <PasswordBox Password="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="37" Style="{StaticResource RightColumn}">
+                        <PasswordBox Password="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="42" Text="ToggleSplitButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="42" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <controls:ToggleSplitButton Content="Hello World">
-                        <controls:ToggleSplitButton.Flyout>
-                            <Flyout>
-                                <Flyout.Content>
-                                    <TextBlock>Hello World</TextBlock>
-                                </Flyout.Content>
-                            </Flyout>
-                        </controls:ToggleSplitButton.Flyout>
-                    </controls:ToggleSplitButton>
-                </Grid>
-                <Grid Grid.Row="42" Style="{StaticResource RightColumn}">
-                    <controls:ToggleSplitButton Content="Hello World" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <controls:ToggleSplitButton.Flyout>
-                            <Flyout>
-                                <Flyout.Content>
-                                    <TextBlock>Hello World</TextBlock>
-                                </Flyout.Content>
-                            </Flyout>
-                        </controls:ToggleSplitButton.Flyout>
-                    </controls:ToggleSplitButton>
-                </Grid>
+                    <TextBlock Grid.Row="38" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="38" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <RichEditBox/>
+                    </Grid>
+                    <Grid Grid.Row="38" Style="{StaticResource RightColumn}">
+                        <RichEditBox contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
+                    <TextBlock Grid.Row="39" Text="FlipView" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="39" Style="{StaticResource LeftColumn}" Width="200" Height="200">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <FlipView>
+                            <Grid Background="Red"/>
+                            <Grid Background="Green"/>
+                            <Grid Background="Blue"/>
+                        </FlipView>
+                    </Grid>
+                    <Grid Grid.Row="39" Style="{StaticResource RightColumn}" Width="200" Height="200">
+                        <FlipView contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <Grid Background="Red"/>
+                            <Grid Background="Green"/>
+                            <Grid Background="Blue"/>
+                        </FlipView>
+                    </Grid>
 
-                <TextBlock Grid.Row="43" Text="RepeatButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="43" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <RepeatButton Content="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="43" Style="{StaticResource RightColumn}">
-                    <RepeatButton Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
+                    <TextBlock Grid.Row="40" Text="RadioButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="40" Style="{StaticResource LeftColumn}">
+                        <StackPanel Orientation="Vertical">
+                            <RadioButton Content="Item 1"/>
+                            <RadioButton Content="Item 2"/>
+                            <RadioButton Content="Item 3"/>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="40" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
 
-                <TextBlock Grid.Row="44" Text="HyperlinkButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="44" Style="{StaticResource LeftColumn}">
-                    <HyperlinkButton Content="Hello World"/>
-                </Grid>
-                <Grid Grid.Row="44" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
-                    <TextBlock>N/A</TextBlock>
-                </Grid>
+                    <TextBlock Grid.Row="41" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="41" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <ToggleButton Content="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="41" Style="{StaticResource RightColumn}">
+                        <ToggleButton Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="45" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <controls:DropDownButton Content="Hello World">
-                        <controls:DropDownButton.Flyout>
-                            <Flyout>
-                                <Flyout.Content>
-                                    <TextBlock>Hello World</TextBlock>
-                                </Flyout.Content>
-                            </Flyout>
-                        </controls:DropDownButton.Flyout>
-                    </controls:DropDownButton>
-                </Grid>
-                <Grid Grid.Row="45" Style="{StaticResource RightColumn}">
-                    <controls:DropDownButton Content="Hello World" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <controls:DropDownButton.Flyout>
-                            <Flyout>
-                                <Flyout.Content>
-                                    <TextBlock>Hello World</TextBlock>
-                                </Flyout.Content>
-                            </Flyout>
-                        </controls:DropDownButton.Flyout>
-                    </controls:DropDownButton>
-                </Grid>
-                <TextBlock Grid.Row="46" Text="SplitButton" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="46" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <controls:SplitButton Content="Hello World">
-                        <controls:SplitButton.Flyout>
-                            <Flyout>
-                                <Flyout.Content>
-                                    <TextBlock>Hello World</TextBlock>
-                                </Flyout.Content>
-                            </Flyout>
-                        </controls:SplitButton.Flyout>
-                    </controls:SplitButton>
-                </Grid>
-                <Grid Grid.Row="46" Style="{StaticResource RightColumn}">
-                    <controls:SplitButton Content="Hello World" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <controls:SplitButton.Flyout>
-                            <Flyout>
-                                <Flyout.Content>
-                                    <TextBlock>Hello World</TextBlock>
-                                </Flyout.Content>
-                            </Flyout>
-                        </controls:SplitButton.Flyout>
-                    </controls:SplitButton>
-                </Grid>
-                <TextBlock Grid.Row="47" Text="ColorPicker" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="47" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
-                    </Grid.Resources>
-                    <controls:ColorPicker IsAlphaEnabled="True"/>
-                </Grid>
-                <Grid Grid.Row="47" Style="{StaticResource RightColumn}">
-                    <Grid.Resources>
-                        <contract7Present:Style TargetType="ComboBox">
-                            <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
-                        </contract7Present:Style>
-                        <contract7Present:Style TargetType="TextBox">
-                            <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
-                        </contract7Present:Style>
-                        <contract7Present:Style TargetType="primitives:ColorPickerSlider">
-                            <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
-                        </contract7Present:Style>
-                    </Grid.Resources>
-                    <controls:ColorPicker IsAlphaEnabled="True" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                </Grid>
-                <TextBlock Grid.Row="48" Text="ListView" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="48" Style="{StaticResource LeftColumn}">
-                    <ListView SelectionMode="Multiple">
-                        <ListViewHeaderItem Content="Header 1"/>
-                        <ListViewItem Content="Item 1"/>
-                        <ListViewItem Content="Item 2"/>
-                        <ListViewItem Content="Item 3"/>
-                    </ListView>
-                </Grid>
-                <Grid Grid.Row="48" Style="{StaticResource RightColumn}">
-                    <ListView SelectionMode="Multiple" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <ListViewHeaderItem Content="Header 1"/>
-                        <ListViewItem Content="Item 1"/>
-                        <ListViewItem Content="Item 2"/>
-                        <ListViewItem Content="Item 3"/>
-                    </ListView>
-                </Grid>
+                    <TextBlock Grid.Row="42" Text="ToggleSplitButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="42" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:ToggleSplitButton Content="Hello World">
+                            <controls:ToggleSplitButton.Flyout>
+                                <Flyout>
+                                    <Flyout.Content>
+                                        <TextBlock>Hello World</TextBlock>
+                                    </Flyout.Content>
+                                </Flyout>
+                            </controls:ToggleSplitButton.Flyout>
+                        </controls:ToggleSplitButton>
+                    </Grid>
+                    <Grid Grid.Row="42" Style="{StaticResource RightColumn}">
+                        <controls:ToggleSplitButton Content="Hello World" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <controls:ToggleSplitButton.Flyout>
+                                <Flyout>
+                                    <Flyout.Content>
+                                        <TextBlock>Hello World</TextBlock>
+                                    </Flyout.Content>
+                                </Flyout>
+                            </controls:ToggleSplitButton.Flyout>
+                        </controls:ToggleSplitButton>
+                    </Grid>
 
-                <TextBlock Grid.Row="49" Text="GridView" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="49" Style="{StaticResource LeftColumn}" MaxWidth="400">
-                    <GridView SelectionMode="Multiple">
-                        <GridViewHeaderItem Content="Header 1"/>
-                        <GridViewItem Content="Item 1.1"/>
-                        <GridViewItem Content="Item 1.2"/>
-                        <GridViewHeaderItem Content="Header 2"/>
-                        <GridViewItem Content="Item 2.1"/>
-                    </GridView>
-                </Grid>
-                <Grid Grid.Row="49" Style="{StaticResource RightColumn}" MaxWidth="400">
-                    <GridView SelectionMode="Multiple" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <GridViewHeaderItem Content="Header 1"/>
-                        <GridViewItem Content="Item 1.1"/>
-                        <GridViewItem Content="Item 1.2"/>
-                        <GridViewHeaderItem Content="Header 2"/>
-                        <GridViewItem Content="Item 2.1"/>
-                    </GridView>
-                </Grid>
+                    <TextBlock Grid.Row="43" Text="RepeatButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="43" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <RepeatButton Content="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="43" Style="{StaticResource RightColumn}">
+                        <RepeatButton Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
 
-                <TextBlock Grid.Row="50" Text="TreeView" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="50" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <controls:TreeView SelectionMode="Multiple">
-                        <controls:TreeView.RootNodes>
-                            <controls:TreeViewNode Content="Item 1" IsExpanded="True">
-                                <controls:TreeViewNode.Children>
-                                    <controls:TreeViewNode Content="Item 1.1"/>
-                                    <controls:TreeViewNode Content="Item 1.2">
-                                        <controls:TreeViewNode.Children>
-                                            <controls:TreeViewNode Content="Item 1.2.1"/>
-                                            <controls:TreeViewNode Content="Item 1.2.2"/>
-                                        </controls:TreeViewNode.Children>
-                                    </controls:TreeViewNode>
-                                    <controls:TreeViewNode Content="Item 1.3"/>
-                                </controls:TreeViewNode.Children>
-                            </controls:TreeViewNode>
-                        </controls:TreeView.RootNodes>
-                    </controls:TreeView>
-                </Grid>
-                <Grid Grid.Row="50" Style="{StaticResource RightColumn}">
-                    <controls:TreeView SelectionMode="Multiple" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <controls:TreeView.RootNodes>
-                            <controls:TreeViewNode Content="Item 1" IsExpanded="True">
-                                <controls:TreeViewNode.Children>
-                                    <controls:TreeViewNode Content="Item 1.1"/>
-                                    <controls:TreeViewNode Content="Item 1.2">
-                                        <controls:TreeViewNode.Children>
-                                            <controls:TreeViewNode Content="Item 1.2.1"/>
-                                            <controls:TreeViewNode Content="Item 1.2.2"/>
-                                        </controls:TreeViewNode.Children>
-                                    </controls:TreeViewNode>
-                                    <controls:TreeViewNode Content="Item 1.3"/>
-                                </controls:TreeViewNode.Children>
-                            </controls:TreeViewNode>
-                        </controls:TreeView.RootNodes>
-                    </controls:TreeView>
-                </Grid>
-                <TextBlock Grid.Row="51" Text="MediaPlayerElement" Style="{StaticResource SideHeader}"/>
-                <Grid Grid.Row="51" Style="{StaticResource LeftColumn}">
-                    <Grid.Resources>
-                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
-                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
-                    </Grid.Resources>
-                    <MediaPlayerElement 
-                        Width="200"
-                        Height="100"
-                        x:Name="mediaPlayer"
-                        AreTransportControlsEnabled="True" />
-                </Grid>
+                    <TextBlock Grid.Row="44" Text="HyperlinkButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="44" Style="{StaticResource LeftColumn}">
+                        <HyperlinkButton Content="Hello World"/>
+                    </Grid>
+                    <Grid Grid.Row="44" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                        <TextBlock>N/A</TextBlock>
+                    </Grid>
+
+                    <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="45" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:DropDownButton Content="Hello World">
+                            <controls:DropDownButton.Flyout>
+                                <Flyout>
+                                    <Flyout.Content>
+                                        <TextBlock>Hello World</TextBlock>
+                                    </Flyout.Content>
+                                </Flyout>
+                            </controls:DropDownButton.Flyout>
+                        </controls:DropDownButton>
+                    </Grid>
+                    <Grid Grid.Row="45" Style="{StaticResource RightColumn}">
+                        <controls:DropDownButton Content="Hello World" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <controls:DropDownButton.Flyout>
+                                <Flyout>
+                                    <Flyout.Content>
+                                        <TextBlock>Hello World</TextBlock>
+                                    </Flyout.Content>
+                                </Flyout>
+                            </controls:DropDownButton.Flyout>
+                        </controls:DropDownButton>
+                    </Grid>
+                    <TextBlock Grid.Row="46" Text="SplitButton" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="46" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:SplitButton Content="Hello World">
+                            <controls:SplitButton.Flyout>
+                                <Flyout>
+                                    <Flyout.Content>
+                                        <TextBlock>Hello World</TextBlock>
+                                    </Flyout.Content>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                    </Grid>
+                    <Grid Grid.Row="46" Style="{StaticResource RightColumn}">
+                        <controls:SplitButton Content="Hello World" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <controls:SplitButton.Flyout>
+                                <Flyout>
+                                    <Flyout.Content>
+                                        <TextBlock>Hello World</TextBlock>
+                                    </Flyout.Content>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                    </Grid>
+                    <TextBlock Grid.Row="47" Text="ColorPicker" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="47" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                            <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                            <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                            <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                        </Grid.Resources>
+                        <controls:ColorPicker IsAlphaEnabled="True"/>
+                    </Grid>
+                    <Grid Grid.Row="47" Style="{StaticResource RightColumn}">
+                        <Grid.Resources>
+                            <contract7Present:Style TargetType="ComboBox">
+                                <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
+                            </contract7Present:Style>
+                            <contract7Present:Style TargetType="TextBox">
+                                <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
+                            </contract7Present:Style>
+                            <contract7Present:Style TargetType="primitives:ColorPickerSlider">
+                                <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
+                            </contract7Present:Style>
+                        </Grid.Resources>
+                        <controls:ColorPicker IsAlphaEnabled="True" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
+                    <TextBlock Grid.Row="48" Text="ListView" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="48" Style="{StaticResource LeftColumn}">
+                        <ListView SelectionMode="Multiple">
+                            <ListViewHeaderItem Content="Header 1"/>
+                            <ListViewItem Content="Item 1"/>
+                            <ListViewItem Content="Item 2"/>
+                            <ListViewItem Content="Item 3"/>
+                        </ListView>
+                    </Grid>
+                    <Grid Grid.Row="48" Style="{StaticResource RightColumn}">
+                        <ListView SelectionMode="Multiple" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <ListViewHeaderItem Content="Header 1"/>
+                            <ListViewItem Content="Item 1"/>
+                            <ListViewItem Content="Item 2"/>
+                            <ListViewItem Content="Item 3"/>
+                        </ListView>
+                    </Grid>
+
+                    <TextBlock Grid.Row="49" Text="GridView" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="49" Style="{StaticResource LeftColumn}" MaxWidth="400">
+                        <GridView SelectionMode="Multiple">
+                            <GridViewHeaderItem Content="Header 1"/>
+                            <GridViewItem Content="Item 1.1"/>
+                            <GridViewItem Content="Item 1.2"/>
+                            <GridViewHeaderItem Content="Header 2"/>
+                            <GridViewItem Content="Item 2.1"/>
+                        </GridView>
+                    </Grid>
+                    <Grid Grid.Row="49" Style="{StaticResource RightColumn}" MaxWidth="400">
+                        <GridView SelectionMode="Multiple" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <GridViewHeaderItem Content="Header 1"/>
+                            <GridViewItem Content="Item 1.1"/>
+                            <GridViewItem Content="Item 1.2"/>
+                            <GridViewHeaderItem Content="Header 2"/>
+                            <GridViewItem Content="Item 2.1"/>
+                        </GridView>
+                    </Grid>
+
+                    <TextBlock Grid.Row="50" Text="TreeView" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="50" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:TreeView SelectionMode="Multiple">
+                            <controls:TreeView.RootNodes>
+                                <controls:TreeViewNode Content="Item 1" IsExpanded="True">
+                                    <controls:TreeViewNode.Children>
+                                        <controls:TreeViewNode Content="Item 1.1"/>
+                                        <controls:TreeViewNode Content="Item 1.2">
+                                            <controls:TreeViewNode.Children>
+                                                <controls:TreeViewNode Content="Item 1.2.1"/>
+                                                <controls:TreeViewNode Content="Item 1.2.2"/>
+                                            </controls:TreeViewNode.Children>
+                                        </controls:TreeViewNode>
+                                        <controls:TreeViewNode Content="Item 1.3"/>
+                                    </controls:TreeViewNode.Children>
+                                </controls:TreeViewNode>
+                            </controls:TreeView.RootNodes>
+                        </controls:TreeView>
+                    </Grid>
+                    <Grid Grid.Row="50" Style="{StaticResource RightColumn}">
+                        <controls:TreeView SelectionMode="Multiple" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                            <controls:TreeView.RootNodes>
+                                <controls:TreeViewNode Content="Item 1" IsExpanded="True">
+                                    <controls:TreeViewNode.Children>
+                                        <controls:TreeViewNode Content="Item 1.1"/>
+                                        <controls:TreeViewNode Content="Item 1.2">
+                                            <controls:TreeViewNode.Children>
+                                                <controls:TreeViewNode Content="Item 1.2.1"/>
+                                                <controls:TreeViewNode Content="Item 1.2.2"/>
+                                            </controls:TreeViewNode.Children>
+                                        </controls:TreeViewNode>
+                                        <controls:TreeViewNode Content="Item 1.3"/>
+                                    </controls:TreeViewNode.Children>
+                                </controls:TreeViewNode>
+                            </controls:TreeView.RootNodes>
+                        </controls:TreeView>
+                    </Grid>
+                    <TextBlock Grid.Row="51" Text="MediaPlayerElement" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="51" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <MediaPlayerElement 
+                            Width="200"
+                            Height="100"
+                            x:Name="mediaPlayer"
+                            AreTransportControlsEnabled="True" />
+                    </Grid>
                 
-                <Grid Grid.Row="51" Style="{StaticResource RightColumn}">
-                    <MediaPlayerElement 
-                        Width="200"
-                        Height="100"
-                        AreTransportControlsEnabled="True"
-                        contract7Present:CornerRadius="{x:Bind ControlCornerRadius}" />
+                    <Grid Grid.Row="51" Style="{StaticResource RightColumn}">
+                        <MediaPlayerElement 
+                            Width="200"
+                            Height="100"
+                            AreTransportControlsEnabled="True"
+                            contract7Present:CornerRadius="{x:Bind ControlCornerRadius}" />
+                    </Grid>
+                    <TextBlock Grid.Row="52" Text="NumberBox" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="52" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:NumberBox/>
+                    </Grid>
+                    <Grid Grid.Row="52" Style="{StaticResource RightColumn}">
+                        <controls:NumberBox muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    </Grid>
+                    <TextBlock Grid.Row="53" Text="NumberBox (inline)" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="53" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:NumberBox SpinButtonPlacementMode="Inline"/>
+                    </Grid>
+                    <Grid Grid.Row="53" Style="{StaticResource RightColumn}">
+                        <controls:NumberBox muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}" SpinButtonPlacementMode="Inline"/>
+                    </Grid>
+                    <TextBlock Grid.Row="54" Text="NumberBox (compact)" Style="{StaticResource SideHeader}"/>
+                    <Grid Grid.Row="54" Style="{StaticResource LeftColumn}">
+                        <Grid.Resources>
+                            <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                            <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        </Grid.Resources>
+                        <controls:NumberBox SpinButtonPlacementMode="Compact"/>
+                    </Grid>
+                    <Grid Grid.Row="54" Style="{StaticResource RightColumn}">
+                        <controls:NumberBox muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}" SpinButtonPlacementMode="Compact"/>
+                    </Grid>
                 </Grid>
-            </Grid>
-
-        </controls:ScrollViewer>
+            </controls:ScrollView>
+        </Grid>
     </Grid>
 
 </local:TestPage>

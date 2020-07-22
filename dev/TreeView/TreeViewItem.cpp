@@ -23,11 +23,11 @@ TreeViewItem::~TreeViewItem()
 // IControlOverrides
 void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 {
-    if (auto targetNode = TreeNode())
+    if (const auto targetNode = TreeNode())
     {
-        auto treeView = AncestorTreeView();
-        auto key = e.Key();
-        auto originalKey = e.OriginalKey();
+        const auto treeView = AncestorTreeView();
+        const auto key = e.Key();
+        const auto originalKey = e.OriginalKey();
         
         // If in multi-selection and gamepad a is pressed
         if (originalKey == winrt::VirtualKey::GamepadA &&
@@ -44,7 +44,7 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         // Collapse/Expand
         else if (IsExpandCollapse(key))
         {
-            auto handled = HandleExpandCollapse(key);
+            const auto handled = HandleExpandCollapse(key);
             if (handled)
             {
                 e.Handled(true);
@@ -53,8 +53,8 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         else if (key == winrt::VirtualKey::Space &&
                  treeView->ListControl()->IsMultiselect())
         {
-            auto selectionBox = m_selectionBox.get();
-            bool isSelected = CheckBoxSelectionState(selectionBox) == TreeNodeSelectionState::Selected;
+            const auto selectionBox = m_selectionBox.get();
+            const bool isSelected = CheckBoxSelectionState(selectionBox) == TreeNodeSelectionState::Selected;
             selectionBox.IsChecked(!isSelected);
             e.Handled(true);
         }
@@ -66,22 +66,22 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
 void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 {
-    if (args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
+    if (!args.Handled() && args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
     {
-        winrt::TreeViewItem droppedOnItem = *this;
-        auto treeView = AncestorTreeView();
+        const winrt::TreeViewItem droppedOnItem = *this;
+        const auto treeView = AncestorTreeView();
         if (treeView)
         {
-            auto treeViewList = treeView->ListControl();
-            if (auto droppedNode = treeViewList->DraggedTreeViewNode())
+            const auto treeViewList = treeView->ListControl();
+            if (const auto droppedNode = treeViewList->DraggedTreeViewNode())
             {
                 if (treeViewList->IsMutiSelectWithSelectedItems())
                 {
-                    auto droppedOnNode = treeView->NodeFromContainer(droppedOnItem);
-                    auto selectedRoots = treeViewList->GetRootsOfSelectedSubtrees();
-                    for (auto& node : selectedRoots)
+                    const auto droppedOnNode = treeView->NodeFromContainer(droppedOnItem);
+                    const auto selectedRoots = treeViewList->GetRootsOfSelectedSubtrees();
+                    for (const auto node : selectedRoots)
                     {
-                        auto nodeIndex = treeViewList->FlatIndex(node);
+                        const auto nodeIndex = treeViewList->FlatIndex(node);
                         if (treeViewList->IsFlatIndexValid(nodeIndex))
                         {
                             treeViewList->RemoveNodeFromParent(node);
@@ -90,11 +90,11 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
                     }
 
                     args.Handled(true);
-                    treeViewList->OnDrop(args);
+                    treeView->MutableListControl()->OnDrop(args);
                 }
                 else
                 {
-                    auto droppedOnNode = treeView->NodeFromContainer(droppedOnItem);
+                    const auto droppedOnNode = treeView->NodeFromContainer(droppedOnItem);
 
                     // Remove the item that was dragged
                     unsigned int removeIndex;
@@ -109,7 +109,7 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 
                         // If not set to true then the Reorder code of listview will override what is being done here.
                         args.Handled(true);
-                        treeViewList->OnDrop(args);
+                        treeView->MutableListControl()->OnDrop(args);
                     }
                     else
                     {
@@ -126,10 +126,10 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 
 void TreeViewItem::OnDragOver(winrt::DragEventArgs const& args)
 {
-    auto treeView = AncestorTreeView();
-    if (treeView)
+    const auto treeView = AncestorTreeView();
+    if (treeView && !args.Handled())
     {
-        auto treeViewList = treeView->ListControl();
+        const auto treeViewList = treeView->ListControl();
         winrt::TreeViewItem draggedOverItem = *this;
         winrt::TreeViewNode draggedOverNode = treeView->NodeFromContainer(draggedOverItem);
         winrt::TreeViewNode draggedNode = treeViewList->DraggedTreeViewNode();
@@ -141,12 +141,12 @@ void TreeViewItem::OnDragOver(winrt::DragEventArgs const& args)
                 if (treeViewList->IsSelected(draggedOverNode))
                 {
                     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
-                    treeViewList->SetDraggedOverItem(nullptr);
+                    treeView->MutableListControl()->SetDraggedOverItem(nullptr);
                 }
                 else
                 {
                     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move);
-                    treeViewList->SetDraggedOverItem(draggedOverItem);
+                    treeView->MutableListControl()->SetDraggedOverItem(draggedOverItem);
                 }
             }
             else
@@ -157,13 +157,14 @@ void TreeViewItem::OnDragOver(winrt::DragEventArgs const& args)
                     walkNode = walkNode.Parent();
                 }
 
+                const auto mutableTreeViewList = treeView->MutableListControl();
                 if (walkNode != draggedNode && draggedNode != draggedOverNode)
                 {
                     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move);
-                    treeViewList->SetDraggedOverItem(draggedOverItem);
+                    mutableTreeViewList->SetDraggedOverItem(draggedOverItem);
                 }
 
-                treeViewList->UpdateDropTargetDropEffect(false, false, nullptr);
+                mutableTreeViewList->UpdateDropTargetDropEffect(false, false, nullptr);
             }
         }
     }
@@ -178,10 +179,10 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
     args.DragUIOverride().IsGlyphVisible(true);
 
-    auto treeView = AncestorTreeView();
-    if (treeView && treeView->CanReorderItems())
+    const auto treeView = AncestorTreeView();
+    if (treeView && treeView->CanReorderItems() && !args.Handled())
     {
-        auto treeViewList = treeView->ListControl();
+        const auto treeViewList = treeView->ListControl();
         winrt::TreeViewNode draggedNode = treeViewList->DraggedTreeViewNode();
         if (draggedNode)
         {
@@ -206,15 +207,15 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
                 {
                     if (m_expandContentTimer)
                     {
-                        auto expandContentTimer = m_expandContentTimer.get();
+                        const auto expandContentTimer = m_expandContentTimer.get();
                         expandContentTimer.Stop();
                         expandContentTimer.Start();
                     }
                     else
                     {
                         // Initialize timer.
-                        winrt::TimeSpan interval = winrt::TimeSpan::duration(c_dragOverInterval);
-                        auto expandContentTimer = winrt::DispatcherTimer();
+                        const winrt::TimeSpan interval = winrt::TimeSpan::duration(c_dragOverInterval);
+                        const auto expandContentTimer = winrt::DispatcherTimer();
                         m_expandContentTimer.set(expandContentTimer);
                         expandContentTimer.Interval(interval);
                         expandContentTimer.Tick({ this, &TreeViewItem::OnExpandContentTimerTick });
@@ -230,15 +231,18 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
 
 void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& args)
 {
-    if (auto treeView = AncestorTreeView())
+    if (!args.Handled())
     {
-        auto treeViewList = treeView->ListControl();
-        treeViewList->SetDraggedOverItem(nullptr);
-    }
+        if (auto treeView = AncestorTreeView())
+        {
+            const auto mutableTreeViewList = treeView->MutableListControl();
+            mutableTreeViewList->SetDraggedOverItem(nullptr);
+        }
 
-    if (m_expandContentTimer)
-    {
-        m_expandContentTimer.get().Stop();
+        if (m_expandContentTimer)
+        {
+            m_expandContentTimer.get().Stop();
+        }
     }
 
     __super::OnDragLeave(args);
@@ -265,13 +269,13 @@ void TreeViewItem::OnApplyTemplate()
         m_uncheckedEventRevoker = m_selectionBox.get().Unchecked(winrt::auto_revoke, { this, &TreeViewItem::OnCheckToggle });
     }
 
-    auto chevron = GetTemplateChildT<winrt::UIElement>(c_expandCollapseChevronName, controlProtected);
+    const auto chevron = GetTemplateChildT<winrt::UIElement>(c_expandCollapseChevronName, controlProtected);
     if (chevron)
     {
         m_expandCollapseChevronPointerPressedToken = chevron.PointerPressed({ this, &TreeViewItem::OnExpandCollapseChevronPointerPressed });
         m_expandCollapseChevron.set(chevron);
     }
-    auto node = TreeNode();
+    const auto node = TreeNode();
     if (node && IsInContentMode())
     {
         UpdateNodeIsExpandedAsync(node, IsExpanded());
@@ -319,22 +323,25 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         }
         else if (property == s_ItemsSourceProperty)
         {
-            winrt::IInspectable value = args.NewValue();
-
-            auto treeViewNode = winrt::get_self<TreeViewNode>(node);
-            treeViewNode->ItemsSource(value);
-            if (IsInContentMode())
-            {
-                // The children have changed, validate and update GlyphOpacity
-                bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
-                GlyphOpacity(hasChildren ? 1.0 : 0.0);
-            }
+            SetItemsSource(node, args.NewValue());
         }
         else if (property == s_HasUnrealizedChildrenProperty)
         {
             bool value = unbox_value<bool>(args.NewValue());
             node.HasUnrealizedChildren(value);
         }
+    }
+}
+
+void TreeViewItem::SetItemsSource(winrt::TreeViewNode const& node, winrt::IInspectable const& value)
+{
+    const auto treeViewNode = winrt::get_self<TreeViewNode>(node);
+    treeViewNode->ItemsSource(value);
+    if (IsInContentMode())
+    {
+        // The children have changed, validate and update GlyphOpacity
+        const bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
+        GlyphOpacity(hasChildren ? 1.0 : 0.0);
     }
 }
 
@@ -358,10 +365,10 @@ void TreeViewItem::RaiseExpandCollapseAutomationEvent(bool isExpanded)
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        auto expandState = isExpanded ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed;
-        if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        const auto expandState = isExpanded ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed;
+        if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
         {
-            auto treeViewItemPeer = peer.as<winrt::TreeViewItemAutomationPeer>();
+            const auto treeViewItemPeer = peer.as<winrt::TreeViewItemAutomationPeer>();
             winrt::get_self<TreeViewItemAutomationPeer>(treeViewItemPeer)->RaiseExpandCollapseAutomationEvent(expandState);
         }
     }
@@ -369,16 +376,16 @@ void TreeViewItem::RaiseExpandCollapseAutomationEvent(bool isExpanded)
 
 bool TreeViewItem::IsInReorderMode(winrt::VirtualKey key)
 {
-    auto ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
-    bool isControlPressed = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const auto ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
+    const bool isControlPressed = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
-    auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
-    bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+    const bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
-    auto shiftState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Shift);
-    bool isShiftPressed = (shiftState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const auto shiftState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Shift);
+    const bool isShiftPressed = (shiftState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
-    bool isDirectionPressed = IsDirectionalKey(key);
+    const bool isDirectionPressed = IsDirectionalKey(key);
 
     bool canReorderItems = false;
     if (auto treeView = AncestorTreeView())
@@ -403,12 +410,12 @@ void TreeViewItem::UpdateTreeViewItemVisualState(TreeNodeSelectionState const& s
 
 void TreeViewItem::OnCheckToggle(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& /*args*/)
 {
-    if (auto treeView = AncestorTreeView())
+    if (const auto treeView = AncestorTreeView())
     {
-        auto listControl = treeView->ListControl();
-        int index = listControl->IndexFromContainer(*this);
-        auto selectionState = CheckBoxSelectionState(sender.as<winrt::CheckBox>());
-        listControl->ListViewModel()->ModifySelectByIndex(index, selectionState);
+        const auto listControl = treeView->ListControl();
+        const int index = listControl->IndexFromContainer(*this);
+        const auto selectionState = CheckBoxSelectionState(sender.as<winrt::CheckBox>());
+        listControl->ListViewModel()->SelectByIndex(index, selectionState);
         UpdateTreeViewItemVisualState(selectionState);
         RaiseSelectionChangeEvents(selectionState == TreeNodeSelectionState::Selected);
     }
@@ -418,49 +425,32 @@ void TreeViewItem::RaiseSelectionChangeEvents(bool isSelected)
 {
     if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
     {
-        auto treeViewItemPeer = winrt::get_self<TreeViewItemAutomationPeer>(peer.as<winrt::TreeViewItemAutomationPeer>());
+        const auto treeViewItemPeer = winrt::get_self<TreeViewItemAutomationPeer>(peer.as<winrt::TreeViewItemAutomationPeer>());
 
-        auto selectionEvent = isSelected ? winrt::AutomationEvents::SelectionItemPatternOnElementAddedToSelection : winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection;
+        const auto selectionEvent = isSelected ? winrt::AutomationEvents::SelectionItemPatternOnElementAddedToSelection : winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection;
         treeViewItemPeer->RaiseAutomationEvent(selectionEvent);
 
-        auto isSelectedProperty = winrt::SelectionItemPatternIdentifiers::IsSelectedProperty();
+        const auto isSelectedProperty = winrt::SelectionItemPatternIdentifiers::IsSelectedProperty();
         treeViewItemPeer->RaisePropertyChangedEvent(isSelectedProperty, box_value(!isSelected).as<winrt::IReference<bool>>(), box_value(isSelected).as<winrt::IReference<bool>>());
     }
 }
 
 void TreeViewItem::UpdateSelection(bool isSelected)
 {
-    if (auto treeView = AncestorTreeView())
+    if (const auto treeView = AncestorTreeView())
     {
-        if (auto node = TreeNode())
+        if (const auto node = TreeNode())
         {
-            auto listControl = treeView->ListControl();
-            auto viewModel = listControl->ListViewModel();
-            if (isSelected != viewModel->IsNodeSelected(node))
-            {
-                auto selectedNodes = viewModel->GetSelectedNodes();
-                if (isSelected)
-                {
-                    selectedNodes.Append(node);
-                }
-                else
-                {
-                    unsigned int index;
-                    if (selectedNodes.IndexOf(node, index))
-                    {
-                        selectedNodes.RemoveAt(index);
-                    }
-                }
-            }
+            treeView->UpdateSelection(node, isSelected);
         }
     }
 }
 
 void TreeViewItem::UpdateSelectionVisual(TreeNodeSelectionState const& state)
 {
-    if (auto treeView = AncestorTreeView())
+    if (const auto treeView = AncestorTreeView())
     {
-        if (auto listControl = treeView->ListControl())
+        if (const auto listControl = treeView->ListControl())
         {
             if (listControl->IsMultiselect())
             {
@@ -468,10 +458,10 @@ void TreeViewItem::UpdateSelectionVisual(TreeNodeSelectionState const& state)
             }
             else
             {
-                if (auto node = TreeNode())
+                if (const auto node = TreeNode())
                 {
-                    auto viewModel = listControl->ListViewModel();
-                    auto isNodeSelected = viewModel->IsNodeSelected(node);
+                    const auto viewModel = listControl->ListViewModel();
+                    const auto isNodeSelected = viewModel->IsNodeSelected(node);
                     if (isNodeSelected != IsSelected())
                     {
                         IsSelected(isNodeSelected);
@@ -509,12 +499,12 @@ bool TreeViewItem::IsSelectedInternal()
     // Check Selector::IsChecked for single selection since we use
     // ListView's single selection. In multiple selection we roll our own.
     bool isSelected = IsSelected(); 
-    if (auto treeView = AncestorTreeView())
+    if (const auto treeView = AncestorTreeView())
     {
-        auto listControl = treeView->ListControl();
+        const auto listControl = treeView->ListControl();
         if (listControl && listControl->IsMultiselect())
         {
-            TreeNodeSelectionState state = CheckBoxSelectionState(m_selectionBox.get());
+            const TreeNodeSelectionState state = CheckBoxSelectionState(m_selectionBox.get());
             isSelected = state == TreeNodeSelectionState::Selected;
         }
     }
@@ -530,44 +520,44 @@ void TreeViewItem::UpdateIndentation(int depth)
     thickness.Right = 0;
     thickness.Bottom = 0;
 
-    auto templateSettings = winrt::get_self<::TreeViewItemTemplateSettings>(TreeViewItemTemplateSettings());
+    const auto templateSettings = winrt::get_self<::TreeViewItemTemplateSettings>(TreeViewItemTemplateSettings());
     templateSettings->Indentation(thickness);
 }
 
 bool TreeViewItem::IsExpandCollapse(winrt::VirtualKey key)
 {
-    auto ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
-    bool isControlPressed = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const auto ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
+    const bool isControlPressed = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
-    auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
-    bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+    const bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
-    auto shiftState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Shift);
-    bool isShiftPressed = (shiftState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const auto shiftState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Shift);
+    const bool isShiftPressed = (shiftState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
-    bool isDirectionPressed = IsDirectionalKey(key);
+    const bool isDirectionPressed = IsDirectionalKey(key);
 
     return (isDirectionPressed && !isShiftPressed && !isAltPressed && !isControlPressed);
 }
 
 void TreeViewItem::ReorderItems(const winrt::ListView& listControl, const winrt::TreeViewNode& targetNode, int position, int childIndex, bool isForwards)
 {
-    int positionModifier = isForwards ? 1 : -1;
+    const int positionModifier = isForwards ? 1 : -1;
     if (auto skippedItem = listControl.ContainerFromIndex(position + positionModifier))
     {
         skippedItem.as<winrt::TreeViewItem>().Focus(winrt::FocusState::Keyboard);
     }
 
-    auto parentNode = targetNode.Parent();
-    auto children = winrt::get_self<TreeViewNodeVector>(parentNode.Children());
+    const auto parentNode = targetNode.Parent();
+    const auto children = winrt::get_self<TreeViewNodeVector>(parentNode.Children());
     children->RemoveAt(childIndex);
     children->InsertAt(childIndex + positionModifier, targetNode);
     listControl.UpdateLayout();
 
-    auto treeView = AncestorTreeView();
-    if (auto lvi = treeView->ContainerFromNode(targetNode))
+    const auto treeView = AncestorTreeView();
+    if (const auto lvi = treeView->ContainerFromNode(targetNode))
     {
-        auto targetItem = lvi.as<winrt::TreeViewItem>();
+        const auto targetItem = lvi.as<winrt::TreeViewItem>();
         targetItem.Focus(winrt::FocusState::Keyboard);
         winrt::get_self<TreeViewList>(listControl.as<winrt::TreeViewList>())->UpdateDropTargetDropEffect(false, false, targetItem);
         winrt::AutomationPeer ancestorPeer = winrt::FrameworkElementAutomationPeer::FromElement(listControl);
@@ -599,8 +589,8 @@ void TreeViewItem::HandleGamepadAInMultiselectMode(const winrt::TreeViewNode& no
 
 bool TreeViewItem::ToggleSelection()
 {
-    auto currentState = CheckBoxSelectionState(m_selectionBox.get());
-    auto newState = currentState == TreeNodeSelectionState::Selected ? TreeNodeSelectionState::UnSelected : TreeNodeSelectionState::Selected;
+    const auto currentState = CheckBoxSelectionState(m_selectionBox.get());
+    const auto newState = currentState == TreeNodeSelectionState::Selected ? TreeNodeSelectionState::UnSelected : TreeNodeSelectionState::Selected;
     UpdateMultipleSelection(newState);
     return newState == TreeNodeSelectionState::Selected;
 }
@@ -610,7 +600,7 @@ void TreeViewItem::HandleReorder(winrt::VirtualKey key)
     winrt::TreeViewNode targetNode = TreeNode();
 
     winrt::TreeViewNode parentNode = targetNode.Parent();
-    auto listControl = AncestorTreeView()->ListControl();
+    const auto listControl = AncestorTreeView()->ListControl();
     unsigned int position = listControl->IndexFromContainer(*this);
     if (key == winrt::VirtualKey::Up || key == winrt::VirtualKey::Left && position != 0)
     {
@@ -645,10 +635,10 @@ void TreeViewItem::HandleReorder(winrt::VirtualKey key)
 
 bool TreeViewItem::HandleExpandCollapse(winrt::VirtualKey key)
 {
-    auto treeView = AncestorTreeView();
-    winrt::TreeViewNode targetNode = treeView->NodeFromContainer(*this);
+    const auto treeView = AncestorTreeView();
+    const winrt::TreeViewNode targetNode = treeView->NodeFromContainer(*this);
     const auto flowDirectionReversed = (FlowDirection() == winrt::FlowDirection::RightToLeft);
-    bool isExpanded = targetNode.IsExpanded();
+    const bool isExpanded = targetNode.IsExpanded();
     bool handled = false;
 
     // Inputs for Collapse/Move to parent
@@ -658,10 +648,10 @@ bool TreeViewItem::HandleExpandCollapse(winrt::VirtualKey key)
         if (isExpanded)// Is expanded : need to collapse
         {
             targetNode.IsExpanded(false);
-            auto targetValue = treeView->ContainerFromNode(targetNode);
+            const auto targetValue = treeView->ContainerFromNode(targetNode);
             if (targetValue)
             {
-                auto targetItem = targetValue.as<winrt::TreeViewItem>();
+                const auto targetItem = targetValue.as<winrt::TreeViewItem>();
                 targetItem.Focus(winrt::FocusState::Keyboard);
             }
 
@@ -673,7 +663,7 @@ bool TreeViewItem::HandleExpandCollapse(winrt::VirtualKey key)
             {
                 if (auto parentValue = treeView->ContainerFromNode(parentNode))
                 {
-                    auto parentItem = parentValue.as<winrt::TreeViewItem>();
+                    const auto parentItem = parentValue.as<winrt::TreeViewItem>();
                     parentItem.Focus(winrt::FocusState::Keyboard);
                     handled = true;
                 }
@@ -691,11 +681,11 @@ bool TreeViewItem::HandleExpandCollapse(winrt::VirtualKey key)
         }
         else if (targetNode.Children().Size() > 0) // Is expanded and has children: need to select first child (if applicable)
         {
-            auto childNode = targetNode.Children().GetAt(0).as<winrt::TreeViewNode>();
-            auto childValue = treeView->ContainerFromNode(childNode);
+            const auto childNode = targetNode.Children().GetAt(0).as<winrt::TreeViewNode>();
+            const auto childValue = treeView->ContainerFromNode(childNode);
             if (childValue)
             {
-                auto childItem = childValue.as<winrt::TreeViewItem>();
+                const auto childItem = childValue.as<winrt::TreeViewItem>();
                 childItem.Focus(winrt::FocusState::Keyboard);
                 handled = true;
             }
@@ -709,8 +699,8 @@ void TreeViewItem::OnExpandCollapseChevronPointerPressed(
     const winrt::IInspectable& /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
 {
-    winrt::TreeViewNode targetNode = TreeNode();
-    auto isExpanded = !targetNode.IsExpanded();
+    const winrt::TreeViewNode targetNode = TreeNode();
+    const auto isExpanded = !targetNode.IsExpanded();
     targetNode.IsExpanded(isExpanded);
 
     args.Handled(true);
@@ -729,7 +719,7 @@ void TreeViewItem::RecycleEvents(bool useSafeGet)
 }
 
 /* static */
-bool TreeViewItem::IsDirectionalKey(winrt::VirtualKey key)
+bool constexpr TreeViewItem::IsDirectionalKey(winrt::VirtualKey key)
 {
     return
         key == winrt::VirtualKey::Up ||
@@ -752,8 +742,8 @@ winrt::TreeViewNode TreeViewItem::TreeNode()
 //We schedule it on the dispatcher so that it runs after layout pass.
 void TreeViewItem::UpdateNodeIsExpandedAsync(winrt::TreeViewNode const& node, bool isExpanded)
 {
-    auto dispatcher = winrt::Window::Current().Dispatcher();
-    dispatcher.RunAsync(
+    const auto dispatcher = winrt::Window::Current().Dispatcher();
+    const auto ignore = dispatcher.RunAsync(
         winrt::CoreDispatcherPriority::Normal,
         winrt::DispatchedHandler([node, isExpanded]()
     {
@@ -763,8 +753,8 @@ void TreeViewItem::UpdateNodeIsExpandedAsync(winrt::TreeViewNode const& node, bo
 
 bool TreeViewItem::IsInContentMode()
 {
-    auto treeView = AncestorTreeView();
-    auto treeViewList = treeView->ListControl();
+    const auto treeView = AncestorTreeView();
+    const auto treeViewList = treeView->ListControl();
     return treeViewList->ListViewModel()->IsContentMode();
 }
 

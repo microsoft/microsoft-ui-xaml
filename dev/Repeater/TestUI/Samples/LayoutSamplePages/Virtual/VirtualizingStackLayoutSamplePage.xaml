@@ -1,0 +1,49 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.VirtualizingStackLayoutSamplePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:samples="using:MUXControlsTestApp.Samples"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <controls:RecyclingElementFactory x:Name="elementFactory">
+            <controls:RecyclingElementFactory.RecyclePool>
+                <controls:RecyclePool />
+            </controls:RecyclingElementFactory.RecyclePool>
+            <DataTemplate x:Key="item">
+                <UserControl IsTabStop="True" UseSystemFocusVisuals="True" Margin="5" >
+                    <StackPanel BorderThickness="1" Background="{ThemeResource SystemChromeMediumColor}" Margin="5">
+                        <Image x:Name="recipeImage" Source="{Binding ImageUri}"  Width="100" Height="100"/>
+                        <TextBlock 
+                                        x:Name="recipeDescription" 
+                                        Text="{Binding Description}"
+                                        TextWrapping="Wrap"
+                                        Margin="10" />
+                    </StackPanel>
+                </UserControl>
+            </DataTemplate>
+        </controls:RecyclingElementFactory>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock x:Name="tb">10</TextBlock>
+            <Button Content="BringIntoView" x:Name="bringIntoView"/>
+        </StackPanel>
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
+            <ScrollViewer>
+                <controls:ItemsRepeater x:Name="repeater" >
+                    <controls:ItemsRepeater.Layout>
+                        <samples:VirtualizingStackLayout />
+                    </controls:ItemsRepeater.Layout>
+                </controls:ItemsRepeater>
+            </ScrollViewer>
+        </controls:ItemsRepeaterScrollHost>
+    </Grid>
+</Page>

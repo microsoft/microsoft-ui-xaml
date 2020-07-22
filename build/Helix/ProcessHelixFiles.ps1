@@ -1,13 +1,20 @@
 Param(
     [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
+    [string]$HelixAccessToken = $env:HelixAccessToken,
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [string]$OutPutFolder = "HelixOutput"
+    [string]$OutputFolder = "HelixOutput"
 )
 
-$helixLinkFile = "$OutPutFolder\LinksToHelixTestFiles.html"
-$visualTreeMasterFolder = "$OutPutFolder\VisualTreeMasters"
+$helixLinkFile = "$OutputFolder\LinksToHelixTestFiles.html"
+$visualTreeVerificationFolder = "$OutputFolder\UpdatedVisualTreeVerificationFiles"
+
+$accessTokenParam = ""
+if($HelixAccessToken)
+{
+    $accessTokenParam = "?access_token=$HelixAccessToken"
+}
 
 function Generate-File-Links
 {
@@ -27,7 +34,7 @@ function Generate-File-Links
 }
 
 #Create output directory
-New-Item $OutPutFolder -ItemType Directory
+New-Item $OutputFolder -ItemType Directory
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
@@ -45,10 +52,9 @@ $webClient = New-Object System.Net.WebClient
 
 foreach ($testRun in $testRuns.value)
 {
-    $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
     $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
     $isTestRunNameShown = $false
-        
+
     foreach ($testResult in $testResults.value)
     {
         $info = ConvertFrom-Json $testResult.comment
@@ -60,13 +66,14 @@ foreach ($testRun in $testRuns.value)
         if (-not $workItems.Contains($workItem))
         {
             $workItems.Add($workItem)
-            $filesQueryUri = "https://helix.dot.net/api/2019-06-17/jobs/$helixJobId/workitems/$helixWorkItemName/files"
+            $filesQueryUri = "https://helix.dot.net/api/2019-06-17/jobs/$helixJobId/workitems/$helixWorkItemName/files$accessTokenParam"
             $files = Invoke-RestMethod -Uri $filesQueryUri -Method Get
 
             $screenShots = $files | where { $_.Name.EndsWith(".jpg") }
             $dumps = $files | where { $_.Name.EndsWith(".dmp") }
-            $visualTreeMasters = $files | where { $_.Name.EndsWith(".xml") -And (-Not $_.Name.Contains('testResults')) }
-            if($screenShots.Count+$dumps.Count+$visualTreeMasters.Count -gt 0)
+            $visualTreeVerificationFiles = $files | where { $_.Name.EndsWith(".xml") -And (-Not $_.Name.Contains('testResults')) }
+            $pgcFiles = $files | where { $_.Name.EndsWith(".pgc") }
+            if ($screenShots.Count + $dumps.Count + $visualTreeVerificationFiles.Count + $pgcFiles.Count -gt 0)
             {
                 if(-Not $isTestRunNameShown)
                 {
@@ -76,31 +83,53 @@ foreach ($testRun in $testRuns.value)
                 Out-File -FilePath $helixLinkFile -Append -InputObject "<h3>$helixWorkItemName</h3>"
                 Generate-File-Links $screenShots "Screenshots"
                 Generate-File-Links $dumps "CrashDumps"
-                Generate-File-Links $visualTreeMasters "VisualTreeMasters"
-                $misc = $files | where { ($screenShots -NotContains $_) -And ($dumps -NotContains $_) -And ($visualTreeMasters -NotContains $_) }
+                Generate-File-Links $visualTreeVerificationFiles "visualTreeVerificationFiles"
+                Generate-File-Links $pgcFiles "PGC files"
+                $misc = $files | where { ($screenShots -NotContains $_) -And ($dumps -NotContains $_) -And ($visualTreeVerificationFiles -NotContains $_) -And ($pgcFiles -NotContains $_) }
                 Generate-File-Links $misc "Misc"
 
-                if( -Not (Test-Path $visualTreeMasterFolder) )
+                if( -Not (Test-Path $visualTreeVerificationFolder) )
                 {
-                    New-Item $visualTreeMasterFolder -ItemType Directory
+                    New-Item $visualTreeVerificationFolder -ItemType Directory
                 }
-                foreach($masterFile in $visualTreeMasters)
+                foreach($verificationFile in $visualTreeVerificationFiles)
                 {
-                    $destination = "$visualTreeMasterFolder\$($masterFile.Name)"
-                    Write-Host "Copying $($masterFile.Name) to $destination"
-                    $webClient.DownloadFile($masterFile.Link, $destination)
+
+                    $destination = "$visualTreeVerificationFolder\$($verificationFile.Name)"
+                    Write-Host "Copying $($verificationFile.Name) to $destination"
+                    $link = "$($verificationFile.Link)$accessTokenParam"
+                    $webClient.DownloadFile($link, $destination)
+                }
+
+                foreach($pgcFile in $pgcFiles)
+                {
+                    $flavorPath = $pgcFile.Name.Split('.')[0]
+                    $archPath = $pgcFile.Name.Split('.')[1]
+                    $fileName = $pgcFile.Name.Remove(0, $flavorPath.length + $archPath.length + 2)
+                    $fullPath = "$OutputFolder\PGO\$flavorPath\$archPath"
+                    $destination = "$fullPath\$fileName"
+
+                    Write-Host "Copying $($pgcFile.Name) to $destination"
+
+                    if (-Not (Test-Path $fullPath))
+                    {
+                        New-Item $fullPath -ItemType Directory
+                    }
+
+                    $link = "$($pgcFile.Link)$accessTokenParam"
+                    $webClient.DownloadFile($link, $destination)
                 }
             }
-        }        
+        }
     }
 }
 
-if(Test-Path $visualTreeMasterFolder)
+if(Test-Path $visualTreeVerificationFolder)
 {
-    Write-Host "Merge duplicated master files..."
-    $masterFiles = Get-ChildItem $visualTreeMasterFolder
+    Write-Host "Merge duplicated verification files..."
+    $verificationFiles = Get-ChildItem $visualTreeVerificationFolder
     $prefixList = @()
-    foreach($file in $masterFiles)
+    foreach($file in $verificationFiles)
     {
         $prefix = $file.BaseName.Split('-')[0]
         if($prefixList -NotContains $prefix)
@@ -112,23 +141,26 @@ if(Test-Path $visualTreeMasterFolder)
     foreach($prefix in $prefixList)
     {
         $filesToDelete = @()
-        $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith("$prefix-") } | Sort-Object -Property Name -Descending
-        for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
+        $versionedVerificationFiles = $verificationFiles | Where { $_.BaseName.StartsWith("$prefix-") } | Sort-Object -Property Name -Descending
+        if($versionedVerificationFiles.Count > 1)
         {
-            $v1 = Get-Content $versionedMasters[$i].FullName
-            $v2 = Get-Content $versionedMasters[$i+1].FullName
-            $diff = Compare-Object $v1 $v2
-            if($diff.Length -eq 0)
+            for ($i=0; $i -lt $versionedVerificationFiles.Length-1; $i++)
             {
-                $filesToDelete += $versionedMasters[$i]
+                $v1 = Get-Content $versionedVerificationFiles[$i].FullName
+                $v2 = Get-Content $versionedVerificationFiles[$i+1].FullName
+                $diff = Compare-Object $v1 $v2
+                if($diff.Length -eq 0)
+                {
+                    $filesToDelete += $versionedVerificationFiles[$i]
+                }
+            }
+            $filesToDelete | ForEach-Object {
+                Write-Host "Deleting $($_.Name)"
+                Remove-Item $_.FullName
             }
         }
-        $filesToDelete | ForEach-Object {
-            Write-Host "Deleting $($_.Name)"
-            Remove-Item $_.FullName
-        }
 
-        Write-Host "Renaming $($versionedMasters[-1].Name) to $prefix.xml"
-        Move-Item $versionedMasters[-1].FullName "$visualTreeMasterFolder\$prefix.xml" -Force
+        Write-Host "Renaming $($versionedVerificationFiles[-1].Name) to $prefix.xml"
+        Move-Item $versionedVerificationFiles[-1].FullName "$visualTreeVerificationFolder\$prefix.xml" -Force
     }
 }

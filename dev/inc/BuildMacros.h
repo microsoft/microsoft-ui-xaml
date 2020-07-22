@@ -4,6 +4,9 @@
 #pragma once
 
 #define MUXCONTROLS_NAMESPACE Microsoft::UI::Xaml::Controls
+#define WINRT_MUXC_NAMESPACE winrt::Microsoft::UI::Xaml::Controls
+#define WINRT_MUXM_NAMESPACE winrt::Microsoft::UI::Xaml::Media
+
 
 #define MUXCONTROLSROOT_NAMESPACE_STR L"Microsoft.UI.Xaml"
 #define MUXCONTROLSMEDIA_NAMESPACE_STR L"Microsoft.UI.Xaml.Media"
@@ -15,7 +18,7 @@
 #ifdef _DEBUG
 // NOTE: This could be "Microsoft.UI.Xaml.Debug" if we wanted to have Debug framework packages be distinct and
 // installed side-by-side on a machine.
-#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.3"
+#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.5"
 #else
-#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.3"
+#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.5"
 #endif

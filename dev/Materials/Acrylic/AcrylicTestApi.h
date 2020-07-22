@@ -22,5 +22,3 @@ public:
 private:
     winrt::AcrylicBrush m_acrylicBrush{ nullptr };
 };
-
-CppWinRTActivatableClassWithBasicFactory(AcrylicTestApi)

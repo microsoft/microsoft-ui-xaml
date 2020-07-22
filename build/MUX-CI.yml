@@ -1,6 +1,7 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
+  rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Build
   pool:
@@ -15,9 +16,11 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_Arm:
         buildPlatform: 'arm'
         buildConfiguration: 'Release'
@@ -29,10 +32,8 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
@@ -41,13 +42,15 @@ jobs:
     dependsOn: Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
- 
+    prereleaseVersionTag: ci
+
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -57,7 +60,7 @@ jobs:
     helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
-   
+
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -74,5 +77,5 @@ jobs:
     - RunTestsInHelix
     - RunNugetPkgTestsInHelix
     - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)

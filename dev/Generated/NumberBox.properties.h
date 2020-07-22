@@ -9,17 +9,23 @@ class NumberBoxProperties
 public:
     NumberBoxProperties();
 
-    void AcceptsCalculation(bool value);
-    bool AcceptsCalculation();
+    void AcceptsExpression(bool value);
+    bool AcceptsExpression();
 
-    void BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value);
-    winrt::NumberBoxBasicValidationMode BasicValidationMode();
+    void Description(winrt::IInspectable const& value);
+    winrt::IInspectable Description();
 
-    void Header(winrt::hstring const& value);
-    winrt::hstring Header();
+    void Header(winrt::IInspectable const& value);
+    winrt::IInspectable Header();
 
-    void HyperScrollEnabled(bool value);
-    bool HyperScrollEnabled();
+    void HeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate HeaderTemplate();
+
+    void IsWrapEnabled(bool value);
+    bool IsWrapEnabled();
+
+    void LargeChange(double value);
+    double LargeChange();
 
     void Maximum(double value);
     double Maximum();
@@ -33,48 +39,72 @@ public:
     void PlaceholderText(winrt::hstring const& value);
     winrt::hstring PlaceholderText();
 
+    void PreventKeyboardDisplayOnProgrammaticFocus(bool value);
+    bool PreventKeyboardDisplayOnProgrammaticFocus();
+
+    void SelectionFlyout(winrt::FlyoutBase const& value);
+    winrt::FlyoutBase SelectionFlyout();
+
+    void SelectionHighlightColor(winrt::SolidColorBrush const& value);
+    winrt::SolidColorBrush SelectionHighlightColor();
+
+    void SmallChange(double value);
+    double SmallChange();
+
     void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
     winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
-
-    void StepFrequency(double value);
-    double StepFrequency();
 
     void Text(winrt::hstring const& value);
     winrt::hstring Text();
 
+    void TextReadingOrder(winrt::TextReadingOrder const& value);
+    winrt::TextReadingOrder TextReadingOrder();
+
+    void ValidationMode(winrt::NumberBoxValidationMode const& value);
+    winrt::NumberBoxValidationMode ValidationMode();
+
     void Value(double value);
     double Value();
 
-    void WrapEnabled(bool value);
-    bool WrapEnabled();
-
-    static winrt::DependencyProperty AcceptsCalculationProperty() { return s_AcceptsCalculationProperty; }
-    static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
+    static winrt::DependencyProperty AcceptsExpressionProperty() { return s_AcceptsExpressionProperty; }
+    static winrt::DependencyProperty DescriptionProperty() { return s_DescriptionProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
-    static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
+    static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
+    static winrt::DependencyProperty IsWrapEnabledProperty() { return s_IsWrapEnabledProperty; }
+    static winrt::DependencyProperty LargeChangeProperty() { return s_LargeChangeProperty; }
     static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
     static winrt::DependencyProperty MinimumProperty() { return s_MinimumProperty; }
     static winrt::DependencyProperty NumberFormatterProperty() { return s_NumberFormatterProperty; }
     static winrt::DependencyProperty PlaceholderTextProperty() { return s_PlaceholderTextProperty; }
+    static winrt::DependencyProperty PreventKeyboardDisplayOnProgrammaticFocusProperty() { return s_PreventKeyboardDisplayOnProgrammaticFocusProperty; }
+    static winrt::DependencyProperty SelectionFlyoutProperty() { return s_SelectionFlyoutProperty; }
+    static winrt::DependencyProperty SelectionHighlightColorProperty() { return s_SelectionHighlightColorProperty; }
+    static winrt::DependencyProperty SmallChangeProperty() { return s_SmallChangeProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
-    static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
+    static winrt::DependencyProperty TextReadingOrderProperty() { return s_TextReadingOrderProperty; }
+    static winrt::DependencyProperty ValidationModeProperty() { return s_ValidationModeProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
-    static winrt::DependencyProperty WrapEnabledProperty() { return s_WrapEnabledProperty; }
 
-    static GlobalDependencyProperty s_AcceptsCalculationProperty;
-    static GlobalDependencyProperty s_BasicValidationModeProperty;
+    static GlobalDependencyProperty s_AcceptsExpressionProperty;
+    static GlobalDependencyProperty s_DescriptionProperty;
     static GlobalDependencyProperty s_HeaderProperty;
-    static GlobalDependencyProperty s_HyperScrollEnabledProperty;
+    static GlobalDependencyProperty s_HeaderTemplateProperty;
+    static GlobalDependencyProperty s_IsWrapEnabledProperty;
+    static GlobalDependencyProperty s_LargeChangeProperty;
     static GlobalDependencyProperty s_MaximumProperty;
     static GlobalDependencyProperty s_MinimumProperty;
     static GlobalDependencyProperty s_NumberFormatterProperty;
     static GlobalDependencyProperty s_PlaceholderTextProperty;
+    static GlobalDependencyProperty s_PreventKeyboardDisplayOnProgrammaticFocusProperty;
+    static GlobalDependencyProperty s_SelectionFlyoutProperty;
+    static GlobalDependencyProperty s_SelectionHighlightColorProperty;
+    static GlobalDependencyProperty s_SmallChangeProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
-    static GlobalDependencyProperty s_StepFrequencyProperty;
     static GlobalDependencyProperty s_TextProperty;
+    static GlobalDependencyProperty s_TextReadingOrderProperty;
+    static GlobalDependencyProperty s_ValidationModeProperty;
     static GlobalDependencyProperty s_ValueProperty;
-    static GlobalDependencyProperty s_WrapEnabledProperty;
 
     winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::NumberBoxValueChangedEventArgs> const& value);
     void ValueChanged(winrt::event_token const& token);
@@ -84,7 +114,15 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnBasicValidationModePropertyChanged(
+    static void OnHeaderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsWrapEnabledPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -100,11 +138,19 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnSmallChangePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnSpinButtonPlacementModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnTextPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnValidationModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

@@ -1,4 +1,4 @@
-namespace MU_XC_NAMESPACE
+﻿namespace MU_XC_NAMESPACE
 {
 
 [WUXC_VERSION_RS3]
@@ -40,7 +40,7 @@ unsealed runtimeclass FontIconSource : IconSource
     String Glyph { get; set; };
     [MUX_DEFAULT_VALUE("20.0")]
     Double FontSize { get; set; };
-    [MUX_DEFAULT_VALUE("{ c_fontIconSourceDefaultFontFamily }")]
+    [MUX_DEFAULT_VALUE("winrt::FontFamily{ c_fontIconSourceDefaultFontFamily }")]
     Windows.UI.Xaml.Media.FontFamily FontFamily { get; set; };
     [MUX_DEFAULT_VALUE("{ 400 }")]
     Windows.UI.Text.FontWeight FontWeight { get; set; };

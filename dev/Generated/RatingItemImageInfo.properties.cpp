@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RatingItemImageInfo.h"
 
-CppWinRTActivatableClassWithDPFactory(RatingItemImageInfo)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RatingItemImageInfo)
+}
+
+#include "RatingItemImageInfo.g.cpp"
 
 GlobalDependencyProperty RatingItemImageInfoProperties::s_DisabledImageProperty{ nullptr };
 GlobalDependencyProperty RatingItemImageInfoProperties::s_ImageProperty{ nullptr };
@@ -102,7 +107,10 @@ void RatingItemImageInfoProperties::ClearProperties()
 
 void RatingItemImageInfoProperties::DisabledImage(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemImageInfo*>(this)->SetValue(s_DisabledImageProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource RatingItemImageInfoProperties::DisabledImage()
@@ -112,7 +120,10 @@ winrt::ImageSource RatingItemImageInfoProperties::DisabledImage()
 
 void RatingItemImageInfoProperties::Image(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemImageInfo*>(this)->SetValue(s_ImageProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource RatingItemImageInfoProperties::Image()
@@ -122,7 +133,10 @@ winrt::ImageSource RatingItemImageInfoProperties::Image()
 
 void RatingItemImageInfoProperties::PlaceholderImage(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemImageInfo*>(this)->SetValue(s_PlaceholderImageProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource RatingItemImageInfoProperties::PlaceholderImage()
@@ -132,7 +146,10 @@ winrt::ImageSource RatingItemImageInfoProperties::PlaceholderImage()
 
 void RatingItemImageInfoProperties::PointerOverImage(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemImageInfo*>(this)->SetValue(s_PointerOverImageProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource RatingItemImageInfoProperties::PointerOverImage()
@@ -142,7 +159,10 @@ winrt::ImageSource RatingItemImageInfoProperties::PointerOverImage()
 
 void RatingItemImageInfoProperties::PointerOverPlaceholderImage(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemImageInfo*>(this)->SetValue(s_PointerOverPlaceholderImageProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource RatingItemImageInfoProperties::PointerOverPlaceholderImage()
@@ -152,7 +172,10 @@ winrt::ImageSource RatingItemImageInfoProperties::PointerOverPlaceholderImage()
 
 void RatingItemImageInfoProperties::UnsetImage(winrt::ImageSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingItemImageInfo*>(this)->SetValue(s_UnsetImageProperty, ValueHelper<winrt::ImageSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ImageSource RatingItemImageInfoProperties::UnsetImage()

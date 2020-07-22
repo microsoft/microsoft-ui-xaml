@@ -6,7 +6,12 @@
 #include "common.h"
 #include "Layout.h"
 
-CppWinRTActivatableClassWithBasicFactory(Layout)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(Layout)
+}
+
+#include "Layout.g.cpp"
 
 
 LayoutProperties::LayoutProperties()

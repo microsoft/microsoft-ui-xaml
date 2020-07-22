@@ -12,17 +12,20 @@ public:
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
+    void HeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate HeaderTemplate();
+
     void Items(winrt::IVector<winrt::IInspectable> const& value);
     winrt::IVector<winrt::IInspectable> Items();
 
     void ItemsSource(winrt::IInspectable const& value);
     winrt::IInspectable ItemsSource();
 
-    void ItemTemplate(winrt::DataTemplate const& value);
-    winrt::DataTemplate ItemTemplate();
+    void ItemTemplate(winrt::IInspectable const& value);
+    winrt::IInspectable ItemTemplate();
 
-    void MaximumColumns(int value);
-    int MaximumColumns();
+    void MaxColumns(int value);
+    int MaxColumns();
 
     void SelectedIndex(int value);
     int SelectedIndex();
@@ -31,18 +34,20 @@ public:
     winrt::IInspectable SelectedItem();
 
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
+    static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty ItemsProperty() { return s_ItemsProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
-    static winrt::DependencyProperty MaximumColumnsProperty() { return s_MaximumColumnsProperty; }
+    static winrt::DependencyProperty MaxColumnsProperty() { return s_MaxColumnsProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
 
     static GlobalDependencyProperty s_HeaderProperty;
+    static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_ItemsProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;
-    static GlobalDependencyProperty s_MaximumColumnsProperty;
+    static GlobalDependencyProperty s_MaxColumnsProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
 
@@ -58,6 +63,10 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnHeaderTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnItemsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
@@ -70,7 +79,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnMaximumColumnsPropertyChanged(
+    static void OnMaxColumnsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

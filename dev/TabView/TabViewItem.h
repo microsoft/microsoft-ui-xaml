@@ -38,14 +38,22 @@ public:
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
+    void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
+    void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
+
+    winrt::TabView GetParentTabView();
+    void SetParentTabView(winrt::TabView const& tabView);
 
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
+    winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
+    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
 
     void UpdateCloseButton();
     void RequestClose();
     void OnIconSourceChanged();
+    void UpdateWidthModeVisualState();
 
     bool m_firstTimeSettingToolTip{ true };
 
@@ -53,7 +61,6 @@ public:
     winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
     winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
 
-    void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
@@ -64,7 +71,10 @@ public:
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
     bool m_isDragging = false;
+    bool m_isPointerOver = false;
 
     void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
+
+    winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };
 };

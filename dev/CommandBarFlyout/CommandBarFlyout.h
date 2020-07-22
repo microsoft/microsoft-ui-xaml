@@ -42,4 +42,3 @@ private:
     bool m_isClosingAfterCloseAnimation{ false };
 }; 
 
-CppWinRTActivatableClassWithBasicFactory(CommandBarFlyout);

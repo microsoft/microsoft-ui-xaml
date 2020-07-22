@@ -15,8 +15,6 @@
 
     <Style TargetType="ListView" BasedOn="{StaticResource ListViewCommon}"/>
 
-    <Style TargetType="controls:NavigationViewList" BasedOn="{StaticResource ListViewCommon}"/>
-
     <!-- There"s no good way to disable ScrollViewer's indicator transitions so just make a ScrollViewer style that doesn't have VSM -->
     <Style TargetType="ScrollViewer">
         <Setter Property="Template">
