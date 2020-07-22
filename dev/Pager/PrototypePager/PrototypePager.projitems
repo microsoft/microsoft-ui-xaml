@@ -15,13 +15,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Scripts\ButtonVisibilityModeConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.TestHooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scripts\Int32ToDoubleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scripts\IntToStrConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scripts\Int32MinusOneConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scripts\PageChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Methods.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Properties.cs" />
   </ItemGroup>
 </Project>

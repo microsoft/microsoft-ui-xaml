@@ -19,61 +19,58 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     {
-        public enum PagerDisplayModes { Auto, ComboBox, NumberBox, ButtonPanel, }
-        public enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnLast, None, }
+        public enum PagerDisplayModes { Auto, ComboBox, NumberBox, NumberPanel, }
+        public enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
 
-        private Button _FirstPageButton, _PreviousPageButton, _NextPageButton, _LastPageButton;
-        private NumberBox _PageNumberBox;
-        private ComboBox _PageComboBox;
-        private Windows.UI.Xaml.Controls.ScrollViewer _ButtonPanelView;
-        private ItemsRepeater _ButtonPanelItems;
-        private double _ButtonPanel_ButtonWidth;
+        private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
 
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
+        
         public PrototypePager()
         {
-            DefaultStyleKey = typeof(Pager);
-            Loaded += (s, args) => { PagerTemplateSettings = new PagerTemplateSettings(this); };
+            this.DefaultStyleKey = typeof(PrototypePager);
+            this.Loaded += (s, args) => { PagerTemplateSettings = new PagerTemplateSettings(this); };
+
         }
-
-        private void ApplyButtonPanelTemplate()
-        {
-            _ButtonPanelView = GetTemplateChild<Windows.UI.Xaml.Controls.ScrollViewer>("ButtonPanelViewer");
-            _ButtonPanelItems = GetTemplateChild<ItemsRepeater>("ButtonPanelItemsRepeater");
-
-            _ButtonPanelItems.ElementPrepared += ButtonPanelFirstButtonPrepared;
-            _ButtonPanelItems.ElementPrepared += ButtonPanelSetButtonEvents;
-        }
-
-        private void ButtonPanelSetButtonEvents(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
-        {
-            ((Button)args.Element).Click += OnButtonPanelButtonClick;
-            ((Button)args.Element).GotFocus += OnButtonPanelButtonGotFocus;
-            ((Button)args.Element).LostFocus += OnButtonPanelButtonLostFocus;
-            ((Button)args.Element).Click += (s, e) => { PageChanged?.Invoke(this, new PageChangedEventArgs(SelectedIndex + 1)); };
-        }
-
         protected override void OnApplyTemplate()
         {
-            base.OnApplyTemplate();
+            // Grab UIElements for later
+            FirstPageButton = GetTemplateChild<Button>("FirstPageButton");
+            PreviousPageButton = GetTemplateChild<Button>("PreviousPageButton");
+            NextPageButton = GetTemplateChild<Button>("NextPageButton");
+            LastPageButton = GetTemplateChild<Button>("LastPageButton");
+            FirstPageButtonTestHook = FirstPageButton;
+            PreviousPageButtonTestHook = PreviousPageButton;
+            NextPageButtonTestHook = NextPageButton;
+            LastPageButtonTestHook = LastPageButton;
+            NumberBoxDisplayTestHook = GetTemplateChild<NumberBox>("NumberBoxDisplay");
+            ComboBoxDisplayTestHook = GetTemplateChild<ComboBox>("ComboBoxDisplay");
 
-            RegisterPropertyChangedCallback(SelectedIndexProperty, OnSelectedIndexChanged_UpdateChevronButtons);
-            RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { PageChanged?.Invoke(this, new PageChangedEventArgs(SelectedIndex)); });
-            
-            _FirstPageButton = GetTemplateChild<Button>("FirstPageButton");
-            _PreviousPageButton = GetTemplateChild<Button>("PreviousPageButton");
-            _NextPageButton = GetTemplateChild<Button>("NextPageButton");
-            _LastPageButton = GetTemplateChild<Button>("LastPageButton");
-            _PageNumberBox = GetTemplateChild<NumberBox>("PageNumberBox");
-            _PageComboBox = GetTemplateChild<ComboBox>("PageComboBox");
-            
-            _FirstPageButton.Click += OnFirstPageButton_Click;
-            _PreviousPageButton.Click += OnPreviousPageButton_Click;
-            _NextPageButton.Click += OnNextPageButton_Click;
-            _LastPageButton.Click += OnLastPageButton_Click;
+            // Attach Callbacks for property changes
+            RegisterPropertyChangedCallback(SelectedIndexProperty, DisablePageButtonsOnEdge);
+            RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { PageChanged?.Invoke(this, new PageChangedEventArgs(SelectedIndex - 1)); });
 
-            //ApplyButtonPanelTemplate();
+            // Attach click events
+            FirstPageButton.Click += (s, e) => { SelectedIndex = 1; };
+            PreviousPageButton.Click += (s, e) => { SelectedIndex -= 1; };
+            NextPageButton.Click += (s, e) => { SelectedIndex += 1; };
+            LastPageButton.Click += (s, e) => { SelectedIndex = NumberOfPages; };
 
+            InitializeDisplayMode();
+        }
+
+        T GetTemplateChild<T>(string name) where T : DependencyObject
+        {
+            T templateChild = GetTemplateChild(name) as T;
+            if (templateChild == null)
+            {
+                throw new NullReferenceException(name);
+            }
+            return templateChild;
+        }
+
+        private void InitializeDisplayMode()
+        {
             switch (PagerDisplayMode)
             {
                 case PagerDisplayModes.NumberBox:
@@ -83,16 +80,10 @@ namespace MUXControlsTestApp
                 case PagerDisplayModes.ComboBox:
                     VisualStateManager.GoToState(this, "ComboBoxVisible", false);
                     break;
-                case PagerDisplayModes.ButtonPanel:
-                    GetTemplateChild<StackPanel>("ButtonPanelDisplay").Visibility = Visibility.Visible;
+                case PagerDisplayModes.NumberPanel:
+                    VisualStateManager.GoToState(this, "NumberPanelVisible", false);
                     break;
             }
-        }
-
-        private void ButtonPanelFirstButtonPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
-        {
-            ((Button)args.Element).Loaded += SetButtonPanelView;
-            sender.ElementPrepared -= ButtonPanelFirstButtonPrepared;
         }
     }
 

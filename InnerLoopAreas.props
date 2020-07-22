@@ -4,5 +4,6 @@
   <!-- Feature to include for inner loop build -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
 	  <FeaturePagerEnabled>true</FeaturePagerEnabled>
+	  <FeatureRadioButtonsEnabled>true</FeatureRadioButtonsEnabled>
   </PropertyGroup>
 </Project>

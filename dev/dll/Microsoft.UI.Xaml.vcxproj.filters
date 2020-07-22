@@ -237,6 +237,21 @@
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Microsoft.UI.Xaml.rc">
