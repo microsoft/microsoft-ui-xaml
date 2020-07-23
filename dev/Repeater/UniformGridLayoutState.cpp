@@ -41,30 +41,21 @@ void UniformGridLayoutState::EnsureElementSize(
 
     if (context.ItemCount() > 0)
     {
-        // If the first element is realized we don't need to cache it or to get it from the context
+        // If the first element is realized we don't need to get it from the context
         if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
         {
             realizedElement.Measure(availableSize);
-            m_cachedSize = realizedElement.DesiredSize();
-            SetSize(m_cachedSize, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
-            hasCachedSize = true;
+            SetSize(realizedElement.DesiredSize(), layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
         }
         else
         {
-            if (!hasCachedSize)
+            // Not realized by flowlayout, so do this now!
+            if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
             {
-                // we only cache if we aren't realizing it
-                // expensive
-                if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
-                {
-                    firstElement.Measure(availableSize);
-                    hasCachedSize = true;
-                    m_cachedSize = firstElement.DesiredSize();
-                    context.RecycleElement(firstElement);
-                }
+                firstElement.Measure(availableSize);
+                SetSize(firstElement.DesiredSize(), layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
+                context.RecycleElement(firstElement);
             }
-
-            SetSize(m_cachedSize, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
         }
     }
 }
