@@ -139,7 +139,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         }
     }
 
-    internal class FindCore
+    public class FindCore
     {
         public static UIObject ById(string id, bool shouldWait)
         {
@@ -303,7 +303,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             objectFromClassNameCache.Clear();
         }
 
-        internal static void Refresh()
+        public static void Refresh()
         {
             Clear();
             Wait.ForIdle(findElementsIfNull: false); // false because otherwise Wait.ForIdle() might call Refresh(), and then we have an infinite loop.

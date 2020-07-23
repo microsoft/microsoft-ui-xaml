@@ -141,7 +141,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)\Common\AppsTestExtensions.cs" />
+
+    <Compile Include="$(MSBuildThisFileDirectory)\TestAssembly.cs" />
+
+    <!-- <Compile Include="$(MSBuildThisFileDirectory)\Common\AppsTestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\FindElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\FocusHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\GamepadHelper.cs" />
@@ -154,7 +157,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Common\ValueChangedEventWaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\WaitHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Infra\Application.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Infra\TestEnvironment.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Infra\TestHelpers.cs" />
+    
+    <Compile Include="$(MSBuildThisFileDirectory)\Infra\TestHelpers.cs" /> -->
   </ItemGroup>
 </Project>

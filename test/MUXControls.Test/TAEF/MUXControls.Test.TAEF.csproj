@@ -7,7 +7,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
@@ -16,13 +16,7 @@
          For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
     <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
   </PropertyGroup>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-    <CLR_REF_PATH>$(SdkRefPath)\profiles\testnet\v2.1</CLR_REF_PATH>
-    <FrameworkPathOverride>$(SdkRefPath)\profiles\testnet\v2.1</FrameworkPathOverride>
-  </PropertyGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <Reference Include="TE.Managed">
       <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>
     </Reference>
@@ -44,8 +38,11 @@
   <Import Project="RazzleIncludes.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="NonRazzleIncludes.props" Condition="$(BuildingWithBuildExe) != 'true'" />
   <Import Project="..\MUXControls.Test.Shared.projitems" />
-  <ItemGroup>
+  <!--<ItemGroup>
     <Compile Include="TestAppInstallHelper.cs" Condition="$(BuildingWithBuildExe) == 'true'" />
+  </ItemGroup>-->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\testinfra\MUXTestInfra\MUXTestInfra.csproj" />
   </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.targets" />
   <!-- Sdk="Microsoft.NET.Sdk" doesn't do anything in Razzle, so we need to manually include the C# targets file there. -->

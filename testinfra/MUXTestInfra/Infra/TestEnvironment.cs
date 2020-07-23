@@ -113,9 +113,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         }
     }
 
-    // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup
-    // fixtures get executed.  It won't actually host any tests.
-    [TestClass]
     public class TestEnvironment
     {
         public static TestContext TestContext { get; private set; }
@@ -144,12 +141,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        [AssemblyInitialize]
-        [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
-        [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
-        [TestProperty("Hosting:Mode", "UAP")]
-        // Default value for tests is to not run on phone. Test Classes or Test Methods can override
-        [TestProperty("MUXControlsTestEnabledForPhone", "False")]
         public static void AssemblyInitialize(TestContext testContext)
         {
             if (!PlatformConfiguration.IsDevice(DeviceType.OneCore))
@@ -185,7 +176,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #endif
         }
 
-        [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
             AssemblyCleanupWorker(TestApplicationInfo.MUXControlsTestApp);
