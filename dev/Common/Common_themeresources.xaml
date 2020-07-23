@@ -9,6 +9,7 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
@@ -17,6 +18,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
@@ -25,6 +27,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
