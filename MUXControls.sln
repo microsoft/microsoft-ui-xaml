@@ -43,6 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{5EF3865D
 		tools\GenerateNewProperty.ps1 = tools\GenerateNewProperty.ps1
 		tools\GenerateSystemDllImageResources.ps1 = tools\GenerateSystemDllImageResources.ps1
 		tools\GenerateSystemDllStringResources.ps1 = tools\GenerateSystemDllStringResources.ps1
+		tools\GenerateVisualVerificationUpdates.ps1 = tools\GenerateVisualVerificationUpdates.ps1
 		tools\GenerateXamlMetadata.ps1 = tools\GenerateXamlMetadata.ps1
 		tools\GenerateXamlMetadataWindowsCodeGen.ps1 = tools\GenerateXamlMetadataWindowsCodeGen.ps1
 		tools\LaunchXde.cmd = tools\LaunchXde.cmd

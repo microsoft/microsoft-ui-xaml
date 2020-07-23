@@ -129,38 +129,10 @@ if(Test-Path $visualTreeVerificationFolder)
     Write-Host "Merge duplicated verification files..."
     $verificationFiles = Get-ChildItem $visualTreeVerificationFolder
     $prefixList = @()
+
     foreach($file in $verificationFiles)
     {
-        $prefix = $file.BaseName.Split('-')[0]
-        if($prefixList -NotContains $prefix)
-        {
-            $prefixList += $prefix
-        }
-    }
-
-    foreach($prefix in $prefixList)
-    {
-        $filesToDelete = @()
-        $versionedVerificationFiles = $verificationFiles | Where { $_.BaseName.StartsWith("$prefix-") } | Sort-Object -Property Name -Descending
-        if($versionedVerificationFiles.Count > 1)
-        {
-            for ($i=0; $i -lt $versionedVerificationFiles.Length-1; $i++)
-            {
-                $v1 = Get-Content $versionedVerificationFiles[$i].FullName
-                $v2 = Get-Content $versionedVerificationFiles[$i+1].FullName
-                $diff = Compare-Object $v1 $v2
-                if($diff.Length -eq 0)
-                {
-                    $filesToDelete += $versionedVerificationFiles[$i]
-                }
-            }
-            $filesToDelete | ForEach-Object {
-                Write-Host "Deleting $($_.Name)"
-                Remove-Item $_.FullName
-            }
-        }
-
-        Write-Host "Renaming $($versionedVerificationFiles[-1].Name) to $prefix.xml"
-        Move-Item $versionedVerificationFiles[-1].FullName "$visualTreeVerificationFolder\$prefix.xml" -Force
+        Write-Host "Copying $($file.Name) to $visualTreeVerificationFolder"
+        Move-Item $file.FullName "$visualTreeVerificationFolder\$($file.Name)" -Force
     }
 }
