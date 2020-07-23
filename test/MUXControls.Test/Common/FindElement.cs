@@ -191,8 +191,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 }
 
                 root.Descendants.TryFind(condition, out uiObject);
-
-                Log.Comment("...Found");
+                if(uiObject != null)
+                {
+                    Log.Comment("...Found");
+                }
+                else
+                {
+                    Log.Comment("...Not Found");
+                }
+                
             }
 
             return uiObject;

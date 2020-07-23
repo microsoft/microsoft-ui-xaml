@@ -238,9 +238,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 catch (Exception ex)
                 {
                     Log.Comment("Failed to launch app. Exception: " + ex.ToString());
-                    Log.Comment("Dumping UIA tree...");
-                    LogDumpTree();
-
+                    
                     if (retries < MaxLaunchRetries)
                     {
                         Log.Comment("UAPApp.Launch might not have waited long enough, trying again {0}", retries);
@@ -248,6 +246,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
                     else
                     {
+                        Log.Comment("Dumping UIA tree...");
+                        LogDumpTree();
                         Log.Error("Could not launch app {0} with top-level window condition '{1}'!", _appName, CreateTopLevelWindowCondition().ToString());
                         throw;
                     }

@@ -258,10 +258,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #endif
         }
 
-        public static void ScheduleAppRestartIfNeeded()
-        {
-        }
-
         public static void LogDumpTree(UIObject root = null)
         {
             Log.Comment("============ Dump Tree ============");
