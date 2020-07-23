@@ -73,6 +73,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D3327F36-E161-4FED-A0F4-56F2B735827E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NavigationView", "NavigationView", "{05CB5DBD-A481-4DFF-B1A3-642F049D165C}"
+	ProjectSection(SolutionItems) = preProject
+		dev\NavigationView\readme.md = dev\NavigationView\readme.md
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NavigationView", "dev\NavigationView\NavigationView.vcxitems", "{1B8EF049-A38E-43E4-B88E-F1EBFCEF07D2}"
 EndProject
@@ -637,6 +640,12 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_InteractionTests", "dev\InfoBar\InteractionTests\InfoBar_InteractionTests.shproj", "{8CA62B44-3673-4037-8D9C-934D42904BB9}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_TestUI", "dev\InfoBar\TestUI\InfoBar_TestUI.shproj", "{ABBC2446-9B41-4400-8CF6-AF2CF8C597B2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{10183D43-1785-443E-AEB7-C426FDF14964}"
+	ProjectSection(SolutionItems) = preProject
+		dev\NavigationView\docs\NavigationViewItem.md = dev\NavigationView\docs\NavigationViewItem.md
+		dev\NavigationView\docs\rendering.md = dev\NavigationView\docs\rendering.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1583,6 +1592,7 @@ Global
 		{4F935F95-BCD6-4DEF-B897-7F5D8799206A} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{8CA62B44-3673-4037-8D9C-934D42904BB9} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
 		{ABBC2446-9B41-4400-8CF6-AF2CF8C597B2} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
+		{10183D43-1785-443E-AEB7-C426FDF14964} = {05CB5DBD-A481-4DFF-B1A3-642F049D165C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
