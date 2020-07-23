@@ -375,6 +375,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void EmptyMenuBarItemNoPopupTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                FindElement.ByName<Button>("NoChildrenFlyout").Click();
+                VerifyElement.NotFound("Popup",FindBy.Name);
+
+                FindElement.ByName<Button>("OneChildrenFlyout").Click();
+                VerifyElement.Found("Popup", FindBy.Name);
+
+                // Click twice to close flyout
+                FindElement.ByName<Button>("RemoveItemsFromOneChildrenItem").Click();
+                FindElement.ByName<Button>("RemoveItemsFromOneChildrenItem").Click();
+
+                FindElement.ByName<Button>("OneChildrenFlyout").Click();
+                VerifyElement.NotFound("Popup", FindBy.Name);
+            }
+        }
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {

@@ -11,21 +11,21 @@ public:
 
 
 
+    winrt::event_token AddScrollVelocityRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerAddScrollVelocityRequestedEventArgs> const& value);
+    void AddScrollVelocityRequested(winrt::event_token const& token);
     winrt::event_token InteractionInfoChanged(winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable> const& value);
     void InteractionInfoChanged(winrt::event_token const& token);
     winrt::event_token InteractionRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs> const& value);
     void InteractionRequested(winrt::event_token const& token);
     winrt::event_token ScrollByRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value);
     void ScrollByRequested(winrt::event_token const& token);
-    winrt::event_token ScrollFromRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs> const& value);
-    void ScrollFromRequested(winrt::event_token const& token);
     winrt::event_token ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value);
     void ScrollToRequested(winrt::event_token const& token);
 
+    event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerAddScrollVelocityRequestedEventArgs>> m_addScrollVelocityRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable>> m_interactionInfoChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs>> m_interactionRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs>> m_scrollByRequestedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs>> m_scrollFromRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs>> m_scrollToRequestedEventSource;
 
     static void EnsureProperties();

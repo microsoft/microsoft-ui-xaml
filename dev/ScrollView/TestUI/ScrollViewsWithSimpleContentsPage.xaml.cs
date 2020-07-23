@@ -7,15 +7,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
+using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 
 using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
 using ScrollPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollPresenterViewChangeResult;
@@ -28,7 +28,7 @@ namespace MUXControlsTestApp
     public sealed partial class ScrollViewsWithSimpleContentsPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
-        private int scrollView52ZoomFactorChangeId = -1;
+        private int scrollView52ZoomFactorChangeCorrelationId = -1;
 
         public ScrollViewsWithSimpleContentsPage()
         {
@@ -205,7 +205,7 @@ namespace MUXControlsTestApp
 
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
             chkLogUpdated.IsChecked = false;
         }
 
@@ -220,13 +220,13 @@ namespace MUXControlsTestApp
 
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-            this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
             chkLogUpdated.IsChecked = false;
 
-            if (args.ZoomInfo.ZoomFactorChangeId == scrollView52ZoomFactorChangeId)
+            if (args.CorrelationId == scrollView52ZoomFactorChangeCorrelationId)
             {
                 this.txtResetStatus.Text = "Views reset";
-                scrollView52ZoomFactorChangeId = -1;
+                scrollView52ZoomFactorChangeCorrelationId = -1;
             }
         }
 
@@ -274,8 +274,8 @@ namespace MUXControlsTestApp
                     for (int columnIndex = 0; columnIndex < 5; columnIndex++)
                         this.rootGrid.ColumnDefinitions[columnIndex].Width = new GridLength(1, GridUnitType.Star);
 
-                    cmbIgnoredInputKind.IsEnabled = false;
-                    cmbIgnoredInputKind.SelectedIndex = 0;
+                    cmbIgnoredInputKinds.IsEnabled = false;
+                    cmbIgnoredInputKinds.SelectedIndex = 0;
                 }
                 else
                 {
@@ -296,7 +296,7 @@ namespace MUXControlsTestApp
                     for (int columnIndex = 0; columnIndex < 5; columnIndex++)
                         this.rootGrid.ColumnDefinitions[columnIndex].Width = GridLength.Auto;
 
-                    cmbIgnoredInputKind.IsEnabled = true;
+                    cmbIgnoredInputKinds.IsEnabled = true;
 
                     ScrollView scrollView = SelectedScrollView;
 
@@ -308,70 +308,70 @@ namespace MUXControlsTestApp
                     txtScrollPresenterVerticalOffset.Text = scrollView.VerticalOffset.ToString();
                     txtScrollPresenterZoomFactor.Text = scrollView.ZoomFactor.ToString();
 
-                    switch (scrollView.IgnoredInputKind)
+                    switch (scrollView.IgnoredInputKinds)
                     {
-                        case InputKind.None:
-                            cmbIgnoredInputKind.SelectedIndex = 1;
+                        case ScrollingInputKinds.None:
+                            cmbIgnoredInputKinds.SelectedIndex = 1;
                             break;
-                        case InputKind.Touch:
-                            cmbIgnoredInputKind.SelectedIndex = 2;
+                        case ScrollingInputKinds.Touch:
+                            cmbIgnoredInputKinds.SelectedIndex = 2;
                             break;
-                        case InputKind.Pen:
-                            cmbIgnoredInputKind.SelectedIndex = 3;
+                        case ScrollingInputKinds.Pen:
+                            cmbIgnoredInputKinds.SelectedIndex = 3;
                             break;
-                        case InputKind.MouseWheel:
-                            cmbIgnoredInputKind.SelectedIndex = 4;
+                        case ScrollingInputKinds.MouseWheel:
+                            cmbIgnoredInputKinds.SelectedIndex = 4;
                             break;
-                        case InputKind.Keyboard:
-                            cmbIgnoredInputKind.SelectedIndex = 5;
+                        case ScrollingInputKinds.Keyboard:
+                            cmbIgnoredInputKinds.SelectedIndex = 5;
                             break;
-                        case InputKind.Gamepad:
-                            cmbIgnoredInputKind.SelectedIndex = 6;
+                        case ScrollingInputKinds.Gamepad:
+                            cmbIgnoredInputKinds.SelectedIndex = 6;
                             break;
-                        case InputKind.All:
-                            cmbIgnoredInputKind.SelectedIndex = 7;
+                        case ScrollingInputKinds.All:
+                            cmbIgnoredInputKinds.SelectedIndex = 7;
                             break;
                         default:
-                            cmbIgnoredInputKind.SelectedIndex = 0;
+                            cmbIgnoredInputKinds.SelectedIndex = 0;
                             break;
                     }
                 }
             }
         }
 
-        private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbIgnoredInputKinds_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            InputKind ignoredInputKind;
+            ScrollingInputKinds ignoredInputKinds;
             ScrollView scrollView = SelectedScrollView;
 
-            switch (cmbIgnoredInputKind.SelectedIndex)
+            switch (cmbIgnoredInputKinds.SelectedIndex)
             {
                 case 0:
                     return;
                 case 1:
-                    ignoredInputKind = InputKind.None;
+                    ignoredInputKinds = ScrollingInputKinds.None;
                     break;
                 case 2:
-                    ignoredInputKind = InputKind.Touch;
+                    ignoredInputKinds = ScrollingInputKinds.Touch;
                     break;
                 case 3:
-                    ignoredInputKind = InputKind.Pen;
+                    ignoredInputKinds = ScrollingInputKinds.Pen;
                     break;
                 case 4:
-                    ignoredInputKind = InputKind.MouseWheel;
+                    ignoredInputKinds = ScrollingInputKinds.MouseWheel;
                     break;
                 case 5:
-                    ignoredInputKind = InputKind.Keyboard;
+                    ignoredInputKinds = ScrollingInputKinds.Keyboard;
                     break;
                 case 6:
-                    ignoredInputKind = InputKind.Gamepad;
+                    ignoredInputKinds = ScrollingInputKinds.Gamepad;
                     break;
                 default:
-                    ignoredInputKind = InputKind.All;
+                    ignoredInputKinds = ScrollingInputKinds.All;
                     break;
             }
 
-            scrollView.IgnoredInputKind = ignoredInputKind;
+            scrollView.IgnoredInputKinds = ignoredInputKinds;
         }
 
         private void btnGetFullLog_Click(object sender, RoutedEventArgs e)
@@ -441,16 +441,16 @@ namespace MUXControlsTestApp
             ScrollPresenter scrollPresenter = ScrollViewTestHooks.GetScrollPresenterPart(scrollView);
             string scrollPresenterId = (VisualTreeHelper.GetParent(scrollPresenter) as FrameworkElement).Name + "." + scrollPresenter.Name;
 
-            int viewChangeId = scrollPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
-            this.fullLogs.Add(scrollPresenterId + " ScrollTo requested. Id=" + viewChangeId);
+            int viewChangeCorrelationId = scrollPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+            this.fullLogs.Add(scrollPresenterId + " ScrollTo requested. Id=" + viewChangeCorrelationId);
 
-            viewChangeId = scrollPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
-            this.fullLogs.Add(scrollPresenterId + " ZoomTo requested. Id=" + viewChangeId);
+            viewChangeCorrelationId = scrollPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+            this.fullLogs.Add(scrollPresenterId + " ZoomTo requested. Id=" + viewChangeCorrelationId);
 
             chkLogUpdated.IsChecked = false;
 
             if (scrollView == this.scrollView52)
-                scrollView52ZoomFactorChangeId = viewChangeId;
+                scrollView52ZoomFactorChangeCorrelationId = viewChangeCorrelationId;
         }
 
         private ScrollView SelectedScrollView

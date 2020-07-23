@@ -20,12 +20,12 @@ public:
     }
 
     // IScrollingBringingIntoViewEventArgs overrides
-    winrt::SnapPointsMode SnapPointsMode();
-    void SnapPointsMode(winrt::SnapPointsMode snapPointsMode);
+    winrt::ScrollingSnapPointsMode SnapPointsMode();
+    void SnapPointsMode(winrt::ScrollingSnapPointsMode snapPointsMode);
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
     double TargetHorizontalOffset();
     double TargetVerticalOffset();
-    winrt::ScrollInfo ScrollInfo();
+    int32_t CorrelationId();
     bool Cancel();
     void Cancel(bool value); 
 
@@ -44,16 +44,16 @@ public:
         return m_cancel;
     }
 
-    void OffsetsChangeId(int32_t offsetsChangeId);
+    void OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId);
     void RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs);
     void TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset);
 
 private:
-    winrt::SnapPointsMode m_snapPointsMode{ winrt::SnapPointsMode::Ignore };
+    winrt::ScrollingSnapPointsMode m_snapPointsMode{ winrt::ScrollingSnapPointsMode::Ignore };
     winrt::BringIntoViewRequestedEventArgs m_requestEventArgs{ nullptr };
     double m_targetHorizontalOffset{ 0.0 };
     double m_targetVerticalOffset{ 0.0 };
     bool m_cancel{ false };
-    int32_t m_offsetsChangeId{ -1 };
+    int32_t m_offsetsChangeCorrelationId{ -1 };
 };
 

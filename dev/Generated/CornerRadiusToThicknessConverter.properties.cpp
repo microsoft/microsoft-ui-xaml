@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
 #include "CornerRadiusToThicknessConverter.g.cpp"
 
 GlobalDependencyProperty CornerRadiusToThicknessConverterProperties::s_ConversionKindProperty{ nullptr };
+GlobalDependencyProperty CornerRadiusToThicknessConverterProperties::s_MultiplierProperty{ nullptr };
 
 CornerRadiusToThicknessConverterProperties::CornerRadiusToThicknessConverterProperties()
 {
@@ -33,11 +34,23 @@ void CornerRadiusToThicknessConverterProperties::EnsureProperties()
                 ValueHelper<winrt::CornerRadiusToThicknessConverterKind>::BoxValueIfNecessary(winrt::CornerRadiusToThicknessConverterKind::FilterLeftAndRightFromTop),
                 nullptr);
     }
+    if (!s_MultiplierProperty)
+    {
+        s_MultiplierProperty =
+            InitializeDependencyProperty(
+                L"Multiplier",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::CornerRadiusToThicknessConverter>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(1.0f),
+                nullptr);
+    }
 }
 
 void CornerRadiusToThicknessConverterProperties::ClearProperties()
 {
     s_ConversionKindProperty = nullptr;
+    s_MultiplierProperty = nullptr;
 }
 
 void CornerRadiusToThicknessConverterProperties::ConversionKind(winrt::CornerRadiusToThicknessConverterKind const& value)
@@ -51,4 +64,17 @@ void CornerRadiusToThicknessConverterProperties::ConversionKind(winrt::CornerRad
 winrt::CornerRadiusToThicknessConverterKind CornerRadiusToThicknessConverterProperties::ConversionKind()
 {
     return ValueHelper<winrt::CornerRadiusToThicknessConverterKind>::CastOrUnbox(static_cast<CornerRadiusToThicknessConverter*>(this)->GetValue(s_ConversionKindProperty));
+}
+
+void CornerRadiusToThicknessConverterProperties::Multiplier(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<CornerRadiusToThicknessConverter*>(this)->SetValue(s_MultiplierProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double CornerRadiusToThicknessConverterProperties::Multiplier()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<CornerRadiusToThicknessConverter*>(this)->GetValue(s_MultiplierProperty));
 }

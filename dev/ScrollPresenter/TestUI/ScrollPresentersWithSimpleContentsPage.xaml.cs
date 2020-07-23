@@ -7,9 +7,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingInteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
@@ -25,7 +25,7 @@ namespace MUXControlsTestApp
     public sealed partial class ScrollPresentersWithSimpleContentsPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
-        private int scrollPresenter52ZoomFactorChangeId = -1;
+        private int scrollPresenter52ZoomFactorChangeCorrelationId = -1;
         private bool canScrollPresenter51ContentShrink = true;
 
         public ScrollPresentersWithSimpleContentsPage()
@@ -83,7 +83,7 @@ namespace MUXControlsTestApp
             this.txtScrollPresenterState.Text = sender.Name + " " + sender.State.ToString();
             this.fullLogs.Add(sender.Name + " StateChanged S=" + sender.State.ToString());
 
-            if (!canScrollPresenter51ContentShrink && sender == scrollPresenter51 && scrollPresenter51.State == InteractionState.Idle)
+            if (!canScrollPresenter51ContentShrink && sender == scrollPresenter51 && scrollPresenter51.State == ScrollingInteractionState.Idle)
             {
                 canScrollPresenter51ContentShrink = true;
             }
@@ -117,16 +117,16 @@ namespace MUXControlsTestApp
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            this.fullLogs.Add(sender.Name + " ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            this.fullLogs.Add(sender.Name + " ScrollCompleted OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
         }
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-            this.fullLogs.Add(sender.Name + " ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            this.fullLogs.Add(sender.Name + " ZoomCompleted ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
 
-            if (this.scrollPresenter52ZoomFactorChangeId == args.ZoomInfo.ZoomFactorChangeId)
+            if (this.scrollPresenter52ZoomFactorChangeCorrelationId == args.CorrelationId)
             {
                 this.txtResetStatus.Text = "Views reset";
             }
@@ -332,20 +332,20 @@ namespace MUXControlsTestApp
 
         private void ResetView(ScrollPresenter scrollPresenter)
         {
-            int viewChangeId = scrollPresenter.ScrollTo(
+            int viewChangeCorrelationId = scrollPresenter.ScrollTo(
                 0.0,
                 0.0,
-                new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
-            this.fullLogs.Add(scrollPresenter.Name + " ScrollTo requested. Id=" + viewChangeId);
+                new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+            this.fullLogs.Add(scrollPresenter.Name + " ScrollTo requested. Id=" + viewChangeCorrelationId);
 
-            viewChangeId = scrollPresenter.ZoomTo(
+            viewChangeCorrelationId = scrollPresenter.ZoomTo(
                 1.0f,
                 System.Numerics.Vector2.Zero,
-                new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
-            this.fullLogs.Add(scrollPresenter.Name + " ZoomTo requested. Id=" + viewChangeId);
+                new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+            this.fullLogs.Add(scrollPresenter.Name + " ZoomTo requested. Id=" + viewChangeCorrelationId);
             if (this.scrollPresenter52 == scrollPresenter)
             {
-                scrollPresenter52ZoomFactorChangeId = viewChangeId;
+                scrollPresenter52ZoomFactorChangeCorrelationId = viewChangeCorrelationId;
             }
         }
     }
