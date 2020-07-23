@@ -39,27 +39,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private readonly string _packageName;
         private readonly string _packageFamilyName;
         private readonly string _appName;
+
+        private readonly string _appWindowTitle;
+        private readonly string _appProcessName;
+        private readonly string _appInstallerName;
+
         private readonly bool _isUWPApp;
 
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageName, string packageFamilyName, string appName, bool isUWPApp = true)
+        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, bool isUWPApp = true)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;
             _appName = appName;
             _isUWPApp = isUWPApp;
 
+            _appWindowTitle = testAppMainWindowTitle;
+            _appProcessName = testAppProcessName;
+            _appInstallerName = testAppInstallerName;
+
             if (_isUWPApp)
             {
-                _windowCondition = UICondition.Create("@ClassName='Windows.UI.Core.CoreWindow' AND @Name={0}", _packageName);
-                _appFrameWindowCondition = UICondition.Create("@ClassName='ApplicationFrameWindow' AND @Name={0}", _packageName);
+                _windowCondition = UICondition.Create("@ClassName='Windows.UI.Core.CoreWindow' AND @Name={0}", _appWindowTitle);
+                _appFrameWindowCondition = UICondition.Create("@ClassName='ApplicationFrameWindow' AND @Name={0}", _appWindowTitle);
             }
             else
             {
-                _windowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _packageName);
-                _appFrameWindowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _packageName);
+                _windowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _appWindowTitle);
+                _appFrameWindowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _appWindowTitle);
             }
         }
 
@@ -172,7 +181,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // When running from MUXControls repo we want to install the app.
             // When running in TestMD we also want to install the app.            
 #if USING_TAEF
-            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
+            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
 #else
             BuildAndInstallTestAppIfNeeded();
 #endif
@@ -180,7 +189,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             Log.Comment("Launching app {0}", _appName);
 
-            coreWindow = LaunchApp(_packageName);
+            coreWindow = LaunchApp();
 
             Verify.IsNotNull(coreWindow, "coreWindow");
 
@@ -206,33 +215,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             Log.Comment("15056441 tracing, device family:" + Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily);
 
-            // On phone, we work around different scale factors between devices by configuring the test app to
-            // lay out the test pages at the device's resolution, effectively giving us a scale factor of 1.0.
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-            {
-                Log.Comment("Enabling view scaling workaround on phone.");
-
-                try
-                {
-                    var viewScalingCheckBox = new CheckBox(coreWindow.Descendants.Find(UICondition.Create("@AutomationId='__ViewScalingCheckBox'")));
-                    using (var waiter = viewScalingCheckBox.GetToggledWaiter())
-                    {
-                        viewScalingCheckBox.Check();
-                    }
-                    Log.Comment("15056441 Tracing: New checkbox state is " + viewScalingCheckBox.ToggleState);
-                }
-                catch (UIObjectNotFoundException)
-                {
-                    Log.Error("Could not find the view scaling CheckBox.");
-                    LogDumpTree();
-                    throw;
-                }
-            }
-
             return coreWindow;
         }
 
-        private UIObject LaunchApp(string packageName)
+        private UIObject LaunchApp()
         {
             UIObject coreWindow = null;
 
@@ -245,7 +231,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 try
                 {
                     Log.Comment("Attempting launch, try #{0}...", retries);
-                    coreWindow = _isUWPApp ? LaunchUWPApp(packageName) : LaunchNonUWPApp(packageName);
+                    coreWindow = _isUWPApp ? LaunchUWPApp(_packageName) : LaunchNonUWPApp(_packageName);
                     Log.Comment("Launch successful!");
                     break;
                 }
@@ -274,7 +260,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private UIObject LaunchUWPApp(string packageName)
         {
             Debug.Assert(_isUWPApp);
-            var nameCondition = UICondition.CreateFromName(packageName);
+            var nameCondition = UICondition.CreateFromName(_appWindowTitle);
             var topLevelWindowCondition = CreateTopLevelWindowCondition().AndWith(nameCondition);
             return UAPApp.Launch(_appName, topLevelWindowCondition);
         }
@@ -333,7 +319,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // This is just a sanity check. Under normal circumstances, there should only be 
             // one app process. 
             
-            var appProcesses = Process.GetProcessesByName(_packageName).ToList();
+            var appProcesses = Process.GetProcessesByName(_appProcessName).ToList();
 
             if (appWindowsProccessId != -1)
             {

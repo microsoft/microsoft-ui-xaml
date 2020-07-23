@@ -25,11 +25,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the unit test app
         /// </summary>
-        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName)
+        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
-                FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, packageName + ".appx"));
+                FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, appInstallerName + ".appx"));
+                if (!appxFile.Exists)
+                {
+                    appxFile = new FileInfo(Path.Combine(deploymentDir, appInstallerName + ".appxbundle"));
+                }
                 if (appxFile.Exists)
                 {
                     PackageManager packageManager = new PackageManager();

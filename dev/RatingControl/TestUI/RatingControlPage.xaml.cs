@@ -76,10 +76,7 @@ namespace MUXControlsTestApp
             RatingBindingSample.DataContext = CaptionStringBox;
             BindingRatingCaption.DataContext = ColorFlipButton;
 
-            var testFrame = Window.Current.Content as TestFrame;
-            DependencyObject checkBox = SearchVisualTree(testFrame, "ViewScalingCheckBox");
-            CheckBox cb = checkBox as CheckBox;
-            FrameDetails.Text = Window.Current.Bounds.ToString() + " " + cb.IsChecked.ToString();
+            FrameDetails.Text = XamlRoot.Content.ActualSize.ToString();
 
             if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.RatingControl"))
             {

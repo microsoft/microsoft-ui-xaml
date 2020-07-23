@@ -211,7 +211,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         private static Application CreateApplication(TestApplicationInfo info)
         {
-            return new Application(info.TestAppPackageName, info.TestAppPackageFamilyName, info.TestAppName);
+            return new Application(info.TestAppPackageName, info.TestAppPackageFamilyName, info.TestAppName, info.TestAppMainWindowTitle, info.ProcessName, info.InstallerName);
         }
 
         public static void Initialize(TestContext testContext)
