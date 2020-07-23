@@ -44,7 +44,7 @@ For left mode, the following control template parts are used:
 * `PaneHeaderContentBorder`: Manual sizing for pane header
 * `AutoSuggestArea`: Not used
 * `PaneAutoSuggestBoxPresenter`: Used to check if there is content in autosuggest area
-* `PaneAutoSuggestButton`: Used to open pane when button get's invoked
+* `PaneAutoSuggestButton`: Used to open pane when button gets invoked
 * `PaneCustomContentBorder`: Used for pane header rendering
 * `MenuItemsHost`: Used for rendering of the NavigationViewItems
 * `FooterContentBorder`: Used for rendering of pane footer 
@@ -56,7 +56,7 @@ For left mode, the following control template parts are used:
 
 In DisplayMode left, the SplitView is used to show/hide the pane based on the displaymode and the width of the NavigationView's width.
 
-In PaneDisplayMode `Auto`, the pane get's hidden based on it's width.
+In PaneDisplayMode `Auto`, the pane gets hidden based on its width.
 
 ## DisplayMode Top
 

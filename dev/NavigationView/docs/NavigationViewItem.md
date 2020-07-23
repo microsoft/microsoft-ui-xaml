@@ -10,9 +10,9 @@ The base NavigationViewItem handles basic events and properties that are needed 
 ## Rendering
 In addition to inheriting from NavigationViewItemBase, the NavigationViewItem renders itsself throught the NavigationViewItemPresenter.
 
-For each of the different displaymodes of the NavigationView, the NavigationViewItemPresenter has it's own specific style, which get's applied depending on the displaymode of the NavigationView.
+For each of the different displaymodes of the NavigationView, the NavigationViewItemPresenter has its own specific style, which gets applied depending on the displaymode of the NavigationView.
 
-Each individual NavigationViewItem is responsible for rendering it's own menu items, in the case of hierarchical NavigationView.
+Each individual NavigationViewItem is responsible for rendering its own menu items, in the case of hierarchical NavigationView.
 
 In the case of PaneDisplayMode `Top`, the hierarchical NavigationViewItems will get rendered inside a MenuFlyout.
 In the case of display mode left, the items are being rendered through an ItemsRepeater.
