@@ -72,8 +72,14 @@ function Download-File
     $downloadDestTemp = $downloadPath;
 
     # Delete and rename to final dest
+    Write-Host "testing $downloadDest"
+    if (Test-Path $downloadDest)
+    {
+        Write-Host "Exists: $downloadDest"
+    }
     if (Test-Path -PathType Container $downloadDest)
     {
+        Write-Host "deleting $downloadDest"
         [System.IO.Directory]::Delete($downloadDest, $true)
     }
 
