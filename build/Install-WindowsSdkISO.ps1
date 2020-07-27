@@ -75,7 +75,7 @@ function Download-File
     Write-Host "testing $downloadDest"
     if (Test-Path $downloadDest)
     {
-        Write-Host "Exists: $downloadDest"
+        Write-Host "Deleting: $downloadDest"
         Remove-Item $downloadDest -Force
     }
 
@@ -271,7 +271,7 @@ if ($InstallWindowsSDK)
         $env:TEMP = Join-Path $env:SystemDrive 'temp'
     }
 
-    $winsdkTempDir = Join-Path $env:TEMP "WindowsSDK"
+    $winsdkTempDir = Join-Path (Join-Path $env:TEMP ([System.IO.Path]::GetRandomFileName())) "WindowsSDK"
 
     if (![System.IO.Directory]::Exists($winsdkTempDir))
     {
