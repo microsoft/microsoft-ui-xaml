@@ -76,11 +76,7 @@ function Download-File
     if (Test-Path $downloadDest)
     {
         Write-Host "Exists: $downloadDest"
-    }
-    if (Test-Path -PathType Container $downloadDest)
-    {
-        Write-Host "deleting $downloadDest"
-        [System.IO.Directory]::Delete($downloadDest, $true)
+        Remove-Item $downloadDest -Force
     }
 
     Move-Item -Force $downloadDestTemp $downloadDest
