@@ -21,7 +21,7 @@ jobs:
       ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
     )
   pool:
-    vmImage: 'vmssagentpool'
+    name: 'vmssagentpool'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
