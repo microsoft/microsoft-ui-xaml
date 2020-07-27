@@ -35,7 +35,7 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'vmssagentpool'
   timeoutInMinutes: 120
   strategy:
     maxParallel: ${{ parameters.maxParallel }}

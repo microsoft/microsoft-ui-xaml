@@ -32,7 +32,7 @@ jobs:
       - ${{ parameters.dependsOn }}
 
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'vmssagentpool'
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
