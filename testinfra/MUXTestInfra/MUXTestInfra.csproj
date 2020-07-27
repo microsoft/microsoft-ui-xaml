@@ -1,12 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--<TargetFramework>netstandard2.0</TargetFramework>-->
-
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
-    <!--<RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>-->
 
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
 
@@ -33,6 +30,8 @@
     <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
     <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
     <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
 
@@ -42,12 +41,6 @@
       <IsWinMDFile>true</IsWinMDFile>
     </Reference>
   </ItemGroup>
-
-  <!--<ItemGroup>
-    <Reference Include="TE.Managed, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Taef.Redist.Wlk.10.51.200127004\lib\net45\TE.Managed.dll</HintPath>
-    </Reference>
-  </ItemGroup>-->
 
   <ItemGroup>
     <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
