@@ -7,7 +7,7 @@ jobs:
 - job: MergePGD
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-    vmImage: 'vmssagentpool'
+    vmImage: 'vmssagentpool2'
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
     pgoArtifactsPath: $(artifactsPath)\${{ parameters.pgoArtifact }}

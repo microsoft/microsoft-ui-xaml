@@ -11,7 +11,7 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
-    vmImage: 'vmssagentpool'
+    vmImage: 'vmssagentpool2'
   timeoutInMinutes: 120
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages

@@ -7,7 +7,7 @@ jobs:
 - job: BuildAndPublishPGONuGet
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-    vmImage: 'vmssagentpool'
+    vmImage: 'vmssagentpool2'
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
     pgoToolsPath: $(Build.SourcesDirectory)\tools\MUXPGODatabase

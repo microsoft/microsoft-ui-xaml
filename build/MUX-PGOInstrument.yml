@@ -8,7 +8,7 @@ variables:
 jobs:
 - job: Build
   pool:
-    vmImage: 'vmssagentpool'
+    vmImage: 'vmssagentpool2'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

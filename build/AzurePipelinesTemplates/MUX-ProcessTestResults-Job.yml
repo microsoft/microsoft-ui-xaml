@@ -10,7 +10,7 @@ jobs:
   condition: succeededOrFailed()
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-    vmImage: 'vmssagentpool'
+    vmImage: 'vmssagentpool2'
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
