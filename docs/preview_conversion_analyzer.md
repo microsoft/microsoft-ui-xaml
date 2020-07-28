@@ -42,14 +42,14 @@ This tool assists with the conversion process by providing Code Analyzers/Fixes 
 ### What It Does
 
 - Analyze/Convert C# files
-- Updates Namespaces for Xaml Types from Windows.UI.Xaml to Microsoft.UI.Xaml
-    - Windows.UI.Xaml is now Microsoft.UI.Xaml, so usings and explicit namespaces need to be updated
-- Converts App.onLaunched Method
-    - 2 Updates need to be made to the App OnLaunched method when converting to WinUI3
-    1. Target Microsoft.UI.Xaml.LaunchactivatedEvenArgs as the method parameter type
-    2. Instances of the parameter name in the App OnLaunched method body must invoke .UWPLaunchActivatedEventArgs
+- Updates Namespaces for Xaml Types from `Windows.UI.Xaml` to `Microsoft.UI.Xaml`
+    - `Windows.UI.Xaml` is now `Microsoft.UI.Xaml`, so usings and explicit namespaces need to be updated
+- Converts `App.OnLaunched` Method
+    - 2 Updates need to be made to the `App.OnLaunched` method when converting to WinUI3
+    1. Target `Microsoft.UI.Xaml.LaunchactivatedEvenArgs` as the method parameter type
+    2. Instances of the parameter name in the `App.OnLaunched` method body must invoke `UWPLaunchActivatedEventArgs`
 - Highlights Deprecated Types
-    - Some Types such as Windows.UI.Input.Inking, and Windows.UI.Xaml.Media.AcrylicBackgroundSource are not supported in WinUI3. These may be identified by the analyzer as deprecated but cannot be converted automatically.
+    - Some Types such as `Windows.UI.Input.Inking`, and `Windows.UI.Xaml.Media.AcrylicBackgroundSource` are not supported in WinUI3. These may be identified by the analyzer as deprecated but cannot be converted automatically.
 
 ### What It Does Not Do
 
