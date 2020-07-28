@@ -319,7 +319,7 @@ if ($InstallWindowsSDK)
     finally
     {
         Write-Host -NoNewline "Dismounting ISO $file..."
-        #Dismount-ISO $downloadFile
+        Dismount-ISO $downloadFile
         Write-Host "Done"
     }
 }
