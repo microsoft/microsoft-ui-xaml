@@ -69,6 +69,7 @@ private:
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
+    void OnIsEnabledChanged(const winrt::IInspectable& /*sender*/, const winrt::DependencyPropertyChangedEventArgs& /*args*/);
 
     void ValidateInput();
     void CoerceMinimum();
@@ -82,6 +83,8 @@ private:
     void StepValue(double change);
 
     void UpdateHeaderPresenterState();
+
+    void UpdateVisualStateForIsEnabledChange();
 
     bool IsInBounds(double value);
 
@@ -105,4 +108,6 @@ private:
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
 
     PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
+
+    winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 };
