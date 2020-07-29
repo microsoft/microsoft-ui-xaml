@@ -15,6 +15,11 @@ steps:
       echo parameters.buildOutputDir = '${{ parameters.buildOutputDir }}'
     displayName: 'BuildProject: Display parameters'
 
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
+
   - template: MUX-InstallWindowsSDK-Steps.yml
 
   - template: MUX-InstallNuget-Steps.yml
