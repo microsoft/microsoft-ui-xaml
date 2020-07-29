@@ -4,7 +4,7 @@ variables:
 jobs:
 - job: ComponentDetection
   pool:
-    vmImage: 'vmssagentpool2'
+    vmImage: 'winuibuildagents'
 
   steps:
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -16,7 +16,7 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'')
   pool:
-    vmImage: 'vmssagentpool2'
+    vmImage: 'winuibuildagents'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

@@ -32,7 +32,7 @@ jobs:
       - ${{ parameters.dependsOn }}
 
   pool:
-    vmImage: 'vmssagentpool2'
+    vmImage: 'winuibuildagents'
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
