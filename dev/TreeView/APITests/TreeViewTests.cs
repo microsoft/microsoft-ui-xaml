@@ -710,6 +710,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void TreeViewBackgroundTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = new TreeView();
+
+                Content = treeView;
+                Content.UpdateLayout();
+
+                var treeViewList = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+
+                // Make sure the TreeViewList does not already have the background color we are using for this test.
+                bool testCondition = treeViewList.Background is SolidColorBrush brush && brush.Color == Colors.Green;
+                Verify.IsFalse(testCondition, "The default TreeView background color should not match the test color used.");
+
+                // Check if the Background API affects the TreeView control.
+                treeView.Background = new SolidColorBrush(Colors.Green);
+                Content.UpdateLayout();
+
+                testCondition = treeViewList.Background is SolidColorBrush brush2 && brush2.Color == Colors.Green;
+                Verify.IsTrue(testCondition, "The TreeView background UI should have matched the specified test color.");
+            });
+        }
+
         private bool IsMultiSelectCheckBoxChecked(TreeView tree, TreeViewNode node)
         {
             var treeViewItem = tree.ContainerFromNode(node) as TreeViewItem;
