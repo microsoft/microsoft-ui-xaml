@@ -34,6 +34,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     {
         PagerTestsPageElements elements;
         int previousPage = -1;
+
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
@@ -49,7 +50,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void NumberBoxDisplayChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -85,6 +88,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ComboBoxDisplayChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -107,6 +111,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void AutoDisplayChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -128,6 +133,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void FirstPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -149,6 +155,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void PreviousPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -180,6 +187,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void NextPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -201,6 +209,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void LastPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -221,6 +230,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void FirstPageButtonVisibilityOptionsTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -316,6 +326,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void PreviousPageButtonVisibilityOptionsTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -418,6 +429,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void NextPageButtonVisibilityOptionsTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -514,6 +526,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void LastPageButtonVisibilityOptionsTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -620,6 +633,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void AutoDisplayModeTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -631,6 +645,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void NumberBoxDisplayModeTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -643,6 +658,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ComboBoxDisplayModeTest()
         {
             using (var setupp = new TestSetupHelper("Pager Tests"))
@@ -655,6 +671,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ChangingDisplayModeTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
