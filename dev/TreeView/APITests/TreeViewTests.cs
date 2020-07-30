@@ -115,7 +115,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Content = treeView;
                 Content.UpdateLayout();
-                var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                 // Verify TreeViewNode::SetAt
                 TreeViewNode setAtChildCheckNode = new TreeViewNode() { Content = "Set At Child" };
                 TreeViewNode setAtRootCheckNode = new TreeViewNode() { Content = "Set At Root" };
@@ -207,7 +207,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var treeView = new TreeView();
                 Content = treeView;
                 Content.UpdateLayout();
-                var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                 treeView.RootNodes.Add(treeViewNode1);
                 Verify.AreEqual(listControl.Items.Count, 1);
 
@@ -278,7 +278,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Content = treeView;
                 Content.UpdateLayout();
-                var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                 treeView.RootNodes.Add(treeViewNode1);
                 var children = (treeViewNode1.Children as IObservableVector<TreeViewNode>);
                 children.VectorChanged += (vector, args) =>
@@ -335,7 +335,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     treeView.ItemTemplate = dataTemplate;
                     var node = new TreeViewNode();
                     treeView.RootNodes.Add(node);
-                    var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                    var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                     var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
                     Verify.AreEqual(treeViewItem.ContentTemplate, dataTemplate);
                 };
@@ -376,7 +376,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     treeView.ItemContainerStyle = style;
                     var node = new TreeViewNode();
                     treeView.RootNodes.Add(node);
-                    var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                    var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                     var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
                     Verify.AreEqual(treeViewItem.Style, style);
                 };
@@ -398,7 +398,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     treeView.ItemContainerTransitions = transition;
                     var node = new TreeViewNode();
                     treeView.RootNodes.Add(node);
-                    var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                    var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                     var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
                     Verify.AreEqual(treeViewItem.ContentTransitions, transition);
                 };
@@ -720,7 +720,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content = treeView;
                 Content.UpdateLayout();
 
-                var treeViewList = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var treeViewList = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
 
                 // Make sure the TreeViewList does not already have the background color we are using for this test.
                 bool testCondition = treeViewList.Background is SolidColorBrush brush && brush.Color == Colors.Green;
@@ -738,35 +738,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private bool IsMultiSelectCheckBoxChecked(TreeView tree, TreeViewNode node)
         {
             var treeViewItem = tree.ContainerFromNode(node) as TreeViewItem;
-            var checkBox = FindVisualChildByName(treeViewItem, "MultiSelectCheckBox") as CheckBox;
+            var checkBox = VisualTreeUtils.FindVisualChildByName(treeViewItem, "MultiSelectCheckBox") as CheckBox;
             return checkBox.IsChecked == true;
-        }
-
-        public static DependencyObject FindVisualChildByName(FrameworkElement parent, string name)
-        {
-            if (parent.Name == name)
-            {
-                return parent;
-            }
-
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-
-            for (int i = 0; i < childrenCount; i++)
-            {
-                FrameworkElement childAsFE = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
-
-                if (childAsFE != null)
-                {
-                    DependencyObject result = FindVisualChildByName(childAsFE, name);
-
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
         }
 
         public ObservableCollection<TreeViewItemSource> CreateTreeViewItemsSource()
