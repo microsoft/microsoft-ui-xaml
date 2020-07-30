@@ -8,6 +8,8 @@ If these steps don't work for you, feel free to [file an issue](https://github.c
 1. Make sure all Preview 2 prerequisites are installed. See [installation instructions here](https://aka.ms/winui3/preview2#install-winui-30-preview-2).
 2. Use the NuGet package manager (right-click on the project and select “Manage NuGet Packages…” from the context menu) 
 3. Select the “Microsoft.WinUI” package, ensure that “Include prerelease” is checked, select the latest version of the package, and then click “Upgrade”, accepting prompts that appear  
+    - If you don't see the latest version of the WinUI 3 Preview 2 NuGet package, run the following command in your NuGet package manager console:
+    `install-package Microsoft.WinUI -Version 3.0.0-preview2.200713.0`
 4. If your project is a C# “Blank App (UWP)”, C# “Class Library (UWP)”, C# “Windows Runtime Component (UWP)”, C++ “Blank App (UWP)”, or C++ “Windows Runtime Component (UWP)” project, then **no further changes are necessary.**
 5.  If your project is a C# “Class Library (WinUI in Desktop)” project:
     - Open the .csproj and change <TargetFramework>netcoreapp5.0</TargetFramework> to <TargetFramework>net5.0</TargetFramework> 
