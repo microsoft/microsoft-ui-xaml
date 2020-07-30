@@ -5,7 +5,7 @@ While it's possible to upgrade your Preview 1 application to use the new Preview
 If these steps don't work for you, feel free to [file an issue](https://github.com/microsoft/microsoft-ui-xaml/issues/new/choose). The easiest way to work around this is to just create a new Preview 2 project and copy your content over. 
 
 ## Upgrading steps
-1. Make sure all Preview 2 prerequisites are installed. See [installation instructions here](https://aka.ms/winui3/preview2#install-winui-3.0-preview-2).
+1. Make sure all Preview 2 prerequisites are installed. See [installation instructions here](https://aka.ms/winui3/preview2#install-winui-30-preview-2).
 2. Use the NuGet package manager (right-click on the project and select “Manage NuGet Packages…” from the context menu) 
 3. Select the “Microsoft.WinUI” package, ensure that “Include prerelease” is checked, select the latest version of the package, and then click “Upgrade”, accepting prompts that appear  
 4. If your project is a C# “Blank App (UWP)”, C# “Class Library (UWP)”, C# “Windows Runtime Component (UWP)”, C++ “Blank App (UWP)”, or C++ “Windows Runtime Component (UWP)” project, then **no further changes are necessary.**
