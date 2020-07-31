@@ -2,7 +2,7 @@
 
 WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2019 and into 2020. WinUI is under active development by the Microsoft developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We're also [working with the Uno platform](https://platform.uno/WinUI-on-Windows7-via-UnoPlatform/) so that developers can bring their WinUI code anywhere WebAssembly runs – including Windows 7. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
-For a concise look at the team's plans for 2020 and 2021, see [this section](#winui-30-timelines-and-milestones) .
+**Note: For a detailed look at the target availability dates for certain features in WinUI 3, see [our feature roadmap](#winui-30-feature-roadmap).**
 
 The WinUI team has two major efforts underway:
 
@@ -101,6 +101,7 @@ However, we are planning at least a few new features, including:
 3. [Input validation support](https://github.com/microsoft/microsoft-ui-xaml/issues/179)
 4. New Visual Studio 2019 project templates for different combinations of app type (Win32, UWP) and language (.NET, C++)
 
+
 ### Updating your apps to use WinUI 3.0
 
 Creating a new WinUI app will be easy using the new Visual Studio 2019 project templates.
@@ -115,11 +116,18 @@ We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 to
 
 We're planning to release WinUI 3 via a series of preview releases throughout 2020, with a production-ready preview in November. We expect WinUI 3.0 to ship to market in early 2021. 
 
-You can download WinUI 3 Preview 1 to try out - we'd love feedback on it, although please note it's a early preview build with lots of missing features. For installation info and known issues see:
+You can download WinUI 3 Preview 2 to try out - we'd love feedback on it, although please note it's a early preview build with lots of missing features. For installation info and known issues see:
 
-[WinUI 3.0 Preview 1 (May 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[WinUI 3.0 Preview 2 (May 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
-See the image below for a more detailed look at our plans for getting WinUI 3.0 to market: 
+See the image below for a more detailed look at our plans for getting WinUI 3.0 to market:
 
 ![Winui roadmap](images/WinUI-RoadmapJuly2020.png)
+
+## WinUI 3.0 Feature Roadmap
+We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date that they'll be available to you. 
+
+**Please note: This is a constantly-updated living document, and the information below is always subject to change. The feature availability dates listed here are the team's current goals and expectations, but are not promises or guarantees.**
+
+For questions or status updates on specific features or features you don't see on this list, you can file an issue on [our repo](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=question&template=question.md&title=Question%3A+%5Byour+question+here%5D) or ask during our [monthly community calls](communitycalls/WinUICommunityCall.ics). 
 
