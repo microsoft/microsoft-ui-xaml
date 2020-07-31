@@ -58,11 +58,13 @@
         </StackPanel>
         <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}" Margin="0,24,0,8"/>
         <Button AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard" Click="OnClearClipboardContentsClicked" />
+        <TextBox x:Name="tb" Loaded="tbloaded" Unloaded="tbunloaded" AutomationProperties.Name="TextBoxWithAdditionalItems"/>
 
         <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}" Margin="0,24,0,8"/>
         <StackPanel Orientation="Horizontal">
             <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Click="OnCountPopupsClicked" Margin="0,0,8,0"/>
             <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
+            <TextBox x:Name="CustomButtonsOpenCount" AutomationProperties.AutomationId="CustomButtonsOpenCount" IsReadOnly="True" />
         </StackPanel>
     </StackPanel>
 </local:TestPage>

@@ -22,6 +22,8 @@ namespace MUXControlsTestApp
 {
     public sealed partial class ExtraCommandBarFlyoutPage : TestPage
     {
+        private int customButtonsFlyoutOpenCount = 0;
+
         public ExtraCommandBarFlyoutPage()
         {
             this.InitializeComponent();
@@ -76,6 +78,33 @@ namespace MUXControlsTestApp
         private void OnCountPopupsClicked(object sender, object args)
         {
             PopupCountTextBox.Text = VisualTreeHelper.GetOpenPopups(Window.Current).Count.ToString();
+            CustomButtonsOpenCount.Text = customButtonsFlyoutOpenCount.ToString();
+        }
+
+        private void tbloaded(object sender, RoutedEventArgs e)
+        {
+            tb.ContextFlyout = new Microsoft.UI.Xaml.Controls.TextCommandBarFlyout();
+            tb.ContextFlyout.Opening += ContextFlyout_Opening;
+            tb.ContextFlyout.Closed += ContextFlyout_Closed;
+        }
+
+        private void tbunloaded(object sender, RoutedEventArgs e)
+        {
+            tb.ContextFlyout.Opening -= ContextFlyout_Opening;
+        }
+
+        private void ContextFlyout_Opening(object sender, object e)
+        {
+            customButtonsFlyoutOpenCount++;
+            var flyout = (sender as Microsoft.UI.Xaml.Controls.TextCommandBarFlyout);
+            flyout.PrimaryCommands.Add(new AppBarButton() {
+                Command = new StandardUICommand(StandardUICommandKind.Close) //Just used as an example, doesn't matter what the UICommand is. Behavior is the same
+            });
+        }
+
+        private void ContextFlyout_Closed(object sender, object e)
+        {
+            customButtonsFlyoutOpenCount--;
         }
     }
 }
