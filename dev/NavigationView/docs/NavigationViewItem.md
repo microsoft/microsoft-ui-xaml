@@ -8,7 +8,7 @@ There is the `NavigationViewItemBase` class, which is the base of all Navigation
 The base NavigationViewItem handles basic events and properties that are needed for the NavigationViewItem.
 
 ## Rendering
-In addition to inheriting from NavigationViewItemBase, the NavigationViewItem renders itsself throught the NavigationViewItemPresenter.
+In addition to inheriting from NavigationViewItemBase, the NavigationViewItem renders itself throught the NavigationViewItemPresenter.
 
 For each of the different displaymodes of the NavigationView, the NavigationViewItemPresenter has its own specific style, which gets applied depending on the displaymode of the NavigationView.
 
@@ -20,6 +20,6 @@ In the case of display mode left, the items are being rendered through an ItemsR
 The template of the NavigationViewItem consist of the following parts:
 
 * `NVIRootGrid`: Root grid
-* `NavigationViewItemPresenter`: This handes the actual rendering of the item itsself
+* `NavigationViewItemPresenter`: This handes the actual rendering of the item itself
 * `NavigationViewItemMenuItemsHost`: Used for rendering of child items
 * `ChildrenFlyout`: Flyout used for children when in top NavigationView
