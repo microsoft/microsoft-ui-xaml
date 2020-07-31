@@ -19,10 +19,14 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     {
-        public enum PagerDisplayModes { Auto, ComboBox, NumberBox, NumberPanel, }
-        public enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
+        private enum PagerDisplayModes { Auto, ComboBox, NumberBox, NumberPanel, }
+        private enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
 
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
+
+        private static string NumberBoxVisualState = "NumberBoxVisible";
+        private static string ComboBoxVisualState = "ComboBoxVisible";
+        private static string NumberPanelVisualState = "NumberBoxVisible";
 
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
         
@@ -35,38 +39,42 @@ namespace MUXControlsTestApp
         protected override void OnApplyTemplate()
         {
             // Grab UIElements for later
-            FirstPageButton = GetTemplateChild<Button>("FirstPageButton");
-            PreviousPageButton = GetTemplateChild<Button>("PreviousPageButton");
-            NextPageButton = GetTemplateChild<Button>("NextPageButton");
-            LastPageButton = GetTemplateChild<Button>("LastPageButton");
+            FirstPageButton = GetTemplateChild("FirstPageButton") as Button;
+            PreviousPageButton = GetTemplateChild("PreviousPageButton") as Button;
+            NextPageButton = GetTemplateChild("NextPageButton") as Button;
+            LastPageButton = GetTemplateChild("LastPageButton") as Button;
+            NumberBoxDisplayTestHook = GetTemplateChild("NumberBoxDisplay") as NumberBox;
+            ComboBoxDisplayTestHook = GetTemplateChild("ComboBoxDisplay") as ComboBox;
+
+            // Attach TestHooks
             FirstPageButtonTestHook = FirstPageButton;
             PreviousPageButtonTestHook = PreviousPageButton;
             NextPageButtonTestHook = NextPageButton;
             LastPageButtonTestHook = LastPageButton;
-            NumberBoxDisplayTestHook = GetTemplateChild<NumberBox>("NumberBoxDisplay");
-            ComboBoxDisplayTestHook = GetTemplateChild<ComboBox>("ComboBoxDisplay");
 
             // Attach Callbacks for property changes
             RegisterPropertyChangedCallback(SelectedIndexProperty, DisablePageButtonsOnEdge);
             RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { PageChanged?.Invoke(this, new PageChangedEventArgs(SelectedIndex - 1)); });
 
             // Attach click events
-            FirstPageButton.Click += (s, e) => { SelectedIndex = 1; };
-            PreviousPageButton.Click += (s, e) => { SelectedIndex -= 1; };
-            NextPageButton.Click += (s, e) => { SelectedIndex += 1; };
-            LastPageButton.Click += (s, e) => { SelectedIndex = NumberOfPages; };
+            if (FirstPageButton != null)
+            {
+                FirstPageButton.Click += (s, e) => { SelectedIndex = 1; };
+            }
+            if (PreviousPageButton != null)
+            {
+                PreviousPageButton.Click += (s, e) => { SelectedIndex -= 1; };
+            }
+            if (NextPageButton != null)
+            {
+                NextPageButton.Click += (s, e) => { SelectedIndex += 1; }
+            }
+            if (LastPageButton != null)
+            {
+                LastPageButton.Click += (s, e) => { SelectedIndex = NumberOfPages; };
+            }
 
             InitializeDisplayMode();
-        }
-
-        T GetTemplateChild<T>(string name) where T : DependencyObject
-        {
-            T templateChild = GetTemplateChild(name) as T;
-            if (templateChild == null)
-            {
-                throw new NullReferenceException(name);
-            }
-            return templateChild;
         }
 
         private void InitializeDisplayMode()
@@ -74,14 +82,14 @@ namespace MUXControlsTestApp
             switch (PagerDisplayMode)
             {
                 case PagerDisplayModes.NumberBox:
-                    VisualStateManager.GoToState(this, "NumberBoxVisible", false);
+                    VisualStateManager.GoToState(this, NumberBoxVisualState, false);
                     break;
                 case PagerDisplayModes.Auto:
                 case PagerDisplayModes.ComboBox:
-                    VisualStateManager.GoToState(this, "ComboBoxVisible", false);
+                    VisualStateManager.GoToState(this, ComboBoxVisualState, false);
                     break;
                 case PagerDisplayModes.NumberPanel:
-                    VisualStateManager.GoToState(this, "NumberPanelVisible", false);
+                    VisualStateManager.GoToState(this, NumberPanelVisualState, false);
                     break;
             }
         }
@@ -93,8 +101,7 @@ namespace MUXControlsTestApp
 
         public PagerTemplateSettings(PrototypePager pager)
         {
-            List<int> PageRange = new List<int>(Enumerable.Range(1, pager.NumberOfPages));
-            Pages = new ObservableCollection<int>(PageRange);
+            Pages = new ObservableCollection<int>(Enumerable.Range(1, pager.NumberOfPages));
         }
     }
 }

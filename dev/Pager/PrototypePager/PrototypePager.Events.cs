@@ -22,14 +22,14 @@ namespace MUXControlsTestApp
             switch (mode)
             {
                 case PagerDisplayModes.NumberBox:
-                    VisualStateManager.GoToState(pager, "NumberBoxVisible", false);
+                    VisualStateManager.GoToState(pager, NumberBoxVisualState, false);
                     break;
                 case PagerDisplayModes.Auto:
                 case PagerDisplayModes.ComboBox:
-                    VisualStateManager.GoToState(pager, "ComboBoxVisible", false);
+                    VisualStateManager.GoToState(pager, ComboBoxVisualState, false);
                     break;
                 case PagerDisplayModes.NumberPanel:
-                    VisualStateManager.GoToState(pager, "NumberPanelVisible", false);
+                    VisualStateManager.GoToState(pager, NumberPanelVisualState, false);
                     break;
             }
         }
@@ -134,7 +134,7 @@ namespace MUXControlsTestApp
         {
             if (pager.FirstPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.FirstPageButton.IsEnabled)
+                if (pager.SelectedIndex != 1)
                 {
                     VisualStateManager.GoToState(pager, "FirstPageButtonVisible", false);
                 }
@@ -146,7 +146,7 @@ namespace MUXControlsTestApp
 
             if (pager.PreviousPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.PreviousPageButton.IsEnabled)
+                if (pager.SelectedIndex != 1)
                 {
                     VisualStateManager.GoToState(pager, "PreviousPageButtonVisible", false);
                 }
@@ -158,7 +158,7 @@ namespace MUXControlsTestApp
 
             if (pager.NextPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.NextPageButton.IsEnabled)
+                if (pager.SelectedIndex != pager.NumberOfPages)
                 {
                     VisualStateManager.GoToState(pager, "NextPageButtonVisible", false);
                 }
@@ -170,7 +170,7 @@ namespace MUXControlsTestApp
 
             if (pager.LastPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.LastPageButton.IsEnabled)
+                if (pager.SelectedIndex != pager.NumberOfPages)
                 {
                     VisualStateManager.GoToState(pager, "LastPageButtonVisible", false);
                 }

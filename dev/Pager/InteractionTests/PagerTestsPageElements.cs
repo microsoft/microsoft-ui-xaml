@@ -33,74 +33,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public UIObject GetPagerNumberBox()
         {
-            if (!NumberBoxDisplayModeActive)
-            {
-                Log.Warning("Must Set Pager Display Mode to NumberBox mode");
-                return null;
-            }
-
-            if (PagerNumberBox == null)
-            {
-                PagerNumberBox = GetPager().Children[5];
-            }
-            return PagerNumberBox;
+            return GetElementWithinPager(ref PagerNumberBox, "NumberBoxDisplay");
         }
         private UIObject PagerNumberBox;
 
         public UIObject GetPagerComboBox()
         {
-            if (!ComboBoxDisplayModeActive)
-            {
-                Log.Warning("Must set Pager Display Mode to ComboBox mode or Auto mode");
-            }
-
-            if (PagerComboBox == null)
-            {
-                PagerComboBox = GetPager().Children[5];
-            }
-            return PagerComboBox;
+            return GetElementWithinPager(ref PagerComboBox, "ComboBoxDisplay");
         }
         private UIObject PagerComboBox;
 
         public UIObject GetFirstPageButton()
         {
-
-            if (FirstPageButton == null)
-            {
-                FirstPageButton = GetPager().Children[0];
-            }
-
-            return FirstPageButton;
+            return GetElementWithinPager(ref FirstPageButton, "FirstPageButton");
         }
         private UIObject FirstPageButton;
 
         public UIObject GetPreviousPageButton()
         {
-            if (PreviousPageButton == null)
-            {
-                PreviousPageButton = GetPager().Children[2];
-            }
-            return PreviousPageButton;
+            return GetElementWithinPager(ref PreviousPageButton, "PreviousPageButton");
         }
         private UIObject PreviousPageButton;
 
         public UIObject GetNextPageButton()
         {
-            if (NextPageButton == null)
-            {
-                NextPageButton = GetPager().Children[9];
-            }
-            return NextPageButton;
+            return GetElementWithinPager(ref NextPageButton, "NextPageButton");
         }
         private UIObject NextPageButton;
 
         public UIObject GetLastPageButton()
         {
-            if (LastPageButton == null)
-            {
-                LastPageButton = GetPager().Children[11];
-            }
-            return LastPageButton;
+            return GetElementWithinPager(ref LastPageButton, "LastPageButton");
         }
         private UIObject LastPageButton;
 
@@ -223,6 +186,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Find the " + elementName);
                 element = FindElement.ByNameOrId<T>(elementName);
+                Verify.IsNotNull(element);
+            }
+            return element;
+        }
+
+        private T GetElementWithinPager<T>(ref T element, string elementName) where T: UIObject
+        {
+            if (element == null)
+            {
+                Log.Comment("Find the " + elementName);
+
+                foreach(T child in GetPager().Children)
+                {
+                    if (child.AutomationId == elementName)
+                    {
+                        element = child;
+                    }
+                }
                 Verify.IsNotNull(element);
             }
             return element;

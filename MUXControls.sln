@@ -640,8 +640,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_TestUI", "dev\InfoB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pager", "Pager", "{804CD8D0-F381-4E1B-A5FD-E9D7CE788F55}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pager", "dev\Pager\Pager.vcxitems", "{E6E42A4B-01D2-4CF4-9D24-98E9FF71669B}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Pager_TestUI", "dev\Pager\TestUI\Pager_TestUI.shproj", "{675121BF-CABC-48E7-9C9D-4571BC507406}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Pager_InteractionTests", "dev\Pager\InteractionTests\Pager_InteractionTests.shproj", "{3566798E-9E24-44EF-B89D-2A62AE8F697A}"
@@ -948,7 +946,6 @@ Global
 		dev\DatePicker\TestUI\DatePicker_TestUI.projitems*{e20f725c-3a53-463b-ada9-ff2088aaca4d}*SharedItemsImports = 13
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{e63f1c1d-f06d-46a0-b5c2-184184e44f29}*SharedItemsImports = 13
 		dev\SplitButton\APITests\SplitButton_APITests.projitems*{e687c158-4c66-4ac5-8a1b-d095a82f1549}*SharedItemsImports = 13
-		dev\Pager\Pager.vcxitems*{e6e42a4b-01d2-4cf4-9d24-98e9ff71669b}*SharedItemsImports = 9
 		dev\RadioButtons\RadioButtons.vcxitems*{e770a6d3-7252-4e8a-bd10-fa8524df8c83}*SharedItemsImports = 9
 		dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems*{e98f3da3-3c00-4f2e-bf3b-2d2ad9d176bc}*SharedItemsImports = 13
 		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{e9ac4938-ec2a-46d3-85bf-27316db8cc4d}*SharedItemsImports = 13
@@ -1604,7 +1601,6 @@ Global
 		{8CA62B44-3673-4037-8D9C-934D42904BB9} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
 		{ABBC2446-9B41-4400-8CF6-AF2CF8C597B2} = {4F935F95-BCD6-4DEF-B897-7F5D8799206A}
 		{804CD8D0-F381-4E1B-A5FD-E9D7CE788F55} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
-		{E6E42A4B-01D2-4CF4-9D24-98E9FF71669B} = {804CD8D0-F381-4E1B-A5FD-E9D7CE788F55}
 		{675121BF-CABC-48E7-9C9D-4571BC507406} = {804CD8D0-F381-4E1B-A5FD-E9D7CE788F55}
 		{3566798E-9E24-44EF-B89D-2A62AE8F697A} = {804CD8D0-F381-4E1B-A5FD-E9D7CE788F55}
 		{675373CE-6ACD-4C4B-A009-09A3C9B218E6} = {804CD8D0-F381-4E1B-A5FD-E9D7CE788F55}
