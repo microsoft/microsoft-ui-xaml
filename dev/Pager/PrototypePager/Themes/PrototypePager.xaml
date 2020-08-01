@@ -3,14 +3,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:local1="using:MUXControlsTestApp.Scripts">
+    xmlns:PagerConverters="using:MUXControlsTestApp.Scripts">
 
 
-    <local1:Int32ToDoubleConverter x:Key="IntToDouble"/>
-    <local1:IntToStrConverter x:Key="IntToStr"/>
-    <local1:Int32MinusOneConverter x:Key="IntMinusOne"/>
+    
+    <PagerConverters:Int32ToDoubleConverter x:Key="IntToDouble"/>
+    <PagerConverters:IntToStrConverter x:Key="IntToStr"/>
+    <PagerConverters:Int32MinusOneConverter x:Key="IntMinusOne"/>
 
-    <DataTemplate x:Key="IntToButton">
+    <DataTemplate x:Key="NumberPanelButtonTemplate">
         <Button Content="{Binding}" MinWidth="35"
                 Background="White"
                 Foreground="Black"/>
@@ -92,9 +93,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <!--Spacing="{TemplateBinding Spacing}"-->
-                            <StackPanel x:Name="BackButtons"
-                                        Orientation="Horizontal"
+                            <StackPanel Orientation="Horizontal"
                                         Grid.Row="0"
                                         Grid.Column="0"
                                         HorizontalAlignment="Right">
@@ -135,7 +134,7 @@
                                           ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
                                           IsEnabled="False"
                                           Visibility="Collapsed"/>
-                                    <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="of"/>
+                                    <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
                                     <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToStr}, Path=NumberOfPages}"/>
                                 </StackPanel>
                                 <StackPanel x:Name="NumberPanelDisplay"
@@ -147,16 +146,14 @@
                                               VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                                         <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater"
                                         ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
-                                        ItemTemplate="{StaticResource IntToButton}">
+                                        ItemTemplate="{StaticResource NumberPanelButtonTemplate}">
                                             <controls:ItemsRepeater.Layout>
                                                 <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
                                             </controls:ItemsRepeater.Layout>
                                         </controls:ItemsRepeater>
                                     </ScrollViewer>
                                 </StackPanel>
-                        <StackPanel Orientation="Horizontal" x:Name="ForwardButtons"
-                                        Grid.Row="0" Grid.Column="2"
-                                        HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left">
                             <TextBlock x:Name="NextPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
                                            Text="{TemplateBinding NextPageButtonText}"
                                            Visibility="{Binding ElementName=NextPageButton, Path=Visibility}"/>

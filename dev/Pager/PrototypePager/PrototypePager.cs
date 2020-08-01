@@ -19,14 +19,14 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     {
-        private enum PagerDisplayModes { Auto, ComboBox, NumberBox, NumberPanel, }
-        private enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
+        public enum PagerDisplayModes { Auto, ComboBox, NumberBox, NumberPanel, }
+        public enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
 
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
 
         private static string NumberBoxVisualState = "NumberBoxVisible";
         private static string ComboBoxVisualState = "ComboBoxVisible";
-        private static string NumberPanelVisualState = "NumberBoxVisible";
+        private static string NumberPanelVisualState = "NumberPanelVisible";
 
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
         
@@ -67,7 +67,7 @@ namespace MUXControlsTestApp
             }
             if (NextPageButton != null)
             {
-                NextPageButton.Click += (s, e) => { SelectedIndex += 1; }
+                NextPageButton.Click += (s, e) => { SelectedIndex += 1; };
             }
             if (LastPageButton != null)
             {
