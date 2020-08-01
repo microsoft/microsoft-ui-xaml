@@ -20,8 +20,8 @@
         <TextBlock Text="Demo controls" Style="{ThemeResource StandardGroupHeader}"/>
         <StackPanel Orientation="Horizontal">
             <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" ContextFlyout="{x:Bind TextCommandBarContextFlyout}"
-                     MinWidth="200" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" />
-            <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" OverflowContentTarget="{x:Bind RichTextBlockOverflow1}" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" Width="100" Height="50" HorizontalAlignment="Center">
+                     MinWidth="200" />
+            <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" OverflowContentTarget="{x:Bind RichTextBlockOverflow1}" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" Width="100" Height="50" HorizontalAlignment="Center">
                 <RichTextBlock.Blocks>
                     <Paragraph>
                         <Run>This is a very, very long string that cannot possibly fit within the RichTextBlock's bounds, so it overflows.</Run>
