@@ -51,7 +51,8 @@
                                     </Button>
                                     <ToggleButton
                                         x:Name="InnerFrameInLabDimensions"
-                                        VerticalAlignment="Stretch" Margin="0,0,4,0"
+                                        MaxHeight="25"
+                                        Padding="0"  Margin="0,0,4,0"
                                         AutomationProperties.AutomationId="__InnerFrameInLabDimensions"
                                         Content="Render innerframe in lab dimensions"/>
 
