@@ -1,6 +1,6 @@
 # NavigationView Control
 
-NavigationView is a powerful control makes it easy to integrate navigation into apps.
+NavigationView is a powerful control that makes it easy to integrate a rich navigation experience into apps.
 This document outlines overall structure and behaviors.
 Information related to the NavigationViewItem, or the rendering of the control see the documents in the /NavigationView/docs folder.
 
