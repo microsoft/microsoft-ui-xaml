@@ -55,6 +55,11 @@ namespace MUXControlsTestApp
             // Attach Callbacks for property changes
             RegisterPropertyChangedCallback(SelectedIndexProperty, DisablePageButtonsOnEdge);
             RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { PageChanged?.Invoke(this, new PageChangedEventArgs(SelectedIndex - 1)); });
+            RegisterPropertyChangedCallback(PagerDisplayModeProperty, (s,e) => { OnPagerDisplayModeChanged(); });
+            RegisterPropertyChangedCallback(FirstPageButtonVisibilityProperty, (s, e) => { OnFirstPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(NextPageButtonVisibilityProperty, (s, e) => { OnNextPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(LastPageButtonVisibilityProperty, (s, e) => { OnLastPageButtonVisibilityChanged(); });
 
             // Attach click events
             if (FirstPageButton != null)
