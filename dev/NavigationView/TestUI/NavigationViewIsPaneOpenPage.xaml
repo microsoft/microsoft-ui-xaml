@@ -20,6 +20,8 @@
             PaneTitle="NavView Test"
             IsPaneOpen="False">
             <muxcontrols:NavigationView.MenuItems>
+                <!-- This NavigationViewItem can be used to check whether selecting an item right after showing it still shows the selection indicator -->
+                <!-- See https://github.com/microsoft/microsoft-ui-xaml/issues/2941 for context  -->
                 <muxcontrols:NavigationViewItem x:Name="CollapsedItem" Content="Hidden" Icon="Home" Visibility="Collapsed"/>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
