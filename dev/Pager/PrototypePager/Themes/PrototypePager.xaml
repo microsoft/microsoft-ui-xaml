@@ -53,7 +53,6 @@
                                 <VisualState x:Name="NextPageButtonCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="NextPageButton.Visibility" Value="Collapsed"/>
-                                        <Setter Target="NextPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -62,7 +61,6 @@
                                 <VisualState x:Name="LastPageButtonCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="LastPageButton.Visibility" Value="Collapsed"/>
-                                        <Setter Target="LastPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
