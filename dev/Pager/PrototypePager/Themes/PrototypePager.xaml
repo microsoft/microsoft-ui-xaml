@@ -4,11 +4,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:PagerConverters="using:MUXControlsTestApp.Scripts">
-
-
     
-    <PagerConverters:Int32ToDoubleConverter x:Key="IntToDouble"/>
-    <PagerConverters:IntToStrConverter x:Key="IntToStr"/>
     <PagerConverters:Int32MinusOneConverter x:Key="IntMinusOne"/>
 
     <DataTemplate x:Key="NumberPanelButtonTemplate">
@@ -115,28 +111,28 @@
                                            Visibility="{Binding ElementName=PreviousPageButton, Path=Visibility}"/>
                             </StackPanel>
                             <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-                                    <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{TemplateBinding PrefixText}" />
-                                    <!--NumberBox Display-->
-                                    <controls:NumberBox x:Name="NumberBoxDisplay"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToDouble}, Path=NumberOfPages}"
-                                                    Minimum="1"
-                                                    Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToDouble}, Path=SelectedIndex, Mode=TwoWay}"
-                                                    SmallChange="1"
-                                                    LargeChange="5"
-                                                    IsEnabled="False"
-                                                    Visibility="Collapsed" />
-                                    <!--ComboBox Display-->
-                                    <ComboBox x:Name="ComboBoxDisplay"
-                                          HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          SelectedIndex="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntMinusOne}, Path=SelectedIndex, Mode=TwoWay}"
-                                          ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
-                                          IsEnabled="False"
-                                          Visibility="Collapsed"/>
-                                    <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
-                                    <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntToStr}, Path=NumberOfPages}"/>
-                                </StackPanel>
+                                <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{TemplateBinding PrefixText}" />
+                                <!--NumberBox Display-->
+                                <controls:NumberBox x:Name="NumberBoxDisplay"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"
+                                                Minimum="1"
+                                                Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedIndex, Mode=TwoWay}"
+                                                SmallChange="1"
+                                                LargeChange="5"
+                                                IsEnabled="False"
+                                                Visibility="Collapsed" />
+                                <!--ComboBox Display-->
+                                <ComboBox x:Name="ComboBoxDisplay"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      SelectedIndex="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntMinusOne}, Path=SelectedIndex, Mode=TwoWay}"
+                                      ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
+                                      IsEnabled="False"
+                                      Visibility="Collapsed"/>
+                                <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
+                                <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"/>
+                            </StackPanel>
                                 <StackPanel x:Name="NumberPanelDisplay"
                                             Orientation="Horizontal"
                                             Visibility="Collapsed"

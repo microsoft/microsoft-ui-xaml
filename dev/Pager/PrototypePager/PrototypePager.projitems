@@ -16,8 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.TestHooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Scripts\Int32ToDoubleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Scripts\IntToStrConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scripts\Int32MinusOneConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scripts\PageChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.cs" />
