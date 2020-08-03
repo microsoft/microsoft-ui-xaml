@@ -2,22 +2,35 @@
 
 ## Background
 
-The purpose of this project is to create a porting solution to allow Developers to convert WinUI2 projects to the new WinUI3 format. WinUI3 will be lifted out of Windows Operating System and ships as an independant NuGet package.
+The purpose of the Microsoft.WinUI.Convert Nuget Package is to create a porting solution to allow Developers to convert WinUI2 projects to the new WinUI3 format.
 
-- WinUI is a native user experience (UX) framework for both Windows Desktop and UWP applications. WinUI ships as part of the Windows OS.
-- WinUI3 is the next version of WinUI. It runs on the native Windows 10 UI platform and supports both Windows Desktop and UWP apps. WinUI3 ships as a NuGet package.
+- WinUI is a native user experience (UX) framework for both Windows Desktop and UWP applications. WinUI ships as part of the Windows OS. 
 [More on WinUI](https://docs.microsoft.com/en-us/windows/apps/winui/)
+- WinUI3 is the next version of WinUI. It runs on the native Windows 10 UI platform and supports both Windows Desktop and UWP apps. WinUI3 ships as a NuGet package.
+[More on WinUI3](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/)
 
-This porting assistance is provided in the form of Code Analyzers and Code Fixes. A Code Analyzer extends the Visual Studio experience and provides on the fly code inspections for C#. For most inspections these Code Analyzers provide light bulb quick fixes that can be applied to users code in the form of a Code Fix. A Code Fix consumes the diagnostics created by the Code Analyzer and modifies the C# file in-line. Users may choose to apply Code Fixes one at a time or resolve all instances of a Code Fix across a File, Project, or Solution.
+Converting an existing WinUI C# App to WinUI3 requires some changes to the C# source code. Most notably namespace changes from Windows.UI.* to Microsoft.UI.*
 
-## Description
-This tool assists with the conversion process by providing Code Analyzers/Fixes to convert existing WinUI2 C# projects to WinUI3.
+This porting assistance is provided in the form of Code Analyzers and Code Fixes. 
+- A Code Analyzer extends the Visual Studio experience and provides on the fly code inspections for C#. For most inspections these Code Analyzers provide light bulb quick fixes that can be applied to users code in the form of a Code Fix. 
+- A Code Fix consumes the diagnostics created by the Code Analyzer and modifies the C# file in-line. Users may choose to apply Code Fixes one at a time or resolve all instances of a Code Fix across a File, Project, or Solution.
 
-### What It Does:
+### What The Conversion Analyzers Do:
 Analyze/Convert C# files
 
-- Updates Namespaces for Xaml Types from `Windows.UI.Xaml` to `Microsoft.UI.Xaml`
-    - `Windows.UI.Xaml` is now `Microsoft.UI.Xaml`, so `using`s and explicit namespaces need to be updated
+- Updates Namespaces for Xaml Types from `Windows.*` to `Microsoft.*`
+- Types moving from `Windows` to `Microsoft`:
+    - `Windows.UI.Xaml`
+    - `Windows.UI.Colors`
+    - `Windows.UI.ColorHelper` 
+    - `Windows.UI.Composition`
+    - `Windows.UI.Text`
+    - `Windows.System.DispatcherQueue` 
+    - `Windows.System.DispatcherQueueController`
+    - `Windows.System.DispatcherQueueHandler`
+    - `Windows.System.DispatcherQueuePriority`
+    - `Windows.System.DispatcherQueueShutdownStartingEventArgs`
+    - `Windows.System.DispatcherQueueTimer`
 - Converts `App.OnLaunched` Method
     - Two updates need to be made to the `App.OnLaunched` method when converting to WinUI3:
     1. Target `Microsoft.UI.Xaml.LaunchactivatedEvenArgs` as the method parameter type
@@ -25,7 +38,7 @@ Analyze/Convert C# files
 - Highlights Deprecated Types
     - Some types such as `Windows.UI.Input.Inking`, and `Windows.UI.Xaml.Media.AcrylicBackgroundSource` are not supported in WinUI3. These may be identified by the analyzer as deprecated but cannot be converted automatically.
 
-### What It Does Not Do
+### What The Conversion Analyzers Do Not Do:
 
  - Modify .csproj files or modify/resolve conflicting NuGet packages
  - Remove deprecated Code
