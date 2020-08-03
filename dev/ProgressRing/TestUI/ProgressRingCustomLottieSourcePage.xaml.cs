@@ -2,6 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace MUXControlsTestApp
 {
@@ -22,11 +23,12 @@ namespace MUXControlsTestApp
             var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
             commonStatesGroup.CurrentStateChanged += this.ProgressRingCustomLottieSourcePage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
-            foreach (var state in commonStatesGroup.States)
-            {
-                // Change the animation to 0 duration to avoid timing issues in the test.
-                state.Storyboard.Children[0].Duration = new Duration(TimeSpan.FromSeconds(0));
-            }
+
+            //for (int i = 0; i < commonStatesGroup.Transitions[0].Storyboard.Children.Count; i++)
+            //{
+            //    // Change the animation to 0 duration to avoid timing issues in the test.
+            //    commonStatesGroup.Transitions[0].Storyboard.Children[i].Duration = new Duration(TimeSpan.FromSeconds(0));
+            //}
 
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
 
@@ -46,10 +48,32 @@ namespace MUXControlsTestApp
             OpacityText.Text = layoutRoot.Opacity.ToString();
         }
 
+        public void UpdateMinMax_Click(object sender, RoutedEventArgs e)
+        {
+            TestCustomLottieSourceProgressRing.Maximum = String.IsNullOrEmpty(MaximumInput.Text) ? Double.Parse(MaximumInput.PlaceholderText) : Double.Parse(MaximumInput.Text);
+            TestCustomLottieSourceProgressRing.Minimum = String.IsNullOrEmpty(MinimumInput.Text) ? Double.Parse(MinimumInput.PlaceholderText) : Double.Parse(MinimumInput.Text);
+        }
+
         public void UpdateWidth_Click(object sender, RoutedEventArgs e)
         {
             TestCustomLottieSourceProgressRing.Width = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
             TestCustomLottieSourceProgressRing.Height = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
+        }
+
+        public void UpdateValue_Click(object sender, RoutedEventArgs e)
+        {
+            TestCustomLottieSourceProgressRing.Value = String.IsNullOrEmpty(ValueInput.Text) ? Double.Parse(ValueInput.PlaceholderText) : Double.Parse(ValueInput.Text);
+        }
+        public void ChangeValue_Click(object sender, RoutedEventArgs e)
+        {
+            if (TestCustomLottieSourceProgressRing.Value + 1 > TestCustomLottieSourceProgressRing.Maximum)
+            {
+                TestCustomLottieSourceProgressRing.Value = (int)(TestCustomLottieSourceProgressRing.Minimum + 0.5);
+            }
+            else
+            {
+                TestCustomLottieSourceProgressRing.Value += 1;
+            }
         }
     }
 }
