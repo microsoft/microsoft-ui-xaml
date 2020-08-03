@@ -28,6 +28,8 @@ namespace MUXControlsTestApp
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
 
+        private int PreviousPageIndex = -1;
+
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
         
         public PrototypePager()
@@ -53,8 +55,9 @@ namespace MUXControlsTestApp
             LastPageButtonTestHook = LastPageButton;
 
             // Attach Callbacks for property changes
-            RegisterPropertyChangedCallback(SelectedIndexProperty, DisablePageButtonsOnEdge);
-            RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { PageChanged?.Invoke(this, new PageChangedEventArgs(SelectedIndex - 1)); });
+            RegisterPropertyChangedCallback(SelectedIndexProperty, (s,e) => {
+                DisablePageButtonsOnEdge(s, e);
+                PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1)); });
             RegisterPropertyChangedCallback(PagerDisplayModeProperty, (s,e) => { OnPagerDisplayModeChanged(); });
             RegisterPropertyChangedCallback(FirstPageButtonVisibilityProperty, (s, e) => { OnFirstPageButtonVisibilityChanged(); });
             RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });

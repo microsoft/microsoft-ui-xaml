@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Windows.UI;
@@ -15,7 +16,10 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     { 
-
+        private static void OnSelectedIndexChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        {
+            (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
+        }
         private void OnPagerDisplayModeChanged()
         {
             switch (this.PagerDisplayMode)

@@ -45,7 +45,7 @@ namespace MUXControlsTestApp
             set { SetValue(SelectedIndexProperty, value); }
         }
         public static readonly DependencyProperty SelectedIndexProperty =
-            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(PrototypePager), new PropertyMetadata(1));
+            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(PrototypePager), new PropertyMetadata(1, OnSelectedIndexChanged));
 
         /* NumberBox & ComboBox Text Properties
          * 
