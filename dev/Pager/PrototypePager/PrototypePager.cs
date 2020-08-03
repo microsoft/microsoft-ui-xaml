@@ -24,9 +24,9 @@ namespace MUXControlsTestApp
 
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
 
-        private static string NumberBoxVisualState = "NumberBoxVisible";
-        private static string ComboBoxVisualState = "ComboBoxVisible";
-        private static string NumberPanelVisualState = "NumberPanelVisible";
+        private static string NumberBoxVisibleVisualState = "NumberBoxVisible";
+        private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
+        private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
 
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
         
@@ -82,14 +82,14 @@ namespace MUXControlsTestApp
             switch (PagerDisplayMode)
             {
                 case PagerDisplayModes.NumberBox:
-                    VisualStateManager.GoToState(this, NumberBoxVisualState, false);
+                    VisualStateManager.GoToState(this, NumberBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.Auto:
                 case PagerDisplayModes.ComboBox:
-                    VisualStateManager.GoToState(this, ComboBoxVisualState, false);
+                    VisualStateManager.GoToState(this, ComboBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.NumberPanel:
-                    VisualStateManager.GoToState(this, NumberPanelVisualState, false);
+                    VisualStateManager.GoToState(this, NumberPanelVisibleVisualState, false);
                     break;
             }
         }

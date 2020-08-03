@@ -22,14 +22,14 @@ namespace MUXControlsTestApp
             switch (mode)
             {
                 case PagerDisplayModes.NumberBox:
-                    VisualStateManager.GoToState(pager, NumberBoxVisualState, false);
+                    VisualStateManager.GoToState(pager, NumberBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.Auto:
                 case PagerDisplayModes.ComboBox:
-                    VisualStateManager.GoToState(pager, ComboBoxVisualState, false);
+                    VisualStateManager.GoToState(pager, ComboBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.NumberPanel:
-                    VisualStateManager.GoToState(pager, NumberPanelVisualState, false);
+                    VisualStateManager.GoToState(pager, NumberPanelVisibleVisualState, false);
                     break;
             }
         }

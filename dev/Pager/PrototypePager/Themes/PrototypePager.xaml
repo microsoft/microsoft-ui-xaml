@@ -98,7 +98,7 @@
                                 <Button x:Name="FirstPageButton"
                                         IsEnabled="False"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
-                                        FontFamily="Segoe MDL2 Assets"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         Content="&#xE892;"/>
                                 <TextBlock x:Name="FirstPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
                                            Text="{TemplateBinding FirstPageButtonText}"
@@ -106,8 +106,10 @@
                                 <Button x:Name="PreviousPageButton"
                                         IsEnabled="False"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
-                                        FontFamily="Segoe MDL2 Assets"
-                                        Content="&#xE76B;"/>
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        Content="&#xE76B;"
+                                        
+                                        />
                                 <TextBlock x:Name="PreviousPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
                                            Text="{TemplateBinding PreviousPageButtonText}"
                                            Visibility="{Binding ElementName=PreviousPageButton, Path=Visibility}"/>
@@ -157,14 +159,14 @@
                                            Visibility="{Binding ElementName=NextPageButton, Path=Visibility}"/>
                             <Button x:Name="NextPageButton"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
-                                        FontFamily="Segoe MDL2 Assets"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         Content="&#xE76C;" />
                             <TextBlock x:Name="LastPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
                                            Text="{TemplateBinding LastPageButtonText}"
                                            Visibility="{Binding ElementName=LastPageButton, Path=Visibility}"/>
                             <Button x:Name="LastPageButton"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
-                                        FontFamily="Segoe MDL2 Assets"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         Content="&#xE893;"/>
                         </StackPanel>
                     </Grid>
