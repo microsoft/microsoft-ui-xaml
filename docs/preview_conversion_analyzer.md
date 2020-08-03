@@ -13,13 +13,13 @@ This porting assistance is provided in the form of Code Analyzers and Code Fixes
 ## Description
 This tool assists with the conversion process by providing Code Analyzers/Fixes to convert existing WinUI2 C# projects to WinUI3.
 
-### What It Does
+### What It Does:
+Analyze/Convert C# files
 
-- Analyze/Convert C# files
 - Updates Namespaces for Xaml Types from `Windows.UI.Xaml` to `Microsoft.UI.Xaml`
     - `Windows.UI.Xaml` is now `Microsoft.UI.Xaml`, so `using`s and explicit namespaces need to be updated
 - Converts `App.OnLaunched` Method
-    - 2 Updates need to be made to the `App.OnLaunched` method when converting to WinUI3
+    - Two updates need to be made to the `App.OnLaunched` method when converting to WinUI3:
     1. Target `Microsoft.UI.Xaml.LaunchactivatedEvenArgs` as the method parameter type
     2. Instances of the parameter name in the `App.OnLaunched` method body must invoke `UWPLaunchActivatedEventArgs`
 - Highlights Deprecated Types
