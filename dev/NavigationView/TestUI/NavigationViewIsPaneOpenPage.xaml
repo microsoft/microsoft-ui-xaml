@@ -16,9 +16,11 @@
             x:Name="NavView" 
             AutomationProperties.Name="NavView" 
             AutomationProperties.AutomationId="NavView"
+            ItemInvoked="NavigationView_ItemInvoked"
             PaneTitle="NavView Test"
             IsPaneOpen="False">
             <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem x:Name="CollapsedItem" Content="Hidden" Icon="Home" Visibility="Collapsed"/>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
             </muxcontrols:NavigationView.MenuItems>
