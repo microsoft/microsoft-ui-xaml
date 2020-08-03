@@ -7,8 +7,10 @@
     
     <PagerConverters:Int32MinusOneConverter x:Key="IntMinusOne"/>
 
+    <x:Double x:Key="NumberPanelButtonWidth">35</x:Double>
+    
     <DataTemplate x:Key="NumberPanelButtonTemplate">
-        <Button Content="{Binding}" MinWidth="35"
+        <Button Content="{Binding}" MinWidth="{StaticResource NumberPanelButtonWidth}"
                 Background="White"
                 Foreground="Black"/>
     </DataTemplate>
