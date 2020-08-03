@@ -303,6 +303,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var addButton = FindElement.ByName<Button>("AddItemButton");
                 var removeButton = FindElement.ByName<Button>("RemoveItemButton");
 
+                var addFooterButton = FindElement.ByName<Button>("AddFooterItemButton");
+                var removeFooterButton = FindElement.ByName<Button>("RemoveFooterItemButton");
+
                 Log.Comment("Verify that the MenuItemsSource was loaded and is selected");
                 UIObject item1 = FindElement.ByName("Menu Item 1");
                 Verify.IsNotNull(item1);
@@ -317,6 +320,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 removeButton.Invoke();
                 Wait.ForIdle();
                 VerifyElement.NotFound("New Menu Item", FindBy.Name);
+
+                Log.Comment("Verify that footer menu items added to FooterMenuItemsSource appear in the list");
+                addFooterButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("New Footer Item", FindBy.Name);
+
+                Log.Comment("Verify that footer menu items removed from FooterMenuItemsSource disappear from the list");
+                removeFooterButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.NotFound("New Footer Item", FindBy.Name);
             }
         }
 

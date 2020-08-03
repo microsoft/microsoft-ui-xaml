@@ -177,8 +177,6 @@ NavigationView::NavigationView()
     SetValue(s_MenuItemsProperty, items);
 
     auto footerItems = winrt::make<Vector<winrt::IInspectable>>();
-    auto observableVector = footerItems.try_as<winrt::IObservableVector<winrt::IInspectable>>();
-    observableVector.VectorChanged({ this, &NavigationView::OnFooterItemsVectorChanged });
     SetValue(s_FooterMenuItemsProperty, footerItems);
 
     auto weakThis = get_weak();
@@ -212,7 +210,12 @@ NavigationView::NavigationView()
 
 void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e)
 {
-    if (auto nvi = e.Source().try_as<winrt::NavigationViewItem>())
+    // this is main menu or footer
+    if (e.SourceIndex().GetSize() == 1)
+    {
+        e.Children(e.Source());
+    }
+    else if (auto nvi = e.Source().try_as<winrt::NavigationViewItem>())
     {
         e.Children(GetChildren(nvi));
     }
@@ -220,15 +223,11 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
     {
         e.Children(children);
     }
-    else
-    {
-        e.Children(e.Source());
-    }
 }
 
-void NavigationView::OnFooterItemsVectorChanged(winrt::Collections::IObservableVector<winrt::IInspectable> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
+void NavigationView::OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    UpdateFooterRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
+    UpdateFooterRepeaterItemsSource(false /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -710,7 +709,7 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
     }
 }
 
-void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpdate)
+void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReseted, bool sourceCollectionChanged)
 {
     if (!m_appliedTemplate) return;
 
@@ -728,7 +727,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
     UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
     UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), nullptr);
 
-    if (!m_settingsItem || forceSelectionModelUpdate)
+    if (!m_settingsItem || sourceCollectionChanged || sourceCollectionReseted)
     {
         auto dataSource = winrt::make<Vector<winrt::IInspectable>>();
 
@@ -740,14 +739,26 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
             m_navigationViewItemsFactory.get()->SettingsItem(settingsItem);
         }
 
-        if (auto footerItems = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
+        if (sourceCollectionReseted)
+        {
+            m_footerItemsCollectionChangedRevoker.revoke();
+            m_footerItemsSource = nullptr;
+        }
+
+        if (!m_footerItemsSource)
+        {
+            m_footerItemsSource = winrt::ItemsSourceView(itemsSource);
+            m_footerItemsCollectionChangedRevoker = m_footerItemsSource.CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnFooterItemsSourceCollectionChanged });
+        }
+
+        if (m_footerItemsSource)
         {
             auto settingsItem = m_settingsItem.get();
-            const auto size = footerItems.Size();
+            const auto size = m_footerItemsSource.Count();
 
-            for (uint32_t i = 0; i < size; i++)
+            for (int32_t i = 0; i < size; i++)
             {
-                auto item = footerItems.GetAt(i);
+                auto item = m_footerItemsSource.GetAt(i).as<winrt::IInspectable>();
                 dataSource.Append(item);
             }
 
@@ -2923,16 +2934,6 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
 
     ChangeSelection(oldItem, newItem);
 
-    // When we do not raise a "SelectItemChanged" event, the selection does not get animated.
-    // To prevent faulty visual states, we will animate that here
-    // Since we only do this for the settings item, check if the old item is our settings item
-    if (oldItem != newItem && m_shouldIgnoreNextSelectionChangeBecauseSettingsRestore)
-    {
-        ChangeSelectStatusForItem(oldItem, false /*selected*/);
-        ChangeSelectStatusForItem(newItem, true /*selected*/);
-        AnimateSelectionChanged(newItem);
-    }
-
     if (m_appliedTemplate && IsTopNavigationView())
     {
         if (!m_layoutUpdatedToken ||
@@ -3651,9 +3652,13 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdateRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
     }
+    else if (property == s_FooterMenuItemsSourceProperty)
+    {
+        UpdateFooterRepeaterItemsSource(true /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
+    }
     else if (property == s_FooterMenuItemsProperty)
     {
-        UpdateFooterRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
+        UpdateFooterRepeaterItemsSource(true /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
     }
     else if (property == s_PaneDisplayModeProperty)
     {
@@ -3712,7 +3717,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_IsSettingsVisibleProperty)
     {
-        UpdateFooterRepeaterItemsSource(true);
+        UpdateFooterRepeaterItemsSource(false /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
     }
     else if (property == s_CompactPaneLengthProperty)
     {
@@ -3878,7 +3883,7 @@ void NavigationView::UpdatePaneDisplayMode()
 
     UpdateContentBindingsForPaneDisplayMode();
     UpdateRepeaterItemsSource(false /*forceSelectionModelUpdate*/);
-    UpdateFooterRepeaterItemsSource(false /*forceSelectionModelUpdate*/);
+    UpdateFooterRepeaterItemsSource(false /*sourceCollectionReseted*/, false /*sourceCollectionChanged*/);
     if (auto selectedItem = SelectedItem())
     {
         m_OrientationChangedPendingAnimation = true;
@@ -4240,18 +4245,18 @@ void NavigationView::UpdateSelectionForMenuItems()
         // firstly check Menu items
         if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
-            foundFirstSelected = UpdateSelectedItemFormMenuItems(menuItems);
+            foundFirstSelected = UpdateSelectedItemFromMenuItems(menuItems);
         }
 
         // then do same for footer items and tell wenever selected item alreadyfound in MenuItems
         if (auto footerItems = FooterMenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
-            UpdateSelectedItemFormMenuItems(footerItems, foundFirstSelected);
+            UpdateSelectedItemFromMenuItems(footerItems, foundFirstSelected);
         }
     }
 }
 
-bool NavigationView::UpdateSelectedItemFormMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected)
+bool NavigationView::UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected)
 {
     for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
     {
@@ -4523,12 +4528,23 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
         return nvi;
     }
 
-    // First conduct a basic top level search, which should succeed for a lot of scenarios.
-    auto ir = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
-    const auto itemIndex = GetIndexFromItem(ir, data);
-    if (ir && itemIndex >= 0)
+    // First conduct a basic top level search in mai menu, which should succeed for a lot of scenarios.
+    const auto mainRepeater = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
+    auto itemIndex = GetIndexFromItem(mainRepeater, data);
+    if (itemIndex >= 0)
     {
-        if (auto container = ir.TryGetElement(itemIndex))
+        if (auto container = mainRepeater.TryGetElement(itemIndex))
+        {
+            return container.try_as<T>();
+        }
+    }
+
+    // then look in footer menu
+    const auto footerRepeater = IsTopNavigationView() ? m_topNavFooterMenuRepeater.get() : m_leftNavFooterMenuRepeater.get();
+    itemIndex = GetIndexFromItem(footerRepeater, data);
+    if (itemIndex >= 0)
+    {
+        if (auto container = footerRepeater.TryGetElement(itemIndex))
         {
             return container.try_as<T>();
         }
@@ -4537,8 +4553,12 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
     // If unsuccessful, unfortunately we are going to have to search through the whole tree
     // TODO: Either fix or remove implementation for TopNav.
     // It may not be required due to top nav rarely having realized children in its default state.
-    auto const repeater = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
-    if (auto const container = SearchEntireTreeForContainer(repeater, data))
+    if (auto const container = SearchEntireTreeForContainer(mainRepeater, data))
+    {
+        return container.try_as<T>();
+    }
+
+    if (auto const container = SearchEntireTreeForContainer(footerRepeater, data))
     {
         return container.try_as<T>();
     }
@@ -4582,7 +4602,7 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Items
         {
             if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
             {
-                auto const ip = winrt::make<IndexPath>(std::vector<int>({ isFooterRepeater ? 1 : 0, i }));
+                auto const ip = winrt::make<IndexPath>(std::vector<int>({ isFooterRepeater ? c_footerMenuBlockIndex : c_mainMenuBlockIndex, i }));
                 if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
                 {
                     return indexPath;
@@ -4860,7 +4880,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible)
 {
     auto container = firstContainer;
-    if (ip.GetSize() > 1)
+    if (ip.GetSize() > 2)
     {
         for (int i = 2; i < ip.GetSize(); i++)
         {
