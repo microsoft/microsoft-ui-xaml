@@ -8,7 +8,7 @@ Information related to the NavigationViewItem, or the rendering of the control s
 
 NavigationView is a complex control, which has a lot of internal states to store.
 
-Rendering of the menu items is being done through two ItemsRepeaters, one for the NavigationView in left mode, and one for the NavigationView in top mode.
+Rendering of the menu items is being done through three ItemsRepeaters, one for the NavigationView in left mode, one for the NavigationView in top mode and one for the overflow menu.
 For more on this, see [the rendering document](./docs/rendering.md).
 
 The selection is being tracked through a SelectionModel, which uses IndexPath tracking for hierarchical NavigationViewItems.
@@ -24,15 +24,10 @@ Keyboard navigation is done by the NavigationView, however handling of ItemInvok
 1. NavigationViewItem gets invoked
 2. NavigationView gets informed that an item was invoked
 3. NavigationView raises ItemInvoked
+3.5. NavigationViewChecks the Item's SelectOnInvoke property, if false we are done, if true:
 4. NavigationView updates selection
 5. NavigationView notifies the invoked NavigationViewItem about its new selection state
 6. NavigationView raises SelectionChanged
-
-If the NavigationViewItem has "SelectOnInvoke" set to false, the selection will not be updated:
-
-1. NavigationViewItem gets invoked
-2. NavigationView gets informed that an item was invoked
-3. NavigationView raises ItemInvoked
 
 ### Selection update from API (SelectedItem property)
 
