@@ -31,8 +31,14 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
         }
     }
 
+    if($prefixList.Count -lt 1)
+    {
+        Write-Host "No verification files were found, did you call the script on the correct directory?"
+	}
+
     foreach($prefix in $prefixList)
     {
+        Write-Host "Processing updates for $prefix"
         $updatedVersionedVerificationFiles = $updatedVerificationFiles | Where { $_.Name.StartsWith("$prefix-") } | Sort-Object -Property Name
         $currentBaseVerificationFile = $currentVerificationFiles | Where { $_.Name.StartsWith("$prefix.") }
         $currentVersionedVerificationFiles = $currentVerificationFiles | Where { $_.Name.StartsWith("$prefix-") } | Sort-Object -Property Name
@@ -61,7 +67,7 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
             {
                 $updatedVersionedVerificationFileForI = $updatedVersionedVerificationFiles | Where {$_.Name.StartsWith("$prefix-$i.")}
                 $finalVersionedVerificationFiles += $updatedVersionedVerificationFileForI
-			}
+            }
             else
             {
                 $currentVerificationFilesIndexesLessThanI = $currentVerificationFilesIndexes -le $i | Sort-Object -Descending
@@ -70,12 +76,12 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
                     $currentVersionedVerificationFileIndexForI = $currentVerificationFilesIndexesLessThanI[0]
                     $currentVersionedVerificationFileForI = $currentVersionedVerificationFiles | Where {$_.Name.StartsWith("$prefix-$currentVersionedVerificationFileIndexForI.")}
                     $finalVersionedVerificationFiles += $currentVersionedVerificationFileForI        
-				}
+                }
                 else
                 {
                     $finalVersionedVerificationFiles += $currentBaseVerificationFile				
                 }
-			}
+            }
         }
 
         $indexesToPublish = @()
@@ -96,10 +102,15 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
             $j = $i+1
             Copy-Item $finalVersionedVerificationFiles[$i].FullName "staging\$prefix-$j.xml" -Force
             Write-Host "Copied $($finalVersionedVerificationFiles[$i].FullName) as updated $prefix-$j.xml"
-		}
+        }
         Remove-Item $outputFolder\$prefix.xml
         Remove-Item $outputFolder\$prefix-*.xml
-        Copy-item -Force -Recurse -Verbose "$staging\*" -Destination $outputFolder
+        Copy-item -Force -Recurse "$staging\*" -Destination $outputFolder
         Remove-Item $staging\*.*
     }
+    Remove-Item $staging
+}
+else
+{
+    Write-Host "Invalid path to visual verification updates"
 }
