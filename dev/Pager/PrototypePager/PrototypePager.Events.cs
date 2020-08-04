@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
         {
             (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
         }
+
         private void OnPagerDisplayModeChanged()
         {
             switch (this.PagerDisplayMode)

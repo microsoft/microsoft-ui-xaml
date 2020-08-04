@@ -82,24 +82,7 @@ namespace MUXControlsTestApp
                 LastPageButton.Click += (s, e) => { SelectedIndex = NumberOfPages; };
             }
 
-            InitializeDisplayMode();
-        }
-
-        private void InitializeDisplayMode()
-        {
-            switch (PagerDisplayMode)
-            {
-                case PagerDisplayModes.NumberBox:
-                    VisualStateManager.GoToState(this, NumberBoxVisibleVisualState, false);
-                    break;
-                case PagerDisplayModes.Auto:
-                case PagerDisplayModes.ComboBox:
-                    VisualStateManager.GoToState(this, ComboBoxVisibleVisualState, false);
-                    break;
-                case PagerDisplayModes.NumberPanel:
-                    VisualStateManager.GoToState(this, NumberPanelVisibleVisualState, false);
-                    break;
-            }
+            OnPagerDisplayModeChanged();
         }
     }
 
