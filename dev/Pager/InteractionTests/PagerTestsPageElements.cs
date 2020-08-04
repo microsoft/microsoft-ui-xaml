@@ -217,7 +217,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             NumberPanel
         };
 
-        public enum ButtonVisibilityMode
+        public enum ButtonVisibilityModes
         {
             Auto,
             AlwaysVisible,

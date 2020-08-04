@@ -35,6 +35,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         PagerTestsPageElements elements;
         int previousPage = -1;
 
+        delegate void SetButtonVisibilityModeFunction(ButtonVisibilityModes mode);
+
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
@@ -233,184 +235,101 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void FirstPageButtonVisibilityOptionsTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
-            {
-                elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
-
-                foreach (ButtonVisibilityMode visMode in Enum.GetValues(typeof(ButtonVisibilityMode)))
-                {
-                    SetFirstPageButtonVisibilityMode(visMode);
-
-                    // If we're not on the first page then navigate to the first page.
-                    if (previousPage != 0)
-                    {
-                        if (visMode != ButtonVisibilityMode.None)
-                        {
-                            ClickButton(elements.GetFirstPageButton(), 0);
-                        }
-                        else // If the first page button is not visible then we resort to using the combobox to navigate to the first page.
-                        {
-                            SelectValueInPagerComboBox(0);
-                            VerifyPageChangedEventOutput(0);
-                        }
-                    }
-
-                    // Check the button when on the first page.
-                    var shouldBeEnabled = false;
-                    var expectedVisMode = (visMode == ButtonVisibilityMode.None || (visMode == ButtonVisibilityMode.HiddenOnEdge && previousPage == 0))
-                        ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetFirstPageButton(), expectedVisMode, shouldBeEnabled);
-                    ClickButton(elements.GetNextPageButton(), 1);
-                    
-                    // Check the button when on the second page (not on an edge in the page range).
-                    shouldBeEnabled = true;
-                    expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetFirstPageButton(), expectedVisMode, shouldBeEnabled);
-                    ClickButton(elements.GetLastPageButton(), 4);
-
-                    // Check the button when on the last page.
-                    shouldBeEnabled = true;
-                    expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetFirstPageButton(), expectedVisMode, shouldBeEnabled);
-                }
-            }
+            ButtonVisibilityOptionsTest(buttonNamePrefix: "First");
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void PreviousPageButtonVisibilityOptionsTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
-            {
-                elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
-
-                foreach (ButtonVisibilityMode visMode in Enum.GetValues(typeof(ButtonVisibilityMode)))
-                {
-                    SetPreviousPageButtonVisibilityMode(visMode);
-
-                    // If we're not on the first page then navigate to the first page.
-                    if (previousPage != 0)
-                    {
-                        ClickButton(elements.GetFirstPageButton(), 0);
-                    }
-
-                    // Check the button when on the first page.
-                    var shouldBeEnabled = false;
-                    var expectedVisMode = (visMode == ButtonVisibilityMode.None || (visMode == ButtonVisibilityMode.HiddenOnEdge && previousPage == 0))
-                        ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetPreviousPageButton(), expectedVisMode, shouldBeEnabled);
-                    ClickButton(elements.GetNextPageButton(), 1);
-
-                    // Check the button when on the second page (not on an edge in the page range).
-                    shouldBeEnabled = true;
-                    expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetPreviousPageButton(), expectedVisMode, shouldBeEnabled);
-                    ClickButton(elements.GetLastPageButton(), 4);
-
-                    // Check the button when on the last page.
-                    shouldBeEnabled = true;
-                    expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetPreviousPageButton(), expectedVisMode, shouldBeEnabled);
-                }
-            }
+            ButtonVisibilityOptionsTest(buttonNamePrefix: "Previous");
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void NextPageButtonVisibilityOptionsTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
-            {
-                elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
-
-                foreach (ButtonVisibilityMode visMode in Enum.GetValues(typeof(ButtonVisibilityMode)))
-                {
-                    SetNextPageButtonVisibilityMode(visMode);
-
-                    // If we're not on the first page then navigate to the first page.
-                    if (previousPage != 0)
-                    {
-                        ClickButton(elements.GetFirstPageButton(), 0);
-                    }
-
-                    // Check the button when on the first page.
-                    var shouldBeEnabled = true;
-                    var expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetNextPageButton(), expectedVisMode, shouldBeEnabled);
-                    if (visMode != ButtonVisibilityMode.None)
-                    {
-                        ClickButton(elements.GetNextPageButton(), 1);
-                    }
-                    else
-                    {
-                        // Since the next page button is disabled due to the visibility mode, we resort to using the combobox to go to the next page.
-                        SelectValueInPagerComboBox(1);
-                        VerifyPageChangedEventOutput(1);
-                    }
-
-                    // Check the button when on the second page (not on an edge in the page range).
-                    shouldBeEnabled = true;
-                    expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetNextPageButton(), expectedVisMode, shouldBeEnabled);
-                    ClickButton(elements.GetLastPageButton(), 4);
-
-                    // Check the button when on the last page.
-                    shouldBeEnabled = false;
-                    expectedVisMode = (visMode == ButtonVisibilityMode.None || (visMode == ButtonVisibilityMode.HiddenOnEdge && previousPage == 4))
-                        ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetNextPageButton(), expectedVisMode, shouldBeEnabled);
-                }
-            }
+            ButtonVisibilityOptionsTest(buttonNamePrefix: "Next");
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void LastPageButtonVisibilityOptionsTest()
         {
+            ButtonVisibilityOptionsTest(buttonNamePrefix: "Last");
+        }
+
+        void ButtonVisibilityOptionsTest(string buttonNamePrefix)
+        {
+            SetButtonVisibilityModeFunction SetButtonVisibilityMode;
+            UIObject buttonBeingTested;
+
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
+
                 elements = new PagerTestsPageElements();
+                switch (buttonNamePrefix)
+                {
+                    case "First":
+                        SetButtonVisibilityMode = SetFirstPageButtonVisibilityMode;
+                        buttonBeingTested = elements.GetFirstPageButton();
+                        break;
+                    case "Previous":
+                        SetButtonVisibilityMode = SetPreviousPageButtonVisibilityMode;
+                        buttonBeingTested = elements.GetPreviousPageButton();
+                        break;
+                    case "Next":
+                        SetButtonVisibilityMode = SetNextPageButtonVisibilityMode;
+                        buttonBeingTested = elements.GetNextPageButton();
+                        break;
+                    case "Last":
+                        SetButtonVisibilityMode = SetLastPageButtonVisibilityMode;
+                        buttonBeingTested = elements.GetLastPageButton();
+                        break;
+                    default:
+                        Log.Warning("This test is being skipped because the button string was not one of these four strings: [First, Previous, Next, Last]");
+                        return;
+                }
+
                 VerifyPageChangedEventOutput(0);
 
-                foreach (ButtonVisibilityMode visMode in Enum.GetValues(typeof(ButtonVisibilityMode)))
+                foreach (ButtonVisibilityModes visMode in Enum.GetValues(typeof(ButtonVisibilityModes)))
                 {
-                    SetLastPageButtonVisibilityMode(visMode);
+                    SetButtonVisibilityMode(visMode);
 
                     // If we're not on the first page then navigate to the first page.
                     if (previousPage != 0)
                     {
-                        ClickButton(elements.GetFirstPageButton(), 0);
+                        SelectValueInPagerComboBox(0);
+                        VerifyPageChangedEventOutput(0);
                     }
 
-                    // Check the button when on the first page.
-                    var shouldBeEnabled = true;
-                    var expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetLastPageButton(), expectedVisMode, shouldBeEnabled);
-                    ClickButton(elements.GetNextPageButton(), 1);
+                    var expectedVisibility = ((visMode == ButtonVisibilityModes.None) ||
+                        (visMode == ButtonVisibilityModes.HiddenOnEdge &&
+                        (buttonNamePrefix == "First" || buttonNamePrefix == "Previous"))) ? Visibility.Collapsed : Visibility.Visible;
 
-                    // Check the button when on the second page (not on an edge in the page range).
-                    shouldBeEnabled = true;
-                    expectedVisMode = visMode == ButtonVisibilityMode.None ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetLastPageButton(), expectedVisMode, shouldBeEnabled);
-                    if (visMode != ButtonVisibilityMode.None)
-                    {
-                        ClickButton(elements.GetLastPageButton(), 4);
-                    } 
-                    else
-                    {
-                        // If the Last Page button is not visible, then we resort to using the combobox to go to the last page.
-                        SelectValueInPagerComboBox(4);
-                        VerifyPageChangedEventOutput(4);
-                    }
+                    var expectedIsEnableValue = (buttonNamePrefix == "First" || buttonNamePrefix == "Previous") ? false : true;
 
-                    // Check the button when on the last page.
-                    shouldBeEnabled = false;
-                    expectedVisMode = (visMode == ButtonVisibilityMode.None || (visMode == ButtonVisibilityMode.HiddenOnEdge && previousPage == 4))
-                        ? Visibility.Collapsed : Visibility.Visible;
-                    VerifyButton(elements.GetLastPageButton(), expectedVisMode, shouldBeEnabled);
+                    VerifyButton(buttonBeingTested, expectedVisibility, expectedIsEnableValue);
+
+                    SelectValueInPagerComboBox(1);
+                    VerifyPageChangedEventOutput(1);
+
+                    expectedVisibility = (visMode == ButtonVisibilityModes.None) ? Visibility.Collapsed : Visibility.Visible;
+                    expectedIsEnableValue = true;
+
+                    VerifyButton(buttonBeingTested, expectedVisibility, expectedIsEnableValue);
+
+                    SelectValueInPagerComboBox(4);
+                    VerifyPageChangedEventOutput(4);
+
+                    expectedVisibility = ((visMode == ButtonVisibilityModes.None) ||
+                        (visMode == ButtonVisibilityModes.HiddenOnEdge &&
+                        (buttonNamePrefix == "Next" || buttonNamePrefix == "Last"))) ? Visibility.Collapsed : Visibility.Visible;
+
+                    expectedIsEnableValue = (buttonNamePrefix == "Next" || buttonNamePrefix == "Last") ? false : true;
+
+                    VerifyButton(buttonBeingTested, expectedVisibility, expectedIsEnableValue);
                 }
             }
         }
@@ -554,81 +473,81 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expected, elements.GetLastPageButtonIsEnabledCheckBox().ToggleState == ToggleState.On);
         }
 
-        void SetFirstPageButtonVisibilityMode(ButtonVisibilityMode mode)
+        void SetFirstPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityMode.Auto)
+            if (mode == ButtonVisibilityModes.Auto)
             {
                 elements.GetFirstPageButtonVisibilityComboBox().SelectItemByName("AutoFirstPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.AlwaysVisible)
+            else if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetFirstPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisibleFirstPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.HiddenOnEdge)
+            else if (mode == ButtonVisibilityModes.HiddenOnEdge)
             {
                 elements.GetFirstPageButtonVisibilityComboBox().SelectItemByName("HiddenOnEdgeFirstPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.None)
+            else if (mode == ButtonVisibilityModes.None)
             {
                 elements.GetFirstPageButtonVisibilityComboBox().SelectItemByName("NoneFirstPageButtonVisibilityItem");
             }
         }
 
-        void SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode mode)
+        void SetPreviousPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityMode.Auto)
+            if (mode == ButtonVisibilityModes.Auto)
             {
                 elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("AutoPreviousPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.AlwaysVisible)
+            else if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisiblePreviousPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.HiddenOnEdge)
+            else if (mode == ButtonVisibilityModes.HiddenOnEdge)
             {
                 elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("HiddenOnEdgePreviousPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.None)
+            else if (mode == ButtonVisibilityModes.None)
             {
                 elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("NonePreviousPageButtonVisibilityItem");
             }
         }
         
-        void SetNextPageButtonVisibilityMode(ButtonVisibilityMode mode)
+        void SetNextPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityMode.Auto)
+            if (mode == ButtonVisibilityModes.Auto)
             {
                 elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("AutoNextPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.AlwaysVisible)
+            else if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisibleNextPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.HiddenOnEdge)
+            else if (mode == ButtonVisibilityModes.HiddenOnEdge)
             {
                 elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("HiddenOnEdgeNextPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.None)
+            else if (mode == ButtonVisibilityModes.None)
             {
                 elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("NoneNextPageButtonVisibilityItem");
             }
         }
         
-        void SetLastPageButtonVisibilityMode(ButtonVisibilityMode mode)
+        void SetLastPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityMode.Auto)
+            if (mode == ButtonVisibilityModes.Auto)
             {
                 elements.GetLastPageButtonVisibilityComboBox().SelectItemByName("AutoLastPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.AlwaysVisible)
+            else if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetLastPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisibleLastPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.HiddenOnEdge)
+            else if (mode == ButtonVisibilityModes.HiddenOnEdge)
             {
                 elements.GetLastPageButtonVisibilityComboBox().SelectItemByName("HiddenOnEdgeLastPageButtonVisibilityItem");
             }
-            else if (mode == ButtonVisibilityMode.None)
+            else if (mode == ButtonVisibilityModes.None)
             {
                 elements.GetLastPageButtonVisibilityComboBox().SelectItemByName("NoneLastPageButtonVisibilityItem");
             }
