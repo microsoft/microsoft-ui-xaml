@@ -51,7 +51,7 @@ namespace MUXControlsTestApp
                 TextBox1.ContextFlyout = TextCommandBarContextFlyout;
                 RichTextBlock1.ContextFlyout = TextCommandBarContextFlyout;
             }
-            
+
             try
             {
                 if (ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Controls.TextBox", "SelectionFlyout"))
@@ -98,7 +98,7 @@ namespace MUXControlsTestApp
             customButtonsFlyoutOpenCount++;
             var flyout = (sender as Microsoft.UI.Xaml.Controls.TextCommandBarFlyout);
             flyout.PrimaryCommands.Add(new AppBarButton() {
-                Command = new StandardUICommand(StandardUICommandKind.Close) //Just used as an example, doesn't matter what the UICommand is. Behavior is the same
+                Content = new TextBlock() { Text = "Test" }
             });
         }
 
