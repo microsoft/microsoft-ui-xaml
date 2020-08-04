@@ -4,12 +4,17 @@ Param(
     [string]$outputFolder = "..\test\MUXControlsTestApp\verification"
 )
 
+$staging = "staging"
 $currentVisualTreeVerificationFolder = "..\test\MUXControlsTestApp\verification"
 $maxOSVersionNumber = 8
 
 if( -Not (Test-Path $outputFolder) )
 {
     New-Item $outputFolder -ItemType Directory
+}
+if( -Not (Test-Path $staging) )
+{
+    New-Item $staging -ItemType Directory
 }
 
 if(Test-Path $updatedVisualTreeVerificationFolder)
@@ -84,23 +89,17 @@ if(Test-Path $updatedVisualTreeVerificationFolder)
                 $indexesToPublish += $i+1
             }
         }
-
-        # This call will produce an error if the souce of the $prefix.xml file is the output directory, which happens frequently.
-        Try
-        {
-            Copy-Item $finalVersionedVerificationFiles[0].FullName "$outputFolder\$prefix.xml" -Force -ErrorAction Stop
-            Write-Host "Copied $($finalVersionedVerificationFiles[0].FullName) as updated $prefix.xml"
-        }
-        catch
-        {
-            Write-Host "$prefix.xml was up to date."
-		}
-
+        
+        Copy-Item $finalVersionedVerificationFiles[0].FullName "$staging\$prefix.xml" -Force
         foreach($i in $indexesToPublish)
         {
             $j = $i+1
-            Copy-Item $finalVersionedVerificationFiles[$i].FullName "$outputFolder\$prefix-$j.xml" -Force
+            Copy-Item $finalVersionedVerificationFiles[$i].FullName "staging\$prefix-$j.xml" -Force
             Write-Host "Copied $($finalVersionedVerificationFiles[$i].FullName) as updated $prefix-$j.xml"
 		}
+        Remove-Item $outputFolder\$prefix.xml
+        Remove-Item $outputFolder\$prefix-*.xml
+        Copy-item -Force -Recurse -Verbose "$staging\*" -Destination $outputFolder
+        Remove-Item $staging\*.*
     }
 }

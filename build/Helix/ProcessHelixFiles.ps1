@@ -126,7 +126,6 @@ foreach ($testRun in $testRuns.value)
 
 if(Test-Path $visualTreeVerificationFolder)
 {
-    Write-Host "Merge duplicated verification files..."
     $verificationFiles = Get-ChildItem $visualTreeVerificationFolder
     $prefixList = @()
 
