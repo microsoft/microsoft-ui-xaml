@@ -419,6 +419,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NumberBox", "NumberBox", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NumberBox", "dev\NumberBox\NumberBox.vcxitems", "{9D23C997-1F46-444A-8C07-4A4BFF7E4E63}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NumberBox_APITests", "dev\NumberBox\APITests\NumberBox_APITests.shproj", "{80AF98CA-BC1D-4011-8460-5671799EC419}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NumberBox_TestUI", "dev\NumberBox\TestUI\NumberBox_TestUI.shproj", "{13DA8235-D04F-46D4-B5B4-F5AE774EEEDE}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NumberBox_InteractionTests", "dev\NumberBox\InteractionTests\NumberBox_InteractionTests.shproj", "{773F7592-E7B3-42FC-A14A-E815AFD6A0CB}"
@@ -451,8 +453,6 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Pager_TestUI", "dev\Pager\TestUI\Pager_TestUI.shproj", "{675121BF-CABC-48E7-9C9D-4571BC507406}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PrototypePager", "dev\Pager\PrototypePager\PrototypePager.shproj", "{675373CE-6ACD-4C4B-A009-09A3C9B218E6}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pager", "dev\Pager\Pager.vcxitems", "{E6E42A4B-01D2-4CF4-9D24-98E9FF71669B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -535,6 +535,7 @@ Global
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.projitems*{79863454-1dbf-45bb-b3d3-420b8f5e8705}*SharedItemsImports = 13
 		dev\NavigationView\TestUI\NavigationView_TestUI.projitems*{7ee5e585-090a-44bf-a950-80636e242327}*SharedItemsImports = 13
 		dev\Common\Common.vcxitems*{80ad7f51-8997-47b9-bb41-078b81cff9b0}*SharedItemsImports = 9
+		dev\NumberBox\APITests\NumberBox_APITests.projitems*{80af98ca-bc1d-4011-8460-5671799ec419}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems*{80f1f883-d49b-407d-9e77-c9b0e62b61a9}*SharedItemsImports = 13
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{833a6892-a079-469a-81c7-54d4cd88029b}*SharedItemsImports = 13
 		dev\TestHooks\TestHooks.vcxitems*{848448d5-f717-4f88-8f99-311cd60587fa}*SharedItemsImports = 9
@@ -577,7 +578,6 @@ Global
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\NumberBox\NumberBox.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\Pager\Pager.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\RadioButtons\RadioButtons.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Repeater\Repeater.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ResourceHelper\ResourceHelper.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -624,7 +624,6 @@ Global
 		dev\DatePicker\TestUI\DatePicker_TestUI.projitems*{e20f725c-3a53-463b-ada9-ff2088aaca4d}*SharedItemsImports = 13
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{e63f1c1d-f06d-46a0-b5c2-184184e44f29}*SharedItemsImports = 13
 		dev\SplitButton\APITests\SplitButton_APITests.projitems*{e687c158-4c66-4ac5-8a1b-d095a82f1549}*SharedItemsImports = 13
-		dev\Pager\Pager.vcxitems*{e6e42a4b-01d2-4cf4-9d24-98e9ff71669b}*SharedItemsImports = 9
 		dev\RadioButtons\RadioButtons.vcxitems*{e770a6d3-7252-4e8a-bd10-fa8524df8c83}*SharedItemsImports = 9
 		dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems*{e98f3da3-3c00-4f2e-bf3b-2d2ad9d176bc}*SharedItemsImports = 13
 		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{e9ac4938-ec2a-46d3-85bf-27316db8cc4d}*SharedItemsImports = 13

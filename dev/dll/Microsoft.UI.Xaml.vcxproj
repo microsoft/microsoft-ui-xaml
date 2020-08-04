@@ -137,7 +137,6 @@
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
-    <Import Project="..\Pager\Pager.vcxitems" Label="Shared" Condition="$(FeaturePagerEnabled) == 'true' Or $(FeaturePagerEnabled) == 'productOnly'" />
     <Import Project="..\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
@@ -404,12 +403,6 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
-    <Page Update="C:\Users\t-gavazq\Desktop\localMicrosoftFork\microsoft-ui-xaml\dev\Pager\Pager.xaml">
-      <FileType>Document</FileType>
-    </Page>
-    <Page Update="C:\Users\t-gavazq\Desktop\localMicrosoftFork\microsoft-ui-xaml\dev\Pager\Pager_CPP.xaml">
-      <FileType>Document</FileType>
-    </Page>
     <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
       <FileType>Document</FileType>
     </Page>

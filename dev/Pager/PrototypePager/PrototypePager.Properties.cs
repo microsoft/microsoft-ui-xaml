@@ -18,18 +18,17 @@ namespace MUXControlsTestApp
             set { SetValue(PagerDisplayModeProperty, value); }
         }
         public static readonly DependencyProperty PagerDisplayModeProperty =
-            DependencyProperty.Register("PagerDisplayMode", typeof(PagerDisplayModes), typeof(PrototypePager), new PropertyMetadata(PagerDisplayModes.Auto, OnPagerDisplayModeChanged));
+            DependencyProperty.Register("PagerDisplayMode", typeof(PagerDisplayModes), typeof(PrototypePager), new PropertyMetadata(PagerDisplayModes.Auto));
 
         /*  Universal Pager Properties
          * 
          */
-        public PagerTemplateSettings PagerTemplateSettings
+        public PagerTemplateSettings TemplateSettings
         {
-            get { return (PagerTemplateSettings)GetValue(PagerTemplateSettingsProperty); }
-            private set { SetValue(PagerTemplateSettingsProperty, value); }
+            get { return (PagerTemplateSettings)GetValue(TemplateSettingsProperty); }
         }
-        public static readonly DependencyProperty PagerTemplateSettingsProperty =
-            DependencyProperty.Register("PagerTemplateSettings", typeof(PagerTemplateSettings), typeof(PrototypePager), new PropertyMetadata(default(PagerTemplateSettings)));
+        private static readonly DependencyProperty TemplateSettingsProperty =
+            DependencyProperty.Register("TemplateSettings", typeof(PagerTemplateSettings), typeof(PrototypePager), new PropertyMetadata(default(PagerTemplateSettings)));
 
         public int NumberOfPages
         {
@@ -45,7 +44,7 @@ namespace MUXControlsTestApp
             set { SetValue(SelectedIndexProperty, value); }
         }
         public static readonly DependencyProperty SelectedIndexProperty =
-            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(PrototypePager), new PropertyMetadata(1));
+            DependencyProperty.Register("SelectedIndex", typeof(int), typeof(PrototypePager), new PropertyMetadata(1, OnSelectedIndexChanged));
 
         /* NumberBox & ComboBox Text Properties
          * 
@@ -108,7 +107,7 @@ namespace MUXControlsTestApp
             set { SetValue(FirstPageButtonVisibilityProperty, value); }
         }
         public static readonly DependencyProperty FirstPageButtonVisibilityProperty =
-            DependencyProperty.Register("FirstPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto, OnFirstPageButtonVisibilityChanged));
+            DependencyProperty.Register("FirstPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto));
 
         public ButtonVisibilityMode PreviousPageButtonVisibility
         {
@@ -116,7 +115,7 @@ namespace MUXControlsTestApp
             set { SetValue(PreviousPageButtonVisibilityProperty, value); }
         }
         public static readonly DependencyProperty PreviousPageButtonVisibilityProperty =
-            DependencyProperty.Register("PreviousPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto, OnPreviousPageButtonVisibilityChanged));
+            DependencyProperty.Register("PreviousPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto));
 
         public ButtonVisibilityMode NextPageButtonVisibility
         {
@@ -124,7 +123,7 @@ namespace MUXControlsTestApp
             set { SetValue(NextPageButtonVisibilityProperty, value); }
         }
         public static readonly DependencyProperty NextPageButtonVisibilityProperty =
-            DependencyProperty.Register("NextPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto, OnNextPageButtonVisibilityChanged));
+            DependencyProperty.Register("NextPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto));
 
         public ButtonVisibilityMode LastPageButtonVisibility
         {
@@ -132,7 +131,7 @@ namespace MUXControlsTestApp
             set { SetValue(LastPageButtonVisibilityProperty, value); }
         }
         public static readonly DependencyProperty LastPageButtonVisibilityProperty =
-            DependencyProperty.Register("LastPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto, OnLastPageButtonVisibilityChanged));
+            DependencyProperty.Register("LastPageButtonVisibility", typeof(ButtonVisibilityMode), typeof(PrototypePager), new PropertyMetadata(ButtonVisibilityMode.Auto));
 
         /* NumberPanel Properties
          * 

@@ -11,43 +11,6 @@
 
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
-        <Style TargetType="controls:ProgressRing">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="controls:ProgressRing">
-                        <Grid x:Name="LayoutRoot" Background="Transparent">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Active">
-                                        <Storyboard>
-                                            <DoubleAnimation
-                                            Storyboard.TargetName="LayoutRoot"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0:0:0.15" />
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Inactive">
-                                        <Storyboard>
-                                            <DoubleAnimation
-                                            Storyboard.TargetName="LayoutRoot"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.15" />
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                             <!--AnimatedVisualPlayer for Lottie--> 
-                            <controls:AnimatedVisualPlayer x:Name="IndeterminateAnimatedVisualPlayer" AutoPlay="false" Stretch="fill" >
-                                <!--Define custom Lottie animation-->
-                                <animatedvisuals:ProgressRingDeterminate />
-                            </controls:AnimatedVisualPlayer>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Page.Resources>
     
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -55,8 +18,22 @@
 
             <controls:ProgressRing
                 x:Name="TestCustomLottieSourceProgressRing"
-                IsActive="{x:Bind CustomLottieSourceIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-            />
+                IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+            >
+                <!--Define custom Lottie animation for Determinate-->
+                
+                <controls:ProgressRing.DeterminateSource>
+                    <animatedvisuals:ProgressRingDeterminate/>
+                </controls:ProgressRing.DeterminateSource>
+
+                <!--Define custom Lottie animation for Indeterminate-->
+
+                <controls:ProgressRing.IndeterminateSource>
+                    <animatedvisuals:ProgressRingDeterminate/>
+                </controls:ProgressRing.IndeterminateSource>
+
+            </controls:ProgressRing>
 
             <Grid Width="200px" HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>
@@ -66,10 +43,22 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <TextBox x:Name="WidthInput" AutomationProperties.Name="WidthInput" Header="Width" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="2" Grid.ColumnSpan="1"/>
-                <TextBlock x:Name="WidthInputText" AutomationProperties.Name="WidthInputText" Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Width, Mode=TwoWay}"/>
+                <TextBox x:Name="MaximumInput" AutomationProperties.Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="MaximumInputText" AutomationProperties.Name="MaximumInputText" Grid.Column="1" Text="{Binding ElementName=TestCustomLottieSourceProgressRing, Path=Maximum, Mode=TwoWay}"/>
+
+                <TextBox x:Name="MinimumInput" AutomationProperties.Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="2" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="MinimumInputText" AutomationProperties.Name="MinimumInputText" Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=TestCustomLottieSourceProgressRing, Path=Minimum, Mode=TwoWay}"/>
+
+                <TextBox x:Name="WidthInput" AutomationProperties.Name="WidthInput" Header="Width" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="3" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="WidthInputText" AutomationProperties.Name="WidthInputText" Grid.Row="3" Grid.Column="1" Text="{Binding ElementName=TestCustomLottieSourceProgressRing, Path=Width, Mode=TwoWay}"/>
+
+                <TextBox x:Name="ValueInput" AutomationProperties.Name="ValueInput" Header="Value" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="4" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="4" Grid.Column="1" Text="{Binding ElementName=TestCustomLottieSourceProgressRing, Path=Value, Mode=TwoWay}"/>
             </Grid>
 
             <TextBlock x:Name="VisualStateText" AutomationProperties.Name="VisualStateText" Margin="0, 20, 0, 20"/>
@@ -77,15 +66,21 @@
             <TextBlock Text="Animated Visual Player IsPlaying:"/>
             <TextBlock x:Name="IsPlayingText" AutomationProperties.Name="IsPlayingText" Margin="0, 0, 0, 20"/>
 
-            <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind CustomLottieSourceIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
-            <CheckBox x:Name="CustomLottieSourceIsActiveCheckBox" AutomationProperties.Name="CustomLottieSourceIsActiveCheckBox" Content="IsActive" IsChecked="True"/>
+            <TextBlock AutomationProperties.Name="ShowIsActiveText" Text="{x:Bind ShowIsActiveCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="ShowIsActiveCheckBox" AutomationProperties.Name="ShowIsActiveCheckBox_CLS" Content="IsActive" IsChecked="True"/>
+
+            <TextBlock AutomationProperties.Name="ShowIsIndeterminateText" Text="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="ShowIsIndeterminateCheckBox" AutomationProperties.Name="ShowIsIndeterminateCheckBox_CLS" Content="IsIndeterminate" IsChecked="True"/>
 
             <TextBlock Text="Animated Visual Player Opacity:"/>
             <TextBlock x:Name="OpacityText" AutomationProperties.Name="OpacityText" Margin="0, 0, 0, 20"/>
 
+            <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
             <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+            <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
 
-            <Button x:Name="NavigateToMainPage" AutomationProperties.Name="NavigateToMainPage">Progress Ring Main Page</Button>
+            <Button x:Name="NavigateToMainPage" AutomationProperties.Name="NavigateToMainPage" Margin="2">Progress Ring Main Page</Button>
         </StackPanel>
     </Grid>
 </local:TestPage>

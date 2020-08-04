@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 
-using Pager = Microsoft.UI.Xaml.Controls.Pager;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.AllJoyn;
@@ -23,7 +22,6 @@ namespace MUXControlsTestApp
     public sealed partial class PagerPage : TestPage
     {
         private ObservableCollection<string> EventHistory = new ObservableCollection<string>();
-        public int LastPage = -1;
         public PagerPage()
         {
             this.InitializeComponent();
@@ -47,8 +45,7 @@ namespace MUXControlsTestApp
 
         private void OnPageChanged(PrototypePager sender, PageChangedEventArgs args)
         {
-            EventHistory.Add($"Page changed from page {LastPage} to page {args.CurrentPage}");
-            LastPage = args.CurrentPage;
+            EventHistory.Add($"Page changed from page {args.PreviousPage} to page {args.CurrentPage}");
 
             FirstPageButtonVisibilityTextBlock.Text = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
             PreviousPageButtonVisibilityTextBlock.Text = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";

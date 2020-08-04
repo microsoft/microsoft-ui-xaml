@@ -1,9 +1,11 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Windows.UI;
+using Windows.UI.Notifications;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
@@ -14,107 +16,99 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     { 
-
-        private static void OnPagerDisplayModeChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        private static void OnSelectedIndexChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            PagerDisplayModes mode = (PagerDisplayModes)args.NewValue;
-            PrototypePager pager = sender as PrototypePager;
-            switch (mode)
+            (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
+        }
+
+        private void OnPagerDisplayModeChanged()
+        {
+            switch (this.PagerDisplayMode)
             {
                 case PagerDisplayModes.NumberBox:
-                    VisualStateManager.GoToState(pager, "NumberBoxVisible", false);
+                    VisualStateManager.GoToState(this, NumberBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.Auto:
                 case PagerDisplayModes.ComboBox:
-                    VisualStateManager.GoToState(pager, "ComboBoxVisible", false);
+                    VisualStateManager.GoToState(this, ComboBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.NumberPanel:
-                    VisualStateManager.GoToState(pager, "NumberPanelVisible", false);
+                    VisualStateManager.GoToState(this, NumberPanelVisibleVisualState, false);
                     break;
             }
         }
 
-        private static void OnLastPageButtonVisibilityChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        private void OnLastPageButtonVisibilityChanged()
         {
-            ButtonVisibilityMode lastPageButtonVisibilityMode = (ButtonVisibilityMode)args.NewValue;
-            PrototypePager pager = sender as PrototypePager;
 
-            switch (lastPageButtonVisibilityMode)
+            switch (this.LastPageButtonVisibility)
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(pager, "LastPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "LastPageButtonVisible", false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(pager, "LastPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "LastPageButtonCollapsed", false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
-                    UpdateHiddenOnEdgeButtons(pager);
+                    UpdateHiddenOnEdgeButtons();
                     break;
                 default:
                     break;
             }
         }
 
-        private static void OnNextPageButtonVisibilityChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        private void OnNextPageButtonVisibilityChanged()
         {
-            ButtonVisibilityMode nextPageButtonVisibilityMode = (ButtonVisibilityMode)args.NewValue;
-            PrototypePager pager = sender as PrototypePager;
-
-            switch (nextPageButtonVisibilityMode)
+            switch (this.NextPageButtonVisibility)
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(pager, "NextPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "NextPageButtonVisible", false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(pager, "NextPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "NextPageButtonCollapsed", false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
-                    UpdateHiddenOnEdgeButtons(pager);
+                    UpdateHiddenOnEdgeButtons();
                     break;
                 default:
                     break;
             }
         }
 
-        private static void OnPreviousPageButtonVisibilityChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        private void OnPreviousPageButtonVisibilityChanged()
         {
-            ButtonVisibilityMode prevPageButtonVisibilityMode = (ButtonVisibilityMode)args.NewValue;
-            PrototypePager pager = sender as PrototypePager;
-            switch (prevPageButtonVisibilityMode)
+            switch (this.PreviousPageButtonVisibility)
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(pager, "PreviousPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "PreviousPageButtonVisible", false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(pager, "PreviousPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "PreviousPageButtonCollapsed", false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
-                    UpdateHiddenOnEdgeButtons(pager);
+                    UpdateHiddenOnEdgeButtons();
                     break;
                 default:
                     break;
             }
         }
 
-        private static void OnFirstPageButtonVisibilityChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        private void OnFirstPageButtonVisibilityChanged()
         {
-            ButtonVisibilityMode firstPageButtonVisibilityMode = (ButtonVisibilityMode)args.NewValue;
-            PrototypePager pager = sender as PrototypePager;
-
-            switch (firstPageButtonVisibilityMode)
+            switch (this.FirstPageButtonVisibility)
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(pager, "FirstPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "FirstPageButtonVisible", false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(pager, "FirstPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "FirstPageButtonCollapsed", false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
-                    UpdateHiddenOnEdgeButtons(pager);
+                    UpdateHiddenOnEdgeButtons();
                     break;
                 default:
                     break;
@@ -127,56 +121,56 @@ namespace MUXControlsTestApp
             PreviousPageButton.IsEnabled = SelectedIndex != 1;
             NextPageButton.IsEnabled = SelectedIndex != NumberOfPages;
             LastPageButton.IsEnabled = SelectedIndex != NumberOfPages;
-            UpdateHiddenOnEdgeButtons(this);
+            UpdateHiddenOnEdgeButtons();
         }
 
-        private static void UpdateHiddenOnEdgeButtons(PrototypePager pager)
+        private void UpdateHiddenOnEdgeButtons()
         {
-            if (pager.FirstPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
+            if (this.FirstPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.FirstPageButton.IsEnabled)
+                if (this.SelectedIndex != 1)
                 {
-                    VisualStateManager.GoToState(pager, "FirstPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "FirstPageButtonVisible", false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(pager, "FirstPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "FirstPageButtonCollapsed", false);
                 }
             }
 
-            if (pager.PreviousPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
+            if (this.PreviousPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.PreviousPageButton.IsEnabled)
+                if (this.SelectedIndex != 1)
                 {
-                    VisualStateManager.GoToState(pager, "PreviousPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "PreviousPageButtonVisible", false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(pager, "PreviousPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "PreviousPageButtonCollapsed", false);
                 }
             }
 
-            if (pager.NextPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
+            if (this.NextPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.NextPageButton.IsEnabled)
+                if (this.SelectedIndex != this.NumberOfPages)
                 {
-                    VisualStateManager.GoToState(pager, "NextPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "NextPageButtonVisible", false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(pager, "NextPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "NextPageButtonCollapsed", false);
                 }
             }
 
-            if (pager.LastPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
+            if (this.LastPageButtonVisibility == ButtonVisibilityMode.HiddenOnEdge)
             {
-                if (pager.LastPageButton.IsEnabled)
+                if (this.SelectedIndex != this.NumberOfPages)
                 {
-                    VisualStateManager.GoToState(pager, "LastPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, "LastPageButtonVisible", false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(pager, "LastPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, "LastPageButtonCollapsed", false);
                 }
             }
         }
