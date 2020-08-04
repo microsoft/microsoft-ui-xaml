@@ -23,10 +23,10 @@ namespace MUXControlsTestApp
         /*  Universal Pager Properties
          * 
          */
-        public PagerTemplateSettings PagerTemplateSettings
+        private PagerTemplateSettings PagerTemplateSettings
         {
             get { return (PagerTemplateSettings)GetValue(PagerTemplateSettingsProperty); }
-            private set { SetValue(PagerTemplateSettingsProperty, value); }
+            set { SetValue(PagerTemplateSettingsProperty, value); }
         }
         public static readonly DependencyProperty PagerTemplateSettingsProperty =
             DependencyProperty.Register("PagerTemplateSettings", typeof(PagerTemplateSettings), typeof(PrototypePager), new PropertyMetadata(default(PagerTemplateSettings)));

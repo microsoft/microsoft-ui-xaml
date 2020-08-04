@@ -86,9 +86,9 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class PagerTemplateSettings : DependencyObject
+    internal class PagerTemplateSettings : DependencyObject
     {
-        public ObservableCollection<int> Pages { get; private set; }
+        public ObservableCollection<int> Pages { get; set; }
 
         public PagerTemplateSettings(PrototypePager pager)
         {
