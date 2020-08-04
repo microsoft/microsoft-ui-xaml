@@ -513,7 +513,7 @@ bool NavigationViewItem::ShouldShowContent()
 
 bool NavigationViewItem::IsOnLeftNav() const
 {
-    auto position = Position();
+    auto const position = Position();
     return position == NavigationViewRepeaterPosition::LeftNav || position == NavigationViewRepeaterPosition::LeftFooter;
 }
 

@@ -227,7 +227,7 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
 
 void NavigationView::OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    UpdateFooterRepeaterItemsSource(false /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
+    UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -709,7 +709,7 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
     }
 }
 
-void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReseted, bool sourceCollectionChanged)
+void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset, bool sourceCollectionChanged)
 {
     if (!m_appliedTemplate) return;
 
@@ -727,7 +727,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionResete
     UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
     UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), nullptr);
 
-    if (!m_settingsItem || sourceCollectionChanged || sourceCollectionReseted)
+    if (!m_settingsItem || sourceCollectionChanged || sourceCollectionReset)
     {
         auto dataSource = winrt::make<Vector<winrt::IInspectable>>();
 
@@ -739,7 +739,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionResete
             m_navigationViewItemsFactory.get()->SettingsItem(settingsItem);
         }
 
-        if (sourceCollectionReseted)
+        if (sourceCollectionReset)
         {
             m_footerItemsCollectionChangedRevoker.revoke();
             m_footerItemsSource = nullptr;
@@ -3654,11 +3654,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_FooterMenuItemsSourceProperty)
     {
-        UpdateFooterRepeaterItemsSource(true /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
+        UpdateFooterRepeaterItemsSource(true /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
     }
     else if (property == s_FooterMenuItemsProperty)
     {
-        UpdateFooterRepeaterItemsSource(true /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
+        UpdateFooterRepeaterItemsSource(true /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
     }
     else if (property == s_PaneDisplayModeProperty)
     {
@@ -3717,7 +3717,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_IsSettingsVisibleProperty)
     {
-        UpdateFooterRepeaterItemsSource(false /*sourceCollectionReseted*/, true /*sourceCollectionChanged*/);
+        UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
     }
     else if (property == s_CompactPaneLengthProperty)
     {
@@ -3883,7 +3883,7 @@ void NavigationView::UpdatePaneDisplayMode()
 
     UpdateContentBindingsForPaneDisplayMode();
     UpdateRepeaterItemsSource(false /*forceSelectionModelUpdate*/);
-    UpdateFooterRepeaterItemsSource(false /*sourceCollectionReseted*/, false /*sourceCollectionChanged*/);
+    UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, false /*sourceCollectionChanged*/);
     if (auto selectedItem = SelectedItem())
     {
         m_OrientationChangedPendingAnimation = true;
@@ -4528,7 +4528,7 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
         return nvi;
     }
 
-    // First conduct a basic top level search in mai menu, which should succeed for a lot of scenarios.
+    // First conduct a basic top level search in main menu, which should succeed for a lot of scenarios.
     const auto mainRepeater = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
     auto itemIndex = GetIndexFromItem(mainRepeater, data);
     if (itemIndex >= 0)
