@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 
-using Pager = Microsoft.UI.Xaml.Controls.Pager;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.AllJoyn;
