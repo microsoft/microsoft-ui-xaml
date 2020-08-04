@@ -93,6 +93,7 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
             if (nviImpl->CreatedByNavigationViewItemsFactory())
             {
                 nviImpl->CreatedByNavigationViewItemsFactory(false);
+                UnlinkElementFromParent(args);
                 args.Element(nullptr);
 
                 // Retain the NVI that we created for future re-use
@@ -102,7 +103,7 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
                 // and update the args correspondingly
                 if (m_itemTemplateWrapper)
                 {
-                    // TODO: Retrieve and element and add to the args
+                    // TODO: Retrieve the element and add to the args
                 }
             }
         }
@@ -113,17 +114,22 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
         }
         else
         {
-            // We want to unlink the containers from the parent repeater
-            // in case we are required to move it to a different repeater.
-            if (auto panel = args.Parent().try_as<winrt::Panel>())
-            {
-                auto children = panel.Children();
-                unsigned int childIndex = 0;
-                if (children.IndexOf(element, childIndex))
-                {
-                    children.RemoveAt(childIndex);
-                }
-            }
+            UnlinkElementFromParent(args);
+        }
+    }
+}
+
+void NavigationViewItemsFactory::UnlinkElementFromParent(winrt::ElementFactoryRecycleArgs const& args)
+{
+    // We want to unlink the containers from the parent repeater
+    // in case we are required to move it to a different repeater.
+    if (auto panel = args.Parent().try_as<winrt::Panel>())
+    {
+        auto children = panel.Children();
+        unsigned int childIndex = 0;
+        if (children.IndexOf(args.Element(), childIndex))
+        {
+            children.RemoveAt(childIndex);
         }
     }
 }
