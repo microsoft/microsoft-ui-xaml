@@ -1598,5 +1598,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 }
             }
         }
+
+        [TestMethod]
+        public void VerifyNoCrashWhenSwitchingPaneDisplayModeWithAutoWrappedElements()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
+            {
+                Log.Comment("Verify that switching pane mode to auto does not crash.");
+                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+            }
+        }
+
+
     }
 }
