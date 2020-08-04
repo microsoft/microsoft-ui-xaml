@@ -27,7 +27,7 @@ namespace MUXControlsTestApp
         {
             get { return (PagerTemplateSettings)GetValue(TemplateSettingsProperty); }
         }
-        public static readonly DependencyProperty TemplateSettingsProperty =
+        private static readonly DependencyProperty TemplateSettingsProperty =
             DependencyProperty.Register("TemplateSettings", typeof(PagerTemplateSettings), typeof(PrototypePager), new PropertyMetadata(default(PagerTemplateSettings)));
 
         public int NumberOfPages
