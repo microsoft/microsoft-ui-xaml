@@ -4,18 +4,27 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)IThemedAnimatedVisualSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
@@ -26,5 +35,10 @@
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AnimatedVisuals">
+      <UniqueIdentifier>{27ee48af-c650-446a-b92a-98f9d44146ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
