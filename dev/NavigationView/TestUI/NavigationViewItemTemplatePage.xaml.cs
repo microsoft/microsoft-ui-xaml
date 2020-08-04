@@ -61,15 +61,33 @@ namespace MUXControlsTestApp
 
         private void NavView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
-            var children = (StackPanel)args.SelectedItemContainer.Content;
+            var children = (Customer)args.SelectedItemContainer.Content;
             var customer = (Customer)args.SelectedItem;
-            if(children != null && customer != null)
+            if (children != null && customer != null)
             {
                 SelectionEventResult.Text = "Passed";
             }
             else
             {
                 SelectionEventResult.Text = "Failed";
+            }
+
+            // Reset argument type indicatiors
+            SelectionChangedItemType.Text = "null";
+            SelectionChangedItemContainerType.Text = "null";
+
+            // Update argument type indicators
+            if (args.SelectedItem != null)
+            {
+                SelectionChangedItemType.Text = args.SelectedItem.GetType().ToString();
+            }
+
+            if (args.SelectedItemContainer != null)
+            {
+                SelectionChangedItemContainerType.Text = args.SelectedItemContainer.GetType().ToString();
+            }
+        }
+
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             // Reset argument type indicatiors
@@ -84,23 +102,6 @@ namespace MUXControlsTestApp
             if (args.InvokedItemContainer != null)
             {
                 ItemInvokedItemContainerType.Text = args.InvokedItemContainer.GetType().ToString();
-            }
-        }
-
-        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            // Reset argument type indicatiors
-            SelectionChangedItemType.Text = "null";
-            SelectionChangedItemContainerType.Text = "null";
-
-            if (args.SelectedItem != null)
-            {
-                SelectionChangedItemType.Text = args.SelectedItem.GetType().ToString();
-            }
-
-            if (args.SelectedItemContainer != null)
-            {
-                SelectionChangedItemContainerType.Text = args.SelectedItemContainer.GetType().ToString();
             }
         }
     }

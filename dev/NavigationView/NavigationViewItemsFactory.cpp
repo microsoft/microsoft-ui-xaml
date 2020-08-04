@@ -54,9 +54,8 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
             navigationViewItemPool.pop_back();
             return nvi;
         }
-        return winrt::make_self<NavigationViewItem>().try_as<winrt::NavigationViewItem>();
+        return winrt::make<NavigationViewItem>();
     }();
-
     auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
     nviImpl->CreatedByNavigationViewItemsFactory(true);
 
