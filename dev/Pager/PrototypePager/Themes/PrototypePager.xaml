@@ -129,7 +129,7 @@
                                 <ComboBox x:Name="ComboBoxDisplay"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       SelectedIndex="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntMinusOne}, Path=SelectedIndex, Mode=TwoWay}"
-                                      ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
+                                      ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
                                       IsEnabled="False"
                                       Visibility="Collapsed"/>
                                 <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
@@ -143,7 +143,7 @@
                                               HorizontalScrollBarVisibility="Hidden" HorizontalScrollMode="Disabled"
                                               VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                                         <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater"
-                                        ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PagerTemplateSettings.Pages}"
+                                        ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
                                         ItemTemplate="{StaticResource NumberPanelButtonTemplate}">
                                             <controls:ItemsRepeater.Layout>
                                                 <controls:StackLayout Orientation="Horizontal" Spacing="5"/>

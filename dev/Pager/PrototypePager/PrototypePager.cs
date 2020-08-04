@@ -35,7 +35,7 @@ namespace MUXControlsTestApp
         public PrototypePager()
         {
             this.DefaultStyleKey = typeof(PrototypePager);
-            this.Loaded += (s, args) => { PagerTemplateSettings = new PagerTemplateSettings(this); };
+            this.Loaded += (s, args) => { SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this)); };
 
         }
         protected override void OnApplyTemplate()
@@ -86,7 +86,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    internal class PagerTemplateSettings : DependencyObject
+    public sealed class PagerTemplateSettings : DependencyObject
     {
         public ObservableCollection<int> Pages { get; set; }
 
