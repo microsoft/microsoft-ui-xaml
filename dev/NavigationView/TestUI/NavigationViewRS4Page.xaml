@@ -36,6 +36,9 @@
                 PaneOpened="NavView_PaneOpened"
                 BackRequested="NavView_BackRequested"
                 AccessKey="H">
+            <!-- Note: Adding more NavViewItems here will cause the following tests to fail:
+                 - CommonTests.MenuItemKeyboardInvokeTest()
+                 - SelectionTests.MenuItemAutomationSelectionTest() -->
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />

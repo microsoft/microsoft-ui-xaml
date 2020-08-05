@@ -692,38 +692,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void MenuItemKeyboardInvokeTest()
         {
-            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
-            foreach (var testScenario in testScenarios)
+            // On RS2 scrollviewer handles arrow keys and this causes an issue with the current setup of the "NavigationView Test" test page
+            // used for the left NavigationNiew test. So instead we now execute this test on the "NavigationView Regression Test" test page for
+            // left navigation.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Regression Test" }))
             {
-                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                Log.Comment("Verify the first menu item has focus and is selected");
+                UIObject firstItem = FindElement.ByName("Home");
+                firstItem.SetFocus();
+                Verify.IsTrue(firstItem.HasKeyboardFocus);
+                Verify.IsTrue(Convert.ToBoolean(firstItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                Log.Comment("Move focus to the second menu item by pressing down arrow");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Log.Comment("Verify second menu item has focus but is not selected");
+                UIObject secondItem = FindElement.ByName("Apps");
+                Verify.IsTrue(secondItem.HasKeyboardFocus);
+                Verify.IsFalse(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
                 {
-                    Log.Comment("Verify the first menu item has focus and is selected");
-                    UIObject firstItem = FindElement.ByName("Home");
-                    firstItem.SetFocus();
-                    Verify.IsTrue(firstItem.HasKeyboardFocus);
-                    Verify.IsTrue(Convert.ToBoolean(firstItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
-
-                    Log.Comment("Move focus to the second menu item by pressing down arrow");
-                    KeyboardHelper.PressKey(Key.Down);
+                    Log.Comment("Select the second item by pressing enter");
+                    KeyboardHelper.PressKey(Key.Enter);
                     Wait.ForIdle();
-
-                    Log.Comment("Verify second menu item has focus but is not selected");
-                    UIObject secondItem = FindElement.ByName("Apps");
-                    Verify.IsTrue(secondItem.HasKeyboardFocus);
-                    Verify.IsFalse(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
-
-                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
-                    {
-                        Log.Comment("Select the second item by pressing enter");
-                        KeyboardHelper.PressKey(Key.Enter);
-                        Wait.ForIdle();
-                        Verify.IsTrue(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
-                    }
-                    else
-                    {
-                        Log.Warning("Full test is not executing due to lack of selection on keyboard selection behaviour in older versions of ListView");
-                    }
+                    Verify.IsTrue(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+                }
+                else
+                {
+                    Log.Warning("Full test is not executing due to lack of selection on keyboard selection behaviour in older versions of ListView");
                 }
             }
         }

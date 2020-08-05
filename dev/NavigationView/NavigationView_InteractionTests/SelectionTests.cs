@@ -151,10 +151,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void MenuItemAutomationSelectionTest()
         {
-            var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
+            // On RS2 scrollviewer handles arrow keys and this causes an issue with the current setup of the "NavigationView Test" test page
+            // used for the left NavigationNiew test. So instead we now execute this test on the "NavigationView Regression Test" test page for
+            // left navigation.
+            (string testPageName, bool isLeftNavTest)[] testScenarios = new (string, bool)[] 
+                { ("NavigationView Regression Test", true), ("NavigationView TopNav Test", false) };
+
             foreach (var testScenario in testScenarios)
             {
-                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.testPageName }))
                 {
                     UIObject firstItem = FindElement.ByName("Home");
                     UIObject secondItem = FindElement.ByName("Apps");
@@ -169,7 +174,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Log.Comment("Move focus to the second item by pressing down(left nav)/right(right nav) arrow once");
                     var key = Key.Right;
-                    if (testScenario.IsLeftNavTest)
+                    if (testScenario.isLeftNavTest)
                     {
                         key = Key.Down;
                     }
