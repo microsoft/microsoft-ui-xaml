@@ -5,7 +5,7 @@
 The purpose of the Microsoft.WinUI.Convert Nuget Package is to create a porting solution to allow Developers to convert WinUI2 projects to the new WinUI3 format.
 
 - WinUI is a native user experience (UX) framework for both Windows Desktop and UWP applications. WinUI ships as part of the Windows OS. 
-[More on WinUI](https://docs.microsoft.com/en-us/windows/apps/winui/)
+[More on WinUI](https://microsoft.github.io/microsoft-ui-xaml/), [Docs](https://docs.microsoft.com/en-us/windows/apps/winui/)
 - WinUI3 is the next version of WinUI. It runs on the native Windows 10 UI platform and supports both Windows Desktop and UWP apps. WinUI3 ships as a NuGet package.
 [More on WinUI3](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/)
 
@@ -48,46 +48,48 @@ Analyze/Convert C# files
 ### Convert Namespaces:
 Before converting:
 
-![Visual Studio Lightbulb Suggestion](images\namespaceBefore.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/namespaceBefore.png#thumb)
 
 After:
 
-![Visual Studio Lightbulb Suggestion](images\namespaceAfter.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/namespaceAfter.png#thumb)
 
 ### Convert App.OnLaunched Method:
 Before converting:
 
-![Visual Studio Lightbulb Suggestion](images\onlaunchedBefore.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/onlaunchedBefore.png#thumb)
 
 After:
 
-![Visual Studio Lightbulb Suggestion](images\onlaunchedAfter.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/onlaunchedAfter.png#thumb)
 
 
 ## Conversion Process
-Necessary steps for converting a WinUI C# app to WinUI3: 
+Necessary steps for converting a WinUI C# App to WinUI3: 
 
-1. Install Microsoft.WinUI and WinUIConvert NuGet packages in your app using the NuGet package manager: see the [Install WinUI 3 Preview](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/#install-winui-3-preview-2) page for more information.
+1. Install `Microsoft.WinUI` and `Microsoft.WinUI.Convert` NuGet packages in your app using the NuGet package manager: see the [Install WinUI 3 Preview](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/#install-winui-3-preview-2) page for more information.
     
-    ![Visual Studio Lightbulb Suggestion](\images\newPackage.png#thumb)
+    ![Visual Studio Lightbulb Suggestion](./images/newPackage.png#thumb)
 
 2. Uninstall Microsoft.UI.Xaml from your solution. Additional conflicting packages such as `Microsoft.Xaml.Behaviors.*` may also need to be removed. 
     
-    ![Visual Studio Lightbulb Suggestion](\images\uninstallOldPackage.png#thumb)
+    ![Visual Studio Lightbulb Suggestion](./images/uninstallOldPackage.png#thumb)
 
 3. Light Bulb suggestions should highlight issues that need to be updated for WinUI3 conversion. 
 
-    ![Visual Studio Lightbulb Suggestion](\images\lightbulb.png#thumb)
+    ![Visual Studio Lightbulb Suggestion](./images/lightbulb.png#thumb)
 
 4. Click the down arrow by the lightbulb, Convert to WinUI3 and select Fix all occurences in project. 
 
-    ![Visual Studio Lightbulb Suggestion](\images\analyzer-1.png#thumb)
+    ![Visual Studio Lightbulb Suggestion](./images/analyzer-1.png#thumb)
 
 5. All namespace changes should be fixed in your project!
 
 6. The Analyzer can only parse C# code and not Xaml. WebView is now WebView2 and should be updated: see the [Getting Started](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/) page for more information.
+
+7. (Optional) These Analyzers serve little purpose outside of converting A WinUI C# App. After verifying the conversion is complete you might consider uninstalling the `Microsoft.WinUI.Convert` NuGet Package.
 ---
 
 Note: some WInUI2 resources are not compatible with WinUI3. These issues may be highlighted in code but cannot be fixed by the converter. 
 
-![Visual Studio Lightbulb Suggestion](images\deprecatedWarning.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/deprecatedWarning.png#thumb)
