@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -1851,7 +1851,17 @@ winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectabl
     {
         if (auto const container = NavigationViewItemOrSettingsContentFromData(item))
         {
-            return winrt::get_self<NavigationViewItem>(container)->GetSelectionIndicator();
+            if (const auto indicator = winrt::get_self<NavigationViewItem>(container)->GetSelectionIndicator())
+            {
+                return indicator;
+            }
+            else
+            {
+                // Indicator was not found, so maybe the layout hasn't updated yet.
+                // So let's do that now.
+                container.UpdateLayout();
+                return winrt::get_self<NavigationViewItem>(container)->GetSelectionIndicator();
+            }
         }
     }
     return nullptr;
