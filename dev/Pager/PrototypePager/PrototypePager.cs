@@ -115,12 +115,10 @@ namespace MUXControlsTestApp
     public sealed class PagerTemplateSettings : DependencyObject
     {
         public ObservableCollection<int> Pages { get; set; }
-        public ObservableCollection<int> PagesZeroIndexed { get; set; }
 
         public PagerTemplateSettings(PrototypePager pager)
         {
             Pages = new ObservableCollection<int>(Enumerable.Range(1, pager.NumberOfPages));
-            PagesZeroIndexed = new ObservableCollection<int>(Enumerable.Range(0, pager.NumberOfPages - 1));
         }
     }
 }
