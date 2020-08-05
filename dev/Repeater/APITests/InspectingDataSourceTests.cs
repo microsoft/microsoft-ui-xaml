@@ -15,7 +15,6 @@ using System;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using MUXControlsTestApp.Utils;
-using System.Runtime.Serialization;
 
 #if USING_TAEF
 using WEX.TestExecution;
