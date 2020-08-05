@@ -36,9 +36,14 @@
                 PaneOpened="NavView_PaneOpened"
                 BackRequested="NavView_BackRequested"
                 AccessKey="H">
-            <!-- Note: Adding more NavViewItems here will cause the following tests to fail:
+            <!-- Note: Adding more NavViewItems here will cause the following tests to fail on RS2 and below:
                  - CommonTests.MenuItemKeyboardInvokeTest()
-                 - SelectionTests.MenuItemAutomationSelectionTest() -->
+                 - SelectionTests.MenuItemAutomationSelectionTest()
+                 
+                 The reason is that on RS2, the ScollViewer handles arrow keys and thus scrolls the NavigationView pane instead of moving focus.
+                 This is not an issue with the current page setup as all NavView items fit the page without the need to scroll it. Adding more items,
+                 however, will push these items off-screen leading the ScrollViewer to scroll the pane instead of moving focus. As a result, the above
+                 mentioned tests will fail. -->
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
