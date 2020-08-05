@@ -57,11 +57,11 @@ After:
 ### Convert App.OnLaunched Method:
 Before converting:
 
-![Visual Studio Lightbulb Suggestion](./images/onlaunchedBefore.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/onLaunchedBefore.png#thumb)
 
 After:
 
-![Visual Studio Lightbulb Suggestion](./images/onlaunchedAfter.png#thumb)
+![Visual Studio Lightbulb Suggestion](./images/onLaunchedAfter.png#thumb)
 
 
 ## Conversion Process
