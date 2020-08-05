@@ -115,12 +115,29 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void DisablePageButtonsOnEdge(DependencyObject sender, DependencyProperty dp)
+        private void DisablePageButtonsOnEdge()
         {
-            FirstPageButton.IsEnabled = SelectedIndex != 1;
-            PreviousPageButton.IsEnabled = SelectedIndex != 1;
-            NextPageButton.IsEnabled = SelectedIndex != NumberOfPages;
-            LastPageButton.IsEnabled = SelectedIndex != NumberOfPages;
+            if (SelectedIndex == 1)
+            {
+                VisualStateManager.GoToState(this, "FirstPageButtonDisabled", false);
+                VisualStateManager.GoToState(this, "PreviousPageButtonDisabled", false);
+                VisualStateManager.GoToState(this, "NextPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, "LastPageButtonEnabled", false);
+            } 
+            else if (SelectedIndex == NumberOfPages)
+            {
+                VisualStateManager.GoToState(this, "FirstPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, "PreviousPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, "NextPageButtonDisabled", false);
+                VisualStateManager.GoToState(this, "LastPageButtonDisabled", false);
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "FirstPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, "PreviousPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, "NextPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, "LastPageButtonEnabled", false);
+            }
             UpdateHiddenOnEdgeButtons();
         }
 

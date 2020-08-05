@@ -402,12 +402,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expectedText, elements.GetLastEventOutput());
         }
 
-        void ClickButton(UIObject element, int expectedPageNumber)
-        {
-            InputHelper.LeftClick(element);
-            VerifyPageChangedEventOutput(expectedPageNumber);
-        }
-
         void VerifyButton(UIObject button, Visibility expectedVisibility, bool shouldBeEnabled)
         {
 

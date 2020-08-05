@@ -32,7 +32,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="FirstPageButtonStates">
+                            <VisualStateGroup x:Name="FirstPageButtonVisibilityStates">
                                 <VisualState x:Name="FirstPageButtonVisible"/>
                                 <VisualState x:Name="FirstPageButtonCollapsed">
                                     <VisualState.Setters>
@@ -40,7 +40,15 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="PreviousPageButtonStates">
+                            <VisualStateGroup x:Name="FirstPageButtonIsEnabledStates">
+                                <VisualState x:Name="FirstPageButtonEnabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="FirstPageButton.IsEnabled" Value="true"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FirstPageButtonDisabled"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="PreviousPageButtonVisibilityStates">
                                 <VisualState x:Name="PreviousPageButtonVisible"/>
                                 <VisualState x:Name="PreviousPageButtonCollapsed">
                                     <VisualState.Setters>
@@ -48,11 +56,27 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="NextPageButtonStates">
+                            <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
+                                <VisualState x:Name="PreviousPageButtonEnabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PreviousPageButton.IsEnabled" Value="true"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PreviousPageButtonDisabled"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="NextPageButtonVisibilityStates">
                                 <VisualState x:Name="NextPageButtonVisible"/>
                                 <VisualState x:Name="NextPageButtonCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="NextPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="NextPageButtonIsEnabledStates">
+                                <VisualState x:Name="NextPageButtonEnabled"/>
+                                <VisualState x:Name="NextPageButtonDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="NextPageButton.IsEnabled" Value="false"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -61,6 +85,14 @@
                                 <VisualState x:Name="LastPageButtonCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="LastPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup>
+                                <VisualState x:Name="LastPageButtonEnabled"/>
+                                <VisualState x:Name="LastPageButtonDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="LastPageButton.IsEnabled" Value="false"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
