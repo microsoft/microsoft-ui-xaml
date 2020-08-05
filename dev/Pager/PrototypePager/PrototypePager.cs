@@ -29,6 +29,17 @@ namespace MUXControlsTestApp
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
 
+        private static string[] FirstPageButtonStates = new string[] { "FirstPageButtonVisible", "FirstPageButtonCollapsed",
+                                                                       "FirstPageButtonEnabled", "FirstPageButtonDisabled" };
+        private static string[] PreviousPageButtonStates = new string[] { "PreviousPageButtonVisible", "PreviousPageButtonCollapsed",
+                                                                          "PreviousPageButtonEnabled", "PreviousPageButtonDisabled" };
+        private static string[] NextPageButtonStates = new string[] { "NextPageButtonVisible", "NextPageButtonCollapsed",
+                                                                      "NextPageButtonEnabled", "NextPageButtonDisabled" };
+        private static string[] LastPageButtonStates = new string[] { "LastPageButtonVisible", "LastPageButtonCollapsed",
+                                                                      "LastPageButtonEnabled", "LastPageButtonDisabled" };
+
+
+
         private int PreviousPageIndex = -1;
 
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;

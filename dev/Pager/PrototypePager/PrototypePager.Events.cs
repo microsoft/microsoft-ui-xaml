@@ -45,10 +45,10 @@ namespace MUXControlsTestApp
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(this, "LastPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, LastPageButtonStates[0], false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(this, "LastPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, LastPageButtonStates[1], false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
                     UpdateHiddenOnEdgeButtons();
@@ -64,10 +64,10 @@ namespace MUXControlsTestApp
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(this, "NextPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, NextPageButtonStates[0], false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(this, "NextPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, NextPageButtonStates[1], false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
                     UpdateHiddenOnEdgeButtons();
@@ -83,10 +83,10 @@ namespace MUXControlsTestApp
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(this, "PreviousPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, PreviousPageButtonStates[0], false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(this, "PreviousPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, PreviousPageButtonStates[1], false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
                     UpdateHiddenOnEdgeButtons();
@@ -102,10 +102,10 @@ namespace MUXControlsTestApp
             {
                 case ButtonVisibilityMode.Auto:
                 case ButtonVisibilityMode.AlwaysVisible:
-                    VisualStateManager.GoToState(this, "FirstPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, FirstPageButtonStates[0], false);
                     break;
                 case ButtonVisibilityMode.None:
-                    VisualStateManager.GoToState(this, "FirstPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, FirstPageButtonStates[1], false);
                     break;
                 case ButtonVisibilityMode.HiddenOnEdge:
                     UpdateHiddenOnEdgeButtons();
@@ -119,24 +119,24 @@ namespace MUXControlsTestApp
         {
             if (SelectedIndex == 1)
             {
-                VisualStateManager.GoToState(this, "FirstPageButtonDisabled", false);
-                VisualStateManager.GoToState(this, "PreviousPageButtonDisabled", false);
-                VisualStateManager.GoToState(this, "NextPageButtonEnabled", false);
-                VisualStateManager.GoToState(this, "LastPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, FirstPageButtonStates[3], false);
+                VisualStateManager.GoToState(this, PreviousPageButtonStates[3], false);
+                VisualStateManager.GoToState(this, NextPageButtonStates[2], false);
+                VisualStateManager.GoToState(this, LastPageButtonStates[2], false);
             } 
             else if (SelectedIndex == NumberOfPages)
             {
-                VisualStateManager.GoToState(this, "FirstPageButtonEnabled", false);
-                VisualStateManager.GoToState(this, "PreviousPageButtonEnabled", false);
-                VisualStateManager.GoToState(this, "NextPageButtonDisabled", false);
-                VisualStateManager.GoToState(this, "LastPageButtonDisabled", false);
+                VisualStateManager.GoToState(this, FirstPageButtonStates[2], false);
+                VisualStateManager.GoToState(this, PreviousPageButtonStates[2], false);
+                VisualStateManager.GoToState(this, NextPageButtonStates[3], false);
+                VisualStateManager.GoToState(this, LastPageButtonStates[3], false);
             }
             else
             {
-                VisualStateManager.GoToState(this, "FirstPageButtonEnabled", false);
-                VisualStateManager.GoToState(this, "PreviousPageButtonEnabled", false);
-                VisualStateManager.GoToState(this, "NextPageButtonEnabled", false);
-                VisualStateManager.GoToState(this, "LastPageButtonEnabled", false);
+                VisualStateManager.GoToState(this, FirstPageButtonStates[2], false);
+                VisualStateManager.GoToState(this, PreviousPageButtonStates[2], false);
+                VisualStateManager.GoToState(this, NextPageButtonStates[2], false);
+                VisualStateManager.GoToState(this, LastPageButtonStates[2], false);
             }
             UpdateHiddenOnEdgeButtons();
         }
@@ -147,11 +147,11 @@ namespace MUXControlsTestApp
             {
                 if (this.SelectedIndex != 1)
                 {
-                    VisualStateManager.GoToState(this, "FirstPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, FirstPageButtonStates[0], false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(this, "FirstPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, FirstPageButtonStates[1], false);
                 }
             }
 
@@ -159,11 +159,11 @@ namespace MUXControlsTestApp
             {
                 if (this.SelectedIndex != 1)
                 {
-                    VisualStateManager.GoToState(this, "PreviousPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, PreviousPageButtonStates[0], false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(this, "PreviousPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, PreviousPageButtonStates[1], false);
                 }
             }
 
@@ -171,11 +171,11 @@ namespace MUXControlsTestApp
             {
                 if (this.SelectedIndex != this.NumberOfPages)
                 {
-                    VisualStateManager.GoToState(this, "NextPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, NextPageButtonStates[0], false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(this, "NextPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, NextPageButtonStates[1], false);
                 }
             }
 
@@ -183,11 +183,11 @@ namespace MUXControlsTestApp
             {
                 if (this.SelectedIndex != this.NumberOfPages)
                 {
-                    VisualStateManager.GoToState(this, "LastPageButtonVisible", false);
+                    VisualStateManager.GoToState(this, LastPageButtonStates[0], false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(this, "LastPageButtonCollapsed", false);
+                    VisualStateManager.GoToState(this, LastPageButtonStates[1], false);
                 }
             }
         }
