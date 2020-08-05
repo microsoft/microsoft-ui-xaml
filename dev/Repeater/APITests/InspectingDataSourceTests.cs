@@ -15,6 +15,7 @@ using System;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using MUXControlsTestApp.Utils;
+using System.Runtime.Serialization;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -198,6 +199,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         public void ValidateSwitchingItemsSourceRefreshesElementsVirtualLayout()
         {
             ValidateSwitchingItemsSourceRefreshesElements(isVirtualLayout: true);
+        }
+
+        [TestMethod]
+        public void VerifyReadOnlyListCompatibility()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var collection = new ObservableDataSource<object>();
+                var firstItem = "something1";
+                
+                collection.Data = new ObservableCollection<object>();
+
+                collection.Data.Add(firstItem);
+                collection.Data.Add("something2");
+                collection.Data.Add("something3");
+
+                var itemsSourceView = new ItemsSourceView(collection);
+                Verify.AreEqual(3, itemsSourceView.Count);
+
+                collection.Data.Add("something4");
+                Verify.AreEqual(4, itemsSourceView.Count);
+
+                Verify.AreEqual(firstItem,itemsSourceView.GetAt(0));
+                Verify.AreEqual(0, itemsSourceView.IndexOf(firstItem));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNotifyCollectionChangeWithReadonlyListBehavior()
+        {
+            int invocationCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var collection = new ObservableDataSource<object>();
+
+                var itemsSourceView = new ItemsSourceView(collection);
+                itemsSourceView.CollectionChanged += ItemsSourceView_CollectionChanged;
+
+                var underlyingData = new ObservableCollection<object>();
+                collection.Data = underlyingData;
+
+                Verify.AreEqual(1, invocationCount);
+            });
+
+            void ItemsSourceView_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                invocationCount++;
+            }
         }
 
         public void ValidateSwitchingItemsSourceRefreshesElements(bool isVirtualLayout)
@@ -400,6 +450,90 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Index = (uint)index;
                 }
             }
+        }
+
+        public class ObservableDataSource<T> : IReadOnlyList<T>, INotifyCollectionChanged, IKeyIndexMapping
+        {
+            public ObservableDataSource() { }
+
+            public ObservableDataSource(IEnumerable<T> data)
+            {
+                Data = new ObservableCollection<T>(data);
+            }
+
+            #region IReadOnlyList<T>
+
+            public int Count => Data.Count;
+
+            public T this[int index] => Data[index];
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return this.Data.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
+
+            #endregion
+
+            #region INotifyCollectionChanged
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+            protected virtual void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                this.CollectionChanged?.Invoke(this, e);
+            }
+
+            #endregion
+
+            public string KeyFromIndex(int index)
+            {
+                return this[index].GetHashCode().ToString();
+            }
+
+            public int IndexFromKey(string key)
+            {
+                throw new Exception();
+            }
+
+            public ObservableCollection<T> Data
+            {
+                get
+                {
+                    if (_data == null)
+                    {
+                        _data = new ObservableCollection<T>();
+                    }
+                    return _data;
+                }
+
+                set
+                {
+                    if (_data != value)
+                    {
+                        // Listen for future changes
+                        if (_data != null)
+                            _data.CollectionChanged -= this.OnCollectionChanged;
+
+                        _data = value;
+
+                        if (_data != null)
+                            _data.CollectionChanged += this.OnCollectionChanged;
+                    }
+
+                    // Raise a reset event
+                    this.OnCollectionChanged(
+                        this,
+                        new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Reset));
+                }
+            }
+
+            private ObservableCollection<T> _data = null;
         }
 
         class ObservableVectorWithUniqueIds : ObservableCollection<int>, IKeyIndexMapping

@@ -43,7 +43,9 @@ private:
         const winrt::Collections::IObservableVector<winrt::IInspectable>& sender,
         const winrt::Collections::IVectorChangedEventArgs& e);
 
+    bool m_vectorViewInsteadOfVector{ false };
     tracker_ref<winrt::Collections::IVector<winrt::IInspectable>> m_vector{ this };
+    tracker_ref<winrt::Collections::IVectorView<winrt::IInspectable>> m_vectorView{ this };
 
     // To unhook event from data source
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
