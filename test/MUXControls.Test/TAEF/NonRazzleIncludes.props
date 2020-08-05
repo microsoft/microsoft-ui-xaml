@@ -4,6 +4,6 @@
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181203002" />
-    <PackageReference Include="TAEF.Redist.Wlk" Version="10.31.180822002" />
+    <PackageReference Include="TAEF.Redist.Wlk" Version="10.57.200731005-develop" />
   </ItemGroup>
 </Project>
