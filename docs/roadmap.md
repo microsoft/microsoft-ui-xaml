@@ -121,5 +121,5 @@ You can download WinUI 3 Preview 1 to try out - we'd love feedback on it, althou
 
 See the image below for a more detailed look at our plans for getting WinUI 3.0 to market: 
 
-![Winui roadmap](images/winui-roadmap-img.PNG)
+![Winui roadmap](images/WinUI-RoadmapJuly2020.png)
 
