@@ -349,7 +349,7 @@ void NumberBox::OnIsEnabledChanged(const winrt::IInspectable& /*sender*/, const 
 
 void NumberBox::UpdateVisualStateForIsEnabledChange()
 {
-    winrt::VisualStateManager::GoToState(*this, IsEnabled() ? L"Enabled" : L"Disabled", false);
+    winrt::VisualStateManager::GoToState(*this, IsEnabled() ? L"Normal" : L"Disabled", false);
 }
 
 void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
