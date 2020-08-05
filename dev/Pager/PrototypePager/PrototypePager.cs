@@ -23,10 +23,22 @@ namespace MUXControlsTestApp
         public enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
 
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
+        private ComboBox PagerComboBox;
 
         private static string NumberBoxVisibleVisualState = "NumberBoxVisible";
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
+
+        private static string[] FirstPageButtonStates = new string[] { "FirstPageButtonVisible", "FirstPageButtonCollapsed",
+                                                                       "FirstPageButtonEnabled", "FirstPageButtonDisabled" };
+        private static string[] PreviousPageButtonStates = new string[] { "PreviousPageButtonVisible", "PreviousPageButtonCollapsed",
+                                                                          "PreviousPageButtonEnabled", "PreviousPageButtonDisabled" };
+        private static string[] NextPageButtonStates = new string[] { "NextPageButtonVisible", "NextPageButtonCollapsed",
+                                                                      "NextPageButtonEnabled", "NextPageButtonDisabled" };
+        private static string[] LastPageButtonStates = new string[] { "LastPageButtonVisible", "LastPageButtonCollapsed",
+                                                                      "LastPageButtonEnabled", "LastPageButtonDisabled" };
+
+
 
         private int PreviousPageIndex = -1;
 
@@ -45,19 +57,25 @@ namespace MUXControlsTestApp
             PreviousPageButton = GetTemplateChild("PreviousPageButton") as Button;
             NextPageButton = GetTemplateChild("NextPageButton") as Button;
             LastPageButton = GetTemplateChild("LastPageButton") as Button;
-            NumberBoxDisplayTestHook = GetTemplateChild("NumberBoxDisplay") as NumberBox;
-            ComboBoxDisplayTestHook = GetTemplateChild("ComboBoxDisplay") as ComboBox;
+            PagerComboBox = GetTemplateChild("ComboBoxDisplay") as ComboBox;
 
             // Attach TestHooks
             FirstPageButtonTestHook = FirstPageButton;
             PreviousPageButtonTestHook = PreviousPageButton;
             NextPageButtonTestHook = NextPageButton;
             LastPageButtonTestHook = LastPageButton;
+            NumberBoxDisplayTestHook = GetTemplateChild("NumberBoxDisplay") as NumberBox;
+            ComboBoxDisplayTestHook = PagerComboBox;
 
             // Attach Callbacks for property changes
             RegisterPropertyChangedCallback(SelectedIndexProperty, (s,e) => {
-                DisablePageButtonsOnEdge(s, e);
-                PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1)); });
+                if (PagerComboBox != null)
+                {
+                    PagerComboBox.SelectedIndex = SelectedIndex - 1;
+                }
+                DisablePageButtonsOnEdge();
+                PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
+            });
             RegisterPropertyChangedCallback(PagerDisplayModeProperty, (s,e) => { OnPagerDisplayModeChanged(); });
             RegisterPropertyChangedCallback(FirstPageButtonVisibilityProperty, (s, e) => { OnFirstPageButtonVisibilityChanged(); });
             RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });
@@ -81,18 +99,28 @@ namespace MUXControlsTestApp
             {
                 LastPageButton.Click += (s, e) => { SelectedIndex = NumberOfPages; };
             }
+            if (PagerComboBox != null)
+            {
+                PagerComboBox.SelectedIndex = SelectedIndex - 1;
+                PagerComboBox.SelectionChanged += (s, e) => {
+                    SelectedIndex = PagerComboBox.SelectedIndex + 1; };
+            }
 
             OnPagerDisplayModeChanged();
+            // This is for the initial page being loaded whatever page that might be.
+            PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
         }
     }
 
     public sealed class PagerTemplateSettings : DependencyObject
     {
         public ObservableCollection<int> Pages { get; set; }
+        public ObservableCollection<int> PagesZeroIndexed { get; set; }
 
         public PagerTemplateSettings(PrototypePager pager)
         {
             Pages = new ObservableCollection<int>(Enumerable.Range(1, pager.NumberOfPages));
+            PagesZeroIndexed = new ObservableCollection<int>(Enumerable.Range(0, pager.NumberOfPages - 1));
         }
     }
 }
