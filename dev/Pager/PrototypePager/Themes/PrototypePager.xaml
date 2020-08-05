@@ -160,7 +160,6 @@
                                 <!--ComboBox Display-->
                                 <ComboBox x:Name="ComboBoxDisplay"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      SelectedIndex="{Binding RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IntMinusOne}, Path=SelectedIndex, Mode=TwoWay}"
                                       ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
                                       IsEnabled="False"
                                       Visibility="Collapsed"/>
