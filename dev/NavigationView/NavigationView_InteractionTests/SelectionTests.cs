@@ -152,7 +152,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         public void MenuItemAutomationSelectionTest()
         {
             // On RS2 scrollviewer handles arrow keys and this causes an issue with the current setup of the "NavigationView Test" test page
-            // used for the left NavigationNiew test. So instead we now execute this test on the "NavigationView Regression Test" test page for
+            // used for the left NavigationView test. So instead we now execute this test on the "NavigationView Regression Test" test page for
             // left navigation.
             (string testPageName, bool isLeftNavTest)[] testScenarios = new (string, bool)[] 
                 { ("NavigationView Regression Test", true), ("NavigationView TopNav Test", false) };
