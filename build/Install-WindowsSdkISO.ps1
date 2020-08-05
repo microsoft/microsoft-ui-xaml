@@ -255,8 +255,8 @@ if ($StrongNameHijack -or $InstallWindowsSDK)
 {
     if (!(Test-Admin))
     {
-        Write-Host "Are we elevated??"
-        # throw "ERROR: Elevation required"
+        Write-Host
+        throw "ERROR: Elevation required"
     }
 }
 
