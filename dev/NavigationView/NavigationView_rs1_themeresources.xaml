@@ -1111,7 +1111,7 @@
                                 <VisualState x:Name="ContentOnly">
                                     <VisualState.Setters>
                                         <Setter Target="IconBox.Visibility" Value="Collapsed" />
-                                        <Setter Target="ContentPresenter.Margin" Value="12,0" />
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyContentPresenterMargin}" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="12,0,12,4" />
                                         <Setter Target="ExpandCollapseChevron.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyExpandChevronMargin}" />
                                     </VisualState.Setters>
@@ -1274,7 +1274,7 @@
                                 <VisualState x:Name="ContentOnly">
                                     <VisualState.Setters>
                                         <Setter Target="IconBox.Visibility" Value="Collapsed" />
-                                        <Setter Target="ContentPresenter.Margin" Value="12,0" />
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyContentPresenterMargin}" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="12,0" />
                                         <Setter Target="ExpandCollapseChevron.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyExpandChevronMargin}" />
                                     </VisualState.Setters>
