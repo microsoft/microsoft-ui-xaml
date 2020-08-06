@@ -26,17 +26,17 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      # Debug_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Debug'
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
         PGOBuildMode: 'Optimize'
-      # Release_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
@@ -45,45 +45,45 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-# - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-#   parameters:
-#     name: 'RunTestsInHelix'
-#     dependsOn:
-#     - Setup
-#     - Build
-#     condition: |
-#       and
-#       (
-#         ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True'),
-#         in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-#       )
-#     testSuite: 'DevTestSuite'
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  parameters:
+    name: 'RunTestsInHelix'
+    dependsOn:
+    - Setup
+    - Build
+    condition: |
+      and
+      (
+        ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True'),
+        in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+      )
+    testSuite: 'DevTestSuite'
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# # Create Nuget Package
-# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-#   parameters:
-#     jobName: CreateNugetPackage
-#     dependsOn: Build
-#     primaryBuildArch: x64
-#     prereleaseVersionTag: pr
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+    primaryBuildArch: x64
+    prereleaseVersionTag: pr
 
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     dependsOn: CreateNugetPackage
-#     pkgArtifactPath: '$(artifactDownloadPath)\drop'
-#     runTests: 'false'
-#     matrix:
-#       Debug_x64:
-#         buildPlatform: 'x64'
-#         buildConfiguration: 'Debug'
-#       Release_x64:
-#         buildPlatform: 'x64'
-#         buildConfiguration: 'Release'
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+    runTests: 'false'
+    matrix:
+      Debug_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Debug'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
 
-# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-#   parameters:
-#     dependsOn: RunTestsInHelix
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
-#     checkJobAttempt: true
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn: RunTestsInHelix
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+    checkJobAttempt: true
