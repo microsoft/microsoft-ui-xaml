@@ -28,11 +28,23 @@ void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable const& n
     navigationViewItemPool = std::vector<winrt::NavigationViewItem>();
 }
 
+void NavigationViewItemsFactory::SettingsItem(winrt::NavigationViewItemBase const& settingsItem)
+{
+    m_settingsItem = settingsItem;
+}
+
+
 // Retrieve the element that will be displayed for a specific data item.
 // If the resolved element is not derived from NavigationViewItemBase, wrap in a NavigationViewItem before returning.
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, settingsItem = m_settingsItem, args]() {
+        // Do not template SettingsItem
+        if (settingsItem && settingsItem == args.Data())
+        {
+            return args.Data();
+        }
+
         if (itemTemplateWrapper)
         {
             return itemTemplateWrapper.GetElement(args).as<winrt::IInspectable>();
@@ -108,7 +120,10 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
             }
         }
 
-        if (m_itemTemplateWrapper)
+        // Do not recycle SettingsItem
+        bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
+
+        if (m_itemTemplateWrapper && !isSettingsItem)
         {
             m_itemTemplateWrapper.RecycleElement(args);
         }

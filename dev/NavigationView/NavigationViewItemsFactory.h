@@ -11,6 +11,7 @@ class NavigationViewItemsFactory :
 {
 public:
     void UserElementFactory(winrt::IInspectable const& newValue);
+    void SettingsItem(winrt::NavigationViewItemBase const& settingsItem);
 
 #pragma region IElementFactoryOverrides
     winrt::UIElement GetElementCore(winrt::ElementFactoryGetArgs const& args);
@@ -19,6 +20,7 @@ public:
 
 private:
     winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
+    winrt::NavigationViewItemBase m_settingsItem{ nullptr };
     std::vector<winrt::NavigationViewItem> navigationViewItemPool;
 
     void UnlinkElementFromParent(winrt::ElementFactoryRecycleArgs const& args);
