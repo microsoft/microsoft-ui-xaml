@@ -2,6 +2,7 @@
   <File Reference="Microsoft.UI.Xaml.winmd">
     <ToolboxItems VSCategory="Microsoft.UI.Xaml" BlendCategory="Microsoft.UI.Xaml">
       <Item Type="Microsoft.UI.Xaml.Media.RadialGradientBrush" />
+      <Item Type="Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer" />
       <Item Type="Microsoft.UI.Xaml.Controls.ColorPicker" />
       <Item Type="Microsoft.UI.Xaml.Controls.CommandBarFlyout" />
       <Item Type="Microsoft.UI.Xaml.Controls.DropDownButton" />
