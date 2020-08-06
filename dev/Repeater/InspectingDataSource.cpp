@@ -128,7 +128,7 @@ int InspectingDataSource::IndexFromKeyCore(winrt::hstring const& id)
 int InspectingDataSource::IndexOfCore(winrt::IInspectable const& value)
 {
     int index = -1;
-    if (m_vectorView)
+    if (m_vectorViewInsteadOfVector)
     {
         if (m_vectorView)
         {
