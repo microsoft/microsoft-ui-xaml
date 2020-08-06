@@ -270,6 +270,8 @@
     <Thickness x:Key="TopNavigationViewOverflowMenuPadding">0,8</Thickness>
     <Thickness x:Key="NavigationViewItemChildrenMenuFlyoutPadding">0,8</Thickness>
 
+    <!-- The resource below must be defined at the app level in order to affect the expand/collapse chevron font size
+         used in the Top NavigationView's Overflow menu. -->
     <x:Double x:Key="NavigationViewItemExpandedGlyphFontSize">12.0</x:Double>
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
@@ -1511,7 +1513,8 @@
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"/>
-                                <Grid x:Name="ExpandCollapseChevron"
+                                <Grid
+                                    x:Name="ExpandCollapseChevron"
                                     Grid.Column="2"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
@@ -1519,14 +1522,16 @@
                                     Margin="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronMargin}"
                                     Padding="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronPadding}"
                                     Background="Transparent">
-                                    <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                                    <TextBlock
+                                        Foreground="{ThemeResource NavigationViewItemForeground}"
+                                        RenderTransformOrigin="0.5, 0.5"
+                                        FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
+                                        Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        IsTextScaleFactorEnabled="False">
                                         <TextBlock.RenderTransform>
                                             <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
                                         </TextBlock.RenderTransform>
