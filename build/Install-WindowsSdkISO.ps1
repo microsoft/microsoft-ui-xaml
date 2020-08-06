@@ -188,7 +188,16 @@ function Test-InstallWindowsSDK
     {
         # A Windows SDK is installed
         # Is an SDK of our version installed with the options we need?
-        if (Test-RegistryPathAndValue -Path $WindowsSDKInstalledRegPath -Value "$WindowsSDKOptions")
+        $allRequiredSdkOptionsInstalled = $true
+        foreach($sdkOption in $WindowsSDKOptions)
+        {
+            if (!(Test-RegistryPathAndValue -Path $WindowsSDKInstalledRegPath -Value $sdkOption))
+            {
+                $allRequiredSdkOptionsInstalled = $false
+            }
+        }
+
+        if($allRequiredSdkOptionsInstalled)
         {
             # It appears we have what we need. Double check the disk
             $sdkRoot = Get-ItemProperty -Path $WindowsSDKRegPath | Select-Object -ExpandProperty $WindowsSDKRegRootKey
