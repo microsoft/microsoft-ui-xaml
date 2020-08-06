@@ -13,5 +13,5 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 17134
-    displayName: 'Install Windows SDK (17134)'
+      arguments: 17763
+    displayName: 'Install Windows SDK (17763)'
