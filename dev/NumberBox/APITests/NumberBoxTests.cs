@@ -98,9 +98,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
 
                 var numberBoxLayoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(numberBox, 0);
-                disabledStatesGroup = VisualStateManager.GetVisualStateGroups(numberBoxLayoutRoot).First(vsg => vsg.Name.Equals("DisabledStates"));
+                disabledStatesGroup = VisualStateManager.GetVisualStateGroups(numberBoxLayoutRoot).First(vsg => vsg.Name.Equals("CommonStates"));
 
-                Verify.AreEqual("Enabled", disabledStatesGroup.CurrentState.Name);
+                Verify.AreEqual("Normal", disabledStatesGroup.CurrentState.Name);
 
                 // Check 2: Set IsEnabled to false.
                 numberBox.IsEnabled = false;
@@ -118,7 +118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("Enabled", disabledStatesGroup.CurrentState.Name);
+                Verify.AreEqual("Normal", disabledStatesGroup.CurrentState.Name);
             });
         }
 
