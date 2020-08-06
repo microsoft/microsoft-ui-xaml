@@ -70,10 +70,10 @@ steps:
       PathtoPublish: $(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: ${{ parameters.artifactName }}
 
-  # - task: powershell@2
-  #   displayName: 'Source Index PDBs'
-  #   inputs:
-  #     targetType: filePath
-  #     filePath: build\SourceIndexing\IndexPdbs.ps1
-  #     arguments: -SearchDir '${{ parameters.buildOutputDir }}\$(buildConfiguration)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
-  #     errorActionPreference: silentlyContinue
+  - task: powershell@2
+    displayName: 'Source Index PDBs'
+    inputs:
+      targetType: filePath
+      filePath: build\SourceIndexing\IndexPdbs.ps1
+      arguments: -SearchDir '${{ parameters.buildOutputDir }}\$(buildConfiguration)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
+      errorActionPreference: silentlyContinue

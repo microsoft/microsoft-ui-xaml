@@ -4,7 +4,7 @@ variables:
 jobs:
 - job: ComponentDetection
   pool:
-    vmImage: 'winuibuildagents'
+    vmImage: 'windows-2019'
 
   steps:
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0

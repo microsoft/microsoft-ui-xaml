@@ -10,7 +10,7 @@ jobs:
   condition: succeededOrFailed()
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-    vmImage: 'winuibuildagents'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
