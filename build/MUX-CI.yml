@@ -5,7 +5,7 @@ variables:
 jobs:
 - job: Build
   pool:
-    vmImage: 'winuibuildagents'
+    name: 'winuibuildagents'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
