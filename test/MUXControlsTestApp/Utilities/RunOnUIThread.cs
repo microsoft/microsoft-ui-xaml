@@ -90,19 +90,26 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public async Task WaitForTick()
+        public static void WaitForTick()
         {
-            var renderingEventFired = new TaskCompletionSource<object>();
+            var renderingEvent = new ManualResetEvent(false);
 
-            EventHandler<object> renderingCallback = (sender, arg) =>
+            EventHandler<object> renderingHandler = (object sender, object args) =>
             {
-                renderingEventFired.TrySetResult(null);
+                renderingEvent.Set();
             };
-            CompositionTarget.Rendering += renderingCallback;
 
-            await renderingEventFired.Task;
+            RunOnUIThread.Execute(() =>
+            {
+                Windows.UI.Xaml.Media.CompositionTarget.Rendering += renderingHandler;
+            });
 
-            CompositionTarget.Rendering -= renderingCallback;
+            renderingEvent.WaitOne();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Windows.UI.Xaml.Media.CompositionTarget.Rendering -= renderingHandler;
+            });
         }
 
     }
