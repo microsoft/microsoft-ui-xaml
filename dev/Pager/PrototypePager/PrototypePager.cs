@@ -29,16 +29,25 @@ namespace MUXControlsTestApp
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
 
-        private static string[] FirstPageButtonStates = new string[] { "FirstPageButtonVisible", "FirstPageButtonCollapsed",
-                                                                       "FirstPageButtonEnabled", "FirstPageButtonDisabled" };
-        private static string[] PreviousPageButtonStates = new string[] { "PreviousPageButtonVisible", "PreviousPageButtonCollapsed",
-                                                                          "PreviousPageButtonEnabled", "PreviousPageButtonDisabled" };
-        private static string[] NextPageButtonStates = new string[] { "NextPageButtonVisible", "NextPageButtonCollapsed",
-                                                                      "NextPageButtonEnabled", "NextPageButtonDisabled" };
-        private static string[] LastPageButtonStates = new string[] { "LastPageButtonVisible", "LastPageButtonCollapsed",
-                                                                      "LastPageButtonEnabled", "LastPageButtonDisabled" };
+        private static string FirstPageButtonVisibleVisualState = "FirstPageButtonVisible";
+        private static string FirstPageButtonNotVisibleVisualState = "FirstPageButtonCollapsed";
+        private static string FirstPageButtonEnabledVisualState = "FirstPageButtonEnabled";
+        private static string FirstPageButtonDisabledVisualState = "FirstPageButtonDisabled";
 
+        private static string PreviousPageButtonVisibleVisualState = "PreviousPageButtonVisible";
+        private static string PreviousPageButtonNotVisibleVisualState = "PreviousPageButtonCollapsed";
+        private static string PreviousPageButtonEnabledVisualState = "PreviousPageButtonEnabled";
+        private static string PreviousPageButtonDisabledVisualState = "PreviousPageButtonDisabled";
 
+        private static string NextPageButtonVisibleVisualState = "NextPageButtonVisible";
+        private static string NextPageButtonNotVisibleVisualState = "NextPageButtonCollapsed";
+        private static string NextPageButtonEnabledVisualState = "NextPageButtonEnabled";
+        private static string NextPageButtonDisabledVisualState = "NextPageButtonDisabled";
+
+        private static string LastPageButtonVisibleVisualState = "LastPageButtonVisible";
+        private static string LastPageButtonNotVisibleVisualState = "LastPageButtonCollapsed";
+        private static string LastPageButtonEnabledVisualState = "LastPageButtonEnabled";
+        private static string LastPageButtonDisabledVisualState = "LastPageButtonDisabled";
 
         private int PreviousPageIndex = -1;
 
