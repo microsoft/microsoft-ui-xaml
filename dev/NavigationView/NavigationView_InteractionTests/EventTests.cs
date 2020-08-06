@@ -283,7 +283,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Verify.AreEqual("Music as header", header.DocumentText);
 
                     Log.Comment("Click settings item");
-                    menuItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    menuItem = FindElement.ByName("Settings");
                     InputHelper.LeftClick(menuItem);
                     Wait.ForIdle();
                     header = new TextBlock(FindElement.ByName("Settings as header"));
@@ -304,7 +304,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
 
                     settingsItem.SetFocus();
                     Wait.ForIdle();
