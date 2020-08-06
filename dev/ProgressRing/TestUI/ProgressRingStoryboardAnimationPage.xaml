@@ -34,20 +34,6 @@
                             </Grid.Resources>
 
                             <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="SizeStates">
-                                    <VisualState x:Name="Large">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Duration="0" Storyboard.TargetName="SixthCircle" Storyboard.TargetProperty="Visibility">
-                                                <DiscreteObjectKeyFrame KeyTime="0">
-                                                    <DiscreteObjectKeyFrame.Value>
-                                                        <Visibility>Visible</Visibility>
-                                                    </DiscreteObjectKeyFrame.Value>
-                                                </DiscreteObjectKeyFrame>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Small" />
-                                </VisualStateGroup>
                                 <VisualStateGroup x:Name="ActiveStates">
                                     <VisualState x:Name="Inactive" />
                                     <VisualState x:Name="Active">
@@ -234,6 +220,7 @@
                 Height="32"
                 Width="32"
                 IsActive="{x:Bind StoryboardAnimationIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                IsIndeterminate="True"
                 />
 
             <Grid Width="200px" HorizontalAlignment="Left">
