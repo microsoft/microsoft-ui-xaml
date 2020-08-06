@@ -19,7 +19,7 @@ namespace MUXControlsTestApp
         {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestStoryboardAnimationProgressRing, 0);
 
-            var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[1];
+            var commonStatesGroup = VisualStateManager.GetVisualStateGroups(layoutRoot)[0];
             commonStatesGroup.CurrentStateChanged += this.ProgressRingStoryboardAnimationPage_CurrentStateChanged;
             VisualStateText.Text = commonStatesGroup.CurrentState.Name;
 

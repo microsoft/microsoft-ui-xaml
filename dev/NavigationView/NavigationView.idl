@@ -175,6 +175,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("1008.0")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanZero")]
     Double ExpandedModeThresholdWidth { get; set; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.Foundation.Collections.IVector<Object> FooterMenuItems{ get; };
+        Object FooterMenuItemsSource{ get; set; };
+    }
     Windows.UI.Xaml.UIElement PaneFooter { get; set; };
     Object Header { get; set; };
     Windows.UI.Xaml.DataTemplate HeaderTemplate { get; set; };
@@ -211,6 +216,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty IsPaneOpenProperty { get; };
     static Windows.UI.Xaml.DependencyProperty CompactModeThresholdWidthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ExpandedModeThresholdWidthProperty { get; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty FooterMenuItemsProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty FooterMenuItemsSourceProperty{ get; };
+    }
     static Windows.UI.Xaml.DependencyProperty PaneFooterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HeaderProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
