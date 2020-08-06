@@ -37,6 +37,21 @@ Analyze/Convert C# files
     2. Instances of the parameter name in the `App.OnLaunched` method body must invoke `UWPLaunchActivatedEventArgs`
 - Highlights Deprecated Types
     - Some types such as `Windows.UI.Input.Inking`, and `Windows.UI.Xaml.Media.AcrylicBackgroundSource` are not supported in WinUI3. These may be identified by the analyzer as deprecated but cannot be converted automatically.
+- .Net Projections moving to `Microsoft.UI.Xaml` :
+    - `System.ComponentModel.INotifyPropertyChanged` -> `Microsoft.UI.Xaml.Data.INotifyPropertyChanged`
+    - `System.ComponentModel.PropertyChangedEventArgs`-> `Microsoft.UI.Xaml.Data.PropertyChangedEventArgs`
+    - `System.Windows.Input.ICommand` -> `Microsoft.UI.Xaml.Input.ICommand`
+    - `System.Collections.ObjectModel.ObservableCollection` -> `Microsoft.UI.Xaml.Interop.INotifyCollectionChanged`
+        - Note `INotifyCollectionChanged` requres there be a concrete implementation. The analyzer provides one such test class.
+- .Net Struct constructors map to their associated WinRT Helper classes
+    - `Windows.UI.Xaml.CornerRadius` -> `Microsoft.UI.Xaml.CornerRadiusHelper`
+    - `Windows.UI.Xaml.Duration`-> `Microsoft.UI.Xaml.DurationHelper`
+    - `Windows.UI.Xaml.GridLength`-> `Microsoft.UI.Xaml.GridLengthHelper`
+    - `Windows.UI.Xaml.Thickness`-> `Microsoft.UI.Xaml.ThicknessHelper` ->
+    - `Windows.UI.Xaml.Controls.Primitives.GeneratorPosition` -> `Microsoft.UI.Xaml.Controls.Primitives.GeneratorPositionHelper`
+    - `Windows.UI.Xaml.Media.Matrix` -> `Microsoft.UI.Xaml.Media.MatrixHelper` 
+    - `Windows.UI.Xaml.Media.Animation.KeyTime` -> `Microsoft.UI.Xaml.Media.Animation.KeyTimeHelper`
+    - `Windows.UI.Xaml.Media.Animation.RepeatBehavior` -> `Microsoft.UI.Xaml.Media.Animation.RepeatBehaviorHelper`
 
 ### What The Conversion Analyzers Do Not Do:
 
@@ -44,26 +59,39 @@ Analyze/Convert C# files
  - Remove deprecated Code
  - Analyze/Convert .xaml files
 
-## Examples
-### Convert Namespaces:
-Before converting:
+### Examples
 
-![Visual Studio Lightbulb Suggestion](./images/namespaceBefore.png#thumb)
+#### Namespaces Before Running Analyzers:
+```csharp
+using Windows.UI;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+```
 
-After:
+#### Namespaces After Running Analyzers:
+```csharp
+using Microsoft.UI;
+using Microsoft.UI.ViewManagement;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+```
 
-![Visual Studio Lightbulb Suggestion](./images/namespaceAfter.png#thumb)
+#### OnLaunched Method Before Running Analyzers:
+```c#
+protected override async void OnLaunched(LaunchActivatedEventArgs args)
+{
+    await EnsureWindow(args)
+}
+```
 
-### Convert App.OnLaunched Method:
-Before converting:
-
-![Visual Studio Lightbulb Suggestion](./images/onLaunchedBefore.png#thumb)
-
-After:
-
-![Visual Studio Lightbulb Suggestion](./images/onLaunchedAfter.png#thumb)
-
-
+#### OnLaunched Method After Running Analyzers:
+```csharp
+protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+{
+    await EnsureWindow(args.UWPLaunchActivatedEventArgs)
+}
+```
 ## Conversion Process
 Necessary steps for converting a WinUI C# App to WinUI3: 
 
