@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -433,6 +433,14 @@ void NavigationView::OnApplyTemplate()
         topNavOverflowButton.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonText)));
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
+
+        auto const toolTip = winrt::ToolTipService::GetToolTip(topNavOverflowButton);
+        if (!toolTip)
+        {
+            auto const tooltip = winrt::ToolTip();
+            tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonToolTip)));
+            winrt::ToolTipService::SetToolTip(topNavOverflowButton, tooltip);
+        }
 
         if (auto const flyoutBase = topNavOverflowButton.Flyout())
         {
