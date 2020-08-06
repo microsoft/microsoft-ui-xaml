@@ -400,13 +400,10 @@
     <Style x:Key="NavigationViewOverflowButtonStyleWhenPaneOnTop" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
-        <Setter Property="Padding" Value="12,0" />
         <Setter Property="Height" Value="{StaticResource PaneToggleButtonHeight}" />
+        <Setter Property="Width" Value="{StaticResource PaneToggleButtonWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="0" />
         <Setter Property="Template">
@@ -415,6 +412,7 @@
                     <Grid 
                         x:Name="RootGrid" 
                         Height="{TemplateBinding Height}"
+                        Width="{TemplateBinding Width}"
                         Background="{TemplateBinding Background}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -422,45 +420,37 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <StackPanel Padding="{TemplateBinding Padding}" Orientation="Horizontal">
-                            <ContentPresenter 
-                                x:Name="ContentPresenter"
-                                Content="{TemplateBinding Content}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Foreground="{TemplateBinding Foreground}"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw" />
-                            <FontIcon
-                                x:Name="Icon"
-                                Margin="8,0,0,-4"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="8"
-                                Glyph="&#xE96E;"
-                                Foreground="{TemplateBinding Foreground}"
-                                IsHitTestVisible="False" />
-                        </StackPanel>
+                        <Rectangle 
+                            x:Name="PointerRectangle" 
+                            Fill="Transparent" />
+                        <FontIcon
+                            x:Name="Icon"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="20"
+                            Glyph="&#xE10C;"
+                            Foreground="{TemplateBinding Foreground}"
+                            IsHitTestVisible="False" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -517,8 +507,8 @@
                             HorizontalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="16"
-                            Glyph="&#xE70D;"
+                            FontSize="20"
+                            Glyph="&#xE10C;"
                             Foreground="{TemplateBinding Foreground}"
                             IsHitTestVisible="False" />
                     </Grid>
