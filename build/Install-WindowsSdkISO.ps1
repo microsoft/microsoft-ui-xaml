@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 
 # Constants
 $WindowsSDKOptions = @("OptionId.UWPCpp", "OptionId.DesktopCPPx64", "OptionId.DesktopCPPx86", "OptionId.DesktopCPPARM64", "OptionId.DesktopCPPARM")
-$WindowsSDKRegPath = "HKLM:\Software\Microsoft\Windows Kits\Installed Roots"
+$WindowsSDKRegPath = "HKLM:\Software\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
 $WindowsSDKRegRootKey = "KitsRoot10"
 $WindowsSDKVersion = "10.0.$buildNumber.0"
 $WindowsSDKInstalledRegPath = "$WindowsSDKRegPath\$WindowsSDKVersion\Installed Options"
