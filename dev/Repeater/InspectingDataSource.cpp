@@ -14,52 +14,32 @@ InspectingDataSource::InspectingDataSource(const winrt::IInspectable& source)
         throw winrt::hresult_invalid_argument(L"Argument 'source' is null.");
     }
 
-    auto vector = source.try_as<winrt::IVector<winrt::IInspectable>>();
-    if (vector)
+    if (const auto vector = source.try_as<winrt::IVector<winrt::IInspectable>>())
     {
         m_vector.set(vector);
         ListenToCollectionChanges();
     }
+    else if (const auto bindableVector = source.try_as<winrt::IBindableVector>())
+    {
+        m_vector.set(reinterpret_cast<const winrt::IVector<winrt::IInspectable>&>(bindableVector));
+        ListenToCollectionChanges();
+    }
+    else if (const auto vectorView = source.try_as<winrt::IVectorView<winrt::IInspectable>>())
+    {
+        m_vectorView.set(vectorView);
+        ListenToCollectionChanges();
+    }
+    else if (const auto iterable = source.try_as<winrt::IIterable<winrt::IInspectable>>())
+    {
+        m_vector.set(WrapIterable(iterable));
+    }
+    else if (const auto bindableIterable = source.try_as<winrt::IBindableIterable>())
+    {
+        m_vector.set(WrapIterable(reinterpret_cast<const winrt::IIterable<winrt::IInspectable>&>(bindableIterable)));
+    }
     else
     {
-        const auto vectorView = source.try_as<winrt::IVectorView<winrt::IInspectable>>();
-        if (vectorView)
-        {
-            m_vectorViewInsteadOfVector = true;
-            m_vectorView.set(vectorView);
-            ListenToCollectionChanges();
-        }
-        else
-        {
-            // The bindable interop interface are abi compatible with the corresponding
-            // WinRT interfaces.
-            auto bindableVector = source.try_as<winrt::IBindableVector>();
-            if (bindableVector)
-            {
-                m_vector.set(reinterpret_cast<const winrt::IVector<winrt::IInspectable>&>(bindableVector));
-                ListenToCollectionChanges();
-            }
-            else
-            {
-                auto iterable = source.try_as<winrt::IIterable<winrt::IInspectable>>();
-                if (iterable)
-                {
-                    m_vector.set(WrapIterable(iterable));
-                }
-                else
-                {
-                    auto bindableIterable = source.try_as<winrt::IBindableIterable>();
-                    if (bindableIterable)
-                    {
-                        m_vector.set(WrapIterable(reinterpret_cast<const winrt::IIterable<winrt::IInspectable>&>(bindableIterable)));
-                    }
-                    else
-                    {
-                        throw winrt::hresult_invalid_argument(L"Argument 'source' is not a supported vector.");
-                    }
-                }
-            }
-        }
+        throw winrt::hresult_invalid_argument(L"Argument 'source' is not a supported vector.");
     }
 
     m_uniqueIdMaping = source.try_as<winrt::IKeyIndexMapping>();
@@ -74,7 +54,7 @@ InspectingDataSource::~InspectingDataSource()
 
 int32_t InspectingDataSource::GetSizeCore()
 {
-    if (m_vectorViewInsteadOfVector)
+    if (m_vectorView)
     {
         return static_cast<int>(m_vectorView.get().Size());
     }
@@ -86,7 +66,7 @@ int32_t InspectingDataSource::GetSizeCore()
 
 winrt::IInspectable InspectingDataSource::GetAtCore(int index)
 {
-    if (m_vectorViewInsteadOfVector)
+    if (m_vectorView)
     {
         return m_vectorView.get().GetAt(static_cast<unsigned>(index));
     }
@@ -128,17 +108,15 @@ int InspectingDataSource::IndexFromKeyCore(winrt::hstring const& id)
 int InspectingDataSource::IndexOfCore(winrt::IInspectable const& value)
 {
     int index = -1;
-    if (m_vectorViewInsteadOfVector)
+    if (m_vectorView)
     {
-        if (m_vectorView)
+        auto v = static_cast<uint32_t>(-1);
+        if (m_vectorView.get().IndexOf(value, v))
         {
-            auto v = static_cast<uint32_t>(-1);
-            if (m_vectorView.get().IndexOf(value, v))
-            {
-                index = static_cast<int>(v);
-            }
+            index = static_cast<int>(v);
         }
-    }else if (m_vector)
+    }
+    else if (m_vector)
     {
         auto v = static_cast<uint32_t>(-1);
         if (m_vector.get().IndexOf(value, v))
@@ -183,7 +161,7 @@ void InspectingDataSource::UnListenToCollectionChanges()
 
 void InspectingDataSource::ListenToCollectionChanges()
 {
-    if (m_vectorViewInsteadOfVector)
+    if (!m_vector)
     {
         MUX_ASSERT(m_vectorView);
     }
@@ -192,7 +170,7 @@ void InspectingDataSource::ListenToCollectionChanges()
         MUX_ASSERT(m_vector);
     }
     const auto incc = [this]() {
-        if (m_vectorViewInsteadOfVector)
+        if (m_vectorView)
         {
             return m_vectorView.try_as<winrt::INotifyCollectionChanged>();
         }
