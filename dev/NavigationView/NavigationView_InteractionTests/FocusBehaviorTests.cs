@@ -114,7 +114,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 flipOrientationButton.Invoke();
                 Wait.ForIdle();
 
-                var topSettingsItem = new Button(FindElement.ByName("SettingsTopNavPaneItem"));
+                var topSettingsItem = new Button(FindElement.ByName("Settings"));
                 topSettingsItem.Click();
 
                 Log.Comment("Verify the top settings item is selected.");

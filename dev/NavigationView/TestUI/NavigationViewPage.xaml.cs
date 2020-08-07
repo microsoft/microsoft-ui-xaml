@@ -29,6 +29,7 @@ namespace MUXControlsTestApp
     public sealed partial class NavigationViewPage : TestPage
     {
         private int m_newItemIndex = 0;
+        private int m_newFooterItemIndex = 0;
         private int m_closingEventsFired = 0;
         private int m_closedEventsFired = 0;
         private bool m_useFocusVisualKindReveal = false;
@@ -319,6 +320,23 @@ namespace MUXControlsTestApp
             if (NavView.MenuItems.Count > 0)
             {
                 NavView.MenuItems.RemoveAt(NavView.MenuItems.Count - 1);
+            }
+        }
+
+        private void AddFooterItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = new NavigationViewItem();
+            menuItem.Content = "New Footer Menu Item " + m_newFooterItemIndex.ToString();
+            menuItem.Icon = new SymbolIcon(Symbol.AllApps);
+            NavView.FooterMenuItems.Add(menuItem);
+            m_newFooterItemIndex++;
+        }
+
+        private void RemoveFooterItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavView.FooterMenuItems.Count > 0)
+            {
+                NavView.FooterMenuItems.RemoveAt(NavView.FooterMenuItems.Count - 1);
             }
         }
 
@@ -628,7 +646,7 @@ namespace MUXControlsTestApp
         private void FlipOrientation_Click(object sender, RoutedEventArgs e)
         {
             NavView.PaneDisplayMode = NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? NavigationViewPaneDisplayMode.Auto : NavigationViewPaneDisplayMode.Top;
-            FindAndGiveAutomationNameToVisualChild("SettingsTopNavPaneItem");
+            FindAndGiveAutomationNameToVisualChild("SettingsItem");
         }
 
         private void ClearSelectedItem_Click(object sender, RoutedEventArgs e)
@@ -713,16 +731,7 @@ namespace MUXControlsTestApp
 
         private void ReadSettingsSelected_Click(object sender, RoutedEventArgs e)
         {
-            DependencyObject settings = null;
-            if (NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Left ||
-                NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Auto)
-            {
-                settings = FindVisualChildByName(NavView, "SettingsNavPaneItem");
-            }
-            else
-            {
-                settings = FindVisualChildByName(NavView, "SettingsTopNavPaneItem");
-            }
+            DependencyObject settings = FindVisualChildByName(NavView, "SettingsItem");
 
             SettingsSelectedState.Text = (settings as NavigationViewItem).IsSelected.ToString();
         }
