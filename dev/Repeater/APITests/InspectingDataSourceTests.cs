@@ -200,6 +200,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             ValidateSwitchingItemsSourceRefreshesElements(isVirtualLayout: true);
         }
 
+        [TestMethod]
+        public void VerifyReadOnlyListCompatibility()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var collection = new ReadOnlyNotifyPropertyChangedCollection<object>();
+                var firstItem = "something1";
+                
+                collection.Data = new ObservableCollection<object>();
+
+                collection.Data.Add(firstItem);
+                collection.Data.Add("something2");
+                collection.Data.Add("something3");
+
+                var itemsSourceView = new ItemsSourceView(collection);
+                Verify.AreEqual(3, itemsSourceView.Count);
+
+                collection.Data.Add("something4");
+                Verify.AreEqual(4, itemsSourceView.Count);
+
+                Verify.AreEqual(firstItem,itemsSourceView.GetAt(0));
+                Verify.AreEqual(0, itemsSourceView.IndexOf(firstItem));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNotifyCollectionChangeWithReadonlyListBehavior()
+        {
+            int invocationCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var collection = new ReadOnlyNotifyPropertyChangedCollection<object>();
+
+                var itemsSourceView = new ItemsSourceView(collection);
+                itemsSourceView.CollectionChanged += ItemsSourceView_CollectionChanged;
+
+                var underlyingData = new ObservableCollection<object>();
+                collection.Data = underlyingData;
+
+                Verify.AreEqual(1, invocationCount);
+            });
+
+            void ItemsSourceView_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                invocationCount++;
+            }
+        }
+
         public void ValidateSwitchingItemsSourceRefreshesElements(bool isVirtualLayout)
         {
             RunOnUIThread.Execute(() =>
