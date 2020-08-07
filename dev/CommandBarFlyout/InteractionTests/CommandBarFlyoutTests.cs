@@ -646,9 +646,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 // Move around over item to open flyout
-                PointerInput.Move(FindElement.ByName("ProofingAppBarButton"), 5, 5);
-                PointerInput.Move(FindElement.ByName("ProofingAppBarButton"), 6, 5);
-                PointerInput.Move(FindElement.ByName("ProofingAppBarButton"), 5, 6);
+                PointerInput.Move(FindElement.ById("ProofingButton"), 5, 5);
+                PointerInput.Move(FindElement.ById("ProofingButton"), 6, 5);
+                PointerInput.Move(FindElement.ById("ProofingButton"), 5, 6);
 
                 // Move around over the first item to keep flyout open safely
                 // This also verifies that the flyout is open as it would crash otherwise
