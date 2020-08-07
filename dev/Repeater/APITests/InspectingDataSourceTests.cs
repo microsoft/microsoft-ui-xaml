@@ -205,7 +205,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var collection = new ObservableDataSource<object>();
+                var collection = new ReadOnlyNotifyPropertyChangedCollection<object>();
                 var firstItem = "something1";
                 
                 collection.Data = new ObservableCollection<object>();
@@ -232,7 +232,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                var collection = new ObservableDataSource<object>();
+                var collection = new ReadOnlyNotifyPropertyChangedCollection<object>();
 
                 var itemsSourceView = new ItemsSourceView(collection);
                 itemsSourceView.CollectionChanged += ItemsSourceView_CollectionChanged;
@@ -449,90 +449,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Index = (uint)index;
                 }
             }
-        }
-
-        public class ObservableDataSource<T> : IReadOnlyList<T>, INotifyCollectionChanged, IKeyIndexMapping
-        {
-            public ObservableDataSource() { }
-
-            public ObservableDataSource(IEnumerable<T> data)
-            {
-                Data = new ObservableCollection<T>(data);
-            }
-
-            #region IReadOnlyList<T>
-
-            public int Count => Data.Count;
-
-            public T this[int index] => Data[index];
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                return this.Data.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return this.GetEnumerator();
-            }
-
-            #endregion
-
-            #region INotifyCollectionChanged
-
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-            protected virtual void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-            {
-                this.CollectionChanged?.Invoke(this, e);
-            }
-
-            #endregion
-
-            public string KeyFromIndex(int index)
-            {
-                return this[index].GetHashCode().ToString();
-            }
-
-            public int IndexFromKey(string key)
-            {
-                throw new Exception();
-            }
-
-            public ObservableCollection<T> Data
-            {
-                get
-                {
-                    if (_data == null)
-                    {
-                        _data = new ObservableCollection<T>();
-                    }
-                    return _data;
-                }
-
-                set
-                {
-                    if (_data != value)
-                    {
-                        // Listen for future changes
-                        if (_data != null)
-                            _data.CollectionChanged -= this.OnCollectionChanged;
-
-                        _data = value;
-
-                        if (_data != null)
-                            _data.CollectionChanged += this.OnCollectionChanged;
-                    }
-
-                    // Raise a reset event
-                    this.OnCollectionChanged(
-                        this,
-                        new NotifyCollectionChangedEventArgs(
-                            NotifyCollectionChangedAction.Reset));
-                }
-            }
-
-            private ObservableCollection<T> _data = null;
         }
 
         class ObservableVectorWithUniqueIds : ObservableCollection<int>, IKeyIndexMapping
