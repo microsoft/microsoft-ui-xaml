@@ -16,6 +16,7 @@
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <StackPanel>
             <TextBlock>DataTemplate Sample:</TextBlock>
@@ -80,7 +81,7 @@
             <TextBlock>ElementFactory Multiple Template Sample:</TextBlock>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater3" 
+                    <controls:ItemsRepeater x:Name="repeater4" 
                                             ItemsSource="{x:Bind Data}"
                                             Layout="{StaticResource stackLayout}">
                         <controls:ItemsRepeater.ItemTemplate>
@@ -94,6 +95,22 @@
                                     <TextBlock Text="{Binding}" Foreground="Green" />
                                 </DataTemplate>
                             </controls:RecyclingElementFactory>
+                        </controls:ItemsRepeater.ItemTemplate>
+                    </controls:ItemsRepeater>
+                </ScrollViewer>
+            </controls:ItemsRepeaterScrollHost>
+        </StackPanel>
+        <StackPanel Grid.Column="4">
+            <TextBlock>DataTemplate clear count checking:</TextBlock>
+            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
+                <ScrollViewer>
+                    <controls:ItemsRepeater x:Name="repeater3" 
+                                            ItemsSource="{x:Bind Numbers}"
+                                            Layout="{StaticResource stackLayout}">
+                        <controls:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="local:MyData" >
+                                <local:DisposableUserControl Number="{x:Bind number}"/>
+                            </DataTemplate>
                         </controls:ItemsRepeater.ItemTemplate>
                     </controls:ItemsRepeater>
                 </ScrollViewer>

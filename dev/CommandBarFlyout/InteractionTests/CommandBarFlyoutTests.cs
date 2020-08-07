@@ -189,6 +189,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void CanTapOnSecondaryItemWithFlyoutWithoutClosing()
+        {
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                Action openCommandBarAction = () =>
+                {
+                    Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                    InputHelper.Tap(showCommandBarFlyoutButton);
+
+                    // Pre-RS5, CommandBarFlyouts always open expanded,
+                    // so we don't need to tap on the more button in that case.
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                    {
+                        Log.Comment("Expanding the CommandBar by invoking the more button.");
+                        FindElement.ById<Button>("MoreButton").InvokeAndWait();
+                    }
+                };
+
+                Log.Comment("Opening the CommandBar and invoking the first button in the secondary commands list.");
+                openCommandBarAction();
+
+
+                setup.ExecuteAndWaitForEvents(() => FindElement.ById<Button>("ProofingButton").Invoke(), new List<string>() { "ProofingButton clicked" });
+
+
+                Verify.IsTrue(isFlyoutOpenCheckBox.ToggleState == ToggleState.On);
+            }
+        }
+
+        [TestMethod]
         public void VerifyTabNavigationBetweenPrimaryAndSecondaryCommands()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
