@@ -614,9 +614,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     
         [TestMethod]
-        public void CreatesAndRecyclesSameNumberOfItems()
+        public void VerifyRepeaterDoesNotLeakItemContainers()
         {
-
             ObservableCollection<int> items = new ObservableCollection<int>();
             for(int i=0;i<10;i++)
             {

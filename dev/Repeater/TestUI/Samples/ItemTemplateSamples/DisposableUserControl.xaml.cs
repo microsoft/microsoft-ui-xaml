@@ -21,15 +21,12 @@ namespace MUXControlsTestApp.Samples
     public sealed partial class DisposableUserControl : UserControl
     {
 
-        private int num;
-
         public int Number
         {
             get { return (int)GetValue(NumberProperty); }
-            set { SetValue(NumberProperty, value); num = value; }
+            set { SetValue(NumberProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Number.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NumberProperty =
             DependencyProperty.Register("Number", typeof(int), typeof(DisposableUserControl), new PropertyMetadata(-1));
 
@@ -39,7 +36,6 @@ namespace MUXControlsTestApp.Samples
 
         public DisposableUserControl()
         {
-            num = -1;
             Interlocked.Increment(ref _counter);
             this.InitializeComponent();
         }
@@ -47,7 +43,6 @@ namespace MUXControlsTestApp.Samples
         ~DisposableUserControl()
         {
             Interlocked.Decrement(ref _counter);
-            int value = this.num;
         }
     }
 }
