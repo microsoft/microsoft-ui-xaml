@@ -30,9 +30,6 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
-using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
-using Windows.UI.Composition;
-using System.Threading.Tasks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -645,8 +642,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            // Wait until the Tick to make sure all layout has completed.
-            RunOnUIThread.WaitForTick();
 
             RunOnUIThread.Execute(() =>
             {
@@ -659,8 +654,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            // Wait until the Tick to make sure all layout has completed.
-            RunOnUIThread.WaitForTick();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

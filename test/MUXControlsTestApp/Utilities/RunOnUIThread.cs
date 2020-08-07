@@ -101,14 +101,14 @@ namespace MUXControlsTestApp.Utilities
 
             RunOnUIThread.Execute(() =>
             {
-                Windows.UI.Xaml.Media.CompositionTarget.Rendering += renderingHandler;
+                CompositionTarget.Rendering += renderingHandler;
             });
 
             renderingEvent.WaitOne();
 
             RunOnUIThread.Execute(() =>
             {
-                Windows.UI.Xaml.Media.CompositionTarget.Rendering -= renderingHandler;
+                CompositionTarget.Rendering -= renderingHandler;
             });
         }
 
