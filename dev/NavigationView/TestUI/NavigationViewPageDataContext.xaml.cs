@@ -37,7 +37,7 @@ namespace MUXControlsTestApp
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             var nvi = args.SelectedItem as NavigationViewItem;
-            NavViewSelectedDataContext.Text = nvi.DataContext as string;
+            NavViewSelectedDataContext.Text = nvi.DataContext as string ?? "";
         }
 
         private void GetNavViewActiveVisualStates_Click(object sender, RoutedEventArgs e)
