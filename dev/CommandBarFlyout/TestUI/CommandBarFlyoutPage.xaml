@@ -95,10 +95,10 @@
                 <AppBarButton x:Name="ItalicButton5" AutomationProperties.AutomationId="ItalicButton5" Label="Italic" Icon="Italic" Click="OnElementClicked" />
                 <AppBarButton x:Name="UnderlineButton5" AutomationProperties.AutomationId="UnderlineButton5" Label="Underline" Icon="Underline" Click="OnElementClicked" />
                 <muxc:CommandBarFlyout.SecondaryCommands>
-                    <AppBarButton Label="Proofing">
+                    <AppBarButton Label="Proofing" AutomationProperties.Name="ProofingAppBarButton">
                         <AppBarButton.Flyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="talk" />
+                                <MenuFlyoutItem AutomationProperties.Name="FirstFlyoutItem" Text="talk" />
                                 <MenuFlyoutItem Text="talks" />
                                 <MenuFlyoutItem Text="talk a" />
                                 <MenuFlyoutSeparator />

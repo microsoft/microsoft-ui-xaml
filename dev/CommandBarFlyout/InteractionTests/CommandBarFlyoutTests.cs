@@ -587,5 +587,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(showCommandBarFlyoutButton);
             }
         }
+
+        [TestMethod]
+        public void VerifyFlyoutClosingBehavior()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+
+                // Pre-RS5, CommandBarFlyouts always open expanded,
+                // so we don't need to tap on the more button in that case.
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Expanding the CommandBar by invoking the more button.");
+                    FindElement.ById<Button>("MoreButton").InvokeAndWait();
+                }
+
+                // Move around over item to open flyout
+                PointerInput.Move(FindElement.ByName("ProofingAppBarButton"), 5, 5);
+                PointerInput.Move(FindElement.ByName("ProofingAppBarButton"), 6, 5);
+                PointerInput.Move(FindElement.ByName("ProofingAppBarButton"), 5, 6);
+
+                // Move around over the first item to keep flyout open safely
+                // This also verifies that the flyout is open as it would crash otherwise
+                PointerInput.Move(FindElement.ByName("FirstFlyoutItem"), 5, 5);
+                PointerInput.Move(FindElement.ByName("FirstFlyoutItem"), 6, 5);
+                PointerInput.Move(FindElement.ByName("FirstFlyoutItem"), 5, 6);
+
+                // Click outside of the flyout to close it
+                InputHelper.Tap(FindElement.ByName<Button>("Show CommandBarFlyout"));
+
+                // Check that the flyout item is not present anymore
+                VerifyElement.NotFound("FirstFlyoutItem",FindBy.Name);
+            }
+        }
     }
 }
