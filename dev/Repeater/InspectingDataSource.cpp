@@ -185,23 +185,15 @@ void InspectingDataSource::ListenToCollectionChanges()
         m_eventToken = incc.CollectionChanged({ this, &InspectingDataSource::OnCollectionChanged });
         m_notifyCollectionChanged.set(incc);
     }
-    else
+    else if (const auto bindableObservableVector = m_vector.try_as<winrt::IBindableObservableVector>())
     {
-        auto bindableObservableVector = m_vector.try_as<winrt::IBindableObservableVector>();
-        if (bindableObservableVector)
-        {
-            m_eventToken = bindableObservableVector.VectorChanged({ this, &InspectingDataSource::OnBindableVectorChanged });
-            m_bindableObservableVector.set(bindableObservableVector);
-        }
-        else
-        {
-            auto observableVector = m_vector.try_as<winrt::IObservableVector<winrt::IInspectable>>();
-            if (observableVector)
-            {
-                m_eventToken = observableVector.VectorChanged({ this, &InspectingDataSource::OnVectorChanged });
-                m_observableVector.set(observableVector);
-            }
-        }
+        m_eventToken = bindableObservableVector.VectorChanged({ this, &InspectingDataSource::OnBindableVectorChanged });
+        m_bindableObservableVector.set(bindableObservableVector);
+
+    }
+    else if(const auto observableVector = m_vector.try_as<winrt::IObservableVector<winrt::IInspectable>>()){
+        m_eventToken = observableVector.VectorChanged({ this, &InspectingDataSource::OnVectorChanged });
+        m_observableVector.set(observableVector);
     }
 }
 

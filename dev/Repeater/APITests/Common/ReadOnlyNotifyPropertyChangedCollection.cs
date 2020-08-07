@@ -25,12 +25,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 
         public IEnumerator<T> GetEnumerator()
         {
-            return this.Data.GetEnumerator();
+            throw new NotImplementedException("This is not implemented and should not have be used");
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            throw new NotImplementedException("This is not implemented and should not have be used");
         }
 
         #endregion
