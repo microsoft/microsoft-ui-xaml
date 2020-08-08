@@ -220,7 +220,7 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
@@ -342,7 +342,7 @@ void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyC
     UpdateSpinButtonEnabled();
 }
 
-void NumberBox::OnIsEnabledChanged(const winrt::IInspectable& /*sender*/, const winrt::DependencyPropertyChangedEventArgs& /*args*/)
+void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateVisualStateForIsEnabledChange();
 }
