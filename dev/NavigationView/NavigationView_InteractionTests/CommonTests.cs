@@ -1726,19 +1726,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView TopNav Test" }))
             {
-                Log.Comment("Verify that the Overflow menu is closed.");
+                Log.Comment("Verify that the overflow menu is closed.");
                 var overflowItemsHost = TryFindElement.ById("TopNavMenuItemsOverflowHost");
                 Verify.IsNull(overflowItemsHost, "Overflow menu should have been closed.");
 
-                Log.Comment("Open Overflow button flyout.");
+                Log.Comment("Open the overflow menu.");
                 GetOverflowButton().Click();
                 Wait.ForIdle();
 
-                Log.Comment("Verify that the Overflow menu is open.");
+                Log.Comment("Verify that the overflow menu is open.");
                 overflowItemsHost = TryFindElement.ById("TopNavMenuItemsOverflowHost");
                 Verify.IsNotNull(overflowItemsHost, "Overflow menu should have been open.");
 
-                Log.Comment("Get CornerRadius of Overflow menu.");
+                Log.Comment("Get CornerRadius of the overflow menu.");
                 FindElement.ByName<Button>("GetOverflowMenuCornerRadiusButton").Invoke();
 
                 // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
@@ -1747,7 +1747,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 UIObject GetOverflowButton()
                 {
-                    Log.Comment("Add items until the Overflow button shows up.");
+                    Log.Comment("Add items until the overflow button shows up.");
                     var addItemButton = new Button(FindElement.ById("AddItemButton"));
 
                     UIObject overflowButton1 = TryFindElement.ById("TopNavOverflowButton");
