@@ -1675,6 +1675,94 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
+        [TestMethod]
+        public void VerifyNavigationViewItemChildrenFlyoutMenuCornerRadius()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Set PaneDisplayMode to LeftCompact.");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                Wait.ForIdle();
 
+                VerifyChildrenFlyoutMenuCornerRadius();
+
+                // Refresh the cache to make sure that the flyout object we are going to be searching for
+                // does not return as a false positive due to the caching mechanism.
+                ElementCache.Clear();
+
+                Log.Comment("Set PaneDisplayMode to Top.");
+                panelDisplayModeComboBox.SelectItemByName("Top");
+                Wait.ForIdle();
+
+                VerifyChildrenFlyoutMenuCornerRadius();
+
+                void VerifyChildrenFlyoutMenuCornerRadius()
+                {
+                    Log.Comment("Verify that the children menu flyout used in this test is closed.");
+                    var childItem = FindElement.ByName("Menu Item 2");
+                    Verify.IsNull(childItem, "Menu Item 1's children menu flyout should have been closed.");
+
+                    Log.Comment("Select Menu Item 1 which should open children flyout.");
+                    var item = FindElement.ByName("Menu Item 1");
+                    InputHelper.LeftClick(item);
+                    Wait.ForIdle();
+
+                    childItem = FindElement.ByName("Menu Item 2");
+                    Verify.IsNotNull(childItem, "Menu Item 1's children menu flyout should have been open.");
+
+                    Log.Comment("Get CornerRadius of Menu Item 1's children menu flyout.");
+                    FindElement.ByName<Button>("GetMenuItem1ChildrenFlyoutCornerRadiusButton").Invoke();
+
+                    // A CornerRadius of (4,4,4,4) is the current value for flyouts.
+                    TextBlock menuItem1ChildrenFlyoutCornerRadiusTextBlock = new TextBlock(FindElement.ByName("MenuItem1ChildrenFlyoutCornerRadiusTextBlock"));
+                    Verify.AreEqual("4,4,4,4", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyOverflowMenuCornerRadius()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView TopNav Test" }))
+            {
+                Log.Comment("Verify that the Overflow menu is closed.");
+                var overflowItemsHost = TryFindElement.ById("TopNavMenuItemsOverflowHost");
+                Verify.IsNull(overflowItemsHost, "Overflow menu should have been closed.");
+
+                Log.Comment("Open Overflow button flyout.");
+                GetOverflowButton().Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify that the Overflow menu is open.");
+                overflowItemsHost = TryFindElement.ById("TopNavMenuItemsOverflowHost");
+                Verify.IsNotNull(overflowItemsHost, "Overflow menu should have been open.");
+
+                Log.Comment("Get CornerRadius of Overflow menu.");
+                FindElement.ByName<Button>("GetOverflowMenuCornerRadiusButton").Invoke();
+
+                // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
+                TextBlock overflowMenuCornerRadiusTextBlock = new TextBlock(FindElement.ByName("OverflowMenuCornerRadiusTextBlock"));
+                Verify.AreEqual("4,4,4,4", overflowMenuCornerRadiusTextBlock.DocumentText);
+
+                UIObject GetOverflowButton()
+                {
+                    Log.Comment("Add items until the Overflow button shows up.");
+                    var addItemButton = new Button(FindElement.ById("AddItemButton"));
+
+                    UIObject overflowButton1 = TryFindElement.ById("TopNavOverflowButton");
+                    while (overflowButton1 == null)
+                    {
+                        addItemButton.Click();
+                        Log.Comment("Item added.");
+                        Wait.ForIdle();
+
+                        overflowButton1 = TryFindElement.ById("TopNavOverflowButton");
+                    }
+
+                    return overflowButton1;
+                }
+            }
+        }
     }
 }
