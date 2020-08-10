@@ -98,7 +98,7 @@
                     <AppBarButton x:Name="ProofingButton" AutomationProperties.AutomationId="ProofingButton" Label="Proofing" Click="OnElementClicked">
                         <AppBarButton.Flyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="talk" />
+                                <MenuFlyoutItem AutomationProperties.Name="FirstFlyoutItem" Text="talk" />
                                 <MenuFlyoutItem Text="talks" />
                                 <MenuFlyoutItem Text="talk a" />
                                 <MenuFlyoutSeparator />

@@ -162,8 +162,9 @@ CommandBarFlyout::CommandBarFlyout()
                             Hide();
                             m_isClosingAfterCloseAnimation = false;
                         });
-                    commandBar->IsOpen(false);
                 }
+                // Close commandbar and thus other associated flyouts
+                commandBar->IsOpen(false);
 
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
