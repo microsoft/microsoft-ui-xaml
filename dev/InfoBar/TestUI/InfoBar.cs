@@ -54,7 +54,7 @@ namespace MUXControlsTestApp
     public sealed class InfoBar : ContentControl
     {
         Button _actionButton;
-        Button _alternateCloseButton;
+        Button _closeButton;
         TextBlock _title;
         TextBlock _message;
         HyperlinkButton _hyperlinkButton;
@@ -83,7 +83,7 @@ namespace MUXControlsTestApp
 
         protected override void OnApplyTemplate()
         {
-            _alternateCloseButton = GetTemplateChild<Button>("AlternateCloseButton");
+            _closeButton = GetTemplateChild<Button>("CloseButton");
             _actionButton = GetTemplateChild<Button>("ActionButton");
             _title = GetTemplateChild<TextBlock>("Title");
             _message = GetTemplateChild<TextBlock>("Message");
@@ -97,7 +97,7 @@ namespace MUXControlsTestApp
             OnIsOpenChanged();
             UpdateMargins();
 
-            _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
+            _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
         }
 
@@ -364,7 +364,6 @@ namespace MUXControlsTestApp
                 if (ActionButtonContent != null)
                 {
                     VisualStateManager.GoToState(this, "ActionButtonVisible", false);
-
                 }
                 else
                 {

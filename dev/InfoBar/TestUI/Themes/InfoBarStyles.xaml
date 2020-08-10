@@ -24,8 +24,8 @@
 
     <x:Double x:Key="InfoBarMinHeight">40</x:Double>
 
-    <x:Double x:Key="InfoBarAlternateCloseButtonSize">44</x:Double>
-    <x:Double x:Key="InfoBarAlternateCloseButtonGlyphSize">12</x:Double>
+    <x:Double x:Key="InfoBarCloseButtonSize">44</x:Double>
+    <x:Double x:Key="InfoBarCloseButtonGlyphSize">12</x:Double>
     
     <Style TargetType="local:InfoBar" >
         <Setter Property="Template">
@@ -39,25 +39,25 @@
                             <VisualStateGroup x:Name="ButtonStates">
                                 <VisualState x:Name="NoButtonsVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CloseButtonVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ActionButtonVisible">
                                     <VisualState.Setters>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BothButtonsVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -220,17 +220,17 @@
                                                      Foreground="{ThemeResource InfoBarHyperlinkButtonColor}"/>
                                 </StackPanel>
                                 
-                                <Button Name="AlternateCloseButton" 
+                                <Button Name="CloseButton" 
                                         Command="{TemplateBinding CloseButtonCommand}" 
                                         CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
-                                        Height="{StaticResource InfoBarAlternateCloseButtonSize}"
-                                        Width="{StaticResource InfoBarAlternateCloseButtonSize}" 
+                                        Height="{StaticResource InfoBarCloseButtonSize}"
+                                        Width="{StaticResource InfoBarCloseButtonSize}" 
                                         Background="Transparent"
                                         FontSize="16"
                                         Grid.Column="2"
                                         Margin="0, 0, -12, 0">
-                                    <Viewbox Width="{StaticResource InfoBarAlternateCloseButtonGlyphSize}"
-                                             Height="{StaticResource InfoBarAlternateCloseButtonGlyphSize}">
+                                    <Viewbox Width="{StaticResource InfoBarCloseButtonGlyphSize}"
+                                             Height="{StaticResource InfoBarCloseButtonGlyphSize}">
                                         <SymbolIcon Symbol="Cancel"/>
                                     </Viewbox>
                                 </Button>
