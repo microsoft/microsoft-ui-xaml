@@ -3,14 +3,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
-    
 
     <x:Double x:Key="NumberPanelButtonWidth">35</x:Double>
-    
+
+    <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
+        <Setter Property="MinWidth" Value="{StaticResource NumberPanelButtonWidth}"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
     <DataTemplate x:Key="NumberPanelButtonTemplate">
-        <Button Content="{Binding}" MinWidth="{StaticResource NumberPanelButtonWidth}"
-                Background="White"
-                Foreground="Black"/>
+        <Button Content="{Binding}" Style="{StaticResource NumberPanelButtonStyle}"/>
     </DataTemplate>
 
     <Style TargetType="local:PrototypePager">
@@ -135,9 +137,7 @@
                                         IsEnabled="False"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                        Content="&#xE76B;"
-                                        
-                                        />
+                                        Content="&#xE76B;"/>
                                 <TextBlock x:Name="PreviousPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
                                            Text="{TemplateBinding PreviousPageButtonText}"
                                            Visibility="{Binding ElementName=PreviousPageButton, Path=Visibility}"/>
@@ -145,34 +145,24 @@
                             <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
                                 <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{TemplateBinding PrefixText}" />
                                 <!--NumberBox Display-->
-                                <controls:NumberBox x:Name="NumberBoxDisplay"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"
-                                                Minimum="1"
+                                <controls:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}" Minimum="1"
                                                 Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedIndex, Mode=TwoWay}"
-                                                SmallChange="1"
-                                                LargeChange="5"
-                                                IsEnabled="False"
-                                                Visibility="Collapsed" />
+                                                SmallChange="1" LargeChange="5"
+                                                IsEnabled="False" Visibility="Collapsed" />
                                 <!--ComboBox Display-->
-                                <ComboBox x:Name="ComboBoxDisplay"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
                                       ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
-                                      IsEnabled="False"
-                                      Visibility="Collapsed"/>
+                                      IsEnabled="False" Visibility="Collapsed"/>
                                 <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
                                 <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"/>
                             </StackPanel>
-                                <StackPanel x:Name="NumberPanelDisplay"
-                                            Orientation="Horizontal"
-                                            Visibility="Collapsed"
-                                            Grid.Row="0" Grid.Column="1">
+                                <StackPanel x:Name="NumberPanelDisplay" Grid.Row="0" Grid.Column="1"
+                                            Orientation="Horizontal" Visibility="Collapsed">
                                     <ScrollViewer x:Name="NumberPanelViewer"
                                               HorizontalScrollBarVisibility="Hidden" HorizontalScrollMode="Disabled"
                                               VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                                         <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater"
-                                        ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
                                         ItemTemplate="{StaticResource NumberPanelButtonTemplate}">
                                             <controls:ItemsRepeater.Layout>
                                                 <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
