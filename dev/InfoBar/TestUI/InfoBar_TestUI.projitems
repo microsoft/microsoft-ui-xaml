@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)InfoBar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InfoBarPage.xaml.cs">
       <DependentUpon>InfoBarPage.xaml</DependentUpon>
     </Compile>

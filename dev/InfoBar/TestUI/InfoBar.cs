@@ -4,7 +4,8 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Foundation;
-
+using InfoBar_TestUI;
+using Windows.UI.Xaml.Automation.Peers;
 
 namespace MUXControlsTestApp
 {
@@ -18,10 +19,8 @@ namespace MUXControlsTestApp
     {
         Critical,
         Warning,
-        Informational,
         Success,
-        Default,
-        None
+        Default
     }
 
     public class InfoBarClosedEventArgs : EventArgs
@@ -43,6 +42,7 @@ namespace MUXControlsTestApp
             get; set;
         }
     }
+
     public class CloseButtonClickEventArgs : EventArgs
     {
         public bool IsHandled
@@ -55,8 +55,12 @@ namespace MUXControlsTestApp
     {
         Button _actionButton;
         Button _alternateCloseButton;
-        Button _closeButton;
-        Border _myContainer;
+        TextBlock _title;
+        TextBlock _message;
+        HyperlinkButton _hyperlinkButton;
+        IconSourceElement _standardIcon;
+        IconSourceElement _userIcon;
+        Grid _contentRootGrid;
 
         public event EventHandler<RoutedEventArgs> ActionButtonClick;
         public event TypedEventHandler<InfoBar, CloseButtonClickEventArgs> CloseButtonClick;
@@ -80,16 +84,20 @@ namespace MUXControlsTestApp
         protected override void OnApplyTemplate()
         {
             _alternateCloseButton = GetTemplateChild<Button>("AlternateCloseButton");
-            _closeButton = GetTemplateChild<Button>("CloseButton");
             _actionButton = GetTemplateChild<Button>("ActionButton");
-            _myContainer = GetTemplateChild<Border>("Container");
+            _title = GetTemplateChild<TextBlock>("Title");
+            _message = GetTemplateChild<TextBlock>("Message");
+            _hyperlinkButton = GetTemplateChild<HyperlinkButton>("HyperlinkButton");
+            _standardIcon = GetTemplateChild<IconSourceElement>("StandardIcon");
+            _userIcon = GetTemplateChild<IconSourceElement>("UserIcon");
+            _contentRootGrid = GetTemplateChild<Grid>("ContentRootGrid");
 
             UpdateButtonsState();
             UpdateSeverityState();
             OnIsOpenChanged();
+            UpdateMargins();
 
             _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
-            _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
         }
 
@@ -101,7 +109,7 @@ namespace MUXControlsTestApp
             {
                 infoBar.UpdateSeverityState();
             }
-            else if (property == ActionButtonContentProperty || property == CloseButtonContentProperty || property == ShowCloseButtonProperty)
+            else if (property == ActionButtonContentProperty || property == ShowCloseButtonProperty)
             {
                 infoBar.UpdateButtonsState();
             }
@@ -113,6 +121,7 @@ namespace MUXControlsTestApp
             {
                 infoBar.OnIconChanged();
             }
+            infoBar.UpdateMargins();
         }
 
         /* Open Properties
@@ -199,24 +208,6 @@ namespace MUXControlsTestApp
         /* Close Button Properties
          * 
          */
-        public object CloseButtonContent
-        {
-            get { return (object)GetValue(CloseButtonContentProperty); }
-            set { SetValue(CloseButtonContentProperty, value); }
-        }
-
-        public static readonly DependencyProperty CloseButtonContentProperty =
-            DependencyProperty.Register(nameof(CloseButtonContent), typeof(object), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
-
-        public Style CloseButtonStyle
-        {
-            get { return (Style)GetValue(CloseButtonStyleProperty); }
-            set { SetValue(CloseButtonStyleProperty, value); }
-        }
-
-        public static readonly DependencyProperty CloseButtonStyleProperty =
-            DependencyProperty.Register(nameof(CloseButtonStyle), typeof(Style), typeof(InfoBar), new PropertyMetadata(null));
-
         public ICommand CloseButtonCommand
         {
             get { return (ICommand)GetValue(CloseButtonCommandProperty); }
@@ -234,6 +225,19 @@ namespace MUXControlsTestApp
 
         public static readonly DependencyProperty CloseButtonCommandParameterProperty =
             DependencyProperty.Register(nameof(CloseButtonCommandParameter), typeof(object), typeof(InfoBar), new PropertyMetadata(null));
+
+        /* Hyperlink Properties 
+         * 
+         */
+        public Object HyperlinkButtonContent
+        {
+            get { return (object)GetValue(HyperlinkButtonContentProperty); }
+            set { SetValue(HyperlinkButtonContentProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HyperlinkButtonContent.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HyperlinkButtonContentProperty =
+            DependencyProperty.Register(nameof(HyperlinkButtonContent), typeof(object), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
 
         /* Severity-Related Properties
         * 
@@ -285,14 +289,12 @@ namespace MUXControlsTestApp
             args.Reason = lastCloseReason;
 
             Closing?.Invoke(this, args);
-            // If the developer did not want to cancel the closing of the InfoBar, the InfoBar will collapse and the ClosedEvent will proceed as usual. 
+
             if (!args.Cancel)
             {
                 alreadyRaised = true;
-                _myContainer.Visibility = Visibility.Collapsed;
                 IsOpen = false;
                 Open(IsOpen);
-                RaiseClosedEvent();
             }
             else
             {
@@ -301,6 +303,7 @@ namespace MUXControlsTestApp
                 IsOpen = true;
             }
         }
+
         void RaiseClosedEvent()
         {
             InfoBarClosedEventArgs args = new InfoBarClosedEventArgs();
@@ -332,17 +335,9 @@ namespace MUXControlsTestApp
             {
                 VisualStateManager.GoToState(this, "Warning", false);
             }
-            else if (Severity == InfoBarSeverity.Informational)
-            {
-                VisualStateManager.GoToState(this, "Informational", false);
-            }
             else if (Severity == InfoBarSeverity.Success)
             {
                 VisualStateManager.GoToState(this, "Success", false);
-            }
-            else if (Severity == InfoBarSeverity.None)
-            {
-                VisualStateManager.GoToState(this, "None", false);
             }
             else
             {
@@ -355,41 +350,106 @@ namespace MUXControlsTestApp
         {
             if (ShowCloseButton)
             {
-                if (CloseButtonContent != null && ActionButtonContent != null)
+                if (ActionButtonContent != null)
                 {
                     VisualStateManager.GoToState(this, "BothButtonsVisible", false);
-                    VisualStateManager.GoToState(this, "NoDefaultCloseButton", false);
                 }
-                else if (CloseButtonContent != null)
+                else
                 {
                     VisualStateManager.GoToState(this, "CloseButtonVisible", false);
-                    VisualStateManager.GoToState(this, "NoDefaultCloseButton", false);
-                }
-                else if (ActionButtonContent != null)
-                {
-                    VisualStateManager.GoToState(this, "ActionButtonVisible", false);
-                    VisualStateManager.GoToState(this, "DefaultCloseButton", false);
-                    _alternateCloseButton.Visibility = Visibility.Visible;
-                }
-                else if (ActionButtonContent == null && CloseButtonContent == null)
-                {
-                    VisualStateManager.GoToState(this, "NoButtonsVisible", false);
-                    VisualStateManager.GoToState(this, "DefaultCloseButton", false);
-                    _closeButton.Visibility = Visibility.Collapsed;
-                    _actionButton.Visibility = Visibility.Collapsed;
-                    _alternateCloseButton.Visibility = Visibility.Visible;
                 }
             }
             else
             {
-                VisualStateManager.GoToState(this, "NoDefaultCloseButton", false);
                 if (ActionButtonContent != null)
                 {
                     VisualStateManager.GoToState(this, "ActionButtonVisible", false);
+
                 }
                 else
                 {
                     VisualStateManager.GoToState(this, "NoButtonsVisible", false);
+                }
+            }
+        }
+
+        //Updates the margins depending on the prescence of certain visual components
+        private void UpdateMargins()
+        {
+            if (_standardIcon != null)
+            {
+                if ((Title != null && Title != "") || (Message != null && Message != "") || ActionButtonContent != null || HyperlinkButtonContent != null || ShowCloseButton == true)
+                {
+                    _standardIcon.Margin = new Thickness(0, 12, 8, 12);
+                }
+                else
+                {
+                    _standardIcon.Margin = new Thickness(0, 12, 0, 12);
+                }
+            }
+            if (_userIcon != null)
+            {
+                if ((Title != null && Title != "") || (Message != null && Message != "") || ActionButtonContent != null || HyperlinkButtonContent != null || ShowCloseButton == true)
+                {
+                    _userIcon.Margin = new Thickness(0, 12, 8, 12);
+                }
+                else
+                {
+                    _userIcon.Margin = new Thickness(0, 12, 0, 12);
+                }
+            }
+            if (_title != null)
+            {
+                if (Title != null && Title != "")
+                {
+                    if ((_standardIcon != null || _userIcon != null) && (Message != null && Message != ""))
+                    {
+                        _title.Margin = new Thickness(0, 12, 8, 12);
+                    }
+                    else
+                    {
+                        _title.Margin = new Thickness(0, 12, 0, 12);
+                    }
+                }
+                else
+                {
+                    _title.Margin = new Thickness(0, 0, 0, 0);
+                }
+            }
+            if (_message != null)
+            {
+                if (Message != null && Message != "")
+                {
+                    if (ActionButtonContent != null || HyperlinkButtonContent != null)
+                    {
+                        _message.Margin = new Thickness(0, 12, 12, 12);
+                    }
+                    else
+                    {
+                        _message.Margin = new Thickness(0, 12, 0, 12);
+                    }
+                }
+                else
+                {
+                    _message.Margin = new Thickness(0, 0, 0, 0);
+                }
+            }
+            if (_actionButton != null)
+            {
+                if (ActionButtonContent != null)
+                {
+                    if (HyperlinkButtonContent != null)
+                    {
+                        _actionButton.Margin = new Thickness(0, 8, 12, 8);
+                    }
+                    else
+                    {
+                        _actionButton.Margin = new Thickness(0, 8, 4, 8);
+                    }
+                }
+                else
+                {
+                    _actionButton.Margin = new Thickness(0, 0, 0, 0);
                 }
             }
         }
@@ -405,7 +465,7 @@ namespace MUXControlsTestApp
             else if (!alreadyRaised)
             {
                 RaiseClosingEvent();
-                alreadyRaised = false; 
+                alreadyRaised = false;
             }
         }
 
@@ -416,13 +476,23 @@ namespace MUXControlsTestApp
             {
                 VisualStateManager.GoToState(this, "Visible", false);
                 IsOpen = true;
+                InfoBarAutomationPeer infoBarPeer = FrameworkElementAutomationPeer.FromElement(this) as InfoBarAutomationPeer ?? null;
+                infoBarPeer.RaiseWindowOpenedEvent(Title + " " + Message);
             }
             else
             {
                 VisualStateManager.GoToState(this, "Collapsed", false);
-                _myContainer.Visibility = Visibility.Collapsed;
                 IsOpen = false;
+                RaiseClosedEvent();
+                InfoBarAutomationPeer infoBarPeer = FrameworkElementAutomationPeer.FromElement(this) as InfoBarAutomationPeer ?? null;
+                infoBarPeer.RaiseWindowOpenedEvent("InfoBar Dismissed");
             }
+        }
+
+        //Creates an InfoBarAutomationPeer
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new InfoBarAutomationPeer(this);
         }
     }
 }

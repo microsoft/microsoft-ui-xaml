@@ -15,7 +15,7 @@
             <RowDefinition/>
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
-        <local:InfoBar x:Name="TestInfoBar" StatusColor="Pink" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Closing="Test_Closing" Severity ="Critical" Width="1000">
+        <local:InfoBar x:Name="TestInfoBar" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Closing="Test_Closing" Severity ="Critical" Width="1000">
         </local:InfoBar>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -28,15 +28,14 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
+            
             <StackPanel Orientation="Horizontal" Grid.Row="0">
                 <TextBlock>Severity Level</TextBlock>
                 <ComboBox Name="SeverityCombo" SelectionChanged="ComboBox_SelectionChanged">
                     <x:String>Critical</x:String>
                     <x:String>Warning</x:String>
-                    <x:String>Informational</x:String>
                     <x:String>Success</x:String>
                     <x:String>Default</x:String>
-                    <x:String>None</x:String>
                 </ComboBox>
                 <Button x:Name="SeverityButton" Click="SeverityButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
@@ -75,36 +74,27 @@
                 <Button x:Name="MessageButton" Click="MessageButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <Grid Grid.Row="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Grid.Row="5">
-                    <TextBlock>Close Button Content</TextBlock>
-                    <ComboBox x:Name="CloseButtonContentComboBox" SelectionChanged="CloseButtonContentComboBox_SelectionChanged">
+                <StackPanel Orientation="Horizontal" Grid.Column="1">
+                    <TextBlock>Action Button Content</TextBlock>
+                    <ComboBox x:Name="ActionButtonContentComboBox" SelectionChanged="ActionButtonContentComboBox_SelectionChanged">
                         <x:String>Short Text</x:String>
                         <x:String>Long Text</x:String>
                         <x:String>No Text</x:String>
                     </ComboBox>
-                    <Button x:Name="CloseButtonContentButton" Click="CloseButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Column="1">
-                    <TextBlock>Show Close Button</TextBlock>
-                    <CheckBox Name="ShowClose" Content="Show Close" Checked="ShowClose_Checked" Unchecked="ShowClose_Unchecked"/>
-                    <Button x:Name="ShowCloseButton" Click="ShowCloseButton_Click" Content="Set"/>
+                    <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
                 </StackPanel>
             </Grid>
             <StackPanel Orientation="Horizontal" Grid.Row="6">
-                <TextBlock>Action Button Content</TextBlock>
-                <ComboBox x:Name="ActionButtonContentComboBox" SelectionChanged="ActionButtonContentComboBox_SelectionChanged">
-                    <x:String>Short Text</x:String>
-                    <x:String>Long Text</x:String>
-                    <x:String>No Text</x:String>
+                <TextBlock>Hyperlink Button Content</TextBlock>
+                <ComboBox x:Name="HyperlinkComboBox" SelectionChanged="Hyperlink_SelectionChanged">
+                    <x:String>Hyperlink</x:String>
+                    <x:String>No Hyperlink</x:String>
                 </ComboBox>
-                <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
+                <Button x:Name="HyperlinkButton" Click="HyperlinkButton_Click" Content="Set" VerticalAlignment="Top"/>
             </StackPanel>
             <Grid Grid.Row="7">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
@@ -117,8 +107,12 @@
                     <TextBlock>Cancel Closing</TextBlock>
                     <CheckBox Name="Cancel" Content="Cancel" Checked="Cancel_Checked" Unchecked="Cancel_Unchecked"/>
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Column="2">
+                    <TextBlock>Show Close Button</TextBlock>
+                    <CheckBox Name="ShowClose" Content="Show Close" Checked="ShowClose_Checked" Unchecked="ShowClose_Unchecked"/>
+                    <Button x:Name="ShowCloseButton" Click="ShowCloseButton_Click" Content="Set"/>
+                </StackPanel>
             </Grid>
         </Grid>
-
     </Grid>
 </local:TestPage>
