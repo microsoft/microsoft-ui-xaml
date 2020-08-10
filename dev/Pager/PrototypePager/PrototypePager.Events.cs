@@ -1,8 +1,10 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Windows.UI;
 using Windows.UI.Notifications;
@@ -19,6 +21,69 @@ namespace MUXControlsTestApp
         private static void OnSelectedIndexChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
             (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
+        }
+
+        private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            if ((args.Element as Button).Content != null && ((args.Element as Button).Content as string) != EllipseString)
+            {
+                (args.Element as Button).Click += OnNumberPanelButtonClicked;
+
+                if ((int)(args.Element as Button).Content == SelectedIndex)
+                {
+                    (args.Element as Button).Foreground = new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    (args.Element as Button).Foreground = new SolidColorBrush(Colors.White);
+                }
+            }
+        }
+
+        private void OnElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+        {
+            (args.Element as Button).Click -= OnNumberPanelButtonClicked;
+        }
+
+        private void OnNumberPanelButtonClicked(object sender, RoutedEventArgs args)
+        {
+            SelectedIndex = (int)(sender as Button).Content;
+        }
+
+        private void UpdateNumberPanel()
+        {
+            if (SelectedIndex < 5)
+            {
+                //return;
+                NumberPanelCurrentItems[0] = 1;
+                NumberPanelCurrentItems[1] = 2;
+                NumberPanelCurrentItems[2] = 3;
+                NumberPanelCurrentItems[3] = 4;
+                NumberPanelCurrentItems[4] = 5;
+                NumberPanelCurrentItems[5] = EllipseString;
+                NumberPanelCurrentItems[6] = NumberOfPages;
+            }
+            else if (SelectedIndex >= NumberOfPages - 3)
+            {
+                NumberPanelCurrentItems[0] = 1;
+                NumberPanelCurrentItems[1] = EllipseString;
+                NumberPanelCurrentItems[2] = NumberOfPages - 4;
+                NumberPanelCurrentItems[3] = NumberOfPages - 3;
+                NumberPanelCurrentItems[4] = NumberOfPages - 2;
+                NumberPanelCurrentItems[5] = NumberOfPages - 1;
+                NumberPanelCurrentItems[6] = NumberOfPages;
+            }
+            else if (SelectedIndex >= 5 && SelectedIndex < NumberOfPages - 3)
+            {
+                NumberPanelCurrentItems[0] = 1;
+                NumberPanelCurrentItems[1] = EllipseString;
+                NumberPanelCurrentItems[2] = SelectedIndex - 1;
+                NumberPanelCurrentItems[3] = SelectedIndex;
+                NumberPanelCurrentItems[4] = SelectedIndex + 1;
+                NumberPanelCurrentItems[5] = EllipseString;
+                NumberPanelCurrentItems[6] = NumberOfPages;
+            }
+            
         }
 
         private void OnPagerDisplayModeChanged()

@@ -24,7 +24,7 @@
         </Grid.ColumnDefinitions>
 
         <Border BorderBrush="Black" BorderThickness="5" Grid.Column="0" VerticalAlignment="Center">
-            <local:PrototypePager x:Name="TestPager" AutomationProperties.Name="TestPager" PageChanged="OnPageChanged"/>
+            <local:PrototypePager x:Name="TestPager" AutomationProperties.Name="TestPager" PageChanged="OnPageChanged" NumberOfPages="10"/>
         </Border>
 
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">

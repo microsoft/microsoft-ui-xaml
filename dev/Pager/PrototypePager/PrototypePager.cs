@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -24,11 +25,16 @@ namespace MUXControlsTestApp
 
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
         private ComboBox PagerComboBox;
+        private ItemsRepeater NumberPanelItems;
+        private ObservableCollection<object> NumberPanelCurrentItems = new ObservableCollection<object>();
 
+        //private bool LeftEllipseEnabled = false;
+        //private bool RightEllipseEnabled = false;
+
+        private static string EllipseString = "...";
         private static string NumberBoxVisibleVisualState = "NumberBoxVisible";
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
-
         private static string[] FirstPageButtonStates = new string[] { "FirstPageButtonVisible", "FirstPageButtonCollapsed",
                                                                        "FirstPageButtonEnabled", "FirstPageButtonDisabled" };
         private static string[] PreviousPageButtonStates = new string[] { "PreviousPageButtonVisible", "PreviousPageButtonCollapsed",
@@ -37,8 +43,6 @@ namespace MUXControlsTestApp
                                                                       "NextPageButtonEnabled", "NextPageButtonDisabled" };
         private static string[] LastPageButtonStates = new string[] { "LastPageButtonVisible", "LastPageButtonCollapsed",
                                                                       "LastPageButtonEnabled", "LastPageButtonDisabled" };
-
-
 
         private int PreviousPageIndex = -1;
 
@@ -58,7 +62,8 @@ namespace MUXControlsTestApp
             NextPageButton = GetTemplateChild("NextPageButton") as Button;
             LastPageButton = GetTemplateChild("LastPageButton") as Button;
             PagerComboBox = GetTemplateChild("ComboBoxDisplay") as ComboBox;
-
+            NumberPanelItems = GetTemplateChild("NumberPanelItemsRepeater") as ItemsRepeater;
+            
             // Attach TestHooks
             FirstPageButtonTestHook = FirstPageButton;
             PreviousPageButtonTestHook = PreviousPageButton;
@@ -107,20 +112,51 @@ namespace MUXControlsTestApp
             }
 
             OnPagerDisplayModeChanged();
+
+            NumberPanelItems.Loaded += (s, e) => { InitializeNumberPanel(); };
+            NumberPanelItems.ElementPrepared += OnElementPrepared;
+            NumberPanelItems.ElementClearing += OnElementClearing;
+
             // This is for the initial page being loaded whatever page that might be.
             PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
+        }
+
+        private void InitializeNumberPanel()
+        {
+            NumberPanelItems.ItemsSource = NumberPanelCurrentItems;
+
+            if (NumberOfPages <= 7)
+            {
+                foreach(var num in TemplateSettings.Pages.GetRange(0, NumberOfPages))
+                {
+                    NumberPanelCurrentItems.Add(num);
+                }
+            } else
+            {
+                RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { 
+                    UpdateNumberPanel();
+                    Debug.WriteLine((NumberPanelItems.TryGetElement(SelectedIndex - 1) as Button)?.Content);
+                    Debug.WriteLine((NumberPanelItems.TryGetElement(PreviousPageIndex) as Button)?.Content);
+                });
+                //RightEllipseEnabled = true;
+                foreach (var num in TemplateSettings.Pages.GetRange(0, 5))
+                {
+                    NumberPanelCurrentItems.Add(num);
+                }
+                NumberPanelCurrentItems.Add("...");
+                NumberPanelCurrentItems.Add(NumberOfPages);
+
+            }
         }
     }
 
     public sealed class PagerTemplateSettings : DependencyObject
     {
-        public ObservableCollection<int> Pages { get; set; }
-        public ObservableCollection<int> PagesZeroIndexed { get; set; }
+        public List<object> Pages { get; set; }
 
         public PagerTemplateSettings(PrototypePager pager)
         {
-            Pages = new ObservableCollection<int>(Enumerable.Range(1, pager.NumberOfPages));
-            PagesZeroIndexed = new ObservableCollection<int>(Enumerable.Range(0, pager.NumberOfPages - 1));
+            Pages = new List<object>(Enumerable.Range(1, pager.NumberOfPages).Cast<object>());
         }
     }
 }
