@@ -151,6 +151,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavFooterMenuRepeaterGettingFocusRevoker.revoke();
     m_topNavFooterMenuRepeater.set(nullptr);
 
+    m_footerItemsCollectionChangedRevoker.revoke();
+
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterOverflowView.set(nullptr);
