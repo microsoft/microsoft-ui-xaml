@@ -26,6 +26,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     public class NumberBoxTests : ApiTestBase
     {
         [TestMethod]
+        public void VerifyTextAlignmentPropogates()
+        {
+            var numberBox = SetupNumberBox();
+            TextBox textBox = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+
+                textBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
+                Verify.AreEqual(TextAlignment.Left, textBox.TextAlignment, "The default TextAlignment should be left.");
+
+                numberBox.TextAlignment = TextAlignment.Right;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(TextAlignment.Right, textBox.TextAlignment, "The TextAlignment should have been updated to Right.");
+            });
+        }
+
+        [TestMethod]
         public void VerifyNumberBoxCornerRadius()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
