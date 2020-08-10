@@ -25,6 +25,7 @@ namespace MUXControlsTestApp
             NavigationViewTopNavPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavPage), 0); };
             NavigationViewTopNavOnlyPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavOnlyPage), 0); };
             NavigationViewTopNavStorePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavStorePage), 0); };
+            NavigateToTopNavOverflowButtonPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavOverflowButtonPage), 0); };
             NavigateToSelectedItemEdgeCasePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewSelectedItemEdgeCasePage), 0); };
             NavigateToInitPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewInitPage), 0); };
             NavigateToStretchPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewStretchPage), 0); };
