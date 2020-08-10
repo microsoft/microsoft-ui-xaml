@@ -157,6 +157,7 @@ private:
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
     void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable &, const winrt::IInspectable &);
+    void OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
@@ -236,6 +237,8 @@ private:
     void UpdatePaneTitleMargins();
     void UpdateLeftRepeaterItemSource(const winrt::IInspectable& items);
     void UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items);
+    void UpdateTopNavRepeaterItemsSource(const winrt::IInspectable& items);
+    void UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items);
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
     bool UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
@@ -423,6 +426,7 @@ private:
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_footerItemsCollectionChangedRevoker{};
 
+    winrt::ItemsSourceView::CollectionChanged_revoker m_topNavOverflowItemsCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
 
