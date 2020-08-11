@@ -171,11 +171,8 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
   <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
-  <!-- <PropertyGroup Condition="     ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR     ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR     ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')     ">
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-  </PropertyGroup> -->
-  <PropertyGroup>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
+  <PropertyGroup Condition="     ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR     ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR     ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')     ">
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
@@ -248,6 +245,8 @@
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <ConformanceMode>true</ConformanceMode>
+      <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
+      <MultiProcessorCompilation Condition="'$(NUMBER_OF_PROCESSORS)'=='2'">false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

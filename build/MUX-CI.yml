@@ -5,22 +5,22 @@ variables:
 jobs:
 - job: Build
   pool:
-    name: 'winuibuildagents'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
     matrix:
-      # Debug_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Debug'
-      # Release_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
-      # Release_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_Arm:
         buildPlatform: 'arm'
         buildConfiguration: 'Release'
