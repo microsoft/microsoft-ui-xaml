@@ -658,7 +658,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(FindElement.ByName<Button>("Show CommandBarFlyout"));
 
                 // Check that the flyout item is not present anymore
-                VerifyElement.NotFound("FirstFlyoutItem",FindBy.Name);
+                VerifyElement.NotFound("FirstFlyoutItem", FindBy.Name);
+            }
+        }
+
+        [TestMethod]
+        public void VerifySecondaryCommandFlyoutItemInvokationClosesCompleteFlyout()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                showCommandBarFlyoutButton.Click();
+
+                // Pre-RS5, CommandBarFlyouts always open expanded,
+                // so we don't need to tap on the more button in that case.
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Expanding the CommandBar by invoking the more button.");
+                    FindElement.ById<Button>("MoreButton").InvokeAndWait();
+                }
+
+                // Click item to open flyout
+                FindElement.ById<Button>("ProofingButton").Click();
+
+                // Move around over the first item to keep flyout open safely
+                // This also verifies that the flyout is open as it would crash otherwise
+                FindElement.ByName("FirstFlyoutItem").Click();
+
+                // Check that the flyout item is not present anymore
+                VerifyElement.NotFound("CutButton5", FindBy.Id);
             }
         }
     }
