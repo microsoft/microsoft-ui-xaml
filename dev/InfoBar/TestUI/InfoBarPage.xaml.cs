@@ -61,17 +61,11 @@ namespace MUXControlsTestApp
                 case "Warning":
                     severity = InfoBarSeverity.Warning;
                     break;
-                case "Informational":
-                    severity = InfoBarSeverity.Informational;
-                    break;
                 case "Success":
                     severity = InfoBarSeverity.Success;
                     break;
                 case "Default":
                     severity = InfoBarSeverity.Default;
-                    break;
-                case "None":
-                    severity = InfoBarSeverity.None;
                     break;
             }
         }

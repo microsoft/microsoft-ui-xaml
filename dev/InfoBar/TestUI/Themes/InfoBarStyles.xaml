@@ -37,39 +37,34 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBar">
-                    <Border
-                        x:Name="Container"
-                        VerticalAlignment="Top"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="Gray"
-                        BorderThickness="2">
+                    <Border x:Name="Container" 
+                            VerticalAlignment = "Top"
+                            Background = "Transparent"                            
+                            AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ButtonStates">
-                                <VisualState x:Name="NoButtonsVisible"/>
+                                <VisualState x:Name="NoButtonsVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="CloseButtonVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ActionButtonVisible">
                                     <VisualState.Setters>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
-                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BothButtonsVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="CloseButtonLocations">
-                                <VisualState x:Name="DefaultCloseButton"/>
-                                <VisualState x:Name="NoDefaultCloseButton">
-                                    <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -80,7 +75,6 @@
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xEA39;" FontSize="20"/>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xEA39;"/>
                                             </Setter.Value>
                                         </Setter>
                                     </VisualState.Setters>
@@ -91,7 +85,16 @@
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" FontSize="20"/>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Informational">
+                                    <VisualState.Setters>
+                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityInformationalStatusColor}"/>
+                                        <Setter Target="StandardIcon.IconSource">
+                                            <Setter.Value>
+                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
                                             </Setter.Value>
                                         </Setter>
                                     </VisualState.Setters>
@@ -102,28 +105,6 @@
                                         <Setter Target="StandardIcon.IconSource">
                                             <Setter.Value>
                                                 <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xF13E;" FontSize="20"/>
-                                <VisualState x:Name="Informational">
-                                    <VisualState.Setters>
-                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityInformationalStatusColor}"/>
-                                        <Setter Target="StandardIcon.IconSource">
-                                            <Setter.Value>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Default">
-                                    <VisualState.Setters>
-                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityDefaultStatusColor}"/>
-                                        <Setter Target="StandardIcon.IconSource">
-                                            <Setter.Value>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
-                                <VisualState x:Name="Success">
-                                    <VisualState.Setters>
-                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeveritySuccessStatusColor}"/>
-                                        <Setter Target="StandardIcon.IconSource">
-                                            <Setter.Value>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xF13E;"/>
                                             </Setter.Value>
                                         </Setter>
                                     </VisualState.Setters>
@@ -133,7 +114,6 @@
                                         <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityDefaultStatusColor}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="None"/>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="StatusColorStates">
                                 <VisualState x:Name="StandardColorVisible">
@@ -177,6 +157,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="InfoBarModeSize">
+                                <VisualState x:Name="InfoBarFloatingSize">
+                                    <VisualState.Setters>
+                                        <Setter Target="Container.MinWidth" Value="{ThemeResource InfoBarFloatingMinWidth}"/>
+                                        <Setter Target="Container.MaxWidth" Value="{ThemeResource InfoBarFloatingMaxWidth}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid x:Name="InfoBarGrid"
@@ -193,7 +181,7 @@
                                                      Color="{Binding RelativeSource={RelativeSource TemplatedParent},Path=(local:InfoBar.StatusColor)}"/>
                                 </Rectangle.Fill>
                             </Rectangle>
-                            
+
                             <Rectangle x:Name="UserColor" 
                                        HorizontalAlignment="Stretch" 
                                        VerticalAlignment="Stretch" 
@@ -215,7 +203,7 @@
 
                                 <IconSourceElement x:Name="StandardIcon"
                                                    Grid.Column="0"/>
-                                
+
                                 <IconSourceElement x:Name="UserIcon" 
                                                    IconSource="{TemplateBinding IconSource}"
                                                    Grid.Column="0"/>
@@ -250,7 +238,7 @@
                                                      FontSize="{ThemeResource InfoBarFontSize}"
                                                      Foreground="{ThemeResource InfoBarHyperlinkButtonColor}"/>
                                 </StackPanel>
-                                
+
                                 <Button Name="CloseButton" 
                                         Command="{TemplateBinding CloseButtonCommand}" 
                                         CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
@@ -266,48 +254,6 @@
                                     </Viewbox>
                                 </Button>
                             </Grid>
-                                <VisualState x:Name="Collapsed"/>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="ContentRootGrid" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="7*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
-
-                            </Grid.ColumnDefinitions>
-
-                            <Rectangle x:Name="StandardColor" Width="50" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <Rectangle.Fill>
-                                    <SolidColorBrush x:Name="StandardBrush" Color="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.StatusColor)}"/>
-                                </Rectangle.Fill>
-                            </Rectangle>
-                            <Rectangle x:Name="UserColor" Width="50" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <Rectangle.Fill>
-                                    <SolidColorBrush x:Name="UserBrush" Color="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(local:InfoBar.StatusColor)}"/>
-                                </Rectangle.Fill>
-                            </Rectangle>
-
-                            <IconSourceElement x:Name="StandardIcon" Grid.Column="1" HorizontalAlignment="Right" />
-                            <IconSourceElement x:Name="UserIcon" IconSource="{TemplateBinding IconSource}" Grid.Column="1" HorizontalAlignment="Right" />
-
-                            <ScrollViewer Grid.Column="2" VerticalAlignment="Center" VerticalScrollBarVisibility="Auto">
-                                <TextBlock x:Name="Title" Text="{TemplateBinding Title}" FontWeight="SemiBold" TextWrapping ="WrapWholeWords" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </ScrollViewer>
-
-                            <ScrollViewer Grid.Column="3" VerticalAlignment="Center" VerticalScrollBarVisibility="Auto">
-                                <TextBlock x:Name="Message" Text="{TemplateBinding Message}" TextWrapping="WrapWholeWords"/>
-                            </ScrollViewer>
-
-                            <Button Name="ActionButton" Content="{TemplateBinding ActionButtonContent}" Command="{TemplateBinding ActionButtonCommand}" Style="{TemplateBinding ActionButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="4"/>
-
-                            <Button Name="AlternateCloseButton" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" Grid.Column="5">
-                                <SymbolIcon Symbol="Cancel"/>
-                            </Button>
-                            <Button Name="CloseButton" Content ="{TemplateBinding CloseButtonContent}" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}" HorizontalAlignment ="Stretch" Grid.Column="5"/>
                         </Grid>
                     </Border>
                 </ControlTemplate>

@@ -4,7 +4,6 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Foundation;
-<<<<<<< HEAD
 using InfoBar_TestUI;
 using Windows.UI.Xaml.Automation.Peers;
 
@@ -45,7 +44,6 @@ namespace MUXControlsTestApp
     }
 
     public class CloseButtonClickEventArgs : EventArgs
-    public class InfoBarEventArgs : EventArgs
     {
         public bool IsHandled
         {
@@ -63,15 +61,10 @@ namespace MUXControlsTestApp
         IconSourceElement _standardIcon;
         IconSourceElement _userIcon;
         Grid _contentRootGrid;
-
-        public event EventHandler<RoutedEventArgs> ActionButtonClick;
-        public event TypedEventHandler<InfoBar, CloseButtonClickEventArgs> CloseButtonClick;
-        Button _alternateCloseButton;
-        Button _closeButton;
         Border _myContainer;
 
         public event EventHandler<RoutedEventArgs> ActionButtonClick;
-        public event TypedEventHandler<InfoBar, InfoBarEventArgs> CloseButtonClick;
+        public event TypedEventHandler<InfoBar, CloseButtonClickEventArgs> CloseButtonClick;
         public event TypedEventHandler<InfoBar, InfoBarClosedEventArgs> Closed;
         public event TypedEventHandler<InfoBar, InfoBarClosingEventArgs> Closing;
 
@@ -91,7 +84,6 @@ namespace MUXControlsTestApp
 
         protected override void OnApplyTemplate()
         {
-            _closeButton = GetTemplateChild<Button>("CloseButton");
             _actionButton = GetTemplateChild<Button>("ActionButton");
             _title = GetTemplateChild<TextBlock>("Title");
             _message = GetTemplateChild<TextBlock>("Message");
@@ -99,7 +91,6 @@ namespace MUXControlsTestApp
             _standardIcon = GetTemplateChild<IconSourceElement>("StandardIcon");
             _userIcon = GetTemplateChild<IconSourceElement>("UserIcon");
             _contentRootGrid = GetTemplateChild<Grid>("ContentRootGrid");
-            _alternateCloseButton = GetTemplateChild<Button>("AlternateCloseButton");
             _closeButton = GetTemplateChild<Button>("CloseButton");
             _actionButton = GetTemplateChild<Button>("ActionButton");
             _myContainer = GetTemplateChild<Border>("Container");
@@ -109,7 +100,6 @@ namespace MUXControlsTestApp
             OnIsOpenChanged();
             UpdateMargins();
 
-            _alternateCloseButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
         }
@@ -123,7 +113,6 @@ namespace MUXControlsTestApp
                 infoBar.UpdateSeverityState();
             }
             else if (property == ActionButtonContentProperty || property == ShowCloseButtonProperty)
-            else if (property == ActionButtonContentProperty || property == CloseButtonContentProperty || property == ShowCloseButtonProperty)
             {
                 infoBar.UpdateButtonsState();
             }
@@ -135,7 +124,6 @@ namespace MUXControlsTestApp
             {
                 infoBar.OnIconChanged();
             }
-
             infoBar.UpdateMargins();
         }
 
@@ -307,9 +295,7 @@ namespace MUXControlsTestApp
         {
             lastCloseReason = InfoBarCloseReason.CloseButton;
             CloseButtonClickEventArgs args = new CloseButtonClickEventArgs();
-            InfoBarEventArgs args = new InfoBarEventArgs();
             CloseButtonClick?.Invoke(this, args);
-            //If the user sets IsHandled to true, they can override the behavior of CloseButtonClick
             if (args.IsHandled == false)
             {
                 RaiseClosingEvent();
@@ -329,14 +315,6 @@ namespace MUXControlsTestApp
                 alreadyRaised = true;
                 IsOpen = false;
                 Open(IsOpen);
-            // If the developer did not want to cancel the closing of the InfoBar, the InfoBar will collapse and the ClosedEvent will proceed as usual. 
-            if (!args.Cancel)
-            {
-                alreadyRaised = true;
-                _myContainer.Visibility = Visibility.Collapsed;
-                IsOpen = false;
-                Open(IsOpen);
-                RaiseClosedEvent();
             }
             else
             {
@@ -377,17 +355,9 @@ namespace MUXControlsTestApp
             {
                 VisualStateManager.GoToState(this, "Warning", false);
             }
-            else if (Severity == InfoBarSeverity.Informational)
-            {
-                VisualStateManager.GoToState(this, "Informational", false);
-            }
             else if (Severity == InfoBarSeverity.Success)
             {
                 VisualStateManager.GoToState(this, "Success", false);
-            }
-            else if (Severity == InfoBarSeverity.None)
-            {
-                VisualStateManager.GoToState(this, "None", false);
             }
             else
             {
@@ -423,7 +393,7 @@ namespace MUXControlsTestApp
         }
 
         //Updates the margins depending on the prescence of certain visual components
-        private void UpdateMargins()
+        void UpdateMargins()
         {
             if (_standardIcon != null)
             {
@@ -436,6 +406,7 @@ namespace MUXControlsTestApp
                     _standardIcon.Margin = new Thickness(0, 12, 0, 12);
                 }
             }
+
             if (_userIcon != null)
             {
                 if ((Title != null && Title != "") || (Message != null && Message != "") || ActionButtonContent != null || HyperlinkButtonContent != null || ShowCloseButton == true)
@@ -447,6 +418,7 @@ namespace MUXControlsTestApp
                     _userIcon.Margin = new Thickness(0, 12, 0, 12);
                 }
             }
+
             if (_title != null)
             {
                 if (Title != null && Title != "")
@@ -465,6 +437,7 @@ namespace MUXControlsTestApp
                     _title.Margin = new Thickness(0, 0, 0, 0);
                 }
             }
+
             if (_message != null)
             {
                 if (Message != null && Message != "")
@@ -483,9 +456,10 @@ namespace MUXControlsTestApp
                     _message.Margin = new Thickness(0, 0, 0, 0);
                 }
             }
+
             if (_actionButton != null)
             {
-                if (ActionButtonContent != null)
+                if (ActionButtonContent != null || HyperlinkButtonContent != null)
                 {
                     if (HyperlinkButtonContent != null)
                     {
@@ -499,41 +473,6 @@ namespace MUXControlsTestApp
                 else
                 {
                     _actionButton.Margin = new Thickness(0, 0, 0, 0);
-                if (CloseButtonContent != null && ActionButtonContent != null)
-                {
-                    VisualStateManager.GoToState(this, "BothButtonsVisible", false);
-                    VisualStateManager.GoToState(this, "NoDefaultCloseButton", false);
-                }
-                else if (CloseButtonContent != null)
-                {
-                    VisualStateManager.GoToState(this, "CloseButtonVisible", false);
-                    VisualStateManager.GoToState(this, "NoDefaultCloseButton", false);
-                }
-                else if (ActionButtonContent != null)
-                {
-                    VisualStateManager.GoToState(this, "ActionButtonVisible", false);
-                    VisualStateManager.GoToState(this, "DefaultCloseButton", false);
-                    _alternateCloseButton.Visibility = Visibility.Visible;
-                }
-                else if (ActionButtonContent == null && CloseButtonContent == null)
-                {
-                    VisualStateManager.GoToState(this, "NoButtonsVisible", false);
-                    VisualStateManager.GoToState(this, "DefaultCloseButton", false);
-                    _closeButton.Visibility = Visibility.Collapsed;
-                    _actionButton.Visibility = Visibility.Collapsed;
-                    _alternateCloseButton.Visibility = Visibility.Visible;
-                }
-            }
-            else
-            {
-                VisualStateManager.GoToState(this, "NoDefaultCloseButton", false);
-                if (ActionButtonContent != null)
-                {
-                    VisualStateManager.GoToState(this, "ActionButtonVisible", false);
-                }
-                else
-                {
-                    VisualStateManager.GoToState(this, "NoButtonsVisible", false);
                 }
             }
         }
@@ -545,12 +484,13 @@ namespace MUXControlsTestApp
             {
                 lastCloseReason = InfoBarCloseReason.Programattic;
                 Open(IsOpen);
+
             }
             else if (!alreadyRaised)
             {
+
                 RaiseClosingEvent();
                 alreadyRaised = false;
-                alreadyRaised = false; 
             }
         }
 
@@ -578,10 +518,6 @@ namespace MUXControlsTestApp
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new InfoBarAutomationPeer(this);
-        }
-                _myContainer.Visibility = Visibility.Collapsed;
-                IsOpen = false;
-            }
         }
     }
 }
