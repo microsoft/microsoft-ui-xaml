@@ -17,17 +17,18 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)IThemedAnimatedVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRingTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingDeterminate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\ProgressRingIndeterminate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingTemplateSettings.cpp" />
   </ItemGroup>

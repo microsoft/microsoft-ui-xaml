@@ -6,9 +6,10 @@
 #include "pch.h"
 #include "common.h"
 
-#include "ProgressRingIndeterminate.h"
-#include "ProgressRingTemplateSettings.h"
+#include "AnimatedVisuals/ProgressRingIndeterminate.h"
+#include "AnimatedVisuals/ProgressRingDeterminate.h"
 
+#include "ProgressRingTemplateSettings.h"
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
 
@@ -24,7 +25,10 @@ public:
 
     void OnApplyTemplate();
 
+    void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnDeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnIndeterminateSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
@@ -32,12 +36,16 @@ public:
 
 private:
     void SetAnimatedVisualPlayerSource();
-    void SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
-    void SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
+    void SetLottieForegroundColor(const winrt::IAnimatedVisualSource);
+    void SetLottieBackgroundColor(const winrt::IAnimatedVisualSource);
+    void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void ChangeVisualState();
+    void UpdateStates();
     void ApplyTemplateSettings();
+    void UpdateLottieProgress();
 
-    tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
+    tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
+
+    double m_oldValue{ 0 };
 };

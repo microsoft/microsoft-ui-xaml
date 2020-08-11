@@ -121,7 +121,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
                 const string navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
-                const string stringType = "System.String";
+                const string itemType = "System.String";
 
                 var itemInvokedItemType = new Edit(FindElement.ById("ItemInvokedItemType"));
                 var itemInvokedItemContainerType = new Edit(FindElement.ById("ItemInvokedItemContainerType"));
@@ -134,11 +134,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Wait.ForIdle();
 
                 Log.Comment("Verify that item invoked returns expected parameters.");
-                Verify.IsTrue(itemInvokedItemType.Value == stringType);
+                Verify.IsTrue(itemInvokedItemType.Value == itemType);
                 Verify.IsTrue(itemInvokedItemContainerType.Value == navigationViewItemType);
 
                 Log.Comment("Verify that selection changed event returns expected parameters");
-                Verify.IsTrue(selectionChangedItemtype.Value == stringType);
+                Verify.IsTrue(selectionChangedItemtype.Value == itemType);
+                Verify.IsTrue(selectionChangedItemContainerType.Value == navigationViewItemType);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyEventsReturnExpectedDataTypesItemTemplate()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
+            {
+                const string navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
+                const string itemType = "MUXControlsTestApp.Customer";
+
+                var itemInvokedItemType = new Edit(FindElement.ById("ItemInvokedItemType"));
+                var itemInvokedItemContainerType = new Edit(FindElement.ById("ItemInvokedItemContainerType"));
+                var selectionChangedItemtype = new Edit(FindElement.ById("SelectionChangedItemType"));
+                var selectionChangedItemContainerType = new Edit(FindElement.ById("SelectionChangedItemContainerType"));
+
+                Log.Comment("Click Michael item");
+                var menuItem = FindElement.ByName("Michael");
+                InputHelper.LeftClick(menuItem);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that item invoked returns expected parameters.");
+                Verify.IsTrue(itemInvokedItemType.Value == itemType);
+                Verify.IsTrue(itemInvokedItemContainerType.Value == navigationViewItemType);
+
+                Log.Comment("Verify that selection changed event returns expected parameters");
+                Verify.IsTrue(selectionChangedItemtype.Value == itemType);
                 Verify.IsTrue(selectionChangedItemContainerType.Value == navigationViewItemType);
             }
         }
@@ -255,7 +283,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Verify.AreEqual("Music as header", header.DocumentText);
 
                     Log.Comment("Click settings item");
-                    menuItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    menuItem = FindElement.ByName("Settings");
                     InputHelper.LeftClick(menuItem);
                     Wait.ForIdle();
                     header = new TextBlock(FindElement.ByName("Settings as header"));
@@ -269,23 +297,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        public void SettingsItemInvokeTest()
+        public void SettingsItemClickTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
 
                     settingsItem.SetFocus();
                     Wait.ForIdle();
 
-                    AutomationElement ae = AutomationElement.FocusedElement;
-                    InvokePattern invokePattern = ae.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
-
-                    Log.Comment("Invoking settings");
-                    invokePattern.Invoke();
+                    Log.Comment("Click settings");
+                    settingsItem.Click();
                     Wait.ForIdle();
 
                     Log.Comment("Verify settings is selected");
@@ -305,12 +330,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var result = new TextBlock(FindElement.ByName("MyLocationResult"));
 
                 Log.Comment("Click on MyLocation Item and verify it's on Frame1");
-                myLocationButton.Invoke();
+                myLocationButton.Click();
                 Wait.ForIdle();
                 Verify.AreEqual(result.GetText(), "Frame1");
 
                 Log.Comment("Click on SwitchFrame");
-                switchFrameButton.Invoke();
+                switchFrameButton.Click();
                 Wait.ForIdle();
 
                 // tree structure changed and rebuild the cache.
@@ -318,7 +343,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 Log.Comment("Click on MyLocation Item and verify it's on Frame2");
                 myLocationButton = FindElement.ByName<Button>("MyLocation");
-                myLocationButton.Invoke();
+                myLocationButton.Click();
                 Wait.ForIdle();
                 Verify.AreEqual(result.GetText(), "Frame2");
             }

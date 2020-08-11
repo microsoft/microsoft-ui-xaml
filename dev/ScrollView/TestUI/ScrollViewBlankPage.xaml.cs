@@ -151,22 +151,22 @@ namespace MUXControlsTestApp
 
         private void ScrollPresenter_ScrollAnimationStarting(ScrollPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollPresenter.ScrollAnimationStarting OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}, SP=({args.StartPosition.X}, {args.StartPosition.Y}), EP=({args.EndPosition.X}, {args.EndPosition.Y})");
+            AppendAsyncEventMessage($"ScrollPresenter.ScrollAnimationStarting OffsetsChangeCorrelationId={args.CorrelationId}, SP=({args.StartPosition.X}, {args.StartPosition.Y}), EP=({args.EndPosition.X}, {args.EndPosition.Y})");
         }
 
         private void ScrollPresenter_ZoomAnimationStarting(ScrollPresenter sender, ScrollingZoomAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollPresenter.ZoomAnimationStarting ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}, CenterPoint={args.CenterPoint}, SZF={args.StartZoomFactor}, EZF={args.EndZoomFactor}");
+            AppendAsyncEventMessage($"ScrollPresenter.ZoomAnimationStarting ZoomFactorChangeCorrelationId={args.CorrelationId}, CenterPoint={args.CenterPoint}, SZF={args.StartZoomFactor}, EZF={args.EndZoomFactor}");
         }
 
         private void ScrollPresenter_ScrollCompleted(ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollPresenter.ScrollCompleted OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
+            AppendAsyncEventMessage($"ScrollPresenter.ScrollCompleted OffsetsChangeCorrelationId={args.CorrelationId}");
         }
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollPresenter.ZoomCompleted ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}");
+            AppendAsyncEventMessage($"ScrollPresenter.ZoomCompleted ZoomFactorChangeCorrelationId={args.CorrelationId}");
         }
 
         private void ScrollView_ExtentChanged(ScrollView sender, object args)
@@ -186,22 +186,22 @@ namespace MUXControlsTestApp
 
         private void ScrollView_ScrollAnimationStarting(ScrollView sender, ScrollingScrollAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollView.ScrollAnimationStarting OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
+            AppendAsyncEventMessage($"ScrollView.ScrollAnimationStarting OffsetsChangeCorrelationId={args.CorrelationId}");
         }
 
         private void ScrollView_ZoomAnimationStarting(ScrollView sender, ScrollingZoomAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollView.ZoomAnimationStarting ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}, CenterPoint={args.CenterPoint}");
+            AppendAsyncEventMessage($"ScrollView.ZoomAnimationStarting ZoomFactorChangeCorrelationId={args.CorrelationId}, CenterPoint={args.CenterPoint}");
         }
 
         private void ScrollView_ScrollCompleted(ScrollView sender, ScrollingScrollCompletedEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollView.ScrollCompleted OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
+            AppendAsyncEventMessage($"ScrollView.ScrollCompleted OffsetsChangeCorrelationId={args.CorrelationId}");
         }
 
         private void ScrollView_ZoomCompleted(ScrollView sender, ScrollingZoomCompletedEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollView.ZoomCompleted ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}");
+            AppendAsyncEventMessage($"ScrollView.ZoomCompleted ZoomFactorChangeCorrelationId={args.CorrelationId}");
         }
 
         private void LogScrollPresenterInfo()

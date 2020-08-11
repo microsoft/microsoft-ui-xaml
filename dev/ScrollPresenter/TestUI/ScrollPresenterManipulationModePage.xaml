@@ -39,7 +39,7 @@
 
         <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter1" AutomationProperties.Name="scrollPresenter1" Background="Violet" 
             ZoomMode="Enabled" MinZoomFactor="0.7" MaxZoomFactor="1.3"
-            HorizontalScrollRailingMode="Enabled" VerticalScrollRailingMode="Enabled"
+            HorizontalScrollRailMode="Enabled" VerticalScrollRailMode="Enabled"
             Width="600" Height="600" Grid.Row="1">
             <StackPanel Width="900" Height="900" Background="Lavender">
                 <StackPanel Orientation="Horizontal" Margin="10">
@@ -67,8 +67,8 @@
                     <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter0" AutomationProperties.Name="scrollPresenter0" Background="Lime"
                         Width="400" Height="400" Margin="10" 
                         ZoomMode="Enabled" MinZoomFactor="0.7" MaxZoomFactor="1.3"
-                        HorizontalScrollChainingMode="Always" VerticalScrollChainingMode="Always" ZoomChainingMode="Always"
-                        HorizontalScrollRailingMode="Enabled" VerticalScrollRailingMode="Enabled">
+                        HorizontalScrollChainMode="Always" VerticalScrollChainMode="Always" ZoomChainMode="Always"
+                        HorizontalScrollRailMode="Enabled" VerticalScrollRailMode="Enabled">
                         <StackPanel Width="700" Height="700" Background="LimeGreen">
                             <StackPanel Orientation="Horizontal" Margin="10">
                                 <TextBlock Text="scrollPresenter0.ManipulationMode:" VerticalAlignment="Center"/>

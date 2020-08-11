@@ -136,17 +136,17 @@
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="HorizontalScrollChainingMode:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbHorizontalScrollChainingMode" Margin="1" Grid.Row="4" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged">
+                <TextBlock Text="HorizontalScrollChainMode:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbHorizontalScrollChainMode" Margin="1" Grid.Row="4" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollChainMode_SelectionChanged">
                     <ComboBoxItem>Auto</ComboBoxItem>
                     <ComboBoxItem>Always</ComboBoxItem>
                     <ComboBoxItem>Never</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="HorizontalScrollRailingMode:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbHorizontalScrollRailingMode" Margin="1" Grid.Row="5" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged">
+                <TextBlock Text="HorizontalScrollRailMode:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbHorizontalScrollRailMode" Margin="1" Grid.Row="5" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollRailMode_SelectionChanged">
                     <ComboBoxItem>Enabled</ComboBoxItem>
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
@@ -158,17 +158,17 @@
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="VerticalScrollChainingMode:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbVerticalScrollChainingMode" Margin="1" Grid.Row="7" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged">
+                <TextBlock Text="VerticalScrollChainMode:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbVerticalScrollChainMode" Margin="1" Grid.Row="7" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollChainMode_SelectionChanged">
                     <ComboBoxItem>Auto</ComboBoxItem>
                     <ComboBoxItem>Always</ComboBoxItem>
                     <ComboBoxItem>Never</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="VerticalScrollRailingMode:" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbVerticalScrollRailingMode" Margin="1" Grid.Row="8" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged">
+                <TextBlock Text="VerticalScrollRailMode:" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbVerticalScrollRailMode" Margin="1" Grid.Row="8" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollRailMode_SelectionChanged">
                     <ComboBoxItem>Enabled</ComboBoxItem>
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
@@ -180,17 +180,17 @@
                     <ComboBoxItem>Disabled</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="ZoomChainingMode:" Grid.Row="10" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbZoomChainingMode" Margin="1" Grid.Row="10" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbZoomChainingMode_SelectionChanged">
+                <TextBlock Text="ZoomChainMode:" Grid.Row="10" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbZoomChainMode" Margin="1" Grid.Row="10" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbZoomChainMode_SelectionChanged">
                     <ComboBoxItem>Auto</ComboBoxItem>
                     <ComboBoxItem>Always</ComboBoxItem>
                     <ComboBoxItem>Never</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="IgnoredInputKind:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbIgnoredInputKind" Margin="1" Grid.Row="11" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbIgnoredInputKind_SelectionChanged">
+                <TextBlock Text="IgnoredInputKinds:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbIgnoredInputKinds" Margin="1" Grid.Row="11" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbIgnoredInputKinds_SelectionChanged">
                     <ComboBoxItem>None</ComboBoxItem>
                     <ComboBoxItem>Touch</ComboBoxItem>
                     <ComboBoxItem>Pen</ComboBoxItem>
@@ -226,6 +226,7 @@
                     <ComboBoxItem>VerticalStackPanel</ComboBoxItem>
                     <ComboBoxItem>TilePanel</ComboBoxItem>
                     <ComboBoxItem>Viewbox</ComboBoxItem>
+                    <ComboBoxItem>TextBlock</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Text="ManipulationMode:" Grid.Row="14" Grid.Column="0" VerticalAlignment="Center"/>
@@ -550,7 +551,7 @@
                         <Button x:Name="btnCancelScroll" Content="Cancel" Margin="2" Click="BtnCancelScroll_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="ScrollFrom Options" Grid.Row="8" Margin="2" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="AddScrollVelocity Options" Grid.Row="8" Margin="2" Grid.ColumnSpan="2"/>
                     <TextBlock Text="Horizontal Velocity:" Grid.Column="0" Grid.Row="9" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtScrollHorizontalVelocity" Text="0" Grid.Column="1" Grid.Row="9" VerticalAlignment="Center"/>
                     <TextBlock Text="Vertical Velocity:" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center"/>
@@ -560,8 +561,8 @@
                     <TextBlock Text="Verti. InertiaDecayRate:" Grid.Column="0" Grid.Row="12" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtScrollVerticalInertiaDecayRate" Text="null" Grid.Column="1" Grid.Row="12" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="13">
-                        <Button x:Name="btnScrollFrom" Content="ScrollFrom" Margin="2" Click="BtnScrollFrom_Click"/>
-                        <Button x:Name="btnCancelScrollFrom" Content="Cancel" Margin="2" Click="BtnCancelScrollFrom_Click"/>
+                        <Button x:Name="btnAddScrollVelocity" Content="AddScrollVelocity" Margin="2" Click="BtnAddScrollVelocity_Click"/>
+                        <Button x:Name="btnCancelAddScrollVelocity" Content="Cancel" Margin="2" Click="BtnCancelAddScrollVelocity_Click"/>
                     </StackPanel>
 
                     <TextBlock Text="ZoomTo/By Options" Margin="2,4,2,2" Grid.Row="14" Grid.ColumnSpan="2"/>
@@ -597,16 +598,16 @@
                         <Button x:Name="btnCancelZoom" Content="Cancel" Margin="2" Click="BtnCancelZoom_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="ZoomFrom Options" Margin="2,4,2,2" Grid.Row="22" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="AddZoomVelocity Options" Margin="2,4,2,2" Grid.Row="22" Grid.ColumnSpan="2"/>
                     <TextBlock Text="ZoomFactor Velocity:" Grid.Column="0" Grid.Row="23" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtZoomFromVelocity" Text="1" Grid.Column="1" Grid.Row="23" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtAddZoomVelocityVelocity" Text="1" Grid.Column="1" Grid.Row="23" VerticalAlignment="Center"/>
                     <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="24" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtZoomFromInertiaDecayRate" Text="null" Grid.Column="1" Grid.Row="24" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtAddZoomVelocityInertiaDecayRate" Text="null" Grid.Column="1" Grid.Row="24" VerticalAlignment="Center"/>
                     <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="25" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtZoomFromCenterPoint" Text="0, 0"  Grid.Column="1" Grid.Row="25" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtAddZoomVelocityCenterPoint" Text="0, 0"  Grid.Column="1" Grid.Row="25" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="26">
-                        <Button x:Name="btnZoomFrom" Content="ZoomFrom" Margin="2" Click="BtnZoomFrom_Click"/>
-                        <Button x:Name="btnCancelZoomFrom" Content="Cancel" Margin="2" Click="BtnCancelZoomFrom_Click"/>
+                        <Button x:Name="btnAddZoomVelocity" Content="AddZoomVelocity" Margin="2" Click="BtnAddZoomVelocity_Click"/>
+                        <Button x:Name="btnCancelAddZoomVelocity" Content="Cancel" Margin="2" Click="BtnCancelAddZoomVelocity_Click"/>
                     </StackPanel>
 
                     <Button x:Name="btnChangeView" Content="ChangeView" HorizontalAlignment="Stretch"

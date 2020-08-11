@@ -2,7 +2,7 @@
 
 WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2019 and into 2020. WinUI is under active development by the Microsoft developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We're also [working with the Uno platform](https://platform.uno/WinUI-on-Windows7-via-UnoPlatform/) so that developers can bring their WinUI code anywhere WebAssembly runs – including Windows 7. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
-For a concise look at the team's plans for 2020 and 2021, see [this section](###winui-3.0-timelines-and-milestones) .
+For a concise look at the team's plans for 2020 and 2021, see [this section](#winui-30-timelines-and-milestones) .
 
 The WinUI team has two major efforts underway:
 
@@ -121,5 +121,5 @@ You can download WinUI 3 Preview 1 to try out - we'd love feedback on it, althou
 
 See the image below for a more detailed look at our plans for getting WinUI 3.0 to market: 
 
-![Winui roadmap](images/winui-roadmap-img.PNG)
+![Winui roadmap](images/WinUI-RoadmapJuly2020.png)
 

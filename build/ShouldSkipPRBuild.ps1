@@ -5,7 +5,7 @@ function AllChangedFilesAreSkippable
 {
     Param($files)
 
-    $skipExts = @(".md")
+    $skipExts = @(".md", ".png", ".PNG")
     $allFilesAreSkippable = $true
 
     foreach($file in $files)

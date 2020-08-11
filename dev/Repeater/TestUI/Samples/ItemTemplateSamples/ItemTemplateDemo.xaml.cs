@@ -13,16 +13,34 @@ namespace MUXControlsTestApp.Samples
 {
     public sealed partial class ItemTemplateDemo : Page
     {
-        public List<int> Data { get; set; } 
+        public List<int> Data { get; set; }
+        public List<MyData> Numbers = new List<MyData>();
+
         public ItemTemplateDemo()
         {
             Data = Enumerable.Range(0, 1000).ToList();
+            
+            for(int i=0;i<10;i++)
+            {
+                Numbers.Add(new MyData(i));
+            }
+
             this.InitializeComponent();
         }
 
         private void OnSelectTemplateKey(RecyclingElementFactory sender, SelectTemplateEventArgs args)
         {
             args.TemplateKey = (((int)args.DataContext) % 2 == 0) ? "even" : "odd";
+        }
+    }
+
+    public class MyData
+    {
+        public int number;
+
+        public MyData(int number)
+        {
+            this.number = number;
         }
     }
 

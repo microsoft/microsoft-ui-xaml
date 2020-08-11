@@ -6,12 +6,12 @@
 #include "ScrollPresenterTrace.h"
 #include "ScrollingBringingIntoViewEventArgs.h"
 
-winrt::SnapPointsMode ScrollingBringingIntoViewEventArgs::SnapPointsMode()
+winrt::ScrollingSnapPointsMode ScrollingBringingIntoViewEventArgs::SnapPointsMode()
 {
     return m_snapPointsMode;
 }
 
-void ScrollingBringingIntoViewEventArgs::SnapPointsMode(winrt::SnapPointsMode snapPointsMode)
+void ScrollingBringingIntoViewEventArgs::SnapPointsMode(winrt::ScrollingSnapPointsMode snapPointsMode)
 {
     m_snapPointsMode = snapPointsMode;
 }
@@ -31,9 +31,9 @@ double ScrollingBringingIntoViewEventArgs::TargetVerticalOffset()
     return m_targetVerticalOffset;
 }
 
-winrt::ScrollInfo ScrollingBringingIntoViewEventArgs::ScrollInfo()
+int32_t ScrollingBringingIntoViewEventArgs::CorrelationId()
 {
-    return winrt::ScrollInfo{ m_offsetsChangeId };
+    return m_offsetsChangeCorrelationId;
 }
 
 bool ScrollingBringingIntoViewEventArgs::Cancel()
@@ -46,9 +46,9 @@ void ScrollingBringingIntoViewEventArgs::Cancel(bool value)
     m_cancel = value;
 }
 
-void ScrollingBringingIntoViewEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingBringingIntoViewEventArgs::OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId)
 {
-    m_offsetsChangeId = offsetsChangeId;
+    m_offsetsChangeCorrelationId = offsetsChangeCorrelationId;
 }
 
 void ScrollingBringingIntoViewEventArgs::RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs)

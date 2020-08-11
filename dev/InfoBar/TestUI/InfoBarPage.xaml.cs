@@ -17,6 +17,7 @@ namespace MUXControlsTestApp
         String title;
         String message;
         String actionButtonContent;
+        String closeButtonContent;
         Color color;
         bool open;
         bool cancel;
@@ -60,11 +61,17 @@ namespace MUXControlsTestApp
                 case "Warning":
                     severity = InfoBarSeverity.Warning;
                     break;
+                case "Informational":
+                    severity = InfoBarSeverity.Informational;
+                    break;
                 case "Success":
                     severity = InfoBarSeverity.Success;
                     break;
                 case "Default":
                     severity = InfoBarSeverity.Default;
+                    break;
+                case "None":
+                    severity = InfoBarSeverity.None;
                     break;
             }
         }
@@ -92,7 +99,6 @@ namespace MUXControlsTestApp
                     sym3.Symbol = new Symbol();
                     icon = sym3;
                     break;
-
             }
         }
 
@@ -145,6 +151,29 @@ namespace MUXControlsTestApp
         private void MessageButton_Click(object sender, RoutedEventArgs e)
         {
             TestInfoBar.Message = message;
+        }
+
+        private void CloseButtonContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string iconName = e.AddedItems[0].ToString();
+
+            switch (iconName)
+            {
+                case "Short Text":
+                    closeButtonContent = "C:Short";
+                    break;
+                case "Long Text":
+                    closeButtonContent = "C:LongTextLorem ipsum dolor sit amet.";
+                    break;
+                case "No Text":
+                    closeButtonContent = null;
+                    break;
+            }
+        }
+
+        private void CloseButtonContent_Click(object sender, RoutedEventArgs e)
+        {
+            TestInfoBar.CloseButtonContent = closeButtonContent;
         }
 
         private void ActionButtonContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

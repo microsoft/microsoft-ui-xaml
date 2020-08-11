@@ -20,7 +20,7 @@ enum class InteractionTrackerAsyncOperationType
 
 enum class InteractionTrackerAsyncOperationTrigger
 {
-    // Operation is triggered by a direct call to ScrollPresenter's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
+    // Operation is triggered by a direct call to ScrollPresenter's ScrollTo/ScrollBy/AddScrollVelocity or ZoomTo/ZoomBy/AddZoomVelocity
     DirectViewChange = 0x01,
     // Operation is triggered by the horizontal IScrollController.
     HorizontalScrollControllerRequest = 0x02,
@@ -48,14 +48,14 @@ public:
         std::shared_ptr<ViewChangeBase> viewChangeBase);
     ~InteractionTrackerAsyncOperation();
 
-    int32_t GetViewChangeId() const
+    int32_t GetViewChangeCorrelationId() const
     {
-        return m_viewChangeId;
+        return m_viewChangeCorrelationId;
     }
 
-    void SetViewChangeId(int32_t viewChangeId)
+    void SetViewChangeCorrelationId(int32_t viewChangeCorrelationId)
     {
-        m_viewChangeId = viewChangeId;
+        m_viewChangeCorrelationId = viewChangeCorrelationId;
     }
 
     bool IsAnimated() const
@@ -249,8 +249,8 @@ private:
     // OffsetsChange or ZoomFactorChange instance associated with this operation.
     std::shared_ptr<ViewChangeBase> m_viewChangeBase;
 
-    // ViewChangeId associated with this operation.
-    int32_t m_viewChangeId{ -1 };
+    // ViewChangeCorrelationId associated with this operation.
+    int32_t m_viewChangeCorrelationId{ -1 };
 
     // Null by default and optionally set to a prior operation that needs to complete before this one can start.
     std::shared_ptr<InteractionTrackerAsyncOperation> m_requiredOperation{ nullptr };

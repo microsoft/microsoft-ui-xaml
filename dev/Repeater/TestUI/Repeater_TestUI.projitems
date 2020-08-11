@@ -19,6 +19,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\DisposableUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\VirtualLayoutPages\ActivityFeedSamplePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -111,6 +115,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\SortingAndFilteringPage.xaml.cs">
       <DependentUpon>SortingAndFilteringPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\DisposableUserControl.xaml.cs">
+      <DependentUpon>DisposableUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\VirtualLayoutPages\ActivityFeedLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\VirtualLayoutPages\ActivityFeedSamplePage.xaml.cs">

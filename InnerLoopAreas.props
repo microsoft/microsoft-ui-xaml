@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Feature to include for inner loop build -->
+  <!-- Features to include for inner loop build for example:-->
+  <!-- <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled> -->
+  
+  <!-- Note that after modifying the file, you will need to close and reopen the solution -->
+  <!-- for changes to be picked up correctly by Visual Studio and MSBUILD -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
   </PropertyGroup>
 </Project>

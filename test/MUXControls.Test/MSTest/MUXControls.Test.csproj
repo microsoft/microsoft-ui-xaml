@@ -31,5 +31,6 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
   </ItemGroup>
   <Import Project="..\MUXControls.Test.Shared.projitems" />
+  <Import Project="..\..\..\dev\Pager\InteractionTests\Pager_InteractionTests.projitems" Label="Shared" />
   <Import Project="..\MUXControls.Test.Shared.targets" />
 </Project>

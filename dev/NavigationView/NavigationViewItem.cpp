@@ -254,6 +254,19 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
     m_suggestedToolTipContent.set(newToolTipContent);
 }
 
+void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        auto navViewItemPeer = peer.as<winrt::NavigationViewItemAutomationPeer>();
+        winrt::get_self<NavigationViewItemAutomationPeer>(navViewItemPeer)->RaiseExpandCollapseAutomationEvent(
+            IsExpanded() ?
+                winrt::ExpandCollapseState::Expanded :
+                winrt::ExpandCollapseState::Collapsed
+        );
+    }
+}
+
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateNoTransition();
@@ -303,6 +316,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
     switch (position)
     {
     case NavigationViewRepeaterPosition::LeftNav:
+    case NavigationViewRepeaterPosition::LeftFooter:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             // OnLeftNavigationReveal is introduced in RS6. 
@@ -314,6 +328,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
         }
         break;
     case NavigationViewRepeaterPosition::TopPrimary:
+    case NavigationViewRepeaterPosition::TopFooter:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             stateName = c_OnTopNavigationPrimaryReveal;
@@ -498,7 +513,8 @@ bool NavigationViewItem::ShouldShowContent()
 
 bool NavigationViewItem::IsOnLeftNav() const
 {
-    return Position() == NavigationViewRepeaterPosition::LeftNav;
+    auto const position = Position();
+    return position == NavigationViewRepeaterPosition::LeftNav || position == NavigationViewRepeaterPosition::LeftFooter;
 }
 
 bool NavigationViewItem::IsOnTopPrimary() const
