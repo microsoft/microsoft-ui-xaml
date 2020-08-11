@@ -18,7 +18,12 @@ TextCommandBarFlyout::TextCommandBarFlyout()
         [this](auto const&, auto const&)
         {
             UpdateButtons();
+        }
+    });
 
+    Opened({
+        [this](auto const&, auto const&)
+        {
             // If there aren't any primary commands and we aren't opening expanded,
             // or if there are just no commands at all, then we'll have literally no UI to show. 
             // We'll just close the flyout in that case - nothing should be opening us

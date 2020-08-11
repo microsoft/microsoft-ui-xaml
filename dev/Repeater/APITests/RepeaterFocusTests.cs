@@ -29,6 +29,7 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -123,16 +124,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             foreach(var expectedElement in expectedSequence)
             {
-                var actualElement = (Button)FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
+                var actualElement = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
+                var actualElementAsbutton = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next) as Button;
+                var actualElementAsToggleButton = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next) as ToggleButton;
 
+                string content = actualElementAsbutton != null ? (string)actualElementAsbutton.Content : (string)actualElementAsToggleButton.Content;
                 // We need to ignore the toggle theme button, so lets set its tabstop to false and get next element.
-                if((string)actualElement.Content == "Toggle theme")
+                if (content == "Toggle theme")
                 {
-                    actualElement.IsTabStop = false;
-                    actualElement = (Button)FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
+                    actualElementAsbutton.IsTabStop = false;
+                    actualElement = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
+                }
+                actualElementAsbutton = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next) as Button;
+                actualElementAsToggleButton = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next) as ToggleButton;
+
+                content = actualElementAsbutton != null ? (string)actualElementAsbutton.Content : (string)actualElementAsToggleButton.Content;
+                // We need to ignore the lab dimensions button, so lets set its tabstop to false and get next element.
+                if (content== "Render innerframe in lab dimensions")
+                {
+                    actualElementAsToggleButton.IsTabStop = false;
+                    actualElement = FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
                 }
                 Log.Comment("Expected: " + expectedElement.Content);
-                Log.Comment("Actual: " + actualElement.Content);
+                Log.Comment("Actual: " + content);
                 Verify.AreEqual(expectedElement, actualElement);
                 expectedElement.Focus(FocusState.Keyboard);
             }

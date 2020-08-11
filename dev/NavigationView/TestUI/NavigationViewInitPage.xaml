@@ -26,6 +26,8 @@
                     <TextBlock Margin="0,8" Text="This tests the initial state of the control, and the ItemsSource property."/>
                     <Button x:Name="AddItemButton" AutomationProperties.Name="AddItemButton" Content="Add Item" Click="AddButton_Click"/>
                     <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveButton_Click"/>
+                    <Button x:Name="AddFooterItemButton" AutomationProperties.Name="AddFooterItemButton" Content="Add Footer Item" Click="AddFooterButton_Click"/>
+                    <Button x:Name="RemoveFooterItemButton" AutomationProperties.Name="RemoveFooterItemButton" Content="Remove Footer Item" Click="RemoveFooterButton_Click"/>
                     <Button x:Name="ChangeToIEnumerableButton" AutomationProperties.Name="ChangeToIEnumerableButton" Content="Make it IEnumerable" Click="ChangeToIEnumerableButton_Clicks"/>
                     <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
 
