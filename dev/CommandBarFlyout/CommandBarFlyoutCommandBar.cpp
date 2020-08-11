@@ -765,14 +765,6 @@ void CommandBarFlyoutCommandBar::EnsureFocusedPrimaryCommand()
 
 void CommandBarFlyoutCommandBar::MoreButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
-    if (m_secondaryCommandsExpectedToBeVisible)
-    {
-        m_secondaryCommandsExpectedToBeVisible = m_secondaryCommandsExpectedToBeVisible;
-    }
-    else
-    {
-        m_secondaryCommandsExpectedToBeVisible = m_secondaryCommandsExpectedToBeVisible;
-    }
     // If the button get's invoked, we switch between secondary commands visible and secondary commands not visible
     m_secondaryCommandsExpectedToBeVisible = !m_secondaryCommandsExpectedToBeVisible;
 }
