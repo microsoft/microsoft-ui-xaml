@@ -57,6 +57,9 @@ public:
     void Text(winrt::hstring const& value);
     winrt::hstring Text();
 
+    void TextAlignment(winrt::TextAlignment const& value);
+    winrt::TextAlignment TextAlignment();
+
     void TextReadingOrder(winrt::TextReadingOrder const& value);
     winrt::TextReadingOrder TextReadingOrder();
 
@@ -82,6 +85,7 @@ public:
     static winrt::DependencyProperty SmallChangeProperty() { return s_SmallChangeProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
+    static winrt::DependencyProperty TextAlignmentProperty() { return s_TextAlignmentProperty; }
     static winrt::DependencyProperty TextReadingOrderProperty() { return s_TextReadingOrderProperty; }
     static winrt::DependencyProperty ValidationModeProperty() { return s_ValidationModeProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
@@ -102,6 +106,7 @@ public:
     static GlobalDependencyProperty s_SmallChangeProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
     static GlobalDependencyProperty s_TextProperty;
+    static GlobalDependencyProperty s_TextAlignmentProperty;
     static GlobalDependencyProperty s_TextReadingOrderProperty;
     static GlobalDependencyProperty s_ValidationModeProperty;
     static GlobalDependencyProperty s_ValueProperty;
