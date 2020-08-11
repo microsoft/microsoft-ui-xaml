@@ -494,13 +494,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("Test is momentarily disabled on phone (bug #12074500).");
                 return;
             }
-            
+
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
                 Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
                 return;
             }
-            
+
             // Allow the test to run a second time pre-RS4 if it failed the first time.
             int additionalAttempts = PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4) ? 1 : 2;
 
@@ -617,7 +617,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Starting with 19H1, the InteractionTracker changes the scale by a factor of 1.1 for each 60 mouse wheel delta.
                 // For earlier versions, a mouse wheel delta of 120 is required for the same 1.1 scale change.
                 InputHelper.RotateWheel(scrollPresenter12UIObject,
-                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? (int) (-mouseWheelDeltaForVelocityUnit / 2) : -mouseWheelDeltaForVelocityUnit);
+                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? (int)(-mouseWheelDeltaForVelocityUnit / 2) : -mouseWheelDeltaForVelocityUnit);
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
 
                 Log.Comment("Waiting for scrollPresenter12 pinch completion");
@@ -792,10 +792,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Panning ScrollPresenter close to the Content's end");
                 PrepareForScrollPresenterManipulationStart("scrollPresenter51");
 
-                Point startPoint = isForHorizontalDirection ? 
+                Point startPoint = isForHorizontalDirection ?
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 105, scrollPresenter51UIObject.BoundingRectangle.Top + 100) :
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 100, scrollPresenter51UIObject.BoundingRectangle.Top + 100);
-                Point endPoint = isForHorizontalDirection ? 
+                Point endPoint = isForHorizontalDirection ?
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 50, scrollPresenter51UIObject.BoundingRectangle.Top + 100) :
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 100, scrollPresenter51UIObject.BoundingRectangle.Top + 50);
 
@@ -999,12 +999,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Pans an inner ScrollPresenter and chains to an outer ScrollViewer.")]
         public void PanWithChainingFromScrollPresenterToScrollViewer()
         {
-            // Inner ScrollPresenter uses ChainingMode.Always
+            // Inner ScrollPresenter uses ScrollingChainMode.Always
             PanWithChainingFromScrollPresenterToScrollViewerWithChainingMode(useChainingModeAlways: true);
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
-                // Inner ScrollPresenter uses ChainingMode.Auto
+                // Inner ScrollPresenter uses ScrollingChainMode.Auto
                 // Only running this case in RS4+ since the Auto behavior changed in RS4
                 PanWithChainingFromScrollPresenterToScrollViewerWithChainingMode(useChainingModeAlways: false);
             }
@@ -1050,11 +1050,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Log.Comment("Retrieving scrollPresenter1");
                     ScrollPresenter scrollPresenter1UIObject = new ScrollPresenter(FindElement.ByName("scrollPresenter1"));
 
-                    Log.Comment("Retrieving cmbHorizontalScrollChainingMode1");
-                    ComboBox cmbHorizontalScrollChainingMode1 = new ComboBox(FindElement.ByName("cmbHorizontalScrollChainingMode1"));
+                    Log.Comment("Retrieving cmbHorizontalScrollChainMode1");
+                    ComboBox cmbHorizontalScrollChainMode1 = new ComboBox(FindElement.ByName("cmbHorizontalScrollChainMode1"));
 
-                    Log.Comment("Retrieving cmbVerticalScrollChainingMode1");
-                    ComboBox cmbVerticalScrollChainingMode1 = new ComboBox(FindElement.ByName("cmbVerticalScrollChainingMode1"));
+                    Log.Comment("Retrieving cmbVerticalScrollChainMode1");
+                    ComboBox cmbVerticalScrollChainMode1 = new ComboBox(FindElement.ByName("cmbVerticalScrollChainMode1"));
 
                     // Tapping button before attempting pan operation to guarantee effective touch input
                     TapResetViewsButton();
@@ -1076,12 +1076,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     if (useChainingModeAlways)
                     {
                         Log.Comment("Changing horizontal chaining to Always");
-                        cmbHorizontalScrollChainingMode1.SelectItemByName("Always");
-                        Log.Comment("Selection is now {0}", cmbHorizontalScrollChainingMode1.Selection[0].Name);
+                        cmbHorizontalScrollChainMode1.SelectItemByName("Always");
+                        Log.Comment("Selection is now {0}", cmbHorizontalScrollChainMode1.Selection[0].Name);
 
                         Log.Comment("Changing vertical chaining to Always");
-                        cmbVerticalScrollChainingMode1.SelectItemByName("Always");
-                        Log.Comment("Selection is now {0}", cmbVerticalScrollChainingMode1.Selection[0].Name);
+                        cmbVerticalScrollChainMode1.SelectItemByName("Always");
+                        Log.Comment("Selection is now {0}", cmbVerticalScrollChainMode1.Selection[0].Name);
                     }
 
                     Log.Comment("Panning scrollPresenter1 horizontally");
@@ -3091,7 +3091,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             else
             {
                 LogAndClearTraces();
-                string message = unsuccessfulWaits > maxUnsuccessfulWaits ? 
+                string message = unsuccessfulWaits > maxUnsuccessfulWaits ?
                     "Offset has not changed within " + millisecondsIdleStepTimeout + " milliseconds outside of Idle State." :
                     "Idle State was not reached within " + millisecondsTimeout + " milliseconds.";
                 if (failOnError)
@@ -3300,7 +3300,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int tries = 0;
             do
             {
-                InputHelper.Pan(scrollPresenterUIObject, Math.Max((int) Convert.ToDouble(text.Value) / 2, 25), Direction.South);
+                InputHelper.Pan(scrollPresenterUIObject, Math.Max((int)Convert.ToDouble(text.Value) / 2, 25), Direction.South);
                 WaitForOffsetToSettle(text, millisecondsTimeout: defaultAnimatedViewChangeTimeout, failOnError: false);
                 tries++;
             }
@@ -3312,7 +3312,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             Log.Comment("GatherScrollSnapPointsTestPageElements - entry");
             var elements = new ScrollSnapPointsTestPageElements();
-            
+
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
             elements.txtMISnapPointValueUIObject = new Edit(FindElement.ByName("txtMISnapPointValue"));
             elements.cmbMISnapPointAlignment = new ComboBox(FindElement.ByName("cmbMISnapPointAlignment"));

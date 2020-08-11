@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Common;
 
+
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -204,6 +205,14 @@ namespace MUXControlsTestApp
             // Since the resource is only available with ScrollView feature enabled, try this but expect it to fail sometimes
 #if FEATURE_SCROLLPRESENTER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
+
+#if FEATURE_INFOBAR_ENABLED 
+            AppendResourceToMergedDictionaries("InfoBarStyles.xaml");
+#endif
+
+#if FEATURE_PAGER_ENABLED
+            AppendResourceToMergedDictionaries("PrototypePager.xaml");
 #endif
 
             // For test purposes, add styles that disable long animations.

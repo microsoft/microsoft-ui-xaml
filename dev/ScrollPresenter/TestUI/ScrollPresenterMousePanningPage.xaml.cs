@@ -146,7 +146,7 @@ namespace MUXControlsTestApp
                     scrollPresenter.ScrollTo(
                         _preMousePanPosition.X - position.X + _preMousePanHorizontalOffset,
                         _preMousePanPosition.Y - position.Y + _preMousePanVerticalOffset,
-                        new ScrollingScrollOptions(AnimationMode.Disabled));
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
                 }
                 else
                 {
@@ -169,7 +169,7 @@ namespace MUXControlsTestApp
                             (float)(position.X - _preConstantVelocityPanPosition.X) / 2.0f,
                             (float)(position.Y - _preConstantVelocityPanPosition.Y) / 2.0f);
 
-                        scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate: Vector2.Zero);
+                        scrollPresenter.AddScrollVelocity(offsetsVelocity, inertiaDecayRate: Vector2.Zero);
                     }
                 }
             }

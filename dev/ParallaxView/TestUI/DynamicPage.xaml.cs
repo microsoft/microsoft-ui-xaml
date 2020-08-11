@@ -17,12 +17,12 @@ using Windows.UI.Xaml.Hosting;
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
 
 namespace MUXControlsTestApp
 {
@@ -640,10 +640,10 @@ namespace MUXControlsTestApp
             {
                 switch (this.ScrollPresenter.HorizontalScrollMode)
                 {
-                    case ScrollMode.Disabled:
+                    case ScrollingScrollMode.Disabled:
                         this.cmbHorizontalScrollMode.SelectedIndex = 0;
                         break;
-                    case ScrollMode.Enabled:
+                    case ScrollingScrollMode.Enabled:
                         this.cmbHorizontalScrollMode.SelectedIndex = 1;
                         break;
 #if USE_SCROLLMODE_AUTO
@@ -670,16 +670,16 @@ namespace MUXControlsTestApp
                 switch (this.cmbHorizontalScrollMode.SelectedIndex)
                 {
                     case 0:
-                        this.ScrollPresenter.HorizontalScrollMode = ScrollMode.Disabled;
+                        this.ScrollPresenter.HorizontalScrollMode = ScrollingScrollMode.Disabled;
                         break;
                     case 1:
-                        this.ScrollPresenter.HorizontalScrollMode = ScrollMode.Enabled;
+                        this.ScrollPresenter.HorizontalScrollMode = ScrollingScrollMode.Enabled;
                         break;
                     case 2:
 #if USE_SCROLLMODE_AUTO
                         this.ScrollPresenter.HorizontalScrollMode = ScrollMode.Auto;
 #else
-                        this.cmbHorizontalScrollMode.SelectedIndex = this.ScrollPresenter.HorizontalScrollMode == ScrollMode.Disabled ? 0 : 1;
+                        this.cmbHorizontalScrollMode.SelectedIndex = this.ScrollPresenter.HorizontalScrollMode == ScrollingScrollMode.Disabled ? 0 : 1;
 #endif
                         break;
                 }
@@ -696,10 +696,10 @@ namespace MUXControlsTestApp
             {
                 switch (this.ScrollPresenter.VerticalScrollMode)
                 {
-                    case ScrollMode.Disabled:
+                    case ScrollingScrollMode.Disabled:
                         this.cmbVerticalScrollMode.SelectedIndex = 0;
                         break;
-                    case ScrollMode.Enabled:
+                    case ScrollingScrollMode.Enabled:
                         this.cmbVerticalScrollMode.SelectedIndex = 1;
                         break;
 #if USE_SCROLLMODE_AUTO
@@ -726,16 +726,16 @@ namespace MUXControlsTestApp
                 switch (this.cmbVerticalScrollMode.SelectedIndex)
                 {
                     case 0:
-                        this.ScrollPresenter.VerticalScrollMode = ScrollMode.Disabled;
+                        this.ScrollPresenter.VerticalScrollMode = ScrollingScrollMode.Disabled;
                         break;
                     case 1:
-                        this.ScrollPresenter.VerticalScrollMode = ScrollMode.Enabled;
+                        this.ScrollPresenter.VerticalScrollMode = ScrollingScrollMode.Enabled;
                         break;
                     case 2:
 #if USE_SCROLLMODE_AUTO
                         this.ScrollPresenter.VerticalScrollMode = ScrollMode.Auto;
 #else
-                        this.cmbVerticalScrollMode.SelectedIndex = this.ScrollPresenter.VerticalScrollMode == ScrollMode.Disabled ? 0 : 1;
+                        this.cmbVerticalScrollMode.SelectedIndex = this.ScrollPresenter.VerticalScrollMode == ScrollingScrollMode.Disabled ? 0 : 1;
 #endif
                         break;
                 }
@@ -752,10 +752,10 @@ namespace MUXControlsTestApp
             {
                 switch (this.ScrollPresenter.ZoomMode)
                 {
-                    case ZoomMode.Disabled:
+                    case ScrollingZoomMode.Disabled:
                         this.cmbZoomMode.SelectedIndex = 0;
                         break;
-                    case ZoomMode.Enabled:
+                    case ScrollingZoomMode.Enabled:
                         this.cmbZoomMode.SelectedIndex = 1;
                         break;
                 }
@@ -777,10 +777,10 @@ namespace MUXControlsTestApp
                 switch (this.cmbZoomMode.SelectedIndex)
                 {
                     case 0:
-                        this.ScrollPresenter.ZoomMode = ZoomMode.Disabled;
+                        this.ScrollPresenter.ZoomMode = ScrollingZoomMode.Disabled;
                         break;
                     case 1:
-                        this.ScrollPresenter.ZoomMode = ZoomMode.Enabled;
+                        this.ScrollPresenter.ZoomMode = ScrollingZoomMode.Enabled;
                         break;
                 }
             }
@@ -1232,7 +1232,7 @@ namespace MUXControlsTestApp
                     this.ScrollPresenter.ScrollTo(
                         Convert.ToSingle(this.txtHorizontalOffset.Text),
                         this.ScrollPresenter.VerticalOffset,
-                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1266,7 +1266,7 @@ namespace MUXControlsTestApp
                         this.ScrollPresenter.HorizontalOffset,
                         Convert.ToSingle(this.txtVerticalOffset.Text),
                         new ScrollingScrollOptions(
-                            AnimationMode.Disabled, SnapPointsMode.Ignore));
+                            ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1299,7 +1299,7 @@ namespace MUXControlsTestApp
                     this.ScrollPresenter.ZoomTo(
                         Convert.ToSingle(this.txtZoomFactor.Text),
                         System.Numerics.Vector2.Zero,
-                        new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1434,9 +1434,9 @@ namespace MUXControlsTestApp
             this.scrollPresenter.Height = 300;
             this.scrollPresenter.Background = new SolidColorBrush(Windows.UI.Colors.Magenta);
             this.scrollPresenter.Margin = new Thickness(6);
-            this.scrollPresenter.HorizontalScrollMode = ScrollMode.Disabled;
-            this.scrollPresenter.VerticalScrollMode = ScrollMode.Enabled;
-            this.scrollPresenter.ZoomMode = ZoomMode.Enabled;
+            this.scrollPresenter.HorizontalScrollMode = ScrollingScrollMode.Disabled;
+            this.scrollPresenter.VerticalScrollMode = ScrollingScrollMode.Enabled;
+            this.scrollPresenter.ZoomMode = ScrollingZoomMode.Enabled;
             this.scrollPresenter.Content = this.rectSC;
             this.scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
             this.scrollPresenter.SetValue(AutomationProperties.NameProperty, "scrollPresenter");

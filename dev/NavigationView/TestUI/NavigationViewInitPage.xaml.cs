@@ -22,6 +22,7 @@ namespace MUXControlsTestApp
     public sealed partial class NavigationViewInitPage : TestPage
     {
         ObservableCollection<string> m_menuItems;
+        ObservableCollection<string> m_footerItems;
         LinkedList<string> m_menuItemsEnumerable = null;
 
         public NavigationViewInitPage()
@@ -38,7 +39,14 @@ namespace MUXControlsTestApp
             m_menuItems.Add("Menu Item 3");
             m_menuItems.Add("Music");
 
+            m_footerItems = new ObservableCollection<string>();
+
+            m_footerItems.Add("Footer Item 1");
+            m_footerItems.Add("Footer Item 2");
+            m_footerItems.Add("Footer Item 3");
+
             NavView.MenuItemsSource = m_menuItems;
+            NavView.FooterMenuItemsSource = m_footerItems;
             NavView.SelectedItem = m_menuItems[0];
         }
 
@@ -72,6 +80,16 @@ namespace MUXControlsTestApp
             {
                 m_menuItemsEnumerable.RemoveLast();
             }
+        }
+
+        private void AddFooterButton_Click(object sender, RoutedEventArgs e)
+        {
+            m_footerItems.Add("New Footer Item");
+        }
+
+        private void RemoveFooterButton_Click(object sender, RoutedEventArgs e)
+        {
+            m_footerItems.RemoveAt(m_footerItems.Count - 1);
         }
 
         private void ChangeToIEnumerableButton_Clicks(object sender, RoutedEventArgs e)

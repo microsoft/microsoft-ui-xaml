@@ -10,9 +10,9 @@ class CornerRadiusToThicknessConverter :
     public CornerRadiusToThicknessConverterProperties
 {
 public:
-    winrt::Thickness Convert(
-        winrt::CornerRadius const& radius,
-        winrt::CornerRadiusToThicknessConverterKind const& filterKind);
+    winrt::Thickness Convert(winrt::CornerRadius const& radius,
+        winrt::CornerRadiusToThicknessConverterKind const& filterKind,
+        double multiplier);
 
     winrt::IInspectable Convert(
         winrt::IInspectable const& value,

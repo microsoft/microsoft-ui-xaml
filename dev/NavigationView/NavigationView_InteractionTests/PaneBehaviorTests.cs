@@ -108,7 +108,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Log.Comment("Invoke Music item to close the pane");
                     var music = new Button(FindElement.ByName("Music"));
-                    music.Invoke();
+                    music.Click();
                     Wait.ForIdle();
 
                     Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after invoking Music item");
@@ -821,8 +821,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
 
-                Button navButton = new Button(FindElement.ById("SettingsNavPaneItem"));
-                Log.Comment("Verify that the SettingsNavPaneItem size in Expanded mode and actual width is " + navButton.BoundingRectangle.Width);
+                Button navButton = new Button(FindElement.ById("SettingsItem"));
+                Log.Comment("Verify that the SettingsItem size in Expanded mode and actual width is " + navButton.BoundingRectangle.Width);
 
                 // NavigationViewCompactPaneLength is 40 or 48 in different release. This test case doesn't need an exactly number of width, so just choose 48 as the boundary
                 Verify.IsTrue(navButton.BoundingRectangle.Width > 48);
@@ -830,7 +830,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Medium);
                 Wait.ForIdle();
 
-                Log.Comment("Verify that the SettingsNavPaneItem size in Medium mode and actual width is " + navButton.BoundingRectangle.Width);
+                Log.Comment("Verify that the SettingsItem size in Medium mode and actual width is " + navButton.BoundingRectangle.Width);
                 Verify.IsTrue(navButton.BoundingRectangle.Width <= 48);
             }
         }

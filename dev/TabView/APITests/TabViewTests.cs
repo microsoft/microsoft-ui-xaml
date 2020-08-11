@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Media;
 using Common;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
+using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Automation.Provider;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -82,6 +85,86 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifyTabWidthVisualStates(tabView.TabItems, false);
             });
+        }
+
+        [TestMethod]
+        public void VerifyTabViewUIABehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TabView tabView = new TabView();
+                Content = tabView;
+
+                tabView.TabItems.Add(CreateTabViewItem("Item 0", Symbol.Add));
+                tabView.TabItems.Add(CreateTabViewItem("Item 1", Symbol.AddFriend));
+                tabView.TabItems.Add(CreateTabViewItem("Item 2"));
+
+                Content.UpdateLayout();
+
+                var tabViewPeer = FrameworkElementAutomationPeer.CreatePeerForElement(tabView);
+                Verify.IsNotNull(tabViewPeer);
+                var tabViewSelectionPattern = tabViewPeer.GetPattern(PatternInterface.Selection);
+                Verify.IsNotNull(tabViewSelectionPattern);
+                var selectionProvider = tabViewSelectionPattern as ISelectionProvider;
+                // Tab controls must require selection
+                Verify.IsTrue(selectionProvider.IsSelectionRequired);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyTabViewItemUIABehavior()
+        {
+            TabView tabView = null;
+
+            TabViewItem tvi0 = null;
+            TabViewItem tvi1 = null;
+            TabViewItem tvi2 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tabView = new TabView();
+                Content = tabView;
+
+                tvi0 = CreateTabViewItem("Item 0", Symbol.Add);
+                tvi1 = CreateTabViewItem("Item 1", Symbol.AddFriend);
+                tvi2 = CreateTabViewItem("Item 2");
+
+                tabView.TabItems.Add(tvi0);
+                tabView.TabItems.Add(tvi1);
+                tabView.TabItems.Add(tvi2);
+
+                tabView.SelectedIndex = 0;
+                tabView.SelectedItem = tvi0;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItemProvider = GetProviderFromTVI(tvi0);
+                Verify.IsTrue(selectionItemProvider.IsSelected,"Item should be selected");
+
+                selectionItemProvider = GetProviderFromTVI(tvi1);
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
+
+                Log.Comment("Change selection through automationpeer");
+                selectionItemProvider.Select();
+                Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
+                
+                selectionItemProvider = GetProviderFromTVI(tvi0);
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
+
+                Verify.IsNotNull(selectionItemProvider.SelectionContainer);
+            });
+
+            static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
+            {
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                var provider = peer.GetPattern(PatternInterface.SelectionItem)
+                                as ISelectionItemProvider;
+                Verify.IsNotNull(provider);
+                return provider;
+            }
         }
 
         private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)

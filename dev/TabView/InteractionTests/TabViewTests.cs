@@ -540,7 +540,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Button tabContent = FindElement.ByName<Button>("FirstTabButton");
-                Button toggleThemeButton = FindElement.ById<Button>("__ToggleThemeButton");
+                ToggleButton toggleThemeButton = FindElement.ById<ToggleButton>("__InnerFrameInLabDimensions");
                 TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");

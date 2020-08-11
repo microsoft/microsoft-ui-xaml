@@ -72,7 +72,7 @@
         RenderSize=20,20
       [Windows.UI.Xaml.Controls.TextBlock]
           Padding=0,0,0,0
-          Foreground=#FF000000
+          Foreground=#99000000
           Name=PlaceholderTextBlock
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1

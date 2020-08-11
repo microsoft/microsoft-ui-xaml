@@ -214,29 +214,32 @@ void MenuBarItem::OnMenuBarItemAccessKeyInvoked(winrt::IInspectable const& sende
 // Menu Flyout actions
 void MenuBarItem::ShowMenuFlyout()
 {
-    if (auto button = m_button.get())
+    if (Items().Size() != 0)
     {
-        const auto width = static_cast<float>(button.ActualWidth());
-        const auto height = static_cast<float>(button.ActualHeight());
-
-        if (SharedHelpers::IsFlyoutShowOptionsAvailable())
+        if (auto button = m_button.get())
         {
-            // Sets an exclusion rect over the button that generates the flyout so that even if the menu opens upwards
-            // (which is the default in touch mode) it doesn't cover the menu bar button.
-            winrt::FlyoutShowOptions options{};
-            options.Position(winrt::Point(0, height));
-            options.Placement(winrt::FlyoutPlacementMode::Bottom);
-            options.ExclusionRect(winrt::Rect(0, 0, width, height));
-            m_flyout.get().ShowAt(button, options);
-        }
-        else
-        {
-            m_flyout.get().ShowAt(button, winrt::Point(0, height));
-        }
+            const auto width = static_cast<float>(button.ActualWidth());
+            const auto height = static_cast<float>(button.ActualHeight());
 
-        // Attach keyboard event handler
-        auto presenter = winrt::get_self<MenuBarItemFlyout>(m_flyout.get())->m_presenter.get();
-        m_presenterKeyDownRevoker = presenter.KeyDown(winrt::auto_revoke, { this,  &MenuBarItem::OnPresenterKeyDown });
+            if (SharedHelpers::IsFlyoutShowOptionsAvailable())
+            {
+                // Sets an exclusion rect over the button that generates the flyout so that even if the menu opens upwards
+                // (which is the default in touch mode) it doesn't cover the menu bar button.
+                winrt::FlyoutShowOptions options{};
+                options.Position(winrt::Point(0, height));
+                options.Placement(winrt::FlyoutPlacementMode::Bottom);
+                options.ExclusionRect(winrt::Rect(0, 0, width, height));
+                m_flyout.get().ShowAt(button, options);
+            }
+            else
+            {
+                m_flyout.get().ShowAt(button, winrt::Point(0, height));
+            }
+
+            // Attach keyboard event handler
+            auto presenter = winrt::get_self<MenuBarItemFlyout>(m_flyout.get())->m_presenter.get();
+            m_presenterKeyDownRevoker = presenter.KeyDown(winrt::auto_revoke, { this,  &MenuBarItem::OnPresenterKeyDown });
+        }
     }
 }
 

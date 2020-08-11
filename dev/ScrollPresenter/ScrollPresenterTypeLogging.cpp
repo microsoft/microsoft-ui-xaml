@@ -8,15 +8,15 @@
 namespace TypeLogging
 {
 
-winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility)
+winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollingScrollBarVisibility& scrollBarVisibility)
 {
     switch (scrollBarVisibility)
     {
-    case winrt::ScrollBarVisibility::Visible:
+    case winrt::ScrollingScrollBarVisibility::Visible:
         return L"Visible";
-    case winrt::ScrollBarVisibility::Hidden:
+    case winrt::ScrollingScrollBarVisibility::Hidden:
         return L"Hidden";
-    case winrt::ScrollBarVisibility::Auto:
+    case winrt::ScrollingScrollBarVisibility::Auto:
         return L"Auto";
     default:
         MUX_ASSERT(false);
@@ -24,15 +24,15 @@ winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scr
     }
 }
 
-winrt::hstring ChainingModeToString(const winrt::ChainingMode& chainingMode)
+winrt::hstring ChainingModeToString(const winrt::ScrollingChainMode& chainingMode)
 {
     switch (chainingMode)
     {
-    case winrt::ChainingMode::Always:
+    case winrt::ScrollingChainMode::Always:
         return L"Always";
-    case winrt::ChainingMode::Auto:
+    case winrt::ScrollingChainMode::Auto:
         return L"Auto";
-    case winrt::ChainingMode::Never:
+    case winrt::ScrollingChainMode::Never:
         return L"Never";
     default:
         MUX_ASSERT(false);
@@ -40,13 +40,13 @@ winrt::hstring ChainingModeToString(const winrt::ChainingMode& chainingMode)
     }
 }
 
-winrt::hstring RailingModeToString(const winrt::RailingMode& railingMode)
+winrt::hstring RailingModeToString(const winrt::ScrollingRailMode& railingMode)
 {
     switch (railingMode)
     {
-    case winrt::RailingMode::Disabled:
+    case winrt::ScrollingRailMode::Disabled:
         return L"Disabled";
-    case winrt::RailingMode::Enabled:
+    case winrt::ScrollingRailMode::Enabled:
         return L"Enabled";
     default:
         MUX_ASSERT(false);
@@ -54,16 +54,16 @@ winrt::hstring RailingModeToString(const winrt::RailingMode& railingMode)
     }
 }
 
-winrt::hstring ScrollModeToString(const winrt::ScrollMode& scrollMode)
+winrt::hstring ScrollModeToString(const winrt::ScrollingScrollMode& scrollMode)
 {
     switch (scrollMode)
     {
-    case winrt::ScrollMode::Disabled:
+    case winrt::ScrollingScrollMode::Disabled:
         return L"Disabled";
-    case winrt::ScrollMode::Enabled:
+    case winrt::ScrollingScrollMode::Enabled:
         return L"Enabled";
 #ifdef USE_SCROLLMODE_AUTO
-    case winrt::ScrollMode::Auto:
+    case winrt::ScrollingScrollMode::Auto:
         return L"Auto";
 #endif
     default:
@@ -72,13 +72,13 @@ winrt::hstring ScrollModeToString(const winrt::ScrollMode& scrollMode)
     }
 }
 
-winrt::hstring ZoomModeToString(const winrt::ZoomMode& zoomMode)
+winrt::hstring ZoomModeToString(const winrt::ScrollingZoomMode& zoomMode)
 {
     switch (zoomMode)
     {
-    case winrt::ZoomMode::Disabled:
+    case winrt::ScrollingZoomMode::Disabled:
         return L"Disabled";
-    case winrt::ZoomMode::Enabled:
+    case winrt::ScrollingZoomMode::Enabled:
         return L"Enabled";
     default:
         MUX_ASSERT(false);
@@ -86,36 +86,36 @@ winrt::hstring ZoomModeToString(const winrt::ZoomMode& zoomMode)
     }
 }
 
-winrt::hstring InputKindToString(const winrt::InputKind& inputKind)
+winrt::hstring InputKindToString(const winrt::ScrollingInputKinds& inputKind)
 {
     switch (static_cast<int>(inputKind))
     {
-    case static_cast<int>(winrt::InputKind::None) :
+    case static_cast<int>(winrt::ScrollingInputKinds::None) :
         return L"None";
-    case static_cast<int>(winrt::InputKind::All) :
+    case static_cast<int>(winrt::ScrollingInputKinds::All) :
         return L"All";
-    case static_cast<int>(winrt::InputKind::Touch):
+    case static_cast<int>(winrt::ScrollingInputKinds::Touch):
         return L"Touch";
-    case static_cast<int>(winrt::InputKind::Pen):
+    case static_cast<int>(winrt::ScrollingInputKinds::Pen):
         return L"Pen";
-    case static_cast<int>(winrt::InputKind::Keyboard):
+    case static_cast<int>(winrt::ScrollingInputKinds::Keyboard):
         return L"Keyboard";
-    case static_cast<int>(winrt::InputKind::Gamepad):
+    case static_cast<int>(winrt::ScrollingInputKinds::Gamepad):
         return L"Gamepad";
     default:
         return L"InputKind combination";
     }
 }
 
-winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode)
+winrt::hstring AnimationModeToString(const winrt::ScrollingAnimationMode& animationMode)
 {
     switch (animationMode)
     {
-    case winrt::AnimationMode::Disabled:
+    case winrt::ScrollingAnimationMode::Disabled:
         return L"Disabled";
-    case winrt::AnimationMode::Enabled:
+    case winrt::ScrollingAnimationMode::Enabled:
         return L"Enabled";
-    case winrt::AnimationMode::Auto:
+    case winrt::ScrollingAnimationMode::Auto:
         return L"Auto";
     default:
         MUX_ASSERT(false);
@@ -123,13 +123,13 @@ winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode)
     }
 }
 
-winrt::hstring SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode)
+winrt::hstring SnapPointsModeToString(const winrt::ScrollingSnapPointsMode& snapPointsMode)
 {
     switch (snapPointsMode)
     {
-    case winrt::SnapPointsMode::Default:
+    case winrt::ScrollingSnapPointsMode::Default:
         return L"Default";
-    case winrt::SnapPointsMode::Ignore:
+    case winrt::ScrollingSnapPointsMode::Ignore:
         return L"Ignore";
     default:
         MUX_ASSERT(false);

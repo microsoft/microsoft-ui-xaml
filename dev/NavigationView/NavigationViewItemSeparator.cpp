@@ -20,7 +20,7 @@ void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
     if (m_appliedTemplate)
     {
         static auto groupName = L"NavigationSeparatorLineStates"sv;
-        const auto stateName = (Position() != NavigationViewRepeaterPosition::TopPrimary)
+        const auto stateName = (Position() != NavigationViewRepeaterPosition::TopPrimary && Position() != NavigationViewRepeaterPosition::TopFooter)
             ? m_isClosedCompact
                 ? L"HorizontalLineCompact"sv
                 : L"HorizontalLine"sv

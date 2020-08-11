@@ -10,7 +10,7 @@
 #include "ScrollingZoomOptions.properties.cpp"
 
 ScrollingZoomOptions::ScrollingZoomOptions(
-    winrt::AnimationMode const& animationMode)
+    winrt::ScrollingAnimationMode const& animationMode)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
@@ -19,8 +19,8 @@ ScrollingZoomOptions::ScrollingZoomOptions(
 }
 
 ScrollingZoomOptions::ScrollingZoomOptions(
-    winrt::AnimationMode const& animationMode,
-    winrt::SnapPointsMode const& snapPointsMode)
+    winrt::ScrollingAnimationMode const& animationMode,
+    winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str(),
@@ -30,27 +30,28 @@ ScrollingZoomOptions::ScrollingZoomOptions(
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::AnimationMode ScrollingZoomOptions::AnimationMode() const
+winrt::ScrollingAnimationMode ScrollingZoomOptions::AnimationMode() const
 {
     return m_animationMode;
 }
 
-void ScrollingZoomOptions::AnimationMode(winrt::AnimationMode const& animationMode)
+void ScrollingZoomOptions::AnimationMode(winrt::ScrollingAnimationMode const& animationMode)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
+
     m_animationMode = animationMode;
 }
 
-winrt::SnapPointsMode ScrollingZoomOptions::SnapPointsMode() const
+winrt::ScrollingSnapPointsMode ScrollingZoomOptions::SnapPointsMode() const
 {
     return m_snapPointsMode;
 }
 
-void ScrollingZoomOptions::SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode)
+void ScrollingZoomOptions::SnapPointsMode(winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
+
     m_snapPointsMode = snapPointsMode;
 }
-
