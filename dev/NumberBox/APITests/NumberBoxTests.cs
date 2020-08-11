@@ -85,6 +85,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyIsEnabledChangeUpdatesVisualState()
+        {
+            var numberBox = SetupNumberBox();
+
+            VisualStateGroup commonStatesGroup = null;
+            RunOnUIThread.Execute(() =>
+            {
+                // Check 1: Set IsEnabled to true.
+                numberBox.IsEnabled = true;
+                Content.UpdateLayout();
+
+                var numberBoxLayoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(numberBox, 0);
+                commonStatesGroup = VisualStateManager.GetVisualStateGroups(numberBoxLayoutRoot).First(vsg => vsg.Name.Equals("CommonStates"));
+
+                Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
+
+                // Check 2: Set IsEnabled to false.
+                numberBox.IsEnabled = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Disabled", commonStatesGroup.CurrentState.Name);
+
+                // Check 3: Set IsEnabled back to true.
+                numberBox.IsEnabled = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
+            });
+        }
+
         private NumberBox SetupNumberBox()
         {
             NumberBox numberBox = null;
