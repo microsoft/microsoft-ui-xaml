@@ -172,6 +172,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        public void VerifyMoreButtonIsOnlyReadOnce()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
+            {
+                UIObject moreButton = FindElement.ById("TopNavOverflowButton");
+                moreButton.SetFocus();
+                Wait.ForIdle();
+
+                AutomationElement ae = AutomationElement.FocusedElement;
+                Verify.AreEqual("More", ae.GetCurrentPropertyValue(AutomationElement.NameProperty).ToString());
+            }
+        }
+
+        [TestMethod]
+        public void VerifyOverflowMenuCornerRadius()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView TopNav Test" }))
+            {
+                Log.Comment("Verify that the overflow menu is closed.");
+                var overflowItemsHost = TryFindElement.ById("TopNavMenuItemsOverflowHost");
+                Verify.IsNull(overflowItemsHost, "Overflow menu should have been closed.");
+
+                Log.Comment("Open the overflow menu.");
+                GetOverflowButton().Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify that the overflow menu is open.");
+                overflowItemsHost = TryFindElement.ById("TopNavMenuItemsOverflowHost");
+                Verify.IsNotNull(overflowItemsHost, "Overflow menu should have been open.");
+
+                Log.Comment("Get CornerRadius of the overflow menu.");
+                FindElement.ByName<Button>("GetOverflowMenuCornerRadiusButton").Invoke();
+
+                // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
+                TextBlock overflowMenuCornerRadiusTextBlock = new TextBlock(FindElement.ByName("OverflowMenuCornerRadiusTextBlock"));
+                Verify.AreEqual("4,4,4,4", overflowMenuCornerRadiusTextBlock.DocumentText);
+
+                UIObject GetOverflowButton()
+                {
+                    Log.Comment("Add items until the overflow button shows up.");
+                    var addItemButton = new Button(FindElement.ById("AddItemButton"));
+
+                    UIObject overflowButton1 = TryFindElement.ById("TopNavOverflowButton");
+                    while (overflowButton1 == null)
+                    {
+                        addItemButton.Click();
+                        Log.Comment("Item added.");
+                        Wait.ForIdle();
+
+                        overflowButton1 = TryFindElement.ById("TopNavOverflowButton");
+                    }
+
+                    return overflowButton1;
+                }
+            }
+        }
+
+        [TestMethod]
         public void TopNavigationSelectionTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
