@@ -40,6 +40,9 @@ private:
     void EnsureAutomationSetCountAndPosition();
     void EnsureFocusedPrimaryCommand();
 
+    void MoreButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OverFlowPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable &args);
+
     static bool IsControlFocusable(
         winrt::Control const& control,
         bool checkTabStop);
@@ -72,6 +75,9 @@ private:
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_firstItemLoadedRevoker{};
 
+    winrt::Button::Click_revoker m_moreButtonClicked{};
+    winrt::Popup::Closed_revoker m_overflowPopupClosedRevoker{};
+
     // We need to manually connect the end element of the primary items to the start element of the secondary items
     // for the purposes of UIA items navigation. To ensure that we only have the current start and end elements registered
     // (e.g., if the app adds a new start element to the secondary commands, we want to unregister the previous start element),
@@ -85,5 +91,6 @@ private:
     winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedRevoker{};
     winrt::Storyboard::Completed_revoker m_closingStoryboardCompletedCallbackRevoker{};
 
+    bool m_secondaryCommandsExpectedToBeVisible{ false };
     bool m_secondaryItemsRootSized{ false };
 };
