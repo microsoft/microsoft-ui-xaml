@@ -139,12 +139,6 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty IsOpenProperty =
             DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(InfoBar), new PropertyMetadata(false, OnPropertyChanged));
 
-        public bool ShowCloseButton
-        {
-            get { return (bool)GetValue(ShowCloseButtonProperty); }
-            set { SetValue(ShowCloseButtonProperty, value); }
-        }
-
         public static readonly DependencyProperty ShowCloseButtonProperty =
             DependencyProperty.Register(nameof(ShowCloseButton), typeof(bool), typeof(InfoBar), new PropertyMetadata(true, OnPropertyChanged));
 
@@ -211,32 +205,20 @@ namespace MUXControlsTestApp
         /* Close Button Properties
          * 
          */
-        public object CloseButtonContent
-        {
-            get { return (object)GetValue(CloseButtonContentProperty); }
-            set { SetValue(CloseButtonContentProperty, value); }
-        }
-
-        public static readonly DependencyProperty CloseButtonContentProperty =
-            DependencyProperty.Register(nameof(CloseButtonContent), typeof(object), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
-
-        public Style CloseButtonStyle
-        {
-            get { return (Style)GetValue(CloseButtonStyleProperty); }
-            set { SetValue(CloseButtonStyleProperty, value); }
-        }
-
-        public static readonly DependencyProperty CloseButtonStyleProperty =
-            DependencyProperty.Register(nameof(CloseButtonStyle), typeof(Style), typeof(InfoBar), new PropertyMetadata(null));
-
         public ICommand CloseButtonCommand
         {
             get { return (ICommand)GetValue(CloseButtonCommandProperty); }
             set { SetValue(CloseButtonCommandProperty, value); }
         }
-
+        
         public static readonly DependencyProperty CloseButtonCommandProperty =
             DependencyProperty.Register(nameof(CloseButtonCommand), typeof(ICommand), typeof(InfoBar), new PropertyMetadata(null));
+
+        public bool ShowCloseButton
+        {
+            get { return (bool)GetValue(ShowCloseButtonProperty); }
+            set { SetValue(ShowCloseButtonProperty, value); }
+        }
 
         public object CloseButtonCommandParameter
         {

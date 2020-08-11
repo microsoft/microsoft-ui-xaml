@@ -27,12 +27,6 @@
     <x:Double x:Key="InfoBarCloseButtonSize">44</x:Double>
     <x:Double x:Key="InfoBarCloseButtonGlyphSize">12</x:Double>
 
-    <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusColor" Color="#D13438"/>
-    <SolidColorBrush x:Key="InfoBarSeverityWarningStatusColor" Color="#FF8C00"/>
-    <SolidColorBrush x:Key="InfoBarSeverityInformationalStatusColor" Color="#0078D7"/>
-    <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusColor" Color="#107C10"/>
-    <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusColor" Color="#69797E"/>
-    
     <Style TargetType="local:InfoBar" >
         <Setter Property="Template">
             <Setter.Value>
@@ -45,25 +39,25 @@
                             <VisualStateGroup x:Name="ButtonStates">
                                 <VisualState x:Name="NoButtonsVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CloseButtonVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ActionButtonVisible">
                                     <VisualState.Setters>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BothButtonsVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
