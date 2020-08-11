@@ -11,6 +11,14 @@
         <Setter Property="Background" Value="Transparent"/>
     </Style>
 
+    <Style x:Key="NumberPanelNotSelectedButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberPanelButtonStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource ButtonForegroundThemeBrush}"/>
+    </Style>
+
+    <Style x:Key="NumberPanelSelectedButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberPanelButtonStyle}">
+        <Setter Property="Foreground" Value="Red"/>
+    </Style>
+
     <DataTemplate x:Key="NumberPanelButtonTemplate">
         <Button Content="{Binding}" Style="{StaticResource NumberPanelButtonStyle}"/>
     </DataTemplate>

@@ -20,5 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager_ElementFactory.cs" />
   </ItemGroup>
 </Project>

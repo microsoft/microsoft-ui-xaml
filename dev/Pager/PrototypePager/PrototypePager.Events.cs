@@ -31,11 +31,11 @@ namespace MUXControlsTestApp
 
                 if ((int)(args.Element as Button).Content == SelectedIndex)
                 {
-                    (args.Element as Button).Foreground = new SolidColorBrush(Colors.Red);
+                    (args.Element as Button).Style = (Style)App.Current.Resources["NumberPanelSelectedButtonStyle"];
                 }
                 else
                 {
-                    (args.Element as Button).Foreground = new SolidColorBrush(Colors.White);
+                    (args.Element as Button).Style = (Style)App.Current.Resources["NumberPanelNotSelectedButtonStyle"];
                 }
             }
         }
@@ -54,7 +54,6 @@ namespace MUXControlsTestApp
         {
             if (SelectedIndex < 5)
             {
-                //return;
                 NumberPanelCurrentItems[0] = 1;
                 NumberPanelCurrentItems[1] = 2;
                 NumberPanelCurrentItems[2] = 3;
