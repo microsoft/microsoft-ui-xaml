@@ -233,7 +233,9 @@
     <x:Double x:Key="NavigationViewCompactPaneLength">40</x:Double>
     <x:Double x:Key="NavigationViewTopPaneHeight">40</x:Double>
     <x:Double x:Key="TopNavigationViewPaneCustomContentMinWidth">48</x:Double>
-    
+    <x:Double x:Key="TopNavigationViewOverflowButtonWidth">48</x:Double>
+    <x:Double x:Key="TopNavigationViewOverflowButtonHeight">40</x:Double>
+
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">40</x:Double>
     <x:Double x:Key="NavigationViewPaneHeaderRowMinHeight">4</x:Double>
 
@@ -402,8 +404,10 @@
     <Style x:Key="NavigationViewOverflowButtonStyleWhenPaneOnTop" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
-        <Setter Property="Height" Value="{StaticResource PaneToggleButtonHeight}" />
-        <Setter Property="Width" Value="{StaticResource PaneToggleButtonWidth}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
+        <Setter Property="Height" Value="{StaticResource TopNavigationViewOverflowButtonHeight}" />
+        <Setter Property="Width" Value="{StaticResource TopNavigationViewOverflowButtonWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
@@ -424,6 +428,7 @@
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -431,6 +436,7 @@
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -442,7 +448,12 @@
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle 
                             x:Name="PointerRectangle" 
-                            Fill="Transparent" />
+                            Fill="Transparent"
+                            Visibility="Collapsed"/>
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" />
                         <FontIcon
                             x:Name="Icon"
                             VerticalAlignment="Center"
@@ -462,8 +473,10 @@
     <Style x:Key="NavigationViewOverflowButtonNoLabelStyleWhenPaneOnTop" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
-        <Setter Property="Height" Value="{StaticResource PaneToggleButtonHeight}" />
-        <Setter Property="Width" Value="{StaticResource PaneToggleButtonWidth}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
+        <Setter Property="Height" Value="{StaticResource TopNavigationViewOverflowButtonHeight}" />
+        <Setter Property="Width" Value="{StaticResource TopNavigationViewOverflowButtonWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
@@ -484,6 +497,7 @@
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -491,6 +505,7 @@
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -503,6 +518,10 @@
                         <Rectangle 
                             x:Name="PointerRectangle" 
                             Fill="Transparent" />
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" />
                         <FontIcon
                             x:Name="Icon"
                             VerticalAlignment="Center"
