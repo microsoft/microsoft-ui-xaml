@@ -12,6 +12,19 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     {
+
+
+        public object PagerElementFactory
+        {
+            get { return (object)GetValue(PagerElementFactoryProperty); }
+            set { SetValue(PagerElementFactoryProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for PagerElementFactory.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PagerElementFactoryProperty =
+            DependencyProperty.Register("PagerElementFactory", typeof(object), typeof(PrototypePager), new PropertyMetadata(new PrototypePager_ElementFactory()));
+
+
         public PagerDisplayModes PagerDisplayMode
         {
             get { return (PagerDisplayModes)GetValue(PagerDisplayModeProperty); }

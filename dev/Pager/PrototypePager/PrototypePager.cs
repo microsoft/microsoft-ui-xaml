@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -30,10 +31,9 @@ namespace MUXControlsTestApp
 
         //private bool LeftEllipseEnabled = false;
         //private bool RightEllipseEnabled = false;
-        
-        private SymbolIcon Ellipse = new SymbolIcon(Symbol.More) {
-            Tag = Symbol.More.ToString()
-        };
+
+        private IconElement LeftEllipse = new SymbolIcon(Symbol.More);
+        private IconElement RightEllipse = new SymbolIcon(Symbol.More);
         private static string NumberBoxVisibleVisualState = "NumberBoxVisible";
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
@@ -135,17 +135,13 @@ namespace MUXControlsTestApp
                 }
             } else
             {
-                RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { 
-                    UpdateNumberPanel();
-                    Debug.WriteLine((NumberPanelItems.TryGetElement(SelectedIndex - 1) as Button)?.Content);
-                    Debug.WriteLine((NumberPanelItems.TryGetElement(PreviousPageIndex) as Button)?.Content);
-                });
+                RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { UpdateNumberPanel(); });
                 //RightEllipseEnabled = true;
                 foreach (var num in TemplateSettings.Pages.GetRange(0, 5))
                 {
                     NumberPanelCurrentItems.Add(num);
                 }
-                NumberPanelCurrentItems.Add(Ellipse);
+                NumberPanelCurrentItems.Add(RightEllipse);
                 NumberPanelCurrentItems.Add(NumberOfPages);
 
             }

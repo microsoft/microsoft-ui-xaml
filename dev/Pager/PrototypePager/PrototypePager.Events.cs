@@ -25,17 +25,19 @@ namespace MUXControlsTestApp
 
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
         {
-            if ((args.Element as Button).Content != null && ((args.Element as Button).Content as SymbolIcon)?.Tag != Ellipse.Tag) 
-            {
-                (args.Element as Button).Click += OnNumberPanelButtonClicked;
+            var element = args.Element as Button;
 
-                if ((int)(args.Element as Button).Content == SelectedIndex)
+            //Debug.WriteLine(element.Content);
+            element.Style = (Style)App.Current.Resources["NumberPanelNotSelectedButtonStyle"];
+
+            Type dataType = element.Content?.GetType();
+            
+            if (dataType == typeof(int))
+            {
+                element.Click += OnNumberPanelButtonClicked;
+                if ((int)element.Content == SelectedIndex)
                 {
-                    (args.Element as Button).Style = (Style)App.Current.Resources["NumberPanelSelectedButtonStyle"];
-                }
-                else
-                {
-                    (args.Element as Button).Style = (Style)App.Current.Resources["NumberPanelNotSelectedButtonStyle"];
+                    element.Style = (Style)App.Current.Resources["NumberPanelSelectedButtonStyle"];
                 }
             }
         }
@@ -59,13 +61,13 @@ namespace MUXControlsTestApp
                 NumberPanelCurrentItems[2] = 3;
                 NumberPanelCurrentItems[3] = 4;
                 NumberPanelCurrentItems[4] = 5;
-                NumberPanelCurrentItems[5] = Ellipse;
+                NumberPanelCurrentItems[5] = RightEllipse;
                 NumberPanelCurrentItems[6] = NumberOfPages;
             }
             else if (SelectedIndex >= NumberOfPages - 3)
             {
                 NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = Ellipse;
+                NumberPanelCurrentItems[1] = LeftEllipse;
                 NumberPanelCurrentItems[2] = NumberOfPages - 4;
                 NumberPanelCurrentItems[3] = NumberOfPages - 3;
                 NumberPanelCurrentItems[4] = NumberOfPages - 2;
@@ -75,14 +77,13 @@ namespace MUXControlsTestApp
             else if (SelectedIndex >= 5 && SelectedIndex < NumberOfPages - 3)
             {
                 NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = Ellipse;
+                NumberPanelCurrentItems[1] = LeftEllipse;
                 NumberPanelCurrentItems[2] = SelectedIndex - 1;
                 NumberPanelCurrentItems[3] = SelectedIndex;
                 NumberPanelCurrentItems[4] = SelectedIndex + 1;
-                NumberPanelCurrentItems[5] = Ellipse;
+                NumberPanelCurrentItems[5] = RightEllipse;
                 NumberPanelCurrentItems[6] = NumberOfPages;
             }
-            
         }
 
         private void OnPagerDisplayModeChanged()
