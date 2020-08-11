@@ -46,6 +46,25 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void TextAlignment_Changed(object sender, RoutedEventArgs e)
+        {
+            if (TestNumberBox != null)
+            {
+                if (TextAlignmentComboBox.SelectedIndex == 0)
+                {
+                    TestNumberBox.TextAlignment = TextAlignment.Left;
+                }
+                else if (TextAlignmentComboBox.SelectedIndex == 1)
+                {
+                    TestNumberBox.TextAlignment = TextAlignment.Center;
+                }
+                else if (TextAlignmentComboBox.SelectedIndex == 2)
+                {
+                    TestNumberBox.TextAlignment = TextAlignment.Right;
+                }
+            }
+        }
+
         private void Validation_Changed(object sender, RoutedEventArgs e)
         {
             if (TestNumberBox != null)
