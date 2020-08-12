@@ -867,8 +867,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var overflowButton = VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") as Button;
                 var toolTipObject = ToolTipService.GetToolTip(overflowButton);
 
-                bool testCondition = toolTipObject is ToolTip toolTip && toolTip.Content.Equals("See more");
-                Verify.IsTrue(testCondition, "ToolTip text should have been \"See more\".");
+                bool testCondition = toolTipObject is ToolTip toolTip && toolTip.Content.Equals("More");
+                Verify.IsTrue(testCondition, "ToolTip text should have been \"More\".");
             });
         }
     }
