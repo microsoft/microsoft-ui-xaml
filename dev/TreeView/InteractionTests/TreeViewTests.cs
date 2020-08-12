@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -2893,6 +2893,168 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
                 Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void VerifyTreeViewSingleSelectDragAndDropSelectedNodeDoesNotUnselect_NodeMode()
+        {
+            VerifyTreeViewSingleSelectDragAndDropSelectedNodeDoesNotUnselect();
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void VerifyTreeViewSingleSelectDragAndDropSelectedNodeDoesNotUnselect_ContentMode()
+        {
+            VerifyTreeViewSingleSelectDragAndDropSelectedNodeDoesNotUnselect(isContentMode: true);
+        }
+
+        private void VerifyTreeViewSingleSelectDragAndDropSelectedNodeDoesNotUnselect(bool isContentMode = false)
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            if (isContentMode && IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(isContentMode);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("DisableClickToExpand");
+                ClickButton("LabelItems");
+
+                Log.Comment("Select item \"Root.0\" before dragging it");
+                UIObject dragUIObject = VerifyAndSelectDragAndDropItem();
+
+                Log.Comment("Drag and drop selected item \"Root.0\" between \"Root.1\" and \"Root.2\"");
+                var height = dragUIObject.BoundingRectangle.Height;
+                // 5% from the edge of the next item 
+                var distance = (int)(height * 1.45);
+
+                Log.Comment("Starting Drag...distance:" + distance);
+                InputHelper.DragDistance(dragUIObject, distance, Direction.South);
+
+                TestEnvironment.VerifyAreEqualWithRetry(
+                    5,
+                    () => "Root | Root.1 | Root.0 | Root.2",
+                    () =>
+                    {
+                        ClickButton("GetChildrenOrder");
+                        return ReadResult();
+                    });
+
+                Log.Comment("Verify item \"Root.0\" is still selected after drop.");
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0", ReadResult());
+
+                UIObject VerifyAndSelectDragAndDropItem()
+                {
+                    UIObject root0 = FindElement.ById("Root.0");
+                    Verify.IsNotNull(root0, "Verifying Root.0 is found");
+
+                    Log.Comment("Select item \"Root.0\" before dragging it");
+                    InputHelper.Tap(root0);
+
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Root.0", ReadResult());
+
+                    return root0;
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void VerifyTreeViewMultiSelectDragAndDropSelectedNodeDoesNotUnselect_NodeMode()
+        {
+            VerifyTreeViewMultiSelectDragAndDropSelectedNodeDoesNotUnselect();
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void VerifyTreeViewMultiSelectDragAndDropSelectedNodeDoesNotUnselect_ContentMode()
+        {
+            VerifyTreeViewMultiSelectDragAndDropSelectedNodeDoesNotUnselect(isContentMode: true);
+        }
+
+        private void VerifyTreeViewMultiSelectDragAndDropSelectedNodeDoesNotUnselect(bool isContentMode = false)
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            if (isContentMode && IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(isContentMode);
+
+                ClickButton("ToggleSelectionMode");
+                ClickButton("SetupDragDropHandlersForApiTest");
+
+                UIObject ItemRoot = LabelFirstItem();
+                InputHelper.Tap(ItemRoot);
+
+                ClickButton("DisableClickToExpand");
+                ClickButton("LabelItems");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("4", ReadResult());
+
+                Log.Comment("Select items \"Root.0\" and \"Root.1\" before dragging them");
+                InputHelper.Tap(ItemRoot);
+                KeyboardHelper.PressKey(Key.Down);
+                KeyboardHelper.PressKey(Key.Space);
+
+                KeyboardHelper.PressKey(Key.Down);
+                KeyboardHelper.PressKey(Key.Space);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
+
+                Log.Comment("Drag and drop selected items \"Root.0\" and \"Root.1\" below item \"Root.2\"");
+                UIObject dragUIObject = FindElement.ByName("Root.0");
+                Verify.IsNotNull(dragUIObject, "Verifying Root.0 is found");
+
+                var height = dragUIObject.BoundingRectangle.Height;
+                // 5% from the edge of the second next item 
+                var distance = (int)(height * 1.45 * 2);
+
+                Log.Comment("Click on the item to help make the drag more reliable");
+                dragUIObject.Click();
+
+                Log.Comment("Starting Drag...distance:" + distance);
+                InputHelper.DragDistance(dragUIObject, distance, Direction.South);
+
+                TestEnvironment.VerifyAreEqualWithRetry(
+                    5,
+                    () => "Root | Root.2 | Root.0 | Root.1",
+                    () => {
+                        ClickButton("GetChildrenOrder");
+                        return ReadResult();
+                    });
+
+                Log.Comment("Verify item \"Root.0\" is still selected after drop.");
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
             }
         }
 
