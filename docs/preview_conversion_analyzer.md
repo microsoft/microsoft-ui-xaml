@@ -1,4 +1,5 @@
 # Converting To WinUI3 Using C# Conversion Analyzers
+**Note: `Microsoft.WinUI.Convert` NuGet Package is Currently Unavailable During Prerelease**
 
 ## Background
 
@@ -93,6 +94,8 @@ protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventA
 }
 ```
 ## Conversion Process
+**Note: `Microsoft.WinUI.Convert` NuGet Package is Currently Unavailable During Prerelease**
+
 Necessary steps for converting a WinUI C# App to WinUI3: 
 
 1. Install `Microsoft.WinUI` and `Microsoft.WinUI.Convert` NuGet packages in your app using the NuGet package manager: see the [Install WinUI 3 Preview](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/#install-winui-3-preview-2) page for more information.
