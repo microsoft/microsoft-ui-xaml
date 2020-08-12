@@ -13,6 +13,11 @@ In case of an ItemTemplate, the NavigationViewItem acts based on the provided te
 If the template returns a NavigationViewItem, the template will be used without any wrapper.
 If the template does not return a NavigationViewItem (e.g. a Button), the returned items will be wrapped inside a NavigationViewItem.
 
+In the next three sections, the template parts of the NavigationView will be explained.
+The first section talks about items that are used regardless of the displaymode,
+the second section is for items only needed in displaymode left,
+while the third section is for displaymode top.
+
 ## ControlTemplate
 
 These are the necessary control templates used for both displaymodes and how they are used in code behind.
@@ -47,7 +52,8 @@ For left mode, the following control template parts are used:
 * `PaneAutoSuggestButton`: Used to open pane when button gets invoked
 * `PaneCustomContentBorder`: Used for pane header rendering
 * `MenuItemsHost`: Used for rendering of the NavigationViewItems
-* `FooterContentBorder`: Used for rendering of pane footer 
+* `FooterContentBorder`: Used for rendering of pane footer
+* `FooterMenuItemsHost`: Renders the footer menu items
 * `SettingsNavPaneItem`: Allows Settings functionality
 * `ContentGrid`: Shadow handling and focus behavior
 * `ContentTopPadding`: Not used
@@ -71,5 +77,6 @@ For displaymode Top the following parts are used:
 * `PaneCustomContentOnTopPane`: Renders the custom pane content
 * `TopPaneAutoSuggestArea`: Takes up space for the search box
 * `TopPaneAutoSuggestBoxPresenter`: Renders the autosuggestbox
+* `TopFooterMenuItemsHost`: Renders the footer menu items
 * `PaneFooterOnTopPane`: Shows the panefooter
 * `SettingsTopNavPaneItem`: Allows settings functionality
