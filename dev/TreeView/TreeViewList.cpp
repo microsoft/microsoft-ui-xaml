@@ -144,7 +144,24 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
             }
             else
             {
-                MoveNodeInto(m_draggedTreeViewNode.get(), insertAtNode);
+                const auto draggedTreeViewNode = m_draggedTreeViewNode.get();
+
+                // In single-selection mode we are inheriting the selection logic from TreeView's internal ListView control. When removing a
+                // selected item from the ListView, that item's selection state is set to unselected. As we are first removing the dropped
+                // item from the ListView and then adding it back to the ListView (to update its position), any dropped item which was selected
+                // at the time of the drop will be unselected.
+                // To preserve the selection state of a dropped item, we save its selection state at the time of the drop and manually re-apply
+                // the saved state after the item's position in the ListView was updated.
+                const auto draggedNodeSelectionState = winrt::get_self<TreeViewNode>(draggedTreeViewNode)->SelectionState();
+
+                MoveNodeInto(draggedTreeViewNode, insertAtNode);
+
+                // The dropped item was selected at the time of the drop. After updating its position in the ListView, it is now unselected.
+                // To preserve its selection state after a completed drop operation, we select it manually again.
+                if (draggedNodeSelectionState == TreeNodeSelectionState::Selected)
+                {
+                    ListViewModel()->UpdateSelection(draggedTreeViewNode, TreeNodeSelectionState::Selected);
+                }
             }
 
             UpdateDropTargetDropEffect(false, false, nullptr);
