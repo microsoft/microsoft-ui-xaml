@@ -14,7 +14,7 @@ For each of the different displaymodes of the NavigationView, the NavigationView
 
 Each individual NavigationViewItem is responsible for rendering its own menu items, in the case of hierarchical NavigationView.
 
-In the case of PaneDisplayMode `Top`, the hierarchical NavigationViewItems will get rendered inside a MenuFlyout.
+In the case of PaneDisplayMode `Top` and `LeftCompact`, the hierarchical NavigationViewItems will get rendered inside a MenuFlyout.
 In the case of display mode left, the items are being rendered through an ItemsRepeater.
 
 The template of the NavigationViewItem consist of the following parts:
