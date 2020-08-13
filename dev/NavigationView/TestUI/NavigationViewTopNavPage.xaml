@@ -86,6 +86,8 @@
 
                         <Button x:Name="AddItemButton" AutomationProperties.Name="AddItemButton" Content="Add Item" Click="AddItemButton_Click"  Margin="5"/>
                         <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveItemButton_Click"  Margin="5"/>
+                        <Button x:Name="AddFooterItemButton" AutomationProperties.Name="AddFooterItemButton" Content="Add Footer Item" Click="AddFooterItemButton_Click" Margin="5" />
+                        <Button x:Name="RemoveFooterItemButton" AutomationProperties.Name="RemoveFooterItemButton" Content="Remove Footer Item" Click="RemoveFooterItemButton_Click" Margin="5" />
                         <Button x:Name="ClearMenuButton" AutomationProperties.Name="ClearMenuButton" Content="Clear menu" Click="ClearMenuButton_Click"  Margin="5"/>
                     </StackPanel>
 

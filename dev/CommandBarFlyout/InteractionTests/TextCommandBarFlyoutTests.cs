@@ -648,6 +648,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifyTextCommandBarRemainsOpenWithItems()
+        {
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
+            {
+                Log.Comment("Clear the clipboard.");
+                FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
+
+                Log.Comment("Right-click on the text box with additional items.");
+                FindElement.ByName("TextBoxWithAdditionalItems").Click(PointerButtons.Secondary, 20, 20);
+
+                Wait.ForIdle();
+
+                Log.Comment("Count the number of open popups.");
+                FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+
+                Verify.AreEqual("1", FindElement.ById<Edit>("CustomButtonsOpenCount").Value);
+            }
+        }
+
         private void OpenFlyoutOn(string textControlName, bool asTransient)
         {
             Log.Comment("Opening text control flyout on the {0} in {1} mode.", textControlName, asTransient ? "transient" : "standard");

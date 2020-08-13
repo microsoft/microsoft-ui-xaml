@@ -611,7 +611,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Disabled per GitHub Issue #211
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void VerifyCanNotAddWUXItems()
         {
             if (!ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.NavigationViewItem"))

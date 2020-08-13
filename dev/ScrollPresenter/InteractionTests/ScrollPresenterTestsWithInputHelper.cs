@@ -365,8 +365,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Pinch a Rectangle in a ScrollPresenter.")]
+        [TestMethod]
+        [TestProperty("Description", "Pinch a Rectangle in a ScrollPresenter.")]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: ScrollPresenterTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void PinchRectangle()
         {
@@ -484,8 +485,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (additionalAttempts > 0);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Stretch an Image in a ScrollPresenter.")]
+        [TestMethod]
+        [TestProperty("Description", "Stretch an Image in a ScrollPresenter.")]
+        [TestProperty("Ignore", "True")]
         // Disable due to: ScrollPresenterTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void StretchImage()
         {
@@ -582,8 +584,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (additionalAttempts > 0);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Pinch a Rectangle in a ScrollPresenter with the mouse wheel.")]
+        [TestMethod]
+        [TestProperty("Description", "Pinch a Rectangle in a ScrollPresenter with the mouse wheel.")]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: ScrollPresenterTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void PinchRectangleWithMouseWheel()
         {
@@ -675,8 +678,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
-        //[TestProperty("Description", "Stretch an Image in a ScrollPresenter with the mouse wheel.")]
+        [TestMethod]
+        [TestProperty("Description", "Stretch an Image in a ScrollPresenter with the mouse wheel.")]
+        [TestProperty("Ignore", "True")]
         public void StretchImageWithMouseWheel()
         {
             Log.Comment("Selecting ScrollPresenter tests");

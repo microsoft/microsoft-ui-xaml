@@ -60,7 +60,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // Disabled due to: Bug 17762113: MUXControls.InteractionTests.RevealBrushTests.RevealBrushAudit failing in MUXControls in master
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void RevealBrushAudit()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))

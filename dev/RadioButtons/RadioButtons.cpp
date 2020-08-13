@@ -70,34 +70,31 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
         auto const inputDevice = args.InputDevice();
         if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
         {
-            if (auto const oldFocusedElement = args.OldFocusedElement())
+            // If focus is coming from outside the repeater, put focus on the selected item.
+            auto const oldFocusedElement = args.OldFocusedElement();
+            if (!oldFocusedElement || repeater != winrt::VisualTreeHelper::GetParent(oldFocusedElement))
             {
-                auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-                // If focus is coming from outside the repeater, put focus on the selected item.
-                if (repeater != oldElementParent)
+                if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                 {
-                    if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                    if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                     {
-                        if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        if (args.TrySetNewFocusedElement(selectedItem))
                         {
-                            if (args.TrySetNewFocusedElement(selectedItem))
-                            {
-                                args.Handled(true);
-                            }
+                            args.Handled(true);
                         }
                     }
                 }
+            }
 
-                // On RS3+ Selection follows focus unless control is held down.
-                else if (SharedHelpers::IsRS3OrHigher() &&
-                    (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-                        winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            // Focus was already in the repeater: in On RS3+ Selection follows focus unless control is held down.
+            else if (SharedHelpers::IsRS3OrHigher() &&
+                (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+                    winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            {
+                if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
-                    if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
-                    {
-                        Select(repeater.GetElementIndex(newFocusedElementAsUIE));
-                        args.Handled(true);
-                    }
+                    Select(repeater.GetElementIndex(newFocusedElementAsUIE));
+                    args.Handled(true);
                 }
             }
         }
