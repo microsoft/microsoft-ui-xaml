@@ -12,6 +12,14 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
     {
+        public object PagerElementFactory
+        {
+            get { return (object)GetValue(PagerElementFactoryProperty); }
+        }
+
+        private static readonly DependencyProperty PagerElementFactoryProperty =
+            DependencyProperty.Register("PagerElementFactory", typeof(object), typeof(PrototypePager), new PropertyMetadata(new PrototypePagerElementFactory()));
+
         public PagerDisplayModes PagerDisplayMode
         {
             get { return (PagerDisplayModes)GetValue(PagerDisplayModeProperty); }

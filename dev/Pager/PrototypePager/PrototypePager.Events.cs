@@ -1,11 +1,13 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Notifications;
 using Windows.UI.Xaml;
@@ -13,6 +15,7 @@ using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace MUXControlsTestApp
 {
@@ -25,24 +28,22 @@ namespace MUXControlsTestApp
 
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
         {
-            if ((args.Element as Button).Content != null && ((args.Element as Button).Content as string) != EllipseString)
+            if (args.Element == null || args.Element.GetType() != typeof(Button))
             {
-                (args.Element as Button).Click += OnNumberPanelButtonClicked;
-
-                if ((int)(args.Element as Button).Content == SelectedIndex)
-                {
-                    (args.Element as Button).Foreground = new SolidColorBrush(Colors.Red);
-                }
-                else
-                {
-                    (args.Element as Button).Foreground = new SolidColorBrush(Colors.White);
-                }
+                return;
             }
+
+            (args.Element as Button).Click += OnNumberPanelButtonClicked;
+            (args.Element as FrameworkElement).Loaded += MoveCurrentPageRectIfCurrentPage;
         }
 
         private void OnElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
         {
-            (args.Element as Button).Click -= OnNumberPanelButtonClicked;
+            if (args.Element.GetType() == typeof(Button))
+            {
+                (args.Element as Button).Click -= OnNumberPanelButtonClicked;
+                (args.Element as Button).Loaded -= MoveCurrentPageRectIfCurrentPage;
+            }
         }
 
         private void OnNumberPanelButtonClicked(object sender, RoutedEventArgs args)
@@ -50,23 +51,34 @@ namespace MUXControlsTestApp
             SelectedIndex = (int)(sender as Button).Content;
         }
 
+        private void MoveCurrentPageRectIfCurrentPage(object sender, RoutedEventArgs args)
+        {
+            var element = sender as FrameworkElement;
+
+            if ((int)element.Tag == SelectedIndex)
+            {
+                var childPoint = element.TransformToVisual((UIElement)element.Parent).TransformPoint(new Point(0, 0));
+                var numberPanelRectMargins = NumberPanelCurrentPageIdentifier.Margin;
+                NumberPanelCurrentPageIdentifier.Margin = new Thickness(childPoint.X, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);
+            }
+        }
+
         private void UpdateNumberPanel()
         {
             if (SelectedIndex < 5)
             {
-                //return;
                 NumberPanelCurrentItems[0] = 1;
                 NumberPanelCurrentItems[1] = 2;
                 NumberPanelCurrentItems[2] = 3;
                 NumberPanelCurrentItems[3] = 4;
                 NumberPanelCurrentItems[4] = 5;
-                NumberPanelCurrentItems[5] = EllipseString;
+                NumberPanelCurrentItems[5] = RightEllipse;
                 NumberPanelCurrentItems[6] = NumberOfPages;
             }
             else if (SelectedIndex >= NumberOfPages - 3)
             {
                 NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = EllipseString;
+                NumberPanelCurrentItems[1] = LeftEllipse;
                 NumberPanelCurrentItems[2] = NumberOfPages - 4;
                 NumberPanelCurrentItems[3] = NumberOfPages - 3;
                 NumberPanelCurrentItems[4] = NumberOfPages - 2;
@@ -76,14 +88,13 @@ namespace MUXControlsTestApp
             else if (SelectedIndex >= 5 && SelectedIndex < NumberOfPages - 3)
             {
                 NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = EllipseString;
+                NumberPanelCurrentItems[1] = LeftEllipse;
                 NumberPanelCurrentItems[2] = SelectedIndex - 1;
                 NumberPanelCurrentItems[3] = SelectedIndex;
                 NumberPanelCurrentItems[4] = SelectedIndex + 1;
-                NumberPanelCurrentItems[5] = EllipseString;
+                NumberPanelCurrentItems[5] = RightEllipse;
                 NumberPanelCurrentItems[6] = NumberOfPages;
             }
-            
         }
 
         private void OnPagerDisplayModeChanged()
