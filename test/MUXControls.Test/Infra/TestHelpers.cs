@@ -163,6 +163,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
                         Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
 
+
+                        ToggleButton tb = new ToggleButton(FindElement.ById("__InnerFrameInLabDimensions"));
+                        if(tb.ToggleState != ToggleState.On)
+                        {
+                            Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to On.");
+                            tb.Toggle();
+                            Wait.ForIdle();
+                        }
+
                         OpenedTestPages++;
                     }
 
