@@ -304,7 +304,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod] // Not currently passing, tracked by issue #643
+        [TestMethod] // Not currently passing, tracked by issue #643
+        [TestProperty("Ignore", "True")]
         public void AutoPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -638,7 +639,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Disabled with issue #1769
+        [TestMethod] //Disabled with issue #1769
+        [TestProperty("Ignore", "True")]
         public void SettingTitleOrSubtitleToEmptyStringCollapsesTextBox()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))

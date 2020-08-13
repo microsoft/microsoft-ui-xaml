@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\CollectionChangeEventArgsConverters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CustomItemsSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CustomItemsSourceView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ReadOnlyNotifyPropertyChangedCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ElementAnimatorDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\LayoutExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\FlowLayoutDerived.cs" />

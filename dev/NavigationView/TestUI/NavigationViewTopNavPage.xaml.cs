@@ -27,6 +27,7 @@ namespace MUXControlsTestApp
     public sealed partial class NavigationViewTopNavPage : TestPage
     {
         private int m_newItemIndex = 0;
+        private int m_newFooterItemIndex = 0;
         private int m_closingEventsFired = 0;
         private int m_closedEventsFired = 0;
         private bool m_initializeComponentComplete = false;
@@ -259,6 +260,23 @@ namespace MUXControlsTestApp
             if (NavView.MenuItems.Count > 0)
             {
                 NavView.MenuItems.RemoveAt(NavView.MenuItems.Count - 1);
+            }
+        }
+
+        private void AddFooterItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = new NavigationViewItem();
+            menuItem.Content = "New Footer Menu Item " + m_newFooterItemIndex.ToString();
+            menuItem.Icon = new SymbolIcon(Symbol.AllApps);
+            NavView.FooterMenuItems.Add(menuItem);
+            m_newFooterItemIndex++;
+        }
+
+        private void RemoveFooterItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavView.FooterMenuItems.Count > 0)
+            {
+                NavView.FooterMenuItems.RemoveAt(NavView.FooterMenuItems.Count - 1);
             }
         }
 
