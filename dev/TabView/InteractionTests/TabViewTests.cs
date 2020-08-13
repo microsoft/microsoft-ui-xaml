@@ -537,6 +537,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void GamePadTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                // Disabled on RS2 for reliability issues: https://github.com/microsoft/microsoft-ui-xaml/issues/3093
+                Log.Warning("This test is unreliable on RS2 and has been disabled.");
+                return;
+            }
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Button tabContent = FindElement.ByName<Button>("FirstTabButton");

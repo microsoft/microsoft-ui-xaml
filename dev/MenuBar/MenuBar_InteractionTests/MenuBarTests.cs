@@ -42,7 +42,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: 
         // https://github.com/Microsoft/microsoft-ui-xaml/issues/115
         public void BasicMouseInteractionTest()
@@ -156,7 +157,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
         
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: MenuBarTests.KeyboardNavigationWithAccessKeysTest unreliable #135
         public void KeyboardNavigationWithAccessKeysTest()
         {
