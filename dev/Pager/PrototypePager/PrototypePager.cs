@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 // The Templated Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -27,10 +28,8 @@ namespace MUXControlsTestApp
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
         private ComboBox PagerComboBox;
         private ItemsRepeater NumberPanelItems;
+        private Rectangle NumberPanelCurrentPageIdentifier;
         private ObservableCollection<object> NumberPanelCurrentItems = new ObservableCollection<object>();
-
-        //private bool LeftEllipseEnabled = false;
-        //private bool RightEllipseEnabled = false;
 
         private IconElement LeftEllipse = new SymbolIcon(Symbol.More);
         private IconElement RightEllipse = new SymbolIcon(Symbol.More);
@@ -65,7 +64,8 @@ namespace MUXControlsTestApp
             LastPageButton = GetTemplateChild("LastPageButton") as Button;
             PagerComboBox = GetTemplateChild("ComboBoxDisplay") as ComboBox;
             NumberPanelItems = GetTemplateChild("NumberPanelItemsRepeater") as ItemsRepeater;
-            
+            NumberPanelCurrentPageIdentifier = GetTemplateChild("NumberPanelCurrentPageIdentifier") as Rectangle;
+
             // Attach TestHooks
             FirstPageButtonTestHook = FirstPageButton;
             PreviousPageButtonTestHook = PreviousPageButton;
@@ -112,12 +112,14 @@ namespace MUXControlsTestApp
                 PagerComboBox.SelectionChanged += (s, e) => {
                     SelectedIndex = PagerComboBox.SelectedIndex + 1; };
             }
+            if (NumberPanelItems != null)
+            {
+                NumberPanelItems.Loaded += (s, e) => { InitializeNumberPanel(); };
+                NumberPanelItems.ElementPrepared += OnElementPrepared;
+                NumberPanelItems.ElementClearing += OnElementClearing;
+            }
 
             OnPagerDisplayModeChanged();
-
-            NumberPanelItems.Loaded += (s, e) => { InitializeNumberPanel(); };
-            NumberPanelItems.ElementPrepared += OnElementPrepared;
-            NumberPanelItems.ElementClearing += OnElementClearing;
 
             // This is for the initial page being loaded whatever page that might be.
             PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
@@ -136,7 +138,7 @@ namespace MUXControlsTestApp
             } else
             {
                 RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { UpdateNumberPanel(); });
-                //RightEllipseEnabled = true;
+
                 foreach (var num in TemplateSettings.Pages.GetRange(0, 5))
                 {
                     NumberPanelCurrentItems.Add(num);

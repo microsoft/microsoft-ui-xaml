@@ -4,7 +4,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
-    <x:Double x:Key="NumberPanelButtonWidth">35</x:Double>
+    <x:Double x:Key="NumberPanelButtonWidth">32</x:Double>
 
     <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
         <Setter Property="MinWidth" Value="{StaticResource NumberPanelButtonWidth}"/>
@@ -19,10 +19,13 @@
         <Setter Property="Foreground" Value="Red"/>
     </Style>
 
-    <DataTemplate x:Key="NumberPanelButtonTemplate">
-        <Button Style="{StaticResource NumberPanelButtonStyle}" Content="{Binding}"/>
-
-    </DataTemplate>
+    <Style x:Key="NumberPanelCurrentPageIdentifierStyle" TargetType="Rectangle">
+        <Setter Property="Width" Value="{StaticResource NumberPanelButtonWidth}"/>
+        <Setter Property="Height" Value="2"/>
+        <Setter Property="Fill" Value="#0064C1"/>
+        <Setter Property="RadiusX" Value="1"/>
+        <Setter Property="RadiusY" Value="1"/>
+    </Style>
 
     <Style TargetType="local:PrototypePager">
         <Setter Property="Template">
@@ -167,17 +170,21 @@
                             <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"/>
                         </StackPanel>
                         <StackPanel x:Name="NumberPanelDisplay" Grid.Row="0" Grid.Column="1"
-                                        Orientation="Horizontal" Visibility="Collapsed">
-                            <ScrollViewer x:Name="NumberPanelViewer"
-                                            HorizontalScrollBarVisibility="Hidden" HorizontalScrollMode="Disabled"
-                                            VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                                <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater"
-                                    ItemTemplate="{StaticResource NumberPanelButtonTemplate}">
-                                    <controls:ItemsRepeater.Layout>
-                                        <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
-                                    </controls:ItemsRepeater.Layout>
-                                </controls:ItemsRepeater>
-                            </ScrollViewer>
+                                        Orientation="Vertical" Visibility="Collapsed">
+                            <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater"
+                                ItemTemplate="{TemplateBinding PagerElementFactory}" Background="Blue">
+                                <controls:ItemsRepeater.Layout>
+                                    <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
+                                </controls:ItemsRepeater.Layout>
+                            </controls:ItemsRepeater>
+                            <Rectangle x:Name="NumberPanelCurrentPageIdentifier" Style="{StaticResource NumberPanelCurrentPageIdentifierStyle}"
+                                       HorizontalAlignment="Left">
+                                <Rectangle.Transitions>
+                                    <TransitionCollection>
+                                        <RepositionThemeTransition/>    
+                                    </TransitionCollection>
+                                </Rectangle.Transitions>
+                            </Rectangle>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left">
                             <TextBlock x:Name="NextPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"

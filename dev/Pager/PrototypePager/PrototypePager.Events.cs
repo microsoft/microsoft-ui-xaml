@@ -1,11 +1,13 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Notifications;
 using Windows.UI.Xaml;
@@ -13,6 +15,7 @@ using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace MUXControlsTestApp
 {
@@ -25,31 +28,39 @@ namespace MUXControlsTestApp
 
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
         {
-            var element = args.Element as Button;
-
-            //Debug.WriteLine(element.Content);
-            element.Style = (Style)App.Current.Resources["NumberPanelNotSelectedButtonStyle"];
-
-            Type dataType = element.Content?.GetType();
-            
-            if (dataType == typeof(int))
+            if (args.Element == null || args.Element.GetType() != typeof(Button))
             {
-                element.Click += OnNumberPanelButtonClicked;
-                if ((int)element.Content == SelectedIndex)
-                {
-                    element.Style = (Style)App.Current.Resources["NumberPanelSelectedButtonStyle"];
-                }
+                return;
             }
+
+            (args.Element as Button).Click += OnNumberPanelButtonClicked;
+            (args.Element as FrameworkElement).Loaded += MoveCurrentPageRectIfCurrentPage;
         }
 
         private void OnElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
         {
-            (args.Element as Button).Click -= OnNumberPanelButtonClicked;
+            if (args.Element.GetType() == typeof(Button))
+            {
+                (args.Element as Button).Click -= OnNumberPanelButtonClicked;
+                (args.Element as Button).Loaded -= MoveCurrentPageRectIfCurrentPage;
+            }
         }
 
         private void OnNumberPanelButtonClicked(object sender, RoutedEventArgs args)
         {
             SelectedIndex = (int)(sender as Button).Content;
+        }
+
+        private void MoveCurrentPageRectIfCurrentPage(object sender, RoutedEventArgs args)
+        {
+            var element = sender as FrameworkElement;
+
+            if ((int)element.Tag == SelectedIndex)
+            {
+                var childPoint = element.TransformToVisual((UIElement)element.Parent).TransformPoint(new Point(0, 0));
+                var numberPanelRectMargins = NumberPanelCurrentPageIdentifier.Margin;
+                NumberPanelCurrentPageIdentifier.Margin = new Thickness(childPoint.X, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);
+            }
         }
 
         private void UpdateNumberPanel()
