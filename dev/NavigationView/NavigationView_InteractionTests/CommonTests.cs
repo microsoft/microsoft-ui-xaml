@@ -1682,12 +1682,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             {
                 Log.Comment("Open a ContentDialog with a NavView inside.");
                 Button openContentDialogButton = new Button(FindElement.ById("ContentDialogNavViewButton"));
-                openContentDialogButton.Click();
+                openContentDialogButton.Invoke();
                 Wait.ForIdle();
 
                 Log.Comment("Close the ContentDialog with a NavView inside.");
                 Button closeContentDialogButton = new Button(FindElement.ByName("Button1ContentDialog"));
-                closeContentDialogButton.Click();
+                closeContentDialogButton.Invoke();
                 Wait.ForIdle();
             }
         }
