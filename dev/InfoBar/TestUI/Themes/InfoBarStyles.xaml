@@ -62,6 +62,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="HyperlinkButtonStates">
+                                <VisualState x:Name="HyperlinkButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="HyperlinkButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HyperlinkButtonVisible"/>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="SeverityLevels">
                                 <VisualState x:Name="Critical">
                                     <VisualState.Setters>
@@ -83,16 +91,6 @@
                                         </Setter>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Informational">
-                                    <VisualState.Setters>
-                                        <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityInformationalStatusColor}"/>
-                                        <Setter Target="StandardIcon.IconSource">
-                                            <Setter.Value>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </VisualState.Setters>
-                                </VisualState>
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
                                         <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeveritySuccessStatusColor}"/>
@@ -106,6 +104,11 @@
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
                                         <Setter Target="StandardColor.Fill" Value="{ThemeResource InfoBarSeverityDefaultStatusColor}"/>
+                                        <Setter Target="StandardIcon.IconSource">
+                                            <Setter.Value>
+                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
+                                            </Setter.Value>
+                                        </Setter>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

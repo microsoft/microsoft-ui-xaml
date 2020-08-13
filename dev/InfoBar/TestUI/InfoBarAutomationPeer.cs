@@ -2,7 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 
-namespace InfoBar_TestUI
+namespace MUXControlsTestApp
 {
     public class InfoBarAutomationPeer : FrameworkElementAutomationPeer
     {

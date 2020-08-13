@@ -3,9 +3,8 @@ using System.Windows.Input;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.Foundation;
-using InfoBar_TestUI;
 using Windows.UI.Xaml.Automation.Peers;
+using Windows.Foundation;
 
 namespace MUXControlsTestApp
 {
@@ -124,6 +123,10 @@ namespace MUXControlsTestApp
             {
                 infoBar.OnIconChanged();
             }
+            else if (property == HyperlinkButtonContentProperty)
+            {
+                infoBar.OnHyperlinkButtonContentChanged();
+            }
             infoBar.UpdateMargins();
         }
 
@@ -238,7 +241,6 @@ namespace MUXControlsTestApp
             set { SetValue(HyperlinkButtonContentProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for HyperlinkButtonContent.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HyperlinkButtonContentProperty =
             DependencyProperty.Register(nameof(HyperlinkButtonContent), typeof(object), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
 
@@ -313,6 +315,7 @@ namespace MUXControlsTestApp
             Closed?.Invoke(this, args);
         }
 
+        // Determines whether a custom icon or the severity level's icon is being used
         void OnIconChanged()
         {
             if (IconSource != null)
@@ -322,6 +325,19 @@ namespace MUXControlsTestApp
             else
             {
                 VisualStateManager.GoToState(this, "StandardIconVisible", false);
+            }
+        }
+
+        // Updates the visibility of the hyperlinkbutton
+        private void OnHyperlinkButtonContentChanged()
+        {
+            if (HyperlinkButtonContent != null)
+            {
+                VisualStateManager.GoToState(this, "HyperlinkButtonVisible", false);
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "HyperlinkButtonCollapsed", false);
             }
         }
 
