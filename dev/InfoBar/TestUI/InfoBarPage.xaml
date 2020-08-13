@@ -16,7 +16,7 @@
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
 
-        <local:InfoBar x:Name="TestInfoBar" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Closing="Test_Closing" Severity ="Critical">
+        <local:InfoBar x:Name="TestInfoBar" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Closing="Test_Closing" Severity ="Critical" Width="800">
         </local:InfoBar>
         
         <Grid Grid.Row="1">

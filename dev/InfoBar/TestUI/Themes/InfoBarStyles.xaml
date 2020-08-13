@@ -303,7 +303,8 @@
                                                      Foreground="{ThemeResource InfoBarHyperlinkButtonColor}"/>
                                 </StackPanel>
 
-                                <Button Name="CloseButton" 
+                                <Button Name="CloseButton"
+                                        Style="{TemplateBinding CloseButtonStyle}"
                                         Command="{TemplateBinding CloseButtonCommand}" 
                                         CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                         Height="{StaticResource InfoBarCloseButtonSize}"

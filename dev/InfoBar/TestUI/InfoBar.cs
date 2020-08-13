@@ -54,13 +54,8 @@ namespace MUXControlsTestApp
     {
         Button _actionButton;
         Button _closeButton;
-        TextBlock _title;
-        TextBlock _message;
-        HyperlinkButton _hyperlinkButton;
         IconSourceElement _standardIcon;
         IconSourceElement _userIcon;
-        Grid _contentRootGrid;
-        Border _myContainer;
 
         public event EventHandler<RoutedEventArgs> ActionButtonClick;
         public event TypedEventHandler<InfoBar, CloseButtonClickEventArgs> CloseButtonClick;
@@ -84,15 +79,10 @@ namespace MUXControlsTestApp
         protected override void OnApplyTemplate()
         {
             _actionButton = GetTemplateChild<Button>("ActionButton");
-            _title = GetTemplateChild<TextBlock>("Title");
-            _message = GetTemplateChild<TextBlock>("Message");
-            _hyperlinkButton = GetTemplateChild<HyperlinkButton>("HyperlinkButton");
             _standardIcon = GetTemplateChild<IconSourceElement>("StandardIcon");
             _userIcon = GetTemplateChild<IconSourceElement>("UserIcon");
-            _contentRootGrid = GetTemplateChild<Grid>("ContentRootGrid");
             _closeButton = GetTemplateChild<Button>("CloseButton");
             _actionButton = GetTemplateChild<Button>("ActionButton");
-            _myContainer = GetTemplateChild<Border>("Container");
 
             UpdateButtonsState();
             UpdateSeverityState();
@@ -159,7 +149,7 @@ namespace MUXControlsTestApp
         }
 
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register(nameof(Title), typeof(string), typeof(InfoBar), new PropertyMetadata("", OnPropertyChanged));
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
 
         public string Message
         {
@@ -168,7 +158,7 @@ namespace MUXControlsTestApp
         }
 
         public static readonly DependencyProperty MessageProperty =
-            DependencyProperty.Register(nameof(Message), typeof(string), typeof(InfoBar), new PropertyMetadata("", OnPropertyChanged));
+            DependencyProperty.Register(nameof(Message), typeof(string), typeof(InfoBar), new PropertyMetadata(null, OnPropertyChanged));
 
         /* Action Button Properties
          * 
@@ -212,6 +202,15 @@ namespace MUXControlsTestApp
         /* Close Button Properties
          * 
          */
+        public Style CloseButtonStyle
+        {
+            get { return (Style)GetValue(CloseButtonStyleProperty); }
+            set { SetValue(CloseButtonStyleProperty, value); }
+        }
+
+        public static readonly DependencyProperty CloseButtonStyleProperty =
+            DependencyProperty.Register(nameof(CloseButtonStyle), typeof(Style), typeof(InfoBar), new PropertyMetadata(null));
+
         public ICommand CloseButtonCommand
         {
             get { return (ICommand)GetValue(CloseButtonCommandProperty); }
@@ -408,6 +407,7 @@ namespace MUXControlsTestApp
                     VisualStateManager.GoToState(this, "StandardIconNoRightMargin", false);
                 }
             }
+
             if (_userIcon != null)
             {
                 if ((Title != null && Title != "") || (Message != null && Message != "") || ActionButtonContent != null || HyperlinkButtonContent != null || ShowCloseButton == true)
@@ -419,66 +419,60 @@ namespace MUXControlsTestApp
                     VisualStateManager.GoToState(this, "UserIconNoRightMargin", false);
                 }
             }
-            if (_title != null)
+
+            if (Title != null)
             {
-                if (Title != null && Title != "")
+                if ((_standardIcon != null || _userIcon != null) && Message != null)
                 {
-                    if ((_standardIcon != null || _userIcon != null) && (Message != null && Message != ""))
-                    {
-                        VisualStateManager.GoToState(this, "TitleRightMargin", false);
-                    }
-                    else
-                    {
-                        VisualStateManager.GoToState(this, "TitleNoRightMargin", false);
-                    }
+                    VisualStateManager.GoToState(this, "TitleRightMargin", false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(this, "TitleNoMargin", false);
+                    VisualStateManager.GoToState(this, "TitleNoRightMargin", false);
                 }
             }
-            if (_message != null)
+            else
             {
-                if (Message != null && Message != "")
-                {
-                    if (ActionButtonContent != null || HyperlinkButtonContent != null)
-                    {
-                        VisualStateManager.GoToState(this, "MessageRightMargin", false);
-                    }
-                    else
-                    {
-                        VisualStateManager.GoToState(this, "MessageNoRightMargin", false);
-                    }
-                }
-                else
-                {
-                    VisualStateManager.GoToState(this, "MessageNoMargin", false);
-                }
+                VisualStateManager.GoToState(this, "TitleNoMargin", false);
             }
-            if (_actionButton != null)
+
+            if (Message != null)
             {
                 if (ActionButtonContent != null || HyperlinkButtonContent != null)
                 {
-                    if (HyperlinkButtonContent != null)
-                    {
-                        VisualStateManager.GoToState(this, "ActionButtonRightMarginHyperlinkAdjacent", false);
-                    }
-                    else
-                    {
-                        if (ShowCloseButton != false)
-                        {
-                            VisualStateManager.GoToState(this, "ActionButtonRightMarginCloseButtonAdjacent", false);
-                        }
-                        else
-                        {
-                            VisualStateManager.GoToState(this, "ActionButtonNoRightMargin", false);
-                        }
-                    }
+                    VisualStateManager.GoToState(this, "MessageRightMargin", false);
                 }
                 else
                 {
-                    VisualStateManager.GoToState(this, "ActionButtonNoMargin", false);
+                    VisualStateManager.GoToState(this, "MessageNoRightMargin", false);
                 }
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "MessageNoMargin", false);
+            }
+            
+            if (ActionButtonContent != null || HyperlinkButtonContent != null)
+            {
+                if (HyperlinkButtonContent != null)
+                {
+                    VisualStateManager.GoToState(this, "ActionButtonRightMarginHyperlinkAdjacent", false);
+                }
+                else
+                {
+                    if (ShowCloseButton != false)
+                    {
+                        VisualStateManager.GoToState(this, "ActionButtonRightMarginCloseButtonAdjacent", false);
+                    }
+                    else
+                    {
+                        VisualStateManager.GoToState(this, "ActionButtonNoRightMargin", false);
+                    }
+                }
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "ActionButtonNoMargin", false);
             }
         }
 
