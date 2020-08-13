@@ -43,6 +43,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject PagerComboBox;
 
+        public UIObject GetPageNumberPanel()
+        {
+            return GetElementWithinPager(ref PagerNumberPanel, "NumberPanelItemsRepeater");
+        }
+        private UIObject PagerNumberPanel;
+
+        public UIObject GetPagerNumberPanelCurrentPageIdentifier()
+        {
+            return GetElementWithinPager(ref PagerNumberPanelCurrentPageIdentifier, "NumberPanelCurrentPageIdentifier");
+        }
+        private UIObject PagerNumberPanelCurrentPageIdentifier;
+
         public UIObject GetFirstPageButton()
         {
             return GetElementWithinPager(ref FirstPageButton, "FirstPageButton");

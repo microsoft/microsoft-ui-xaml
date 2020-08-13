@@ -8,6 +8,7 @@
 
     <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
         <Setter Property="MinWidth" Value="{StaticResource NumberPanelButtonWidth}"/>
+        <Setter Property="MinHeight" Value="20"/>
         <Setter Property="Background" Value="Transparent"/>
     </Style>
 
@@ -36,6 +37,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
@@ -128,7 +130,8 @@
                                         <Setter Target="BoxPanels.Visibility" Value="Collapsed"/>
                                         <Setter Target="NumberBoxDisplay.Visibility" Value="Collapsed"/>
                                         <Setter Target="ComboBoxDisplay.Visibility" Value="Collapsed"/>
-                                        <Setter Target="NumberPanelDisplay.Visibility" Value="Visible"/>
+                                        <Setter Target="NumberPanelItemsRepeater.Visibility" Value="Visible"/>
+                                        <Setter Target="NumberPanelCurrentPageIdentifier.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -169,34 +172,31 @@
                             <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
                             <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"/>
                         </StackPanel>
-                        <StackPanel x:Name="NumberPanelDisplay" Grid.Row="0" Grid.Column="1"
-                                        Orientation="Vertical" Visibility="Collapsed">
-                            <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater"
-                                ItemTemplate="{TemplateBinding PagerElementFactory}" Background="Blue">
-                                <controls:ItemsRepeater.Layout>
-                                    <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
-                                </controls:ItemsRepeater.Layout>
-                            </controls:ItemsRepeater>
-                            <Rectangle x:Name="NumberPanelCurrentPageIdentifier" Style="{StaticResource NumberPanelCurrentPageIdentifierStyle}"
-                                       HorizontalAlignment="Left">
-                                <Rectangle.Transitions>
-                                    <TransitionCollection>
-                                        <RepositionThemeTransition/>    
-                                    </TransitionCollection>
-                                </Rectangle.Transitions>
-                            </Rectangle>
-                        </StackPanel>
+                        <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater" Grid.Row="0" Grid.Column="1"
+                            ItemTemplate="{TemplateBinding PagerElementFactory}" Background="Blue" Visibility="Collapsed">
+                            <controls:ItemsRepeater.Layout>
+                                <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
+                            </controls:ItemsRepeater.Layout>
+                        </controls:ItemsRepeater>
+                        <Rectangle x:Name="NumberPanelCurrentPageIdentifier" Style="{StaticResource NumberPanelCurrentPageIdentifierStyle}"
+                                   HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="0" Visibility="Collapsed">
+                            <Rectangle.Transitions>
+                                <TransitionCollection>
+                                    <RepositionThemeTransition/>
+                                </TransitionCollection>
+                            </Rectangle.Transitions>
+                        </Rectangle>
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left">
                             <TextBlock x:Name="NextPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                           Text="{TemplateBinding NextPageButtonText}"
-                                           Visibility="{Binding ElementName=NextPageButton, Path=Visibility}"/>
+                                            Text="{TemplateBinding NextPageButtonText}"
+                                            Visibility="{Binding ElementName=NextPageButton, Path=Visibility}"/>
                             <Button x:Name="NextPageButton"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         Content="&#xE76C;" />
                             <TextBlock x:Name="LastPageButtonText" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                           Text="{TemplateBinding LastPageButtonText}"
-                                           Visibility="{Binding ElementName=LastPageButton, Path=Visibility}"/>
+                                            Text="{TemplateBinding LastPageButtonText}"
+                                            Visibility="{Binding ElementName=LastPageButton, Path=Visibility}"/>
                             <Button x:Name="LastPageButton"
                                         Style="{StaticResource NavigationBackButtonNormalStyle}"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
