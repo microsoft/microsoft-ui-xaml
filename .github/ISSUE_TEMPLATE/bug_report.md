@@ -24,7 +24,7 @@ Steps to reproduce the behavior:
 <!-- If applicable, add screenshots here to help explain your problem -->
 
 **Version Info**
-<!-- Please enter your WinUI NuGet package version, OS version(s), and form factor(s) -->
+<!-- Please enter your WinUI NuGet package version, Windows app type (when using WinUI 3+), OS version(s), and form factor(s) -->
 
 NuGet package version: 
 <!-- 
@@ -34,6 +34,12 @@ Examples
 [Microsoft.WinUI 3.0.0-preview1.200515.3] If you seeing your issue in preview1, please try preview2.
 [Microsoft.WinUI 3.0.0-preview2.200713.0]
 -->
+
+<!-- If you are using WinUI 3, please specify for which Windows app type you have encountered the issue. Leave blank if you didn't try that app type. -->
+Windows app type:
+| UWP              | Win32            |
+| :--------------- | :--------------- |
+| <!-- Yes/No? --> | <!-- Yes/No? --> |
 
 <!-- Which Windows versions did you see the issue on? Leave blank if you didn't try that version. -->
 | Windows 10 version                  | Saw the problem? |
