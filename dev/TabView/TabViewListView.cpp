@@ -47,6 +47,27 @@ void TabViewListView::OnItemsChanged(winrt::IInspectable const& item)
     }
 }
 
+void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObject& element, const winrt::IInspectable& item)
+{
+    const auto itemContainer = element.as<winrt::TabViewItem>();
+    const auto tvi = winrt::get_self<TabViewItem>(itemContainer);
+
+    // Due to virtualization, a TabViewItem might be recycled to display a different tab data item.
+    // In that case, there is no need to set the TabWidthMode of the TabViewItem or its
+    // parent TabView as they are already set correctly here.
+    // We know we are currently looking at a TabViewItem being recycled its parent TabView has already been set.
+    if (!tvi->GetParentTabView())
+    {
+        if (const auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+        {
+            tvi->OnTabViewWidthModeChanged(tabView.TabWidthMode());
+            tvi->SetParentTabView(tabView);
+        }
+    }
+
+    __super::PrepareContainerForItemOverride(element, item);
+}
+
 void TabViewListView::OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs& args)
 {
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
