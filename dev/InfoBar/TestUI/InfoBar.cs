@@ -44,7 +44,7 @@ namespace MUXControlsTestApp
 
     public class CloseButtonClickEventArgs : EventArgs
     {
-        public bool IsHandled
+        public bool Handled
         {
             get; set;
         }
@@ -99,7 +99,11 @@ namespace MUXControlsTestApp
             OnIsOpenChanged();
             UpdateMargins();
 
-            _closeButton.Click += new RoutedEventHandler(OnCloseButtonClick);
+            if (_closeButton != null)
+            {
+                _closeButton.Click += OnCloseButtonClick;
+            }
+            
             _actionButton.Click += (s, e) => ActionButtonClick?.Invoke(s, e);
         }
 
@@ -155,7 +159,7 @@ namespace MUXControlsTestApp
         }
 
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register(nameof(Title), typeof(string), typeof(InfoBar), new PropertyMetadata(""));
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(InfoBar), new PropertyMetadata("", OnPropertyChanged));
 
         public string Message
         {
@@ -164,7 +168,7 @@ namespace MUXControlsTestApp
         }
 
         public static readonly DependencyProperty MessageProperty =
-            DependencyProperty.Register(nameof(Message), typeof(string), typeof(InfoBar), new PropertyMetadata(""));
+            DependencyProperty.Register(nameof(Message), typeof(string), typeof(InfoBar), new PropertyMetadata("", OnPropertyChanged));
 
         /* Action Button Properties
          * 
@@ -280,7 +284,7 @@ namespace MUXControlsTestApp
             lastCloseReason = InfoBarCloseReason.CloseButton;
             CloseButtonClickEventArgs args = new CloseButtonClickEventArgs();
             CloseButtonClick?.Invoke(this, args);
-            if (args.IsHandled == false)
+            if (args.Handled == false)
             {
                 RaiseClosingEvent();
                 alreadyRaised = false;
@@ -397,80 +401,83 @@ namespace MUXControlsTestApp
             {
                 if ((Title != null && Title != "") || (Message != null && Message != "") || ActionButtonContent != null || HyperlinkButtonContent != null || ShowCloseButton == true)
                 {
-                    _standardIcon.Margin = new Thickness(0, 12, 8, 12);
+                    VisualStateManager.GoToState(this, "StandardIconRightMargin", false);
                 }
                 else
                 {
-                    _standardIcon.Margin = new Thickness(0, 12, 0, 12);
+                    VisualStateManager.GoToState(this, "StandardIconNoRightMargin", false);
                 }
             }
-
             if (_userIcon != null)
             {
                 if ((Title != null && Title != "") || (Message != null && Message != "") || ActionButtonContent != null || HyperlinkButtonContent != null || ShowCloseButton == true)
                 {
-                    _userIcon.Margin = new Thickness(0, 12, 8, 12);
+                    VisualStateManager.GoToState(this, "UserIconRightMargin", false);
                 }
                 else
                 {
-                    _userIcon.Margin = new Thickness(0, 12, 0, 12);
+                    VisualStateManager.GoToState(this, "UserIconNoRightMargin", false);
                 }
             }
-
             if (_title != null)
             {
                 if (Title != null && Title != "")
                 {
                     if ((_standardIcon != null || _userIcon != null) && (Message != null && Message != ""))
                     {
-                        _title.Margin = new Thickness(0, 12, 8, 12);
+                        VisualStateManager.GoToState(this, "TitleRightMargin", false);
                     }
                     else
                     {
-                        _title.Margin = new Thickness(0, 12, 0, 12);
+                        VisualStateManager.GoToState(this, "TitleNoRightMargin", false);
                     }
                 }
                 else
                 {
-                    _title.Margin = new Thickness(0, 0, 0, 0);
+                    VisualStateManager.GoToState(this, "TitleNoMargin", false);
                 }
             }
-
             if (_message != null)
             {
                 if (Message != null && Message != "")
                 {
                     if (ActionButtonContent != null || HyperlinkButtonContent != null)
                     {
-                        _message.Margin = new Thickness(0, 12, 12, 12);
+                        VisualStateManager.GoToState(this, "MessageRightMargin", false);
                     }
                     else
                     {
-                        _message.Margin = new Thickness(0, 12, 0, 12);
+                        VisualStateManager.GoToState(this, "MessageNoRightMargin", false);
                     }
                 }
                 else
                 {
-                    _message.Margin = new Thickness(0, 0, 0, 0);
+                    VisualStateManager.GoToState(this, "MessageNoMargin", false);
                 }
             }
-
             if (_actionButton != null)
             {
                 if (ActionButtonContent != null || HyperlinkButtonContent != null)
                 {
                     if (HyperlinkButtonContent != null)
                     {
-                        _actionButton.Margin = new Thickness(0, 8, 12, 8);
+                        VisualStateManager.GoToState(this, "ActionButtonRightMarginHyperlinkAdjacent", false);
                     }
                     else
                     {
-                        _actionButton.Margin = new Thickness(0, 8, 4, 8);
+                        if (ShowCloseButton != false)
+                        {
+                            VisualStateManager.GoToState(this, "ActionButtonRightMarginCloseButtonAdjacent", false);
+                        }
+                        else
+                        {
+                            VisualStateManager.GoToState(this, "ActionButtonNoRightMargin", false);
+                        }
                     }
                 }
                 else
                 {
-                    _actionButton.Margin = new Thickness(0, 0, 0, 0);
+                    VisualStateManager.GoToState(this, "ActionButtonNoMargin", false);
                 }
             }
         }
