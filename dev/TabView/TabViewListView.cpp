@@ -29,7 +29,7 @@ winrt::DependencyObject TabViewListView::GetContainerForItemOverride()
 bool TabViewListView::IsItemItsOwnContainerOverride(winrt::IInspectable const& args)
 {
     bool isItemItsOwnContainer = false;
-    if (auto item = args.try_as<winrt::TabViewItem>())
+    if (const auto item = args.try_as<winrt::TabViewItem>())
     {
         isItemItsOwnContainer = static_cast<bool>(item);
     }
@@ -40,9 +40,9 @@ void TabViewListView::OnItemsChanged(winrt::IInspectable const& item)
 {
     __super::OnItemsChanged(item);
 
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    if (const auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
-        auto internalTabView = winrt::get_self<TabView>(tabView);
+        const auto internalTabView = winrt::get_self<TabView>(tabView);
         internalTabView->OnItemsChanged(item);
     }
 }
@@ -53,9 +53,10 @@ void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObj
     const auto tvi = winrt::get_self<TabViewItem>(itemContainer);
 
     // Due to virtualization, a TabViewItem might be recycled to display a different tab data item.
-    // In that case, there is no need to set the TabWidthMode of the TabViewItem or its
-    // parent TabView as they are already set correctly here.
-    // We know we are currently looking at a TabViewItem being recycled its parent TabView has already been set.
+    // In that case, there is no need to set the TabWidthMode of the TabViewItem or its parent TabView
+    // as they are already set correctly here.
+    //
+    // We know we are currently looking at a TabViewItem being recycled if its parent TabView has already been set.
     if (!tvi->GetParentTabView())
     {
         if (const auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
@@ -70,9 +71,9 @@ void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObj
 
 void TabViewListView::OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs& args)
 {
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    if (const auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
-        auto internalTabView = winrt::get_self<TabView>(tabView);
+        const auto internalTabView = winrt::get_self<TabView>(tabView);
         internalTabView->UpdateTabContent();
     }
 }
