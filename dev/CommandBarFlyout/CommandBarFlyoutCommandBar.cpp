@@ -144,11 +144,12 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         {
             moreButton.IsTabStop(false);
         }
-        m_moreButtonClicked = moreButton.Click(winrt::auto_revoke, { this, &CommandBarFlyoutCommandBar::MoreButtonClicked });
+        m_moreButtonClickedRevoker = moreButton.Click(winrt::auto_revoke, { this, &CommandBarFlyoutCommandBar::MoreButtonClicked });
     }
 
     if (const auto overFlowPopup = GetTemplateChildT<winrt::Popup>(L"OverflowPopup", thisAsControlProtected))
     {
+        m_overflowPopupOpenedRevoker = overFlowPopup.Opened(winrt::auto_revoke, { this, &CommandBarFlyoutCommandBar::OverFlowPopupOpened });
         m_overflowPopupClosedRevoker = overFlowPopup.Closed(winrt::auto_revoke, { this, &CommandBarFlyoutCommandBar::OverFlowPopupClosed });
     }
 
@@ -347,7 +348,8 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
     m_openingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedCallbackRevoker.revoke();
-    m_moreButtonClicked.revoke();
+    m_moreButtonClickedRevoker.revoke();
+    m_overflowPopupOpenedRevoker.revoke();
     m_overflowPopupClosedRevoker.revoke();
 }
 
@@ -765,8 +767,13 @@ void CommandBarFlyoutCommandBar::EnsureFocusedPrimaryCommand()
 
 void CommandBarFlyoutCommandBar::MoreButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
-    // If the button get's invoked, we switch between secondary commands visible and secondary commands not visible
     m_secondaryCommandsExpectedToBeVisible = !m_secondaryCommandsExpectedToBeVisible;
+}
+
+void CommandBarFlyoutCommandBar::OverFlowPopupOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+{
+    // Overflow popup got opened, so we SecondaryCommands are expected to be visible
+    m_secondaryCommandsExpectedToBeVisible = true;
 }
 
 void CommandBarFlyoutCommandBar::OverFlowPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
