@@ -109,29 +109,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private ComboBox DisplayModeComboBox;
 
-        public TextBlock GetFirstPageButtonVisibilityTextBlock()
+        public CheckBox GetFirstPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref FirstPageButtonVisibilityTextBlock, "FirstPageButtonVisibilityTextBlock");
+            return GetElement(ref FirstPageButtonVisibilityCheckBox, "FirstPageButtonVisibilityCheckBox");
         }
-        private TextBlock FirstPageButtonVisibilityTextBlock;
+        private CheckBox FirstPageButtonVisibilityCheckBox;
         
-        public TextBlock GetPreviousPageButtonVisibilityTextBlock()
+        public CheckBox GetPreviousPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref PreviousPageButtonVisibilityTextBlock, "PreviousPageButtonVisibilityTextBlock");
+            return GetElement(ref PreviousPageButtonVisibilityCheckBox, "PreviousPageButtonVisibilityCheckBox");
         }
-        private TextBlock PreviousPageButtonVisibilityTextBlock;
+        private CheckBox PreviousPageButtonVisibilityCheckBox;
         
-        public TextBlock GetNextPageButtonVisibilityTextBlock()
+        public CheckBox GetNextPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref NextPageButtonVisibilityTextBlock, "NextPageButtonVisibilityTextBlock");
+            return GetElement(ref NextPageButtonVisibilityCheckBox, "NextPageButtonVisibilityCheckBox");
         }
-        private TextBlock NextPageButtonVisibilityTextBlock;
+        private CheckBox NextPageButtonVisibilityCheckBox;
         
-        public TextBlock GetLastPageButtonVisibilityTextBlock()
+        public CheckBox GetLastPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref LastPageButtonVisibilityTextBlock, "LastPageButtonVisibilityTextBlock");
+            return GetElement(ref LastPageButtonVisibilityCheckBox, "LastPageButtonVisibilityCheckBox");
         }
-        private TextBlock LastPageButtonVisibilityTextBlock;
+        private CheckBox LastPageButtonVisibilityCheckBox;
         
         public CheckBox GetFirstPageButtonIsEnabledCheckBox()
         {
@@ -157,11 +157,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox LastPageButtonIsEnabledCheckBox;
 
-        public TextBlock GetNumberBoxVisibilityTextBlock()
+        public CheckBox GetNumberBoxVisibilityCheckBox()
         {
-            return GetElement(ref NumberBoxVisibilityTextBlock, "NumberBoxVisibilityTextBlock");
+            return GetElement(ref NumberBoxVisibilityCheckBox, "NumberBoxVisibilityCheckBox");
         }
-        private TextBlock NumberBoxVisibilityTextBlock;
+        private CheckBox NumberBoxVisibilityCheckBox;
 
         public CheckBox GetNumberBoxIsEnabledCheckBox()
         {
@@ -169,11 +169,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox NumberBoxIsEnabledCheckBox;
 
-        public TextBlock GetComboBoxVisibilityTextBlock()
+        public CheckBox GetComboBoxVisibilityCheckBox()
         {
-            return GetElement(ref ComboBoxVisibilityTextBlock, "ComboBoxVisibilityTextBlock");
+            return GetElement(ref ComboBoxVisibilityCheckBox, "ComboBoxVisibilityCheckBox");
         }
-        private TextBlock ComboBoxVisibilityTextBlock;
+        private CheckBox ComboBoxVisibilityCheckBox;
 
         public CheckBox GetComboBoxIsEnabledCheckBox()
         {

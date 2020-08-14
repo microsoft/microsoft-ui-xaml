@@ -27,23 +27,37 @@ namespace MUXControlsTestApp
 
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
         private ComboBox PagerComboBox;
+        private NumberBox PagerNumberBox;
         private ItemsRepeater NumberPanelItems;
         private Rectangle NumberPanelCurrentPageIdentifier;
         private ObservableCollection<object> NumberPanelCurrentItems = new ObservableCollection<object>();
 
         private IconElement LeftEllipse = new SymbolIcon(Symbol.More);
         private IconElement RightEllipse = new SymbolIcon(Symbol.More);
+
         private static string NumberBoxVisibleVisualState = "NumberBoxVisible";
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
         private static string NumberPanelVisibleVisualState = "NumberPanelVisible";
-        private static string[] FirstPageButtonStates = new string[] { "FirstPageButtonVisible", "FirstPageButtonCollapsed",
-                                                                       "FirstPageButtonEnabled", "FirstPageButtonDisabled" };
-        private static string[] PreviousPageButtonStates = new string[] { "PreviousPageButtonVisible", "PreviousPageButtonCollapsed",
-                                                                          "PreviousPageButtonEnabled", "PreviousPageButtonDisabled" };
-        private static string[] NextPageButtonStates = new string[] { "NextPageButtonVisible", "NextPageButtonCollapsed",
-                                                                      "NextPageButtonEnabled", "NextPageButtonDisabled" };
-        private static string[] LastPageButtonStates = new string[] { "LastPageButtonVisible", "LastPageButtonCollapsed",
-                                                                      "LastPageButtonEnabled", "LastPageButtonDisabled" };
+
+        private static string FirstPageButtonVisibleVisualState = "FirstPageButtonVisible";
+        private static string FirstPageButtonNotVisibleVisualState = "FirstPageButtonCollapsed";
+        private static string FirstPageButtonEnabledVisualState = "FirstPageButtonEnabled";
+        private static string FirstPageButtonDisabledVisualState = "FirstPageButtonDisabled";
+
+        private static string PreviousPageButtonVisibleVisualState = "PreviousPageButtonVisible";
+        private static string PreviousPageButtonNotVisibleVisualState = "PreviousPageButtonCollapsed";
+        private static string PreviousPageButtonEnabledVisualState = "PreviousPageButtonEnabled";
+        private static string PreviousPageButtonDisabledVisualState = "PreviousPageButtonDisabled";
+
+        private static string NextPageButtonVisibleVisualState = "NextPageButtonVisible";
+        private static string NextPageButtonNotVisibleVisualState = "NextPageButtonCollapsed";
+        private static string NextPageButtonEnabledVisualState = "NextPageButtonEnabled";
+        private static string NextPageButtonDisabledVisualState = "NextPageButtonDisabled";
+
+        private static string LastPageButtonVisibleVisualState = "LastPageButtonVisible";
+        private static string LastPageButtonNotVisibleVisualState = "LastPageButtonCollapsed";
+        private static string LastPageButtonEnabledVisualState = "LastPageButtonEnabled";
+        private static string LastPageButtonDisabledVisualState = "LastPageButtonDisabled";
 
         private int PreviousPageIndex = -1;
 
@@ -52,8 +66,21 @@ namespace MUXControlsTestApp
         public PrototypePager()
         {
             this.DefaultStyleKey = typeof(PrototypePager);
-            this.Loaded += (s, args) => { SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this)); };
+            this.Loaded += OnLoad;
+        }
 
+        private void OnLoad(object sender, RoutedEventArgs args)
+        {
+            SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
+            // Attach Callbacks for property changes
+            RegisterPropertyChangedCallback(NumberOfPagesProperty, (s, e) => { OnNumberOfPagesChanged(); });
+            RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { OnSelectedIndexChanged(); });
+            RegisterPropertyChangedCallback(PagerDisplayModeProperty, (s, e) => { OnPagerDisplayModeChanged(); });
+            RegisterPropertyChangedCallback(FirstPageButtonVisibilityProperty, (s, e) => { OnFirstPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(NextPageButtonVisibilityProperty, (s, e) => { OnNextPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(LastPageButtonVisibilityProperty, (s, e) => { OnLastPageButtonVisibilityChanged(); });
+            RegisterPropertyChangedCallback(PagerNumberBox.Maximum)
         }
         protected override void OnApplyTemplate()
         {
@@ -63,6 +90,7 @@ namespace MUXControlsTestApp
             NextPageButton = GetTemplateChild("NextPageButton") as Button;
             LastPageButton = GetTemplateChild("LastPageButton") as Button;
             PagerComboBox = GetTemplateChild("ComboBoxDisplay") as ComboBox;
+            PagerNumberBox = GetTemplateChild("NumberBoxDisplay") as NumberBox;
             NumberPanelItems = GetTemplateChild("NumberPanelItemsRepeater") as ItemsRepeater;
             NumberPanelCurrentPageIdentifier = GetTemplateChild("NumberPanelCurrentPageIdentifier") as Rectangle;
 
@@ -71,23 +99,8 @@ namespace MUXControlsTestApp
             PreviousPageButtonTestHook = PreviousPageButton;
             NextPageButtonTestHook = NextPageButton;
             LastPageButtonTestHook = LastPageButton;
-            NumberBoxDisplayTestHook = GetTemplateChild("NumberBoxDisplay") as NumberBox;
+            NumberBoxDisplayTestHook = PagerNumberBox;
             ComboBoxDisplayTestHook = PagerComboBox;
-
-            // Attach Callbacks for property changes
-            RegisterPropertyChangedCallback(SelectedIndexProperty, (s,e) => {
-                if (PagerComboBox != null)
-                {
-                    PagerComboBox.SelectedIndex = SelectedIndex - 1;
-                }
-                DisablePageButtonsOnEdge();
-                PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
-            });
-            RegisterPropertyChangedCallback(PagerDisplayModeProperty, (s,e) => { OnPagerDisplayModeChanged(); });
-            RegisterPropertyChangedCallback(FirstPageButtonVisibilityProperty, (s, e) => { OnFirstPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(NextPageButtonVisibilityProperty, (s, e) => { OnNextPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(LastPageButtonVisibilityProperty, (s, e) => { OnLastPageButtonVisibilityChanged(); });
 
             // Attach click events
             if (FirstPageButton != null)
@@ -109,8 +122,7 @@ namespace MUXControlsTestApp
             if (PagerComboBox != null)
             {
                 PagerComboBox.SelectedIndex = SelectedIndex - 1;
-                PagerComboBox.SelectionChanged += (s, e) => {
-                    SelectedIndex = PagerComboBox.SelectedIndex + 1; };
+                PagerComboBox.SelectionChanged += (s, e) => { SelectedIndex = PagerComboBox.SelectedIndex + 1; };
             }
             if (NumberPanelItems != null)
             {
@@ -131,6 +143,7 @@ namespace MUXControlsTestApp
 
             if (NumberOfPages <= 7)
             {
+                RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { MoveIdentifierToCurrentPage(); });
                 foreach(var num in TemplateSettings.Pages.GetRange(0, NumberOfPages))
                 {
                     NumberPanelCurrentItems.Add(num);

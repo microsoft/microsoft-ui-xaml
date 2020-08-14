@@ -429,7 +429,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void VerifyFirstPageButtonVisibility(Visibility expected)
         {
-            Verify.AreEqual(expected.ToString(), elements.GetFirstPageButtonVisibilityTextBlock().GetText());
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetFirstPageButtonVisibilityCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifyFirstPageButtonIsEnabled(bool expected)
@@ -439,7 +439,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void VerifyPreviousPageButtonVisibility(Visibility expected)
         {
-            Verify.AreEqual(expected.ToString(), elements.GetPreviousPageButtonVisibilityTextBlock().GetText());
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetPreviousPageButtonVisibilityCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifyPreviousPageButtonIsEnabled(bool expected)
@@ -449,7 +449,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void VerifyNextPageButtonVisibility(Visibility expected)
         {
-            Verify.AreEqual(expected.ToString(), elements.GetNextPageButtonVisibilityTextBlock().GetText());
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetNextPageButtonVisibilityCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifyNextPageButtonIsEnabled(bool expected)
@@ -459,7 +459,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void VerifyLastPageButtonVisibility(Visibility expected)
         {
-            Verify.AreEqual(expected.ToString(), elements.GetLastPageButtonVisibilityTextBlock().GetText());
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetLastPageButtonVisibilityCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifyLastPageButtonIsEnabled(bool expected)
@@ -630,7 +630,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void VerifyComboBoxVisibility(Visibility expected)
         {
-            Verify.AreEqual(expected.ToString(), elements.GetComboBoxVisibilityTextBlock().GetText());
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetComboBoxVisibilityCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifyComboBoxIsEnabled(bool expected)
@@ -640,7 +640,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void VerifyNumberBoxVisibility(Visibility expected)
         {
-            Verify.AreEqual(expected.ToString(), elements.GetNumberBoxVisibilityTextBlock().GetText());
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetNumberBoxVisibilityCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifyNumberBoxIsEnabled(bool expected)

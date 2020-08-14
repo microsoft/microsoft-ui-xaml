@@ -26,6 +26,29 @@ namespace MUXControlsTestApp
             (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
         }
 
+        private void OnSelectedIndexChanged()
+        {
+            if (PagerComboBox != null)
+            {
+                PagerComboBox.SelectedIndex = SelectedIndex - 1;
+            }
+            DisablePageButtonsOnEdge();
+            PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
+        }
+
+        private void OnNumberOfPagesChanged()
+        {
+            SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
+            if (PagerComboBox != null)
+            {
+                PagerComboBox.SelectedIndex = SelectedIndex - 1;
+            }
+            if (PagerNumberBox != null)
+            {
+                PagerNumberBox.Value = SelectedIndex;
+            }
+        }
+
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
         {
             if (args.Element == null || args.Element.GetType() != typeof(Button))
@@ -34,7 +57,7 @@ namespace MUXControlsTestApp
             }
 
             (args.Element as Button).Click += OnNumberPanelButtonClicked;
-            (args.Element as FrameworkElement).Loaded += MoveCurrentPageRectIfCurrentPage;
+            (args.Element as FrameworkElement).Loaded += MoveIdentifierToCurrentPage;
         }
 
         private void OnElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
@@ -42,7 +65,7 @@ namespace MUXControlsTestApp
             if (args.Element.GetType() == typeof(Button))
             {
                 (args.Element as Button).Click -= OnNumberPanelButtonClicked;
-                (args.Element as Button).Loaded -= MoveCurrentPageRectIfCurrentPage;
+                (args.Element as Button).Loaded -= MoveIdentifierToCurrentPage;
             }
         }
 
@@ -51,7 +74,7 @@ namespace MUXControlsTestApp
             SelectedIndex = (int)(sender as Button).Content;
         }
 
-        private void MoveCurrentPageRectIfCurrentPage(object sender, RoutedEventArgs args)
+        private void MoveIdentifierToCurrentPage(object sender, RoutedEventArgs args)
         {
             var element = sender as FrameworkElement;
 
@@ -60,6 +83,18 @@ namespace MUXControlsTestApp
                 var childPoint = element.TransformToVisual((UIElement)element.Parent).TransformPoint(new Point(0, 0));
                 var numberPanelRectMargins = NumberPanelCurrentPageIdentifier.Margin;
                 NumberPanelCurrentPageIdentifier.Margin = new Thickness(childPoint.X, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);
+            }
+        }
+
+        private void MoveIdentifierToCurrentPage()
+        {
+            for (int i = 0; i < NumberOfPages; i++)
+            {
+                var element = NumberPanelItems.TryGetElement(i);
+                if (element != null)
+                {
+                    MoveIdentifierToCurrentPage(element, null);
+                }
             }
         }
 

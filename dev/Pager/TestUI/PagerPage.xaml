@@ -24,7 +24,7 @@
         </Grid.ColumnDefinitions>
 
         <Border BorderBrush="Black" BorderThickness="5" Grid.Column="0" VerticalAlignment="Center">
-            <local:PrototypePager x:Name="TestPager" AutomationProperties.Name="TestPager" PageChanged="OnPageChanged" NumberOfPages="10"/>
+            <local:PrototypePager x:Name="TestPager" AutomationProperties.Name="TestPager" PageChanged="OnPageChanged"/>
         </Border>
 
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
@@ -93,6 +93,8 @@
                         <ComboBoxItem x:Name="NumberPanelDisplayModeItem" AutomationProperties.Name="NumberPanelDisplayModeItem">NumberPanel</ComboBoxItem>
                     </ComboBox>
 
+                    <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Grid.Row="4" Click="NumberOfPagesSetterButtonClicked"/>
+
                 </Grid>
                 <Grid Grid.Column="1" Margin="5">
                     <Grid.ColumnDefinitions>
@@ -116,45 +118,101 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Pager Outputs" Style="{ThemeResource TitleTextBlockStyle}" Foreground="Red"/>
+                    <StackPanel Grid.Row="1" Grid.Column="0">
+                        <TextBlock Text="First Page Button"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="FirstPageButtonVisibilityCheckBox" AutomationProperties.Name="FirstPageButtonVisibilityCheckBox"  IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="FirstPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="FirstPageButtonIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
                     
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="FirstPageButton Visibility"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="FirstPageButtonVisibilityTextBlock" AutomationProperties.Name="FirstPageButtonVisibilityTextBlock" />
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="FirstPageButton IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="2" Grid.Column="1" x:Name="FirstPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="FirstPageButtonIsEnabledCheckBox"/>
+                    <StackPanel Grid.Row="2" Grid.Column="0">
+                        <TextBlock Text="Previous Page Button"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="PreviousPageButtonVisibilityCheckBox" AutomationProperties.Name="PreviousPageButtonVisibilityCheckBox"  IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="PreviousPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="PreviousPageButtonIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="PreviousPageButton Visibility"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="PreviousPageButtonVisibilityTextBlock" AutomationProperties.Name="PreviousPageButtonVisibilityTextBlock"/>
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="PreviousPageButton IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="4" Grid.Column="1" x:Name="PreviousPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="PreviousPageButtonIsEnabledCheckBox"/>
+                    <StackPanel Grid.Row="3" Grid.Column="0">
+                        <TextBlock Text="Next Page Button"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="NextPageButtonVisibilityCheckBox" AutomationProperties.Name="NextPageButtonVisibilityCheckBox" IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="NextPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NextPageButtonIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="NextPageButton Visibility"/>
-                    <TextBlock Grid.Row="5" Grid.Column="1" x:Name="NextPageButtonVisibilityTextBlock" AutomationProperties.Name="NextPageButtonVisibilityTextBlock"/>
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="NextPageButton IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="6" Grid.Column="1" x:Name="NextPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NextPageButtonIsEnabledCheckBox"/>
+                    <StackPanel Grid.Row="4" Grid.Column="0">
+                        <TextBlock Text="Next Page Button"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="LastPageButtonVisibilityCheckBox" AutomationProperties.Name="LastPageButtonVisibilityCheckBox" IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="LastPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="LastPageButtonIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="7" Grid.Column="0" Text="LastPageButton Visibility"/>
-                    <TextBlock Grid.Row="7" Grid.Column="1" x:Name="LastPageButtonVisibilityTextBlock" AutomationProperties.Name="LastPageButtonVisibilityTextBlock"/>
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="LastPageButton IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="8" Grid.Column="1" x:Name="LastPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="LastPageButtonIsEnabledCheckBox"/>
+                    <StackPanel Grid.Row="1" Grid.Column="1">
+                        <TextBlock Text="NumberBox DisplayMode"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="NumberBoxVisibilityCheckBox" AutomationProperties.Name="NumberBoxVisibilityCheckBox" IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="NumberBoxIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberBoxIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="1" Grid.Column="2" Text="DisplayMode"/>
-                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{x:Bind TestPager.PagerDisplayMode, Mode=OneWay}" AutomationProperties.Name="DisplayModeTextBlock"/>
+                    <StackPanel Grid.Row="2" Grid.Column="1">
+                        <TextBlock Text="ComboBox DisplayMode" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible"/>
+                            <CheckBox x:Name="ComboBoxVisibilityCheckBox" AutomationProperties.Name="ComboBoxVisibilityCheckBox"  IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="ComboBoxIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="ComboBoxIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="2" Grid.Column="2" Text="NumberBox Visibility"/>
-                    <TextBlock Grid.Row="2" Grid.Column="3" x:Name="NumberBoxVisibilityTextBlock" AutomationProperties.Name="NumberBoxVisibilityTextBlock"/>
-                    <TextBlock Grid.Row="3" Grid.Column="2" Text="NumberBox IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="3" Grid.Column="3"  x:Name="NumberBoxIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberBoxIsEnabledCheckBox"/>
-                    
-                    <TextBlock Grid.Row="4" Grid.Column="2" Text="ComboBox Visibility"/>
-                    <TextBlock Grid.Row="4" Grid.Column="3" x:Name="ComboBoxVisibilityTextBlock" AutomationProperties.Name="ComboBoxVisibilityTextBlock"/>
-                    <TextBlock Grid.Row="5" Grid.Column="2" Text="ComboBox IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="5" Grid.Column="3"  x:Name="ComboBoxIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="ComboBoxIsEnabledCheckBox"/>
+                    <StackPanel Grid.Row="3" Grid.Column="1">
+                        <TextBlock Text="NumberPanel DisplayMode"/>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="NumberPanelVisibilityCheckBox" AutomationProperties.Name="NumberPanelVisibilityCheckBox"  IsChecked="False" IsEnabled="False"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
+                            <CheckBox  x:Name="NumberPanelIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberPanelIsEnabledCheckBox"/>
+                        </StackPanel>
+                    </StackPanel>
 
-                    <TextBlock Grid.Row="6" Grid.Column="2" Text="NumberPanel Visibility"/>
-                    <TextBlock Grid.Row="6" Grid.Column="3" x:Name="NumberPanelVisibilityTextBlock" AutomationProperties.Name="NumberPanelVisibilityTextBlock"/>
-                    <TextBlock Grid.Row="7" Grid.Column="2" Text="NumberPanel IsEnabled" VerticalAlignment="Center"/>
-                    <CheckBox  Grid.Row="7" Grid.Column="3" x:Name="NumberPanelIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberPanelIsEnabledCheckBox"/>
-                   
+                    <StackPanel Grid.Row="4" Grid.Column="1">
+                        <TextBlock Text="Current Display Mode:"/>
+                        <TextBlock Text="{x:Bind TestPager.PagerDisplayMode, Mode=OneWay}" AutomationProperties.Name="DisplayModeTextBlock"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Number Of Pages" />
+                            <controls:NumberBox Value="{x:Bind TestPager.NumberOfPages, Mode=OneWay}" IsEnabled="False"/>
+                        </StackPanel>
+                    </StackPanel>
+
+
+
                 </Grid>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Pager Event Log" Grid.Row="0" Style="{StaticResource TitleTextBlockStyle}" Foreground="Gold"/>
