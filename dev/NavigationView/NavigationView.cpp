@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -4521,7 +4521,14 @@ void NavigationView::UpdatePaneShadow()
         shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
         // Ensure shadow is as wide as the pane when it is open
-        shadowReceiver.Width(OpenPaneLength());
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        {
+            shadowReceiver.Width(OpenPaneLength());
+        }
+        else
+        {
+            shadowReceiver.Width(OpenPaneLength() + GetPaneToggleButtonWidth());
+        }
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
