@@ -4527,7 +4527,7 @@ void NavigationView::UpdatePaneShadow()
         }
         else
         {
-            shadowReceiver.Width(OpenPaneLength() + GetPaneToggleButtonWidth());
+            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
         }
         shadowReceiver.Margin(shadowReceiverMargin);
     }
