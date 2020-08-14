@@ -60,7 +60,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 17762113
         public void RevealBrushAudit()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))

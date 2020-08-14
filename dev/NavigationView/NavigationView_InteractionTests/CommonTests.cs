@@ -497,7 +497,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18650478
         public void TitleBarTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();

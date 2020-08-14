@@ -572,7 +572,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHidden()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -589,7 +589,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHiddenWithFixedWindowSize()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
