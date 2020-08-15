@@ -265,8 +265,7 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
         if (auto const toggleButton = element.try_as<winrt::ToggleButton>())
         {
             auto childHandlers = winrt::make_self<ChildHandlers>();
-            childHandlers->checkedRevoker = toggleButton.Checked(winrt::auto_revoke, { this, &RadioButtons::OnChildChecked });
-            childHandlers->uncheckedRevoker = toggleButton.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
+            childHandlers->clickRevoker = toggleButton.Click(winrt::auto_revoke, { this, &RadioButtons::OnChildClick });
                 
             toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
 
@@ -403,7 +402,7 @@ winrt::IInspectable RadioButtons::GetDataAtIndex(int index, bool containerIsChec
     return static_cast<winrt::IInspectable>(nullptr);
 }
 
-void RadioButtons::OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
+void RadioButtons::OnChildClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
 {
     if (!m_currentlySelecting)
     {
@@ -412,23 +411,6 @@ void RadioButtons::OnChildChecked(const winrt::IInspectable& sender, const winrt
             if (auto const senderAsUIE = sender.as<winrt::UIElement>())
             {
                 Select(repeater.GetElementIndex(senderAsUIE));
-            }
-        }
-    }
-}
-
-void RadioButtons::OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
-{
-    if (!m_currentlySelecting)
-    {
-        if (auto const repeater = m_repeater.get())
-        {
-            if (auto const senderAsUIE = sender.as<winrt::UIElement>())
-            {
-                if (m_selectedIndex == repeater.GetElementIndex(senderAsUIE))
-                {
-                    Select(-1);
-                }
             }
         }
     }

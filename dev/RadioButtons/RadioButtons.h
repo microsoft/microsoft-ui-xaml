@@ -18,8 +18,7 @@
 class ChildHandlers : public winrt::implements<ChildHandlers, winrt::IInspectable>
 {
 public:
-    winrt::ToggleButton::Checked_revoker checkedRevoker;
-    winrt::ToggleButton::Unchecked_revoker uncheckedRevoker;
+    winrt::ToggleButton::Click_revoker clickRevoker;
 };
 
 class RadioButtons :
@@ -53,8 +52,7 @@ private:
     void OnRepeaterElementClearing(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args);
     void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
     void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnChildClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
 
