@@ -361,7 +361,20 @@ void RadioButtons::Select(int index)
 
         SelectedIndex(m_selectedIndex);
         SelectedItem(newSelectedItem);
-        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs({ previousSelectedItem }, { newSelectedItem }));
+
+        auto const previousSelectedItems = winrt::make<Vector<winrt::IInspectable>>();
+        if (previousSelectedItem)
+        {
+            previousSelectedItems.Append(previousSelectedItem);
+        }
+
+        auto const newSelectedItems = winrt::make<Vector<winrt::IInspectable>>();
+        if (newSelectedItem)
+        {
+            newSelectedItems.Append(newSelectedItem);
+        }
+
+        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(previousSelectedItems, newSelectedItems));
     }
 }
 
