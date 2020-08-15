@@ -435,6 +435,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadioButtons", "dev\RadioBu
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioButtons_TestUI", "dev\RadioButtons\TestUI\RadioButtons_TestUI.shproj", "{833A6892-A079-469A-81C7-54D4CD88029B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioButtons_APITests", "dev\RadioButtons\APITests\RadioButtons_APITests.shproj", "{5F9FD8D1-2A55-4635-9EBF-9BB5A55F0199}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioButtons_InteractionTests", "dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.shproj", "{42D6E8F9-59FE-4CA5-83EB-69A7622F5742}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonStyles", "CommonStyles", "{807E57C8-F3E8-4049-AB88-BE3D3285B441}"
@@ -719,6 +721,7 @@ Global
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{593e15d8-f6f9-4aba-ba65-c6927c178dbd}*SharedItemsImports = 13
 		dev\CalendarView\TestUI\CalendarView_TestUI.projitems*{5983a27f-cb27-4400-8277-bcb09d93777b}*SharedItemsImports = 13
 		dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems*{5bf80ae9-29df-4be9-858a-f095c8073473}*SharedItemsImports = 13
+		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{5f9fd8d1-2a55-4635-9ebf-9bb5a55f0199}*SharedItemsImports = 13
 		dev\PersonPicture\PersonPicture.vcxitems*{5fdf2501-aa3d-4082-ad45-d1f2a94c1213}*SharedItemsImports = 9
 		dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems*{6075e2d2-46d6-4000-bb77-56f0efe37389}*SharedItemsImports = 13
 		dev\ProgressRing\ProgressRing.vcxitems*{64447efa-19b4-4bf2-9d63-618635c483ec}*SharedItemsImports = 9
@@ -914,6 +917,7 @@ Global
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RatingControl\APITests\RatingControl_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -1007,6 +1011,7 @@ Global
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RatingControl\APITests\RatingControl_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1498,6 +1503,7 @@ Global
 		{D232C226-CD18-4509-B848-80083AA9892B} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{E770A6D3-7252-4E8A-BD10-FA8524DF8C83} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{833A6892-A079-469A-81C7-54D4CD88029B} = {D232C226-CD18-4509-B848-80083AA9892B}
+		{5F9FD8D1-2A55-4635-9EBF-9BB5A55F0199} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{42D6E8F9-59FE-4CA5-83EB-69A7622F5742} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{807E57C8-F3E8-4049-AB88-BE3D3285B441} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{3A07FA59-C5C1-4B46-8B31-043F9CA91226} = {807E57C8-F3E8-4049-AB88-BE3D3285B441}
