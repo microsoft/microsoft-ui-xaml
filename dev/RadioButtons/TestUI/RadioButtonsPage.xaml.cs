@@ -57,6 +57,13 @@ namespace MUXControlsTestApp
 
         private void TestRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (LogRadioButtonsEventsCheckBox.IsChecked is bool logEvents && logEvents
+                && DisplayLogsCheckBox.IsChecked is bool displayLogs && displayLogs)
+            {
+                // This log message is used in RadioButtons' interaction test(s).
+                RadioButtonsEventsList.Items.Add("TestRadioButtons: SelectionChanged");
+            }
+
             var index = TestRadioButtons.SelectedIndex;
             SelectedIndexTextBlock.Text = index.ToString();
             if (TestRadioButtons.SelectedItem != null)
@@ -270,6 +277,7 @@ namespace MUXControlsTestApp
 
         private void ClearRadioButtonsEventsButton_Click(object sender, RoutedEventArgs e)
         {
+            RadioButtonsEventsList.Items.Clear();
         }
 
         private void UpdateRadioButtonsSource()

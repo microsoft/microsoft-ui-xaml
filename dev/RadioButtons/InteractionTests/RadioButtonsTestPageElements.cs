@@ -211,6 +211,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private ListBox RadioButtonsEventsList;
 
+
+        public CheckBox GetLogRadioButtonsEventsCheckBox()
+        {
+            return GetElement(ref LogRadioButtonsEventsCheckBox, "LogRadioButtonsEventsCheckBox");
+        }
+        private CheckBox LogRadioButtonsEventsCheckBox;
+
+        public CheckBox GetDisplayLogsCheckBox()
+        {
+            return GetElement(ref DisplayLogsCheckBox, "DisplayLogsCheckBox");
+        }
+        private CheckBox DisplayLogsCheckBox;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)

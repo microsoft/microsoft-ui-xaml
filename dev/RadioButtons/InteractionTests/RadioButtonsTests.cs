@@ -730,6 +730,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void AccessKeys()
@@ -765,6 +766,89 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(3);
                         UseAccessKey();
                         VerifySelectedFocusedIndex(3);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifySelectionChangedEventRaised()
+        {
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
+            {
+                elements = new RadioButtonsTestPageElements();
+
+                // Enable display logging of events
+                SetDisplayLogsSetting(true);
+                SetRadioButtonsLoggingLevel(true);
+
+                SetItemType(RadioButtonsSourceType.RadioButton);
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+
+                    Log.Comment("Clear event logs");
+                    ClearRadioButtonsEventLogs();
+
+                    Log.Comment("No selection initally: Select an  item by API via an index");
+                    SelectByIndex(1);
+                    VerifySelectedIndex(1);
+
+                    Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
+
+                    Log.Comment("Clear event logs");
+                    ClearRadioButtonsEventLogs();
+
+                    Log.Comment("Select another item by API via the item to select");
+                    SelectByItem(2);
+                    VerifySelectedIndex(2);
+
+                    Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
+
+                    Log.Comment("Clear event logs");
+                    ClearRadioButtonsEventLogs();
+
+                    Log.Comment("Now select a different item by clicking it");
+                    TapOnItem(3);
+                    VerifySelectedIndex(3);
+
+                    Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
+
+                    Log.Comment("Clear event logs");
+                    ClearRadioButtonsEventLogs();
+
+                    // Keyboard selection requires RS3+ keyboarding behavior
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+                    {
+                        Log.Comment("Select next item by pressing the keyboard down arrow key");
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifySelectedFocusedIndex(4);
+
+                        Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
+
+                        Log.Comment("Clear event logs");
+                        ClearRadioButtonsEventLogs();
+                    }
+
+                    Log.Comment("Clear selection");
+                    SelectByIndex(-1);
+
+                    Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
+
+                    int GetSelectionChangedRaiseCount()
+                    {
+                        int count = 0;
+                        ListBox eventsListBox = elements.GetRadioButtonsEventsList();
+                        foreach (var item in eventsListBox.AllItems)
+                        {
+                            if (item.Name.Equals("TestRadioButtons: SelectionChanged"))
+                            {
+                                count++;
+                            }
+                        }
+
+                        return count;
                     }
                 }
             }
@@ -971,6 +1055,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         void VerifyFocusedIndex(int index)
         {
             Verify.AreEqual(index, Int32.Parse(elements.GetFocusedIndexTextBlock().DocumentText));
+        }
+
+        void SetRadioButtonsLoggingLevel(bool isEventLoggingEnabled)
+        {
+            var logRadioButtonsEventsCheckBox = elements.GetLogRadioButtonsEventsCheckBox();
+            if (isEventLoggingEnabled && logRadioButtonsEventsCheckBox.ToggleState != ToggleState.On
+                || !isEventLoggingEnabled && logRadioButtonsEventsCheckBox.ToggleState != ToggleState.Off)
+            {
+                Log.Comment("Toggling LogRadioButtonsEventsCheckBox.IsChecked to " + isEventLoggingEnabled);
+                logRadioButtonsEventsCheckBox.Toggle();
+                Wait.ForIdle();
+            }
+        }
+
+        void SetDisplayLogsSetting(bool displayLogs)
+        {
+            var displayLogsCheckBox = elements.GetDisplayLogsCheckBox();
+            if (displayLogs && displayLogsCheckBox.ToggleState != ToggleState.On
+                || !displayLogs && displayLogsCheckBox.ToggleState != ToggleState.Off)
+            {
+                Log.Comment("Toggling DisplayLogsCheckBox.IsChecked to " + displayLogs);
+                displayLogsCheckBox.Toggle();
+                Wait.ForIdle();
+            }
+        }
+
+        void ClearRadioButtonsEventLogs()
+        {
+            var clearRadioButtonsEventsButtons = elements.GetClearRadioButtonsEventsButton();
+            clearRadioButtonsEventsButtons.InvokeAndWait();
         }
     }
 }

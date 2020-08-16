@@ -186,10 +186,10 @@
                         <TextBlock Text="RadioButtons Messages &amp; Events" Foreground="Red" HorizontalAlignment="Center"/>
 
                         <StackPanel Orientation="Horizontal" Grid.Row="1">
-                            <Button x:Name="ClearRadioButtonsEventsButton" AutomationProperties.Name="ClearRadioButtonsEventsButton" Content="Clear" Click="ClearRadioButtonsEventsButton_Click" Margin="1"/>
+                            <Button x:Name="ClearRadioButtonsEventsButton" AutomationProperties.Name="ClearRadioButtonsEventsButton" Content="Clear" Click="ClearRadioButtonsEventsButton_Click" Margin="1" IsTabStop="False"/>
                             <CheckBox x:Name="LogRadioButtonsMessagesCheckBox" Content="Log RadioButtons Messages?" Margin="1" IsEnabled="false"/>
-                            <CheckBox x:Name="LogRadioButtonsEventsCheckBox" Content="Log RadioButtons Events?" Margin="1" IsEnabled="false"/>
-                            <CheckBox x:Name="DisplayLogsCheckBox" Content="Display Logs?" Margin="1" IsEnabled="false"/>
+                            <CheckBox x:Name="LogRadioButtonsEventsCheckBox" Content="Log RadioButtons Events?" Margin="1" IsEnabled="True"/>
+                            <CheckBox x:Name="DisplayLogsCheckBox" Content="Display Logs?" Margin="1" IsEnabled="True"/>
                         </StackPanel>
                         <ListBox x:Name="RadioButtonsEventsList" AutomationProperties.Name="RadioButtonsEventsList" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Auto" Margin="1" Grid.Row="2"/>
                     </Grid>
