@@ -791,7 +791,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Log.Comment("Clear event logs");
                     ClearRadioButtonsEventLogs();
 
-                    Log.Comment("No selection initally: Select an  item by API via an index");
+                    Log.Comment("No selection initally: Select an item by API via an index");
                     SelectByIndex(1);
                     VerifySelectedIndex(1);
 
