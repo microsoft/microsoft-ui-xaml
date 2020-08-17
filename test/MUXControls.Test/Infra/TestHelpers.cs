@@ -37,7 +37,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         // The value of 'testName' should match that which was used when
         // registering the test in TestInventory.cs in the test app project.
-        public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true, bool shouldRestictInnerFrameSize = true)
+        public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true, bool shouldRestrictInnerFrameSize = true)
         {
             // If a test crashes, it can take a little bit of time before we can 
             // restart the app again especially if watson is collecting dumps. Adding a 
@@ -165,13 +165,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
 
                         ToggleButton tb = new ToggleButton(FindElement.ById("__InnerFrameInLabDimensions"));
-                        if(tb.ToggleState != ToggleState.On && shouldRestictInnerFrameSize)
+                        if(tb.ToggleState != ToggleState.On && shouldRestrictInnerFrameSize)
                         {
                             Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to On.");
                             tb.Toggle();
                             Wait.ForIdle();
                         }
-                        else if(tb.ToggleState != ToggleState.Off && !shouldRestictInnerFrameSize)
+                        else if(tb.ToggleState != ToggleState.Off && !shouldRestrictInnerFrameSize)
                         {
                             Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to Off.");
                             tb.Toggle();
