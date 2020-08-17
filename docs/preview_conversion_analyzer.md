@@ -121,6 +121,6 @@ Necessary steps for converting a WinUI C# App to WinUI3:
 7. (Optional) These Analyzers serve little purpose outside of converting A WinUI C# App. After verifying the conversion is complete you might consider uninstalling the `Microsoft.WinUI.Convert` NuGet Package.
 ---
 
-Note: some WInUI2 resources are not compatible with WinUI3. These issues may be highlighted in code but cannot be fixed by the converter. 
+Note: some WinUI2 resources are not compatible with WinUI3. These issues may be highlighted in code but cannot be fixed by the converter. 
 
 ![Visual Studio Lightbulb Suggestion](./images/deprecatedWarning.png#thumb)
