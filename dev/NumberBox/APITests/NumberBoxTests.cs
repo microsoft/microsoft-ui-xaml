@@ -26,6 +26,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     public class NumberBoxTests : ApiTestBase
     {
         [TestMethod]
+        public void VerifyTextAlignmentPropogates()
+        {
+            var numberBox = SetupNumberBox();
+            TextBox textBox = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+
+                textBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
+                Verify.AreEqual(TextAlignment.Left, textBox.TextAlignment, "The default TextAlignment should be left.");
+
+                numberBox.TextAlignment = TextAlignment.Right;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(TextAlignment.Right, textBox.TextAlignment, "The TextAlignment should have been updated to Right.");
+            });
+        }
+
+        [TestMethod]
         public void VerifyNumberBoxCornerRadius()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -82,6 +102,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
 
                 Verify.AreEqual(new CornerRadius(0), textBox.CornerRadius);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyIsEnabledChangeUpdatesVisualState()
+        {
+            var numberBox = SetupNumberBox();
+
+            VisualStateGroup commonStatesGroup = null;
+            RunOnUIThread.Execute(() =>
+            {
+                // Check 1: Set IsEnabled to true.
+                numberBox.IsEnabled = true;
+                Content.UpdateLayout();
+
+                var numberBoxLayoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(numberBox, 0);
+                commonStatesGroup = VisualStateManager.GetVisualStateGroups(numberBoxLayoutRoot).First(vsg => vsg.Name.Equals("CommonStates"));
+
+                Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
+
+                // Check 2: Set IsEnabled to false.
+                numberBox.IsEnabled = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Disabled", commonStatesGroup.CurrentState.Name);
+
+                // Check 3: Set IsEnabled back to true.
+                numberBox.IsEnabled = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
             });
         }
 

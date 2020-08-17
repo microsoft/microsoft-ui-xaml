@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
@@ -85,7 +85,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Issue #1018
+        [TestMethod] //Issue #1018
+        [TestProperty("Ignore", "True")]
         public void CanPinFocusedElements()
         {
             // Setup a grouped repeater scenario with two groups each containing two items.
@@ -186,7 +187,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Issue 1018
+        [TestMethod] //Issue 1018
+        [TestProperty("Ignore", "True")]
         public void CanReuseElementsDuringUniqueIdReset()
         {
             var data = new WinRTCollection(Enumerable.Range(0, 2).Select(i => string.Format("Item #{0}", i)));
@@ -658,7 +660,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Issue 1018
+        [TestMethod]// Issue 1018
+        [TestProperty("Ignore", "True")]
         public void ValidateFocusMoveOnElementCleared()
         {
             ItemsRepeater repeater = null;
@@ -702,7 +705,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 });
         }
 
-        // [TestMethod] Issue 1018
+        [TestMethod] //Issue 1018
+        [TestProperty("Ignore", "True")]
         public void ValidateFocusMoveOnElementClearedWithUniqueIds()
         {
             ItemsRepeater repeater = null;

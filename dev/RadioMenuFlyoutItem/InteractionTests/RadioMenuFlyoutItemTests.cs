@@ -55,7 +55,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             "Expanded"
         };
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         //Disabled due to Bug 19603059: RadioMenuFlyoutItemTests is occasionally failing in the lab
         public void BasicTest()
         {
