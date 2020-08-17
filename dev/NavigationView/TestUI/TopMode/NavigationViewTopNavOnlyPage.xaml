@@ -26,7 +26,7 @@
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                 AccessKey="H">
         <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home" AutomationProperties.Name="HomeItem"/>
+                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Icon="Shop" Tag="Apps" /> <!-- AppsItem only have Icon and no content -->
                 <muxcontrols:NavigationViewItem x:Name="SuppressSelection" Content="SuppressSelection" Icon="Emoji" SelectsOnInvoked="False" />
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
@@ -72,7 +72,6 @@
 
                         <ComboBox x:Name="ShoulderNavigationEnabledSetter" AutomationProperties.Name="ShoulderNavigationEnabledSetter"
                                 SelectionChanged="ShoulderNavigationEnabledSetter_SelectionChanged"
-                                SelectedIndex="0"
                                 Header="ShoulderNavigationEnabled">
                             <ComboBoxItem AutomationProperties.Name="ShoulderNavigationEnabledAlways">Always</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ShoulderNavigationEnabledWhenSelectionFollowsFocus">WhenSelectionFollowsFocus</ComboBoxItem>
@@ -81,7 +80,6 @@
 
                         <ComboBox x:Name="SelectionFollowsFocusSetter" AutomationProperties.Name="SelectionFollowsFocusSetter"
                                 SelectionChanged="SelectionFollowsFocusSetter_SelectionChanged"
-                                SelectedIndex="0"
                                 Header="SelectionFollowsFocus">
                             <ComboBoxItem AutomationProperties.Name="SelectionFollowsFocusEnabled">Enabled</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="SelectionFollowsFocusDisabled">Disabled</ComboBoxItem>

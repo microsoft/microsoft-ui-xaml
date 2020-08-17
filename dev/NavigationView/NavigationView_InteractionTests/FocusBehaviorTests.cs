@@ -486,7 +486,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusEnabled");
 
                 Log.Comment("Select first item");
-                FindElement.ByName("HomeItem").Click();
+                FindElement.ByName("Home").Click();
                 Wait.ForIdle();
                 Verify.AreEqual("Home", GetSelectedItem());
 
@@ -526,7 +526,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusEnabled");
 
                 Log.Comment("Select first item");
-                FindElement.ByName("HomeItem").Click();
+                FindElement.ByName("Home").Click();
                 Wait.ForIdle();
                 Verify.AreEqual("Home", GetSelectedItem());
 
