@@ -1,7 +1,9 @@
 # Converting To WinUI3 Using C# Conversion Analyzers
 **Note: `Microsoft.WinUI.Convert` NuGet Package is Currently Unavailable During Prerelease**
 
-## Background
+**It is recommended to use the  [try-convert](https://github.com/dotnet/try-convert/blob/feature/winui/WinUIConvert.md) tool for the full conversion process.**
+
+# Background
 
 The purpose of the Microsoft.WinUI.Convert Nuget Package is to create a porting solution to allow Developers to convert WinUI2 projects to the new WinUI3 format.
 
@@ -17,27 +19,26 @@ This porting assistance is provided in the form of Code Analyzers and Code Fixes
 - A Code Fix consumes the diagnostics created by the Code Analyzer and modifies the C# file in-line. Users may choose to apply Code Fixes one at a time or resolve all instances of a Code Fix across a File, Project, or Solution.
 
 ### What The Conversion Analyzers Do:
-Analyze/Convert C# files
+Analyze/Convert C# files and apply the following changes:
 
-- Updates Namespaces for Xaml Types from `Windows.*` to `Microsoft.*`
+### Changes Common to All Projects:
+
+- Updates Type Namespaces from `Windows.*` to `Microsoft.*`
 - Types moving from `Windows` to `Microsoft`:
     - `Windows.UI.Xaml`
     - `Windows.UI.Colors`
     - `Windows.UI.ColorHelper` 
     - `Windows.UI.Composition`
+    - `Windows.UI.Input`
     - `Windows.UI.Text`
-    - `Windows.System.DispatcherQueue` 
-    - `Windows.System.DispatcherQueueController`
-    - `Windows.System.DispatcherQueueHandler`
-    - `Windows.System.DispatcherQueuePriority`
-    - `Windows.System.DispatcherQueueShutdownStartingEventArgs`
-    - `Windows.System.DispatcherQueueTimer`
+    - `Windows.System.DispatcherQueue*` 
 - Converts `App.OnLaunched` Method
     - Two updates need to be made to the `App.OnLaunched` method when converting to WinUI3:
     1. Target `Microsoft.UI.Xaml.LaunchactivatedEvenArgs` as the method parameter type
     2. Instances of the parameter name in the `App.OnLaunched` method body must invoke `UWPLaunchActivatedEventArgs`
-- Highlights Deprecated Types
-    - Some types such as `Windows.UI.Input.Inking`, and `Windows.UI.Xaml.Media.AcrylicBackgroundSource` are not supported in WinUI3. These may be identified by the analyzer as deprecated but cannot be converted automatically.
+
+### Changes Specific to UWP (.NET Native) Projects:
+
 - .Net Projections moving to `Microsoft.UI.Xaml` :
     - `System.ComponentModel.INotifyPropertyChanged` -> `Microsoft.UI.Xaml.Data.INotifyPropertyChanged`
     - `System.ComponentModel.PropertyChangedEventArgs`-> `Microsoft.UI.Xaml.Data.PropertyChangedEventArgs`
@@ -57,10 +58,12 @@ Analyze/Convert C# files
 ### What The Conversion Analyzers Do Not Do:
 
  - Modify .csproj files or modify/resolve conflicting NuGet packages
- - Remove deprecated Code
+ - Remove deprecated code:
+    - Some types such as `Windows.UI.Input.Inking`, and `Windows.UI.Xaml.Media.AcrylicBackgroundSource` are not supported in WinUI3. 
+    These may be identified and highlighted by the analyzer as deprecated but cannot be converted automatically, users will have to address these issues manually.
  - Analyze/Convert .xaml files
 
-### Examples
+# Examples
 
 #### Namespaces Before Running Analyzers:
 ```csharp
@@ -94,7 +97,10 @@ protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventA
 }
 ```
 ## Conversion Process
+
 **Note: `Microsoft.WinUI.Convert` NuGet Package is Currently Unavailable During Prerelease**
+
+**It is recommended to use the  [try-convert](https://github.com/dotnet/try-convert/blob/feature/winui/WinUIConvert.md) tool for the full conversion process.**
 
 Necessary steps for converting a WinUI C# App to WinUI3: 
 
@@ -102,7 +108,11 @@ Necessary steps for converting a WinUI C# App to WinUI3:
     
     ![Visual Studio Lightbulb Suggestion](./images/newPackage.png#thumb)
 
+<<<<<<< Updated upstream
 2. If installed, uninstall the Microsoft.UI.Xaml NuGet package from your solution. Additional conflicting packages such as `Microsoft.Xaml.Behaviors.*` may also need to be removed. 
+=======
+2. If installed, uninstall the Microsoft.UI.Xaml NuGet package from your solution. Additional conflicting packages such as `Microsoft.Xaml.Behaviors.*` may also need to be removed.
+>>>>>>> Stashed changes
     
     ![Visual Studio Lightbulb Suggestion](./images/uninstallOldPackage.png#thumb)
 
