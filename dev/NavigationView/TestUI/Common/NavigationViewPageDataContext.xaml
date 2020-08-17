@@ -31,9 +31,9 @@
         </muxcontrols:NavigationView>
 
         <muxcontrols:NavigationView
-            Width="400" PaneDisplayMode="Left"
-		    MenuItemsSource="{x:Bind Pages, Mode=OneWay}"
-		    ItemInvoked="NavigationView_ItemInvoked">
+                Width="400" PaneDisplayMode="Left"
+                MenuItemsSource="{x:Bind Pages, Mode=OneWay}"
+                ItemInvoked="NavigationView_ItemInvoked">
             <muxcontrols:NavigationView.MenuItemTemplate>
                 <DataTemplate>
                     <muxcontrols:NavigationViewItem Content="{Binding Name}" AutomationProperties.Name="{Binding Name}"/>
