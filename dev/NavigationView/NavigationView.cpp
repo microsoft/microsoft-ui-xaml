@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -2671,9 +2671,11 @@ bool NavigationView::BumperNavigation(int offset)
     // that meets the conditions, in the same direction.
     const auto shoulderNavigationEnabledParamValue = ShoulderNavigationEnabled();
     const auto shoulderNavigationForcedDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::Never);
+    const auto shoulderNavigationOptionalDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::WhenSelectionFollowsFocus
+        && SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled);
 
     if (!IsTopNavigationView()
-        || !IsNavigationViewListSingleSelectionFollowsFocus()
+        || shoulderNavigationOptionalDisabled
         || shoulderNavigationForcedDisabled)
     {
         return false;

@@ -520,7 +520,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var selectionFollowsFocusComboBox = new ComboBox(FindElement.ByName("SelectionFollowsFocusSetter"));
 
                 Log.Comment("Set ShoulderNavigation to always");
-                shoulderNavigationEnabled.SelectItemByName("ShoulderNavigationEnabledAlways");
+                shoulderNavigationEnabled.SelectItemByName("ShoulderNavigationEnabledWhenSelectionFollowsFocus");
 
                 Log.Comment("Set SelectionFollowsFocus to enabled");
                 selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusEnabled");
