@@ -102,7 +102,7 @@ Necessary steps for converting a WinUI C# App to WinUI3:
     
     ![Visual Studio Lightbulb Suggestion](./images/newPackage.png#thumb)
 
-2. Uninstall Microsoft.UI.Xaml from your solution. Additional conflicting packages such as `Microsoft.Xaml.Behaviors.*` may also need to be removed. 
+2. If installed, uninstall the Microsoft.UI.Xaml NuGet package from your solution. Additional conflicting packages such as `Microsoft.Xaml.Behaviors.*` may also need to be removed. 
     
     ![Visual Studio Lightbulb Suggestion](./images/uninstallOldPackage.png#thumb)
 
