@@ -107,7 +107,7 @@
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- Dependencies for Pager -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
@@ -262,6 +262,7 @@
     <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
     <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
+    <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
