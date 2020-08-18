@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -19,11 +19,25 @@ void InfoBar::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     // TODO: Implement
+
+    UpdateSeverity();
 }
 
-void  InfoBar::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void InfoBar::OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    winrt::IDependencyProperty property = args.Property();
-    
-    // TODO: Implement
+    UpdateSeverity();
+}
+
+void InfoBar::UpdateSeverity()
+{
+    auto severityState = L"Default";
+
+    switch (Severity())
+    {
+        case winrt::InfoBarSeverity::Critical: severityState = L"Critical"; break;
+        case winrt::InfoBarSeverity::Warning:  severityState = L"Warning";  break;
+        case winrt::InfoBarSeverity::Success:  severityState = L"Success";  break;
+    };
+
+    winrt::VisualStateManager::GoToState(*this, severityState, false);
 }

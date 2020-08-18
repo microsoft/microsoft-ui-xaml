@@ -1,17 +1,92 @@
-namespace MU_XC_NAMESPACE
+﻿namespace MU_XC_NAMESPACE
 {
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+enum InfoBarCloseReason
+{
+    CloseButton = 0,
+    Programmatic = 1
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum InfoBarSeverity
+{
+    Critical = 0,
+    Warning = 1,
+    Success = 2,
+    Default = 3
+};
+
+/*[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass InfoBarClosedEventArgs : System.EventArgs
+{
+    InfoBarCloseReason Reason { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass InfoBarClosingEventArgs : System.EventArgs
+{
+    InfoBarCloseReason Reason { get; set; };
+    bool Cancel { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass CloseButtonClickEventArgs : System.EventArgs
+{
+    bool IsHandled { get; set; };
+}*/
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
 {
     InfoBar();
 
-    Object Placeholder{ get; set; };
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsOpen{ get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
+    String Title{ get; set; };
+    String Message{ get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::InfoBarSeverity::Default")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    InfoBarSeverity Severity{ get; set; };
+
+    IconSource IconSource{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean ShowCloseButton{ get; set; };
+
+    Windows.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
+    Object CloseButtonCommandParameter{ get; set; };
+
+    Object ActionButtonContent{ get; set; };
+    Windows.UI.Xaml.Style ActionButtonStyle{ get; set; };
+    Windows.UI.Xaml.Input.ICommand ActionButtonCommand{ get; set; };
+    Object ActionButtonCommandParameter{ get; set; };
+
+    Object HyperlinkButtonContent{ get; set; }; // ### ???
+
+    //Windows.UI.Color StatusColor{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MessageProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SeverityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ShowCloseButtonProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonCommandParameterProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HyperlinkButtonContentProperty{ get; };
 }
 
 }

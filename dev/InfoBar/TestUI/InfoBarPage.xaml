@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.InfoBarPage"
     x:Name="InfoBarTestPage"
@@ -11,8 +11,52 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel Orientation="Vertical">
-            <controls:InfoBar />
-        </StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <controls:InfoBar x:Name="TestInfoBar"
+                IsOpen="True"
+                Title="{x:Bind TitleTextBox.Text, Mode=OneWay}"
+                Message="{x:Bind MessageTextBox.Text, Mode=OneWay}"
+                ActionButtonContent="{x:Bind ActionContentTextBox.Text, Mode=OneWay}"
+                HyperlinkButtonContent="Now what?" />
+
+            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,20,0,0" Spacing="6" HorizontalAlignment="Left">
+                <ComboBox x:Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
+                    <x:String>Critical</x:String>
+                    <x:String>Warning</x:String>
+                    <x:String>Success</x:String>
+                    <x:String>Default</x:String>
+                </ComboBox>
+
+                <ComboBox x:Name="IconComboBox" Header="Icon">
+                    <x:String>Default Icon</x:String>
+                    <x:String>User Icon</x:String>
+                    <x:String>No Icon</x:String>
+                </ComboBox>
+
+                <TextBox x:Name="TitleTextBox" Header="Title" Width="250" Text="Oops" HorizontalAlignment="Left"/>
+
+                <TextBox x:Name="MessageTextBox" Header="Message" Width="250" Text="You done goofed" HorizontalAlignment="Left"/>
+
+                <TextBox x:Name="ActionContentTextBox" Header="Action Button Content" Width="200" Text="I have regrets" HorizontalAlignment="Left"/>
+
+                <ComboBox x:Name="HyperlinkComboBox" Header="Hyperlink">
+                    <x:String>Hyperlink</x:String>
+                    <x:String>No Hyperlink</x:String>
+                </ComboBox>
+                
+                <CheckBox x:Name="IsOpenCheckBox" Content="IsOpen"/>
+
+                <CheckBox x:Name="CancelCheckBox" Content="Cancel Close" />
+
+                <CheckBox Name="ShowCloseCheckBox" Content="Show Close Button"/>
+
+                <!-- ### also need to test the command, commandparam, and style-->
+            </StackPanel>
+        </Grid>
     </Grid>
 </local:TestPage>
