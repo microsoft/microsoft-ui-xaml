@@ -441,7 +441,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void ReplaceMultipleItems()
         {
             // TODO: Lower prioirty scenario. Tracked by work item: 9738020

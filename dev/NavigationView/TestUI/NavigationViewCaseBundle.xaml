@@ -42,7 +42,6 @@
             <Button x:Name="NavigationViewTopNavPage" AutomationProperties.Name="NavigationView TopNav Test" Margin="2" HorizontalAlignment="Stretch">NavigationView TopNav Test</Button>
             <Button x:Name="NavigationViewTopNavOnlyPage" AutomationProperties.Name="Top NavigationView Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Test</Button>
             <Button x:Name="NavigationViewTopNavStorePage" AutomationProperties.Name="Top NavigationView Store Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Store Test</Button>
-            <Button x:Name="NavigateToTopNavPage" AutomationProperties.Name="Top Nav Test" Margin="2" HorizontalAlignment="Stretch">Top Nav Test</Button>
             <Button x:Name="NavigateToTopNavOverflowButtonPage" AutomationProperties.Name="Top NavigationView Overflow Button Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Overflow Button Test</Button>
         </StackPanel>
 

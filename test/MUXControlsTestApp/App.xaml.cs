@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Common;
 
+
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -208,6 +209,10 @@ namespace MUXControlsTestApp
 
 #if FEATURE_INFOBAR_ENABLED 
             AppendResourceToMergedDictionaries("InfoBarStyles.xaml");
+#endif
+
+#if FEATURE_PAGER_ENABLED
+            AppendResourceToMergedDictionaries("PrototypePager.xaml");
 #endif
 
             // For test purposes, add styles that disable long animations.
