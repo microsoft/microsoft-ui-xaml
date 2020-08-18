@@ -304,8 +304,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] // Not currently passing, tracked by issue #643
-        [TestProperty("Ignore", "True")]
+        [TestMethod] 
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void AutoPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
