@@ -3904,21 +3904,23 @@ winrt::IVector<winrt::ZoomSnapPointBase> ScrollPresenter::GetConsolidatedZoomSna
     return snapPoints;
 }
 
-SnapPointWrapper<winrt::ScrollSnapPointBase>* ScrollPresenter::GetScrollSnapPointWrapper(ScrollPresenterDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint)
+std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> ScrollPresenter::GetScrollSnapPointWrapper(ScrollPresenterDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint)
 {
-    std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> snapPointsSet;
-
-    switch (dimension)
+    const auto& snapPointsSet = [&]()
     {
-    case ScrollPresenterDimension::VerticalScroll:
-        snapPointsSet = m_sortedConsolidatedVerticalSnapPoints;
-        break;
-    case ScrollPresenterDimension::HorizontalScroll:
-        snapPointsSet = m_sortedConsolidatedHorizontalSnapPoints;
-        break;
-    default:
-        MUX_ASSERT(false);
-    }
+        switch (dimension)
+        {
+        case ScrollPresenterDimension::VerticalScroll:
+            return m_sortedConsolidatedVerticalSnapPoints;
+            break;
+        case ScrollPresenterDimension::HorizontalScroll:
+            return m_sortedConsolidatedHorizontalSnapPoints;
+            break;
+        default:
+            MUX_ASSERT(false);
+            return m_sortedConsolidatedVerticalSnapPoints;
+        }
+    }();
 
     for (std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> snapPointWrapper : snapPointsSet)
     {
@@ -3926,14 +3928,14 @@ SnapPointWrapper<winrt::ScrollSnapPointBase>* ScrollPresenter::GetScrollSnapPoin
 
         if (winrtScrollSnapPoint == scrollSnapPoint)
         {
-            return snapPointWrapper.get();
+            return snapPointWrapper;
         }
     }
 
     return nullptr;
 }
 
-SnapPointWrapper<winrt::ZoomSnapPointBase>* ScrollPresenter::GetZoomSnapPointWrapper(winrt::ZoomSnapPointBase const& zoomSnapPoint)
+std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>> ScrollPresenter::GetZoomSnapPointWrapper(winrt::ZoomSnapPointBase const& zoomSnapPoint)
 {
     for (std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>> snapPointWrapper : m_sortedConsolidatedZoomSnapPoints)
     {
@@ -3941,7 +3943,7 @@ SnapPointWrapper<winrt::ZoomSnapPointBase>* ScrollPresenter::GetZoomSnapPointWra
 
         if (winrtZoomSnapPoint == zoomSnapPoint)
         {
-            return snapPointWrapper.get();
+            return snapPointWrapper;
         }
     }
 
