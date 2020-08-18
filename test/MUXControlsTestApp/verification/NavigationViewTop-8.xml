@@ -1648,7 +1648,7 @@
                       RenderSize=120,19
                 [Windows.UI.Xaml.Controls.Canvas]
                     Background=[NULL]
-                    Width=120
+                    Width=152
                     Name=PaneShadowReceiver
                     Margin=0,-32,-32,-32
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -1656,7 +1656,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=120,624
+                    RenderSize=152,624
             [Windows.UI.Xaml.Shapes.Rectangle]
                 StrokeThickness=1
                 Name=LightDismissLayer
