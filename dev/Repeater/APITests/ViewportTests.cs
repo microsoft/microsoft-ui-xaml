@@ -97,7 +97,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Temporarily disabled for bug 18866003
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18866003
         public void ValidateItemsRepeaterScrollHostScenario()
         {
             var realizationRects = new List<Rect>();
@@ -840,7 +841,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Temporarily disabled for bug 18866003
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18866003
         public void ValidateLoadUnload()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
@@ -989,8 +991,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         // Test is flaky - disabling it while debugging the issue.
-        // Bug 17581054: RepeaterTests.ViewportTests.CanBringIntoViewElements is failing on RS4 
-        // [TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 17581054
         public void CanBringIntoViewElements()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
