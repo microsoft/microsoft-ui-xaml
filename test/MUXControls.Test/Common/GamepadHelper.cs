@@ -82,10 +82,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             else
             {
                 var keyInputReceivedCheckbox = new CheckBox(keyInputReceivedUIObject);
-                while (keyInputReceivedCheckbox.ToggleState != ToggleState.On)
-                {
-                    Wait.ForMilliseconds(10);
-                }
+                keyInputReceivedCheckbox.GetToggledWaiter().TryWait(TimeSpan.FromMilliseconds(50));
             }
 
             Wait.ForIdle();
