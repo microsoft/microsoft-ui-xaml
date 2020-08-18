@@ -414,7 +414,7 @@ winrt::float2 ScrollPresenterTestHooks::GetHorizontalSnapPointActualApplicableZo
 {
     if (scrollSnapPoint)
     {
-        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
+        const auto snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -431,7 +431,7 @@ winrt::float2 ScrollPresenterTestHooks::GetVerticalSnapPointActualApplicableZone
 {
     if (scrollSnapPoint)
     {
-        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
+        const auto snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -448,7 +448,7 @@ winrt::float2 ScrollPresenterTestHooks::GetZoomSnapPointActualApplicableZone(
 {
     if (zoomSnapPoint)
     {
-        const SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
+        const auto snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -465,7 +465,7 @@ int ScrollPresenterTestHooks::GetHorizontalSnapPointCombinationCount(
 {
     if (scrollSnapPoint)
     {
-        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
+        const auto snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -481,7 +481,7 @@ int ScrollPresenterTestHooks::GetVerticalSnapPointCombinationCount(
 {
     if (scrollSnapPoint)
     {
-        const SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
+        const auto snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -497,7 +497,7 @@ int ScrollPresenterTestHooks::GetZoomSnapPointCombinationCount(
 {
     if (zoomSnapPoint)
     {
-        const SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
+        const auto snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }

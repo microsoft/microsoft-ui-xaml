@@ -571,8 +571,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHidden()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -588,8 +588,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHiddenWithFixedWindowSize()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))

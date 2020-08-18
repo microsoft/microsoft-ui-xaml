@@ -411,7 +411,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] replace with Dmitry's more reliable method
+        [TestMethod]// replace with Dmitry's more reliable method
+        [TestProperty("Ignore", "True")]  // Disabled as per tracking issue #3125
         public void SwipeDoesntJumpWhenItReverts()
         {
             using (var setup = new TestSetupHelper("SwipeControl Tests"))
