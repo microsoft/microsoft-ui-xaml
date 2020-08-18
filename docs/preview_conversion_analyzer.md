@@ -46,7 +46,7 @@ Analyze/Convert C# files and apply the following changes:
 
 ### UWP Projection Analyzer/Codefix
 
-- Some moving in UWP and projects need to target the new projected types.
+- Some types are moving in UWP and projects need to target the new projected types.
 - .Net Projections moving to `Microsoft.UI.Xaml` :
     - `System.ComponentModel.INotifyPropertyChanged` -> `Microsoft.UI.Xaml.Data.INotifyPropertyChanged`
     - `System.ComponentModel.PropertyChangedEventArgs`-> `Microsoft.UI.Xaml.Data.PropertyChangedEventArgs`
@@ -54,7 +54,7 @@ Analyze/Convert C# files and apply the following changes:
 
 ### ObservableCollection Analyzer/Codefix
 
-- `ObservableCollection\<T\>` is being removed and users will have to provide their own implementation targeting `INotifyCollectionChanged`.
+- `ObservableCollection<T>` is being removed and users will have to provide their own implementation targeting `INotifyCollectionChanged`.
 - If the analyzer cannot find an implementation it will provide its own helper class.
     - `System.Collections.ObjectModel.ObservableCollection` -> `Microsoft.UI.Xaml.Interop.INotifyCollectionChanged`
         
