@@ -1706,9 +1706,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectGamepadTest();
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
-        //[TestProperty("TestSuite", "B")]
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void TreeViewMultiSelectGamepadTest_ContentMode()
         {
             TreeViewMultiSelectGamepadTest(isContentMode:true);
