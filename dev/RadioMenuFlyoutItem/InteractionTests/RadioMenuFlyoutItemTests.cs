@@ -56,8 +56,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         };
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
-        //Disabled due to Bug 19603059: RadioMenuFlyoutItemTests is occasionally failing in the lab
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19603059
         public void BasicTest()
         {
             using (var setup = new TestSetupHelper("RadioMenuFlyoutItem Tests"))
