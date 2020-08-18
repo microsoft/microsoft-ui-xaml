@@ -438,7 +438,7 @@ void ViewportManagerWithPlatformFeatures::UpdateViewport(winrt::Rect const& view
         previousVisibleWindow.X, previousVisibleWindow.Y, previousVisibleWindow.Width, previousVisibleWindow.Height,
         viewport.X, viewport.Y, viewport.Width, viewport.Height);
 
-    const auto currentVisibleWindow = viewport;
+    const auto& currentVisibleWindow = viewport;
 
     if (-currentVisibleWindow.X <= ItemsRepeater::ClearedElementsArrangePosition.X &&
         -currentVisibleWindow.Y <= ItemsRepeater::ClearedElementsArrangePosition.Y)
