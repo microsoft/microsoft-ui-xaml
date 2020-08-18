@@ -39,7 +39,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             TestEnvironment.Initialize(testContext);
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: Multiple unreliable NavigationView tests #134
         public void SuppressSelectionItemInvokeTest()
         {

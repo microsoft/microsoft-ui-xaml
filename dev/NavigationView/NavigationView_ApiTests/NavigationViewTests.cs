@@ -567,7 +567,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-
         [TestMethod]
         public void VerifySettingsItemToolTip()
         {
@@ -611,7 +610,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Disabled per GitHub Issue #211
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void VerifyCanNotAddWUXItems()
         {
             if (!ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.NavigationViewItem"))
@@ -854,5 +854,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyOverflowButtonToolTip()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
+                Content = navView;
+                Content.UpdateLayout();
+
+                var overflowButton = VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") as Button;
+                var toolTipObject = ToolTipService.GetToolTip(overflowButton);
+
+                bool testCondition = toolTipObject is ToolTip toolTip && toolTip.Content.Equals("More");
+                Verify.IsTrue(testCondition, "ToolTip text should have been \"More\".");
+            });
+        }
     }
 }

@@ -101,6 +101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Verify.IsNotNull(focusedElement);
             }
         }
+
         [TestMethod]
         public void EnsureLeftSettingsRetainsFocusAfterOrientationChanges()
         {
