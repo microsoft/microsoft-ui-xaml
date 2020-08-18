@@ -237,7 +237,7 @@ private:
     void UpdatePaneTitleMargins();
     void UpdateLeftRepeaterItemSource(const winrt::IInspectable& items);
     void UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items);
-    void UpdateTopNavRepeaterItemsSource(const winrt::IInspectable& items);
+    void UpdateTopNavPrimaryRepeaterItemsSource(const winrt::IInspectable& items);
     void UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items);
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();

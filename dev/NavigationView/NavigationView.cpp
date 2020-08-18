@@ -708,11 +708,11 @@ void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& 
     m_topDataProvider.SetDataSource(items);
 
     // rebinding
-    UpdateTopNavRepeaterItemsSource(items);
+    UpdateTopNavPrimaryRepeaterItemsSource(items);
     UpdateTopNavOverflowRepeaterItemsSource(items);
 }
 
-void NavigationView::UpdateTopNavRepeaterItemsSource(const winrt::IInspectable& items)
+void NavigationView::UpdateTopNavPrimaryRepeaterItemsSource(const winrt::IInspectable& items)
 {
     if (items)
     {
@@ -728,12 +728,13 @@ void NavigationView::UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspe
 {
     m_topNavOverflowItemsCollectionChangedRevoker.revoke();
 
-    if (items)
+    if (const auto overflowRepeater = m_topNavRepeaterOverflowView.get())
     {
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
-
-        if (const auto overflowRepeater = m_topNavRepeaterOverflowView.get())
+        if (items)
         {
+            const auto itemsSource = m_topDataProvider.GetOverflowItems();
+            overflowRepeater.ItemsSource(itemsSource);
+
             // We listen to changes to the overflow menu item collection so we can set the visibility of the overflow button
             // to collapsed when it no longer has any items.
             //
@@ -742,13 +743,12 @@ void NavigationView::UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspe
             // - either remove that menu item or
             // - remove menu items displayed in the NavigationView pane until there is enough room for the single overflow menu item
             //   to be displayed in the pane
-            m_topNavOverflowItemsCollectionChangedRevoker =
-                overflowRepeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemsSourceCollectionChanged });
+            m_topNavOverflowItemsCollectionChangedRevoker = overflowRepeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemsSourceCollectionChanged });
         }
-    }
-    else
-    {
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+        else
+        {
+            overflowRepeater.ItemsSource(nullptr);
+        }
     }
 }
 
