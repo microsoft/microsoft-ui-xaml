@@ -74,7 +74,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewTopNavOverflowButtonPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavOverflowButtonPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -118,7 +118,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewIsPaneOpenPage.xaml.cs">
       <DependentUpon>NavigationViewIsPaneOpenPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml.cs" >
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml.cs">
       <DependentUpon>NavigationViewMenuItemStretchPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMinimalPage.xaml.cs">
@@ -148,7 +148,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInitPage.xaml.cs">
       <DependentUpon>NavigationViewInitPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavOverflowButtonPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavOverflowButtonPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavOverflowButtonPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavPage.xaml.cs">
