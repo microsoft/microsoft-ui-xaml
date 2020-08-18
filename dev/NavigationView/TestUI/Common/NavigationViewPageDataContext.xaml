@@ -9,7 +9,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <StackPanel Orientation="Horizontal">
+       
         <muxcontrols:NavigationView
             x:Name="NavView"
             AutomationProperties.Name="NavView"
@@ -28,6 +29,19 @@
                 </StackPanel>
             </StackPanel>
         </muxcontrols:NavigationView>
-    </Grid>
+
+        <muxcontrols:NavigationView
+                Width="400" PaneDisplayMode="Left"
+                MenuItemsSource="{x:Bind Pages, Mode=OneWay}"
+                ItemInvoked="NavigationView_ItemInvoked">
+            <muxcontrols:NavigationView.MenuItemTemplate>
+                <DataTemplate>
+                    <muxcontrols:NavigationViewItem Content="{Binding Name}" AutomationProperties.Name="{Binding Name}"/>
+                </DataTemplate>
+            </muxcontrols:NavigationView.MenuItemTemplate>
+
+            <TextBlock Text="{Binding SelectedPage.Name}" />
+        </muxcontrols:NavigationView>
+    </StackPanel>
 
 </local:TestPage>

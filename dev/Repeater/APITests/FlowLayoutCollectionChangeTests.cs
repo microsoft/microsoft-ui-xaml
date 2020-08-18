@@ -442,7 +442,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ReplaceMultipleItems()
         {
             // TODO: Lower prioirty scenario. Tracked by work item: 9738020
