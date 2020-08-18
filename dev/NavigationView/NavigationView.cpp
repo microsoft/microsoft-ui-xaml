@@ -469,10 +469,18 @@ void NavigationView::OnApplyTemplate()
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
     {
         m_topNavOverflowButton.set(topNavOverflowButton);
-        winrt::AutomationProperties::SetName(topNavOverflowButton, ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonText));
+        winrt::AutomationProperties::SetName(topNavOverflowButton, ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonName));
         topNavOverflowButton.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonText)));
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
+
+        auto const toolTip = winrt::ToolTipService::GetToolTip(topNavOverflowButton);
+        if (!toolTip)
+        {
+            auto const tooltip = winrt::ToolTip();
+            tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonToolTip)));
+            winrt::ToolTipService::SetToolTip(topNavOverflowButton, tooltip);
+        }
 
         if (auto const flyoutBase = topNavOverflowButton.Flyout())
         {
@@ -867,7 +875,13 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
     {
         auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
         auto itemIndex = parentIR.GetElementIndex(nvi);
-        nextItem = inspectingDataSource->GetAt(itemIndex);
+
+        // Check that index is NOT -1, meaning it is actually realized
+        if (itemIndex != -1)
+        {
+            // Something went wrong, item might not be realized yet.
+            nextItem = inspectingDataSource->GetAt(itemIndex);
+        }
     }
 
     // Determine the recommeded transition direction.

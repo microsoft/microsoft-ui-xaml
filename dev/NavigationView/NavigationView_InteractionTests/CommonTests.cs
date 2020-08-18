@@ -497,8 +497,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
-        // Disabled due to: Bug 18650478: Test instability: NavigationViewTests.TitleBarTest
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18650478
         public void TitleBarTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1102,7 +1101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ToolTipTest() // Verify tooltips appear, and that their contents change when headers change
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1231,7 +1230,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ToolTipCustomContentTest() // Verify tooltips don't appear for custom NavViewItems (split off due to CatGates timeout)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))

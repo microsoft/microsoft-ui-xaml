@@ -233,18 +233,18 @@ public:
     winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedScrollSnapPoints(ScrollPresenterDimension dimension);
     winrt::IVector<winrt::ZoomSnapPointBase> GetConsolidatedZoomSnapPoints();
 
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetHorizontalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
+    std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> GetHorizontalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
     {
         return GetScrollSnapPointWrapper(ScrollPresenterDimension::HorizontalScroll, scrollSnapPoint);
     }
 
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetVerticalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
+    std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> GetVerticalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
     {
         return GetScrollSnapPointWrapper(ScrollPresenterDimension::VerticalScroll, scrollSnapPoint);
     }
 
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetScrollSnapPointWrapper(ScrollPresenterDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint);
-    SnapPointWrapper<winrt::ZoomSnapPointBase>* GetZoomSnapPointWrapper(winrt::ZoomSnapPointBase const& zoomSnapPoint);
+    std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> GetScrollSnapPointWrapper(ScrollPresenterDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint);
+    std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>> GetZoomSnapPointWrapper(winrt::ZoomSnapPointBase const& zoomSnapPoint);
 
     // Invoked when a dependency property of this ScrollPresenter has changed.
     void OnPropertyChanged(
