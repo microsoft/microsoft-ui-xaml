@@ -14,75 +14,75 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)HierarchicalNavigationViewDataBinding.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewDataBinding.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)HierarchicalNavigationViewMarkup.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewMarkup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewAnimationPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewAnimationPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewBlankPage1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewBlankPage1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewCompactPaneLengthTestPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewCompactPaneLengthTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewIsPaneOpenPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewIsPaneOpenPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewMenuItemStretchPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewMinimalPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewPageDataContext.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPageDataContext.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewRS3Page.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewRS4Page.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS4Page.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewStretchPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewStretchPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewItemTemplatePage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewItemTemplatePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewCustomThemeResourcesPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewCustomThemeResourcesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewInitPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewInitPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewTopNavPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewSelectedItemEdgeCasePage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewSelectedItemEdgeCasePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -90,11 +90,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewTopNavOnlyPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavOnlyPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewTopNavStorePage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavStorePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -103,65 +103,67 @@
     <Compile Include="$(MSBuildThisFileDirectory)DialogWithNavView.xaml.cs">
       <DependentUpon>DialogWithNavView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)HierarchicalNavigationViewDataBinding.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewDataBinding.xaml.cs">
       <DependentUpon>HierarchicalNavigationViewDataBinding.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)HierarchicalNavigationViewMarkup.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewMarkup.xaml.cs">
       <DependentUpon>HierarchicalNavigationViewMarkup.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewAnimationPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewAnimationPage.xaml.cs">
       <DependentUpon>NavigationViewAnimationPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewBlankPage1.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewBlankPage1.xaml.cs">
       <DependentUpon>NavigationViewBlankPage1.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewCompactPaneLengthTestPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewCompactPaneLengthTestPage.xaml.cs">
       <DependentUpon>NavigationViewCompactPaneLengthTestPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewIsPaneOpenPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewIsPaneOpenPage.xaml.cs">
       <DependentUpon>NavigationViewIsPaneOpenPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMenuItemStretchPage.xaml.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml.cs" >
+      <DependentUpon>NavigationViewMenuItemStretchPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMinimalPage.xaml.cs">
       <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewPageDataContext.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPageDataContext.xaml.cs">
       <DependentUpon>NavigationViewPageDataContext.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewRS3Page.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml.cs">
       <DependentUpon>NavigationViewRS3Page.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewRS4Page.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS4Page.xaml.cs">
       <DependentUpon>NavigationViewRS4Page.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewStretchPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewStretchPage.xaml.cs">
       <DependentUpon>NavigationViewStretchPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewItemTemplatePage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewItemTemplatePage.xaml.cs">
       <DependentUpon>NavigationViewItemTemplatePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPage.xaml.cs">
       <DependentUpon>NavigationViewPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewCustomThemeResourcesPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewCustomThemeResourcesPage.xaml.cs">
       <DependentUpon>NavigationViewCustomThemeResourcesPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewInitPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInitPage.xaml.cs">
       <DependentUpon>NavigationViewInitPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewSelectedItemEdgeCasePage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewSelectedItemEdgeCasePage.xaml.cs">
       <DependentUpon>NavigationViewSelectedItemEdgeCasePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewCaseBundle.xaml.cs">
       <DependentUpon>NavigationViewCaseBundle.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavOnlyPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavOnlyPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavOnlyPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavStorePage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavStorePage.xaml.cs">
       <DependentUpon>NavigationViewTopNavStorePage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -169,5 +171,11 @@
     <Compile Update="D:\Projects\microsoft-ui-xaml\dev\NavigationView\TestUI\NavigationViewMenuItemStretchPage.xaml.cs">
       <DependentUpon>NavigationViewMenuItemStretchPage.xaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Common\" />
+    <Folder Include="$(MSBuildThisFileDirectory)CustomResources\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Regression\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TopMode\" />
   </ItemGroup>
 </Project>
