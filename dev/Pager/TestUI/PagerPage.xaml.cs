@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.AllJoyn;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace MUXControlsTestApp
 {
@@ -25,7 +26,6 @@ namespace MUXControlsTestApp
         public PagerPage()
         {
             this.InitializeComponent();
-            PagerEventListViewDisplay.ItemsSource = EventHistory;
             this.Loaded += OnLoad;
         }
 
@@ -37,19 +37,61 @@ namespace MUXControlsTestApp
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextButtonVisibilityChanged;
             LastPageButtonVisibilityComboBox.SelectionChanged += OnLastButtonVisibilityChanged;
 
+            TestPager.NumberPanelDisplayTestHook.ItemsSourceView.CollectionChanged += OnNumberPanelCollectionChanged;
+
             NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
             ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
             NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
+
+            OnNumberPanelCollectionChanged(this, null);
+
+        }
+
+        private void OnNumberPanelCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            NumberPanelContentTextBlock.Text = "";
+            foreach (var item in TestPager.NumberPanelDisplayTestHook.ItemsSource as ObservableCollection<object>)
+            {
+                if (item.GetType() == typeof(SymbolIcon))
+                {
+                    NumberPanelContentTextBlock.Text += (item as SymbolIcon).Symbol;
+                }
+                else
+                {
+                    NumberPanelContentTextBlock.Text += item;
+                }
+            }
         }
 
         private void NumberOfPagesSetterButtonClicked(object sender, RoutedEventArgs args)
         {
-            TestPager.NumberOfPages = 100;
+            if (TestPager.NumberOfPages == 5)
+            {
+                TestPager.NumberOfPages = 100;
+                NumberOfPagesSetterButton.Content = "Set NumberOfPages to 5";
+            }
+            else
+            {
+                TestPager.NumberOfPages = 5;
+                NumberOfPagesSetterButton.Content = "Set NumberOfPages to 100";
+            }
         }
+
         private void OnPageChanged(PrototypePager sender, PageChangedEventArgs args)
         {
-            EventHistory.Add($"Page changed from page {args.PreviousPage} to page {args.CurrentPage}");
+
+            for (int i = 0; i < TestPager.NumberPanelDisplayTestHook.ItemsSourceView.Count; i++)
+            {
+                FrameworkElement element = TestPager.NumberPanelDisplayTestHook.TryGetElement(i) as FrameworkElement;
+                if (element?.Margin.Left == TestPager.NumberPanelCurrentPageIdentifierTestHook.Margin.Left)
+                {
+                    CurrentPageIdentifierLocationTextBlock.Text = (element as Button).Content.ToString();
+                }
+            }
+            PreviousPageTextBlock.Text = args.PreviousPage.ToString();
+            CurrentPageTextBlock.Text = args.CurrentPage.ToString();
 
             FirstPageButtonVisibilityCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Visible;
             PreviousPageButtonVisibilityCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Visible;
@@ -90,6 +132,7 @@ namespace MUXControlsTestApp
 
             NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
             ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
             NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
         }

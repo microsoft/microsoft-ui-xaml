@@ -43,12 +43,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject PagerComboBox;
 
-        public UIObject GetPageNumberPanel()
-        {
-            return GetElementWithinPager(ref PagerNumberPanel, "NumberPanelItemsRepeater");
-        }
-        private UIObject PagerNumberPanel;
-
         public UIObject GetPagerNumberPanelCurrentPageIdentifier()
         {
             return GetElementWithinPager(ref PagerNumberPanelCurrentPageIdentifier, "NumberPanelCurrentPageIdentifier");
@@ -181,16 +175,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox ComboBoxIsEnabledCheckBox;
 
-        public ListView GetEventOutputListView()
+        public CheckBox GetNumberPanelVisibilityCheckBox()
         {
-            return GetElement(ref EventOutputListView, "PagerEventListViewDisplay");
+            return GetElement(ref NumberPanelVisibilityCheckBox, "NumberPanelVisibilityCheckBox");
         }
-        private ListView EventOutputListView;
+        private CheckBox NumberPanelVisibilityCheckBox;
 
-        public string GetLastEventOutput()
+        public TextBlock GetNumberOfPagesTextBlock()
         {
-            return GetEventOutputListView().LastChild.Name;
+            return GetElement(ref NumberOfPagesTextBlock, "NumberOfPagesTextBlock");
         }
+        private TextBlock NumberOfPagesTextBlock;
+
+        public TextBlock GetCurrentPageTextBlock()
+        {
+            return GetElement(ref CurrentPageTextBlock, "CurrentPageTextBlock");
+        }
+        private TextBlock CurrentPageTextBlock;
+
+        public TextBlock GetPreviousPageTextBlock()
+        {
+            return GetElement(ref PreviousPageTextBlock, "PreviousPageTextBlock");
+        }
+        private TextBlock PreviousPageTextBlock;
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
@@ -209,7 +216,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Find the " + elementName);
 
-                foreach(T child in GetPager().Children)
+                foreach (T child in GetPager().Children)
                 {
                     if (child.AutomationId == elementName)
                     {
@@ -236,8 +243,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             HiddenOnEdge,
             None
         }
-
-        public bool ComboBoxDisplayModeActive = true;
-        public bool NumberBoxDisplayModeActive = false;
     }
 }

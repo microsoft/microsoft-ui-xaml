@@ -28,9 +28,9 @@ namespace MUXControlsTestApp
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
         private ComboBox PagerComboBox;
         private NumberBox PagerNumberBox;
-        private ItemsRepeater NumberPanelItems;
+        private ItemsRepeater PagerNumberPanel;
         private Rectangle NumberPanelCurrentPageIdentifier;
-        private ObservableCollection<object> NumberPanelCurrentItems = new ObservableCollection<object>();
+        private ObservableCollection<object> PagerNumberPanelItems = new ObservableCollection<object>();
 
         private IconElement LeftEllipse = new SymbolIcon(Symbol.More);
         private IconElement RightEllipse = new SymbolIcon(Symbol.More);
@@ -71,7 +71,6 @@ namespace MUXControlsTestApp
 
         private void OnLoad(object sender, RoutedEventArgs args)
         {
-            SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
             // Attach Callbacks for property changes
             RegisterPropertyChangedCallback(NumberOfPagesProperty, (s, e) => { OnNumberOfPagesChanged(); });
             RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { OnSelectedIndexChanged(); });
@@ -80,10 +79,10 @@ namespace MUXControlsTestApp
             RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });
             RegisterPropertyChangedCallback(NextPageButtonVisibilityProperty, (s, e) => { OnNextPageButtonVisibilityChanged(); });
             RegisterPropertyChangedCallback(LastPageButtonVisibilityProperty, (s, e) => { OnLastPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(PagerNumberBox.Maximum)
         }
         protected override void OnApplyTemplate()
         {
+            SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
             // Grab UIElements for later
             FirstPageButton = GetTemplateChild("FirstPageButton") as Button;
             PreviousPageButton = GetTemplateChild("PreviousPageButton") as Button;
@@ -91,7 +90,7 @@ namespace MUXControlsTestApp
             LastPageButton = GetTemplateChild("LastPageButton") as Button;
             PagerComboBox = GetTemplateChild("ComboBoxDisplay") as ComboBox;
             PagerNumberBox = GetTemplateChild("NumberBoxDisplay") as NumberBox;
-            NumberPanelItems = GetTemplateChild("NumberPanelItemsRepeater") as ItemsRepeater;
+            PagerNumberPanel = GetTemplateChild("NumberPanelItemsRepeater") as ItemsRepeater;
             NumberPanelCurrentPageIdentifier = GetTemplateChild("NumberPanelCurrentPageIdentifier") as Rectangle;
 
             // Attach TestHooks
@@ -101,6 +100,8 @@ namespace MUXControlsTestApp
             LastPageButtonTestHook = LastPageButton;
             NumberBoxDisplayTestHook = PagerNumberBox;
             ComboBoxDisplayTestHook = PagerComboBox;
+            NumberPanelDisplayTestHook = PagerNumberPanel;
+            NumberPanelCurrentPageIdentifierTestHook = NumberPanelCurrentPageIdentifier;
 
             // Attach click events
             if (FirstPageButton != null)
@@ -122,13 +123,13 @@ namespace MUXControlsTestApp
             if (PagerComboBox != null)
             {
                 PagerComboBox.SelectedIndex = SelectedIndex - 1;
-                PagerComboBox.SelectionChanged += (s, e) => { SelectedIndex = PagerComboBox.SelectedIndex + 1; };
+                PagerComboBox.SelectionChanged += (s, e) => { OnComboBoxSelectionChanged(); };
             }
-            if (NumberPanelItems != null)
+            if (PagerNumberPanel != null)
             {
-                NumberPanelItems.Loaded += (s, e) => { InitializeNumberPanel(); };
-                NumberPanelItems.ElementPrepared += OnElementPrepared;
-                NumberPanelItems.ElementClearing += OnElementClearing;
+                InitializeNumberPanel();
+                PagerNumberPanel.ElementPrepared += OnElementPrepared;
+                PagerNumberPanel.ElementClearing += OnElementClearing;
             }
 
             OnPagerDisplayModeChanged();
@@ -139,25 +140,24 @@ namespace MUXControlsTestApp
 
         private void InitializeNumberPanel()
         {
-            NumberPanelItems.ItemsSource = NumberPanelCurrentItems;
+            
+            PagerNumberPanelItems?.Clear();
+            PagerNumberPanel.ItemsSource = PagerNumberPanelItems;
 
             if (NumberOfPages <= 7)
             {
-                RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { MoveIdentifierToCurrentPage(); });
                 foreach(var num in TemplateSettings.Pages.GetRange(0, NumberOfPages))
                 {
-                    NumberPanelCurrentItems.Add(num);
+                    PagerNumberPanelItems.Add(num);
                 }
             } else
             {
-                RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { UpdateNumberPanel(); });
-
                 foreach (var num in TemplateSettings.Pages.GetRange(0, 5))
                 {
-                    NumberPanelCurrentItems.Add(num);
+                    PagerNumberPanelItems.Add(num);
                 }
-                NumberPanelCurrentItems.Add(RightEllipse);
-                NumberPanelCurrentItems.Add(NumberOfPages);
+                PagerNumberPanelItems.Add(RightEllipse);
+                PagerNumberPanelItems.Add(NumberOfPages);
 
             }
         }

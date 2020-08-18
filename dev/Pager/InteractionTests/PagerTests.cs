@@ -34,7 +34,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     {
         PagerTestsPageElements elements;
         int previousPage = -1;
-
         delegate void SetButtonVisibilityModeFunction(ButtonVisibilityModes mode);
 
         [ClassInitialize]
@@ -63,27 +62,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetNumberBoxDisplayMode();
                 VerifyNumberBoxDisplayMode();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 SendValueToNumberBox("3"); // Note: Pager displays numbers starting at 1 but the page changed event sends 0-based numbers
-                VerifyPageChangedEventOutput(2);
+                VerifyPageChanged(2);
 
                 SendValueToNumberBox("1");
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 SendValueToNumberBox("5");
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
 
                 SendValueToNumberBox("2");
-                VerifyPageChangedEventOutput(1);
+                VerifyPageChanged(1);
 
                 SendValueToNumberBox("100");
                 Verify.AreEqual("5", FindTextBox(elements.GetPagerNumberBox()).GetText()); // If over max, value should be clamped down to the max.
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
 
                 SendValueToNumberBox("-100");
                 Verify.AreEqual("1", FindTextBox(elements.GetPagerNumberBox()).GetText()); // If under min, value should be clamped up to the min.
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
                 
             }
         }
@@ -95,19 +94,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
                 elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 SetComboBoxDisplayMode();
                 VerifyComboBoxDisplayMode();
 
                 SelectValueInPagerComboBox(2);
-                VerifyPageChangedEventOutput(2);
+                VerifyPageChanged(2);
 
                 SelectValueInPagerComboBox(4);
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
 
                 SelectValueInPagerComboBox(0);
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
             }
         }
 
@@ -118,19 +117,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
                 elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 SetAutoDisplayMode();
                 VerifyAutoDisplayMode();
 
                 SelectValueInPagerComboBox(2);
-                VerifyPageChangedEventOutput(2);
+                VerifyPageChanged(2);
 
                 SelectValueInPagerComboBox(4);
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
 
                 SelectValueInPagerComboBox(0);
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
+            }
+        }
+
+        [TestMethod]
+        public void NumberPanelChangingPageTest()
+        {
+            using (var setup = new TestSetupHelper("Pager Tests"))
+            {
+                elements = new PagerTestsPageElements();
+
+                VerifyPageChanged(0);
+
+                SetNumberPanelDisplayMode();
+                VerifyNumberPanelDisplayMode();
+
+                ClickOnNumberPanelChild(1);
+                VerifyPageChanged(1);
             }
         }
 
@@ -141,18 +157,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
                 elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetLastPageButton());
 
                 previousPage = 4;
                 InputHelper.LeftClick(elements.GetFirstPageButton());
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
                 previousPage = 1;
                 InputHelper.LeftClick(elements.GetFirstPageButton());
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
             }
         }
 
@@ -163,27 +179,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
                 elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
                 previousPage = 1;
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 InputHelper.LeftClick(elements.GetLastPageButton());
 
                 previousPage = 4;
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChangedEventOutput(3);
+                VerifyPageChanged(3);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChangedEventOutput(2);
+                VerifyPageChanged(2);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChangedEventOutput(1);
+                VerifyPageChanged(1);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
             }
         }
@@ -195,18 +211,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
                 elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChangedEventOutput(1);
+                VerifyPageChanged(1);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChangedEventOutput(2);
+                VerifyPageChanged(2);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChangedEventOutput(3);
+                VerifyPageChanged(3);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
             }
         }
 
@@ -217,9 +233,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("Pager Tests"))
             {
                 elements = new PagerTestsPageElements();
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetLastPageButton());
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
 
                 InputHelper.LeftClick(elements.GetFirstPageButton());
                 InputHelper.LeftClick(elements.GetNextPageButton());
@@ -227,7 +243,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 previousPage = 1;
 
                 InputHelper.LeftClick(elements.GetLastPageButton());
-                VerifyPageChangedEventOutput(4);
+                VerifyPageChanged(4);
             }
         }
 
@@ -291,17 +307,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         return;
                 }
 
-                VerifyPageChangedEventOutput(0);
+                VerifyPageChanged(0);
 
                 foreach (ButtonVisibilityModes visMode in Enum.GetValues(typeof(ButtonVisibilityModes)))
                 {
                     SetButtonVisibilityMode(visMode);
-
+                    GetLastPage();
                     // If we're not on the first page then navigate to the first page.
                     if (previousPage != 0)
                     {
                         SelectValueInPagerComboBox(0);
-                        VerifyPageChangedEventOutput(0);
+                        VerifyPageChanged(0);
                     }
 
                     var expectedVisibility = ((visMode == ButtonVisibilityModes.None) ||
@@ -313,15 +329,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifyButton(buttonBeingTested, expectedVisibility, expectedIsEnableValue);
 
                     SelectValueInPagerComboBox(1);
-                    VerifyPageChangedEventOutput(1);
+                    VerifyPageChanged(1);
 
                     expectedVisibility = (visMode == ButtonVisibilityModes.None) ? Visibility.Collapsed : Visibility.Visible;
                     expectedIsEnableValue = true;
 
                     VerifyButton(buttonBeingTested, expectedVisibility, expectedIsEnableValue);
 
-                    SelectValueInPagerComboBox(4);
-                    VerifyPageChangedEventOutput(4);
+                    SelectValueInPagerComboBox(GetLastPageAsInt() - 1);
+                    VerifyPageChanged(GetLastPageAsInt() - 1);
 
                     expectedVisibility = ((visMode == ButtonVisibilityModes.None) ||
                         (visMode == ButtonVisibilityModes.HiddenOnEdge &&
@@ -350,17 +366,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetNumberBoxDisplayMode();
                 VerifyNumberBoxDisplayMode();
 
+                SetNumberPanelDisplayMode();
+                VerifyNumberPanelDisplayMode();
+
                 SetAutoDisplayMode();
                 VerifyAutoDisplayMode();
 
                 SetNumberBoxDisplayMode();
                 VerifyNumberBoxDisplayMode();
 
+                SetNumberPanelDisplayMode();
+                VerifyNumberPanelDisplayMode();
+
                 SetComboBoxDisplayMode();
                 VerifyComboBoxDisplayMode();
 
                 SetAutoDisplayMode();
                 VerifyAutoDisplayMode();
+
+                SetNumberPanelDisplayMode();
+                VerifyNumberPanelDisplayMode();
             }
         }
 
@@ -394,12 +419,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return null;
         }
 
-        void VerifyPageChangedEventOutput(int expectedPage)
+        void ClickOnNumberPanelChild(int childIndex)
         {
-            string expectedText = $"Page changed from page {previousPage} to page {expectedPage}";
+            InputHelper.LeftClick(elements.GetPager().Children[childIndex+4]);
+        }
+
+        int GetLastPageAsInt()
+        {
+            return Convert.ToInt32(GetLastPage());
+        }
+        string GetLastPage()
+        {
+            return elements.GetNumberOfPagesTextBlock().GetText();
+        }
+
+        int GetPreviousPageAsInt()
+        {
+            return Convert.ToInt32(GetPreviousPage());
+        }
+         string GetPreviousPage()
+        {
+            return elements.GetPreviousPageTextBlock().GetText();
+        }
+
+        int GetCurrentPageAsInt()
+        {
+            return Convert.ToInt32(GetCurrentPage());
+        }
+        string GetCurrentPage()
+        {
+            return elements.GetCurrentPageTextBlock().GetText();
+        }
+
+        void VerifyPageChanged(int expectedPage)
+        {
+            Verify.AreEqual(expectedPage, GetCurrentPageAsInt());
+            Verify.AreEqual(previousPage, GetPreviousPageAsInt());
             Log.Comment($"Changing to page {expectedPage} from {previousPage}");
             previousPage = expectedPage;
-            Verify.AreEqual(expectedText, elements.GetLastEventOutput());
         }
 
         void VerifyButton(UIObject button, Visibility expectedVisibility, bool shouldBeEnabled)
@@ -554,16 +611,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         
         void SetNumberBoxDisplayMode()
         {
-            elements.ComboBoxDisplayModeActive = false;
-            elements.NumberBoxDisplayModeActive = true;
             SetDisplayMode("NumberBoxDisplayModeItem");
         }
         
         void SetComboBoxDisplayMode()
         {
-            elements.ComboBoxDisplayModeActive = true;
-            elements.NumberBoxDisplayModeActive = false;
             SetDisplayMode("ComboBoxDisplayModeItem");
+        }
+
+        void SetNumberPanelDisplayMode()
+        {
+            SetDisplayMode("NumberPanelDisplayModeItem");
         }
         
         void SetDisplayMode(string mode)
@@ -586,6 +644,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             VerifyDisplayMode(DisplayModes.ComboBox);
         }
 
+        void VerifyNumberPanelDisplayMode()
+        {
+            VerifyDisplayMode(DisplayModes.NumberPanel);
+        }
+
         void VerifyDisplayMode(DisplayModes mode)
         {
             switch (mode)
@@ -594,10 +657,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 case DisplayModes.ComboBox:
                     VerifyComboBoxEnabled();
                     VerifyNumberBoxDisabled();
+                    VerifyNumberPanelDisabled();
                     break;
                 case DisplayModes.NumberBox:
                     VerifyComboBoxDisabled();
                     VerifyNumberBoxEnabled();
+                    VerifyNumberPanelDisabled();
+                    break;
+                case DisplayModes.NumberPanel:
+                    VerifyComboBoxDisabled();
+                    VerifyNumberBoxDisabled();
+                    VerifyNumberPanelEnabled();
                     break;
                 default:
                     break;
@@ -616,6 +686,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             VerifyNumberBoxIsEnabled(true);
         }
 
+        void VerifyNumberPanelEnabled()
+        {
+            VerifyNumberPanelVisibility(Visibility.Visible);
+        }
+
         void VerifyComboBoxDisabled()
         {
             VerifyComboBoxVisibility(Visibility.Collapsed);
@@ -626,6 +701,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             VerifyNumberBoxVisibility(Visibility.Collapsed);
             VerifyNumberBoxIsEnabled(false);
+        }
+
+        void VerifyNumberPanelDisabled()
+        {
+            VerifyNumberPanelVisibility(Visibility.Collapsed);
         }
 
         void VerifyComboBoxVisibility(Visibility expected)
@@ -646,6 +726,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         void VerifyNumberBoxIsEnabled(bool expected)
         {
             Verify.AreEqual(expected, elements.GetNumberBoxIsEnabledCheckBox().ToggleState == ToggleState.On);
+        }
+
+        void VerifyNumberPanelVisibility(Visibility expected) 
+        {
+            Verify.AreEqual(expected == Visibility.Visible, elements.GetNumberPanelVisibilityCheckBox().ToggleState == ToggleState.On);
         }
     }
 }

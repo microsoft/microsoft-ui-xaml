@@ -109,12 +109,14 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/> <!--5-->
+                        <RowDefinition Height="Auto"/>
+                        <!--5-->
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/> <!--10-->
+                        <RowDefinition Height="Auto"/>
+                        <!--10-->
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Pager Outputs" Style="{ThemeResource TitleTextBlockStyle}" Foreground="Red"/>
@@ -129,7 +131,7 @@
                             <CheckBox  x:Name="FirstPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="FirstPageButtonIsEnabledCheckBox"/>
                         </StackPanel>
                     </StackPanel>
-                    
+
                     <StackPanel Grid.Row="2" Grid.Column="0">
                         <TextBlock Text="Previous Page Button"/>
                         <StackPanel Orientation="Horizontal" Margin="5">
@@ -196,29 +198,35 @@
                             <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
                             <CheckBox x:Name="NumberPanelVisibilityCheckBox" AutomationProperties.Name="NumberPanelVisibilityCheckBox"  IsChecked="False" IsEnabled="False"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="5">
-                            <TextBlock Text="IsEnabled" VerticalAlignment="Center"/>
-                            <CheckBox  x:Name="NumberPanelIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberPanelIsEnabledCheckBox"/>
-                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="1">
                         <TextBlock Text="Current Display Mode:"/>
                         <TextBlock Text="{x:Bind TestPager.PagerDisplayMode, Mode=OneWay}" AutomationProperties.Name="DisplayModeTextBlock"/>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Number Of Pages" />
-                            <controls:NumberBox Value="{x:Bind TestPager.NumberOfPages, Mode=OneWay}" IsEnabled="False"/>
+                            <TextBlock Text="Number Of Pages: " />
+                            <TextBlock AutomationProperties.Name="NumberOfPagesTextBlock"  Text="{x:Bind TestPager.NumberOfPages}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Previous Page: "/>
+                            <TextBlock x:Name="PreviousPageTextBlock" AutomationProperties.Name="PreviousPageTextBlock"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Current Page: "/>
+                            <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.Name="CurrentPageTextBlock"/>
                         </StackPanel>
                     </StackPanel>
 
-
+                    <StackPanel Grid.Row="5" Grid.Column="0">
+                        <TextBlock Text="NumberPanel Content:"/>
+                        <TextBlock x:Name="NumberPanelContentTextBlock" AutomationProperties.Name="NumberPanelContentTextBlock"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="CurrentPageIdentifier under element: "/>
+                            <TextBlock x:Name="CurrentPageIdentifierLocationTextBlock" AutomationProperties.Name="CurrentPageIdentifierLocationTextBlock"/>
+                        </StackPanel>
+                    </StackPanel>
 
                 </Grid>
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Pager Event Log" Grid.Row="0" Style="{StaticResource TitleTextBlockStyle}" Foreground="Gold"/>
-                    <Button Content="Clear" Click="ClearEventDisplay"/>
-                    <ListView x:Name="PagerEventListViewDisplay" ItemTemplate="{StaticResource EventToString}"/>
-                </StackPanel>
             </Grid>
         </ScrollViewer>
     </Grid>

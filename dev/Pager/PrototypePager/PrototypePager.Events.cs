@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Windows.Foundation;
@@ -24,6 +25,7 @@ namespace MUXControlsTestApp
         private static void OnSelectedIndexChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
             (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
+            (sender as PrototypePager).OnSelectedIndexChanged();
         }
 
         private void OnSelectedIndexChanged()
@@ -32,106 +34,36 @@ namespace MUXControlsTestApp
             {
                 PagerComboBox.SelectedIndex = SelectedIndex - 1;
             }
+
             DisablePageButtonsOnEdge();
+            UpdateNumberPanel();
             PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
         }
 
         private void OnNumberOfPagesChanged()
         {
             SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
-            if (PagerComboBox != null)
+
+            if (PagerNumberPanel != null)
+            {
+                InitializeNumberPanel();
+                UpdateNumberPanel();
+            }
+            
+            DisablePageButtonsOnEdge();
+        }
+
+        private void OnComboBoxSelectionChanged()
+        {
+            if (PagerComboBox.SelectedIndex == -1)
             {
                 PagerComboBox.SelectedIndex = SelectedIndex - 1;
-            }
-            if (PagerNumberBox != null)
+            } 
+            else
             {
-                PagerNumberBox.Value = SelectedIndex;
+                SelectedIndex = PagerComboBox.SelectedIndex + 1;
             }
         }
-
-        private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
-        {
-            if (args.Element == null || args.Element.GetType() != typeof(Button))
-            {
-                return;
-            }
-
-            (args.Element as Button).Click += OnNumberPanelButtonClicked;
-            (args.Element as FrameworkElement).Loaded += MoveIdentifierToCurrentPage;
-        }
-
-        private void OnElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
-        {
-            if (args.Element.GetType() == typeof(Button))
-            {
-                (args.Element as Button).Click -= OnNumberPanelButtonClicked;
-                (args.Element as Button).Loaded -= MoveIdentifierToCurrentPage;
-            }
-        }
-
-        private void OnNumberPanelButtonClicked(object sender, RoutedEventArgs args)
-        {
-            SelectedIndex = (int)(sender as Button).Content;
-        }
-
-        private void MoveIdentifierToCurrentPage(object sender, RoutedEventArgs args)
-        {
-            var element = sender as FrameworkElement;
-
-            if ((int)element.Tag == SelectedIndex)
-            {
-                var childPoint = element.TransformToVisual((UIElement)element.Parent).TransformPoint(new Point(0, 0));
-                var numberPanelRectMargins = NumberPanelCurrentPageIdentifier.Margin;
-                NumberPanelCurrentPageIdentifier.Margin = new Thickness(childPoint.X, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);
-            }
-        }
-
-        private void MoveIdentifierToCurrentPage()
-        {
-            for (int i = 0; i < NumberOfPages; i++)
-            {
-                var element = NumberPanelItems.TryGetElement(i);
-                if (element != null)
-                {
-                    MoveIdentifierToCurrentPage(element, null);
-                }
-            }
-        }
-
-        private void UpdateNumberPanel()
-        {
-            if (SelectedIndex < 5)
-            {
-                NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = 2;
-                NumberPanelCurrentItems[2] = 3;
-                NumberPanelCurrentItems[3] = 4;
-                NumberPanelCurrentItems[4] = 5;
-                NumberPanelCurrentItems[5] = RightEllipse;
-                NumberPanelCurrentItems[6] = NumberOfPages;
-            }
-            else if (SelectedIndex >= NumberOfPages - 3)
-            {
-                NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = LeftEllipse;
-                NumberPanelCurrentItems[2] = NumberOfPages - 4;
-                NumberPanelCurrentItems[3] = NumberOfPages - 3;
-                NumberPanelCurrentItems[4] = NumberOfPages - 2;
-                NumberPanelCurrentItems[5] = NumberOfPages - 1;
-                NumberPanelCurrentItems[6] = NumberOfPages;
-            }
-            else if (SelectedIndex >= 5 && SelectedIndex < NumberOfPages - 3)
-            {
-                NumberPanelCurrentItems[0] = 1;
-                NumberPanelCurrentItems[1] = LeftEllipse;
-                NumberPanelCurrentItems[2] = SelectedIndex - 1;
-                NumberPanelCurrentItems[3] = SelectedIndex;
-                NumberPanelCurrentItems[4] = SelectedIndex + 1;
-                NumberPanelCurrentItems[5] = RightEllipse;
-                NumberPanelCurrentItems[6] = NumberOfPages;
-            }
-        }
-
         private void OnPagerDisplayModeChanged()
         {
             switch (this.PagerDisplayMode)
@@ -302,6 +234,105 @@ namespace MUXControlsTestApp
                 }
             }
         }
+
+        /* Events regarding the number panel display mode */
+
+        private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            if (args.Element == null || args.Element.GetType() != typeof(Button))
+            {
+                return;
+            }
+
+            (args.Element as Button).Click += OnNumberPanelButtonClicked;
+            (args.Element as FrameworkElement).Loaded += MoveIdentifierToCurrentPage;
+        }
+
+        private void OnElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+        {
+            if (args.Element.GetType() == typeof(Button))
+            {
+                (args.Element as Button).Click -= OnNumberPanelButtonClicked;
+                (args.Element as Button).Loaded -= MoveIdentifierToCurrentPage;
+            }
+        }
+
+        private void OnNumberPanelButtonClicked(object sender, RoutedEventArgs args)
+        {
+            SelectedIndex = (int)(sender as Button).Content;
+        }
+
+        private void MoveIdentifierToCurrentPage(object sender, RoutedEventArgs args)
+        {
+            var element = sender as FrameworkElement;
+
+            if ((int)element.Tag == SelectedIndex)
+            {
+                var childPoint = element.TransformToVisual((UIElement)element.Parent).TransformPoint(new Point(0, 0));
+                var numberPanelRectMargins = NumberPanelCurrentPageIdentifier.Margin;
+                NumberPanelCurrentPageIdentifier.Margin = new Thickness(childPoint.X, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);
+                
+            }
+        }
+
+        private void MoveIdentifierToCurrentPage()
+        {
+            for (int i = 0; i < NumberOfPages; i++)
+            {
+                var element = PagerNumberPanel.TryGetElement(i);
+                if (element != null)
+                {
+                    MoveIdentifierToCurrentPage(element, null);
+                }
+            }
+        }
+
+        private void UpdateNumberPanel()
+        {
+
+            if (NumberOfPages <= 7)
+            {
+                if (NumberOfPages != PagerNumberPanel.ItemsSourceView.Count)
+                {
+                    InitializeNumberPanel();
+                }
+
+                MoveIdentifierToCurrentPage();
+                return;
+            }
+           
+            if (SelectedIndex < 5)
+            {
+                PagerNumberPanelItems[0] = 1;
+                PagerNumberPanelItems[1] = 2;
+                PagerNumberPanelItems[2] = 3;
+                PagerNumberPanelItems[3] = 4;
+                PagerNumberPanelItems[4] = 5;
+                PagerNumberPanelItems[5] = RightEllipse;
+                PagerNumberPanelItems[6] = NumberOfPages;
+            }
+            else if (SelectedIndex >= NumberOfPages - 3)
+            {
+                PagerNumberPanelItems[0] = 1;
+                PagerNumberPanelItems[1] = LeftEllipse;
+                PagerNumberPanelItems[2] = NumberOfPages - 4;
+                PagerNumberPanelItems[3] = NumberOfPages - 3;
+                PagerNumberPanelItems[4] = NumberOfPages - 2;
+                PagerNumberPanelItems[5] = NumberOfPages - 1;
+                PagerNumberPanelItems[6] = NumberOfPages;
+            }
+            else if (SelectedIndex >= 5 && SelectedIndex < NumberOfPages - 3)
+            {
+                PagerNumberPanelItems[0] = 1;
+                PagerNumberPanelItems[1] = LeftEllipse;
+                PagerNumberPanelItems[2] = SelectedIndex - 1;
+                PagerNumberPanelItems[3] = SelectedIndex;
+                PagerNumberPanelItems[4] = SelectedIndex + 1;
+                PagerNumberPanelItems[5] = RightEllipse;
+                PagerNumberPanelItems[6] = NumberOfPages;
+            }
+        }
+
 
     }
 }
