@@ -919,7 +919,13 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
     {
         auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
         auto itemIndex = parentIR.GetElementIndex(nvi);
-        nextItem = inspectingDataSource->GetAt(itemIndex);
+
+        // Check that index is NOT -1, meaning it is actually realized
+        if (itemIndex != -1)
+        {
+            // Something went wrong, item might not be realized yet.
+            nextItem = inspectingDataSource->GetAt(itemIndex);
+        }
     }
 
     // Determine the recommeded transition direction.
@@ -2723,9 +2729,11 @@ bool NavigationView::BumperNavigation(int offset)
     // that meets the conditions, in the same direction.
     const auto shoulderNavigationEnabledParamValue = ShoulderNavigationEnabled();
     const auto shoulderNavigationForcedDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::Never);
+    const auto shoulderNavigationOptionalDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::WhenSelectionFollowsFocus
+        && SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled);
 
     if (!IsTopNavigationView()
-        || !IsNavigationViewListSingleSelectionFollowsFocus()
+        || shoulderNavigationOptionalDisabled
         || shoulderNavigationForcedDisabled)
     {
         return false;
