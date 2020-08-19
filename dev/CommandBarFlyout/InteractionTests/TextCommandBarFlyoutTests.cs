@@ -500,7 +500,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
 
-                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("More app bar")))
+                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Bold")))
+                {
+                    Log.Comment("Use Shift+F10 to bring up the context menu. The Bold button should get focus.");
+                    KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+                    waiter.Wait();
+                }
+
+                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Less app bar")))
                 {
                     Log.Comment("Press the right arrow key three times.  The '...' button should get focus.");
                     KeyboardHelper.PressKey(Key.Right, ModifierKey.None, numPresses: 3);
