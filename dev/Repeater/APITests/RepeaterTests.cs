@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -660,6 +660,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             GC.Collect();
 
             Verify.AreEqual(0, MUXControlsTestApp.Samples.DisposableUserControl.OpenItems, "Verify we cleaned up all the DisposableUserControl that were created");
+        }
+
+        [TestMethod]
+        public void BringIntoViewOfExistingItemsDoesNotChangeScrollOffset()
+        {
+            ScrollViewer scroll = null;
+            ItemsRepeater repeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater();
+                repeater.ItemsSource = Enumerable.Range(0, 100).Select(x => x.ToString()).ToList();
+
+                scroll = new ScrollViewer() {
+                    Content = repeater,
+                    MaxHeight = 400,
+                    MaxWidth = 200
+                };
+
+                Content = scroll;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+
+                scroll.ChangeView(null, repeater.ActualHeight, null);
+                scroll.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            double endOfScrollOffset = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                endOfScrollOffset = scroll.VerticalOffset;
+                Verify.IsTrue(400 < endOfScrollOffset, "We should at least have scrolled some amount");
+
+                var lastItem = repeater.GetOrCreateElement(99);
+                lastItem.UpdateLayout();
+                lastItem.StartBringIntoView();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(Math.Abs(endOfScrollOffset - scroll.VerticalOffset) < 1);
+            });
         }
 
     }
