@@ -135,8 +135,7 @@ private:
     // be displayed.
     bool m_isFallenBack{ false };
 
-    // Set true when FrameworkElement::Unloaded is fired, then set false when FrameworkElement::Loaded is fired.
-    // This is used to differentiate the first Loaded event (when the element has never been
-    // unloaded) from later Loaded events.
-    bool m_isUnloaded{ false };
+    // Set true when FrameworkElement::Unloaded is called, then set false when FrameworkElement::Loaded is called.
+    // Initially set true as the AnimatedVisualPlayer instance isn't loaded.
+    bool m_isUnloaded{ true };
 };
