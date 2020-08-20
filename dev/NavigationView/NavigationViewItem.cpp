@@ -492,7 +492,9 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 
 bool NavigationViewItem::HasChildren()
 {
-    return MenuItems().Size() > 0 || (MenuItemsSource() != nullptr && m_repeater.get().ItemsSourceView().Count() > 0) || HasUnrealizedChildren();
+    return MenuItems().Size() > 0
+        || (MenuItemsSource() != nullptr && m_repeater != nullptr && m_repeater.get().ItemsSourceView().Count() > 0)
+        || HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
