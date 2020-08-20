@@ -151,12 +151,6 @@
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
-  <!-- <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\testinfra\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj">
-      <Project>{128e6f7a-578c-48dc-bd3f-750ec662c268}</Project>
-      <Name>AppTestAutomationHelpers</Name>
-    </ProjectReference>
-  </ItemGroup> -->
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
