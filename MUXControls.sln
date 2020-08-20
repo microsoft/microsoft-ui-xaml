@@ -638,9 +638,9 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_TestUI", "dev\InfoB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestInfra", "TestInfra", "{C0215617-A17B-45DB-9CDA-C46C0923DA55}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppTestAutomationHelpers", "testinfra\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj", "{128E6F7A-578C-48DC-BD3F-750EC662C268}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppTestAutomationHelpers", "test\testinfra\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj", "{128E6F7A-578C-48DC-BD3F-750EC662C268}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUXTestInfra", "testinfra\MUXTestInfra\MUXTestInfra.csproj", "{F24267B5-BD4D-4137-8277-4B0DA22B5E74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUXTestInfra", "test\testinfra\MUXTestInfra\MUXTestInfra.csproj", "{F24267B5-BD4D-4137-8277-4B0DA22B5E74}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
