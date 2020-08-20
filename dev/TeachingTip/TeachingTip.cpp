@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -313,7 +313,7 @@ bool TeachingTip::UpdateTail()
 
     UpdateSizeBasedTemplateSettings();
 
-    switch (m_currentEffectiveTailPlacementMode)
+    switch (GetFlowDirectionAdjustedPlacement(m_currentEffectiveTailPlacementMode))
     {
     // An effective placement of auto means the tip should not display a tail.
     case winrt::TeachingTipPlacementMode::Auto:
@@ -459,7 +459,7 @@ bool TeachingTip::PositionTargetedPopup()
     {
         // Depending on the effective placement mode of the tip we use a combination of the tip's size, the target's position within the app, the target's
         // size, and the target offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
-        switch (m_currentEffectiveTipPlacementMode)
+        switch (GetFlowDirectionAdjustedPlacement(m_currentEffectiveTipPlacementMode))
         {
         case winrt::TeachingTipPlacementMode::Top:
             popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
@@ -556,7 +556,7 @@ bool TeachingTip::PositionUntargetedPopup()
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     if (auto&& popup = m_popup.get())
     {
-        switch (PreferredPlacement())
+        switch (GetFlowDirectionAdjustedPlacement(PreferredPlacement()))
         {
         case winrt::TeachingTipPlacementMode::Auto:
         case winrt::TeachingTipPlacementMode::Bottom:
@@ -646,7 +646,7 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
         return std::make_tuple(0.0, 0.0);
     }();
 
-    switch (m_currentEffectiveTailPlacementMode)
+    switch (GetFlowDirectionAdjustedPlacement(m_currentEffectiveTailPlacementMode))
     {
     case winrt::TeachingTipPlacementMode::Top:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
@@ -1341,6 +1341,47 @@ void TeachingTip::ClosePopup()
         // small scale.
         tailOcclusionGrid.Scale({ 1.0f,1.0f,1.0f });
     }
+}
+
+winrt::TeachingTipPlacementMode TeachingTip::GetFlowDirectionAdjustedPlacement(const winrt::TeachingTipPlacementMode& placementMode)
+{
+    if (FlowDirection() == winrt::FlowDirection::LeftToRight)
+    {
+        return placementMode;
+    }
+    else
+    {
+        switch (placementMode)
+        {
+            case winrt::TeachingTipPlacementMode::Auto:
+                return winrt::TeachingTipPlacementMode::Auto;
+            case winrt::TeachingTipPlacementMode::Left:
+                return winrt::TeachingTipPlacementMode::Right;
+            case winrt::TeachingTipPlacementMode::Right:
+                return winrt::TeachingTipPlacementMode::Left;
+            case winrt::TeachingTipPlacementMode::Top:
+                return winrt::TeachingTipPlacementMode::Top;
+            case winrt::TeachingTipPlacementMode::Bottom:
+                return winrt::TeachingTipPlacementMode::Bottom;
+            case winrt::TeachingTipPlacementMode::LeftBottom:
+                return winrt::TeachingTipPlacementMode::RightBottom;
+            case winrt::TeachingTipPlacementMode::LeftTop:
+                return winrt::TeachingTipPlacementMode::RightTop;
+            case winrt::TeachingTipPlacementMode::TopLeft:
+                return winrt::TeachingTipPlacementMode::TopRight;
+            case winrt::TeachingTipPlacementMode::TopRight:
+                return winrt::TeachingTipPlacementMode::TopLeft;
+            case winrt::TeachingTipPlacementMode::RightTop:
+                return winrt::TeachingTipPlacementMode::LeftTop;
+            case winrt::TeachingTipPlacementMode::RightBottom:
+                return winrt::TeachingTipPlacementMode::LeftBottom;
+            case winrt::TeachingTipPlacementMode::BottomRight:
+                return winrt::TeachingTipPlacementMode::BottomLeft;
+            case winrt::TeachingTipPlacementMode::BottomLeft:
+                return winrt::TeachingTipPlacementMode::BottomRight;
+        }
+    }
+    return winrt::TeachingTipPlacementMode::Auto;
 }
 
 void TeachingTip::OnTargetChanged()
