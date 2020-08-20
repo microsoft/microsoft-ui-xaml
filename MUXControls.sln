@@ -492,6 +492,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AnimatedVisualPlayer", "Ani
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnimatedVisualPlayer", "dev\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems", "{B39300D2-4510-44EA-AA7B-EDA9118F830E}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedVisualPlayer_APITests", "dev\AnimatedVisualPlayer\APITests\AnimatedVisualPlayer_APITests.shproj", "{9970C46B-372E-4B58-9211-D51066D629C9}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedVisualPlayer_InteractionTests", "dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.shproj", "{CBAACCF6-A27D-40B3-980B-ADF51A2EBB89}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedVisualPlayer_TestUI", "dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.shproj", "{DBEC0BE4-BA3F-41C9-A303-AF98201BE6DC}"
@@ -766,6 +768,7 @@ Global
 		dev\ScrollPresenter\InteractionTests\ScrollPresenter_InteractionTests.projitems*{8faad013-139c-8d2a-2285-45f717d9e64a}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems*{94aaadf1-80ca-45a7-9bd8-c6d00d58334d}*SharedItemsImports = 9
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{954d7000-c06f-49eb-a7d2-0df83de6ca35}*SharedItemsImports = 13
+		dev\AnimatedVisualPlayer\APITests\AnimatedVisualPlayer_APITests.projitems*{9970c46b-372e-4b58-9211-d51066d629c9}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems*{999c289e-5ad6-4700-a44e-e85b696e508a}*SharedItemsImports = 13
 		dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems*{999e00c9-0e58-402a-8e0e-cbafb0adc7e3}*SharedItemsImports = 13
 		dev\SwipeControl\SwipeControl_InteractionTests\SwipeControl_InteractionTests.projitems*{9a8da438-193c-4950-a046-2952de2d3b0b}*SharedItemsImports = 13
@@ -874,6 +877,7 @@ Global
 		test\IXMPTestApp\IXMPTestApp.Shared.projitems*{de061ed1-947e-487c-81b8-32e92e85b95f}*SharedItemsImports = 13
 		dev\TreeView\APITests\TreeView_APITests.projitems*{de885c66-929c-464e-bac4-3e076ec46483}*SharedItemsImports = 13
 		dev\Pivot\TestUI\Pivot_TestUI.projitems*{deb3fa60-e4a7-4735-89f2-363c7c56b428}*SharedItemsImports = 13
+		dev\AnimatedVisualPlayer\APITests\AnimatedVisualPlayer_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -967,6 +971,7 @@ Global
 		dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems*{f601284a-00c1-49f9-99b3-70d45585f784}*SharedItemsImports = 13
 		dev\SplitButton\SplitButton.vcxitems*{faf114dd-af1f-4d9f-a511-354c19912aad}*SharedItemsImports = 9
 		test\TestAppUtils\TestAppUtils.projitems*{fb0d3053-3135-403f-b542-977f3b781673}*SharedItemsImports = 13
+		dev\AnimatedVisualPlayer\APITests\AnimatedVisualPlayer_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1534,6 +1539,7 @@ Global
 		{42A51D3E-F06A-41A0-BE4C-F94CDDB80678} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
 		{80CCA53D-4A82-4F9F-A825-4FA3718C2AE0} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{B39300D2-4510-44EA-AA7B-EDA9118F830E} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
+		{9970C46B-372E-4B58-9211-D51066D629C9} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
 		{CBAACCF6-A27D-40B3-980B-ADF51A2EBB89} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
 		{DBEC0BE4-BA3F-41C9-A303-AF98201BE6DC} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
 		{BA914F48-E924-4FD2-AEE1-264F67DB6C9F} = {807E57C8-F3E8-4049-AB88-BE3D3285B441}
