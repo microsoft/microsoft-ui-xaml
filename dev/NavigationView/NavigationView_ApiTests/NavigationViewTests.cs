@@ -888,9 +888,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItemsSource = new ObservableCollection<NavigationViewItem>() { parentItem };             
 
                 Content.UpdateLayout();
-
-                // If we don't get here, app has crashed. This verify signals the NavigationView was launched in Top mode without crashing.
-                Verify.IsTrue(true);
             });
         }
     }
