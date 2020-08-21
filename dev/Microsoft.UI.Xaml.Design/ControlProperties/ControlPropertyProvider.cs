@@ -10,7 +10,7 @@ namespace Microsoft.UI.Xaml.Design.ControlProvider
     abstract class ControlPropertyProvider
     {
         private AttributeTableBuilder builder;
-        private static CategoryAttribute CommonCategory = new CategoryAttribute("Common2");
+        private static CategoryAttribute CommonCategory = new CategoryAttribute("Common");
         
         /// <summary>
         /// The control type this control property provider will work with and add properties to.
