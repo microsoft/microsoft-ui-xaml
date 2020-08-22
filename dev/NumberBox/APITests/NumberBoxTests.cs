@@ -116,12 +116,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
                 var inputTextBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
 
-                Verify.AreEqual(InputScopeNameValue.Number.ToString(), inputTextBox.InputScope, "The default InputScope should be 'Number'.");
+                Verify.AreEqual(1, inputTextBox.InputScope.Names.Count);
+                Verify.AreEqual(InputScopeNameValue.Number, inputTextBox.InputScope.Names[0].NameValue, "The default InputScope should be 'Number'.");
 
-                numberBox.InputScope = InputScopeNameValue.CurrencyAmountAndSymbol.ToString();
+                var scopeName = new InputScopeName();
+                scopeName.NameValue = InputScopeNameValue.CurrencyAmountAndSymbol;
+                var scope = new InputScope();
+                scope.Names.Add(scopeName);
+
+                numberBox.InputScope = scope;
                 Content.UpdateLayout();
 
-                Verify.AreEqual(InputScopeNameValue.CurrencyAmountAndSymbol.ToString(), inputTextBox.InputScope, "The InputScope should be 'CurrencyAmountAndSymbol'.");
+                Verify.AreEqual(1, inputTextBox.InputScope.Names.Count);
+                Verify.AreEqual(InputScopeNameValue.CurrencyAmountAndSymbol, inputTextBox.InputScope.Names[0].NameValue, "The InputScope should be 'CurrencyAmountAndSymbol'.");
             });
 
             return;
