@@ -313,7 +313,7 @@ bool TeachingTip::UpdateTail()
 
     UpdateSizeBasedTemplateSettings();
 
-    switch (GetFlowDirectionAdjustedPlacement(m_currentEffectiveTailPlacementMode))
+    switch (m_currentEffectiveTailPlacementMode)
     {
     // An effective placement of auto means the tip should not display a tail.
     case winrt::TeachingTipPlacementMode::Auto:
@@ -459,7 +459,7 @@ bool TeachingTip::PositionTargetedPopup()
     {
         // Depending on the effective placement mode of the tip we use a combination of the tip's size, the target's position within the app, the target's
         // size, and the target offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
-        switch (GetFlowDirectionAdjustedPlacement(m_currentEffectiveTipPlacementMode))
+        switch (m_currentEffectiveTipPlacementMode)
         {
         case winrt::TeachingTipPlacementMode::Top:
             popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
@@ -646,7 +646,7 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
         return std::make_tuple(0.0, 0.0);
     }();
 
-    switch (GetFlowDirectionAdjustedPlacement(m_currentEffectiveTailPlacementMode))
+    switch (m_currentEffectiveTailPlacementMode)
     {
     case winrt::TeachingTipPlacementMode::Top:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
@@ -1379,6 +1379,8 @@ winrt::TeachingTipPlacementMode TeachingTip::GetFlowDirectionAdjustedPlacement(c
                 return winrt::TeachingTipPlacementMode::BottomLeft;
             case winrt::TeachingTipPlacementMode::BottomLeft:
                 return winrt::TeachingTipPlacementMode::BottomRight;
+            case winrt::TeachingTipPlacementMode::Center:
+                return winrt::TeachingTipPlacementMode::Center;
         }
     }
     return winrt::TeachingTipPlacementMode::Auto;
@@ -1709,7 +1711,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     // SetReturnTopForOutOfWindowBounds test hook.
     if (!ShouldConstrainToRootBounds() && m_returnTopForOutOfWindowPlacement)
     {
-        auto const placement = PreferredPlacement();
+        auto const placement =  GetFlowDirectionAdjustedPlacement(PreferredPlacement());
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
             return std::make_tuple(winrt::TeachingTipPlacementMode::Top, false);
@@ -1934,7 +1936,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::RightBottom] = false;
     }
 
-    auto const priorities = GetPlacementFallbackOrder(PreferredPlacement());
+    auto const wantedDirection = GetFlowDirectionAdjustedPlacement(PreferredPlacement());
+    auto const priorities = GetPlacementFallbackOrder(wantedDirection);
 
     for (auto const mode : priorities)
     {
