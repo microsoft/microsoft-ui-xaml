@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -687,7 +687,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-
                 scroll.ChangeView(null, repeater.ActualHeight, null);
                 scroll.UpdateLayout();
             });
@@ -698,7 +697,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 endOfScrollOffset = scroll.VerticalOffset;
-                Verify.IsTrue(400 < endOfScrollOffset, "We should at least have scrolled some amount");
+                // Idea: we might not have scrolled to the end, however we should at least have moved so much that the end is not too far away
+                Verify.IsTrue(Math.Abs(endOfScrollOffset - repeater.ActualHeight) < 500, $"We should at least have scrolled some amount. " +
+                    $"ScrollOffset:{endOfScrollOffset} Repeater height: {repeater.ActualHeight}");
 
                 var lastItem = repeater.GetOrCreateElement(99);
                 lastItem.UpdateLayout();
