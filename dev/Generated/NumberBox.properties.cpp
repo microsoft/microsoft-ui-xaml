@@ -92,10 +92,10 @@ void NumberBoxProperties::EnsureProperties()
         s_InputScopeProperty =
             InitializeDependencyProperty(
                 L"InputScope",
-                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::InputScope>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<winrt::hstring>::BoxValueIfNecessary(L"Number"),
+                ValueHelper<winrt::InputScope>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_IsWrapEnabledProperty)
@@ -451,17 +451,17 @@ winrt::DataTemplate NumberBoxProperties::HeaderTemplate()
     return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderTemplateProperty));
 }
 
-void NumberBoxProperties::InputScope(winrt::hstring const& value)
+void NumberBoxProperties::InputScope(winrt::InputScope const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<NumberBox*>(this)->SetValue(s_InputScopeProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_InputScopeProperty, ValueHelper<winrt::InputScope>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::hstring NumberBoxProperties::InputScope()
+winrt::InputScope NumberBoxProperties::InputScope()
 {
-    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_InputScopeProperty));
+    return ValueHelper<winrt::InputScope>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_InputScopeProperty));
 }
 
 void NumberBoxProperties::IsWrapEnabled(bool value)

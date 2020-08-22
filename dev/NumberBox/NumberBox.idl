@@ -60,8 +60,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 
     [WUXC_VERSION_PREVIEW]
     {
-        [MUX_DEFAULT_VALUE("Number")]
-        String InputScope;
+        Windows.UI.Xaml.Input.InputScope InputScope;
     }
 
     String PlaceholderText;
