@@ -27,6 +27,16 @@ namespace MUXControlsTestApp
             TestNumberBox.RegisterPropertyChangedCallback(NumberBox.TextProperty, new DependencyPropertyChangedCallback(TextPropertyChanged));
         }
 
+        private void InputScope_Changed(object sender, RoutedEventArgs e)
+        {
+            if (TestNumberBox != null &&
+                sender is ComboBox comboBox &&
+                comboBox.SelectedItem is ComboBoxItem item)
+            {
+                TestNumberBox.InputScope = item.Content?.ToString() ?? string.Empty;
+            }
+        }
+
         private void SpinMode_Changed(object sender, RoutedEventArgs e)
         {
             if (TestNumberBox != null)
