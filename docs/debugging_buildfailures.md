@@ -18,7 +18,7 @@ Generally, it is encouraged to collect binlog files through the CLI of MSBuild a
 
 ## Collection binlogs through the command line
 
-To collect binlogs through the command line interface of MSBuild , you can use the `-bl` switch.
+To collect binlogs through the command line interface of MSBuild using the Visual Studio command line, you can use the `-bl` switch. Note that those commands should be used inside the Visual Studio command line.
 
 For example, to build your solution in x86 release and collect binlogs, you can use the following:
 
@@ -27,3 +27,5 @@ For example, to build your solution in x86 release and collect binlogs, you can 
 If you encounter issues while creating app packages, you can use the following command to simulate collect binlogs:
 
 `msbuild /p:AppxBundlePlatforms=x86 /p:Platform=x86 /p:Configuration=Release /p:BuildAppxUploadPackageForUap=true /bl`
+
+In case of investigating build failures with the WinUI source code, please run the `devcmd.cmd` script at the root of the repository first.
