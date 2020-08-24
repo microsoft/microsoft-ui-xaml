@@ -113,7 +113,7 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(const std::vector<
     std::vector<MathToken> postfixTokens;
     std::stack<MathToken> operatorStack;
 
-    for (auto const token : infixTokens)
+    for (auto const& token : infixTokens)
     {
         if (token.Type == MathTokenType::Numeric)
         {
@@ -123,7 +123,7 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(const std::vector<
         {
             while (!operatorStack.empty())
             {
-                const auto top = operatorStack.top();
+                const auto& top = operatorStack.top();
                 if (top.Type != MathTokenType::Parenthesis && (GetPrecedenceValue(top.Char) >= GetPrecedenceValue(token.Char)))
                 {
                     postfixTokens.push_back(operatorStack.top());
@@ -183,7 +183,7 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(const std::v
 {
     std::stack<double> stack;
 
-    for (auto const token : tokens)
+    for (auto const& token : tokens)
     {
         if (token.Type == MathTokenType::Operator)
         {

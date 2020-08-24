@@ -26,7 +26,7 @@
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                 AccessKey="H">
         <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home" />
+                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Icon="Shop" Tag="Apps" /> <!-- AppsItem only have Icon and no content -->
                 <muxcontrols:NavigationViewItem x:Name="SuppressSelection" Content="SuppressSelection" Icon="Emoji" SelectsOnInvoked="False" />
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
@@ -57,18 +57,35 @@
                         <CheckBox x:Name="BackButtonVisibilityCheckbox" AutomationProperties.Name="BackButtonVisibilityCheckbox" Content="Back Visible" Checked="BackButtonVisibilityCheckbox_Checked" Unchecked="BackButtonVisibilityCheckbox_Unchecked" IsChecked="True" Margin="5"/>
                         <TextBlock VerticalAlignment="Center">BackButtonHolder width:</TextBlock>
                     </StackPanel>
-                    <ComboBox x:Name="PaneDisplayModeCombobox"
-                                AutomationProperties.Name="PaneDisplayModeCombobox"
-                                Header="PaneDisplayMode"
-                                SelectionChanged="PaneDisplayModeCombobox_SelectionChanged"
-                                Margin="5">
-                        <ComboBoxItem Content="Auto" Tag="Auto" />
-                        <ComboBoxItem Content="Left" Tag="Left" />
-                        <ComboBoxItem Content="Top" Tag="Top" />
-                        <ComboBoxItem Content="LeftCompact" Tag="LeftCompact" />
-                        <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal" />
-                    </ComboBox>
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox x:Name="PaneDisplayModeCombobox"
+                                    AutomationProperties.Name="PaneDisplayModeCombobox"
+                                    Header="PaneDisplayMode"
+                                    SelectionChanged="PaneDisplayModeCombobox_SelectionChanged"
+                                    Margin="5">
+                            <ComboBoxItem Content="Auto" Tag="Auto" />
+                            <ComboBoxItem Content="Left" Tag="Left" />
+                            <ComboBoxItem Content="Top" Tag="Top" />
+                            <ComboBoxItem Content="LeftCompact" Tag="LeftCompact" />
+                            <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal" />
+                        </ComboBox>
 
+                        <ComboBox x:Name="ShoulderNavigationEnabledSetter" AutomationProperties.Name="ShoulderNavigationEnabledSetter"
+                                SelectionChanged="ShoulderNavigationEnabledSetter_SelectionChanged"
+                                Header="ShoulderNavigationEnabled">
+                            <ComboBoxItem AutomationProperties.Name="ShoulderNavigationEnabledAlways">Always</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ShoulderNavigationEnabledWhenSelectionFollowsFocus">WhenSelectionFollowsFocus</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ShoulderNavigationEnabledNever">Never</ComboBoxItem>
+                        </ComboBox>
+
+                        <ComboBox x:Name="SelectionFollowsFocusSetter" AutomationProperties.Name="SelectionFollowsFocusSetter"
+                                SelectionChanged="SelectionFollowsFocusSetter_SelectionChanged"
+                                Header="SelectionFollowsFocus">
+                            <ComboBoxItem AutomationProperties.Name="SelectionFollowsFocusEnabled">Enabled</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="SelectionFollowsFocusDisabled">Disabled</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="ChangeGamesContent" Click="ChangeGamesContent_Click" Content="ChangeGamesContent" />
                         <Button x:Name="ClearNavItemContent" Click="ClearNavItemContent_Click" Content="ClearNavItemContent" />

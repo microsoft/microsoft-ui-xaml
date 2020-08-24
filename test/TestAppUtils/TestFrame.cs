@@ -10,6 +10,7 @@ using Windows.System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Input;
 
 // The Templated Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -39,12 +40,23 @@ namespace MUXControlsTestApp
         private TextBox _unhandledExceptionReportingTextBox = null;
         private Type _mainPageType = null;
         private ContentPresenter _pagePresenter = null;
+        private CheckBox _keyInputReceived = null;
 
         public TestFrame(Type mainPageType)
         {
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
             Application.Current.UnhandledException += OnUnhandledException;
+
+            AddHandler(FrameworkElement.KeyDownEvent, new KeyEventHandler(TestFrame_KeyDown) , true);
+        }
+
+        private void TestFrame_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if(_keyInputReceived != null)
+            {
+                _keyInputReceived.IsChecked = true;
+            }
         }
 
         public void ChangeBarVisibility(Visibility visibility)
@@ -134,6 +146,7 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
 
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
+            _keyInputReceived = (CheckBox)GetTemplateChild("KeyInputReceived");
         }
 
         private void _innerFrameInLabDimensions_Click(object sender, RoutedEventArgs e)
