@@ -43,11 +43,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject PagerComboBox;
 
-        public UIObject GetPagerNumberPanelCurrentPageIdentifier()
+        public UIObject GetNumberPanelButton(string elementName)
         {
-            return GetElementWithinPager(ref PagerNumberPanelCurrentPageIdentifier, "NumberPanelCurrentPageIdentifier");
+            foreach (var element in GetPager().Children)
+            {
+                if (element.AutomationId == elementName)
+                {
+                    return element;
+                }
+            }
+            return null;
         }
-        private UIObject PagerNumberPanelCurrentPageIdentifier;
 
         public UIObject GetFirstPageButton()
         {
@@ -181,11 +187,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox NumberPanelVisibilityCheckBox;
 
+        public TextBlock GetNumberPanelContentTextBlock()
+        {
+            return GetElement(ref NumberPanelContentTextBlock, "NumberPanelContentTextBlock");
+        }
+        private TextBlock NumberPanelContentTextBlock;
+
+        public Button GetUpdateMarginTextBlockButton()
+        {
+            return GetElement(ref UpdateMarginTextBlockButton, "UpdateMarginTextBlockButton");
+        }
+        private Button UpdateMarginTextBlockButton;
+
+        public TextBlock GetCurrentPageIdentifierLeftMarginTextBlock()
+        {
+            return GetElement(ref CurrentPageIdentifierLeftMarginTextBlock, "CurrentPageIdentifierLeftMarginTextBlock");
+        }
+        private TextBlock CurrentPageIdentifierLeftMarginTextBlock;
+
         public TextBlock GetNumberOfPagesTextBlock()
         {
             return GetElement(ref NumberOfPagesTextBlock, "NumberOfPagesTextBlock");
         }
         private TextBlock NumberOfPagesTextBlock;
+
+        public Button GetNumberOfPagesSetterButton()
+        {
+            return GetElement(ref NumberOfPagesSetterButton, "NumberOfPagesSetterButton");
+        }
+        private Button NumberOfPagesSetterButton;
 
         public TextBlock GetCurrentPageTextBlock()
         {

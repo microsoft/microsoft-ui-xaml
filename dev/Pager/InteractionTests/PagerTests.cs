@@ -134,6 +134,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void NumberPanelChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -145,8 +146,150 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetNumberPanelDisplayMode();
                 VerifyNumberPanelDisplayMode();
 
-                ClickOnNumberPanelChild(1);
+                SelectPageInNumberPanel(2);
                 VerifyPageChanged(1);
+                VerifyNumberPanelContent("12345");
+
+                SelectPageInNumberPanel(5);
+                VerifyPageChanged(4);
+                VerifyNumberPanelContent("12345");
+
+                SelectPageInNumberPanel(4);
+                VerifyPageChanged(3);
+                VerifyNumberPanelContent("12345");
+
+                SelectPageInNumberPanel(3);
+                VerifyPageChanged(2);
+                VerifyNumberPanelContent("12345");
+
+                ChangeNumberOfPages();
+                VerifyNumberOfPages("100");
+                VerifyNumberPanelContent("12345More100");
+
+                SelectPageInNumberPanel(1);
+                VerifyPageChanged(0);
+                VerifyNumberPanelContent("12345More100");
+
+                SelectPageInNumberPanel(2);
+                VerifyPageChanged(1);
+                VerifyNumberPanelContent("12345More100");
+
+                SelectPageInNumberPanel(3);
+                VerifyPageChanged(2);
+                VerifyNumberPanelContent("12345More100");
+                
+                SelectPageInNumberPanel(4);
+                VerifyPageChanged(3);
+                VerifyNumberPanelContent("12345More100");
+
+                SelectPageInNumberPanel(5);
+                VerifyPageChanged(4);
+                VerifyNumberPanelContent("1More456More100");
+
+                SelectPageInNumberPanel(6);
+                VerifyPageChanged(5);
+                VerifyNumberPanelContent("1More567More100");
+
+                SelectPageInNumberPanel(100);
+                VerifyPageChanged(99);
+                
+                VerifyNumberPanelContent("1More96979899100");
+
+                SelectPageInNumberPanel(99);
+                VerifyPageChanged(98);
+                VerifyNumberPanelContent("1More96979899100");
+
+                SelectPageInNumberPanel(98);
+                VerifyPageChanged(97);
+                VerifyNumberPanelContent("1More96979899100");
+
+                SelectPageInNumberPanel(97);
+                VerifyPageChanged(96);
+                VerifyNumberPanelContent("1More96979899100");
+
+                SelectPageInNumberPanel(96);
+                VerifyPageChanged(95);
+                VerifyNumberPanelContent("1More959697More100");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void NumberPanelChangingPageTest2()
+        {
+            using (var setup = new TestSetupHelper("Pager Tests"))
+            {
+                elements = new PagerTestsPageElements();
+
+                VerifyPageChanged(0);
+
+                SetNumberPanelDisplayMode();
+                VerifyNumberPanelDisplayMode();
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                VerifyPageChanged(1);
+                VerifyNumberPanelContent("12345");
+
+                InputHelper.LeftClick(elements.GetLastPageButton());
+                VerifyPageChanged(4);
+                VerifyNumberPanelContent("12345");
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                VerifyPageChanged(3);
+                VerifyNumberPanelContent("12345");
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                VerifyPageChanged(2);
+                VerifyNumberPanelContent("12345");
+
+                ChangeNumberOfPages();
+                VerifyNumberOfPages("100");
+                VerifyNumberPanelContent("12345More100");
+
+                InputHelper.LeftClick(elements.GetFirstPageButton());
+                VerifyPageChanged(0);
+                VerifyNumberPanelContent("12345More100");
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                VerifyPageChanged(1);
+                VerifyNumberPanelContent("12345More100");
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                VerifyPageChanged(2);
+                VerifyNumberPanelContent("12345More100");
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                VerifyPageChanged(3);
+                VerifyNumberPanelContent("12345More100");
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                VerifyPageChanged(4);
+                VerifyNumberPanelContent("1More456More100");
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                VerifyPageChanged(5);
+                VerifyNumberPanelContent("1More567More100");
+
+                InputHelper.LeftClick(elements.GetLastPageButton());
+                VerifyPageChanged(99);
+
+                VerifyNumberPanelContent("1More96979899100");
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                VerifyPageChanged(98);
+                VerifyNumberPanelContent("1More96979899100");
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                VerifyPageChanged(97);
+                VerifyNumberPanelContent("1More96979899100");
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                VerifyPageChanged(96);
+                VerifyNumberPanelContent("1More96979899100");
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                VerifyPageChanged(95);
+                VerifyNumberPanelContent("1More959697More100");
             }
         }
 
@@ -406,6 +549,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        void SelectPageInNumberPanel(int index)
+        {
+            InputHelper.LeftClick(elements.GetNumberPanelButton("Page Button " + index));
+        }
+
         Edit FindTextBox(UIObject parent)
         {
             foreach (UIObject elem in parent.Children)
@@ -417,11 +565,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             Log.Comment("Did not find TextBox for object " + parent.Name);
             return null;
-        }
-
-        void ClickOnNumberPanelChild(int childIndex)
-        {
-            InputHelper.LeftClick(elements.GetPager().Children[childIndex+4]);
         }
 
         int GetLastPageAsInt()
@@ -449,6 +592,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         string GetCurrentPage()
         {
             return elements.GetCurrentPageTextBlock().GetText();
+        }
+
+        void ChangeNumberOfPages()
+        {
+            InputHelper.LeftClick(elements.GetNumberOfPagesSetterButton());
+        }
+        
+        void VerifyNumberOfPages(string expectedPages)
+        {
+            Verify.AreEqual(expectedPages, elements.GetNumberOfPagesTextBlock().GetText());
+        }
+
+        void VerifyNumberPanelContent(string expectedContent)
+        {
+            Verify.AreEqual(expectedContent, elements.GetNumberPanelContentTextBlock().GetText());
         }
 
         void VerifyPageChanged(int expectedPage)

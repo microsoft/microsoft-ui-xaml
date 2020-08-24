@@ -15,6 +15,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
@@ -268,10 +269,9 @@ namespace MUXControlsTestApp
 
             if ((int)element.Tag == SelectedIndex)
             {
-                var childPoint = element.TransformToVisual((UIElement)element.Parent).TransformPoint(new Point(0, 0));
+                var boundingRect = LayoutInformation.GetLayoutSlot(element);
                 var numberPanelRectMargins = NumberPanelCurrentPageIdentifier.Margin;
-                NumberPanelCurrentPageIdentifier.Margin = new Thickness(childPoint.X, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);
-                
+                NumberPanelCurrentPageIdentifier.Margin = new Thickness(boundingRect.Left, numberPanelRectMargins.Top, numberPanelRectMargins.Right, numberPanelRectMargins.Bottom);  
             }
         }
 

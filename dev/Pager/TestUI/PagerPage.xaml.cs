@@ -16,13 +16,13 @@ using Windows.Devices.AllJoyn;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Windows.Foundation;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "Pager")]
     public sealed partial class PagerPage : TestPage
     {
-        private ObservableCollection<string> EventHistory = new ObservableCollection<string>();
         public PagerPage()
         {
             this.InitializeComponent();
@@ -37,6 +37,8 @@ namespace MUXControlsTestApp
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextButtonVisibilityChanged;
             LastPageButtonVisibilityComboBox.SelectionChanged += OnLastButtonVisibilityChanged;
 
+            TestPager.NumberPanelDisplayTestHook.ElementPrepared += OnElementPrepared;
+
             TestPager.NumberPanelDisplayTestHook.ItemsSourceView.CollectionChanged += OnNumberPanelCollectionChanged;
 
             NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
@@ -47,6 +49,15 @@ namespace MUXControlsTestApp
 
             OnNumberPanelCollectionChanged(this, null);
 
+        }
+
+        private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            var element = args.Element as FrameworkElement;
+            if (element.Tag != null)
+            {
+                element.Name = "Page Button " + element.Tag;
+            }
         }
 
         private void OnNumberPanelCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -81,15 +92,6 @@ namespace MUXControlsTestApp
 
         private void OnPageChanged(PrototypePager sender, PageChangedEventArgs args)
         {
-
-            for (int i = 0; i < TestPager.NumberPanelDisplayTestHook.ItemsSourceView.Count; i++)
-            {
-                FrameworkElement element = TestPager.NumberPanelDisplayTestHook.TryGetElement(i) as FrameworkElement;
-                if (element?.Margin.Left == TestPager.NumberPanelCurrentPageIdentifierTestHook.Margin.Left)
-                {
-                    CurrentPageIdentifierLocationTextBlock.Text = (element as Button).Content.ToString();
-                }
-            }
             PreviousPageTextBlock.Text = args.PreviousPage.ToString();
             CurrentPageTextBlock.Text = args.CurrentPage.ToString();
 
@@ -104,9 +106,9 @@ namespace MUXControlsTestApp
             LastPageButtonIsEnabledCheckBox.IsChecked = TestPager.LastPageButtonTestHook.IsEnabled;
         }
 
-        private void ClearEventDisplay(object sender, RoutedEventArgs args)
+        private void OnUpdateMarginClick(object sender, RoutedEventArgs args)
         {
-            EventHistory.Clear();
+            CurrentPageIdentifierLeftMarginTextBlock.Text = TestPager.NumberPanelCurrentPageIdentifierTestHook.Margin.Left.ToString();
         }
 
         private void OnDisplayModeChanged(object sender, SelectionChangedEventArgs e)
@@ -231,5 +233,7 @@ namespace MUXControlsTestApp
 
             LastPageButtonVisibilityCheckBox.IsChecked = TestPager.LastPageButtonTestHook.Visibility == Visibility.Visible;
         }
+
+
     }
 }
