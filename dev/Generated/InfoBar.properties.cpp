@@ -164,7 +164,7 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnShowCloseButtonPropertyChanged));
     }
     if (!s_TitleProperty)
     {
@@ -202,6 +202,14 @@ void InfoBarProperties::OnSeverityPropertyChanged(
 {
     auto owner = sender.as<winrt::InfoBar>();
     winrt::get_self<InfoBar>(owner)->OnSeverityPropertyChanged(args);
+}
+
+void InfoBarProperties::OnShowCloseButtonPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnShowCloseButtonPropertyChanged(args);
 }
 
 void InfoBarProperties::ActionButtonCommand(winrt::ICommand const& value)

@@ -19,27 +19,22 @@ enum InfoBarSeverity
     Default = 3
 };
 
-/*[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass InfoBarClosedEventArgs : System.EventArgs
+unsealed runtimeclass InfoBarClosedEventArgs
 {
-    InfoBarCloseReason Reason { get; set; };
+    InfoBarCloseReason Reason { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass InfoBarClosingEventArgs : System.EventArgs
+unsealed runtimeclass InfoBarClosingEventArgs
 {
-    InfoBarCloseReason Reason { get; set; };
-    bool Cancel { get; set; };
-}
+    InfoBarCloseReason Reason { get; };
+    Boolean Cancel { get; set; };
 
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-unsealed runtimeclass CloseButtonClickEventArgs : System.EventArgs
-{
-    bool IsHandled { get; set; };
-}*/
+    Windows.Foundation.Deferral GetDeferral();
+}
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -60,6 +55,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     IconSource IconSource{ get; set; };
 
     [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean ShowCloseButton{ get; set; };
 
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
@@ -71,8 +67,6 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     Object ActionButtonCommandParameter{ get; set; };
 
     Object HyperlinkButtonContent{ get; set; }; // ### ???
-
-    //Windows.UI.Color StatusColor{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };

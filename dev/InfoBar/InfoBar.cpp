@@ -21,11 +21,18 @@ void InfoBar::OnApplyTemplate()
     // TODO: Implement
 
     UpdateSeverity();
+    UpdateCloseButton();
 }
 
 void InfoBar::OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSeverity();
+}
+
+
+void InfoBar::OnShowCloseButtonPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateCloseButton();
 }
 
 void InfoBar::UpdateSeverity()
@@ -40,4 +47,9 @@ void InfoBar::UpdateSeverity()
     };
 
     winrt::VisualStateManager::GoToState(*this, severityState, false);
+}
+
+void InfoBar::UpdateCloseButton()
+{
+    winrt::VisualStateManager::GoToState(*this, ShowCloseButton() ? L"CloseButtonVisible" : L"CloseButtonCollapsed", false);
 }

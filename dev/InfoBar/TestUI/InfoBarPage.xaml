@@ -22,7 +22,8 @@
                 Title="{x:Bind TitleTextBox.Text, Mode=OneWay}"
                 Message="{x:Bind MessageTextBox.Text, Mode=OneWay}"
                 ActionButtonContent="{x:Bind ActionContentTextBox.Text, Mode=OneWay}"
-                HyperlinkButtonContent="Now what?" />
+                HyperlinkButtonContent="Now what?"
+                ShowCloseButton="{x:Bind ShowCloseCheckBox.IsChecked.Value, Mode=OneWay}"/>
 
             <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,20,0,0" Spacing="6" HorizontalAlignment="Left">
                 <ComboBox x:Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
@@ -53,7 +54,7 @@
 
                 <CheckBox x:Name="CancelCheckBox" Content="Cancel Close" />
 
-                <CheckBox Name="ShowCloseCheckBox" Content="Show Close Button"/>
+                <CheckBox Name="ShowCloseCheckBox" Content="Show Close Button" IsChecked="True"/>
 
                 <!-- ### also need to test the command, commandparam, and style-->
             </StackPanel>

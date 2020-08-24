@@ -23,7 +23,9 @@ public:
 
     // Property change handlers
     void OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnShowCloseButtonPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void UpdateSeverity();
+    void UpdateCloseButton();
 };
