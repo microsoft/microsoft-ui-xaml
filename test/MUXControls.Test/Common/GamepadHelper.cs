@@ -54,14 +54,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
     {
         public static void PressButton(UIObject obj, GamepadButton button)
         {
-            Log.Comment("Pressing Gamepad button: {0}", button);
+            var keyInputReceivedUIObject = FindElement.ById("__KeyInputReceived");
+
+            if(keyInputReceivedUIObject != null)
+            {
+                var keyInputReceivedCheckbox = new CheckBox(keyInputReceivedUIObject);
+
+                if (keyInputReceivedCheckbox.ToggleState == ToggleState.On)
+                {
+                    keyInputReceivedCheckbox.Uncheck();
+                }
+                Verify.IsTrue(keyInputReceivedCheckbox.ToggleState == ToggleState.Off);
+            }
+
+            Log.Comment("Pressing Gamepad button: {0}", button);    
             KeyboardInput[] array = new KeyboardInput[1];
             array[0].virtualKeyCode = (ushort)button;
             InternalNativeMethods.InjectKeyboardInput(array, 1);
 
-            // Without a delay, the input gets dropped.
-            Wait.ForMilliseconds(50);
 
+            // Wait until app reports it received the input
+            if(keyInputReceivedUIObject == null)
+            {
+                // Fallback if we don't find out helper
+                Wait.ForMilliseconds(50);
+            }
+            else
+            {
+                var keyInputReceivedCheckbox = new CheckBox(keyInputReceivedUIObject);
+                keyInputReceivedCheckbox.GetToggledWaiter().TryWait(TimeSpan.FromMilliseconds(50));
+            }
+
+            Wait.ForIdle();
             array[0].flags = KEY_EVENT_FLAGS.KEYUP;
             InternalNativeMethods.InjectKeyboardInput(array, 1);
         }
