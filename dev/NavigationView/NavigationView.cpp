@@ -646,7 +646,6 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTabFocusNavigation();
     UpdateBackAndCloseButtonsVisibility();
     UpdateSingleSelectionFollowsFocusTemplateSetting();
-    UpdateNavigationViewUseSystemVisual();
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
@@ -1134,11 +1133,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             }();
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
-
-            if (ir != m_topNavRepeaterOverflowView.get())
-            {
-                nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
-            }
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -3104,22 +3098,6 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
-void NavigationView::UpdateNavigationViewUseSystemVisual()
-{
-    if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
-    {
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
-    }
-}
-
-bool NavigationView::ShouldShowFocusVisual()
-{
-    return SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
-}
-
 void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
 {
     if (ir)
@@ -3732,7 +3710,6 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_SelectionFollowsFocusProperty)
     {
         UpdateSingleSelectionFollowsFocusTemplateSetting();
-        UpdateNavigationViewUseSystemVisual();
     }
     else if (property == s_IsPaneToggleButtonVisibleProperty)
     {
