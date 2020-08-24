@@ -23,9 +23,13 @@ public:
 
     // Property change handlers
     void OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnShowCloseButtonPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsIconVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsUserDismissablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void UpdateSeverity();
+    void UpdateIcon();
+    void UpdateIconVisibility();
     void UpdateCloseButton();
 };

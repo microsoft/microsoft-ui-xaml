@@ -13,18 +13,16 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "InfoBar.g.cpp"
 
-GlobalDependencyProperty InfoBarProperties::s_ActionButtonCommandProperty{ nullptr };
-GlobalDependencyProperty InfoBarProperties::s_ActionButtonCommandParameterProperty{ nullptr };
-GlobalDependencyProperty InfoBarProperties::s_ActionButtonContentProperty{ nullptr };
-GlobalDependencyProperty InfoBarProperties::s_ActionButtonStyleProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_ActionButtonProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_CloseButtonCommandProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_CloseButtonCommandParameterProperty{ nullptr };
-GlobalDependencyProperty InfoBarProperties::s_HyperlinkButtonContentProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IconSourceProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_IsIconVisibleProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IsOpenProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_IsUserDismissableProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_MessageProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_SeverityProperty{ nullptr };
-GlobalDependencyProperty InfoBarProperties::s_ShowCloseButtonProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_TemplateSettingsProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_TitleProperty{ nullptr };
 
 InfoBarProperties::InfoBarProperties()
@@ -34,48 +32,15 @@ InfoBarProperties::InfoBarProperties()
 
 void InfoBarProperties::EnsureProperties()
 {
-    if (!s_ActionButtonCommandProperty)
+    if (!s_ActionButtonProperty)
     {
-        s_ActionButtonCommandProperty =
+        s_ActionButtonProperty =
             InitializeDependencyProperty(
-                L"ActionButtonCommand",
-                winrt::name_of<winrt::ICommand>(),
+                L"ActionButton",
+                winrt::name_of<winrt::ButtonBase>(),
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ActionButtonCommandParameterProperty)
-    {
-        s_ActionButtonCommandParameterProperty =
-            InitializeDependencyProperty(
-                L"ActionButtonCommandParameter",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::InfoBar>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ActionButtonContentProperty)
-    {
-        s_ActionButtonContentProperty =
-            InitializeDependencyProperty(
-                L"ActionButtonContent",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::InfoBar>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ActionButtonStyleProperty)
-    {
-        s_ActionButtonStyleProperty =
-            InitializeDependencyProperty(
-                L"ActionButtonStyle",
-                winrt::name_of<winrt::Style>(),
-                winrt::name_of<winrt::InfoBar>(),
-                false /* isAttached */,
-                ValueHelper<winrt::Style>::BoxedDefaultValue(),
+                ValueHelper<winrt::ButtonBase>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_CloseButtonCommandProperty)
@@ -100,17 +65,6 @@ void InfoBarProperties::EnsureProperties()
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_HyperlinkButtonContentProperty)
-    {
-        s_HyperlinkButtonContentProperty =
-            InitializeDependencyProperty(
-                L"HyperlinkButtonContent",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::InfoBar>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
     if (!s_IconSourceProperty)
     {
         s_IconSourceProperty =
@@ -120,7 +74,18 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
+    }
+    if (!s_IsIconVisibleProperty)
+    {
+        s_IsIconVisibleProperty =
+            InitializeDependencyProperty(
+                L"IsIconVisible",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::InfoBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsIconVisiblePropertyChanged));
     }
     if (!s_IsOpenProperty)
     {
@@ -132,6 +97,17 @@ void InfoBarProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 nullptr);
+    }
+    if (!s_IsUserDismissableProperty)
+    {
+        s_IsUserDismissableProperty =
+            InitializeDependencyProperty(
+                L"IsUserDismissable",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::InfoBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsUserDismissablePropertyChanged));
     }
     if (!s_MessageProperty)
     {
@@ -155,16 +131,16 @@ void InfoBarProperties::EnsureProperties()
                 ValueHelper<winrt::InfoBarSeverity>::BoxValueIfNecessary(winrt::InfoBarSeverity::Default),
                 winrt::PropertyChangedCallback(&OnSeverityPropertyChanged));
     }
-    if (!s_ShowCloseButtonProperty)
+    if (!s_TemplateSettingsProperty)
     {
-        s_ShowCloseButtonProperty =
+        s_TemplateSettingsProperty =
             InitializeDependencyProperty(
-                L"ShowCloseButton",
-                winrt::name_of<bool>(),
+                L"TemplateSettings",
+                winrt::name_of<winrt::InfoBarTemplateSettings>(),
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnShowCloseButtonPropertyChanged));
+                ValueHelper<winrt::InfoBarTemplateSettings>::BoxedDefaultValue(),
+                nullptr);
     }
     if (!s_TitleProperty)
     {
@@ -181,19 +157,41 @@ void InfoBarProperties::EnsureProperties()
 
 void InfoBarProperties::ClearProperties()
 {
-    s_ActionButtonCommandProperty = nullptr;
-    s_ActionButtonCommandParameterProperty = nullptr;
-    s_ActionButtonContentProperty = nullptr;
-    s_ActionButtonStyleProperty = nullptr;
+    s_ActionButtonProperty = nullptr;
     s_CloseButtonCommandProperty = nullptr;
     s_CloseButtonCommandParameterProperty = nullptr;
-    s_HyperlinkButtonContentProperty = nullptr;
     s_IconSourceProperty = nullptr;
+    s_IsIconVisibleProperty = nullptr;
     s_IsOpenProperty = nullptr;
+    s_IsUserDismissableProperty = nullptr;
     s_MessageProperty = nullptr;
     s_SeverityProperty = nullptr;
-    s_ShowCloseButtonProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
     s_TitleProperty = nullptr;
+}
+
+void InfoBarProperties::OnIconSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnIconSourcePropertyChanged(args);
+}
+
+void InfoBarProperties::OnIsIconVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnIsIconVisiblePropertyChanged(args);
+}
+
+void InfoBarProperties::OnIsUserDismissablePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnIsUserDismissablePropertyChanged(args);
 }
 
 void InfoBarProperties::OnSeverityPropertyChanged(
@@ -204,64 +202,17 @@ void InfoBarProperties::OnSeverityPropertyChanged(
     winrt::get_self<InfoBar>(owner)->OnSeverityPropertyChanged(args);
 }
 
-void InfoBarProperties::OnShowCloseButtonPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::InfoBar>();
-    winrt::get_self<InfoBar>(owner)->OnShowCloseButtonPropertyChanged(args);
-}
-
-void InfoBarProperties::ActionButtonCommand(winrt::ICommand const& value)
+void InfoBarProperties::ActionButton(winrt::ButtonBase const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<InfoBar*>(this)->SetValue(s_ActionButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    static_cast<InfoBar*>(this)->SetValue(s_ActionButtonProperty, ValueHelper<winrt::ButtonBase>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ICommand InfoBarProperties::ActionButtonCommand()
+winrt::ButtonBase InfoBarProperties::ActionButton()
 {
-    return ValueHelper<winrt::ICommand>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ActionButtonCommandProperty));
-}
-
-void InfoBarProperties::ActionButtonCommandParameter(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBar*>(this)->SetValue(s_ActionButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable InfoBarProperties::ActionButtonCommandParameter()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ActionButtonCommandParameterProperty));
-}
-
-void InfoBarProperties::ActionButtonContent(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBar*>(this)->SetValue(s_ActionButtonContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable InfoBarProperties::ActionButtonContent()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ActionButtonContentProperty));
-}
-
-void InfoBarProperties::ActionButtonStyle(winrt::Style const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBar*>(this)->SetValue(s_ActionButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::Style InfoBarProperties::ActionButtonStyle()
-{
-    return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ActionButtonStyleProperty));
+    return ValueHelper<winrt::ButtonBase>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ActionButtonProperty));
 }
 
 void InfoBarProperties::CloseButtonCommand(winrt::ICommand const& value)
@@ -290,19 +241,6 @@ winrt::IInspectable InfoBarProperties::CloseButtonCommandParameter()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_CloseButtonCommandParameterProperty));
 }
 
-void InfoBarProperties::HyperlinkButtonContent(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBar*>(this)->SetValue(s_HyperlinkButtonContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable InfoBarProperties::HyperlinkButtonContent()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_HyperlinkButtonContentProperty));
-}
-
 void InfoBarProperties::IconSource(winrt::IconSource const& value)
 {
     [[gsl::suppress(con)]]
@@ -316,6 +254,19 @@ winrt::IconSource InfoBarProperties::IconSource()
     return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IconSourceProperty));
 }
 
+void InfoBarProperties::IsIconVisible(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InfoBar*>(this)->SetValue(s_IsIconVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool InfoBarProperties::IsIconVisible()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IsIconVisibleProperty));
+}
+
 void InfoBarProperties::IsOpen(bool value)
 {
     [[gsl::suppress(con)]]
@@ -327,6 +278,19 @@ void InfoBarProperties::IsOpen(bool value)
 bool InfoBarProperties::IsOpen()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IsOpenProperty));
+}
+
+void InfoBarProperties::IsUserDismissable(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InfoBar*>(this)->SetValue(s_IsUserDismissableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool InfoBarProperties::IsUserDismissable()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IsUserDismissableProperty));
 }
 
 void InfoBarProperties::Message(winrt::hstring const& value)
@@ -355,17 +319,17 @@ winrt::InfoBarSeverity InfoBarProperties::Severity()
     return ValueHelper<winrt::InfoBarSeverity>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_SeverityProperty));
 }
 
-void InfoBarProperties::ShowCloseButton(bool value)
+void InfoBarProperties::TemplateSettings(winrt::InfoBarTemplateSettings const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<InfoBar*>(this)->SetValue(s_ShowCloseButtonProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<InfoBar*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::InfoBarTemplateSettings>::BoxValueIfNecessary(value));
     }
 }
 
-bool InfoBarProperties::ShowCloseButton()
+winrt::InfoBarTemplateSettings InfoBarProperties::TemplateSettings()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ShowCloseButtonProperty));
+    return ValueHelper<winrt::InfoBarTemplateSettings>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_TemplateSettingsProperty));
 }
 
 void InfoBarProperties::Title(winrt::hstring const& value)

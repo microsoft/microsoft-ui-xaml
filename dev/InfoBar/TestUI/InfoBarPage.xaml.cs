@@ -12,6 +12,8 @@ using System.Windows.Input;
 
 using InfoBar = Microsoft.UI.Xaml.Controls.InfoBar;
 using InfoBarSeverity = Microsoft.UI.Xaml.Controls.InfoBarSeverity;
+using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
+using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 
 namespace MUXControlsTestApp
 {
@@ -44,6 +46,51 @@ namespace MUXControlsTestApp
                 case "Default":
                 default:
                     TestInfoBar.Severity = InfoBarSeverity.Default;
+                    break;
+            }
+        }
+
+        private void ActionButtonComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TestInfoBar == null) return;
+
+            switch (e.AddedItems[0].ToString())
+            {
+                case "Button":
+                    var button = new Button();
+                    button.Content = "Action";
+                    TestInfoBar.ActionButton = button;
+                    break;
+
+                case "Hyperlink":
+                    var link = new HyperlinkButton();
+                    link.NavigateUri = new Uri("http://www.microsoft.com/");
+                    link.Content = "Link";
+                    TestInfoBar.ActionButton = link;
+                    break;
+
+                case "None":
+                default:
+                    TestInfoBar.ActionButton = null;
+                    break;
+            }
+        }
+
+        private void IconComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TestInfoBar == null) return;
+
+            switch (e.AddedItems[0].ToString())
+            {
+                case "Custom Icon":
+                    SymbolIconSource symbolIcon = new SymbolIconSource();
+                    symbolIcon.Symbol = Symbol.Pin;
+                    TestInfoBar.IconSource = (IconSource)symbolIcon;
+                    break;
+
+                case "Default Icon":
+                default:
+                    TestInfoBar.IconSource = null;
                     break;
             }
         }

@@ -4,12 +4,15 @@
 #include "pch.h"
 #include "common.h"
 #include "InfoBar.h"
+#include "InfoBarTemplateSettings.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
 InfoBar::InfoBar()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_InfoBar);
+
+    SetValue(s_TemplateSettingsProperty, winrt::make<::InfoBarTemplateSettings>());
 
     SetDefaultStyleKey(this);
 }
@@ -21,6 +24,8 @@ void InfoBar::OnApplyTemplate()
     // TODO: Implement
 
     UpdateSeverity();
+    UpdateIcon();
+    UpdateIconVisibility();
     UpdateCloseButton();
 }
 
@@ -29,8 +34,18 @@ void InfoBar::OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEv
     UpdateSeverity();
 }
 
+void InfoBar::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateIcon();
+    UpdateIconVisibility();
+}
 
-void InfoBar::OnShowCloseButtonPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void InfoBar::OnIsIconVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateIconVisibility();
+}
+
+void InfoBar::OnIsUserDismissablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateCloseButton();
 }
@@ -49,7 +64,25 @@ void InfoBar::UpdateSeverity()
     winrt::VisualStateManager::GoToState(*this, severityState, false);
 }
 
+void InfoBar::UpdateIcon()
+{
+    auto const templateSettings = winrt::get_self<::InfoBarTemplateSettings>(TemplateSettings());
+    if (auto const source = IconSource())
+    {
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
+    }
+    else
+    {
+        templateSettings->IconElement(nullptr);
+    }
+}
+
+void InfoBar::UpdateIconVisibility()
+{
+    winrt::VisualStateManager::GoToState(*this, IsIconVisible() ? (IconSource() ? L"UserIconVisible" : L"StandardIconVisible") : L"NoIconVisible", false);
+}
+
 void InfoBar::UpdateCloseButton()
 {
-    winrt::VisualStateManager::GoToState(*this, ShowCloseButton() ? L"CloseButtonVisible" : L"CloseButtonCollapsed", false);
+    winrt::VisualStateManager::GoToState(*this, IsUserDismissable() ? L"CloseButtonVisible" : L"CloseButtonCollapsed", false);
 }

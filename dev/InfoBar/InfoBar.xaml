@@ -67,13 +67,13 @@
                                 <VisualState x:Name="StandardIconVisible">
                                     <VisualState.Setters>
                                         <Setter Target="StandardIcon.Visibility" Value="Visible"/>
-                                        <Setter Target="UserIcon.Visibility" Value="Collapsed"/>
+                                        <Setter Target="UserIconBorder.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 
                                 <VisualState x:Name="UserIconVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="UserIcon.Visibility" Value="Visible"/>
+                                        <Setter Target="UserIconBorder.Visibility" Value="Visible"/>
                                         <Setter Target="StandardIcon.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -119,7 +119,6 @@
                                     <ColumnDefinition Width="Auto"/> <!-- Title -->
                                     <ColumnDefinition Width="Auto"/> <!-- Message -->
                                     <ColumnDefinition Width="Auto"/> <!-- Action button -->
-                                    <ColumnDefinition Width="Auto"/> <!-- Hyperlink -->
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/> <!-- Close button -->
                                 </Grid.ColumnDefinitions>
@@ -127,16 +126,23 @@
                                 <!-- ### could be that these could be combined into one. -->
                                 <IconSourceElement x:Name="StandardIcon"
                                     Grid.Column="0"
-                                    Margin="12,10,0,10">
+                                    Margin="12,10,0,10"
+                                    Visibility="Collapsed">
                                     <IconSourceElement.IconSource>
                                         <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
                                     </IconSourceElement.IconSource>
                                 </IconSourceElement>
 
-                                <IconSourceElement x:Name="UserIcon"
+                                <Border x:Name="UserIconBorder"
                                     Grid.Column="0"
                                     Margin="12,10,0,10"
-                                    IconSource="{TemplateBinding IconSource}"/>
+                                    Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"
+                                    Visibility="Collapsed"/>
+                                <!--<IconSourceElement x:Name="UserIcon"
+                                    Grid.Column="0"
+                                    Margin="12,10,0,10"
+                                    IconSource="{TemplateBinding IconSource}"
+                                    Visibility="Collapsed"/>-->
 
                                 <TextBlock x:Name="Title"
                                     Grid.Column="1"
@@ -154,27 +160,32 @@
                                     Margin="8,10,0,0"
                                     TextTrimming="CharacterEllipsis"/>
 
-                                <Button Name="ActionButton" 
+                                <ContentPresenter
                                     Grid.Column="3"
-                                    Content="{TemplateBinding ActionButtonContent}" 
-                                    Command="{TemplateBinding ActionButtonCommand}" 
-                                    Style="{TemplateBinding ActionButtonStyle}"
-                                    MinWidth="96"
-                                    Height="24"
                                     Margin="12,0,0,0"
-                                    Padding="8,0,8,1"
-                                    CornerRadius="2,2,2,2"/>
+                                    Content="{TemplateBinding ActionButton}">
+                                    <ContentPresenter.Resources>
+                                        <Style TargetType="Button">
+                                            <Style.Setters>
+                                                <Setter Property="MinWidth" Value="96"/>
+                                                <Setter Property="Height" Value="24"/>
+                                                <Setter Property="Padding" Value="8,0,8,1"/>
+                                                <Setter Property="CornerRadius" Value="2,2,2,2"/>
+                                            </Style.Setters>
+                                        </Style>
 
-                                <HyperlinkButton x:Name="HyperlinkButton" 
-                                    Grid.Column="4"
-                                    Margin="12,0,0,0"
-                                    Content="{TemplateBinding HyperlinkButtonContent}"
-                                    FontSize="{ThemeResource InfoBarFontSize}"
-                                    Foreground="{ThemeResource InfoBarHyperlinkButtonColor}"/>
+                                        <Style TargetType="HyperlinkButton">
+                                            <Style.Setters>
+                                                <Setter Property="FontSize" Value="{ThemeResource InfoBarFontSize}"/>
+                                                <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonColor}"/>
+                                            </Style.Setters>
+                                        </Style>
+                                    </ContentPresenter.Resources>
+                                </ContentPresenter>
 
                                 <!-- ### should probably set most of this in a custom style -->
                                 <Button Name="CloseButton" 
-                                    Grid.Column="6"
+                                    Grid.Column="5"
                                     Command="{TemplateBinding CloseButtonCommand}" 
                                     CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                     Height="{StaticResource InfoBarCloseButtonSize}"

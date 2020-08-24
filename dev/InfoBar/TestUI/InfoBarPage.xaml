@@ -16,14 +16,13 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
+
             <controls:InfoBar x:Name="TestInfoBar"
                 IsOpen="True"
                 Title="{x:Bind TitleTextBox.Text, Mode=OneWay}"
                 Message="{x:Bind MessageTextBox.Text, Mode=OneWay}"
-                ActionButtonContent="{x:Bind ActionContentTextBox.Text, Mode=OneWay}"
-                HyperlinkButtonContent="Now what?"
-                ShowCloseButton="{x:Bind ShowCloseCheckBox.IsChecked.Value, Mode=OneWay}"/>
+                IsIconVisible="{x:Bind IsIconVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                IsUserDismissable="{x:Bind IsUserDismissableCheckBox.IsChecked.Value, Mode=OneWay}"/>
 
             <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,20,0,0" Spacing="6" HorizontalAlignment="Left">
                 <ComboBox x:Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
@@ -33,28 +32,28 @@
                     <x:String>Default</x:String>
                 </ComboBox>
 
-                <ComboBox x:Name="IconComboBox" Header="Icon">
+                <ComboBox x:Name="IconComboBox" Header="Icon" SelectionChanged="IconComboBox_SelectionChanged" SelectedIndex="0">
                     <x:String>Default Icon</x:String>
-                    <x:String>User Icon</x:String>
-                    <x:String>No Icon</x:String>
+                    <x:String>Custom Icon</x:String>
                 </ComboBox>
 
                 <TextBox x:Name="TitleTextBox" Header="Title" Width="250" Text="Oops" HorizontalAlignment="Left"/>
 
                 <TextBox x:Name="MessageTextBox" Header="Message" Width="250" Text="You done goofed" HorizontalAlignment="Left"/>
 
-                <TextBox x:Name="ActionContentTextBox" Header="Action Button Content" Width="200" Text="I have regrets" HorizontalAlignment="Left"/>
-
-                <ComboBox x:Name="HyperlinkComboBox" Header="Hyperlink">
+                <ComboBox x:Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
+                    <x:String>None</x:String>
+                    <x:String>Button</x:String>
                     <x:String>Hyperlink</x:String>
-                    <x:String>No Hyperlink</x:String>
                 </ComboBox>
                 
                 <CheckBox x:Name="IsOpenCheckBox" Content="IsOpen"/>
 
                 <CheckBox x:Name="CancelCheckBox" Content="Cancel Close" />
 
-                <CheckBox Name="ShowCloseCheckBox" Content="Show Close Button" IsChecked="True"/>
+                <CheckBox Name="IsIconVisibleCheckBox" Content="Is Icon Visible" IsChecked="True"/>
+                
+                <CheckBox Name="IsUserDismissableCheckBox" Content="Is User Dismissable" IsChecked="True"/>
 
                 <!-- ### also need to test the command, commandparam, and style-->
             </StackPanel>

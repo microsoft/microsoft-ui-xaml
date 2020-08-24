@@ -36,6 +36,17 @@ unsealed runtimeclass InfoBarClosingEventArgs
     Windows.Foundation.Deferral GetDeferral();
 }
 
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass InfoBarTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    InfoBarTemplateSettings();
+
+    Windows.UI.Xaml.Controls.IconElement IconElement;
+
+    static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+}
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
@@ -52,35 +63,36 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     InfoBarSeverity Severity{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IconSource IconSource{ get; set; };
 
     [MUX_DEFAULT_VALUE("true")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean ShowCloseButton{ get; set; };
+    Boolean IsIconVisible{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsUserDismissable{ get; set; };
 
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
     Object CloseButtonCommandParameter{ get; set; };
 
-    Object ActionButtonContent{ get; set; };
-    Windows.UI.Xaml.Style ActionButtonStyle{ get; set; };
-    Windows.UI.Xaml.Input.ICommand ActionButtonCommand{ get; set; };
-    Object ActionButtonCommandParameter{ get; set; };
+    Windows.UI.Xaml.Controls.Primitives.ButtonBase ActionButton{ get; set; };
 
-    Object HyperlinkButtonContent{ get; set; }; // ### ???
+    InfoBarTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MessageProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SeverityProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty ShowCloseButtonProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsIconVisibleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsUserDismissableProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty ActionButtonContentProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty ActionButtonStyleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty ActionButtonCommandProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty ActionButtonCommandParameterProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HyperlinkButtonContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 }
 
 }
