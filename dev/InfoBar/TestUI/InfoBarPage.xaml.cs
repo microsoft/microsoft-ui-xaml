@@ -118,5 +118,20 @@ namespace MUXControlsTestApp
         {
             EventListBox.Items.Clear();
         }
+
+        public void HasCustomContentChanged(object sender, object args)
+        {
+            if (HasCustomContentCheckBox.IsChecked.Value)
+            {
+                var content = new CheckBox();
+                content.Content = "Custom Content";
+                content.Margin = new Thickness(0, 0, 0, 6);
+                TestInfoBar.Content = content;
+            }
+            else
+            {
+                TestInfoBar.Content = null;
+            }
+        }
     }
 }

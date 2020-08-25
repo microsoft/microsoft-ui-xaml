@@ -63,6 +63,8 @@
                     <CheckBox Name="IsIconVisibleCheckBox" Content="Is Icon Visible" IsChecked="True"/>
 
                     <CheckBox Name="IsUserDismissableCheckBox" Content="Is User Dismissable" IsChecked="True"/>
+
+                    <CheckBox Name="HasCustomContentCheckBox" Content="HasCustomContent" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">

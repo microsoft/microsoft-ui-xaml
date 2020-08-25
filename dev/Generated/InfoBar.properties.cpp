@@ -16,6 +16,8 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 GlobalDependencyProperty InfoBarProperties::s_ActionButtonProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_CloseButtonCommandProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_CloseButtonCommandParameterProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_ContentProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_ContentTemplateProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IconSourceProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IsIconVisibleProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IsOpenProperty{ nullptr };
@@ -66,6 +68,28 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ContentProperty)
+    {
+        s_ContentProperty =
+            InitializeDependencyProperty(
+                L"Content",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::InfoBar>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ContentTemplateProperty)
+    {
+        s_ContentTemplateProperty =
+            InitializeDependencyProperty(
+                L"ContentTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::InfoBar>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_IconSourceProperty)
@@ -163,6 +187,8 @@ void InfoBarProperties::ClearProperties()
     s_ActionButtonProperty = nullptr;
     s_CloseButtonCommandProperty = nullptr;
     s_CloseButtonCommandParameterProperty = nullptr;
+    s_ContentProperty = nullptr;
+    s_ContentTemplateProperty = nullptr;
     s_IconSourceProperty = nullptr;
     s_IsIconVisibleProperty = nullptr;
     s_IsOpenProperty = nullptr;
@@ -250,6 +276,32 @@ void InfoBarProperties::CloseButtonCommandParameter(winrt::IInspectable const& v
 winrt::IInspectable InfoBarProperties::CloseButtonCommandParameter()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_CloseButtonCommandParameterProperty));
+}
+
+void InfoBarProperties::Content(winrt::IInspectable const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InfoBar*>(this)->SetValue(s_ContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IInspectable InfoBarProperties::Content()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ContentProperty));
+}
+
+void InfoBarProperties::ContentTemplate(winrt::DataTemplate const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InfoBar*>(this)->SetValue(s_ContentTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DataTemplate InfoBarProperties::ContentTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_ContentTemplateProperty));
 }
 
 void InfoBarProperties::IconSource(winrt::IconSource const& value)

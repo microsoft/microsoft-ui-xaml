@@ -49,6 +49,7 @@ unsealed runtimeclass InfoBarTemplateSettings : Windows.UI.Xaml.DependencyObject
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[contentproperty("Content")]
 unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
 {
     InfoBar();
@@ -80,6 +81,9 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
 
     Windows.UI.Xaml.Controls.Primitives.ButtonBase ActionButton{ get; set; };
 
+    Object Content{ get; set; };
+    Windows.UI.Xaml.DataTemplate ContentTemplate{ get; set; };
+
     InfoBarTemplateSettings TemplateSettings{ get; };
 
     event Windows.Foundation.TypedEventHandler<InfoBar, Object> CloseButtonClick;
@@ -96,6 +100,8 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ContentTemplateProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 }

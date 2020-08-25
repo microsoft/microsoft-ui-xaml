@@ -28,7 +28,7 @@
                                         </Setter>
                                     </VisualState.Setters>
                                 </VisualState>
-                                
+
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
                                         <Setter Target="InfoBarGrid.Background" Value="{ThemeResource InfoBarSeverityWarningStatusColor}"/>
@@ -39,18 +39,7 @@
                                         </Setter>
                                     </VisualState.Setters>
                                 </VisualState>
-                                
-                                <VisualState x:Name="Informational">
-                                    <VisualState.Setters>
-                                        <Setter Target="InfoBarGrid.Background" Value="{ThemeResource InfoBarSeverityInformationalStatusColor}"/>
-                                        <Setter Target="StandardIcon.IconSource">
-                                            <Setter.Value>
-                                                <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                
+
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
                                         <Setter Target="InfoBarGrid.Background" Value="{ThemeResource InfoBarSeveritySuccessStatusColor}"/>
@@ -103,27 +92,31 @@
                             
                         </VisualStateManager.VisualStateGroups>
 
+                        <!-- ### what does this grid do...? -->
                         <Grid x:Name="InfoBarGrid"
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
                             Background="{ThemeResource InfoBarSeverityDefaultStatusColor}" >
 
                             <!-- ### all these magic numbers need to move to themeresources -->
-                            <Grid x:Name="ContentRootGrid">
+                            <Grid x:Name="ContentRootGrid" Margin="12,0,0,0">
                                 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/> <!-- Icon -->
-                                    <ColumnDefinition Width="Auto"/> <!-- Title -->
-                                    <ColumnDefinition Width="Auto"/> <!-- Message -->
-                                    <ColumnDefinition Width="Auto"/> <!-- Action button -->
+                                    <ColumnDefinition Width="Auto"/> <!-- Title, message, and action -->
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/> <!-- Close button -->
                                 </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 
                                 <!-- ### could be that these could be combined into one. -->
                                 <IconSourceElement x:Name="StandardIcon"
                                     Grid.Column="0"
-                                    Margin="12,10,0,10"
+                                    Margin="0,10,12,10"
                                     Visibility="Collapsed">
                                     <IconSourceElement.IconSource>
                                         <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
@@ -132,51 +125,66 @@
 
                                 <Border x:Name="UserIconBorder"
                                     Grid.Column="0"
-                                    Margin="12,10,0,10"
+                                    Margin="0,10,12,10"
                                     Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"
                                     Visibility="Collapsed"/>
 
-                                <TextBlock x:Name="Title"
-                                    Grid.Column="1"
-                                    Text="{TemplateBinding Title}"
-                                    AutomationProperties.LandmarkType="Navigation"
-                                    FontWeight="SemiBold"
-                                    FontSize="{ThemeResource InfoBarFontSize}"
-                                    Margin="12,10,0,0"/>
+                                <!-- ### replace this with new panel -->
+                                <Grid Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <TextBlock x:Name="Message" 
-                                    Grid.Column="2"
-                                    Text="{TemplateBinding Message}" 
-                                    FontSize="{ThemeResource InfoBarFontSize}"
-                                    Margin="8,10,0,0"
-                                    TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="Title"
+                                        Grid.Column="0"
+                                        Text="{TemplateBinding Title}"
+                                        AutomationProperties.LandmarkType="Navigation"
+                                        FontWeight="SemiBold"
+                                        FontSize="{ThemeResource InfoBarFontSize}"
+                                        Margin="0,10,0,0"/>
+
+                                    <TextBlock x:Name="Message" 
+                                        Grid.Column="1"
+                                        Text="{TemplateBinding Message}" 
+                                        FontSize="{ThemeResource InfoBarFontSize}"
+                                        Margin="8,10,0,0"
+                                        TextTrimming="CharacterEllipsis"/>
+
+                                    <ContentPresenter
+                                        Grid.Column="2"
+                                        Margin="12,0,0,0"
+                                        Content="{TemplateBinding ActionButton}">
+                                        <ContentPresenter.Resources>
+                                            <Style TargetType="Button">
+                                                <Style.Setters>
+                                                    <Setter Property="MinWidth" Value="96"/>
+                                                    <Setter Property="Height" Value="24"/>
+                                                    <Setter Property="Padding" Value="8,0,8,1"/>
+                                                    <Setter Property="CornerRadius" Value="2,2,2,2"/>
+                                                </Style.Setters>
+                                            </Style>
+
+                                            <Style TargetType="HyperlinkButton">
+                                                <Style.Setters>
+                                                    <Setter Property="FontSize" Value="{ThemeResource InfoBarFontSize}"/>
+                                                    <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonColor}"/>
+                                                </Style.Setters>
+                                            </Style>
+                                        </ContentPresenter.Resources>
+                                    </ContentPresenter>
+                                </Grid>
 
                                 <ContentPresenter
-                                    Grid.Column="3"
-                                    Margin="12,0,0,0"
-                                    Content="{TemplateBinding ActionButton}">
-                                    <ContentPresenter.Resources>
-                                        <Style TargetType="Button">
-                                            <Style.Setters>
-                                                <Setter Property="MinWidth" Value="96"/>
-                                                <Setter Property="Height" Value="24"/>
-                                                <Setter Property="Padding" Value="8,0,8,1"/>
-                                                <Setter Property="CornerRadius" Value="2,2,2,2"/>
-                                            </Style.Setters>
-                                        </Style>
-
-                                        <Style TargetType="HyperlinkButton">
-                                            <Style.Setters>
-                                                <Setter Property="FontSize" Value="{ThemeResource InfoBarFontSize}"/>
-                                                <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonColor}"/>
-                                            </Style.Setters>
-                                        </Style>
-                                    </ContentPresenter.Resources>
-                                </ContentPresenter>
+                                    Grid.Column="1"
+                                    Grid.Row="1"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"/>
 
                                 <!-- ### should probably set most of this in a custom style -->
                                 <Button Name="CloseButton"
-                                    Grid.Column="5"
+                                    Grid.Column="3"
                                     Command="{TemplateBinding CloseButtonCommand}" 
                                     CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                     Height="{StaticResource InfoBarCloseButtonSize}"
