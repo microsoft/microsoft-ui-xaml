@@ -280,7 +280,7 @@
     <ClInclude Include="XamlType.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\BuildOutput\Intermediates\Microsoft.UI.Xaml\obj\Generated Files\module.g.cpp" />
+    <ClCompile Include="..\..\BuildOutput\Intermediates\$(Platform)\Microsoft.UI.Xaml\obj\Generated Files\module.g.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
     <ClCompile Include="MUXControlsFactory.cpp" />
     <ClCompile Include="dllmain.cpp" />
