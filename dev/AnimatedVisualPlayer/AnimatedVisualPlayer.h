@@ -135,7 +135,7 @@ private:
     // be displayed.
     bool m_isFallenBack{ false };
 
-    // Set true when FrameworkElement::Unloaded is called, then set false when FrameworkElement::Loaded is called.
-    // Initially set true as the AnimatedVisualPlayer instance isn't loaded.
-    bool m_isUnloaded{ true };
+    // Set true when FrameworkElement::Loaded is called, and set false when FrameworkElement::Unloaded is called.
+    // Initially set false as the AnimatedVisualPlayer instance isn't loaded.
+    bool m_isLoaded{ false };
 };
