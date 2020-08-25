@@ -22,7 +22,7 @@ namespace MUXControlsTestApp
                 return new Button() {
                     Content = args.Data,
                     Tag = args.Data,
-                    Style = (Style)App.Current.Resources["NumberPanelNotSelectedButtonStyle"],
+                    Style = (Style)App.Current.Resources["NumberPanelButtonStyle"],
                 };
             }
             else

@@ -47,7 +47,6 @@ namespace MUXControlsTestApp
 
             if (PagerNumberPanel != null)
             {
-                InitializeNumberPanel();
                 UpdateNumberPanel();
             }
             
@@ -289,47 +288,26 @@ namespace MUXControlsTestApp
 
         private void UpdateNumberPanel()
         {
-
-            if (NumberOfPages <= 7)
+            if (NumberOfPages != PagerNumberPanel.ItemsSourceView.Count)
             {
-                if (NumberOfPages != PagerNumberPanel.ItemsSourceView.Count)
-                {
-                    InitializeNumberPanel();
-                }
+                InitializeNumberPanel();
+            }
 
+            if (NumberOfPages <= 7) // Show all pages
+            {
                 MoveIdentifierToCurrentPage();
-                return;
-            }
-           
-            if (SelectedIndex < 5)
+            }          
+            else if (SelectedIndex < 5) // Start State
             {
-                PagerNumberPanelItems[0] = 1;
-                PagerNumberPanelItems[1] = 2;
-                PagerNumberPanelItems[2] = 3;
-                PagerNumberPanelItems[3] = 4;
-                PagerNumberPanelItems[4] = 5;
-                PagerNumberPanelItems[5] = RightEllipse;
-                PagerNumberPanelItems[6] = NumberOfPages;
+                PagerNumberPanel.ItemsSource = NumberPanelLeftMostState;
             }
-            else if (SelectedIndex >= NumberOfPages - 3)
+            else if (SelectedIndex >= NumberOfPages - 3) // End State 
             {
-                PagerNumberPanelItems[0] = 1;
-                PagerNumberPanelItems[1] = LeftEllipse;
-                PagerNumberPanelItems[2] = NumberOfPages - 4;
-                PagerNumberPanelItems[3] = NumberOfPages - 3;
-                PagerNumberPanelItems[4] = NumberOfPages - 2;
-                PagerNumberPanelItems[5] = NumberOfPages - 1;
-                PagerNumberPanelItems[6] = NumberOfPages;
+                PagerNumberPanel.ItemsSource = NumberPanelRightMostState;
             }
-            else if (SelectedIndex >= 5 && SelectedIndex < NumberOfPages - 3)
+            else // Middle State
             {
-                PagerNumberPanelItems[0] = 1;
-                PagerNumberPanelItems[1] = LeftEllipse;
-                PagerNumberPanelItems[2] = SelectedIndex - 1;
-                PagerNumberPanelItems[3] = SelectedIndex;
-                PagerNumberPanelItems[4] = SelectedIndex + 1;
-                PagerNumberPanelItems[5] = RightEllipse;
-                PagerNumberPanelItems[6] = NumberOfPages;
+                PagerNumberPanel.ItemsSource = NumberPanelMiddleState;
             }
         }
 

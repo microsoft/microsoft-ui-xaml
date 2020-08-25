@@ -12,14 +12,6 @@
         <Setter Property="Background" Value="Transparent"/>
     </Style>
 
-    <Style x:Key="NumberPanelNotSelectedButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberPanelButtonStyle}">
-        <Setter Property="Foreground" Value="{ThemeResource ButtonForegroundThemeBrush}"/>
-    </Style>
-
-    <Style x:Key="NumberPanelSelectedButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberPanelButtonStyle}">
-        <Setter Property="Foreground" Value="Red"/>
-    </Style>
-
     <Style x:Key="NumberPanelCurrentPageIdentifierStyle" TargetType="Rectangle">
         <Setter Property="Width" Value="{StaticResource NumberPanelButtonWidth}"/>
         <Setter Property="Height" Value="2"/>
@@ -173,7 +165,7 @@
                             <TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages}"/>
                         </StackPanel>
                         <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater" AutomationProperties.Name="NumberPanelItemsRepeater" Grid.Row="0" Grid.Column="1"
-                            ItemTemplate="{TemplateBinding PagerElementFactory}" Background="Blue" Visibility="Collapsed">
+                            ItemTemplate="{TemplateBinding PagerElementFactory}" Visibility="Collapsed">
                             <controls:ItemsRepeater.Layout>
                                 <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
                             </controls:ItemsRepeater.Layout>

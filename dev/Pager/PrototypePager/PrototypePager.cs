@@ -30,10 +30,23 @@ namespace MUXControlsTestApp
         private NumberBox PagerNumberBox;
         private ItemsRepeater PagerNumberPanel;
         private Rectangle NumberPanelCurrentPageIdentifier;
-        private ObservableCollection<object> PagerNumberPanelItems = new ObservableCollection<object>();
 
-        private IconElement LeftEllipse = new SymbolIcon(Symbol.More);
-        private IconElement RightEllipse = new SymbolIcon(Symbol.More);
+        private static IconElement LeftEllipse = new SymbolIcon(Symbol.More);
+        private static IconElement RightEllipse = new SymbolIcon(Symbol.More);
+
+        private ObservableCollection<object> NumberPanelLeftMostState
+        {
+            get { return new ObservableCollection<object>() { 1, 2, 3, 4, 5, RightEllipse, NumberOfPages }; }
+        }
+        private ObservableCollection<object> NumberPanelRightMostState
+        {
+            get { return new ObservableCollection<object>() { 1, LeftEllipse, NumberOfPages - 4, NumberOfPages - 3, NumberOfPages - 2, NumberOfPages - 1, NumberOfPages }; }
+        }
+        private ObservableCollection<object> NumberPanelMiddleState 
+        { 
+            get { return new ObservableCollection<object>() { 1, LeftEllipse, SelectedIndex - 1, SelectedIndex, SelectedIndex + 1, RightEllipse, NumberOfPages, }; }
+        }
+
 
         private static string NumberBoxVisibleVisualState = "NumberBoxVisible";
         private static string ComboBoxVisibleVisualState = "ComboBoxVisible";
@@ -62,7 +75,7 @@ namespace MUXControlsTestApp
         private int PreviousPageIndex = -1;
 
         public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
-        
+
         public PrototypePager()
         {
             this.DefaultStyleKey = typeof(PrototypePager);
@@ -140,36 +153,24 @@ namespace MUXControlsTestApp
 
         private void InitializeNumberPanel()
         {
-            
-            PagerNumberPanelItems?.Clear();
-            PagerNumberPanel.ItemsSource = PagerNumberPanelItems;
-
-            if (NumberOfPages <= 7)
+            if (NumberOfPages < 7)
             {
-                foreach(var num in TemplateSettings.Pages.GetRange(0, NumberOfPages))
-                {
-                    PagerNumberPanelItems.Add(num);
-                }
-            } else
+                PagerNumberPanel.ItemsSource = TemplateSettings.Pages;
+            }
+            else
             {
-                foreach (var num in TemplateSettings.Pages.GetRange(0, 5))
-                {
-                    PagerNumberPanelItems.Add(num);
-                }
-                PagerNumberPanelItems.Add(RightEllipse);
-                PagerNumberPanelItems.Add(NumberOfPages);
-
+                PagerNumberPanel.ItemsSource = NumberPanelLeftMostState;
             }
         }
     }
 
     public sealed class PagerTemplateSettings : DependencyObject
     {
-        public List<object> Pages { get; set; }
+        public ObservableCollection<object> Pages { get; }
 
         public PagerTemplateSettings(PrototypePager pager)
         {
-            Pages = new List<object>(Enumerable.Range(1, pager.NumberOfPages).Cast<object>());
+            Pages = new ObservableCollection<object>(Enumerable.Range(1, pager.NumberOfPages).Cast<object>());
         }
     }
 }

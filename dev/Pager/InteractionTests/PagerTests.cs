@@ -164,7 +164,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ChangeNumberOfPages();
                 VerifyNumberOfPages("100");
-                VerifyNumberPanelContent("12345More100");
+                
 
                 SelectPageInNumberPanel(1);
                 VerifyPageChanged(0);
@@ -244,7 +244,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ChangeNumberOfPages();
                 VerifyNumberOfPages("100");
-                VerifyNumberPanelContent("12345More100");
+
 
                 InputHelper.LeftClick(elements.GetFirstPageButton());
                 VerifyPageChanged(0);

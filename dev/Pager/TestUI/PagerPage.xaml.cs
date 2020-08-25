@@ -39,16 +39,13 @@ namespace MUXControlsTestApp
 
             TestPager.NumberPanelDisplayTestHook.ElementPrepared += OnElementPrepared;
 
-            TestPager.NumberPanelDisplayTestHook.ItemsSourceView.CollectionChanged += OnNumberPanelCollectionChanged;
-
+         
             NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
             ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
             NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
             NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
-
-            OnNumberPanelCollectionChanged(this, null);
-
+            UpdateNumberPanelContentTextBlock(this, null);
         }
 
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
@@ -60,7 +57,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void OnNumberPanelCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        private void UpdateNumberPanelContentTextBlock(object sender, NotifyCollectionChangedEventArgs args)
         {
             NumberPanelContentTextBlock.Text = "";
             foreach (var item in TestPager.NumberPanelDisplayTestHook.ItemsSource as ObservableCollection<object>)
@@ -92,6 +89,7 @@ namespace MUXControlsTestApp
 
         private void OnPageChanged(PrototypePager sender, PageChangedEventArgs args)
         {
+            UpdateNumberPanelContentTextBlock(this, null);
             PreviousPageTextBlock.Text = args.PreviousPage.ToString();
             CurrentPageTextBlock.Text = args.CurrentPage.ToString();
 
@@ -104,11 +102,6 @@ namespace MUXControlsTestApp
             PreviousPageButtonIsEnabledCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.IsEnabled;
             NextPageButtonIsEnabledCheckBox.IsChecked = TestPager.NextPageButtonTestHook.IsEnabled;
             LastPageButtonIsEnabledCheckBox.IsChecked = TestPager.LastPageButtonTestHook.IsEnabled;
-        }
-
-        private void OnUpdateMarginClick(object sender, RoutedEventArgs args)
-        {
-            CurrentPageIdentifierLeftMarginTextBlock.Text = TestPager.NumberPanelCurrentPageIdentifierTestHook.Margin.Left.ToString();
         }
 
         private void OnDisplayModeChanged(object sender, SelectionChangedEventArgs e)
