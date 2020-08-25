@@ -69,8 +69,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var radioButton1 = radioButtons.ContainerFromIndex(0) as RadioButton;
                 var radioButton2 = radioButtons2.ContainerFromIndex(0) as RadioButton;
-                Verify.IsTrue(radioButton1 != null, "Our custom ItemTemplate should have been wrapped in a RadioButton.");
-                Verify.IsTrue(radioButton2 != null, "Our custom ItemTemplate should have been wrapped in a RadioButton.");
+                Verify.IsNotNull(radioButton1, "Our custom ItemTemplate should have been wrapped in a RadioButton.");
+                Verify.IsNotNull(radioButton2, "Our custom ItemTemplate should have been wrapped in a RadioButton.");
 
                 bool testCondition = !(radioButton1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
                 Verify.IsTrue(testCondition, "Default foreground color of the RadioButton should not have been [blue].");
