@@ -28,8 +28,6 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
-//TODO: MUXControlsInnerLoopTestApp
-
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
     
