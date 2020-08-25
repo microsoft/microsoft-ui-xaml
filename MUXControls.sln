@@ -220,7 +220,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TreeView_TestUI", "dev\Tree
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NavigationView_TestUI", "dev\NavigationView\TestUI\NavigationView_TestUI.shproj", "{7EE5E585-090A-44BF-A950-80636E242327}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NavigationView_APITests", "dev\NavigationView\NavigationView_ApiTests\NavigationView_APITests.shproj", "{E98F3DA3-3C00-4F2E-BF3B-2D2AD9D176BC}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NavigationView_ApiTests", "dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.shproj", "{E98F3DA3-3C00-4F2E-BF3B-2D2AD9D176BC}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NavigationView_InteractionTests", "dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.shproj", "{475C3A33-637A-44DC-B789-6C2D78A75283}"
 EndProject
