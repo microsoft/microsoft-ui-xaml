@@ -47,4 +47,6 @@
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181203002" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
+
+  <Import Project="..\MUXTestInfra.Shared.projitems" />
 </Project>

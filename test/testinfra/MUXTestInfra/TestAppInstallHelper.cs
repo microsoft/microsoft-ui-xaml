@@ -9,8 +9,12 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if USING_TAEF
 using WEX.Logging.Interop;
 using WEX.TestExecution;
+#else
+using Common;
+#endif
 using Windows.Foundation;
 using Windows.Management.Deployment;
 
