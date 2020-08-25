@@ -21,7 +21,7 @@ namespace MUXControls.ReleaseTest
     public class ReleaseTestEnvironment
     {
         [AssemblyInitialize]
-        [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
+        [TestProperty("CoreClrProfile", ".")]
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         public static void AssemblyInitialize(TestContext testContext)
         {

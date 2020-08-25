@@ -98,7 +98,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         }
 
         [AssemblyInitialize]
-        [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
+        [TestProperty("CoreClrProfile", ".")]
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("Hosting:Mode", "UAP")]
         // Default value for tests is to not run on phone. Test Classes or Test Methods can override
