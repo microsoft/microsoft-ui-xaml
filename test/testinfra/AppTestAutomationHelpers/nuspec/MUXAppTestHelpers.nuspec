@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>MUXAppTestHelpers</id>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <title>MUXAppTestHelpers</title>
     <authors>MUXAppTestHelpers</authors>
     <owners>MUXAppTestHelpers</owners>
@@ -11,19 +11,19 @@
   </metadata>
   <files>
     
-    <file target="lib\uap10.0" src="..\..\..\BuildOutput\Debug\x86\AppTestAutomationHelpers\AppTestAutomationHelpers.winmd"/>
+    <file target="lib\uap10.0" src="..\..\..\..\BuildOutput\Debug\x86\AppTestAutomationHelpers\AppTestAutomationHelpers.winmd"/>
 
-    <file target="runtimes\win10-x86\native" src="..\..\..\BuildOutput\Debug\x86\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
-    <file target="runtimes\win10-x86\native" src="..\..\..\BuildOutput\Debug\x86\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
+    <file target="runtimes\win10-x86\native" src="..\..\..\..\BuildOutput\Debug\x86\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
+    <file target="runtimes\win10-x86\native" src="..\..\..\..\BuildOutput\Debug\x86\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
 
-    <file target="runtimes\win10-x64\native" src="..\..\..\BuildOutput\Debug\x64\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
-    <file target="runtimes\win10-x64\native" src="..\..\..\BuildOutput\Debug\x64\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
+    <file target="runtimes\win10-x64\native" src="..\..\..\..\BuildOutput\Debug\x64\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
+    <file target="runtimes\win10-x64\native" src="..\..\..\..\BuildOutput\Debug\x64\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
 
-    <file target="runtimes\win10-arm\native" src="..\..\..\BuildOutput\Debug\ARM\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
-    <file target="runtimes\win10-arm\native" src="..\..\..\BuildOutput\Debug\ARM\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
+    <file target="runtimes\win10-arm\native" src="..\..\..\..\BuildOutput\Debug\ARM\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
+    <file target="runtimes\win10-arm\native" src="..\..\..\..\BuildOutput\Debug\ARM\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
 
-    <file target="runtimes\win10-arm64\native" src="..\..\..\BuildOutput\Debug\ARM64\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
-    <file target="runtimes\win10-arm64\native" src="..\..\..\BuildOutput\Debug\ARM64\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
+    <file target="runtimes\win10-arm64\native" src="..\..\..\..\BuildOutput\Debug\ARM64\AppTestAutomationHelpers\AppTestAutomationHelpers.dll"/>
+    <file target="runtimes\win10-arm64\native" src="..\..\..\..\BuildOutput\Debug\ARM64\AppTestAutomationHelpers\AppTestAutomationHelpers.pri"/>
     
   </files>
 </package>
