@@ -3823,14 +3823,19 @@ void NavigationView::OnIsPaneOpenChanged()
     }
     else if (!m_isOpenPaneForInteraction && !isPaneOpen)
     {
-        if (auto splitView = m_rootSplitView.get())
+        if (const auto splitView = m_rootSplitView.get())
         {
-            // splitview.IsPaneOpen and nav.IsPaneOpen is two way binding. There is possible change that SplitView.IsPaneOpen=false, then
-            // nav.IsPaneOpen=false. We don't need to set force flag in this situation
-            if (splitView.IsPaneOpen())
-            {
-                m_wasForceClosed = true;
-            }
+            // splitview.IsPaneOpen and nav.IsPaneOpen is two way binding. If nav.IsPaneOpen=false and splitView.IsPaneOpen=true,
+            // then the pane has been closed by API and we treat it as a forced close.
+            // If, however, splitView.IsPaneOpen=false, then nav.IsPaneOpen is just following the SplitView here and the pane
+            // was closed, for example, due to app window resizing. We don't set the force flag in this situation.
+            m_wasForceClosed = splitView.IsPaneOpen();
+        }
+        else
+        {
+            // If there is no SplitView (for example it hasn't been loaded yet) then nav.IsPaneOpen was set directly
+            // so we treat it as a closed force.
+            m_wasForceClosed = true;
         }
     }
 
