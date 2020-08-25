@@ -26,6 +26,9 @@ GlobalDependencyProperty InfoBarProperties::s_TemplateSettingsProperty{ nullptr 
 GlobalDependencyProperty InfoBarProperties::s_TitleProperty{ nullptr };
 
 InfoBarProperties::InfoBarProperties()
+    : m_closeButtonClickEventSource{static_cast<InfoBar*>(this)}
+    , m_closedEventSource{static_cast<InfoBar*>(this)}
+    , m_closingEventSource{static_cast<InfoBar*>(this)}
 {
     EnsureProperties();
 }
@@ -96,7 +99,7 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsOpenPropertyChanged));
     }
     if (!s_IsUserDismissableProperty)
     {
@@ -184,6 +187,14 @@ void InfoBarProperties::OnIsIconVisiblePropertyChanged(
 {
     auto owner = sender.as<winrt::InfoBar>();
     winrt::get_self<InfoBar>(owner)->OnIsIconVisiblePropertyChanged(args);
+}
+
+void InfoBarProperties::OnIsOpenPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnIsOpenPropertyChanged(args);
 }
 
 void InfoBarProperties::OnIsUserDismissablePropertyChanged(
@@ -343,4 +354,34 @@ void InfoBarProperties::Title(winrt::hstring const& value)
 winrt::hstring InfoBarProperties::Title()
 {
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_TitleProperty));
+}
+
+winrt::event_token InfoBarProperties::CloseButtonClick(winrt::TypedEventHandler<winrt::InfoBar, winrt::IInspectable> const& value)
+{
+    return m_closeButtonClickEventSource.add(value);
+}
+
+void InfoBarProperties::CloseButtonClick(winrt::event_token const& token)
+{
+    m_closeButtonClickEventSource.remove(token);
+}
+
+winrt::event_token InfoBarProperties::Closed(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosedEventArgs> const& value)
+{
+    return m_closedEventSource.add(value);
+}
+
+void InfoBarProperties::Closed(winrt::event_token const& token)
+{
+    m_closedEventSource.remove(token);
+}
+
+winrt::event_token InfoBarProperties::Closing(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosingEventArgs> const& value)
+{
+    return m_closingEventSource.add(value);
+}
+
+void InfoBarProperties::Closing(winrt::event_token const& token)
+{
+    m_closingEventSource.remove(token);
 }

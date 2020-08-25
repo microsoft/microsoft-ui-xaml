@@ -9,9 +9,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
+using Microsoft.UI.Xaml.Controls;
 
-using InfoBar = Microsoft.UI.Xaml.Controls.InfoBar;
-using InfoBarSeverity = Microsoft.UI.Xaml.Controls.InfoBarSeverity;
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 
@@ -93,6 +92,31 @@ namespace MUXControlsTestApp
                     TestInfoBar.IconSource = null;
                     break;
             }
+        }
+
+        public void OnCloseButtonClick(object sender, object args)
+        {
+            EventListBox.Items.Add("CloseButtonClick");
+        }
+
+        public void OnClosing(object sender, InfoBarClosingEventArgs args)
+        {
+            EventListBox.Items.Add("Closing: " + args.Reason);
+
+            if (CancelCheckBox.IsChecked.Value)
+            {
+                args.Cancel = true;
+            }
+        }
+
+        public void OnClosed(object sender, InfoBarClosedEventArgs args)
+        {
+            EventListBox.Items.Add("Closed: " + args.Reason);
+        }
+
+        public void ClearButtonClick(object sender, object args)
+        {
+            EventListBox.Items.Clear();
         }
     }
 }

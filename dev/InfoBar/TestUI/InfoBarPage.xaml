@@ -22,41 +22,69 @@
                 Title="{x:Bind TitleTextBox.Text, Mode=OneWay}"
                 Message="{x:Bind MessageTextBox.Text, Mode=OneWay}"
                 IsIconVisible="{x:Bind IsIconVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
-                IsUserDismissable="{x:Bind IsUserDismissableCheckBox.IsChecked.Value, Mode=OneWay}"/>
+                IsUserDismissable="{x:Bind IsUserDismissableCheckBox.IsChecked.Value, Mode=OneWay}"
+                CloseButtonClick="OnCloseButtonClick"
+                Closing="OnClosing"
+                Closed="OnClosed"/>
 
-            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,20,0,0" Spacing="6" HorizontalAlignment="Left">
-                <ComboBox x:Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
-                    <x:String>Critical</x:String>
-                    <x:String>Warning</x:String>
-                    <x:String>Success</x:String>
-                    <x:String>Default</x:String>
-                </ComboBox>
+            <Grid Grid.Row="1" Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <ComboBox x:Name="IconComboBox" Header="Icon" SelectionChanged="IconComboBox_SelectionChanged" SelectedIndex="0">
-                    <x:String>Default Icon</x:String>
-                    <x:String>Custom Icon</x:String>
-                </ComboBox>
+                <StackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Left">
+                    <ComboBox x:Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
+                        <x:String>Critical</x:String>
+                        <x:String>Warning</x:String>
+                        <x:String>Success</x:String>
+                        <x:String>Default</x:String>
+                    </ComboBox>
 
-                <TextBox x:Name="TitleTextBox" Header="Title" Width="250" Text="Oops" HorizontalAlignment="Left"/>
+                    <ComboBox x:Name="IconComboBox" Header="Icon" SelectionChanged="IconComboBox_SelectionChanged" SelectedIndex="0">
+                        <x:String>Default Icon</x:String>
+                        <x:String>Custom Icon</x:String>
+                    </ComboBox>
 
-                <TextBox x:Name="MessageTextBox" Header="Message" Width="250" Text="You done goofed" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TitleTextBox" Header="Title" Width="250" Text="Oops" HorizontalAlignment="Left"/>
 
-                <ComboBox x:Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
-                    <x:String>None</x:String>
-                    <x:String>Button</x:String>
-                    <x:String>Hyperlink</x:String>
-                </ComboBox>
-                
-                <CheckBox x:Name="IsOpenCheckBox" Content="IsOpen"/>
+                    <TextBox x:Name="MessageTextBox" Header="Message" Width="250" Text="You done goofed" HorizontalAlignment="Left"/>
 
-                <CheckBox x:Name="CancelCheckBox" Content="Cancel Close" />
+                    <ComboBox x:Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
+                        <x:String>None</x:String>
+                        <x:String>Button</x:String>
+                        <x:String>Hyperlink</x:String>
+                    </ComboBox>
 
-                <CheckBox Name="IsIconVisibleCheckBox" Content="Is Icon Visible" IsChecked="True"/>
-                
-                <CheckBox Name="IsUserDismissableCheckBox" Content="Is User Dismissable" IsChecked="True"/>
+                    <CheckBox x:Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
 
-                <!-- ### also need to test the command, commandparam, and style-->
-            </StackPanel>
+                    <CheckBox x:Name="CancelCheckBox" Content="Cancel Close" />
+
+                    <CheckBox Name="IsIconVisibleCheckBox" Content="Is Icon Visible" IsChecked="True"/>
+
+                    <CheckBox Name="IsUserDismissableCheckBox" Content="Is User Dismissable" IsChecked="True"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                    <TextBlock>Events:</TextBlock>
+                    <ListBox x:Name="EventListBox" MinWidth="150" MaxHeight="380">
+                        <ListBox.Resources>
+                            <Style TargetType="ListBoxItem">
+                                <Style.Setters>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <TextBlock Text="{TemplateBinding Content}"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style.Setters>
+                            </Style>
+                        </ListBox.Resources>
+                    </ListBox>
+                    <Button Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </local:TestPage>

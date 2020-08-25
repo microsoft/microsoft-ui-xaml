@@ -16,12 +16,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBar.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBarTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>

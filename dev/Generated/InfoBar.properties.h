@@ -66,6 +66,17 @@ public:
     static GlobalDependencyProperty s_TemplateSettingsProperty;
     static GlobalDependencyProperty s_TitleProperty;
 
+    winrt::event_token CloseButtonClick(winrt::TypedEventHandler<winrt::InfoBar, winrt::IInspectable> const& value);
+    void CloseButtonClick(winrt::event_token const& token);
+    winrt::event_token Closed(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosedEventArgs> const& value);
+    void Closed(winrt::event_token const& token);
+    winrt::event_token Closing(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosingEventArgs> const& value);
+    void Closing(winrt::event_token const& token);
+
+    event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::IInspectable>> m_closeButtonClickEventSource;
+    event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosedEventArgs>> m_closedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosingEventArgs>> m_closingEventSource;
+
     static void EnsureProperties();
     static void ClearProperties();
 
@@ -74,6 +85,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsIconVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsOpenPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

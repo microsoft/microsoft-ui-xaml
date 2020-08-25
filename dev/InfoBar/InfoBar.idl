@@ -54,6 +54,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     InfoBar();
 
     [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsOpen{ get; set; };
 
     String Title{ get; set; };
@@ -80,6 +81,10 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.Controls.Primitives.ButtonBase ActionButton{ get; set; };
 
     InfoBarTemplateSettings TemplateSettings{ get; };
+
+    event Windows.Foundation.TypedEventHandler<InfoBar, Object> CloseButtonClick;
+    event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarClosingEventArgs> Closing;
+    event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarClosedEventArgs> Closed;
 
     static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };

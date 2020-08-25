@@ -22,14 +22,25 @@ public:
     void OnApplyTemplate();
 
     // Property change handlers
+    void OnIsOpenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsIconVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsUserDismissablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
+    void OnCloseButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+
+    void RaiseClosingEvent();
+    void RaiseClosedEvent();
+
+    void UpdateVisibility();
     void UpdateSeverity();
     void UpdateIcon();
     void UpdateIconVisibility();
     void UpdateCloseButton();
+
+    winrt::InfoBarCloseReason m_lastCloseReason{ winrt::InfoBarCloseReason::Programmatic };
+
+    winrt::Button::Click_revoker m_closeButtonClickRevoker{};
 };
