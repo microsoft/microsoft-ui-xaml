@@ -162,11 +162,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             Wait.InitializeWaitHelper();
 
-#if USING_TAEF
             if (TestEnvironment.TestContext.Properties.Contains("WaitForAppDebugger"))
-#else
-            if (TestEnvironment.TestContext.Properties.ContainsKey("WaitForAppDebugger"))
-#endif
             {
                 Wait.ForAppDebugger();
             }
@@ -504,13 +500,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         private void BuildAndInstallTestAppIfNeeded()
         {
-            string[] architectures = { "x86", "x64", "ARM" };
+            string[] architectures = { "x86", "x64", "ARM", "ARM64" };
 
             // First, we need to figure out what the most recently built architecture was.
             // Since MUXControls' interaction tests need to be built as AnyCPU, we can't just check our own architecture,
             // so we'll check the last-write times of Microsoft.UI.Xaml.dll and MUXControlsTestApp.exe
             // and go with what the latest was.
-            string baseDirectory = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
+            string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string baseDirectory = Directory.GetParent(assemblyDir).Parent.FullName;
 
             string mostRecentlyBuiltArchitecture = string.Empty;
             DateTime timeMostRecentlyBuilt = DateTime.MinValue;
@@ -574,7 +571,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             {
                 Log.Comment("Packaging and installing AppX...");
 
-                string buildAndInstallScript = Path.Combine(baseDirectory, "AnyCPU", "MUXControls.Test", "BuildAndInstallAppX.ps1");
+                string buildAndInstallScript = Path.Combine(assemblyDir, "BuildAndInstallAppX.ps1");
 
                 ProcessStartInfo powershellProcessStartInfo =
                     new ProcessStartInfo("powershell",

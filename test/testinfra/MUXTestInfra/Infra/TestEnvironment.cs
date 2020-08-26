@@ -213,17 +213,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             TestContext = testContext;
 
-#if USING_TAEF
             IsLogVerbose = TestContext.Properties.Contains("LogVerbose");
             IsLogSuperVerbose = TestContext.Properties.Contains("LogSuperVerbose");
 
             if (TestContext.Properties.Contains("WaitForDebugger"))
-#else
-            IsLogVerbose = TestContext.Properties.ContainsKey("LogVerbose");
-            IsLogSuperVerbose = TestContext.Properties.ContainsKey("LogSuperVerbose");
-
-            if (TestContext.Properties.ContainsKey("WaitForDebugger"))
-#endif
             {
                 var processId = Process.GetCurrentProcess().Id;
                 while (!Debugger.IsAttached)
