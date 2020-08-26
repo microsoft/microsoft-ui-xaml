@@ -76,7 +76,7 @@
                                             <ColorAnimation
                                             Storyboard.TargetName="DeterminateProgressBarIndicator"
                                             Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Converter={StaticResource SolidColorBrushToColor}}"
+                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
                                             Duration="0:0:0.0"/>
                                             <ColorAnimation
                                             Storyboard.TargetName="ProgressBarRoot"
@@ -140,7 +140,7 @@
                                             Storyboard.TargetName="IndeterminateProgressBarIndicator2"
                                             Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame Value="{ThemeResource SystemAccentColor}" KeyTime="0:0:2.75" />
-                                            <LinearColorKeyFrame Value="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Converter={StaticResource SolidColorBrushToColor}}" KeyTime="0:0:3" />
+                                            <LinearColorKeyFrame Value="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}" KeyTime="0:0:3" />
                                         </ColorAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames
                                             Storyboard.TargetName="ProgressBarRoot"
@@ -156,7 +156,7 @@
                                         <ColorAnimation
                                             Storyboard.TargetName="DeterminateProgressBarIndicator"
                                             Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Converter={StaticResource SolidColorBrushToColor}}"
+                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
                                             Duration="0:0:0.25"/>
                                         <ColorAnimation
                                             Storyboard.TargetName="ProgressBarRoot"

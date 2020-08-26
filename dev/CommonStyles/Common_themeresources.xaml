@@ -39,5 +39,4 @@
    
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
-    <primitives:SolidColorBrushToColorConverter x:Key="SolidColorBrushToColor"/>
 </ResourceDictionary>
