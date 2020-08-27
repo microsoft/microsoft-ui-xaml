@@ -19,6 +19,10 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
