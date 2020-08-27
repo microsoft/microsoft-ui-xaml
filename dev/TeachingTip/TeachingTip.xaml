@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
@@ -561,11 +561,19 @@
 
                                                     <Border x:Name="IconBorder" Grid.Column="0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
                                                     <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
-                                                        <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
-                                                        <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}" TextWrapping="WrapWholeWords"/>
+                                                        <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords"
+                                                            Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                                            FontWeight="SemiBold"/>
+                                                        <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}"
+                                                            Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                                            TextWrapping="WrapWholeWords"/>
                                                     </StackPanel>
                                                 </Grid>
-                                                <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
+                                                <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"
+                                                        Background="{TemplateBinding Background}" Foreground="{TemplateBinding Foreground}"
+                                                        FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                                        FontStyle="{TemplateBinding FontStyle}" FontFamily="{TemplateBinding FontFamily}"
+                                                        FontStretch="{TemplateBinding FontStretch}"/>
                                                 <Grid Grid.Row="2">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
