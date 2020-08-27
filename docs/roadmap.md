@@ -37,9 +37,9 @@ We're focused on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-The team recently released WinUI 3 Preview 1, which is an early pre-release that includes support for Win32 and UWP apps. Preview 1 is available for anyone to try out, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 1 here: 
+The team recently released WinUI 3 Preview 2, which is an early pre-release that includes support for Win32 and UWP apps. Preview 21 is available for anyone to try out, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 2here: 
 
-[WinUI 3.0 Preview 1 (May 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[WinUI 3.0 Preview 2 (July 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 Conceptual overview of WinUI 3:
 
@@ -96,7 +96,7 @@ This means we won't be adding many new features in the first WinUI 3.0 release.
 
 However, we are planning at least a few new features, including:
 
-1. Downlevel support (backward compatibility) for all existing features: new Xaml and Composition features that were added in the Windows May 2019 Update will now work on Creators Update (a.k.a. 15063 or RS2) and newer!
+1. Downlevel support (backward compatibility) for all existing features: new Xaml and Composition features that were added in the Windows May 2019 Update will now work on the April 2018 Update (i.e. Build 17134 or RS4) and newer!
 2. A new [Microsoft Edge (Chromium) WebView2](https://docs.microsoft.com/microsoft-edge/hosting/webview2) Xaml control
 3. [Input validation support](https://github.com/microsoft/microsoft-ui-xaml/issues/179)
 4. New Visual Studio 2019 project templates for different combinations of app type (Win32, UWP) and language (.NET, C++)
@@ -113,13 +113,13 @@ We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 to
 
 ### WinUI 3.0 Timelines and Milestones
 
-We're planning to release WinUI 3 via a series of preview releases throughout 2020, with a production-ready preview in November. We expect WinUI 3.0 to ship to market in early 2021. 
+We're planning to release WinUI 3 via a series of preview releases throughout 2020. We expect WinUI 3.0 to ship to market in early 2021. 
 
-You can download WinUI 3 Preview 1 to try out - we'd love feedback on it, although please note it's a early preview build with lots of missing features. For installation info and known issues see:
+You can download WinUI 3 Preview 2 to try out - we'd love feedback on it, although please note it's a early preview build with lots of missing features. For installation info and known issues see:
 
-[WinUI 3.0 Preview 1 (May 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[WinUI 3.0 Preview 2 (July 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 See the image below for a more detailed look at our plans for getting WinUI 3.0 to market: 
 
-![Winui roadmap](images/WinUI-RoadmapJuly2020.png)
+![Winui roadmap](images/WinUI-Roadmap-Aug2020.jpg)
 
