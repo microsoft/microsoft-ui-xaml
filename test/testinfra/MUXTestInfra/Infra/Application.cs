@@ -46,15 +46,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         private readonly bool _isUWPApp;
 
+        private readonly string _certSerialNumber;
+        private readonly string _baseAppxDir;
+
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, bool isUWPApp = true)
+        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp = true)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;
             _appName = appName;
             _isUWPApp = isUWPApp;
+            _certSerialNumber = certSerialNumber;
+            _baseAppxDir = baseAppxDir;
 
             _appWindowTitle = testAppMainWindowTitle;
             _appProcessName = testAppProcessName;
@@ -179,9 +184,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #if USING_TAEF
             TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
 #else
-            BuildAndInstallTestAppIfNeeded();
+            InstallTestAppIfNeeded();
 #endif
-
 
             Log.Comment("Launching app {0}", _appName);
 
@@ -498,124 +502,73 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        private void BuildAndInstallTestAppIfNeeded()
+        private void InstallTestAppIfNeeded()
         {
-            string[] architectures = { "x86", "x64", "ARM", "ARM64" };
-
-            // First, we need to figure out what the most recently built architecture was.
-            // Since MUXControls' interaction tests need to be built as AnyCPU, we can't just check our own architecture,
-            // so we'll check the last-write times of Microsoft.UI.Xaml.dll and MUXControlsTestApp.exe
-            // and go with what the latest was.
-            string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string baseDirectory = Directory.GetParent(assemblyDir).Parent.FullName;
-
-            string mostRecentlyBuiltArchitecture = string.Empty;
+            string mostRecentlyBuiltAppx = string.Empty;
             DateTime timeMostRecentlyBuilt = DateTime.MinValue;
 
-            foreach (string architecture in architectures)
+            var exclude = new[] { "Microsoft.NET.CoreRuntime", "Microsoft.VCLibs" };
+
+            var files = Directory.GetFiles(_baseAppxDir, "*.appx", SearchOption.AllDirectories).Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
+
+            if (files.Count() == 0)
             {
-                string muxPath = Path.Combine(baseDirectory, architecture, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll");
-                string testAppExePath = Path.Combine(baseDirectory, architecture, _packageName, _packageName + ".exe");
-
-                if (File.Exists(muxPath) && File.Exists(testAppExePath))
-                {
-                    DateTime muxWriteTime = File.GetLastWriteTime(muxPath);
-                    DateTime testAppExeWriteTime = File.GetLastWriteTime(testAppExePath);
-
-                    if (muxWriteTime > timeMostRecentlyBuilt || testAppExeWriteTime > timeMostRecentlyBuilt)
-                    {
-                        timeMostRecentlyBuilt = muxWriteTime > testAppExeWriteTime ? muxWriteTime : testAppExeWriteTime;
-                        mostRecentlyBuiltArchitecture = architecture;
-                    }
-                }
+                throw new Exception(string.Format("Failed to find '*.appx' in {0}'!", _baseAppxDir));
             }
 
-            if (mostRecentlyBuiltArchitecture.Length == 0)
+            foreach (string file in files)
             {
-                Log.Warning("Could not find most recently built architecture!  Defaulting to x86.");
-                mostRecentlyBuiltArchitecture = "x86";
+                DateTime fileWriteTime = File.GetLastWriteTime(file);
+
+                if (fileWriteTime > timeMostRecentlyBuilt)
+                {
+                    timeMostRecentlyBuilt = fileWriteTime;
+                    mostRecentlyBuiltAppx = file;
+                }
             }
 
             // We'll see if we need to install the app.
             // Since we can't run as administrator in MSTest, we need to call out
             // to a script that'll install the app for us.
-            string architectureDirectory = Path.Combine(baseDirectory, mostRecentlyBuiltArchitecture);
-            string testAppDirectory = Path.Combine(architectureDirectory, _packageName);
-            string appxDirectory = Path.Combine(testAppDirectory, "AppPackages", _packageName + "_Test");
-            string appxPath = Path.Combine(appxDirectory, _packageName + ".appx");
-            bool appXPackagingNecessary = false;
-
-            if (!File.Exists(appxPath))
+            PackageManager packageManager = new PackageManager();
+            if (packageManager.FindPackagesForUser(string.Empty, _packageFamilyName).Count() == 0)
             {
-                Log.Comment($".appx not found at '{appxPath}'");
-                // If the AppX doesn't even exist, then we definitely need to package it.
-                appXPackagingNecessary = true;
-            }
-            else
-            {
-                // Otherwise, we need to package it if any of its contents have been built since the last packaging.
-                DateTime appxWriteTime = File.GetLastWriteTime(appxPath);
-                DateTime exeWriteTime = File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe"));
-                DateTime dllWriteTime = File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll"));
+                Log.Comment("Installing AppX...");
 
-                appXPackagingNecessary =
-                    exeWriteTime > appxWriteTime ||
-                    dllWriteTime > appxWriteTime;
+                Log.Comment("Checking if the app's certificate is installed...");
 
-                Log.Comment($"AppX packaging necessary: {appXPackagingNecessary} (appxWriteTime = {appxWriteTime}, exeWriteTime = {exeWriteTime}, dllWriteTime = {dllWriteTime})");
-            }
+                // If the certificate for the app is not present, installing it requires elevation.
+                // We'll run Add-AppDevPackage.ps1 without -Force in that circumstance so the user
+                // can be prompted to allow elevation.  We don't want to run it without -Force all the time,
+                // as that prompts the user to hit enter at the end of the install, which is an annoying
+                // and unnecessary step. The parameter is the SHA-1 hash of the certificate.
 
-            // Only package the AppX or install the app if we need to - otherwise, we'll get unnecessary console windows showing up
-            // for a brief time on every test run, which would get very annoying very quickly.
-            if (appXPackagingNecessary)
-            {
-                Log.Comment("Packaging and installing AppX...");
+                var certutilProcess = Process.Start(new ProcessStartInfo("certutil.exe",
+                        string.Format("-verifystore TrustedPeople {0}", _certSerialNumber)) {
+                    UseShellExecute = true
+                });
+                certutilProcess.WaitForExit();
 
-                string buildAndInstallScript = Path.Combine(assemblyDir, "BuildAndInstallAppX.ps1");
+                if(certutilProcess.ExitCode == 0)
+                {
+                    Log.Comment("Certificate is installed. Installing app...");
+                }
+                else
+                {
+                    Log.Comment("Certificate is not installed. Installing app and certificate...");
+                }
 
-                ProcessStartInfo powershellProcessStartInfo =
-                    new ProcessStartInfo("powershell",
-                        string.Format("-ExecutionPolicy Unrestricted -File {0} {1} {2} {3} {4}",
-                            buildAndInstallScript,
-                            _packageName,
-                            mostRecentlyBuiltArchitecture,
-                            _appName,
-                            _packageFamilyName));
-
-                powershellProcessStartInfo.UseShellExecute = true;
-
-                Process powershellProcess = Process.Start(powershellProcessStartInfo);
+                var powershellProcess = Process.Start(new ProcessStartInfo("powershell",
+                        string.Format("-ExecutionPolicy Unrestricted -File {0}\\Add-AppDevPackage.ps1 {1}",
+                            Path.GetDirectoryName(mostRecentlyBuiltAppx),
+                            certutilProcess.ExitCode == 0 ? "-Force" : "")) {
+                    UseShellExecute = true
+                });
                 powershellProcess.WaitForExit();
 
                 if (powershellProcess.ExitCode != 0)
                 {
-                    throw new Exception(string.Format("Failed to package and install AppX for {0}!", _packageName));
-                }
-            }
-            else
-            {
-                PackageManager packageManager = new PackageManager();
-                if (packageManager.FindPackagesForUser(string.Empty, _packageFamilyName).Count() == 0)
-                {
-                    Log.Comment("Packaging and installing AppX...");
-
-                    string buildAndInstallScript = Path.Combine(baseDirectory, "AnyCPU", "MUXControls.Test", "InstallAppX.ps1");
-
-                    ProcessStartInfo powershellProcessStartInfo =
-                        new ProcessStartInfo("powershell",
-                            string.Format("-ExecutionPolicy Unrestricted -File {0} {1}",
-                                buildAndInstallScript,
-                                appxDirectory));
-
-                    powershellProcessStartInfo.UseShellExecute = true;
-
-                    Process powershellProcess = Process.Start(powershellProcessStartInfo);
-                    powershellProcess.WaitForExit();
-
-                    if (powershellProcess.ExitCode != 0)
-                    {
-                        throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
-                    }
+                    throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
                 }
             }
         }
