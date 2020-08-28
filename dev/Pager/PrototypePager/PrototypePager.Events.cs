@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Windows.Foundation;
@@ -22,15 +23,45 @@ using Windows.UI.Xaml.Media.Animation;
 namespace MUXControlsTestApp
 {
     public sealed partial class PrototypePager : Control
-    { 
-        private static void OnSelectedIndexChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+    {
+        private static void OnPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
-            (sender as PrototypePager).PreviousPageIndex = (int)args.OldValue - 1;
-            (sender as PrototypePager).OnSelectedIndexChanged();
+            var sender = obj as PrototypePager;
+            DependencyProperty prop = args.Property;
+            
+            if (prop == FirstPageButtonVisibilityProperty)
+            {
+                sender.OnFirstPageButtonVisibilityChanged();
+            }
+            else if (prop == PreviousPageButtonVisibilityProperty)
+            {
+                sender.OnPreviousPageButtonVisibilityChanged();
+            }
+            else if (prop == NextPageButtonVisibilityProperty)
+            {
+                sender.OnNextPageButtonVisibilityChanged();
+            }
+            else if (prop == LastPageButtonVisibilityProperty)
+            {
+                sender.OnLastPageButtonVisibilityChanged();
+            }
+            else if (prop == PagerDisplayModeProperty)
+            {
+                sender.OnPagerDisplayModeChanged();
+            }
+            else if (prop == NumberOfPagesProperty)
+            {
+                sender.OnNumberOfPagesChanged();
+            }
+            else if (prop == SelectedIndexProperty)
+            {
+                sender.OnSelectedIndexChanged((int)args.OldValue - 1);
+            }
         }
 
-        private void OnSelectedIndexChanged()
+        private void OnSelectedIndexChanged(int previousIndex)
         {
+            PreviousPageIndex = previousIndex;
             if (PagerComboBox != null)
             {
                 PagerComboBox.SelectedIndex = SelectedIndex - 1;
@@ -43,7 +74,12 @@ namespace MUXControlsTestApp
 
         private void OnNumberOfPagesChanged()
         {
-            SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
+            NumberPanelEndStateStartIndex = NumberOfPages - 3;
+            TemplateSettings.Pages?.Clear();
+            foreach (var item in Enumerable.Range(1, NumberOfPages).Cast<object>())
+            {
+                TemplateSettings.Pages.Add(item);
+            }
 
             if (PagerNumberPanel != null)
             {
@@ -293,15 +329,15 @@ namespace MUXControlsTestApp
                 InitializeNumberPanel();
             }
 
-            if (NumberOfPages <= 7) // Show all pages
+            if (NumberOfPages <= MaxNumberOfElementsInRepeater) // Show all pages
             {
                 MoveIdentifierToCurrentPage();
             }          
-            else if (SelectedIndex < 5) // Start State
+            else if (SelectedIndex < NumberPanelMiddleStateStartIndex) // Start State
             {
                 PagerNumberPanel.ItemsSource = NumberPanelLeftMostState;
             }
-            else if (SelectedIndex >= NumberOfPages - 3) // End State 
+            else if (SelectedIndex >= NumberPanelEndStateStartIndex) // End State 
             {
                 PagerNumberPanel.ItemsSource = NumberPanelRightMostState;
             }

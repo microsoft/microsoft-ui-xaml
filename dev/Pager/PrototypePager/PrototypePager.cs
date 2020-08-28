@@ -31,6 +31,10 @@ namespace MUXControlsTestApp
         private ItemsRepeater PagerNumberPanel;
         private Rectangle NumberPanelCurrentPageIdentifier;
 
+        private static int MaxNumberOfElementsInRepeater = 7;
+        private static int NumberPanelMiddleStateStartIndex = 5;
+        private int NumberPanelEndStateStartIndex;
+
         private static IconElement LeftEllipse = new SymbolIcon(Symbol.More);
         private static IconElement RightEllipse = new SymbolIcon(Symbol.More);
 
@@ -79,23 +83,13 @@ namespace MUXControlsTestApp
         public PrototypePager()
         {
             this.DefaultStyleKey = typeof(PrototypePager);
-            this.Loaded += OnLoad;
         }
 
-        private void OnLoad(object sender, RoutedEventArgs args)
-        {
-            // Attach Callbacks for property changes
-            RegisterPropertyChangedCallback(NumberOfPagesProperty, (s, e) => { OnNumberOfPagesChanged(); });
-            RegisterPropertyChangedCallback(SelectedIndexProperty, (s, e) => { OnSelectedIndexChanged(); });
-            RegisterPropertyChangedCallback(PagerDisplayModeProperty, (s, e) => { OnPagerDisplayModeChanged(); });
-            RegisterPropertyChangedCallback(FirstPageButtonVisibilityProperty, (s, e) => { OnFirstPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(PreviousPageButtonVisibilityProperty, (s, e) => { OnPreviousPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(NextPageButtonVisibilityProperty, (s, e) => { OnNextPageButtonVisibilityChanged(); });
-            RegisterPropertyChangedCallback(LastPageButtonVisibilityProperty, (s, e) => { OnLastPageButtonVisibilityChanged(); });
-        }
         protected override void OnApplyTemplate()
         {
             SetValue(TemplateSettingsProperty, new PagerTemplateSettings(this));
+            NumberPanelEndStateStartIndex = NumberOfPages - 3;
+
             // Grab UIElements for later
             FirstPageButton = GetTemplateChild("FirstPageButton") as Button;
             PreviousPageButton = GetTemplateChild("PreviousPageButton") as Button;
@@ -153,7 +147,7 @@ namespace MUXControlsTestApp
 
         private void InitializeNumberPanel()
         {
-            if (NumberOfPages < 7)
+            if (NumberOfPages < MaxNumberOfElementsInRepeater)
             {
                 PagerNumberPanel.ItemsSource = TemplateSettings.Pages;
             }
@@ -166,7 +160,7 @@ namespace MUXControlsTestApp
 
     public sealed class PagerTemplateSettings : DependencyObject
     {
-        public ObservableCollection<object> Pages { get; }
+        public ObservableCollection<object> Pages { get; set; }
 
         public PagerTemplateSettings(PrototypePager pager)
         {
