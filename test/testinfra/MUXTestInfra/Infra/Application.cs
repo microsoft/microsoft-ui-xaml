@@ -29,6 +29,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using System.Runtime.InteropServices;
+using Windows.Foundation;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
@@ -502,6 +503,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
+#if !USING_TAEF
         private void InstallTestAppIfNeeded()
         {
             string mostRecentlyBuiltAppx = string.Empty;
@@ -527,51 +529,78 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
 
-            // We'll see if we need to install the app.
-            // Since we can't run as administrator in MSTest, we need to call out
-            // to a script that'll install the app for us.
             PackageManager packageManager = new PackageManager();
-            if (packageManager.FindPackagesForUser(string.Empty, _packageFamilyName).Count() == 0)
+            DeploymentResult result = null;
+
+            var installedPackages = packageManager.FindPackagesForUser(string.Empty, _packageFamilyName);
+            foreach (var installedPackage in installedPackages)
             {
-                Log.Comment("Installing AppX...");
+                Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
 
-                Log.Comment("Checking if the app's certificate is installed...");
-
-                // If the certificate for the app is not present, installing it requires elevation.
-                // We'll run Add-AppDevPackage.ps1 without -Force in that circumstance so the user
-                // can be prompted to allow elevation.  We don't want to run it without -Force all the time,
-                // as that prompts the user to hit enter at the end of the install, which is an annoying
-                // and unnecessary step. The parameter is the SHA-1 hash of the certificate.
-
-                var certutilProcess = Process.Start(new ProcessStartInfo("certutil.exe",
-                        string.Format("-verifystore TrustedPeople {0}", _certSerialNumber)) {
-                    UseShellExecute = true
-                });
-                certutilProcess.WaitForExit();
-
-                if(certutilProcess.ExitCode == 0)
+                AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
+                var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
+                removePackageOperation.Completed = (operation, status) =>
                 {
-                    Log.Comment("Certificate is installed. Installing app...");
+                    if (status != AsyncStatus.Started)
+                    {
+                        result = operation.GetResults();
+                        removePackageCompleteEvent.Set();
+                    }
+                };
+                removePackageCompleteEvent.WaitOne();
+
+                if (!string.IsNullOrEmpty(result.ErrorText))
+                {
+                    Log.Error("Removal failed!");
+                    Log.Error("Package removal ActivityId = {0}", result.ActivityId);
+                    Log.Error("Package removal ErrorText = {0}", result.ErrorText);
+                    Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
                 }
                 else
                 {
-                    Log.Comment("Certificate is not installed. Installing app and certificate...");
-                }
-
-                var powershellProcess = Process.Start(new ProcessStartInfo("powershell",
-                        string.Format("-ExecutionPolicy Unrestricted -File {0}\\Add-AppDevPackage.ps1 {1}",
-                            Path.GetDirectoryName(mostRecentlyBuiltAppx),
-                            certutilProcess.ExitCode == 0 ? "-Force" : "")) {
-                    UseShellExecute = true
-                });
-                powershellProcess.WaitForExit();
-
-                if (powershellProcess.ExitCode != 0)
-                {
-                    throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
+                    Log.Comment("Removal successful.");
                 }
             }
+
+            Log.Comment("Installing AppX...");
+
+            Log.Comment("Checking if the app's certificate is installed...");
+
+            // If the certificate for the app is not present, installing it requires elevation.
+            // We'll run Add-AppDevPackage.ps1 without -Force in that circumstance so the user
+            // can be prompted to allow elevation.  We don't want to run it without -Force all the time,
+            // as that prompts the user to hit enter at the end of the install, which is an annoying
+            // and unnecessary step. The parameter is the SHA-1 hash of the certificate.
+
+            var certutilProcess = Process.Start(new ProcessStartInfo("certutil.exe",
+                    string.Format("-verifystore TrustedPeople {0}", _certSerialNumber)) {
+                UseShellExecute = true
+            });
+            certutilProcess.WaitForExit();
+
+            if(certutilProcess.ExitCode == 0)
+            {
+                Log.Comment("Certificate is installed. Installing app...");
+            }
+            else
+            {
+                Log.Comment("Certificate is not installed. Installing app and certificate...");
+            }
+
+            var powershellProcess = Process.Start(new ProcessStartInfo("powershell",
+                    string.Format("-ExecutionPolicy Unrestricted -File {0}\\Add-AppDevPackage.ps1 {1}",
+                        Path.GetDirectoryName(mostRecentlyBuiltAppx),
+                        certutilProcess.ExitCode == 0 ? "-Force" : "")) {
+                UseShellExecute = true
+            });
+            powershellProcess.WaitForExit();
+
+            if (powershellProcess.ExitCode != 0)
+            {
+                throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
+            }
         }
+#endif
 
         #endregion
 
