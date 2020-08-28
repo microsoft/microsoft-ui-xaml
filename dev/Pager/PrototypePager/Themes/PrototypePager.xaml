@@ -12,14 +12,6 @@
         <Setter Property="Background" Value="Transparent"/>
     </Style>
 
-    <Style x:Key="NumberPanelCurrentPageIdentifierStyle" TargetType="Rectangle">
-        <Setter Property="Width" Value="{StaticResource NumberPanelButtonWidth}"/>
-        <Setter Property="Height" Value="2"/>
-        <Setter Property="Fill" Value="#0064C1"/>
-        <Setter Property="RadiusX" Value="1"/>
-        <Setter Property="RadiusY" Value="1"/>
-    </Style>
-
     <Style TargetType="local:PrototypePager">
         <Setter Property="Template">
             <Setter.Value>
@@ -170,8 +162,8 @@
                                 <controls:StackLayout Orientation="Horizontal" Spacing="5"/>
                             </controls:ItemsRepeater.Layout>
                         </controls:ItemsRepeater>
-                        <Rectangle x:Name="NumberPanelCurrentPageIdentifier" Style="{StaticResource NumberPanelCurrentPageIdentifierStyle}"
-                                   HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="0" Visibility="Collapsed">
+                        <Rectangle x:Name="NumberPanelCurrentPageIdentifier" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="0"
+                                   Visibility="Collapsed" Fill="#0064C1" RadiusX="1" RadiusY="1" Height="2" Width="{StaticResource NumberPanelButtonWidth}">
                             <Rectangle.Transitions>
                                 <TransitionCollection>
                                     <RepositionThemeTransition/>
