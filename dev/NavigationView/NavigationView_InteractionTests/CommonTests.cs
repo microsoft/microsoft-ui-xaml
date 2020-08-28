@@ -102,9 +102,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    String settings = testScenario.IsLeftNavTest ? "Settings" : "SettingsTopNavPaneItem";
                     Log.Comment("Verify that settings item is enabled by default");
-                    VerifyElement.Found(settings, FindBy.Name);
+                    VerifyElement.Found("Settings", FindBy.Name);
 
                     CheckBox settingsCheckbox = new CheckBox(FindElement.ByName("SettingsItemVisibilityCheckbox"));
 
@@ -112,12 +111,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     settingsCheckbox.Uncheck();
                     ElementCache.Clear();
                     Wait.ForIdle();
-                    VerifyElement.NotFound(settings, FindBy.Name);
+                    VerifyElement.NotFound("Settings", FindBy.Name);
 
                     Log.Comment("Verify that settings item is visible when IsSettingsVisible == true");
                     settingsCheckbox.Check();
                     Wait.ForIdle();
-                    VerifyElement.Found(settings, FindBy.Name);
+                    VerifyElement.Found("Settings", FindBy.Name);
                 }
             }
         }
@@ -143,7 +142,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Verify that settings item is visible when IsSettingsVisible == true");
                     toggleCheckbox.Check();
                     Wait.ForIdle();
-                    VerifyElement.Found("SettingsNavPaneItem", FindBy.Id);
+                    VerifyElement.Found("SettingsItem", FindBy.Id);
                 }
             }
         }
@@ -261,12 +260,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void AddRemoveFooterItemTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    var addButton = FindElement.ById<Button>("AddFooterItemButton");
+                    var removeButton = FindElement.ById<Button>("RemoveFooterItemButton");
+
+                    Log.Comment("Verify that footer menu items can be added");
+                    addButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.Found("New Footer Menu Item 0", FindBy.Name);
+
+                    Log.Comment("Verify that more footer menu items can be added");
+                    addButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.Found("New Footer Menu Item 1", FindBy.Name);
+
+                    Log.Comment("Verify that footer menu items can be removed");
+                    removeButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.NotFound("New Footer Menu Item 1", FindBy.Name);
+                    VerifyElement.Found("New Footer Menu Item 0", FindBy.Name);
+
+                    Log.Comment("Verify that more Footer menu items can be removed");
+                    removeButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.NotFound("New Menu Item 0", FindBy.Name);
+                }
+            }
+        }
+
+        [TestMethod]
         public void ItemSourceTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
                 var addButton = FindElement.ByName<Button>("AddItemButton");
                 var removeButton = FindElement.ByName<Button>("RemoveItemButton");
+
+                var addFooterButton = FindElement.ByName<Button>("AddFooterItemButton");
+                var removeFooterButton = FindElement.ByName<Button>("RemoveFooterItemButton");
 
                 Log.Comment("Verify that the MenuItemsSource was loaded and is selected");
                 UIObject item1 = FindElement.ByName("Menu Item 1");
@@ -282,6 +320,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 removeButton.Invoke();
                 Wait.ForIdle();
                 VerifyElement.NotFound("New Menu Item", FindBy.Name);
+
+                Log.Comment("Verify that footer menu items added to FooterMenuItemsSource appear in the list");
+                addFooterButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("New Footer Item", FindBy.Name);
+
+                Log.Comment("Verify that footer menu items removed from FooterMenuItemsSource disappear from the list");
+                removeFooterButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.NotFound("New Footer Item", FindBy.Name);
             }
         }
 
@@ -448,8 +496,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //[TestMethod]
-        // Disabled due to: Bug 18650478: Test instability: NavigationViewTests.TitleBarTest
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18650478
         public void TitleBarTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -764,7 +812,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
                     Log.Comment("Setting focus to Settings");
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
                     settingsItem.SetFocus();
                     Wait.ForIdle();
 
@@ -774,6 +822,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Verify.AreEqual(1, positionInSet, "Position in set");
                     Verify.AreEqual(1, sizeOfSet, "Size of set");
+
+                    var addButton = FindElement.ById<Button>("AddFooterItemButton");
+                    var removeButton = FindElement.ById<Button>("RemoveFooterItemButton");
+
+                    addButton.Invoke();
+                    addButton.Invoke();
+                    Wait.ForIdle();
+
+                    positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                    sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                    Verify.AreEqual(3, positionInSet, "Position in set");
+                    Verify.AreEqual(3, sizeOfSet, "Size of set");
+
+                    removeButton.Invoke();
+                    removeButton.Invoke();
                 }
             }
         }
@@ -907,7 +971,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                         return;
                     }
 
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
 
                     settingsItem.SetFocus();
                     Wait.ForIdle();
@@ -1036,7 +1100,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        // [TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ToolTipTest() // Verify tooltips appear, and that their contents change when headers change
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1099,7 +1164,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: Multiple unreliable NavigationView tests #134
         public void KeyboardFocusToolTipTest() // Verify tooltips appear when Keyboard focused
         {
@@ -1163,7 +1229,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ToolTipCustomContentTest() // Verify tooltips don't appear for custom NavViewItems (split off due to CatGates timeout)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -1598,5 +1665,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 }
             }
         }
+
+        [TestMethod]
+        public void VerifyNoCrashWhenSwitchingPaneDisplayModeWithAutoWrappedElements()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
+            {
+                Log.Comment("Verify that switching pane mode to auto does not crash.");
+                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+            }
+        }
+
+
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
@@ -50,7 +50,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void SelectionTest()
         {
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
@@ -81,7 +81,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires TrySetNewFocusedElement from RS4");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
@@ -118,29 +118,90 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires TrySetNewFocusedElement from RS4");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtonsFocus Test" }))
             {
-                elements = new RadioButtonsTestPageElements();
-                SetItemType(RadioButtonsSourceType.RadioButton);
-                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                var elements = new RadioButtonsFocusTestPageElements();        
+
+                // Select items
+                SelectByIndex(1, false);
+                SelectByIndex(2, true);
+
+                // Verify selection
+                VerifySelectedIndex(1, false);
+                VerifySelectedIndex(2, true);
+
+                VerifyRadioButtonsHasFocus(true, false);
+
+                // Move focus to second RadioButtons control by pressing TAB
+                KeyboardHelper.PressKey(Key.Tab);
+
+                // Verify that 
+                // - the first RadioButtons control no longer has focus and
+                // - the third radio button of the second RadioButtons control now has focus
+                VerifyRadioButtonsHasFocus(false, false);
+                VerifySelectedFocusedIndex(2, true);
+
+                // Move focus to the first RadioButtons control by pressing TAB again
+                KeyboardHelper.PressKey(Key.Tab);
+
+                // Verify that the second radio button is still selected and now has focus
+                VerifySelectedFocusedIndex(1, false);
+
+                void SelectByIndex(int index, bool checkRadioButtons2)
                 {
-                    SetSource(location);
+                    if (checkRadioButtons2)
+                    {
+                        elements.GetIndexToSelectTextBox2().SetValue(index.ToString());
+                        elements.GetSelectByIndexButton2().Click();
+                    }
+                    else
+                    {
+                        elements.GetIndexToSelectTextBox1().SetValue(index.ToString());
+                        elements.GetSelectByIndexButton1().Click();
+                    }
+                }
 
-                    TapOnItem(3);
-                    VerifySelectedFocusedIndex(3);
-                    RadioButton item3 = FindElement.ByName<RadioButton>("Radio Button 3");
-                    Verify.IsTrue(item3.IsSelected);
+                void VerifySelectedIndex(int index, bool checkRadioButtons2)
+                {
+                    if (checkRadioButtons2)
+                    {
+                        Verify.AreEqual(index, Int32.Parse(elements.GetSelectedIndexTextBlock2().DocumentText), $"RadioButton with index {index} should have been selected.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual(index, Int32.Parse(elements.GetSelectedIndexTextBlock1().DocumentText), $"RadioButton with index {index} should have been selected.");
+                    }
+                }
 
-                    KeyboardHelper.PressKey(Key.Tab);
-                    VerifyRadioButtonsHasFocus(false);
-                    Verify.IsTrue(item3.IsSelected);
+                void VerifyRadioButtonsHasFocus(bool hasFocus, bool checkRadioButtons2)
+                {
+                    if (checkRadioButtons2)
+                    {
+                        Verify.AreEqual(hasFocus, elements.GetRadioButtons2HasFocusCheckBox().ToggleState == ToggleState.On);
+                    }
+                    else
+                    {
+                        Verify.AreEqual(hasFocus, elements.GetRadioButtons1HasFocusCheckBox().ToggleState == ToggleState.On);
+                    }
+                }
 
-                    KeyboardHelper.PressDownModifierKey(ModifierKey.Shift);
-                    KeyboardHelper.PressKey(Key.Tab);
-                    KeyboardHelper.ReleaseModifierKey(ModifierKey.Shift);
-                    VerifySelectedFocusedIndex(3);
-                    Verify.IsTrue(item3.IsSelected);
+                void VerifyFocusedIndex(int index, bool checkRadioButtons2)
+                {
+                    if (checkRadioButtons2)
+                    {
+                        Verify.AreEqual(index, Int32.Parse(elements.GetFocusedIndexTextBlock2().DocumentText), $"RadioButton with index {index} should have focus.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual(index, Int32.Parse(elements.GetFocusedIndexTextBlock1().DocumentText), $"RadioButton with index {index} should have focus.");
+                    }
+                    
+                }
 
+                void VerifySelectedFocusedIndex(int index, bool checkRadioButtons2)
+                {
+                    VerifySelectedIndex(index, checkRadioButtons2);
+                    VerifyFocusedIndex(index, checkRadioButtons2);
                 }
             }
         }
@@ -154,7 +215,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS3+ keyboarding behavior");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -198,7 +259,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS3+ keyboarding behavior");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -261,7 +322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS3+ keyboarding behavior");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
@@ -333,7 +394,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS3+ keyboarding behavior");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
@@ -396,7 +457,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS2 keyboarding behavior");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -447,7 +508,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -506,7 +567,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test fails on RS2 because of a repeater bug: #1447");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -532,7 +593,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void ColumnsTest()
         {
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -579,7 +640,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void UIAProperties()
         {
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
@@ -622,7 +683,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void InsertedCheckedRadioButtonGetsSelection()
         {
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
@@ -645,7 +706,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test is disabled on RS2 because it requires RS3+ keyboarding behavior.");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
@@ -678,7 +739,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS3+ keyboarding behavior");
                 return;
             }
-            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
             {
                 elements = new RadioButtonsTestPageElements();
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))

@@ -56,16 +56,6 @@
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="SettingsGroup">
-                                <VisualState x:Name="SettingsVisible" />
-                                <VisualState x:Name="SettingsCollapsed">
-                                    <VisualState.Setters>
-                                        <Setter Target="SettingsNavPaneItem.Visibility" Value="Collapsed" />
-                                        <Setter Target="SettingsTopNavPaneItem.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-
                             <VisualStateGroup x:Name="AutoSuggestGroup">
                                 <VisualState x:Name="AutoSuggestBoxVisible" />
                                 <VisualState x:Name="AutoSuggestBoxCollapsed">
@@ -91,7 +81,6 @@
                                 <VisualState x:Name="ListSizeCompact">
                                     <VisualState.Setters>
                                         <Setter Target="PaneContentGrid.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
-                                        <Setter Target="SettingsNavPaneItem.HorizontalAlignment" Value="Left"/>
                                         <Setter Target="PaneTitleTextBlock.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneHeaderContentBorder.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneCustomContentBorder.HorizontalAlignment" Value="Left"/>
@@ -216,7 +205,7 @@
                                 Background="{ThemeResource NavigationViewTopPaneBackground}"
                                 Grid.Row="0"
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Top"                                
+                                VerticalAlignment="Top"
                                 Canvas.ZIndex="1"
                                 contract4Present:XYFocusKeyboardNavigation="Enabled">
 
@@ -233,7 +222,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*" MinWidth="48"/>
+                                        <ColumnDefinition Width="*" MinWidth="{ThemeResource TopNavigationViewPaneCustomContentMinWidth}"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -302,11 +291,7 @@
                                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                         <local:ItemsRepeater
                                                                     AutomationProperties.AccessibilityView = "Content"
-                                                                    x:Name="TopNavMenuItemsOverflowHost">
-                                                            <local:ItemsRepeater.Layout>
-                                                                <local:StackLayout Orientation="Vertical"/>
-                                                            </local:ItemsRepeater.Layout>
-                                                        </local:ItemsRepeater>
+                                                                    x:Name="TopNavMenuItemsOverflowHost"/>
                                                     </ScrollViewer>
                                                 </local:ItemsRepeaterScrollHost>
                                             </Flyout>
@@ -340,14 +325,16 @@
                                         VerticalContentAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
                                         Grid.Column="7" />
-                                    <Grid
-                                        Grid.Column="8" >
-                                        <local:NavigationViewItem
-                                            x:Name="SettingsTopNavPaneItem"
-                                            Style="{ThemeResource MUX_NavigationViewSettingsItemStyleWhenOnTopPane}"
-                                            Icon="Setting"/>
-
-                                    </Grid>
+                                    <!-- Top footer menu ItemsRepeater -->
+                                    <local:ItemsRepeater
+                                        Grid.Column="8"
+                                        AutomationProperties.LandmarkType="Navigation"
+                                        AutomationProperties.AccessibilityView = "Content"
+                                        x:Name="TopFooterMenuItemsHost">
+                                        <local:ItemsRepeater.Layout>
+                                            <local:StackLayout Orientation="Horizontal"/>
+                                        </local:ItemsRepeater.Layout>
+                                    </local:ItemsRepeater>
 
                                 </Grid>
                                 <Border
@@ -375,15 +362,12 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->                                            
+                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->
                                             <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
                                             <RowDefinition Height="*"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="8"/>
                                         </Grid.RowDefinitions>
 
                                         <Grid x:Name="ContentPaneTopPadding"
@@ -435,39 +419,44 @@
                                             HorizontalContentAlignment="Stretch"
                                             Grid.Row="4" />
 
-                                        <!-- Left nav ItemsRepeater -->
                                         <local:ItemsRepeaterScrollHost
                                             Grid.Row="6"
-                                            Margin="0,0,0,20"
                                             HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Top">
+                                            VerticalAlignment="Stretch">
                                             <ScrollViewer
-                                                TabNavigation="Once"
+                                                TabNavigation="Local"
                                                 VerticalScrollBarVisibility="Auto">
-                                                <local:ItemsRepeater
+                                                <Grid x:Name="ScrollingContentGrid">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="8"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Left nav ItemsRepeater -->
+                                                    <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
+                                                        Margin="0,0,0,20"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
-                                                        AutomationProperties.AccessibilityView = "Content">
-                                                    <local:ItemsRepeater.Layout>
-                                                        <local:StackLayout Orientation="Vertical"/>
-                                                    </local:ItemsRepeater.Layout>
-                                                </local:ItemsRepeater>
+                                                        AutomationProperties.AccessibilityView = "Content"/>
+
+
+                                                    <ContentControl
+                                                        x:Name="FooterContentBorder"
+                                                        IsTabStop="False"
+                                                        VerticalContentAlignment="Stretch"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Grid.Row="2" />
+                                                    <!-- Left footer menu ItemsRepeater -->
+                                                    <local:ItemsRepeater
+                                                        x:Name="FooterMenuItemsHost"
+                                                        AutomationProperties.AccessibilityView = "Content"
+                                                        Grid.Row="3"/>
+                                                </Grid>
                                             </ScrollViewer>
                                         </local:ItemsRepeaterScrollHost>
-
-
-                                        <ContentControl
-                                            x:Name="FooterContentBorder"
-                                            IsTabStop="False"
-                                            VerticalContentAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch"
-                                            Grid.Row="7" />
-                                        <Grid
-                                            Grid.Row="8">
-                                            <local:NavigationViewItem
-                                            x:Name="SettingsNavPaneItem"
-                                            Icon="Setting"/>
-                                        </Grid>
 
                                     </Grid>
                                 </SplitView.Pane>

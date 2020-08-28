@@ -45,11 +45,17 @@
                                         <SymbolIcon Symbol="Back"/>
                                     </Button>
                                     <Button x:Name="ToggleThemeButton"
-                                        VerticalAlignment="Stretch"
+                                        VerticalAlignment="Stretch" Margin="0,0,4,0"
                                         Style="{ThemeResource AccentButtonStyle}"
                                         AutomationProperties.AutomationId="__ToggleThemeButton" 
                                         Content="Toggle theme">
                                     </Button>
+                                    <ToggleButton
+                                        x:Name="InnerFrameInLabDimensions"
+                                        MaxHeight="25"
+                                        Padding="0"  Margin="0,0,4,0"
+                                        AutomationProperties.AutomationId="__InnerFrameInLabDimensions"
+                                        Content="Render innerframe in lab dimensions"/>
 
                                     <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.AutomationId="__CurrentPage"  FontSize="18" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 </StackPanel>
@@ -66,9 +72,12 @@
                             <Grid x:Name="AutomationHelpersPanel" Grid.Row="1">
                                 <Button x:Name="GoBackInvokerButton" AutomationProperties.AutomationId="__GoBackInvoker" Style="{StaticResource AutomationHelperStyle}" />
                                 <helpers:TestAutomationHelpersPanel />
+
+                                <CheckBox x:Name="KeyInputReceived" IsChecked="True" AutomationProperties.AutomationId="__KeyInputReceived" Style="{StaticResource AutomationHelperStyle}" />
                             </Grid>
 
                             <ContentPresenter Grid.Row="2"
+                                    x:Name="PagePresenter"
                                     Content="{TemplateBinding Content}"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"

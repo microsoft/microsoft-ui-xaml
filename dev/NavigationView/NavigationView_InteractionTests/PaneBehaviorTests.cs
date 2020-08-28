@@ -571,8 +571,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHidden()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -588,8 +588,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHiddenWithFixedWindowSize()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -821,8 +821,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
 
-                Button navButton = new Button(FindElement.ById("SettingsNavPaneItem"));
-                Log.Comment("Verify that the SettingsNavPaneItem size in Expanded mode and actual width is " + navButton.BoundingRectangle.Width);
+                Button navButton = new Button(FindElement.ById("SettingsItem"));
+                Log.Comment("Verify that the SettingsItem size in Expanded mode and actual width is " + navButton.BoundingRectangle.Width);
 
                 // NavigationViewCompactPaneLength is 40 or 48 in different release. This test case doesn't need an exactly number of width, so just choose 48 as the boundary
                 Verify.IsTrue(navButton.BoundingRectangle.Width > 48);
@@ -830,7 +830,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Medium);
                 Wait.ForIdle();
 
-                Log.Comment("Verify that the SettingsNavPaneItem size in Medium mode and actual width is " + navButton.BoundingRectangle.Width);
+                Log.Comment("Verify that the SettingsItem size in Medium mode and actual width is " + navButton.BoundingRectangle.Width);
                 Verify.IsTrue(navButton.BoundingRectangle.Width <= 48);
             }
         }

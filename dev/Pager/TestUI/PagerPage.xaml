@@ -1,0 +1,167 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.PagerPage"
+    x:Name="PagerTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:Windows10FallCreatorsUpdate="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <DataTemplate x:Key="EventToString">
+            <TextBlock Text="{Binding}" />
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border BorderBrush="Black" BorderThickness="5" Grid.Column="0" VerticalAlignment="Center">
+            <local:PrototypePager x:Name="TestPager" AutomationProperties.Name="TestPager" PageChanged="OnPageChanged"/>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0" Margin="5" Windows10FallCreatorsUpdate:ColumnSpacing="5" Windows10FallCreatorsUpdate:RowSpacing="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- 0 -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <!-- 5 -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <!-- 10 -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Pager Properties" Grid.Row="0" Grid.Column="0" Style="{StaticResource TitleTextBlockStyle}" Foreground="Green"/>
+
+                    
+                    <ComboBox x:Name="FirstPageButtonVisibilityComboBox" Grid.Row="1" Grid.Column="0" Header="First Page Button Visibility" SelectedIndex="0">
+                        <ComboBoxItem x:Name="AutoFirstPageButtonVisibilityItem" AutomationProperties.Name="AutoFirstPageButtonVisibilityItem">Auto</ComboBoxItem>
+                        <ComboBoxItem x:Name="NoneFirstPageButtonVisibilityItem" AutomationProperties.Name="NoneFirstPageButtonVisibilityItem">None</ComboBoxItem>
+                        <ComboBoxItem x:Name="AlwaysVisibleFirstPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisibleFirstPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
+                        <ComboBoxItem x:Name="HiddenOnEdgeFirstPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgeFirstPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
+                    </ComboBox>
+                    <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Grid.Row="2" Grid.Column="0" Header="Previous Page Button Visibility" SelectedIndex="0">
+                        <ComboBoxItem x:Name="AutoPreviousPageButtonVisibilityItem" AutomationProperties.Name="AutoPreviousPageButtonVisibilityItem">Auto</ComboBoxItem>
+                        <ComboBoxItem x:Name="NonePreviousPageButtonVisibilityItem" AutomationProperties.Name="NonePreviousPageButtonVisibilityItem">None</ComboBoxItem>
+                        <ComboBoxItem x:Name="AlwaysVisiblePreviousPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisiblePreviousPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
+                        <ComboBoxItem x:Name="HiddenOnEdgePreviousPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgePreviousPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
+                    </ComboBox>
+                    <ComboBox x:Name="NextPageButtonVisibilityComboBox" Grid.Row="1" Grid.Column="1" Header="Next Page Button Visibility" SelectedIndex="0">
+                        <ComboBoxItem x:Name="AutoNextPageButtonVisibilityItem" AutomationProperties.Name="AutoNextPageButtonVisibilityItem">Auto</ComboBoxItem>
+                        <ComboBoxItem x:Name="NoneNextPageButtonVisibilityItem" AutomationProperties.Name="NoneNextPageButtonVisibilityItem">None</ComboBoxItem>
+                        <ComboBoxItem x:Name="AlwaysVisibleNextPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisibleNextPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
+                        <ComboBoxItem x:Name="HiddenOnEdgeNextPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgeNextPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
+                    </ComboBox>
+                    <ComboBox x:Name="LastPageButtonVisibilityComboBox" Grid.Row="2" Grid.Column="1" Header="Last Page Button Visibility" SelectedIndex="0">
+                        <ComboBoxItem x:Name="AutoLastPageButtonVisibilityItem" AutomationProperties.Name="AutoLastPageButtonVisibilityItem">Auto</ComboBoxItem>
+                        <ComboBoxItem x:Name="NoneLastPageButtonVisibilityItem" AutomationProperties.Name="NoneLastPageButtonVisibilityItem">None</ComboBoxItem>
+                        <ComboBoxItem x:Name="AlwaysVisibleLastPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisibleLastPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
+                        <ComboBoxItem x:Name="HiddenOnEdgeLastPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgeLastPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
+                    </ComboBox>
+                    <ComboBox x:Name="PagerDisplayModeComboBox" Grid.Row="3" Grid.Column="0" Header="Pager DisplayMode" SelectedIndex="0">
+                        <ComboBoxItem x:Name="AutoDisplayModeItem" AutomationProperties.Name="AutoDisplayModeItem">Auto</ComboBoxItem>
+                        <ComboBoxItem x:Name="NumberBoxDisplayModeItem" AutomationProperties.Name="NumberBoxDisplayModeItem">NumberBox</ComboBoxItem>
+                        <ComboBoxItem x:Name="ComboBoxDisplayModeItem" AutomationProperties.Name="ComboBoxDisplayModeItem">ComboBox</ComboBoxItem>
+                        <ComboBoxItem x:Name="NumberPanelDisplayModeItem" AutomationProperties.Name="NumberPanelDisplayModeItem">NumberPanel</ComboBoxItem>
+                    </ComboBox>
+
+                </Grid>
+                <Grid Grid.Column="1" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/> <!--5-->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/> <!--10-->
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Pager Outputs" Style="{ThemeResource TitleTextBlockStyle}" Foreground="Red"/>
+                    
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="FirstPageButton Visibility"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="FirstPageButtonVisibilityTextBlock" AutomationProperties.Name="FirstPageButtonVisibilityTextBlock" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="FirstPageButton IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="2" Grid.Column="1" x:Name="FirstPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="FirstPageButtonIsEnabledCheckBox"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="PreviousPageButton Visibility"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="PreviousPageButtonVisibilityTextBlock" AutomationProperties.Name="PreviousPageButtonVisibilityTextBlock"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="PreviousPageButton IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="4" Grid.Column="1" x:Name="PreviousPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="PreviousPageButtonIsEnabledCheckBox"/>
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="NextPageButton Visibility"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" x:Name="NextPageButtonVisibilityTextBlock" AutomationProperties.Name="NextPageButtonVisibilityTextBlock"/>
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="NextPageButton IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="6" Grid.Column="1" x:Name="NextPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NextPageButtonIsEnabledCheckBox"/>
+
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="LastPageButton Visibility"/>
+                    <TextBlock Grid.Row="7" Grid.Column="1" x:Name="LastPageButtonVisibilityTextBlock" AutomationProperties.Name="LastPageButtonVisibilityTextBlock"/>
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="LastPageButton IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="8" Grid.Column="1" x:Name="LastPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="LastPageButtonIsEnabledCheckBox"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="DisplayMode"/>
+                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{x:Bind TestPager.PagerDisplayMode, Mode=OneWay}" AutomationProperties.Name="DisplayModeTextBlock"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="2" Text="NumberBox Visibility"/>
+                    <TextBlock Grid.Row="2" Grid.Column="3" x:Name="NumberBoxVisibilityTextBlock" AutomationProperties.Name="NumberBoxVisibilityTextBlock"/>
+                    <TextBlock Grid.Row="3" Grid.Column="2" Text="NumberBox IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="3" Grid.Column="3"  x:Name="NumberBoxIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberBoxIsEnabledCheckBox"/>
+                    
+                    <TextBlock Grid.Row="4" Grid.Column="2" Text="ComboBox Visibility"/>
+                    <TextBlock Grid.Row="4" Grid.Column="3" x:Name="ComboBoxVisibilityTextBlock" AutomationProperties.Name="ComboBoxVisibilityTextBlock"/>
+                    <TextBlock Grid.Row="5" Grid.Column="2" Text="ComboBox IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="5" Grid.Column="3"  x:Name="ComboBoxIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="ComboBoxIsEnabledCheckBox"/>
+
+                    <TextBlock Grid.Row="6" Grid.Column="2" Text="NumberPanel Visibility"/>
+                    <TextBlock Grid.Row="6" Grid.Column="3" x:Name="NumberPanelVisibilityTextBlock" AutomationProperties.Name="NumberPanelVisibilityTextBlock"/>
+                    <TextBlock Grid.Row="7" Grid.Column="2" Text="NumberPanel IsEnabled" VerticalAlignment="Center"/>
+                    <CheckBox  Grid.Row="7" Grid.Column="3" x:Name="NumberPanelIsEnabledCheckBox" IsChecked="False" IsEnabled="False" AutomationProperties.Name="NumberPanelIsEnabledCheckBox"/>
+                   
+                </Grid>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Pager Event Log" Grid.Row="0" Style="{StaticResource TitleTextBlockStyle}" Foreground="Gold"/>
+                    <Button Content="Clear" Click="ClearEventDisplay"/>
+                    <ListView x:Name="PagerEventListViewDisplay" ItemTemplate="{StaticResource EventToString}"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</local:TestPage>

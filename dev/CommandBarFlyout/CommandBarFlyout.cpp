@@ -162,8 +162,9 @@ CommandBarFlyout::CommandBarFlyout()
                             Hide();
                             m_isClosingAfterCloseAnimation = false;
                         });
-                    commandBar->IsOpen(false);
                 }
+                // Close commandbar and thus other associated flyouts
+                commandBar->IsOpen(false);
 
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
@@ -271,7 +272,7 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
         auto button = element.try_as<winrt::AppBarButton>();
         auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
-        if (button)
+        if (button && !button.Flyout())
         {
             m_secondaryButtonClickRevokerByIndexMap[i] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
         }
