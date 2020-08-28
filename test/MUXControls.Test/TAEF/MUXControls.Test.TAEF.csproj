@@ -38,9 +38,6 @@
   <Import Project="RazzleIncludes.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="NonRazzleIncludes.props" Condition="$(BuildingWithBuildExe) != 'true'" />
   <Import Project="..\MUXControls.Test.Shared.projitems" />
-  <!--<ItemGroup>
-    <Compile Include="TestAppInstallHelper.cs" Condition="$(BuildingWithBuildExe) == 'true'" />
-  </ItemGroup>-->
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\TAEF\MUXTestInfra.TAEF.csproj" />
   </ItemGroup>
