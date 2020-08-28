@@ -160,7 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        public static void AssemblyInitialize(TestContext testContext)
+        public static void AssemblyInitialize(TestContext testContext, string certFileName)
         {
             if (!PlatformConfiguration.IsDevice(DeviceType.OneCore))
             {
@@ -191,7 +191,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // If this is the MUXControlsTestApp from the OS repo, then it'll have been signed with a test cert
             // that doesn't need installation.
             Log.Comment("Installing the certificate for the test app");
-            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, "MUXControlsTestApp");
+            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, certFileName);
 #endif
         }
 

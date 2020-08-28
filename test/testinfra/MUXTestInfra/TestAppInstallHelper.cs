@@ -147,9 +147,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the cert file for the appx so that it can be installed on the desktop environment
         /// </summary>
-        public static void InstallAppxCert(string deploymentDir, string packageName)
+        public static void InstallAppxCert(string deploymentDir, string certFileName)
         {
-            InstallCert(Path.Combine(deploymentDir, packageName + ".cer"));
+            InstallCert(Path.Combine(deploymentDir, certFileName));
         }
 
         public static void EnableSideloadingApps()

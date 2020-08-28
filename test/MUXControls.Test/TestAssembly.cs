@@ -42,7 +42,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         [TestProperty("Hosting:Mode", "UAP")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-            TestEnvironment.AssemblyInitialize(testContext);
+            TestEnvironment.AssemblyInitialize(testContext, "MUXControlsTestApp.cer");
         }
 
         [AssemblyCleanup]
