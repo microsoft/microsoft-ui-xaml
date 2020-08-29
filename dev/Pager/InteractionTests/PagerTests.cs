@@ -111,7 +111,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "B")]
         public void AutoDisplayChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -134,7 +134,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        [TestProperty("TestSuite", "D")]
         public void NumberPanelChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -294,7 +294,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "C")]
         public void FirstPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
@@ -391,28 +391,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "D")]
         public void FirstPageButtonVisibilityOptionsTest()
         {
             ButtonVisibilityOptionsTest(buttonNamePrefix: "First");
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        [TestProperty("TestSuite", "E")]
         public void PreviousPageButtonVisibilityOptionsTest()
         {
             ButtonVisibilityOptionsTest(buttonNamePrefix: "Previous");
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestSuite", "F")]
         public void NextPageButtonVisibilityOptionsTest()
         {
             ButtonVisibilityOptionsTest(buttonNamePrefix: "Next");
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestSuite", "G")]
         public void LastPageButtonVisibilityOptionsTest()
         {
             ButtonVisibilityOptionsTest(buttonNamePrefix: "Last");
@@ -494,7 +494,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "C")]
         public void ChangingDisplayModeTest()
         {
             using (var setup = new TestSetupHelper("Pager Tests"))
