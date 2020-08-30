@@ -140,32 +140,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
-            //RunOnUIThread.Execute(() =>
-            //{
-            //    var selectionItemProvider = GetProviderFromTVI(tvi0);
-            //    Verify.IsTrue(selectionItemProvider.IsSelected,"Item should be selected");
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItemProvider = GetProviderFromTVI(tvi0);
+                Verify.IsTrue(selectionItemProvider.IsSelected, "Item should be selected");
 
-            //    selectionItemProvider = GetProviderFromTVI(tvi1);
-            //    Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
+                selectionItemProvider = GetProviderFromTVI(tvi1);
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
 
-            //    Log.Comment("Change selection through automationpeer");
-            //    selectionItemProvider.Select();
-            //    Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
-                
-            //    selectionItemProvider = GetProviderFromTVI(tvi0);
-            //    Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
+                Log.Comment("Change selection through automationpeer");
+                selectionItemProvider.Select();
+                Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
 
-            //    Verify.IsNotNull(selectionItemProvider.SelectionContainer);
-            //});
+                selectionItemProvider = GetProviderFromTVI(tvi0);
+                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
 
-            //static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
-            //{
-            //    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
-            //    var provider = peer.GetPattern(PatternInterface.SelectionItem)
-            //                    as ISelectionItemProvider;
-            //    Verify.IsNotNull(provider);
-            //    return provider;
-            //}
+                Verify.IsNotNull(selectionItemProvider.SelectionContainer);
+            });
+
+            static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
+            {
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                var provider = peer.GetPattern(PatternInterface.SelectionItem)
+                                as ISelectionItemProvider;
+                Verify.IsNotNull(provider);
+                return provider;
+            }
         }
 
         [TestMethod]
