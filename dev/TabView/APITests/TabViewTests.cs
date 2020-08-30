@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Provider;
+using Windows.UI.Xaml.Controls;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -139,32 +140,139 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
+            //RunOnUIThread.Execute(() =>
+            //{
+            //    var selectionItemProvider = GetProviderFromTVI(tvi0);
+            //    Verify.IsTrue(selectionItemProvider.IsSelected,"Item should be selected");
+
+            //    selectionItemProvider = GetProviderFromTVI(tvi1);
+            //    Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
+
+            //    Log.Comment("Change selection through automationpeer");
+            //    selectionItemProvider.Select();
+            //    Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
+                
+            //    selectionItemProvider = GetProviderFromTVI(tvi0);
+            //    Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
+
+            //    Verify.IsNotNull(selectionItemProvider.SelectionContainer);
+            //});
+
+            //static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
+            //{
+            //    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+            //    var provider = peer.GetPattern(PatternInterface.SelectionItem)
+            //                    as ISelectionItemProvider;
+            //    Verify.IsNotNull(provider);
+            //    return provider;
+            //}
+        }
+
+        [TestMethod]
+        public void TabViewItemBackgroundTest()
+        {
+            TabView tabView = null;
+            TabViewItem tabViewItem1 = null;
+            TabViewItem tabViewItem2 = null;
             RunOnUIThread.Execute(() =>
             {
-                var selectionItemProvider = GetProviderFromTVI(tvi0);
-                Verify.IsTrue(selectionItemProvider.IsSelected,"Item should be selected");
+                tabView = new TabView();
 
-                selectionItemProvider = GetProviderFromTVI(tvi1);
-                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
+                tabViewItem1 = CreateTabViewItem("Tab1", Symbol.Home);
+                tabViewItem2 = CreateTabViewItem("Tab2", Symbol.Document);
 
-                Log.Comment("Change selection through automationpeer");
-                selectionItemProvider.Select();
-                Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
-                
-                selectionItemProvider = GetProviderFromTVI(tvi0);
-                Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
+                tabView.TabItems.Add(tabViewItem1);
+                tabView.TabItems.Add(tabViewItem2);
 
-                Verify.IsNotNull(selectionItemProvider.SelectionContainer);
+                Content = tabView;
             });
 
-            static ISelectionItemProvider GetProviderFromTVI(TabViewItem item)
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
             {
-                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
-                var provider = peer.GetPattern(PatternInterface.SelectionItem)
-                                as ISelectionItemProvider;
-                Verify.IsNotNull(provider);
-                return provider;
-            }
+                // Verify that the TabViewItem we use for background API testing here is unselected
+                Verify.IsFalse(tabViewItem2.IsSelected, "TabViewItem should have been unselected");
+
+                bool testCondition = !IsBrushUsingSolidColor(tabViewItem2.Background, Colors.Blue);
+                Verify.IsTrue(testCondition, "Default TabViewItem background color should have not been [blue]");
+
+                var tabContainer = VisualTreeUtils.FindVisualChildByName(tabViewItem2, "TabContainer") as Grid;
+
+                testCondition = !IsBrushUsingSolidColor(tabContainer.Background, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's [TabContainer] background color should have not been [blue]");
+
+                Log.Comment("Set the background color of the TabViewItem to [blue]");
+                tabViewItem2.Background = new SolidColorBrush(Colors.Blue);
+
+                testCondition = IsBrushUsingSolidColor(tabViewItem2.Background, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's background color should have been [blue]");
+
+                testCondition = IsBrushUsingSolidColor(tabContainer.Background, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's [TabContainer] background color should have been [blue]");
+
+                bool IsBrushUsingSolidColor(Brush brush, Color color)
+                {
+                    return brush is SolidColorBrush scBrush && scBrush.Color == color;
+                }
+            });
+        }
+
+        [TestMethod]
+        public void TabViewItemForegroundTest()
+        {
+            TabView tabView = null;
+            TabViewItem tabViewItem1 = null;
+            TabViewItem tabViewItem2 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tabView = new TabView();
+
+                tabViewItem1 = CreateTabViewItem("Tab1", Symbol.Home);
+                tabViewItem2 = CreateTabViewItem("Tab2", Symbol.Document);
+
+                tabView.TabItems.Add(tabViewItem1);
+                tabView.TabItems.Add(tabViewItem2);
+
+                Content = tabView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Verify that the TabViewItem we use for foreground API testing here is unselected
+                Verify.IsFalse(tabViewItem2.IsSelected, "TabViewItem should have been unselected");
+
+                bool testCondition = !IsBrushUsingSolidColor(tabViewItem2.Foreground, Colors.Blue);
+                Verify.IsTrue(testCondition, "Default TabViewItem foreground color should have not been [blue]");
+
+                var iconControl = VisualTreeUtils.FindVisualChildByName(tabViewItem2, "IconControl") as ContentControl;
+                var headerPresenter = VisualTreeUtils.FindVisualChildByName(tabViewItem2, "ContentPresenter") as ContentPresenter;
+
+                testCondition = !IsBrushUsingSolidColor(iconControl.Foreground, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's [IconControl] foreground color should have not been [blue]");
+
+                testCondition = !IsBrushUsingSolidColor(headerPresenter.Foreground, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's [ContentPresenter] foreground color should have not been [blue]");
+
+                Log.Comment("Set the foreground color of the TabViewItem to [blue]");
+                tabViewItem2.Foreground = new SolidColorBrush(Colors.Blue);
+
+                testCondition = IsBrushUsingSolidColor(tabViewItem2.Foreground, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's foreground color should have been [blue]");
+
+                testCondition = IsBrushUsingSolidColor(iconControl.Foreground, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's [IconControl] foreground color should have been [blue]");
+
+                testCondition = IsBrushUsingSolidColor(headerPresenter.Foreground, Colors.Blue);
+                Verify.IsTrue(testCondition, "TabViewItem's [ContentPresenter] foreground color should have been [blue]");
+
+                bool IsBrushUsingSolidColor(Brush brush, Color color)
+                {
+                    return brush is SolidColorBrush scBrush && scBrush.Color == color;
+                }
+            });
         }
 
         private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
