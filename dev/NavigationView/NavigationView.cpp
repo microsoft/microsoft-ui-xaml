@@ -3098,29 +3098,6 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
-void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
-{
-    if (ir)
-    {
-        if (auto itemsSourceView = ir.ItemsSourceView())
-        {
-            const auto numberOfItems = itemsSourceView.Count();
-            for (int i = 0; i < numberOfItems; i++)
-            {
-                if (auto nvib = ir.TryGetElement(i))
-                {
-                    if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
-                    {
-                        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                        nviImpl->UseSystemFocusVisuals(showFocusVisual);
-                    }
-                }
-
-            }
-        }
-    }
-}
-
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
     if (m_appliedTemplate && IsTopNavigationView())
