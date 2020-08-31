@@ -72,18 +72,16 @@
                                 <VisualState x:Name="Updating" />
                                 <VisualState x:Name="UpdatingError">
                                     <Storyboard>
-                                        <Storyboard>
-                                            <ColorAnimation
-                                            Storyboard.TargetName="DeterminateProgressBarIndicator"
-                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
-                                            Duration="0:0:0.0"/>
-                                            <ColorAnimation
-                                            Storyboard.TargetName="ProgressBarRoot"
-                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="{StaticResource SystemControlErrorBackgroundColor}"
-                                            Duration="0:0:0.0"/>
-                                        </Storyboard>
+                                        <ColorAnimation
+                                        Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                        Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                        To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
+                                        Duration="0:0:0.0"/>
+                                        <ColorAnimation
+                                        Storyboard.TargetName="ProgressBarRoot"
+                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                        To="{StaticResource SystemControlErrorBackgroundColor}"
+                                        Duration="0:0:0.0"/>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Indeterminate">
