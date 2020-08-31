@@ -38,5 +38,15 @@
 
     <x:Double x:Key="InfoBarCloseButtonSize">40</x:Double>
     <x:Double x:Key="InfoBarCloseButtonGlyphSize">12</x:Double>
+
+    <Style x:Key="InfoBarCloseButtonStyle" TargetType="Button">
+        <Style.Setters>
+            <Setter Property="Width" Value="{StaticResource InfoBarCloseButtonSize}"/>
+            <Setter Property="Height" Value="{StaticResource InfoBarCloseButtonSize}"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style.Setters>
+    </Style>
     
 </ResourceDictionary>

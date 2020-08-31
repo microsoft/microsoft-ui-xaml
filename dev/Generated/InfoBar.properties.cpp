@@ -16,6 +16,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 GlobalDependencyProperty InfoBarProperties::s_ActionButtonProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_CloseButtonCommandProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_CloseButtonCommandParameterProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_CloseButtonStyleProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_ContentTemplateProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IconSourceProperty{ nullptr };
@@ -68,6 +69,17 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_CloseButtonStyleProperty)
+    {
+        s_CloseButtonStyleProperty =
+            InitializeDependencyProperty(
+                L"CloseButtonStyle",
+                winrt::name_of<winrt::Style>(),
+                winrt::name_of<winrt::InfoBar>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Style>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_ContentProperty)
@@ -187,6 +199,7 @@ void InfoBarProperties::ClearProperties()
     s_ActionButtonProperty = nullptr;
     s_CloseButtonCommandProperty = nullptr;
     s_CloseButtonCommandParameterProperty = nullptr;
+    s_CloseButtonStyleProperty = nullptr;
     s_ContentProperty = nullptr;
     s_ContentTemplateProperty = nullptr;
     s_IconSourceProperty = nullptr;
@@ -276,6 +289,19 @@ void InfoBarProperties::CloseButtonCommandParameter(winrt::IInspectable const& v
 winrt::IInspectable InfoBarProperties::CloseButtonCommandParameter()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_CloseButtonCommandParameterProperty));
+}
+
+void InfoBarProperties::CloseButtonStyle(winrt::Style const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InfoBar*>(this)->SetValue(s_CloseButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Style InfoBarProperties::CloseButtonStyle()
+{
+    return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_CloseButtonStyleProperty));
 }
 
 void InfoBarProperties::Content(winrt::IInspectable const& value)

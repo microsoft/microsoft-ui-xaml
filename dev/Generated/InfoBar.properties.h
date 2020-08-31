@@ -18,6 +18,9 @@ public:
     void CloseButtonCommandParameter(winrt::IInspectable const& value);
     winrt::IInspectable CloseButtonCommandParameter();
 
+    void CloseButtonStyle(winrt::Style const& value);
+    winrt::Style CloseButtonStyle();
+
     void Content(winrt::IInspectable const& value);
     winrt::IInspectable Content();
 
@@ -51,6 +54,7 @@ public:
     static winrt::DependencyProperty ActionButtonProperty() { return s_ActionButtonProperty; }
     static winrt::DependencyProperty CloseButtonCommandProperty() { return s_CloseButtonCommandProperty; }
     static winrt::DependencyProperty CloseButtonCommandParameterProperty() { return s_CloseButtonCommandParameterProperty; }
+    static winrt::DependencyProperty CloseButtonStyleProperty() { return s_CloseButtonStyleProperty; }
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
     static winrt::DependencyProperty ContentTemplateProperty() { return s_ContentTemplateProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
@@ -65,6 +69,7 @@ public:
     static GlobalDependencyProperty s_ActionButtonProperty;
     static GlobalDependencyProperty s_CloseButtonCommandProperty;
     static GlobalDependencyProperty s_CloseButtonCommandParameterProperty;
+    static GlobalDependencyProperty s_CloseButtonStyleProperty;
     static GlobalDependencyProperty s_ContentProperty;
     static GlobalDependencyProperty s_ContentTemplateProperty;
     static GlobalDependencyProperty s_IconSourceProperty;

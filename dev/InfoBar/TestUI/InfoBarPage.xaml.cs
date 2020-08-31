@@ -133,5 +133,17 @@ namespace MUXControlsTestApp
                 TestInfoBar.Content = null;
             }
         }
+
+        public void CloseStyleChanged(object sender, object args)
+        {
+            if (CloseButtonStyleCheckBox.IsChecked.Value)
+            {
+                TestInfoBar.CloseButtonStyle = this.Resources["CustomCloseButtonStyle"] as Style;
+            }
+            else
+            {
+                TestInfoBar.CloseButtonStyle = Application.Current.Resources["InfoBarCloseButtonStyle"] as Style;
+            }
+        }
     }
 }

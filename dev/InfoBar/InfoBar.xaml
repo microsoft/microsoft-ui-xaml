@@ -6,6 +6,7 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
     <Style TargetType="local:InfoBar">
+        <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBar">
@@ -195,14 +196,10 @@
                                 <!-- ### should probably set most of this in a custom style -->
                                 <Button Name="CloseButton"
                                     Grid.Column="2"
+                                    Visibility="Collapsed"
                                     Command="{TemplateBinding CloseButtonCommand}" 
                                     CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
-                                    Height="{StaticResource InfoBarCloseButtonSize}"
-                                    Width="{StaticResource InfoBarCloseButtonSize}"
-                                    VerticalAlignment="Top"
-                                    Visibility="Collapsed"
-                                    Background="Transparent"
-                                    FontSize="16">
+                                    Style="{TemplateBinding CloseButtonStyle}">
 
                                     <Viewbox Width="{StaticResource InfoBarCloseButtonGlyphSize}"
                                         Height="{StaticResource InfoBarCloseButtonGlyphSize}">

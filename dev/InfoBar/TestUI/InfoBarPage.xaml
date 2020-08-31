@@ -10,6 +10,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <Style x:Name="CustomCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource InfoBarCloseButtonStyle}">
+            <Style.Setters>
+                <Setter Property="Background" Value="Red"/>
+            </Style.Setters>
+        </Style>
+    </Page.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid>
             <Grid.RowDefinitions>
@@ -64,7 +72,9 @@
 
                     <CheckBox Name="IsUserDismissableCheckBox" Content="Is User Dismissable" IsChecked="True"/>
 
-                    <CheckBox Name="HasCustomContentCheckBox" Content="HasCustomContent" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
+                    <CheckBox Name="HasCustomContentCheckBox" Content="Has Custom Content" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
+
+                    <CheckBox Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">

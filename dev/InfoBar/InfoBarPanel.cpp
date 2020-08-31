@@ -29,10 +29,6 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
         const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
         totalHeight += childDesiredSize.Height + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
 
-        StringCchPrintf(strOut, ARRAYSIZE(strOut), L"   InfoBarPanel::MeasureOverride item: %f %f %f\n",
-            verticalMargin.Top, childDesiredSize.Height, verticalMargin.Bottom);
-        OutputDebugString(strOut);
-
         // ### maybe this needs to be fixed with the margins and stuff.
         if (childDesiredSize.Width > widthOfWidest)
         {
@@ -86,10 +82,6 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
             {
                 auto const desiredSize = child.DesiredSize();
                 const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
-
-                StringCchPrintf(strOut, ARRAYSIZE(strOut), L"   InfoBarPanel::ArrangeOverride item: %f %f %f\n",
-                    verticalMargin.Top, desiredSize.Height, verticalMargin.Bottom);
-                OutputDebugString(strOut);
 
                 verticalOffset += (float)verticalMargin.Top;
                 child.Arrange(winrt::Rect{ (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });

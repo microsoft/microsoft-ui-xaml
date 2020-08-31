@@ -76,6 +76,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsUserDismissable{ get; set; };
 
+    Windows.UI.Xaml.Style CloseButtonStyle{ get; set; };
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
     Object CloseButtonCommandParameter{ get; set; };
 
@@ -97,6 +98,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsIconVisibleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsUserDismissableProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonProperty{ get; };
