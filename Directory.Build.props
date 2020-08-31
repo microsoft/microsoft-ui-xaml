@@ -20,6 +20,7 @@
     <OutputPath>$(OutDir)\$(MSBuildProjectName)\</OutputPath>
 
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(Platform)\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(MSBuildProjectName)\obj\</MSBuildProjectExtensionsPath>
     <IntDir>$(BaseIntermediateOutputPath)</IntDir>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <GeneratedFilesDir>$(BaseIntermediateOutputPath)Generated Files\</GeneratedFilesDir>
