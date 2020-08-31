@@ -518,7 +518,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollTargetIntoView();
                     ScrollBy(10);
 
-                    new CheckBox(FindElement.ByName("PageRTLCheckbox")).Check();
+                    elements.GetPageRTLCheckbox().Check();
 
                     SetHeroContent(HeroContentOptions.NoContent);
 
@@ -676,7 +676,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetPreferredPlacement(PlacementOptions.Center);
                     VerifyPlacement("Center");
 
-                    new CheckBox(FindElement.ByName("PageRTLCheckbox")).Uncheck();
+                    elements.GetPageRTLCheckbox().Uncheck();
                 }
             }
         }
