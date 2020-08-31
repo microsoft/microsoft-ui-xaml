@@ -84,6 +84,10 @@
   <!-- Dependencies for IconSource -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureIconSourceEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for InfoBar -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBarEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
   <!-- Dependencies for Interactions -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInteractionsEnabled) == 'true'">
   </PropertyGroup>

@@ -2,7 +2,8 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.UI.Xaml.Controls">
+    xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
     <Style TargetType="local:InfoBar">
         <Setter Property="Template">
@@ -103,8 +104,7 @@
                                 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/> <!-- Icon -->
-                                    <ColumnDefinition Width="Auto"/> <!-- Title, message, and action -->
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>    <!-- Title, message, and action -->
                                     <ColumnDefinition Width="Auto"/> <!-- Close button -->
                                 </Grid.ColumnDefinitions>
 
@@ -117,6 +117,7 @@
                                 <IconSourceElement x:Name="StandardIcon"
                                     Grid.Column="0"
                                     Margin="0,10,12,10"
+                                    VerticalAlignment="Top"
                                     Visibility="Collapsed">
                                     <IconSourceElement.IconSource>
                                         <FontIconSource FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" FontSize="20"/>
@@ -126,35 +127,42 @@
                                 <Border x:Name="UserIconBorder"
                                     Grid.Column="0"
                                     Margin="0,10,12,10"
+                                    VerticalAlignment="Top"
                                     Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"
                                     Visibility="Collapsed"/>
 
                                 <!-- ### replace this with new panel -->
-                                <Grid Grid.Column="1">
+                                <primitives:InfoBarPanel Grid.Column="1">
+
+                                <!-- <Grid Grid.Column="1">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
+                                    Margin="0,10,0,0"-->
 
                                     <TextBlock x:Name="Title"
                                         Grid.Column="0"
+                                        primitives:InfoBarPanel.HorizontalMargin="0,10,0,0"
+                                        primitives:InfoBarPanel.VerticalMargin="0,10,0,0"
                                         Text="{TemplateBinding Title}"
                                         AutomationProperties.LandmarkType="Navigation"
                                         FontWeight="SemiBold"
-                                        FontSize="{ThemeResource InfoBarFontSize}"
-                                        Margin="0,10,0,0"/>
+                                        FontSize="{ThemeResource InfoBarFontSize}"/>
 
                                     <TextBlock x:Name="Message" 
                                         Grid.Column="1"
                                         Text="{TemplateBinding Message}" 
                                         FontSize="{ThemeResource InfoBarFontSize}"
-                                        Margin="8,10,0,0"
+                                        primitives:InfoBarPanel.HorizontalMargin="8,10,0,0"
+                                        primitives:InfoBarPanel.VerticalMargin="0,4,0,0" 
                                         TextTrimming="CharacterEllipsis"/>
 
                                     <ContentPresenter
                                         Grid.Column="2"
-                                        Margin="12,0,0,0"
+                                        primitives:InfoBarPanel.HorizontalMargin="12,0,0,0"
+                                        primitives:InfoBarPanel.VerticalMargin="0,10,0,14" 
                                         Content="{TemplateBinding ActionButton}">
                                         <ContentPresenter.Resources>
                                             <Style TargetType="Button">
@@ -174,7 +182,9 @@
                                             </Style>
                                         </ContentPresenter.Resources>
                                     </ContentPresenter>
-                                </Grid>
+
+                                </primitives:InfoBarPanel>
+                                <!--</Grid>-->
 
                                 <ContentPresenter
                                     Grid.Column="1"
@@ -184,11 +194,12 @@
 
                                 <!-- ### should probably set most of this in a custom style -->
                                 <Button Name="CloseButton"
-                                    Grid.Column="3"
+                                    Grid.Column="2"
                                     Command="{TemplateBinding CloseButtonCommand}" 
                                     CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                     Height="{StaticResource InfoBarCloseButtonSize}"
                                     Width="{StaticResource InfoBarCloseButtonSize}"
+                                    VerticalAlignment="Top"
                                     Visibility="Collapsed"
                                     Background="Transparent"
                                     FontSize="16">
