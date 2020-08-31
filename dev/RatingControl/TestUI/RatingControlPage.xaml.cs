@@ -76,7 +76,7 @@ namespace MUXControlsTestApp
             RatingBindingSample.DataContext = CaptionStringBox;
             BindingRatingCaption.DataContext = ColorFlipButton;
 
-            FrameDetails.Text = XamlRoot.Content.ActualSize.ToString();
+            FrameDetails.Text = Window.Current.Bounds.ToString();
 
             if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.RatingControl"))
             {

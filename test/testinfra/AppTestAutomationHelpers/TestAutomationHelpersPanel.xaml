@@ -35,6 +35,7 @@
         <CheckBox x:Name="DebuggerAttachedCheckBox" AutomationProperties.AutomationId="__DebuggerAttachedCheckBox"  Style="{StaticResource AutomationHelperStyle}" />
         <TextBox x:Name="UnhandledExceptionReportingTextBox" AutomationProperties.AutomationId="__UnhandledExceptionReportingTextBox"  Style="{StaticResource AutomationHelperStyle}" />
         <CheckBox x:Name="TestContentLoadedCheckBox" AutomationProperties.AutomationId="__TestContentLoadedCheckBox" Content="TestContentLoadedCheckbox" IsChecked="False"  Style="{StaticResource AutomationHelperStyle}" />
+        <CheckBox x:Name="KeyInputReceived" IsChecked="True" AutomationProperties.AutomationId="__KeyInputReceived" Style="{StaticResource AutomationHelperStyle}" />
 
     </StackPanel>
 </UserControl>

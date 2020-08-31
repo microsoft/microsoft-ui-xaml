@@ -72,8 +72,6 @@
                             <Grid x:Name="AutomationHelpersPanel" Grid.Row="1">
                                 <Button x:Name="GoBackInvokerButton" AutomationProperties.AutomationId="__GoBackInvoker" Style="{StaticResource AutomationHelperStyle}" />
                                 <helpers:TestAutomationHelpersPanel />
-
-                                <CheckBox x:Name="KeyInputReceived" IsChecked="True" AutomationProperties.AutomationId="__KeyInputReceived" Style="{StaticResource AutomationHelperStyle}" />
                             </Grid>
 
                             <ContentPresenter Grid.Row="2"
