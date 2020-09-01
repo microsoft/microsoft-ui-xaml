@@ -64,7 +64,7 @@ namespace MUXControlsTestApp
                 case "Hyperlink":
                     var link = new HyperlinkButton();
                     link.NavigateUri = new Uri("http://www.microsoft.com/");
-                    link.Content = "Link";
+                    link.Content = "Informational link";
                     TestInfoBar.ActionButton = link;
                     break;
 
