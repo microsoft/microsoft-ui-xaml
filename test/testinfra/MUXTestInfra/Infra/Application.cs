@@ -119,6 +119,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
                 else
                 {
+                    if(CoreWindow == null)
+                    {
+                        CoreWindow = topWindowObj;
+                    }
+
                     // Maxmize window to ensure we can find UIA elements
                     var appFrameWindow = new Window(CoreWindow);
                     if (appFrameWindow.CanMaximize)
@@ -232,7 +237,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 try
                 {
                     Log.Comment("Attempting launch, try #{0}...", retries);
-                    coreWindow = _isUWPApp ? LaunchUWPApp(_packageName) : LaunchNonUWPApp(_packageName);
+                    coreWindow = _isUWPApp ? LaunchUWPApp() : LaunchNonUWPApp(_packageName);
                     Log.Comment("Launch successful!");
                     break;
                 }
@@ -258,7 +263,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             return coreWindow;
         }
 
-        private UIObject LaunchUWPApp(string packageName)
+        private UIObject LaunchUWPApp()
         {
             Debug.Assert(_isUWPApp);
             var nameCondition = UICondition.CreateFromName(_appWindowTitle);
