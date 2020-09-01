@@ -6,8 +6,8 @@ param([Parameter(Mandatory=$true, Position=0)]
 $ErrorActionPreference = 'Stop'
 
 # Constants
-$WindowsSDKOptions = @("OptionId.UWPCpp", "OptionId.DesktopCPPx64", "OptionId.DesktopCPPx86", "OptionId.DesktopCPPARM64", "OptionId.DesktopCPPARM", "OptionId.WindowsDesktopDebuggers")
-$WindowsSDKRegPath = "HKLM:\Software\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
+$WindowsSDKOptions = @("OptionId.UWPCpp", "OptionId.DesktopCPPx64", "OptionId.DesktopCPPx86", "OptionId.DesktopCPPARM64", "OptionId.DesktopCPPARM")
+$WindowsSDKRegPath = "HKLM:\Software\Microsoft\Windows Kits\Installed Roots"
 $WindowsSDKRegRootKey = "KitsRoot10"
 $WindowsSDKVersion = "10.0.$buildNumber.0"
 $WindowsSDKInstalledRegPath = "$WindowsSDKRegPath\$WindowsSDKVersion\Installed Options"
@@ -72,11 +72,9 @@ function Download-File
     $downloadDestTemp = $downloadPath;
 
     # Delete and rename to final dest
-    Write-Host "testing $downloadDest"
-    if (Test-Path $downloadDest)
+    if (Test-Path -PathType Container $downloadDest)
     {
-        Write-Host "Deleting: $downloadDest"
-        Remove-Item $downloadDest -Force
+        [System.IO.Directory]::Delete($downloadDest, $true)
     }
 
     Move-Item -Force $downloadDestTemp $downloadDest
@@ -188,16 +186,7 @@ function Test-InstallWindowsSDK
     {
         # A Windows SDK is installed
         # Is an SDK of our version installed with the options we need?
-        $allRequiredSdkOptionsInstalled = $true
-        foreach($sdkOption in $WindowsSDKOptions)
-        {
-            if (!(Test-RegistryPathAndValue -Path $WindowsSDKInstalledRegPath -Value $sdkOption))
-            {
-                $allRequiredSdkOptionsInstalled = $false
-            }
-        }
-
-        if($allRequiredSdkOptionsInstalled)
+        if (Test-RegistryPathAndValue -Path $WindowsSDKInstalledRegPath -Value "$WindowsSDKOptions")
         {
             # It appears we have what we need. Double check the disk
             $sdkRoot = Get-ItemProperty -Path $WindowsSDKRegPath | Select-Object -ExpandProperty $WindowsSDKRegRootKey
@@ -280,7 +269,7 @@ if ($InstallWindowsSDK)
         $env:TEMP = Join-Path $env:SystemDrive 'temp'
     }
 
-    $winsdkTempDir = Join-Path (Join-Path $env:TEMP ([System.IO.Path]::GetRandomFileName())) "WindowsSDK"
+    $winsdkTempDir = Join-Path $env:TEMP "WindowsSDK"
 
     if (![System.IO.Directory]::Exists($winsdkTempDir))
     {
@@ -328,7 +317,7 @@ if ($InstallWindowsSDK)
     finally
     {
         Write-Host -NoNewline "Dismounting ISO $file..."
-        Dismount-ISO $downloadFile
+        #Dismount-ISO $downloadFile
         Write-Host "Done"
     }
 }
