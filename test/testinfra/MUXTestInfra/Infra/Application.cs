@@ -111,21 +111,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
             else if (didFindWindow)
             {
+                // topWindowObj should match either _windowCondition or _appFrameWindowCondition
+
                 if (topWindowObj.Matches(_windowCondition))
                 {
                     // If the top level window is CoreWindow, then there is no AppFrame window:
                     CoreWindow = topWindowObj;
                     ApplicationFrameWindow = null;
                 }
-                else
+                else // _appFrameWindowCondition
                 {
-                    if(CoreWindow == null)
+                    if(!topWindowObj.Matches(_appFrameWindowCondition))
                     {
-                        CoreWindow = topWindowObj;
+                        // This should never happen
+                        Verify.Fail($"Expected topWindowObj ({UIObjectToLoggableString(topWindowObj)}) to match _appFrameWindowCondition ({_appFrameWindowCondition})");
                     }
 
                     // Maxmize window to ensure we can find UIA elements
-                    var appFrameWindow = new Window(CoreWindow);
+                    var appFrameWindow = new Window(topWindowObj);
                     if (appFrameWindow.CanMaximize)
                     {
                         appFrameWindow.SetWindowVisualState(WindowVisualState.Maximized);
@@ -618,6 +621,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             catch(Exception e)
             {
                 Log.Comment(e.Message);
+            }
+        }
+
+        // UIObjects expose a ToString method to give a human-readable representation of the object.
+        // But the string includes '{' and '}' which the test logger does not handle well.
+        private string UIObjectToLoggableString(UIObject obj)
+        {
+            if(obj == null)
+            {
+                return "Null";
+            }
+            else
+            {
+                return obj.ToString().Replace('{', '[').Replace('}', ']');
             }
         }
     }
