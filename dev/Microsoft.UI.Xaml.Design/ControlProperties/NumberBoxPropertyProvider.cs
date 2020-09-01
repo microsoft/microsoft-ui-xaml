@@ -18,6 +18,7 @@ namespace Microsoft.UI.Xaml.Design.ControlProvider
             RegisterCommonProperty("Minimum");
             RegisterCommonProperty("Maximum");
             RegisterCommonProperty("Value");
+            RegisterCommonProperty("Text");
             RegisterCommonProperty("SmallChange");
             RegisterCommonProperty("LargeChange");
             RegisterCommonProperty("SpinButtonPlacementMode");
