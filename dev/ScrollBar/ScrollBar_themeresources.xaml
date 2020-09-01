@@ -100,8 +100,8 @@
             <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource ScrollBarThumbBackgroundColor}" />
-            <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource ScrollBarPanningThumbBackgroundColor}" />
+            <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="SystemControlForegroundChromeDisabledLowBrush" />
+            <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="SystemControlForegroundChromeDisabledLowBrush" />
             <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeHighBrush" />
             <x:Double x:Key="ScrollBarTrackBorderThemeThickness">1</x:Double>
             <Thickness x:Key="ScrollBarPanningBorderThemeThickness">1</Thickness>
@@ -527,8 +527,8 @@
                                 </VisualState>
                                 <VisualState x:Name="NoIndicator">
                                     <VisualState.Setters>
-                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
-                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackground}"/>
+                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackground}"/>
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="ScaleX" To="{ThemeResource SmallScrollThumbScale}" />
@@ -625,8 +625,8 @@
                                         <Setter Target="VerticalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
                                         <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
                                         <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
-                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarThumbBackgroundColor}"/>
-                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarThumbBackgroundColor}"/>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarThumbBackground}"/>
+                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarThumbBackground}"/>
                                     </VisualState.Setters>
 
                                     <Storyboard>
@@ -662,8 +662,8 @@
                                         <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
                                         <contract7Present:Setter Target="HorizontalThumb.CornerRadius" Value="0" />
                                         <contract7Present:Setter Target="VerticalThumb.CornerRadius" Value="0" />
-                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarThumbBackgroundColor}"/>
-                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarThumbBackgroundColor}"/>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarThumbBackground}"/>
+                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarThumbBackground}"/>
                                     </VisualState.Setters>
                                     <!-- The storyboard below cannot be moved to a transition since transitions
                                              will not be run by the framework when animations are disabled in the system -->
@@ -686,8 +686,8 @@
                                 </VisualState>
                                 <VisualState x:Name="CollapsedWithoutAnimation">
                                     <VisualState.Setters>
-                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
-                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
+                                        <Setter Target="HorizontalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackground}"/>
+                                        <Setter Target="VerticalThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackground}"/>
                                     </VisualState.Setters>
                                     <!-- The storyboard below cannot be moved to a transition since transitions
                                              will not be run by the framework when animations are disabled in the system -->
