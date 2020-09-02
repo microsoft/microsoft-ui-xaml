@@ -58,7 +58,7 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
         return newItem;
     }
 
-    // Acidentally adding a OS XAML NavigationViewItem to WinUI's NavigationView can cause unnecessary confusion for developers
+    // Accidentally adding a OS XAML NavigationViewItem to WinUI's NavigationView can cause unnecessary confusion for developers
     // due to unexpected rendering, potentially without an easy way to understand what went wrong here. To help out developers,
     // we are explicitly checking for this scenario here and throw a helpful error message so that they can quickly fix their app.
     if (newContent.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
