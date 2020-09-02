@@ -251,9 +251,10 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
     if (IsTopNavigationView())
     {
-        auto const inMainMenu = selectedIndex.GetAt(0) == c_mainMenuBlockIndex;
         // If selectedIndex does not exist, means item is being deselected through API
-        auto const isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? inMainMenu && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1)) : false;
+        auto const isInOverflow = (selectedIndex && selectedIndex.GetSize() > 1)
+            ? selectedIndex.GetAt(0) == c_mainMenuBlockIndex && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1))
+            : false;
         if (isInOverflow)
         {
             // We only want to close the overflow flyout and move the item on selection if it is a leaf node
