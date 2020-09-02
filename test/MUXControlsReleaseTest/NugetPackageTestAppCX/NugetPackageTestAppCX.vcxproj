@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props" Condition="Exists('..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props')" />
+  <Import Project="..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props" Condition="Exists('..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props" Condition="Exists('$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Condition="'$(PGOBuildMode)' == 'Instrument'" Project="$(MSBuildProjectDirectory)\..\..\..\PGO.runtime.props" />
   <PropertyGroup Label="Globals">
@@ -202,16 +202,16 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NETCore.UniversalWindowsPlatform.props'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\MUXCustomBuildTasks.1.0.67\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\MUXCustomBuildTasks.1.0.67\build\native\MUXCustomBuildTasks.targets'))" />
   </Target>
   <Import Project="$(MSBuildProjectDirectory)\..\..\..\CustomInlineTasks.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\packages\MUXCustomBuildTasks.1.0.48\build\native\MUXCustomBuildTasks.targets')" />
-    <Import Project="..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" />
-    <Import Project="..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets" Condition="Exists('..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets')" />
+    <Import Project="..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\..\..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" />
+    <Import Project="..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets" Condition="Exists('..\..\..\packages\Microsoft.NETCore.UniversalWindowsPlatform.6.2.8\build\Microsoft.NetCore.UniversalWindowsPlatform.targets')" />
+    <Import Project="..\..\..\packages\MUXCustomBuildTasks.1.0.67\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\..\packages\MUXCustomBuildTasks.1.0.67\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
   <Target Name="AfterBuild">
     <RunPowershellScript Path="$(SolutionDir)\tools\ExtractPackageDependencies_ReleaseTest.ps1" Parameters="-sourceFile $(OutDir)\$(AppxPackageName).build.appxrecipe -platform $(ConvertedPlatformName) -outputFile $(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" />
