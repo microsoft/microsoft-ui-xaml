@@ -100,7 +100,16 @@ namespace MUXControlsTestApp
             _pagePresenter = (ContentPresenter)GetTemplateChild("PagePresenter");
 
             _innerFrameInLabDimensions = (ToggleButton)GetTemplateChild("InnerFrameInLabDimensions");
-            _innerFrameInLabDimensions.Click += _innerFrameInLabDimensions_Click;
+            _innerFrameInLabDimensions.Checked += _innerFrameInLabDimensions_Checked;
+            _innerFrameInLabDimensions.Unchecked += _innerFrameInLabDimensions_Unchecked;
+            if(_innerFrameInLabDimensions.IsChecked == true)
+            {
+                _innerFrameInLabDimensions_Checked(null, null);
+            }
+            else
+            {
+                _innerFrameInLabDimensions_Unchecked(null, null);
+            }
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
@@ -127,6 +136,20 @@ namespace MUXControlsTestApp
                 _pagePresenter.ClearValue(MaxWidthProperty);
                 _pagePresenter.ClearValue(MaxHeightProperty);
             }
+        }
+
+        private void _innerFrameInLabDimensions_Checked(object sender, RoutedEventArgs e)
+        {
+            // Enter CI mode
+            _pagePresenter.MaxWidth = 1024;
+            _pagePresenter.MaxHeight = 664;
+        }
+
+        private void _innerFrameInLabDimensions_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Leave CI mode
+            _pagePresenter.ClearValue(MaxWidthProperty);
+            _pagePresenter.ClearValue(MaxHeightProperty);
         }
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)

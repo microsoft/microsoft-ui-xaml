@@ -109,7 +109,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         // this function returns true for successful run and false for unsuccessful run
         // in case of false, the calling function will retry calling this function
-        private bool TestSingleRun(ICollection<string> testNames)
+        private bool TestSingleRun(ICollection<string> testNames, bool shouldRestrictInnerFrameSize)
         {   
             PreTestSetup();
 
@@ -176,6 +176,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
                 Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
 
+                ToggleButton tb = new ToggleButton(FindElement.ById("__InnerFrameInLabDimensions"));
+                if (tb.ToggleState != ToggleState.On && shouldRestrictInnerFrameSize)
+                {
+                    Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to On.");
+                    tb.Toggle();
+                    Wait.ForIdle();
+                }
+                else if (tb.ToggleState != ToggleState.Off && !shouldRestrictInnerFrameSize)
+                {
+                    Log.Comment("toggling the __InnerFrameInLabDimensions toggle button to Off.");
+                    tb.Toggle();
+                    Wait.ForIdle();
+                }
+
                 OpenedTestPages++;
             }
 
@@ -186,7 +200,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         // The value of 'testName' should match that which was used when
         // registering the test in TestInventory.cs in the test app project.
-        public TestSetupHelper(ICollection<string> testNames, TestSetupHelperOptions options = null)
+        public TestSetupHelper(ICollection<string> testNames, TestSetupHelperOptions options = null, bool shouldRestrictInnerFrameSize = true)
         {
             if(options == null)
             {
@@ -201,7 +215,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             var retryCount = 10;
             while (retryCount-- > 0)
             {
-                var success = TestSingleRun(testNames);
+                var success = TestSingleRun(testNames, shouldRestrictInnerFrameSize);
                 if(success)
                 {
                     break; // no need to retry

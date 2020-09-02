@@ -53,6 +53,7 @@
                                     <ToggleButton
                                         x:Name="InnerFrameInLabDimensions"
                                         MaxHeight="25"
+                                        IsChecked="True"
                                         Padding="0"  Margin="0,0,4,0"
                                         AutomationProperties.AutomationId="__InnerFrameInLabDimensions"
                                         Content="Render innerframe in lab dimensions"/>
