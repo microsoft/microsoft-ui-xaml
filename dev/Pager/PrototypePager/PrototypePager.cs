@@ -25,6 +25,8 @@ namespace MUXControlsTestApp
         public enum PagerDisplayModes { Auto, ComboBox, NumberBox, NumberPanel, }
         public enum ButtonVisibilityMode { Auto, AlwaysVisible, HiddenOnEdge, None, }
 
+        private bool templateApplied = false;
+
         private Button FirstPageButton, PreviousPageButton, NextPageButton, LastPageButton;
         private ComboBox PagerComboBox;
         private NumberBox PagerNumberBox;
@@ -134,27 +136,16 @@ namespace MUXControlsTestApp
             }
             if (PagerNumberPanel != null)
             {
-                InitializeNumberPanel();
+                UpdateNumberPanel();
                 PagerNumberPanel.ElementPrepared += OnElementPrepared;
                 PagerNumberPanel.ElementClearing += OnElementClearing;
             }
 
             OnPagerDisplayModeChanged();
 
+            templateApplied = true;
             // This is for the initial page being loaded whatever page that might be.
             PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
-        }
-
-        private void InitializeNumberPanel()
-        {
-            if (NumberOfPages < MaxNumberOfElementsInRepeater)
-            {
-                PagerNumberPanel.ItemsSource = TemplateSettings.Pages;
-            }
-            else
-            {
-                PagerNumberPanel.ItemsSource = NumberPanelLeftMostState;
-            }
         }
     }
 

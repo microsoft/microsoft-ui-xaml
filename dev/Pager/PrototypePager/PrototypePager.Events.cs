@@ -13,6 +13,7 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Notifications;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 using Windows.UI.Xaml.Controls;
@@ -28,8 +29,12 @@ namespace MUXControlsTestApp
         {
             var sender = obj as PrototypePager;
             DependencyProperty prop = args.Property;
-            
-            if (prop == FirstPageButtonVisibilityProperty)
+
+            if (sender.templateApplied == false)
+            {
+                return;
+            }            
+            else if (prop == FirstPageButtonVisibilityProperty)
             {
                 sender.OnFirstPageButtonVisibilityChanged();
             }
@@ -68,7 +73,11 @@ namespace MUXControlsTestApp
             }
 
             DisablePageButtonsOnEdge();
-            UpdateNumberPanel();
+
+            if (PagerNumberPanel != null)
+            {
+                UpdateNumberPanel();
+            }
             PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
         }
 
@@ -324,13 +333,10 @@ namespace MUXControlsTestApp
 
         private void UpdateNumberPanel()
         {
-            if (NumberOfPages != PagerNumberPanel.ItemsSourceView.Count)
-            {
-                InitializeNumberPanel();
-            }
 
             if (NumberOfPages <= MaxNumberOfElementsInRepeater) // Show all pages
             {
+                PagerNumberPanel.ItemsSource = TemplateSettings.Pages;
                 MoveIdentifierToCurrentPage();
             }          
             else if (SelectedIndex < NumberPanelMiddleStateStartIndex) // Start State
