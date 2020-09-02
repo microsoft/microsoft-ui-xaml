@@ -58,6 +58,14 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
         return newItem;
     }
 
+    // Acidentally adding a OS XAML NavigationViewItem to WinUI's NavigationView can cause unnecessary confusion for developers
+    // due to unexpected rendering, potentially without an easy way to understand what went wrong here. To help out developers,
+    // we are explicitly checking for this scenario here and throw a helpful error message so that they can quickly fix their app.
+    if (newContent.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
+    {
+        throw winrt::hresult_invalid_argument(L"A NavigationView instance contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that its NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
+    }
+
     // Get or create a wrapping container for the data
     auto const nvi = [this]() {
         if (navigationViewItemPool.size() > 0)
