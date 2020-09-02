@@ -7,7 +7,7 @@ using Microsoft.Windows.Design.Metadata;
 [assembly: ProvideMetadata(typeof(RegisterMetadata))]
 namespace Microsoft.UI.Xaml.Design
 {
-    class RegisterMetadata : IProvideAttributeTable
+    public class RegisterMetadata : IProvideAttributeTable
     {
 
         public AttributeTable AttributeTable
