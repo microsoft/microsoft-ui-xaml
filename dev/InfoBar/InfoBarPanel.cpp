@@ -23,21 +23,24 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
         child.Measure(availableSize);
         const auto childDesiredSize = child.DesiredSize();
 
-        const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
-        totalWidth += childDesiredSize.Width + (float)horizontalMargin.Left + (float)horizontalMargin.Right;
-
-        const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
-        totalHeight += childDesiredSize.Height + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
-
-        // ### maybe this needs to be fixed with the margins and stuff.
-        if (childDesiredSize.Width > widthOfWidest)
+        if (childDesiredSize.Width != 0 && childDesiredSize.Height != 0)
         {
-            widthOfWidest = childDesiredSize.Width;
-        }
+            const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
+            totalWidth += childDesiredSize.Width + (float)horizontalMargin.Left + (float)horizontalMargin.Right;
 
-        if (childDesiredSize.Height > heightOfTallest)
-        {
-            heightOfTallest = childDesiredSize.Height;
+            const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
+            totalHeight += childDesiredSize.Height + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
+
+            // ### maybe this needs to be fixed with the margins and stuff.
+            if (childDesiredSize.Width > widthOfWidest)
+            {
+                widthOfWidest = childDesiredSize.Width;
+            }
+
+            if (childDesiredSize.Height > heightOfTallest)
+            {
+                heightOfTallest = childDesiredSize.Height;
+            }
         }
     }
 
@@ -81,11 +84,17 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
             if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
             {
                 auto const desiredSize = child.DesiredSize();
-                const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
+                if (desiredSize.Width != 0 && desiredSize.Height != 0)
+                {
+                    const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
 
-                verticalOffset += (float)verticalMargin.Top;
-                child.Arrange(winrt::Rect{ (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });
-                verticalOffset += desiredSize.Height + (float)verticalMargin.Bottom;
+                    StringCchPrintf(strOut, ARRAYSIZE(strOut), L" - InfoBarPanel::ArrangeOverride: child height %f\n", desiredSize.Height);
+                    OutputDebugString(strOut);
+
+                    verticalOffset += (float)verticalMargin.Top;
+                    child.Arrange(winrt::Rect{ (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });
+                    verticalOffset += desiredSize.Height + (float)verticalMargin.Bottom;
+                }
             }
         }
     }
@@ -101,11 +110,14 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
             if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
             {
                 auto const desiredSize = child.DesiredSize();
-                auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
+                if (desiredSize.Width != 0 && desiredSize.Height != 0)
+                {
+                    auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
 
-                horizontalOffset += (float)horizontalMargin.Left;
-                child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalMargin.Top, desiredSize.Width, finalSize.Height });
-                horizontalOffset += desiredSize.Width + (float)horizontalMargin.Right;
+                    horizontalOffset += (float)horizontalMargin.Left;
+                    child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalMargin.Top, desiredSize.Width, finalSize.Height });
+                    horizontalOffset += desiredSize.Width + (float)horizontalMargin.Right;
+                }
             }
         }
     }

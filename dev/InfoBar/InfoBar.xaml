@@ -123,26 +123,27 @@
                             <primitives:InfoBarPanel Grid.Column="1">
 
                                 <TextBlock x:Name="Title"
-                                        Grid.Column="0"
-                                        primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarTitleHorizontalLayoutMargin}"
-                                        primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarTitleVerticalLayoutMargin}"
-                                        Text="{TemplateBinding Title}"
-                                        AutomationProperties.LandmarkType="Navigation"
-                                        FontWeight="SemiBold"
-                                        FontSize="{ThemeResource InfoBarFontSize}"/>
+                                    Grid.Column="0"
+                                    primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarTitleHorizontalLayoutMargin}"
+                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarTitleVerticalLayoutMargin}"
+                                    Text="{TemplateBinding Title}"
+                                    AutomationProperties.LandmarkType="Navigation"
+                                    FontWeight="{StaticResource InfoBarTitleFontWeight}"
+                                    FontSize="{StaticResource InfoBarTitleFontSize}"/>
 
                                 <TextBlock x:Name="Message" 
-                                        Grid.Column="1"
-                                        Text="{TemplateBinding Message}" 
-                                        FontSize="{ThemeResource InfoBarFontSize}"
-                                        primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarMessageHorizontalLayoutMargin}"
-                                        primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarMessageVerticalLayoutMargin}"/>
+                                    Grid.Column="1"
+                                    Text="{TemplateBinding Message}" 
+                                    primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarMessageHorizontalLayoutMargin}"
+                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarMessageVerticalLayoutMargin}"
+                                    FontWeight="{StaticResource InfoBarMessageFontWeight}"
+                                    FontSize="{StaticResource InfoBarMessageFontSize}"/>
 
                                 <ContentPresenter
-                                        Grid.Column="2"
-                                        primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarActionHorizontalLayoutMargin}"
-                                        primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarActionVerticalLayoutMargin}" 
-                                        Content="{TemplateBinding ActionButton}">
+                                    Grid.Column="2"
+                                    primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarActionHorizontalLayoutMargin}"
+                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarActionVerticalLayoutMargin}" 
+                                    Content="{TemplateBinding ActionButton}">
                                     
                                     <ContentPresenter.Resources>
                                         <Style TargetType="Button">
@@ -156,9 +157,10 @@
 
                                         <Style TargetType="HyperlinkButton">
                                             <Style.Setters>
-                                                <Setter Property="FontSize" Value="{ThemeResource InfoBarFontSize}"/>
+                                                <Setter Property="FontSize" Value="{ThemeResource InfoBarHyperlinkButtonFontSize}"/>
                                                 <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
-                                                <Setter Property="Height" Value="{StaticResource InfoBarActionButtonHeight}"/>
+                                                <Setter Property="Height" Value="{StaticResource InfoBarHyperlinkButtonHeight}"/>
+                                                <Setter Property="Padding" Value="{StaticResource InfoBarHyperlinkButtonPadding}"/>
                                             </Style.Setters>
                                         </Style>
                                     </ContentPresenter.Resources>
@@ -180,7 +182,9 @@
                                     Style="{TemplateBinding CloseButtonStyle}">
 
                                 <Viewbox Width="{StaticResource InfoBarCloseButtonGlyphSize}"
-                                        Height="{StaticResource InfoBarCloseButtonGlyphSize}">
+                                    Height="{StaticResource InfoBarCloseButtonGlyphSize}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
                                     <SymbolIcon Symbol="{StaticResource InfoBarCloseButtonSymbol}"/>
                                 </Viewbox>
                             </Button>
