@@ -162,5 +162,8 @@ public:
 #define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
+#define SR_InfoBarCloseButtonName L"InfoBarCloseButtonName"
+#define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
+#define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

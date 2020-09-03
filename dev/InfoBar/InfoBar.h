@@ -21,6 +21,9 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
+    // UIElement
+    winrt::AutomationPeer OnCreateAutomationPeer();
+
     // Property change handlers
     void OnIsOpenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -34,7 +37,7 @@ private:
     void RaiseClosingEvent();
     void RaiseClosedEvent();
 
-    void UpdateVisibility();
+    void UpdateVisibility(bool notify = true);
     void UpdateSeverity();
     void UpdateIcon();
     void UpdateIconVisibility();
@@ -43,4 +46,8 @@ private:
     winrt::InfoBarCloseReason m_lastCloseReason{ winrt::InfoBarCloseReason::Programmatic };
 
     winrt::Button::Click_revoker m_closeButtonClickRevoker{};
+
+    bool m_applyTemplateCalled{ false };
+    bool m_notifyOpen{ false };
+    bool m_isVisible{ false };
 };

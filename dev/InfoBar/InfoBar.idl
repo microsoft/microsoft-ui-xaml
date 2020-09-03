@@ -131,3 +131,17 @@ unsealed runtimeclass InfoBarPanel : Windows.UI.Xaml.Controls.Panel
 }
 
 }
+
+
+namespace MU_XAP_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass InfoBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    InfoBarAutomationPeer(MU_XC_NAMESPACE.InfoBar owner);
+}
+
+}
+

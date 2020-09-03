@@ -7,6 +7,7 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
     <Style TargetType="local:InfoBar">
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -86,7 +87,8 @@
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
                             Background="{ThemeResource InfoBarSeverityDefaultStatusColor}"
-                            Padding="{StaticResource InfoBarContentRootPadding}">
+                            Padding="{StaticResource InfoBarContentRootPadding}"
+                            XYFocusKeyboardNavigation="Enabled">
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/> <!-- Icon -->

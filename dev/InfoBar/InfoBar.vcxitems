@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarPanel.h" />
@@ -26,6 +27,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBarPanel.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBarTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarPanel.cpp" />
@@ -43,5 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)InfoBar.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

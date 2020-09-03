@@ -7,8 +7,10 @@
 #include "InfoBarClosingEventArgs.h"
 #include "InfoBarClosedEventArgs.h"
 #include "InfoBarTemplateSettings.h"
+#include "InfoBarAutomationPeer.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "../ResourceHelper/Utils.h"
 
 static constexpr wstring_view c_closeButtonName{ L"CloseButton"sv };
 
@@ -21,8 +23,16 @@ InfoBar::InfoBar()
     SetDefaultStyleKey(this);
 }
 
+winrt::AutomationPeer InfoBar::OnCreateAutomationPeer()
+{
+    return winrt::make<InfoBarAutomationPeer>(*this);
+}
+
 void InfoBar::OnApplyTemplate()
 {
+    OutputDebugString(L"OnApplyTemplate()\n");
+    m_applyTemplateCalled = true;
+
     winrt::IControlProtected controlProtected{ *this };
 
     //const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
@@ -38,7 +48,9 @@ void InfoBar::OnApplyTemplate()
         }*/
     }
 
-    UpdateVisibility();
+    UpdateVisibility(m_notifyOpen);
+    m_notifyOpen = false;
+
     UpdateSeverity();
     UpdateIcon();
     UpdateIconVisibility();
@@ -125,10 +137,59 @@ void InfoBar::OnIsUserDismissablePropertyChanged(const winrt::DependencyProperty
     UpdateCloseButton();
 }
 
-void InfoBar::UpdateVisibility()
+void InfoBar::UpdateVisibility(bool notify)
 {
     OutputDebugString(IsOpen() ? L"Going to InfoBarVisible\n" : L"Going to InfoBarCollapsed\n");
-    winrt::VisualStateManager::GoToState(*this, IsOpen() ? L"InfoBarVisible" : L"InfoBarCollapsed", false);
+
+    auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::InfoBarAutomationPeer>();
+    if (!m_applyTemplateCalled && notify)
+    {
+        // ApplyTemplate() hasn't been called yet but IsOpen is already been set. Let's just delay until later.
+        notify = false;
+        m_notifyOpen = true;
+    }
+    else
+    {
+        // Don't do any work if nothing has changed.
+        if (IsOpen() != m_isVisible)
+        {
+            if (IsOpen())
+            {
+                if (notify && peer)
+                {
+                    auto const notificationString = StringUtil::FormatString(
+                        ResourceAccessor::GetLocalizedStringResource(SR_InfoBarOpenedNotification),
+                        Title().data(),
+                        Message().data());
+
+                    WCHAR strOut[1024];
+                    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"Raise window opened: %s\n", notificationString.data());
+                    OutputDebugString(strOut);
+
+                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseWindowOpenedEvent(notificationString);
+                }
+
+                winrt::VisualStateManager::GoToState(*this, L"InfoBarVisible", false);
+                m_isVisible = true;
+            }
+            else
+            {
+                if (notify && peer)
+                {
+                    auto const notificationString = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarClosedNotification);
+
+                    WCHAR strOut[1024];
+                    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"Raise window closed: %s\n", notificationString.data());
+                    OutputDebugString(strOut);
+
+                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseWindowClosedEvent(notificationString);
+                }
+
+                winrt::VisualStateManager::GoToState(*this, L"InfoBarCollapsed", false);
+                m_isVisible = false;
+            }
+        }
+    }
 }
 
 void InfoBar::UpdateSeverity()

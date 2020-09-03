@@ -42,7 +42,7 @@
     <x:String x:Key="InfoBarDefaultIconGlyph">&#xE946;</x:String>
     <x:String x:Key="InfoBarCriticalIconGlyph">&#xEA39;</x:String>
     <x:String x:Key="InfoBarWarningIconGlyph">&#xE783;</x:String>
-    <x:String x:Key="InfoBarSuccessIconGlyph">&#xF13E;</x:String>
+    <x:String x:Key="InfoBarSuccessIconGlyph">&#xE930;</x:String>
 
     <Thickness x:Key="InfoBarContentRootPadding">12,0,0,0</Thickness>
 
