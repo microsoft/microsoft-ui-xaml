@@ -120,13 +120,14 @@
                                     Margin="{StaticResource InfoBarIconMargin}"
                                     Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
 
-                            <primitives:InfoBarPanel Grid.Column="1">
+                            <primitives:InfoBarPanel Grid.Column="1" Margin="0,0,12,0">
 
                                 <TextBlock x:Name="Title"
                                     Grid.Column="0"
+                                    Text="{TemplateBinding Title}"
                                     primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarTitleHorizontalLayoutMargin}"
                                     primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarTitleVerticalLayoutMargin}"
-                                    Text="{TemplateBinding Title}"
+                                    TextWrapping="WrapWholeWords"
                                     AutomationProperties.LandmarkType="Navigation"
                                     FontWeight="{StaticResource InfoBarTitleFontWeight}"
                                     FontSize="{StaticResource InfoBarTitleFontSize}"/>
@@ -136,6 +137,7 @@
                                     Text="{TemplateBinding Message}" 
                                     primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarMessageHorizontalLayoutMargin}"
                                     primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarMessageVerticalLayoutMargin}"
+                                    TextWrapping="WrapWholeWords"
                                     FontWeight="{StaticResource InfoBarMessageFontWeight}"
                                     FontSize="{StaticResource InfoBarMessageFontSize}"/>
 
