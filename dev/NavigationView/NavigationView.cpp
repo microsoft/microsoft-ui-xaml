@@ -4560,7 +4560,14 @@ void NavigationView::UpdatePaneShadow()
         shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
         // Ensure shadow is as wide as the pane when it is open
-        shadowReceiver.Width(OpenPaneLength());
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        {
+            shadowReceiver.Width(OpenPaneLength());
+        }
+        else
+        {
+            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+        }
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
