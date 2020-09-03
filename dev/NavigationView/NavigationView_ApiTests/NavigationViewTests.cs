@@ -874,6 +874,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyClearingItemsCollectionDoesNotCrashWhenItemSelectedOnTopNav()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
+                var navViewItem1 = new NavigationViewItem() { Content = "MenuItem 1", };
+                var navViewItem2 = new NavigationViewItem() { Content = "MenuItem 2" };
+
+                Log.Comment("Set up the MenuItems collection");
+                navView.MenuItems.Add(navViewItem1);
+                navView.MenuItems.Add(navViewItem2);
+
+                Content = navView;
+                Content.UpdateLayout();
+
+                Log.Comment("Set MenuItem 1 as selected");
+                navView.SelectedItem = navViewItem1;
+                Verify.AreEqual(navViewItem1, navView.SelectedItem, "MenuItem 1 should have been selected");
+
+                // Clearing the MenuItems collection should not crash the app
+                Log.Comment("Clear the MenuItems collection");
+                navView.MenuItems.Clear();
+
+                Log.Comment("Set up the MenuItemsSource collection");
+                var itemsSource = new ObservableCollection<NavigationViewItem>() { navViewItem1, navViewItem2 };
+                navView.MenuItemsSource = itemsSource;
+
+                Content.UpdateLayout();
+
+                Log.Comment("Set MenuItem 1 as selected");
+                navView.SelectedItem = navViewItem1;
+                Verify.AreEqual(navViewItem1, navView.SelectedItem, "MenuItem 1 should have been selected");
+
+                // Clearing the MenuItemsSource collection should not crash the app
+                Log.Comment("Clear the MenuItemsSource collection");
+                itemsSource.Clear();
+            });
+        }
+
+        [TestMethod]
         public void VerifyHierarchicalNavigationTopModeMenuItemsSourceDoesNotCrash()
         {
             RunOnUIThread.Execute(() =>

@@ -3,15 +3,6 @@
 
 #pragma once
 
-// After updating to VS 16.4.3 the updated compiler contains a bug that is hit by C++/WinRT resulting in crashes
-// at runtime.
-// See https://github.com/microsoft/cppwinrt/issues/486
-// The workaround from the cppwinrt team is to define '__INTELLISENSE__', which allows us to avoid the compiler issue.
-// Once the underlying issue has been resolved, we should remove this workaround.
-// Tracked by: #1877 - Remove "#define __INTELLISENSE__" from CppWinRTIncludes.h once underlying issue with cppwinrt/msvc has been resolved 
-// Also remove the corresponding #undef at the bottom of this file.
-#define __INTELLISENSE__
-
 #include <winrt\base.h>
 #include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
@@ -389,5 +380,3 @@ namespace winrt
     using IElementFactory = winrt::IInspectable;
 #endif
 }
-
-#undef __INTELLISENSE__
