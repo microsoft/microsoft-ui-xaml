@@ -267,6 +267,9 @@
                             <TextBox x:Name="SelectionChangedItemType" AutomationProperties.Name="SelectionChangedItemType" Text="N/A"/>
                             <TextBox x:Name="SelectionChangedItemContainerType" AutomationProperties.Name="SelectionChangedItemContainerType" Text="N/A"/>
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Button x:Name="ContentDialogNavViewButton" AutomationProperties.Name="ContentDialogNavViewButton" Click="ContentDialogNavViewButton_Click">Open NavView in ContentDialog</Button>
+                        </StackPanel>
                     </StackPanel>
 
                     <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="5">

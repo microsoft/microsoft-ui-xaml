@@ -437,6 +437,12 @@ private:
 
     bool m_appliedTemplate{ false };
 
+    // Identifies whenever a call is the result of OnApplyTemplate
+    bool m_fromOnApplyTemplate{ false };
+
+    // Used to defer updating the SplitView displaymode property
+    bool m_updateVisualStateForDisplayModeFromOnLoaded{ false };
+
     // flag is used to stop recursive call. eg:
     // Customer select an item from SelectedItem property->ChangeSelection update ListView->LIstView raise OnSelectChange(we want stop here)->change property do do animation again.
     // Customer clicked listview->listview raised OnSelectChange->SelectedItem property changed->ChangeSelection->Undo the selection by SelectedItem(prevItem) (we want it stop here)->ChangeSelection again ->...
