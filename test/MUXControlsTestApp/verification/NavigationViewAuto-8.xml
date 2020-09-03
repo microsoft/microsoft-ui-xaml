@@ -2275,4 +2275,4 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Collapsed
-                RenderSize=800,600
+                RenderSize=0,0

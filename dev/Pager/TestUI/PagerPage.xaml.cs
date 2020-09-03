@@ -15,17 +15,17 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.AllJoyn;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using Windows.Foundation;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "Pager")]
     public sealed partial class PagerPage : TestPage
     {
-        private ObservableCollection<string> EventHistory = new ObservableCollection<string>();
         public PagerPage()
         {
             this.InitializeComponent();
-            PagerEventListViewDisplay.ItemsSource = EventHistory;
             this.Loaded += OnLoad;
         }
 
@@ -37,30 +37,71 @@ namespace MUXControlsTestApp
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextButtonVisibilityChanged;
             LastPageButtonVisibilityComboBox.SelectionChanged += OnLastButtonVisibilityChanged;
 
-            NumberBoxVisibilityTextBlock.Text = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
-            ComboBoxVisibilityTextBlock.Text = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            TestPager.NumberPanelDisplayTestHook.ElementPrepared += OnElementPrepared;
+
+         
+            NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
             NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
+            UpdateNumberPanelContentTextBlock(this, null);
+        }
+
+        private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            var element = args.Element as FrameworkElement;
+            if (element.Tag != null)
+            {
+                element.Name = "Page Button " + element.Tag;
+            }
+        }
+
+        private void UpdateNumberPanelContentTextBlock(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            NumberPanelContentTextBlock.Text = "";
+            foreach (var item in TestPager.NumberPanelDisplayTestHook.ItemsSource as ObservableCollection<object>)
+            {
+                if (item.GetType() == typeof(SymbolIcon))
+                {
+                    NumberPanelContentTextBlock.Text += (item as SymbolIcon).Symbol;
+                }
+                else
+                {
+                    NumberPanelContentTextBlock.Text += item;
+                }
+            }
+        }
+
+        private void NumberOfPagesSetterButtonClicked(object sender, RoutedEventArgs args)
+        {
+            if (TestPager.NumberOfPages == 5)
+            {
+                TestPager.NumberOfPages = 100;
+                NumberOfPagesSetterButton.Content = "Set NumberOfPages to 5";
+            }
+            else
+            {
+                TestPager.NumberOfPages = 5;
+                NumberOfPagesSetterButton.Content = "Set NumberOfPages to 100";
+            }
         }
 
         private void OnPageChanged(PrototypePager sender, PageChangedEventArgs args)
         {
-            EventHistory.Add($"Page changed from page {args.PreviousPage} to page {args.CurrentPage}");
+            UpdateNumberPanelContentTextBlock(this, null);
+            PreviousPageTextBlock.Text = args.PreviousPage.ToString();
+            CurrentPageTextBlock.Text = args.CurrentPage.ToString();
 
-            FirstPageButtonVisibilityTextBlock.Text = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
-            PreviousPageButtonVisibilityTextBlock.Text = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
-            NextPageButtonVisibilityTextBlock.Text = TestPager.NextPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
-            LastPageButtonVisibilityTextBlock.Text = TestPager.LastPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            FirstPageButtonVisibilityCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Visible;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Visible;
+            NextPageButtonVisibilityCheckBox.IsChecked = TestPager.NextPageButtonTestHook.Visibility == Visibility.Visible;
+            LastPageButtonVisibilityCheckBox.IsChecked = TestPager.LastPageButtonTestHook.Visibility == Visibility.Visible;
 
             FirstPageButtonIsEnabledCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.IsEnabled;
             PreviousPageButtonIsEnabledCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.IsEnabled;
             NextPageButtonIsEnabledCheckBox.IsChecked = TestPager.NextPageButtonTestHook.IsEnabled;
             LastPageButtonIsEnabledCheckBox.IsChecked = TestPager.LastPageButtonTestHook.IsEnabled;
-        }
-
-        private void ClearEventDisplay(object sender, RoutedEventArgs args)
-        {
-            EventHistory.Clear();
         }
 
         private void OnDisplayModeChanged(object sender, SelectionChangedEventArgs e)
@@ -84,8 +125,9 @@ namespace MUXControlsTestApp
                 TestPager.PagerDisplayMode = PrototypePager.PagerDisplayModes.NumberPanel;
             }
 
-            NumberBoxVisibilityTextBlock.Text = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
-            ComboBoxVisibilityTextBlock.Text = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
             NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
         }
@@ -111,7 +153,7 @@ namespace MUXControlsTestApp
                 TestPager.FirstPageButtonVisibility = PrototypePager.ButtonVisibilityMode.HiddenOnEdge;
             }
 
-            FirstPageButtonVisibilityTextBlock.Text = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            FirstPageButtonVisibilityCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Visible;
         }
 
         private void OnPreviousButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -135,7 +177,7 @@ namespace MUXControlsTestApp
                 TestPager.PreviousPageButtonVisibility = PrototypePager.ButtonVisibilityMode.HiddenOnEdge;
             }
 
-            PreviousPageButtonVisibilityTextBlock.Text = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            PreviousPageButtonVisibilityCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Visible;
         }
 
         private void OnNextButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -159,7 +201,7 @@ namespace MUXControlsTestApp
                 TestPager.NextPageButtonVisibility = PrototypePager.ButtonVisibilityMode.HiddenOnEdge;
             }
 
-            NextPageButtonVisibilityTextBlock.Text = TestPager.NextPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            NextPageButtonVisibilityCheckBox.IsChecked = TestPager.NextPageButtonTestHook.Visibility == Visibility.Visible;
         }
         private void OnLastButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -182,7 +224,9 @@ namespace MUXControlsTestApp
                 TestPager.LastPageButtonVisibility = PrototypePager.ButtonVisibilityMode.HiddenOnEdge;
             }
 
-            LastPageButtonVisibilityTextBlock.Text = TestPager.LastPageButtonTestHook.Visibility == Visibility.Collapsed ? "Collapsed" : "Visible";
+            LastPageButtonVisibilityCheckBox.IsChecked = TestPager.LastPageButtonTestHook.Visibility == Visibility.Visible;
         }
+
+
     }
 }
