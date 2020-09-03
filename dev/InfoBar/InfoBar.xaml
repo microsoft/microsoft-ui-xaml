@@ -15,6 +15,8 @@
                     <Border x:Name="Container" 
                         VerticalAlignment="Top"
                         Background="Transparent"
+                        BorderBrush="{ThemeResource InfoBarBorderBrush}"
+                        BorderThickness="{ThemeResource InfoBarBorderThickness}"
                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
 
                         <VisualStateManager.VisualStateGroups>
@@ -24,21 +26,21 @@
                                 
                                 <VisualState x:Name="Critical">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeverityCriticalStatusColor}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeverityCriticalStatusBrush}"/>
                                         <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarCriticalIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeverityWarningStatusColor}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeverityWarningStatusBrush}"/>
                                         <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarWarningIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeveritySuccessStatusColor}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeveritySuccessStatusBrush}"/>
                                         <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -86,7 +88,7 @@
                         <Grid x:Name="ContentRoot"
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
-                            Background="{ThemeResource InfoBarSeverityDefaultStatusColor}"
+                            Background="{ThemeResource InfoBarSeverityDefaultStatusBrush}"
                             Padding="{StaticResource InfoBarContentRootPadding}"
                             XYFocusKeyboardNavigation="Enabled">
 
@@ -155,7 +157,8 @@
                                         <Style TargetType="HyperlinkButton">
                                             <Style.Setters>
                                                 <Setter Property="FontSize" Value="{ThemeResource InfoBarFontSize}"/>
-                                                <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonColor}"/>
+                                                <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
+                                                <Setter Property="Height" Value="{StaticResource InfoBarActionButtonHeight}"/>
                                             </Style.Setters>
                                         </Style>
                                     </ContentPresenter.Resources>

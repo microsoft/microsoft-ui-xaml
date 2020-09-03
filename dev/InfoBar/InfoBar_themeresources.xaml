@@ -7,28 +7,39 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusColor" Color="#FDE7E9"/>
-            <SolidColorBrush x:Key="InfoBarSeverityWarningStatusColor" Color="#FFF4CE"/>
-            <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusColor" Color="#DFF6DD"/>
-            <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusColor" Color="#F2F2F2"/>
-            <SolidColorBrush x:Key="InfoBarHyperlinkButtonColor" Color="#000000"/> <!-- ### nope ### -->
+            <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusBrush" Color="#FDE7E9"/>
+            <SolidColorBrush x:Key="InfoBarSeverityWarningStatusBrush" Color="#FFF4CE"/>
+            <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusBrush" Color="#DFF6DD"/>
+            <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusBrush" Color="#F2F2F2"/>
+
+            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+            <Thickness x:Key="InfoBarBorderThickness">0</Thickness>
         </ResourceDictionary>
         
         <ResourceDictionary x:Key="Dark">
-            <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusColor" Color="#442726"/>
-            <SolidColorBrush x:Key="InfoBarSeverityWarningStatusColor" Color="#433519"/>
-            <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusColor" Color="#393D1B"/>
-            <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusColor" Color="#2b2b2b"/>
-            <SolidColorBrush x:Key="InfoBarHyperlinkButtonColor" Color="#FFFFFF"/> <!-- ### nope ### -->
+            <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusBrush" Color="#442726"/>
+            <SolidColorBrush x:Key="InfoBarSeverityWarningStatusBrush" Color="#433519"/>
+            <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusBrush" Color="#393D1B"/>
+            <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusBrush" Color="#2B2B2B"/>
+
+            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+            <Thickness x:Key="InfoBarBorderThickness">0</Thickness>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <!-- ### no idea what goes here ### -->
-            <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusColor" Color="#442726"/>
-            <SolidColorBrush x:Key="InfoBarSeverityWarningStatusColor" Color="#433519"/>
-            <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusColor" Color="#393D1B"/>
-            <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusColor" Color="#2b2b2b"/>
-            <SolidColorBrush x:Key="InfoBarHyperlinkButtonColor" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="InfoBarSeverityCriticalStatusBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="InfoBarSeverityWarningStatusBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="InfoBarSeveritySuccessStatusBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="InfoBarSeverityDefaultStatusBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+
+            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+            <Thickness x:Key="InfoBarBorderThickness">2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
