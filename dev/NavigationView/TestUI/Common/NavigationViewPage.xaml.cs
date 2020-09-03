@@ -23,6 +23,7 @@ using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewP
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
 using Microsoft.UI.Xaml.Controls;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -749,6 +750,14 @@ namespace MUXControlsTestApp
             if (FindVisualChildByName(ChildItem, "ContentPresenter") is ContentPresenter presenter)
             {
                 NavViewItemContentPresenterMarginTextBlock.Text = presenter.Margin.ToString();
+            }
+        }
+
+        private void BringSettingsIntoViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SettingsItem is NavigationViewItem settingsItem)
+            {
+                settingsItem.StartBringIntoView();
             }
         }
     }
