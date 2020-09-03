@@ -251,9 +251,10 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
     if (IsTopNavigationView())
     {
-        auto const inMainMenu = selectedIndex.GetAt(0) == c_mainMenuBlockIndex;
         // If selectedIndex does not exist, means item is being deselected through API
-        auto const isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? inMainMenu && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1)) : false;
+        auto const isInOverflow = (selectedIndex && selectedIndex.GetSize() > 1)
+            ? selectedIndex.GetAt(0) == c_mainMenuBlockIndex && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1))
+            : false;
         if (isInOverflow)
         {
             // We only want to close the overflow flyout and move the item on selection if it is a leaf node
@@ -347,6 +348,11 @@ void NavigationView::OnApplyTemplate()
 {
     // Stop update anything because of PropertyChange during OnApplyTemplate. Update them all together at the end of this function
     m_appliedTemplate = false;
+    auto scopeGuard = gsl::finally([this]()
+        {
+            m_fromOnApplyTemplate = false;
+        });
+    m_fromOnApplyTemplate = true;
 
     UnhookEventsAndClearFields();
 
@@ -2342,7 +2348,18 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
         {
             winrt::VisualStateManager::GoToState(*this, visualStateName, false /*useTransitions*/);
         }
-        splitView.DisplayMode(splitViewDisplayMode);
+
+        // Updating the splitview 'DisplayMode' property in some diplaymodes causes children to be added to the popup root.
+        // This causes an exception if the NavigationView is in the popup root itself (as SplitView is trying to add children to the tree while it is being measured).
+        // Due to this, we want to defer updating this property for all calls coming from `OnApplyTemplate`to the OnLoaded function.
+        if (m_fromOnApplyTemplate)
+        {
+            m_updateVisualStateForDisplayModeFromOnLoaded = true;
+        }
+        else
+        {
+            splitView.DisplayMode(splitViewDisplayMode);
+        }
     }
 }
 
@@ -2685,9 +2702,11 @@ bool NavigationView::BumperNavigation(int offset)
     // that meets the conditions, in the same direction.
     const auto shoulderNavigationEnabledParamValue = ShoulderNavigationEnabled();
     const auto shoulderNavigationForcedDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::Never);
+    const auto shoulderNavigationOptionalDisabled = (shoulderNavigationEnabledParamValue == winrt::NavigationViewShoulderNavigationEnabled::WhenSelectionFollowsFocus
+        && SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled);
 
     if (!IsTopNavigationView()
-        || !IsNavigationViewListSingleSelectionFollowsFocus()
+        || shoulderNavigationOptionalDisabled
         || shoulderNavigationForcedDisabled)
     {
         return false;
@@ -3803,6 +3822,12 @@ void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::Routed
 
 void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
+    if (m_updateVisualStateForDisplayModeFromOnLoaded)
+    {
+        m_updateVisualStateForDisplayModeFromOnLoaded = false;
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
+    }
+
     if (auto coreTitleBar = m_coreTitleBar.get())
     {
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });

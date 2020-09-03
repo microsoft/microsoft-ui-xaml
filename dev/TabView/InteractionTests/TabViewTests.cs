@@ -546,7 +546,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Button tabContent = FindElement.ByName<Button>("FirstTabButton");
-                ToggleButton toggleThemeButton = FindElement.ById<ToggleButton>("__InnerFrameInLabDimensions");
+                ToggleButton toggleInnerFrameDimensions = FindElement.ById<ToggleButton>("__InnerFrameInLabDimensions");
                 TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
@@ -572,7 +572,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickUp);
                 Wait.ForIdle();
-                Verify.IsTrue(toggleThemeButton.HasKeyboardFocus, "GamePad Up should move to toggle theme button");
+                Verify.IsTrue(toggleInnerFrameDimensions.HasKeyboardFocus, "GamePad Up should move to toggle inner frame dimensions button");
             }
         }
 
