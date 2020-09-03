@@ -736,6 +736,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifySettingSelectionDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeview = new TreeView();
+
+                var items = new ObservableCollection<string>() { 
+                    "Item0", "Item1", "Item2"
+                };
+
+                treeview.SelectedItem = items[0];
+                Verify.AreEqual(treeview.SelectedItem, items[0]);
+
+                treeview.ItemsSource = items;
+                treeview.SelectedItem = items[1];
+                Verify.AreEqual(treeview.SelectedItem, items[1]);
+            });
+        }
+
         private bool IsMultiSelectCheckBoxChecked(TreeView tree, TreeViewNode node)
         {
             var treeViewItem = tree.ContainerFromNode(node) as TreeViewItem;
