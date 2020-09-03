@@ -1459,7 +1459,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
         public void VerifyShouldPreserveNavigationViewRS3Behavior()
         {
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }))
+            // This test exercises how the navigation view intereacts with the titlebar, thus setting shouldRestrictInnerFrameSize to true (the default) doesn't allow us
+            // to exercise the scenario, thus requiring us to disable this. 
+            using (var setup = new TestSetupHelper(testNames: new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }, shouldRestrictInnerFrameSize: false))
             {
                 if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
                 {
@@ -1660,6 +1662,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Log.Comment("Verify that switching pane mode to auto does not crash.");
                 var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
                 flipOrientationButton.Invoke();
+                Wait.ForIdle();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNoCrashWhenNavViewInContentDialog()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                Log.Comment("Open a ContentDialog with a NavView inside.");
+                Button openContentDialogButton = new Button(FindElement.ById("ContentDialogNavViewButton"));
+                openContentDialogButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Close the ContentDialog with a NavView inside.");
+                Button closeContentDialogButton = new Button(FindElement.ByName("Button1ContentDialog"));
+                closeContentDialogButton.Invoke();
                 Wait.ForIdle();
             }
         }
