@@ -264,7 +264,7 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
     {
 
         const auto items = SelectedItems();
-        const auto selected = items.Size() > 0 ? items.GetAt(0) : nullptr;
+        const auto selected = (items != nullptr && items.Size() > 0) ? items.GetAt(0) : nullptr;
         // Checking if new value is different to the currently internally selected item
         if (args.NewValue() != selected)
         {
