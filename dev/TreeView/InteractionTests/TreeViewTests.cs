@@ -1708,7 +1708,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void TreeViewMultiSelectGamepadTest_ContentMode()
         {
             TreeViewMultiSelectGamepadTest(isContentMode:true);

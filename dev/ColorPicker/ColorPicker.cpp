@@ -923,11 +923,10 @@ void ColorPicker::OnAlphaTextChanging(winrt::TextBox const& /*sender*/, winrt::T
         // where it was before.
         const int cursorPosition = alphaTextBox.SelectionStart() + alphaTextBox.SelectionLength();
 
-        const wchar_t* s = alphaTextBox.Text().begin() + alphaTextBox.Text().size() - 1;
-
-        if (*s != '%')
+        const auto text = alphaTextBox.Text();
+        if (text.empty() || text.begin()[text.size() - 1] != '%')
         {
-            alphaTextBox.Text(static_cast<wstring>(alphaTextBox.Text()) + wstring(L"%"));
+            alphaTextBox.Text(static_cast<wstring>(text) + wstring(L"%"));
             alphaTextBox.SelectionStart(cursorPosition);
         }
 
@@ -961,9 +960,10 @@ void ColorPicker::OnHexTextChanging(winrt::TextBox const& /*sender*/, winrt::Tex
 
     // If the user hasn't entered a #, we'll do that for them, keeping the cursor
     // where it was before.
-    if (hexTextBox.Text().begin()[0] != '#')
+    const auto text = hexTextBox.Text();
+    if (text.empty() || text.begin()[0] != '#')
     {
-        hexTextBox.Text(wstring(L"#") + static_cast<wstring>(hexTextBox.Text()));
+        hexTextBox.Text(wstring(L"#") + static_cast<wstring>(text));
         hexTextBox.SelectionStart(hexTextBox.Text().size());
     }
 

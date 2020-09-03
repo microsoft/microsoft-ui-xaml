@@ -82,20 +82,12 @@ foreach ($testRun in $testRuns.value)
                 
                 if ($rerun.outcome -ne "Passed")
                 {
-                    $screenshots = "$($rerunResults.blobPrefix)/$($rerun.screenshots -join @"
-$($rerunResults.blobSuffix)
-$($rerunResults.blobPrefix)
-"@)$($rerunResults.blobSuffix)"
-
                     # We subtract 1 from the error index because we added 1 so we could use 0
                     # as a default value not injected into the JSON in order to keep its size down.
                     # We did this because there's a maximum size enforced for the errorMessage parameter
                     # in the Azure DevOps REST API.
                     $fullErrorMessage = @"
 Log: $($rerunResults.blobPrefix)/$($rerun.log)$($rerunResults.blobSuffix)
-
-Screenshots:
-$screenshots
 
 Error log:
 $($rerunResults.errors[$rerun.errorIndex - 1])
