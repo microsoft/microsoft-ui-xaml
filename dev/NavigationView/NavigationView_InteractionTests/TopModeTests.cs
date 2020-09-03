@@ -457,7 +457,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void TopPaddingTest()
         {
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
+            // We cannot restrict the inner framesize for this test because it interacts with the titlebar area.
+            using (var setup = new TestSetupHelper(testNames: new[] { "NavigationView Tests", "Top NavigationView Store Test" }, shouldRestrictInnerFrameSize: false))
             {
                 var moveContentUnderTitleBarButton = new Button(FindElement.ById("MoveContentUnderTopnavTitleBar"));
                 var flipIsTitleBarAutoPaddingEnabledButton = new Button(FindElement.ById("FlipIsTitleBarAutoPaddingEnabledButton"));
