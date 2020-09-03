@@ -151,9 +151,13 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavFooterMenuRepeaterGettingFocusRevoker.revoke();
     m_topNavFooterMenuRepeater.set(nullptr);
 
+    m_footerItemsCollectionChangedRevoker.revoke();
+
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterOverflowView.set(nullptr);
+
+    m_topNavOverflowItemsCollectionChangedRevoker.revoke();
 
     if (isFromDestructor)
     {
@@ -228,6 +232,14 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
 void NavigationView::OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
+}
+
+void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    if (m_topNavRepeaterOverflowView.get().ItemsSourceView().Count() == 0)
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -702,15 +714,47 @@ void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& 
     m_topDataProvider.SetDataSource(items);
 
     // rebinding
+    UpdateTopNavPrimaryRepeaterItemsSource(items);
+    UpdateTopNavOverflowRepeaterItemsSource(items);
+}
+
+void NavigationView::UpdateTopNavPrimaryRepeaterItemsSource(const winrt::IInspectable& items)
+{
     if (items)
     {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
     }
     else
     {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+    }
+}
+
+void NavigationView::UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items)
+{
+    m_topNavOverflowItemsCollectionChangedRevoker.revoke();
+
+    if (const auto overflowRepeater = m_topNavRepeaterOverflowView.get())
+    {
+        if (items)
+        {
+            const auto itemsSource = m_topDataProvider.GetOverflowItems();
+            overflowRepeater.ItemsSource(itemsSource);
+
+            // We listen to changes to the overflow menu item collection so we can set the visibility of the overflow button
+            // to collapsed when it no longer has any items.
+            //
+            // Normally, MeasureOverride() kicks off updating the button's visibility, however, it is not run when the overflow menu
+            // only contains a *single* item and we
+            // - either remove that menu item or
+            // - remove menu items displayed in the NavigationView pane until there is enough room for the single overflow menu item
+            //   to be displayed in the pane
+            m_topNavOverflowItemsCollectionChangedRevoker = overflowRepeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemsSourceCollectionChanged });
+        }
+        else
+        {
+            overflowRepeater.ItemsSource(nullptr);
+        }
     }
 }
 
