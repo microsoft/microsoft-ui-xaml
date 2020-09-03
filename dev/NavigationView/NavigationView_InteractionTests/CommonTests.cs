@@ -1680,6 +1680,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
+        [TestMethod]
+        public void VerifyNoCrashWhenNavViewInContentDialog()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                Log.Comment("Open a ContentDialog with a NavView inside.");
+                Button openContentDialogButton = new Button(FindElement.ById("ContentDialogNavViewButton"));
+                openContentDialogButton.Invoke();
+                Wait.ForIdle();
 
+                Log.Comment("Close the ContentDialog with a NavView inside.");
+                Button closeContentDialogButton = new Button(FindElement.ByName("Button1ContentDialog"));
+                closeContentDialogButton.Invoke();
+                Wait.ForIdle();
+            }
+        }
     }
 }
