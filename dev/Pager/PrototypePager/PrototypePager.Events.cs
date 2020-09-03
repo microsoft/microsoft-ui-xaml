@@ -115,7 +115,7 @@ namespace MUXControlsTestApp
             switch (this.PagerDisplayMode)
             {
                 case PagerDisplayModes.Auto:
-                    VisualStateManager.GoToState(this, NumberOfPages < 11 ? ComboBoxVisibleVisualState : NumberBoxVisibleVisualState, false);
+                    VisualStateManager.GoToState(this, NumberOfPages < AutoDisplayModeNumberOfPagesThreshold ? ComboBoxVisibleVisualState : NumberBoxVisibleVisualState, false);
                     break;
                 case PagerDisplayModes.NumberBox:
                     VisualStateManager.GoToState(this, NumberBoxVisibleVisualState, false);

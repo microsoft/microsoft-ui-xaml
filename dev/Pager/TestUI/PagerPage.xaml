@@ -203,6 +203,10 @@
                             <TextBlock Text="Current Page: "/>
                             <TextBlock x:Name="CurrentPageTextBlock" AutomationProperties.Name="CurrentPageTextBlock"/>
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="AutoDisplayMode Threshold Value: "/>
+                            <TextBlock x:Name="AutoDisplayModeThresholdValueTextBlock" AutomationProperties.Name="AutoDisplayModeThresholdValueTextBlock"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Row="5" Grid.Column="0">

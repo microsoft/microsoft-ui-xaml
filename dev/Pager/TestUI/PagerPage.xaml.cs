@@ -46,6 +46,8 @@ namespace MUXControlsTestApp
             NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
             UpdateNumberPanelContentTextBlock(this, null);
+
+            AutoDisplayModeThresholdValueTextBlock.Text = TestPager.AutoDisplayModeNumberOfPagesThresholdTestHook.ToString();
         }
 
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)

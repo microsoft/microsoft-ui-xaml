@@ -823,16 +823,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             switch (mode)
             {
                 case DisplayModes.Auto:
-                    if (elements.GetNumberOfPagesTextBlock().GetText() == "100")
+                    if (Convert.ToInt32(elements.GetNumberOfPagesTextBlock().GetText()) < Convert.ToInt32(elements.GetAutoDisplayModeThresholdValueTextBlock().GetText()))
                     {
-                        VerifyNumberBoxEnabled();
-                        VerifyComboBoxDisabled();
+                        VerifyComboBoxEnabled();
+                        VerifyNumberBoxDisabled();
                         VerifyNumberPanelDisabled();
                     }
                     else
                     {
-                        VerifyComboBoxEnabled();
-                        VerifyNumberBoxDisabled();
+                        VerifyNumberBoxEnabled();
+                        VerifyComboBoxDisabled();
                         VerifyNumberPanelDisabled();
                     }
                     break;

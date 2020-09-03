@@ -229,6 +229,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock PreviousPageTextBlock;
 
+        public TextBlock GetAutoDisplayModeThresholdValueTextBlock()
+        {
+            return GetElement(ref AutoDisplayModeThresholdValueTextBlock, "AutoDisplayModeThresholdValueTextBlock");
+        }
+        private TextBlock AutoDisplayModeThresholdValueTextBlock;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
