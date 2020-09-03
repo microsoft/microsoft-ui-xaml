@@ -529,6 +529,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetNumberPanelDisplayMode();
                 VerifyNumberPanelDisplayMode();
+
+                ChangeNumberOfPages();
+                VerifyNumberOfPages("100");
+
+                SetAutoDisplayMode();
+                VerifyAutoDisplayMode();
+
+                ChangeNumberOfPages();
+                VerifyNumberOfPages("5");
+
+                VerifyAutoDisplayMode();
             }
         }
 
@@ -580,7 +591,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             return Convert.ToInt32(GetPreviousPage());
         }
-         string GetPreviousPage()
+        string GetPreviousPage()
         {
             return elements.GetPreviousPageTextBlock().GetText();
         }
@@ -812,6 +823,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             switch (mode)
             {
                 case DisplayModes.Auto:
+                    if (elements.GetNumberOfPagesTextBlock().GetText() == "100")
+                    {
+                        VerifyNumberBoxEnabled();
+                        VerifyComboBoxDisabled();
+                        VerifyNumberPanelDisabled();
+                    }
+                    else
+                    {
+                        VerifyComboBoxEnabled();
+                        VerifyNumberBoxDisabled();
+                        VerifyNumberPanelDisabled();
+                    }
+                    break;
                 case DisplayModes.ComboBox:
                     VerifyComboBoxEnabled();
                     VerifyNumberBoxDisabled();

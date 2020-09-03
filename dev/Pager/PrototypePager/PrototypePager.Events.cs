@@ -96,6 +96,7 @@ namespace MUXControlsTestApp
             }
             
             DisablePageButtonsOnEdge();
+            OnPagerDisplayModeChanged();
         }
 
         private void OnComboBoxSelectionChanged()
