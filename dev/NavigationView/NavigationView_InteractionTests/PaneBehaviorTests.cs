@@ -951,5 +951,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Verify.IsTrue(paneCustomContentButton.BoundingRectangle.Width <= widthCompactBoundary && paneCustomContentButton.BoundingRectangle.Width > 0);
             }
         }
+    
+    
+        [TestMethod]
+        public void SelectingAnItemInLeftCompactClosesPane()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                SetNavViewWidth(ControlWidth.Medium);
+
+                CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                // On phone, the pane will initially be in the closed compact state, so open it before
+                // proceeding with the test.
+                if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
+                {
+                    using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
+                    {
+                        isPaneOpenCheckBox.Toggle();
+                        waiter.Wait();
+                    }
+                }
+
+                Wait.ForIdle();
+
+                var autoSuggestBox = FindElement.ByName("PaneAutoSuggestBox");
+                Verify.IsNotNull(autoSuggestBox);
+                autoSuggestBox.SetFocus();
+
+
+                var autoSuggestBoxEdit = new Edit(autoSuggestBox);
+                Verify.IsNotNull(autoSuggestBoxEdit);
+                // Search for something
+
+                autoSuggestBoxEdit.SendKeys("Text");
+                Wait.ForIdle();
+
+                // Select item by clicking a bit lower
+                KeyboardHelper.PressKey(Key.Down);
+                KeyboardHelper.PressKey(Key.Enter);
+
+                Verify.AreEqual(ToggleState.On, new CheckBox(FindElement.ByName("QuerySubmittedCheckbox")).ToggleState,
+                    "Should've submitted a query");
+
+                Verify.AreEqual(ToggleState.Off, new CheckBox(FindElement.ByName("IsPaneOpenCheckBox")).ToggleState,
+                    "Pane should be closed");
+            }
+        }
     }
 }

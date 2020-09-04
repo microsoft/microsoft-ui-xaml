@@ -23,6 +23,7 @@ using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewP
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
 using Microsoft.UI.Xaml.Controls;
+using System.Collections.Generic;
 
 namespace MUXControlsTestApp
 {
@@ -739,6 +740,19 @@ namespace MUXControlsTestApp
         {
             DialogWithNavView dialog = new DialogWithNavView();
             await dialog.ShowAsync();
+        }
+
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            var suggestions = new List<string>();
+            suggestions.Add(sender.Text);
+            suggestions.Add(sender.Text + "1");
+            PaneAutoSuggestBox.ItemsSource = suggestions;
+        }
+
+        private void PaneAutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            QuerySubmittedCheckbox.IsChecked = true;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.NavigationViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -193,6 +193,7 @@
                         <CheckBox x:Name="PaneToggleButtonVisiblityCheckbox" AutomationProperties.Name="PaneToggleButtonVisiblityCheckbox" Content="Show Hamburger Button" Checked="PaneToggleButtonVisiblityCheckbox_Checked" Unchecked="PaneToggleButtonVisiblityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="AutoSuggestCheckbox" AutomationProperties.Name="AutoSuggestCheckbox" Content="Set AutoSuggestBox" IsChecked="True" Checked="AutoSuggestCheckbox_Checked" Unchecked="AutoSuggestCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="HeaderVisiblityCheckbox" AutomationProperties.Name="HeaderVisiblityCheckbox" Content="Always Show Header" Checked="HeaderVisiblityCheckbox_Checked" Unchecked="HeaderVisiblityCheckbox_Unchecked" Margin="5"/>
+                        <CheckBox x:Name="QuerySubmittedCheckbox" AutomationProperties.Name="QuerySubmittedCheckbox" Content="Qeury submitted" Margin="5"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -284,7 +285,9 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
             </ScrollViewer>
 
             <muxcontrols:NavigationView.AutoSuggestBox>
-                <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="PaneAutoSuggestBox"/>
+                <AutoSuggestBox x:Name="PaneAutoSuggestBox" QueryIcon="Find"
+                    QuerySubmitted="PaneAutoSuggestBox_QuerySubmitted"
+                    AutomationProperties.Name="PaneAutoSuggestBox" TextChanged="AutoSuggestBox_TextChanged"/>
             </muxcontrols:NavigationView.AutoSuggestBox>
 
             <muxcontrols:NavigationView.PaneFooter>
