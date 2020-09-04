@@ -3795,12 +3795,9 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         {
             m_autoSuggestBoxQuerySubmittedRevoker.revoke();
         }
-        if (const auto newSuggestBox = args.NewValue())
+        if (const auto newAutoSuggestBox = args.NewValue().try_as<winrt::AutoSuggestBox>())
         {
-            if (const auto autoSuggestBox = newSuggestBox.try_as<winrt::AutoSuggestBox>())
-            {
-                m_autoSuggestBoxQuerySubmittedRevoker = autoSuggestBox.QuerySubmitted(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxQuerySubmitted });
-            }
+            m_autoSuggestBoxQuerySubmittedRevoker = newAutoSuggestBox.QuerySubmitted(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxQuerySubmitted });
         }
     }
     else if (property == s_SelectionFollowsFocusProperty)
