@@ -954,48 +954,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
     
     
         [TestMethod]
-        public void SelectingAnItemInLeftCompactClosesPane()
+        public void SelectingAnItemInLeftCompactOrLeftMinimalClosesPane()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
-                SetNavViewWidth(ControlWidth.Medium);
+                var configs = new ControlWidth[] { ControlWidth.Narrow, ControlWidth.Medium };
 
-                CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-
-                // On phone, the pane will initially be in the closed compact state, so open it before
-                // proceeding with the test.
-                if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
+                foreach(var width in configs)
                 {
-                    using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
+                    SetNavViewWidth(width);
+
+                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                    // On phone, the pane will initially be in the closed compact state, so open it before
+                    // proceeding with the test.
+                    if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
                     {
-                        isPaneOpenCheckBox.Toggle();
-                        waiter.Wait();
+                        using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
+                        {
+                            isPaneOpenCheckBox.Toggle();
+                            waiter.Wait();
+                        }
                     }
+
+                    var querySubmittedCheckbox = new CheckBox(FindElement.ByName("QuerySubmittedCheckbox"));
+                    querySubmittedCheckbox.Uncheck();
+
+                    Wait.ForIdle();
+
+                    var autoSuggestBox = FindElement.ByName("PaneAutoSuggestBox");
+                    Verify.IsNotNull(autoSuggestBox);
+                    autoSuggestBox.SetFocus();
+
+
+                    var autoSuggestBoxEdit = new Edit(autoSuggestBox);
+                    Verify.IsNotNull(autoSuggestBoxEdit);
+                    // Search for something
+
+                    autoSuggestBoxEdit.SendKeys("Text");
+                    Wait.ForIdle();
+
+                    // Select item by clicking a bit lower
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Enter);
+
+
+                    Verify.AreEqual(ToggleState.On, querySubmittedCheckbox.ToggleState,
+                        "Should've submitted a query");
+
+                    Verify.AreEqual(ToggleState.Off, new CheckBox(FindElement.ByName("IsPaneOpenCheckBox")).ToggleState,
+                        "Pane should be closed");
                 }
-
-                Wait.ForIdle();
-
-                var autoSuggestBox = FindElement.ByName("PaneAutoSuggestBox");
-                Verify.IsNotNull(autoSuggestBox);
-                autoSuggestBox.SetFocus();
-
-
-                var autoSuggestBoxEdit = new Edit(autoSuggestBox);
-                Verify.IsNotNull(autoSuggestBoxEdit);
-                // Search for something
-
-                autoSuggestBoxEdit.SendKeys("Text");
-                Wait.ForIdle();
-
-                // Select item by clicking a bit lower
-                KeyboardHelper.PressKey(Key.Down);
-                KeyboardHelper.PressKey(Key.Enter);
-
-                Verify.AreEqual(ToggleState.On, new CheckBox(FindElement.ByName("QuerySubmittedCheckbox")).ToggleState,
-                    "Should've submitted a query");
-
-                Verify.AreEqual(ToggleState.Off, new CheckBox(FindElement.ByName("IsPaneOpenCheckBox")).ToggleState,
-                    "Pane should be closed");
             }
         }
     }
