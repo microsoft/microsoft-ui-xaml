@@ -229,6 +229,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock PreviousPageTextBlock;
 
+        public Button GetIncreaseNumberOfPagesButton()
+        {
+            return GetElement(ref IncreaseNumberOfPagesButton, "IncreaseNumberOfPagesButton");
+        }
+        private Button IncreaseNumberOfPagesButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
