@@ -28,6 +28,14 @@ Hsv IncrementColorChannel(
     double minBound,
     double maxBound);
 
+Hsv FindNextNamedColor(
+    const Hsv& originalHsv,
+    winrt::ColorPickerHsvChannel channel,
+    IncrementDirection direction,
+    bool shouldWrap,
+    double minBound,
+    double maxBound);
+
 double IncrementAlphaChannel(
     double originalAlpha,
     IncrementDirection direction,
