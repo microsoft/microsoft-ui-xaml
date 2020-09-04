@@ -216,10 +216,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             {
                 var readSettingsSelectedButton = new Button(FindElement.ByName("ReadSettingsSelected"));
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
-                var bringSettingsIntoViewButton = new Button(FindElement.ByName("BringSettingsIntoViewButton"));
 
                 Log.Comment("Bring Settings into view.");
-                bringSettingsIntoViewButton.Invoke();
+                FindElement.ByName<Button>("BringSettingsIntoViewButton").Invoke();
                 Wait.ForIdle();
 
                 var settings = new Button(FindElement.ByName("Settings"));
