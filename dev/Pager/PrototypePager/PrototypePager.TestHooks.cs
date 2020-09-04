@@ -14,7 +14,5 @@ namespace MUXControlsTestApp
         public ComboBox ComboBoxDisplayTestHook;
         public ItemsRepeater NumberPanelDisplayTestHook;
         public Rectangle NumberPanelCurrentPageIdentifierTestHook;
-
-        public int AutoDisplayModeNumberOfPagesThresholdTestHook;
     }
 }

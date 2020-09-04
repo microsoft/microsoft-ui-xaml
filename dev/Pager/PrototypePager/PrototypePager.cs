@@ -112,7 +112,6 @@ namespace MUXControlsTestApp
             ComboBoxDisplayTestHook = PagerComboBox;
             NumberPanelDisplayTestHook = PagerNumberPanel;
             NumberPanelCurrentPageIdentifierTestHook = NumberPanelCurrentPageIdentifier;
-            AutoDisplayModeNumberOfPagesThresholdTestHook = AutoDisplayModeNumberOfPagesThreshold;
 
             // Attach click events
             if (FirstPageButton != null)

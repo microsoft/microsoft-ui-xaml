@@ -229,11 +229,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock PreviousPageTextBlock;
 
-        public TextBlock GetAutoDisplayModeThresholdValueTextBlock()
+        public Button GetIncreaseNumberOfPagesButton()
         {
-            return GetElement(ref AutoDisplayModeThresholdValueTextBlock, "AutoDisplayModeThresholdValueTextBlock");
+            return GetElement(ref IncreaseNumberOfPagesButton, "IncreaseNumberOfPagesButton");
         }
-        private TextBlock AutoDisplayModeThresholdValueTextBlock;
+        private Button IncreaseNumberOfPagesButton;
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {

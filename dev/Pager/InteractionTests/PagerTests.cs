@@ -34,6 +34,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     {
         PagerTestsPageElements elements;
         int previousPage = -1;
+        int AutoDisplayModeThresholdValue = 10;
         delegate void SetButtonVisibilityModeFunction(ButtonVisibilityModes mode);
 
         [ClassInitialize]
@@ -540,6 +541,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyNumberOfPages("5");
 
                 VerifyAutoDisplayMode();
+
+                IncrementNumberOfPages(4);
+                VerifyNumberOfPages("9");
+
+                VerifyAutoDisplayMode();
+
+                IncrementNumberOfPages(1);
+                VerifyNumberOfPages("10");
+
+                VerifyAutoDisplayMode();
+
+                IncrementNumberOfPages(1);
+                VerifyNumberOfPages("11");
+
+                VerifyAutoDisplayMode();
             }
         }
 
@@ -610,6 +626,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             InputHelper.LeftClick(elements.GetNumberOfPagesSetterButton());
         }
         
+        void IncrementNumberOfPages(int numberOfPagesToAdd)
+        {
+            for (int i = 0; i < numberOfPagesToAdd; i++)
+            {
+                InputHelper.LeftClick(elements.GetIncreaseNumberOfPagesButton());
+            }
+        }
+
         void VerifyNumberOfPages(string expectedPages)
         {
             Verify.AreEqual(expectedPages, elements.GetNumberOfPagesTextBlock().GetText());
@@ -823,7 +847,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             switch (mode)
             {
                 case DisplayModes.Auto:
-                    if (Convert.ToInt32(elements.GetNumberOfPagesTextBlock().GetText()) < Convert.ToInt32(elements.GetAutoDisplayModeThresholdValueTextBlock().GetText()))
+                    if (Convert.ToInt32(elements.GetNumberOfPagesTextBlock().GetText()) < AutoDisplayModeThresholdValue)
                     {
                         VerifyComboBoxEnabled();
                         VerifyNumberBoxDisabled();
