@@ -127,6 +127,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneHeaderToggleButtonColumn.set(nullptr);
     m_paneHeaderContentBorderRow.set(nullptr);
 
+    m_autoSuggestBoxQuerySubmittedRevoker.revoke();
+
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavRepeaterLoadedRevoker.revoke();
@@ -3789,6 +3791,17 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_AutoSuggestBoxProperty)
     {
         InvalidateTopNavPrimaryLayout();
+        if (args.OldValue())
+        {
+            m_autoSuggestBoxQuerySubmittedRevoker.revoke();
+        }
+        if (const auto newSuggestBox = args.NewValue())
+        {
+            if (const auto autoSuggestBox = newSuggestBox.try_as<winrt::AutoSuggestBox>())
+            {
+                m_autoSuggestBoxQuerySubmittedRevoker = autoSuggestBox.QuerySubmitted(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxQuerySubmitted });
+            }
+        }
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {
@@ -4512,6 +4525,15 @@ void NavigationView::UpdateTitleBarPadding()
         {
             GetTemplateSettings()->TopPadding(topPadding);
         }
+    }
+}
+
+void NavigationView::OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs& args)
+{
+    // When in compact or minimal, we want to close pane when an item gets selected.
+    if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
+    {
+        ClosePane();
     }
 }
 
