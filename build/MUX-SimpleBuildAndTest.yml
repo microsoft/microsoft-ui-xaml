@@ -11,7 +11,7 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
-    name: 'winuibuildagents'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages

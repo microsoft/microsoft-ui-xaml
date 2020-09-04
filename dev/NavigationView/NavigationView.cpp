@@ -151,9 +151,13 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavFooterMenuRepeaterGettingFocusRevoker.revoke();
     m_topNavFooterMenuRepeater.set(nullptr);
 
+    m_footerItemsCollectionChangedRevoker.revoke();
+
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterOverflowView.set(nullptr);
+
+    m_topNavOverflowItemsCollectionChangedRevoker.revoke();
 
     if (isFromDestructor)
     {
@@ -230,6 +234,14 @@ void NavigationView::OnFooterItemsSourceCollectionChanged(const winrt::IInspecta
     UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
 }
 
+void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    if (m_topNavRepeaterOverflowView.get().ItemsSourceView().Count() == 0)
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
+    }
+}
+
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
 {
     auto selectedItem = selectionModel.SelectedItem();
@@ -251,9 +263,10 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
     if (IsTopNavigationView())
     {
-        auto const inMainMenu = selectedIndex.GetAt(0) == c_mainMenuBlockIndex;
         // If selectedIndex does not exist, means item is being deselected through API
-        auto const isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? inMainMenu && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1)) : false;
+        auto const isInOverflow = (selectedIndex && selectedIndex.GetSize() > 1)
+            ? selectedIndex.GetAt(0) == c_mainMenuBlockIndex && !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(1))
+            : false;
         if (isInOverflow)
         {
             // We only want to close the overflow flyout and move the item on selection if it is a leaf node
@@ -347,6 +360,11 @@ void NavigationView::OnApplyTemplate()
 {
     // Stop update anything because of PropertyChange during OnApplyTemplate. Update them all together at the end of this function
     m_appliedTemplate = false;
+    auto scopeGuard = gsl::finally([this]()
+        {
+            m_fromOnApplyTemplate = false;
+        });
+    m_fromOnApplyTemplate = true;
 
     UnhookEventsAndClearFields();
 
@@ -696,15 +714,47 @@ void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& 
     m_topDataProvider.SetDataSource(items);
 
     // rebinding
+    UpdateTopNavPrimaryRepeaterItemsSource(items);
+    UpdateTopNavOverflowRepeaterItemsSource(items);
+}
+
+void NavigationView::UpdateTopNavPrimaryRepeaterItemsSource(const winrt::IInspectable& items)
+{
     if (items)
     {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
     }
     else
     {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+    }
+}
+
+void NavigationView::UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items)
+{
+    m_topNavOverflowItemsCollectionChangedRevoker.revoke();
+
+    if (const auto overflowRepeater = m_topNavRepeaterOverflowView.get())
+    {
+        if (items)
+        {
+            const auto itemsSource = m_topDataProvider.GetOverflowItems();
+            overflowRepeater.ItemsSource(itemsSource);
+
+            // We listen to changes to the overflow menu item collection so we can set the visibility of the overflow button
+            // to collapsed when it no longer has any items.
+            //
+            // Normally, MeasureOverride() kicks off updating the button's visibility, however, it is not run when the overflow menu
+            // only contains a *single* item and we
+            // - either remove that menu item or
+            // - remove menu items displayed in the NavigationView pane until there is enough room for the single overflow menu item
+            //   to be displayed in the pane
+            m_topNavOverflowItemsCollectionChangedRevoker = overflowRepeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemsSourceCollectionChanged });
+        }
+        else
+        {
+            overflowRepeater.ItemsSource(nullptr);
+        }
     }
 }
 
@@ -2342,7 +2392,18 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
         {
             winrt::VisualStateManager::GoToState(*this, visualStateName, false /*useTransitions*/);
         }
-        splitView.DisplayMode(splitViewDisplayMode);
+
+        // Updating the splitview 'DisplayMode' property in some diplaymodes causes children to be added to the popup root.
+        // This causes an exception if the NavigationView is in the popup root itself (as SplitView is trying to add children to the tree while it is being measured).
+        // Due to this, we want to defer updating this property for all calls coming from `OnApplyTemplate`to the OnLoaded function.
+        if (m_fromOnApplyTemplate)
+        {
+            m_updateVisualStateForDisplayModeFromOnLoaded = true;
+        }
+        else
+        {
+            splitView.DisplayMode(splitViewDisplayMode);
+        }
     }
 }
 
@@ -3805,6 +3866,12 @@ void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::Routed
 
 void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
+    if (m_updateVisualStateForDisplayModeFromOnLoaded)
+    {
+        m_updateVisualStateForDisplayModeFromOnLoaded = false;
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
+    }
+
     if (auto coreTitleBar = m_coreTitleBar.get())
     {
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
@@ -4537,7 +4604,14 @@ void NavigationView::UpdatePaneShadow()
         shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
         // Ensure shadow is as wide as the pane when it is open
-        shadowReceiver.Width(OpenPaneLength());
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        {
+            shadowReceiver.Width(OpenPaneLength());
+        }
+        else
+        {
+            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+        }
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
