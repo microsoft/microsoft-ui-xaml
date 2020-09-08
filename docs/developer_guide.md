@@ -34,7 +34,7 @@ https://developer.microsoft.com/windows/downloads/windows-10-sdk
 
 ## Building the repository
 
-The **MUXControls.sln** solution is used to build all projects/controls. The **MUXControlsInnerLoop.sln** solution can be used to build only select projects/controls.
+The **MUXControls.sln** solution is used to build all feature areas (such as controls, layout panels and composition elements). The **MUXControlsInnerLoop.sln** solution can be used to build only select feature areas.
 Generally, you will want to set your configuration to **Debug**, **x64**, and 
 select **MUXControlsTestApp** as your startup project in Visual Studio. To retrieve the appropriate dependencies, right click on the solution in the Solution Explorer and select "Restore NuGet Packages". 
 
