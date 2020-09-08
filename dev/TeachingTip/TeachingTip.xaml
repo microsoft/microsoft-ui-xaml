@@ -99,12 +99,12 @@
                             <VisualStateGroup x:Name="IconStates">
                                 <VisualState x:Name="Icon">
                                     <VisualState.Setters>
-                                        <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithIcon}"/>
+                                        <Setter Target="IconPresenter.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithIcon}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="NoIcon">
                                     <VisualState.Setters>
-                                        <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
+                                        <Setter Target="IconPresenter.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -558,7 +558,9 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <Border x:Name="IconBorder" Grid.Column="0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
+                                                    <ContentPresenter x:Name="IconPresenter" Grid.Column="0" Foreground="{TemplateBinding Foreground}">
+                                                        <Border Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
+                                                    </ContentPresenter>
                                                     <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
                                                         <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords"
                                                             Foreground="{ThemeResource TeachingTipTitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
