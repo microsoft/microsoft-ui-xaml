@@ -28,6 +28,9 @@ Hsv IncrementColorChannel(
     double minBound,
     double maxBound);
 
+template <typename T>
+int sgn(T val);
+
 Hsv FindNextNamedColor(
     const Hsv& originalHsv,
     winrt::ColorPickerHsvChannel channel,
