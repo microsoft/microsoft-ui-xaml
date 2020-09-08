@@ -966,8 +966,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
-                    // On phone, the pane will initially be in the closed compact state, so open it before
-                    // proceeding with the test.
+                    // Ensure pane is open.
                     if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
                     {
                         using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
