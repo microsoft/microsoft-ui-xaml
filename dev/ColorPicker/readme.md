@@ -79,7 +79,7 @@ The color picker looks for and uses the following parts in the control template.
 
 A custom slider implementation used for the sliders in the `ColorPicker` control template. These sliders are unique in that they have a gradient background rendered to correspond with a defined HSV color channel (important notes on background below). Sliders provide a one-dimensional method of modifying a color channel. They are used for the third color channel not on the `ColorSpectrum` or the alpha channel.
 
-Visually to the user, these sliders have a background rendered based on the assigned HSV color channel or alpha. For example, the background could be a gradient of the selected color from minimum saturation to maximum saturation if the slider represents the saturation channel. However, the slider itself does not draw this background gradient. The gradient is managed by the parent `ColorPicker` and shown underneath the slider as the fill of a background rectangle. For the alpha channel slider there is a further checkered background that is rendered separately and then blended using opacity. `ColorPickerSlider` and `ColorPicker` are intrinsically linked together and `ColorPickerSlider` is not useful as a stand-alone control.
+Visually to the user, these sliders have a background rendered based on the assigned HSV color channel or alpha. For example, the background could be a gradient of the selected color from minimum saturation to maximum saturation if the slider represents the saturation channel. However, the slider itself does not draw this background gradient. The gradient is managed by the parent `ColorPicker` and shown underneath the slider as the fill of a background rectangle. For the alpha channel slider there is a further checkered background that is rendered separately and then blended using opacity. `ColorPickerSlider` and `ColorPicker` are intrinsically linked together and `ColorPickerSlider` is not intended as a stand-alone control.
 
 Like the ColorSpectrum, this slider always operates in HSV color representation.
 
@@ -105,10 +105,10 @@ The color spectrum looks for and uses the following parts in the control templat
 
 * `LayoutRoot` : [Grid] The root element of the control. Changes to the size of the root element will trigger re-calculation of the spectrum.
 * `SizingGrid` : [Grid] The grid representing the actual width/height that the spectrum will be drawn to.
-* `SpectrumRectangle` : [Rectangle] The background rectangle is used to represent the color spectrum gradient. This is blended with the overlay rectangle using opacity (see notes below on rendering). This rectangle is only visible in Box shape.
-* `SpectrumEllipse` : [Ellipse] The background ellipse use to represent the color spectrum gradient. This is blended with the overlay ellipse using opacity (see notes below on rendering). This ellipse is only visible in Ring shape.
-* `SpectrumOverlayRectangle` : [Rectangle] The overlay rectangle use to represent the color spectrum gradient. This is blended with the background rectangle using opacity (see notes below on rendering). This rectangle is only visible in Box shape.
-* `SpectrumOverlayEllipse` : [Ellipse] The overlay ellipse use to represent the color spectrum gradient. This is blended with the background ellipse using opacity (see notes below on rendering). This ellipse is only visible in Ring shape.
+* `SpectrumRectangle` : [Rectangle] The background rectangle used to represent the color spectrum gradient. This is blended with the overlay rectangle using opacity (see notes below on rendering). This rectangle is only visible in Box shape.
+* `SpectrumEllipse` : [Ellipse] The background ellipse used to represent the color spectrum gradient. This is blended with the overlay ellipse using opacity (see notes below on rendering). This ellipse is only visible in Ring shape.
+* `SpectrumOverlayRectangle` : [Rectangle] The overlay rectangle used to represent the color spectrum gradient. This is blended with the background rectangle using opacity (see notes below on rendering). This rectangle is only visible in Box shape.
+* `SpectrumOverlayEllipse` : [Ellipse] The overlay ellipse used to represent the color spectrum gradient. This is blended with the background ellipse using opacity (see notes below on rendering). This ellipse is only visible in Ring shape.
 * `InputTarget` : [FrameworkElement] The control used to track pointer interaction by the user and get X/Y coordinates to change the selected color in the spectrum.
 * `SelectionEllipsePanel` : [Panel] The panel representing the selected color indicator shown on the spectrum. 
 * `ColorNameToolTip` : [ToolTip] The tool-tip used to present the selected color's displayed name to the user.
