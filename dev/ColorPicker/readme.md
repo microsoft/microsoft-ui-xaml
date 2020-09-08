@@ -91,11 +91,9 @@ The `ColorPickerSlider` has no template parts differing from the standard `Slide
 
 [Control Properties](https://docs.microsoft.com/en-us/uwp/api/microsoft.ui.xaml.controls.primitives.colorspectrum#properties), [Control Events](https://docs.microsoft.com/en-us/uwp/api/microsoft.ui.xaml.controls.primitives.colorspectrum#events)
 
-The color spectrum is the main two-dimensional graphic displaying a field of possible colors the user can select from. The spectrum always operates in HSV color representation. This is because the HSV color representation is specifically designed to describe human perception of color.
+The color spectrum is the main 2-dimensional graphic displaying a field of possible colors the user can select from. The spectrum always operates in HSV color representation. This is because the HSV color representation is specifically designed to describe human perception of color.
 
-The spectrum itself is only 2-dimensional, yet a color can have up to 4 dimensions/channels (hue, saturation, value, alpha); therefore, the two channels that should be displayed must be specified. This is done using the `Components` property which has all possible combinations of the HSV color channels excluding alpha. Each of the components specified by setting `Components` will then take an axis on the spectrum and all values interpolated between them. The third, unspecified dimension and alpha will be considered maximum when rendering the spectrum.
-
-The third channel, and alpha must be represented outside of the color spectrum itself. This is handled in the `ColorPicker` using two additional sliders.
+The spectrum itself is only 2-dimensional, yet a color can have up to 4 dimensions/channels (hue, saturation, value, alpha); therefore, the two channels that should be displayed must be specified. This is done using the `Components` property which has all possible combinations of the HSV color channels excluding alpha. Each of the components specified by setting `Components` will then take an axis on the spectrum and all values interpolated between them. The third channel, and alpha must be represented outside of the color spectrum itself. This is handled in the `ColorPicker` using two additional sliders. Note that the third dimension and alpha will be considered maximum when rendering the spectrum.
 
 The `ColorSpectrum` also maintains a cursor that visually identifies to the user the selected color. When the spectrum image is rendered (more on that below) an array of the color at every pixel in the spectrum image is stored (`m_hsvValues`). This array can become quite large, for example a 600px x 600px spectrum will build an array of 36000 unique HSV colors. When the pointer is pressed on the spectrum, the corresponding color at those X/Y pointer coordinates is looked-up in the array and set as the new selected color. The look-up is simple as the array indexes directly correspond to the pixel X/Y coordinates.
 
@@ -103,9 +101,9 @@ Note: Because the `ColorSpectrum` works in HSV, it is very important that the `H
 
 ### Template Parts
 
-The color picker looks for and uses the following parts in the control template. 
+The color spectrum looks for and uses the following parts in the control template. 
 
-* `LayoutRoot` : [Grid] The root element of the control.
+* `LayoutRoot` : [Grid] The root element of the control. Changes to the size of the root element will trigger re-calculation of the spectrum.
 * `SizingGrid` : [Grid] The grid representing the actual width/height that the spectrum will be drawn to.
 * `SpectrumRectangle` : [Rectangle] The background rectangle use to represent the color spectrum gradient. This is blended with the overlay rectangle using opacity (see notes below on rendering). This rectangle is only visible in Box shape.
 * `SpectrumEllipse` : [Ellipse] The background ellipse use to represent the color spectrum gradient. This is blended with the overlay ellipse using opacity (see notes below on rendering). This ellipse is only visible in Ring shape.
@@ -132,8 +130,12 @@ Provides a way of drawing the `ColorSpectrum` background using the composition A
 
 ## Ideas for Future Implementations / Lessons Learned
 
-RGB and HSV channels are identified separately in most places. For example, HSV channels are represented by the `ColorPickerHsvChannel` enum. Since HSV is used as the primary representation internally there is no corresponding enum for RGB channels. In the control template, however, there are separate controls depending on the active color representation RGB/HSV. This means there is a duplication of a large number of controls. These could all be unified, for example, by referring to both hue and red as channel 1, etc. This greatly simplifies the effort required in the control template itself and removes duplicate controls. Instead, the same input controls can be used and only the active color representation set. Internal representation could add an enum for Channel1, Channel2, Channel3 and Alpha.
+* RGB and HSV channels are identified separately in most places. For example, HSV channels are represented by the `ColorPickerHsvChannel` enum. Since HSV is used as the primary representation internally there is no corresponding enum for RGB channels. In the control template, however, there are separate controls depending on the active color representation RGB/HSV. This means there is a duplication of a large number of controls. These could all be unified, for example, by referring to both hue and red as channel 1, etc. This greatly simplifies the effort required in the control template itself and removes duplicate controls. Instead, the same input controls can be used and only the active color representation set. Internal representation could add an enum for Channel1, Channel2, Channel3 and Alpha.
 
-The 'ThirdDimension' slider really should not be named 'dimension'. 'Channel' is the standardized term so 'ThirdChannelSlider' would be a better choice. 'Components' is also the term used in control properties.
+* The 'ThirdDimension' slider really should not be named 'dimension'. 'Channel' is the standardized term so 'ThirdChannelSlider' would be a better choice. 'Components' is also the term used in control properties.
 
-HSV color representation should be externally exposed by the color picker for those applications that require higher levels of precision. A new HsvColor struct should be added to the existing RGB struct already in WinUI.
+* HSV color representation should be externally exposed by the color picker for those applications that require higher levels of precision. A new HsvColor struct should be added to the existing RGB struct already in WinUI.
+
+* The `ColorPickerSlider` could render its own background and be made a completely independent control. This would simplify the `ColorPicker` template and code-behind considerably.
+
+* Composting of the preview/slider backgrounds with a checkered background underneath can be done all at once in code-behind when the background image is calculated. This would remove several template parts and greatly simplify the overall template. The affect on performance should be minimal and not detectable.
