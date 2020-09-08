@@ -438,6 +438,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadioButtons", "dev\RadioBu
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioButtons_TestUI", "dev\RadioButtons\TestUI\RadioButtons_TestUI.shproj", "{833A6892-A079-469A-81C7-54D4CD88029B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioButtons_APITests", "dev\RadioButtons\APITests\RadioButtons_APITests.shproj", "{0352711A-D79A-4D82-8255-916D29522AE0}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioButtons_InteractionTests", "dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.shproj", "{42D6E8F9-59FE-4CA5-83EB-69A7622F5742}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonStyles", "CommonStyles", "{807E57C8-F3E8-4049-AB88-BE3D3285B441}"
@@ -661,6 +663,7 @@ Global
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
 		dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems*{00c52fd5-42fd-33b4-84a0-795c9b5a014d}*SharedItemsImports = 13
 		dev\lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems*{02ed27be-97e4-4327-bb96-8b3fa6869c48}*SharedItemsImports = 13
+		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{0352711a-d79a-4d82-8255-916d29522ae0}*SharedItemsImports = 13
 		dev\Telemetry\Telemetry.vcxitems*{0db22ba9-6053-459b-baf5-e82ea1c78ab3}*SharedItemsImports = 9
 		dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.projitems*{0ec52fd5-42fe-3eb4-84e0-79ec9b5a014e}*SharedItemsImports = 13
 		dev\ProgressBar\ProgressBar.vcxitems*{0f61c8bd-d066-4812-a02b-e95ce18a985d}*SharedItemsImports = 9
@@ -923,6 +926,7 @@ Global
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\RatingControl\APITests\RatingControl_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -1016,6 +1020,7 @@ Global
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\RatingControl\APITests\RatingControl_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1507,6 +1512,7 @@ Global
 		{D232C226-CD18-4509-B848-80083AA9892B} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{E770A6D3-7252-4E8A-BD10-FA8524DF8C83} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{833A6892-A079-469A-81C7-54D4CD88029B} = {D232C226-CD18-4509-B848-80083AA9892B}
+		{0352711A-D79A-4D82-8255-916D29522AE0} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{42D6E8F9-59FE-4CA5-83EB-69A7622F5742} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{807E57C8-F3E8-4049-AB88-BE3D3285B441} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{3A07FA59-C5C1-4B46-8B31-043F9CA91226} = {807E57C8-F3E8-4049-AB88-BE3D3285B441}
