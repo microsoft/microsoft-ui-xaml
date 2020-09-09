@@ -840,7 +840,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var navView = new NavigationView();
                 MUXControlsTestApp.App.TestContentRoot = navView;
 
-                navView.MenuItemsSource = new ObservableCollection<String> { "Item 1", "Item 2" }; ;
+                navView.MenuItemsSource = new ObservableCollection<string> { "Item 1", "Item 2" };
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
 
                 MUXControlsTestApp.App.TestContentRoot.UpdateLayout();
@@ -848,11 +848,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var menuItem = "Item 2";
                 // Get container for item
                 var itemContainer = navView.ContainerFromMenuItem(menuItem) as NavigationViewItem;
-                bool correctContainerReturned = itemContainer != null && (itemContainer.Content as String) == menuItem;
+                bool correctContainerReturned = itemContainer != null && (itemContainer.Content as string) == menuItem;
                 Verify.IsTrue(correctContainerReturned, "Correct container should be returned for passed in menu item.");
 
                 // Get item for container
-                var returnedItem = navView.MenuItemFromContainer(itemContainer) as String;
+                var returnedItem = navView.MenuItemFromContainer(itemContainer) as string;
                 bool correctItemReturned = returnedItem != null && returnedItem == menuItem;
                 Verify.IsTrue(correctItemReturned, "Correct item should be returned for passed in container.");
 
@@ -1071,6 +1071,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // Clearing the MenuItemsSource collection should not crash the app
                 Log.Comment("Clear the MenuItemsSource collection");
                 itemsSource.Clear();
+            });
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalNavigationTopModeMenuItemsSourceDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                Content = navView;
+
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
+                var childItem = new NavigationViewItem() { Content = "Item 1.1" };
+                var parentItem = new NavigationViewItem() { Content = "Item 1", MenuItemsSource = new ObservableCollection<NavigationViewItem>() { childItem } };
+                navView.MenuItemsSource = new ObservableCollection<NavigationViewItem>() { parentItem };             
+
+                Content.UpdateLayout();
             });
         }
     }
