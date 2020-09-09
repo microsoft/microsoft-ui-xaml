@@ -83,9 +83,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void ValidateSelectionChangedEvent()
         {
-            bool item1InitiallySelected = false;
-            bool item2Selected = false;
-            bool clearedSelection = false;
+            int testCaseNumber = -1; // No valid test case
             int selectionChangedRaisedCounter = 0;
 
             RadioButtons radioButtons = null;
@@ -108,22 +106,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Select item \"1\" as the initial selection");
-                item1InitiallySelected = true;
+                testCaseNumber = 0;
                 radioButtons.SelectedIndex = 1;
-                item1InitiallySelected = false;
 
                 Verify.AreEqual(1, selectionChangedRaisedCounter, "The SelectionChanged event should have been raised 1 time in total");
 
                 Log.Comment("Select item \"2\"");
-                item2Selected = true;
+                testCaseNumber = 1;
                 radioButtons.SelectedIndex = 2;
-                item2Selected = false;
                 Verify.AreEqual(2, selectionChangedRaisedCounter, "The SelectionChanged event should have been raised 2 times in total");
 
                 Log.Comment("Clear selection");
-                clearedSelection = true;
+                testCaseNumber = 2;
                 radioButtons.SelectedIndex = -1;
-                clearedSelection = false;
                 Verify.AreEqual(3, selectionChangedRaisedCounter, "The SelectionChanged event should have been raised 3 times in total");
             });
 
@@ -132,33 +127,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 selectionChangedRaisedCounter++;
 
                 bool testCondition = false;
-                if (item1InitiallySelected)
+                switch (testCaseNumber)
                 {
-                    testCondition = e.AddedItems.Count == 1 && e.AddedItems[0] is string s1 && s1 == "1";
-                    Verify.IsTrue(testCondition, "Initial selection: SelectionChangedEventArgs.AddedItems should have contained the single item \"1\"");
+                    case 0: // Verify selection of item "1" as initial selection
+                        testCondition = e.AddedItems.Count == 1 && e.AddedItems[0] is string s1 && s1 == "1";
+                        Verify.IsTrue(testCondition, "Initial selection: SelectionChangedEventArgs.AddedItems should have contained the single item \"1\"");
 
-                    testCondition = e.RemovedItems.Count == 0;
-                    Verify.IsTrue(testCondition, "Initial selection: SelectionChangedEventArgs.RemovedItems should have been empty");
-                }
-                else if (item2Selected)
-                {
-                    testCondition = e.AddedItems.Count == 1 && e.AddedItems[0] is string s2 && s2 == "2";
-                    Verify.IsTrue(testCondition, "Updated selection: SelectionChangedEventArgs.AddedItems should have contained the single item \"2\"");
+                        testCondition = e.RemovedItems.Count == 0;
+                        Verify.IsTrue(testCondition, "Initial selection: SelectionChangedEventArgs.RemovedItems should have been empty");
+                        break;
+                    case 1: // Verify selection of item "2" while item "1" is selected
+                        testCondition = e.AddedItems.Count == 1 && e.AddedItems[0] is string s2 && s2 == "2";
+                        Verify.IsTrue(testCondition, "Updated selection: SelectionChangedEventArgs.AddedItems should have contained the single item \"2\"");
 
-                    testCondition = e.RemovedItems.Count == 1 && e.RemovedItems[0] is string s3 && s3 == "1";
-                    Verify.IsTrue(testCondition, "Updated selection: SelectionChangedEventArgs.RemovedItem should have contained the single item \"1\"");
-                }
-                else if (clearedSelection)
-                {
-                    testCondition = e.AddedItems.Count == 0;
-                    Verify.IsTrue(testCondition, "Cleared selection: SelectionChangedEventArgs.AddedItems should have been empty");
+                        testCondition = e.RemovedItems.Count == 1 && e.RemovedItems[0] is string s3 && s3 == "1";
+                        Verify.IsTrue(testCondition, "Updated selection: SelectionChangedEventArgs.RemovedItem should have contained the single item \"1\"");
+                        break;
+                    case 2: // Verify clearing selection
+                        testCondition = e.AddedItems.Count == 0;
+                        Verify.IsTrue(testCondition, "Cleared selection: SelectionChangedEventArgs.AddedItems should have been empty");
 
-                    testCondition = e.RemovedItems.Count == 1 && e.RemovedItems[0] is string s4 && s4 == "2";
-                    Verify.IsTrue(testCondition, "Cleared selection: SelectionChangedEventArgs.RemovedItems should have contained the single item \"2\"");
-                }
-                else
-                {
-                    Verify.IsTrue(false, "OnSelectionChangedEvent: Shouldn't have reached here, test needs to be updated");
+                        testCondition = e.RemovedItems.Count == 1 && e.RemovedItems[0] is string s4 && s4 == "2";
+                        Verify.IsTrue(testCondition, "Cleared selection: SelectionChangedEventArgs.RemovedItems should have contained the single item \"2\"");
+                        break;
                 }
             }
         }

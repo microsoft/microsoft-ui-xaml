@@ -820,6 +820,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     // Keyboard selection requires RS3+ keyboarding behavior
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
                     {
+                        TapOnItem(3);
+                        VerifySelectedFocusedIndex(3);
+
                         Log.Comment("Select next item by pressing the keyboard down arrow key");
                         KeyboardHelper.PressKey(Key.Down);
                         VerifySelectedFocusedIndex(4);
