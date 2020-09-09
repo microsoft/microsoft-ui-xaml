@@ -820,12 +820,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     // Keyboard selection requires RS3+ keyboarding behavior
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
                     {
+                        // Make sure item 3 is focused
                         TapOnItem(3);
                         VerifySelectedFocusedIndex(3);
 
                         Log.Comment("Select next item by pressing the keyboard down arrow key");
                         KeyboardHelper.PressKey(Key.Down);
                         VerifySelectedFocusedIndex(4);
+
+                        Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
+
+                        Log.Comment("Clear event logs");
+                        ClearRadioButtonsEventLogs();
+
+                        Log.Comment("Move focus to the next item");
+                        // Make sure item 4 is focused
+                        TapOnItem(4);
+                        VerifySelectedFocusedIndex(4);
+
+                        KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
+                        KeyboardHelper.PressKey(Key.Down);
+                        KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                        VerifySelectedIndex(4);
+                        VerifyFocusedIndex(5);
+
+                        Log.Comment("Select focused item by pressing the keyboard space key");
+                        KeyboardHelper.PressKey(Key.Space);
+                        VerifySelectedFocusedIndex(5);
 
                         Verify.AreEqual(1, GetSelectionChangedRaiseCount(), "SelectionChanged event should have been raised exactly once");
 
