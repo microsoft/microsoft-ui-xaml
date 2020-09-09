@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -387,10 +387,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void CloseFlyout(CommandBarFlyout flyout)
         {
             var isOpen = true;
-            RunOnUIThread.Execute(() =>
+            
+            if(ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Controls.Primitives.FlyoutBase","IsOpen"))
             {
-                isOpen = flyout.IsOpen;
-            });
+                RunOnUIThread.Execute(() =>
+                {
+                    isOpen = flyout.IsOpen;
+                });
+            }
 
             if(!isOpen)
             {
