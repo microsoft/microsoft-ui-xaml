@@ -33,10 +33,11 @@ namespace MUXControlsTestApp
         private ItemsRepeater PagerNumberPanel;
         private Rectangle NumberPanelCurrentPageIdentifier;
 
+        private static int AutoDisplayModeNumberOfPagesThreshold = 10; // This integer determines when to switch between NumberBoxDisplayMode and ComboBoxDisplayMode 
         private static int MaxNumberOfElementsInRepeater = 7;
         private static int NumberPanelMiddleStateStartIndex = 5;
         private int NumberPanelEndStateStartIndex;
-
+        
         private static IconElement LeftEllipse = new SymbolIcon(Symbol.More);
         private static IconElement RightEllipse = new SymbolIcon(Symbol.More);
 
