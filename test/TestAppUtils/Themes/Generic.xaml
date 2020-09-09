@@ -52,6 +52,7 @@
                                     <ToggleButton
                                         x:Name="InnerFrameInLabDimensions"
                                         MaxHeight="25"
+                                        IsChecked="True"
                                         Padding="0"  Margin="0,0,4,0"
                                         AutomationProperties.AutomationId="__InnerFrameInLabDimensions"
                                         Content="Render innerframe in lab dimensions"/>
@@ -84,7 +85,7 @@
                                 <CheckBox x:Name="DebuggerAttachedCheckBox" AutomationProperties.AutomationId="__DebuggerAttachedCheckBox" Style="{StaticResource AutomationHelperStyle}" />
                                 <TextBox x:Name="UnhandledExceptionReportingTextBox" AutomationProperties.AutomationId="__UnhandledExceptionReportingTextBox" Style="{StaticResource AutomationHelperStyle}" AcceptsReturn="True" />
                                 <CheckBox x:Name="TestContentLoadedCheckBox" IsChecked="False" AutomationProperties.AutomationId="__TestContentLoadedCheckBox" Content="TestContentLoadedCheckbox"  Style="{StaticResource AutomationHelperStyle}" />
-
+                                <CheckBox x:Name="KeyInputReceived" IsChecked="True" AutomationProperties.AutomationId="__KeyInputReceived" Style="{StaticResource AutomationHelperStyle}" />
                             </Grid>
 
                             <ContentPresenter Grid.Row="2"

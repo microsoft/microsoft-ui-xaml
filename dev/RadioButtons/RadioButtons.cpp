@@ -29,6 +29,8 @@ RadioButtons::RadioButtons()
     AccessKeyInvoked({ this, &RadioButtons::OnAccessKeyInvoked });
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
 
+    m_radioButtonsElementFactory = winrt::make_self<RadioButtonsElementFactory>();
+
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
     // To ensure proper lifetime management we create revokers for these elements and attach
     // the revokers to the child radio button via this attached property.  This way, if/when the child
@@ -50,6 +52,8 @@ void RadioButtons::OnApplyTemplate()
     m_repeater.set([this, controlProtected]() {
         if (auto const repeater = GetTemplateChildT<winrt::ItemsRepeater>(s_repeaterName, controlProtected))
         {
+            repeater.ItemTemplate(*m_radioButtonsElementFactory);
+
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementPrepared });
             m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementClearing });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementIndexChanged });
@@ -496,6 +500,10 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateSelectedItem();
     }
+    else if (property == s_ItemTemplateProperty)
+    {
+        UpdateItemTemplate();
+    }
 }
 
 winrt::UIElement RadioButtons::ContainerFromIndex(int index)
@@ -608,6 +616,11 @@ bool RadioButtons::IsRepeaterOwnedRadioButton(const winrt::DependencyObject& ele
     }
 
     return false;
+}
+
+void RadioButtons::UpdateItemTemplate()
+{
+    m_radioButtonsElementFactory->UserElementFactory(ItemTemplate());
 }
 
 // Test Hooks helpers, only function when m_testHooksEnabled == true

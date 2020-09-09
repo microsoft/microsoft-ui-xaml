@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "ItemTemplateWrapper.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include "RadioButtonsElementFactory.h"
@@ -11,9 +12,31 @@ RadioButtonsElementFactory::RadioButtonsElementFactory()
 {
 }
 
+void RadioButtonsElementFactory::UserElementFactory(const winrt::IInspectable& newValue)
+{
+    m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
+    if (!m_itemTemplateWrapper)
+    {
+        // ItemTemplate set does not implement IElementFactoryShim. We also want to support DataTemplate.
+        if (auto const dataTemplate = newValue.try_as<winrt::DataTemplate>())
+        {
+            m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+        }
+    }
+}
+
 winrt::UIElement RadioButtonsElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
-    if (auto const radioButton = args.Data().try_as<winrt::RadioButton>())
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
+        if (itemTemplateWrapper)
+        {
+            return itemTemplateWrapper.GetElement(args).as<winrt::IInspectable>();
+        }
+        return args.Data();
+    }();
+
+    // Element is already a RadioButton, so we just return it.
+    if (auto const radioButton = newContent.try_as<winrt::RadioButton>())
     {
         // The current default behavior of the RadioButton control is that multiple RadioButton controls with the _same_
         // visual parent will be grouped together. As a consequence, if a RadioButton is to be selected while another RadioButton
@@ -32,16 +55,22 @@ winrt::UIElement RadioButtonsElementFactory::GetElementCore(const winrt::Element
         parentGrid.Children().Append(radioButton);
         return parentGrid;
     }
-    else
-    {
-        auto const newRadioButton = winrt::RadioButton{};
-        newRadioButton.Content(args.Data());
 
-        // See the comment above as to why we wrap the RadioButton in a Grid.
-        auto const parentGrid = winrt::Grid{};
-        parentGrid.Children().Append(newRadioButton);
-        return parentGrid;
+    // Element is not a RadioButton. We'll wrap it in a RadioButton now.
+    auto const newRadioButton = winrt::RadioButton{};
+    newRadioButton.Content(args.Data());
+
+    // If a user provided item template exists, we pass the template down to the ContentPresenter of the RadioButton.
+    if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
+    {
+        newRadioButton.ContentTemplate(itemTemplateWrapper->Template());
     }
+
+    // See the comment above as to why we wrap the RadioButton in a Grid.
+    auto const parentGrid = winrt::Grid{};
+    parentGrid.Children().Append(newRadioButton);
+
+    return parentGrid;
 }
 
 void RadioButtonsElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)

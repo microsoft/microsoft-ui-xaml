@@ -639,7 +639,7 @@
                                     BorderThickness=0,0,0,0
                                     BorderBrush=[NULL]
                                     Background=#00FFFFFF
-                                    Width=24
+                                    Width=40
                                     Name=ExpandCollapseChevron
                                     Margin=-16,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
@@ -890,7 +890,7 @@
                                     BorderThickness=0,0,0,0
                                     BorderBrush=[NULL]
                                     Background=#00FFFFFF
-                                    Width=24
+                                    Width=40
                                     Name=ExpandCollapseChevron
                                     Margin=-16,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
@@ -1006,12 +1006,13 @@
                       Visibility=Collapsed
                       RenderSize=0,0
           [Windows.UI.Xaml.Controls.Button]
-              Padding=12,0,12,0
+              Padding=8,5,8,6
               Foreground=#FF000000
               BorderThickness=1,1,1,1
-              BorderBrush=#00FFFFFF
+              BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
               Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
               CornerRadius=0,0,0,0
+              Width=48
               Name=TopNavOverflowButton
               Margin=0,0,0,0
               Height=40
@@ -1521,8 +1522,8 @@
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                      Width=48
                       Name=LayoutRoot
+                      MinWidth=48
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -1660,9 +1661,9 @@
                           BorderThickness=0,0,0,0
                           BorderBrush=[NULL]
                           Background=#00FFFFFF
-                          Width=24
+                          Width=40
                           Name=ExpandCollapseChevron
-                          Margin=-16,0,0,0
+                          Margin=0,0,0,0
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#99FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
@@ -2143,7 +2144,7 @@
                             RenderSize=124,19
                 [Windows.UI.Xaml.Controls.Canvas]
                     Background=[NULL]
-                    Width=300
+                    Width=332
                     Name=PaneShadowReceiver
                     Margin=0,-32,-32,-32
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -2151,7 +2152,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=300,624
+                    RenderSize=332,624
             [Windows.UI.Xaml.Shapes.Rectangle]
                 StrokeThickness=1
                 Name=LightDismissLayer

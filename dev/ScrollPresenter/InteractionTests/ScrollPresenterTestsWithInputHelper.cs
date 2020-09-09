@@ -677,7 +677,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
+        //Test failures with keyboard/gamepad/mousewheel input #1329
         [TestMethod]
         [TestProperty("Description", "Stretch an Image in a ScrollPresenter with the mouse wheel.")]
         [TestProperty("Ignore", "True")]

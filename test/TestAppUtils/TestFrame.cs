@@ -10,6 +10,7 @@ using Windows.System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Input;
 
 // The Templated Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -39,12 +40,23 @@ namespace MUXControlsTestApp
         private TextBox _unhandledExceptionReportingTextBox = null;
         private Type _mainPageType = null;
         private ContentPresenter _pagePresenter = null;
+        private CheckBox _keyInputReceived = null;
 
         public TestFrame(Type mainPageType)
         {
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
             Application.Current.UnhandledException += OnUnhandledException;
+
+            AddHandler(FrameworkElement.KeyDownEvent, new KeyEventHandler(TestFrame_KeyDown) , true);
+        }
+
+        private void TestFrame_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if(_keyInputReceived != null)
+            {
+                _keyInputReceived.IsChecked = true;
+            }
         }
 
         public void ChangeBarVisibility(Visibility visibility)
@@ -102,7 +114,16 @@ namespace MUXControlsTestApp
             _pagePresenter = (ContentPresenter)GetTemplateChild("PagePresenter");
 
             _innerFrameInLabDimensions = (ToggleButton)GetTemplateChild("InnerFrameInLabDimensions");
-            _innerFrameInLabDimensions.Click += _innerFrameInLabDimensions_Click;
+            _innerFrameInLabDimensions.Checked += _innerFrameInLabDimensions_Checked;
+            _innerFrameInLabDimensions.Unchecked += _innerFrameInLabDimensions_Unchecked;
+            if(_innerFrameInLabDimensions.IsChecked == true)
+            {
+                _innerFrameInLabDimensions_Checked(null, null);
+            }
+            else
+            {
+                _innerFrameInLabDimensions_Unchecked(null, null);
+            }
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
@@ -134,6 +155,7 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
 
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
+            _keyInputReceived = (CheckBox)GetTemplateChild("KeyInputReceived");
         }
 
         private void _innerFrameInLabDimensions_Click(object sender, RoutedEventArgs e)
@@ -150,6 +172,20 @@ namespace MUXControlsTestApp
                 _pagePresenter.ClearValue(MaxWidthProperty);
                 _pagePresenter.ClearValue(MaxHeightProperty);
             }
+        }
+
+        private void _innerFrameInLabDimensions_Checked(object sender, RoutedEventArgs e)
+        {
+            // Enter CI mode
+            _pagePresenter.MaxWidth = 1024;
+            _pagePresenter.MaxHeight = 664;
+        }
+
+        private void _innerFrameInLabDimensions_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Leave CI mode
+            _pagePresenter.ClearValue(MaxWidthProperty);
+            _pagePresenter.ClearValue(MaxHeightProperty);
         }
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
