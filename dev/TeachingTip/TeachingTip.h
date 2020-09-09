@@ -88,6 +88,8 @@ private:
     void UpdateButtonsState();
     void UpdateDynamicHeroContentPlacementToTop();
     void UpdateDynamicHeroContentPlacementToBottom();
+    void DoUpdateDynamicHeroContentPlacementToTop();
+    void DoUpdateDynamicHeroContentPlacementToBottom();
 
     static void OnPropertyChanged(
         const winrt::DependencyObject& sender,

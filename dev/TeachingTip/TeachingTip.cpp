@@ -106,6 +106,7 @@ void TeachingTip::OnApplyTemplate()
     UpdateButtonsState();
     OnIsLightDismissEnabledChanged();
     OnIconSourceChanged();
+    OnHeroContentPlacementChanged();
 
     EstablishShadows();
 
@@ -748,12 +749,17 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToTop()
 {
     if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        DoUpdateDynamicHeroContentPlacementToTop();
+    }
+}
+
+void TeachingTip::DoUpdateDynamicHeroContentPlacementToTop()
+{
+    winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+    if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
+    {
+        m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+        TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
     }
 }
 
@@ -761,12 +767,17 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 {
     if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        DoUpdateDynamicHeroContentPlacementToBottom();
+    }
+}
+
+void TeachingTip::DoUpdateDynamicHeroContentPlacementToBottom()
+{
+    winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+    if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
+    {
+        m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+        TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
     }
 }
 
@@ -1002,22 +1013,18 @@ void TeachingTip::OnHeroContentPlacementChanged()
     switch (HeroContentPlacement())
     {
     case winrt::TeachingTipHeroContentPlacementMode::Auto:
+        // If there is no target for the TeachingTip we don't display a tail. As such, we will always display the hero content
+        // in the header of the TeachingTip.
+        if (!Target())
+        {
+            DoUpdateDynamicHeroContentPlacementToTop();
+        }
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Top:
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        DoUpdateDynamicHeroContentPlacementToTop();
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Bottom:
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        DoUpdateDynamicHeroContentPlacementToBottom();
         break;
     }
 
