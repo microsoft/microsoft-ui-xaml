@@ -166,8 +166,6 @@ private:
     void UpdateVisualState(bool useTransitions = false);
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
-    void UpdateNavigationViewUseSystemVisual();
-    static void PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual);
     void UpdatePaneShadow();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
@@ -323,7 +321,6 @@ private:
     bool ShouldPreserveNavigationViewRS3Behavior();
 
     bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
-    bool ShouldShowFocusVisual();
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void FocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);

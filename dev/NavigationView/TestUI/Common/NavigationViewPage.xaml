@@ -52,6 +52,12 @@
                     </muxcontrols:NavigationViewItem.Content>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
+                <muxcontrols:NavigationViewItemSeparator />
+                <muxcontrols:NavigationViewItem x:Name="HasChildItem" AutomationProperties.Name="HasChildItem" Content="Item with child">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem x:Name="ChildItem" AutomationProperties.Name="ChildItem" Content="Child Item Content" Icon="Document" />
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
             </muxcontrols:NavigationView.MenuItems>
 
             <ScrollViewer Margin="8,0,0,0">
@@ -271,6 +277,20 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Button x:Name="ContentDialogNavViewButton" AutomationProperties.Name="ContentDialogNavViewButton" Click="ContentDialogNavViewButton_Click">Open NavView in ContentDialog</Button>
                         </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <Button x:Name="BringSettingsIntoViewButton" AutomationProperties.Name="BringSettingsIntoViewButton" Click="BringSettingsIntoViewButton_Click"
+                                Content="Bring Settings into view"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0 5">
+                        <Button x:Name="GetTopLevelNavViewItemContentPresenterMarginButton" AutomationProperties.Name="GetTopLevelNavViewItemContentPresenterMarginButton"
+                                Content="GetTopLevelNavViewItemContentPresenterMargin" Margin="0,0,5,0" Click="GetTopLevelNavViewItemContentPresenterMarginButton_Click"/>
+                        <Button x:Name="GetChildNavViewItemContentPresenterMarginButton" AutomationProperties.Name="GetChildNavViewItemContentPresenterMarginButton"
+                                Content="GetChildNavViewItemContentPresenterMargin" Margin="0,0,2,0" Click="GetChildNavViewItemContentPresenterMarginButton_Click" />
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavViewItemContentPresenter.Margin:</TextBlock>
+                        <TextBlock x:Name="NavViewItemContentPresenterMarginTextBlock" AutomationProperties.Name="NavViewItemContentPresenterMarginTextBlock" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="5">
