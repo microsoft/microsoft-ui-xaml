@@ -7,8 +7,8 @@ namespace winrt::AppTestAutomationHelpers::implementation
 {
     struct IdleSynchronizer : IdleSynchronizerT<IdleSynchronizer>
     {
-        IdleSynchronizer(winrt::Windows::System::DispatcherQueue dispatcherQueue);
-        
+        IdleSynchronizer(winrt::Windows::UI::Core::CoreDispatcher dispatcher);
+
         winrt::hstring TryWait();
 
         ULONGLONG TickCountBegin;
@@ -40,7 +40,7 @@ namespace winrt::AppTestAutomationHelpers::implementation
         const wchar_t* s_hasBuildTreeWorksHandleName = L"HasBuildTreeWorks";
         const wchar_t* s_buildTreeServiceDrainedHandleName = L"BuildTreeServiceDrained";
 
-        winrt::Windows::System::DispatcherQueue m_dispatcherQueue{ nullptr };
+        winrt::Windows::UI::Core::CoreDispatcher m_coreDispatcher{ nullptr };
 
         ::AppTestAutomationHelpers::Handle m_hasAnimationsHandle;
         ::AppTestAutomationHelpers::Handle m_animationsCompleteHandle;

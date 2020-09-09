@@ -16,14 +16,14 @@ namespace MUXControlsTestApp.Utilities
     class IdleSynchronizer
     {
         private static IdleSynchronizer instance = null;
-        
+
         public static IdleSynchronizer Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    throw new Exception("Init() must be called on the UI thread before retrieving Instance.");
+                    instance = new IdleSynchronizer(CoreApplication.MainView.Dispatcher);
                 }
 
                 return instance;
@@ -32,21 +32,9 @@ namespace MUXControlsTestApp.Utilities
 
         private AppTestAutomationHelpers.IdleSynchronizer _idleSynchronizerImpl;
 
-        private IdleSynchronizer(DispatcherQueue dispatcherQueue)
+        public IdleSynchronizer(CoreDispatcher dispatcher)
         {
-            _idleSynchronizerImpl = new AppTestAutomationHelpers.IdleSynchronizer(dispatcherQueue);
-        }
-        
-        public static void Init()
-        {
-            DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            
-            if (dispatcherQueue == null)
-            {
-                throw new Exception("Init() must be called on the UI thread.");
-            }
-            
-            instance = new IdleSynchronizer(dispatcherQueue);
+            _idleSynchronizerImpl = new AppTestAutomationHelpers.IdleSynchronizer(dispatcher);
         }
 
         public static void Wait()

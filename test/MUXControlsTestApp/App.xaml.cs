@@ -15,7 +15,6 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Common;
-using MUXControlsTestApp.Utilities;
 
 
 #if USING_TAEF
@@ -284,8 +283,6 @@ namespace MUXControlsTestApp
 
             // Ensure the current window is active
             Window.Current.Activate();
-
-            IdleSynchronizer.Init();
 
             // If there are multiple arguments we assume we're being launched as a TAEF AppX test, so start up the TAEF dispatcher.
             if (e.Arguments.Length > 0)

@@ -36,18 +36,18 @@ namespace
         return OpenNamedEvent(::GetCurrentProcessId(), threadId, eventNamePrefix);
     }
 
-    DWORD GetUIThreadId(winrt::Windows::System::DispatcherQueue dispatcherQueue)
+    DWORD GetUIThreadId(winrt::Windows::UI::Core::CoreDispatcher dispatcher)
     {
         DWORD threadId = 0;
-        if (dispatcherQueue.HasThreadAccess())
+        if (dispatcher.HasThreadAccess())
         {
             threadId = ::GetCurrentThreadId();
         }
         else
         {
             Event runCompleted;
-            dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Normal,
-                winrt::Windows::System::DispatcherQueueHandler([&runCompleted, &threadId]()
+            auto asyncOp = dispatcher.RunAsync(winrt::Windows::UI::Core::CoreDispatcherPriority::Normal,
+                winrt::Windows::UI::Core::DispatchedHandler([&runCompleted, &threadId]()
                     {
                         threadId = ::GetCurrentThreadId();
                         runCompleted.Set();
@@ -59,25 +59,25 @@ namespace
         return threadId;
     }
 
-    inline Handle OpenNamedEvent(winrt::Windows::System::DispatcherQueue dispatcherQueue, const wchar_t* eventNamePrefix)
+    inline Handle OpenNamedEvent(winrt::Windows::UI::Core::CoreDispatcher dispatcher, const wchar_t* eventNamePrefix)
     {
-        return OpenNamedEvent(::GetCurrentProcessId(), GetUIThreadId(dispatcherQueue), eventNamePrefix);
+        return OpenNamedEvent(::GetCurrentProcessId(), GetUIThreadId(dispatcher), eventNamePrefix);
     }
 }
 
 namespace winrt::AppTestAutomationHelpers::implementation
 {
-    IdleSynchronizer::IdleSynchronizer(winrt::Windows::System::DispatcherQueue dispatcherQueue) 
-        : m_dispatcherQueue(dispatcherQueue)
-        , m_hasAnimationsHandle(OpenNamedEvent(m_dispatcherQueue, s_hasAnimationsHandleName))
-        , m_animationsCompleteHandle(OpenNamedEvent(m_dispatcherQueue, s_animationsCompleteHandleName))
-        , m_hasDeferredAnimationOperationsHandle(OpenNamedEvent(m_dispatcherQueue, s_hasDeferredAnimationOperationsHandleName))
-        , m_deferredAnimationOperationsCompleteHandle(OpenNamedEvent(m_dispatcherQueue, s_deferredAnimationOperationsCompleteHandleName))
-        , m_rootVisualResetHandle(OpenNamedEvent(m_dispatcherQueue, s_rootVisualResetHandleName))
-        , m_imageDecodingIdleHandle(OpenNamedEvent(m_dispatcherQueue, s_imageDecodingIdleHandleName))
-        , m_fontDownloadsIdleHandle(OpenNamedEvent(m_dispatcherQueue, s_fontDownloadsIdleHandleName))
-        , m_hasBuildTreeWorksHandle(OpenNamedEvent(m_dispatcherQueue, s_hasBuildTreeWorksHandleName))
-        , m_buildTreeServiceDrainedHandle(OpenNamedEvent(m_dispatcherQueue, s_buildTreeServiceDrainedHandleName))
+    IdleSynchronizer::IdleSynchronizer(winrt::Windows::UI::Core::CoreDispatcher dispatcher)
+        : m_coreDispatcher(dispatcher)
+        , m_hasAnimationsHandle(OpenNamedEvent(m_coreDispatcher, s_hasAnimationsHandleName))
+        , m_animationsCompleteHandle(OpenNamedEvent(m_coreDispatcher, s_animationsCompleteHandleName))
+        , m_hasDeferredAnimationOperationsHandle(OpenNamedEvent(m_coreDispatcher, s_hasDeferredAnimationOperationsHandleName))
+        , m_deferredAnimationOperationsCompleteHandle(OpenNamedEvent(m_coreDispatcher, s_deferredAnimationOperationsCompleteHandleName))
+        , m_rootVisualResetHandle(OpenNamedEvent(m_coreDispatcher, s_rootVisualResetHandleName))
+        , m_imageDecodingIdleHandle(OpenNamedEvent(m_coreDispatcher, s_imageDecodingIdleHandleName))
+        , m_fontDownloadsIdleHandle(OpenNamedEvent(m_coreDispatcher, s_fontDownloadsIdleHandleName))
+        , m_hasBuildTreeWorksHandle(OpenNamedEvent(m_coreDispatcher, s_hasBuildTreeWorksHandleName))
+        , m_buildTreeServiceDrainedHandle(OpenNamedEvent(m_coreDispatcher, s_buildTreeServiceDrainedHandleName))
     {
 
     }
@@ -114,7 +114,7 @@ namespace winrt::AppTestAutomationHelpers::implementation
 
     winrt::hstring IdleSynchronizer::WaitInternal()
     {
-        if (m_dispatcherQueue.HasThreadAccess())
+        if (m_coreDispatcher.HasThreadAccess())
         {
             return L"Cannot wait for UI thread idle from the UI thread.";
         }
@@ -211,21 +211,23 @@ namespace winrt::AppTestAutomationHelpers::implementation
 
     void IdleSynchronizer::WaitForIdleDispatcher()
     {
+        bool isDispatcherIdle = false;
         Event shouldContinueEvent;
 
-        // DispatcherQueueTimer runs at below idle priority, so we can use it to ensure that we only raise the event when we're idle.
-        auto timer = m_dispatcherQueue.CreateTimer();
-        timer.Interval(std::chrono::milliseconds::zero());
-        timer.IsRepeating(false);
+        while (!isDispatcherIdle)
+        {
+            winrt::Windows::Foundation::IAsyncAction action = m_coreDispatcher.RunIdleAsync(winrt::Windows::UI::Core::IdleDispatchedHandler([&](winrt::Windows::UI::Core::IdleDispatchedHandlerArgs args)
+                {
+                    isDispatcherIdle = args.IsDispatcherIdle();
+                }));
 
-        auto revoker = timer.Tick(winrt::auto_revoke_t(), winrt::Windows::Foundation::TypedEventHandler<winrt::Windows::System::DispatcherQueueTimer, IInspectable>(
-            [&](winrt::Windows::System::DispatcherQueueTimer, IInspectable)
-            {
-                shouldContinueEvent.Set();
-            }));
+            action.Completed([&](auto& /*asyncInfo*/, auto& /*asyncStatus*/)
+                {
+                    shouldContinueEvent.Set();
+                });
 
-        timer.Start();
-        shouldContinueEvent.WaitFor(10000);
+            shouldContinueEvent.WaitFor(10000);
+        }
     }
 
     winrt::hstring IdleSynchronizer::WaitForBuildTreeServiceWork(bool* pHadBuildTreeWork)
@@ -245,8 +247,8 @@ namespace winrt::AppTestAutomationHelpers::implementation
 
             Event layoutUpdatedEvent;
 
-            m_dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Normal,
-                winrt::Windows::System::DispatcherQueueHandler([&layoutUpdatedEvent]()
+            auto asyncOp = m_coreDispatcher.RunAsync(winrt::Windows::UI::Core::CoreDispatcherPriority::Normal,
+                winrt::Windows::UI::Core::DispatchedHandler([&layoutUpdatedEvent]()
                     {
                         if (auto window = winrt::Windows::UI::Xaml::Window::Current())
                         {
@@ -367,10 +369,10 @@ namespace winrt::AppTestAutomationHelpers::implementation
             winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker renderingRevoker{};
             tickCompleteEvent.Reset();
 
-            m_dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Normal,
-                winrt::Windows::System::DispatcherQueueHandler([&tickCompleteEvent, &renderingRevoker]()
+            auto asyncOp = m_coreDispatcher.RunAsync(winrt::Windows::UI::Core::CoreDispatcherPriority::Normal,
+                winrt::Windows::UI::Core::DispatchedHandler([&tickCompleteEvent, &renderingRevoker]()
                     {
-                        renderingRevoker = winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, 
+                        renderingRevoker = winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke,
                             [&tickCompleteEvent, &renderingRevoker](auto&, auto&)
                             {
                                 renderingRevoker.revoke();

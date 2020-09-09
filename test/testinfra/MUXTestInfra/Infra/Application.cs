@@ -519,7 +519,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             var exclude = new[] { "Microsoft.NET.CoreRuntime", "Microsoft.VCLibs" };
 
-            var files = Directory.GetFiles(_baseAppxDir, "*.appx", SearchOption.AllDirectories).Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
+            var files = Directory.GetFiles(_baseAppxDir, $"{_packageName}*.appx", SearchOption.AllDirectories).Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
 
             if (files.Count() == 0)
             {

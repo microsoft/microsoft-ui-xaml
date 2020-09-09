@@ -51,17 +51,15 @@ void NugetPackageTestAppCX::MainPage::WaitForIdleInvokerButton_Click(Platform::O
 {
     IdleStateEnteredCheckBox->IsChecked = false;
 
-    auto dispatcherQueue = Windows::System::DispatcherQueue::GetForCurrentThread();
-
     MainPage^ spThis = this;
-    auto workItem = ref new Windows::System::Threading::WorkItemHandler([spThis, dispatcherQueue](IAsyncAction^ workItem) mutable
+    auto workItem = ref new Windows::System::Threading::WorkItemHandler([spThis](IAsyncAction^ workItem) mutable
     {
-        AppTestAutomationHelpers::IdleSynchronizer idle(dispatcherQueue);
+        AppTestAutomationHelpers::IdleSynchronizer idle(spThis->Dispatcher);
         auto errorString = idle.TryWait();
 
-        dispatcherQueue->TryEnqueue(
-            Windows::System::DispatcherQueuePriority::Low,
-            ref new Windows::System::DispatcherQueueHandler([spThis]()
+        spThis->Dispatcher->RunAsync(
+            Windows::UI::Core::CoreDispatcherPriority::Low,
+            ref new Windows::UI::Core::DispatchedHandler([spThis]()
         {
             spThis->IdleStateEnteredCheckBox->IsChecked = true;
         }));

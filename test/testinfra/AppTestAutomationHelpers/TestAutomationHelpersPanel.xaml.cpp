@@ -40,16 +40,16 @@ namespace winrt::AppTestAutomationHelpers::implementation
         IdleStateEnteredCheckBox().IsChecked(false);
 
         auto spThis = get_strong();
-        auto dispatcherQueue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
-        
-        auto workItem = winrt::Windows::System::Threading::WorkItemHandler([spThis, dispatcherQueue](winrt::Windows::Foundation::IAsyncAction workItem) mutable
+
+        auto workItem = winrt::Windows::System::Threading::WorkItemHandler([spThis](winrt::Windows::Foundation::IAsyncAction workItem) mutable
             {
-                winrt::AppTestAutomationHelpers::IdleSynchronizer idle(dispatcherQueue);
+                auto dispatcher = spThis->Dispatcher();
+                winrt::AppTestAutomationHelpers::IdleSynchronizer idle(dispatcher);
                 winrt::hstring errorString = idle.TryWait();
 
-                dispatcherQueue.TryEnqueue(
-                    winrt::Windows::System::DispatcherQueuePriority::Low,
-                    winrt::Windows::System::DispatcherQueueHandler([spThis, errorString]()
+                dispatcher.RunAsync(
+                    winrt::Windows::UI::Core::CoreDispatcherPriority::Low,
+                    winrt::Windows::UI::Core::DispatchedHandler([spThis, errorString]()
                         {
                             if (errorString.empty())
                             {
@@ -62,32 +62,30 @@ namespace winrt::AppTestAutomationHelpers::implementation
                                 // error-reported event that we can detect and handle.
                                 spThis->ErrorReportingTextBox().Text(errorString);
                                 spThis->ErrorReportingTextBox().Text(L"");
-                            }                            
+                            }
                         }));
             });
-        
+
         auto asyncAction = Windows::System::Threading::ThreadPool::RunAsync(workItem);
     }
 
     void TestAutomationHelpersPanel::WaitForDebuggerInvokerButton_Click(Windows::Foundation::IInspectable const& /*sender*/, Windows::UI::Xaml::RoutedEventArgs const& /*args*/)
     {
         DebuggerAttachedCheckBox().IsChecked(false);
-
         auto spThis = get_strong();
-        auto dispatcherQueue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
 
-        auto workItem = winrt::Windows::System::Threading::WorkItemHandler([spThis, dispatcherQueue](winrt::Windows::Foundation::IAsyncAction workItem) mutable
+        auto workItem = winrt::Windows::System::Threading::WorkItemHandler([spThis](winrt::Windows::Foundation::IAsyncAction workItem) mutable
             {
+                auto dispatcher = spThis->Dispatcher();
+
                 while (!IsDebuggerPresent())
                 {
                     Sleep(1000);
                 }
 
-                DebugBreak();
-
-                dispatcherQueue.TryEnqueue(
-                    winrt::Windows::System::DispatcherQueuePriority::Low,
-                    winrt::Windows::System::DispatcherQueueHandler([spThis]()
+                dispatcher.RunAsync(
+                    winrt::Windows::UI::Core::CoreDispatcherPriority::Low,
+                    winrt::Windows::UI::Core::DispatchedHandler([spThis]()
                         {
                             spThis->DebuggerAttachedCheckBox().IsChecked(true);
                         }));
