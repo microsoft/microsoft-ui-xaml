@@ -750,9 +750,9 @@ namespace MUXControlsTestApp
             PaneAutoSuggestBox.ItemsSource = suggestions;
         }
 
-        private void PaneAutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        private void PaneAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
-            QuerySubmittedCheckbox.IsChecked = true;
+            SuggestionChosenCheckbox.IsChecked = true;
         }
     }
 }

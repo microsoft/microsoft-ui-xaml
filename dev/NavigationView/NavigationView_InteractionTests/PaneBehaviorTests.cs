@@ -976,7 +976,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                         }
                     }
 
-                    var querySubmittedCheckbox = new CheckBox(FindElement.ByName("QuerySubmittedCheckbox"));
+                    var querySubmittedCheckbox = new CheckBox(FindElement.ByName("SuggestionChosenCheckbox"));
                     querySubmittedCheckbox.Uncheck();
 
                     Wait.ForIdle();
@@ -997,6 +997,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     KeyboardHelper.PressKey(Key.Down);
                     KeyboardHelper.PressKey(Key.Enter);
 
+                    Wait.ForIdle();
 
                     Verify.AreEqual(ToggleState.On, querySubmittedCheckbox.ToggleState,
                         "Should've submitted a query");
