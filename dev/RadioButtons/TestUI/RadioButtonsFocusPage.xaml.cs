@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp;
 using System;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
 namespace RadioButtons_TestUI
@@ -63,7 +64,9 @@ namespace RadioButtons_TestUI
         {
             var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons1, 0);
             var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
-            FocusedIndexTextBlock1.Text = repeater.GetElementIndex((UIElement)e.OriginalSource).ToString();
+
+            var parentGrid = VisualTreeHelper.GetParent((UIElement)e.OriginalSource) as Grid;
+            FocusedIndexTextBlock1.Text = repeater.GetElementIndex(parentGrid).ToString();
             TestRadioButtons1HasFocusCheckBox.IsChecked = true;
         }
 
@@ -77,7 +80,9 @@ namespace RadioButtons_TestUI
         {
             var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons2, 0);
             var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
-            FocusedIndexTextBlock2.Text = repeater.GetElementIndex((UIElement)e.OriginalSource).ToString();
+
+            var parentGrid = VisualTreeHelper.GetParent((UIElement)e.OriginalSource) as Grid;
+            FocusedIndexTextBlock2.Text = repeater.GetElementIndex(parentGrid).ToString();
             TestRadioButtons2HasFocusCheckBox.IsChecked = true;
         }
 

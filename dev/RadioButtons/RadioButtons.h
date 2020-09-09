@@ -18,7 +18,8 @@
 class ChildHandlers : public winrt::implements<ChildHandlers, winrt::IInspectable>
 {
 public:
-    winrt::ToggleButton::Click_revoker clickRevoker;
+    winrt::ToggleButton::Checked_revoker checkedRevoker;
+    winrt::ToggleButton::Unchecked_revoker uncheckedRevoker;
 };
 
 class RadioButtons :
@@ -52,9 +53,16 @@ private:
     void OnRepeaterElementClearing(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args);
     void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
     void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnChildClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
+    void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
+    void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
+
+    winrt::UIElement TryGetRepeaterElementFromRadioButton(const winrt::UIElement& element);
+    bool TryGetRepeaterElementIndexFromRadioButton(const winrt::UIElement& element, const winrt::ItemsRepeater& repeater, int& index);
+    winrt::ToggleButton TryGetRadioButtonFromRepeaterElement(const winrt::UIElement& element);
+    winrt::ToggleButton TryGetRadioButtonFromRepeaterElementIndex(int index, const winrt::ItemsRepeater& repeater);
+    bool IsRepeaterOwnedRadioButton(const winrt::DependencyObject& element, const winrt::ItemsRepeater& repeater);
 
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();
