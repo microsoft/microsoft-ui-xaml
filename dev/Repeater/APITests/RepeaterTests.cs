@@ -30,6 +30,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
+using System.Diagnostics;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -665,21 +666,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void BringIntoViewOfExistingItemsDoesNotChangeScrollOffset()
         {
-            ScrollViewer scroll = null;
+            ScrollViewer scrollViewer = null;
             ItemsRepeater repeater = null;
+            AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
                 repeater = new ItemsRepeater();
                 repeater.ItemsSource = Enumerable.Range(0, 100).Select(x => x.ToString()).ToList();
 
-                scroll = new ScrollViewer() {
+                scrollViewer = new ScrollViewer() {
                     Content = repeater,
                     MaxHeight = 400,
                     MaxWidth = 200
                 };
 
-                Content = scroll;
+                scrollViewer.Loaded += (object sender, RoutedEventArgs e) =>
+                {
+                    Log.Comment("ScrollViewer.Loaded event handler");
+                    scrollViewerLoadedEvent.Set();
+                };
+
+                Content = scrollViewer;
                 Content.UpdateLayout();
             });
 
@@ -687,22 +695,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                scroll.ChangeView(null, repeater.ActualHeight, null);
-                scroll.UpdateLayout();
+                Log.Comment("Scroll to end");
+                scrollViewer.ChangeView(null, repeater.ActualHeight, null);
+                scrollViewer.UpdateLayout();
             });
+
+            Log.Comment("Wait for scrolling");
+            if (Debugger.IsAttached)
+            {
+                scrollViewerLoadedEvent.WaitOne();
+            }
+            else
+            {
+                if (!scrollViewerLoadedEvent.WaitOne(TimeSpan.FromMilliseconds(5000)))
+                {
+                    throw new Exception("Timeout expiration in WaitForEvent.");
+                }
+            }
+
             IdleSynchronizer.Wait();
 
             double endOfScrollOffset = 0;
-
             RunOnUIThread.Execute(() =>
             {
-                endOfScrollOffset = scroll.VerticalOffset;
+                Log.Comment("Determine scrolled offset");
+                endOfScrollOffset = scrollViewer.VerticalOffset;
                 // Idea: we might not have scrolled to the end, however we should at least have moved so much that the end is not too far away
                 Verify.IsTrue(Math.Abs(endOfScrollOffset - repeater.ActualHeight) < 500, $"We should at least have scrolled some amount. " +
                     $"ScrollOffset:{endOfScrollOffset} Repeater height: {repeater.ActualHeight}");
 
                 var lastItem = repeater.GetOrCreateElement(99);
                 lastItem.UpdateLayout();
+                Log.Comment("Bring last element into view");
                 lastItem.StartBringIntoView();
             });
 
@@ -710,7 +734,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsTrue(Math.Abs(endOfScrollOffset - scroll.VerticalOffset) < 1);
+                Log.Comment("Verify position did not change");
+                Verify.IsTrue(Math.Abs(endOfScrollOffset - scrollViewer.VerticalOffset) < 1);
             });
         }
 
