@@ -151,9 +151,13 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavFooterMenuRepeaterGettingFocusRevoker.revoke();
     m_topNavFooterMenuRepeater.set(nullptr);
 
+    m_footerItemsCollectionChangedRevoker.revoke();
+
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
     m_topNavRepeaterOverflowView.set(nullptr);
+
+    m_topNavOverflowItemsCollectionChangedRevoker.revoke();
 
     if (isFromDestructor)
     {
@@ -228,6 +232,14 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
 void NavigationView::OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
+}
+
+void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    if (m_topNavRepeaterOverflowView.get().ItemsSourceView().Count() == 0)
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -652,7 +664,6 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTabFocusNavigation();
     UpdateBackAndCloseButtonsVisibility();
     UpdateSingleSelectionFollowsFocusTemplateSetting();
-    UpdateNavigationViewUseSystemVisual();
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
@@ -702,15 +713,47 @@ void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& 
     m_topDataProvider.SetDataSource(items);
 
     // rebinding
+    UpdateTopNavPrimaryRepeaterItemsSource(items);
+    UpdateTopNavOverflowRepeaterItemsSource(items);
+}
+
+void NavigationView::UpdateTopNavPrimaryRepeaterItemsSource(const winrt::IInspectable& items)
+{
     if (items)
     {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
     }
     else
     {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+    }
+}
+
+void NavigationView::UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items)
+{
+    m_topNavOverflowItemsCollectionChangedRevoker.revoke();
+
+    if (const auto overflowRepeater = m_topNavRepeaterOverflowView.get())
+    {
+        if (items)
+        {
+            const auto itemsSource = m_topDataProvider.GetOverflowItems();
+            overflowRepeater.ItemsSource(itemsSource);
+
+            // We listen to changes to the overflow menu item collection so we can set the visibility of the overflow button
+            // to collapsed when it no longer has any items.
+            //
+            // Normally, MeasureOverride() kicks off updating the button's visibility, however, it is not run when the overflow menu
+            // only contains a *single* item and we
+            // - either remove that menu item or
+            // - remove menu items displayed in the NavigationView pane until there is enough room for the single overflow menu item
+            //   to be displayed in the pane
+            m_topNavOverflowItemsCollectionChangedRevoker = overflowRepeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemsSourceCollectionChanged });
+        }
+        else
+        {
+            overflowRepeater.ItemsSource(nullptr);
+        }
     }
 }
 
@@ -1140,11 +1183,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             }();
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
-
-            if (ir != m_topNavRepeaterOverflowView.get())
-            {
-                nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
-            }
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -3121,45 +3159,6 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
-void NavigationView::UpdateNavigationViewUseSystemVisual()
-{
-    if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
-    {
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
-    }
-}
-
-bool NavigationView::ShouldShowFocusVisual()
-{
-    return SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
-}
-
-void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
-{
-    if (ir)
-    {
-        if (auto itemsSourceView = ir.ItemsSourceView())
-        {
-            const auto numberOfItems = itemsSourceView.Count();
-            for (int i = 0; i < numberOfItems; i++)
-            {
-                if (auto nvib = ir.TryGetElement(i))
-                {
-                    if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
-                    {
-                        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                        nviImpl->UseSystemFocusVisuals(showFocusVisual);
-                    }
-                }
-
-            }
-        }
-    }
-}
-
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
     if (m_appliedTemplate && IsTopNavigationView())
@@ -3749,7 +3748,6 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_SelectionFollowsFocusProperty)
     {
         UpdateSingleSelectionFollowsFocusTemplateSetting();
-        UpdateNavigationViewUseSystemVisual();
     }
     else if (property == s_IsPaneToggleButtonVisibleProperty)
     {
@@ -3846,14 +3844,19 @@ void NavigationView::OnIsPaneOpenChanged()
     }
     else if (!m_isOpenPaneForInteraction && !isPaneOpen)
     {
-        if (auto splitView = m_rootSplitView.get())
+        if (const auto splitView = m_rootSplitView.get())
         {
-            // splitview.IsPaneOpen and nav.IsPaneOpen is two way binding. There is possible change that SplitView.IsPaneOpen=false, then
-            // nav.IsPaneOpen=false. We don't need to set force flag in this situation
-            if (splitView.IsPaneOpen())
-            {
-                m_wasForceClosed = true;
-            }
+            // splitview.IsPaneOpen and nav.IsPaneOpen is two way binding. If nav.IsPaneOpen=false and splitView.IsPaneOpen=true,
+            // then the pane has been closed by API and we treat it as a forced close.
+            // If, however, splitView.IsPaneOpen=false, then nav.IsPaneOpen is just following the SplitView here and the pane
+            // was closed, for example, due to app window resizing. We don't set the force flag in this situation.
+            m_wasForceClosed = splitView.IsPaneOpen();
+        }
+        else
+        {
+            // If there is no SplitView (for example it hasn't been loaded yet) then nav.IsPaneOpen was set directly
+            // so we treat it as a closed force.
+            m_wasForceClosed = true;
         }
     }
 
@@ -4560,7 +4563,14 @@ void NavigationView::UpdatePaneShadow()
         shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
         // Ensure shadow is as wide as the pane when it is open
-        shadowReceiver.Width(OpenPaneLength());
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        {
+            shadowReceiver.Width(OpenPaneLength());
+        }
+        else
+        {
+            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+        }
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
