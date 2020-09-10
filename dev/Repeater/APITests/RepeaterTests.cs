@@ -668,7 +668,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             ScrollViewer scrollViewer = null;
             ItemsRepeater repeater = null;
-            AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewerScrolledEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -681,11 +681,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     MaxWidth = 200
                 };
 
-                scrollViewer.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    Log.Comment("ScrollViewer.Loaded event handler");
-                    scrollViewerLoadedEvent.Set();
-                };
 
                 Content = scrollViewer;
                 Content.UpdateLayout();
@@ -696,6 +691,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Scroll to end");
+                scrollViewer.ViewChanged += (object sender, ScrollViewerViewChangedEventArgs e) =>
+                {
+                    if(!e.IsIntermediate)
+                    {
+                        Log.Comment("ScrollViewer scrolling finished");
+                        scrollViewerScrolledEvent.Set();
+                    }
+                };
                 scrollViewer.ChangeView(null, repeater.ActualHeight, null);
                 scrollViewer.UpdateLayout();
             });
@@ -703,11 +706,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Log.Comment("Wait for scrolling");
             if (Debugger.IsAttached)
             {
-                scrollViewerLoadedEvent.WaitOne();
+                scrollViewerScrolledEvent.WaitOne();
             }
             else
             {
-                if (!scrollViewerLoadedEvent.WaitOne(TimeSpan.FromMilliseconds(5000)))
+                if (!scrollViewerScrolledEvent.WaitOne(TimeSpan.FromMilliseconds(5000)))
                 {
                     throw new Exception("Timeout expiration in WaitForEvent.");
                 }
