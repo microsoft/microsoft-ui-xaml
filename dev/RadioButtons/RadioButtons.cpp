@@ -583,11 +583,11 @@ void RadioButtons::UpdateSelectedItem()
 
 winrt::UIElement RadioButtons::TryGetRadioButtonAsUIElement(const winrt::UIElement& repaterElement)
 {
-    if (auto const elementAsGrid = repaterElement.try_as<winrt::Grid>())
+    if (auto const elementAsPanel = repaterElement.try_as<winrt::Panel>())
     {
-        if (elementAsGrid.Children().Size() >= 1)
+        if (elementAsPanel.Children().Size() >= 1)
         {
-            return elementAsGrid.Children().GetAt(0).try_as<winrt::UIElement>();
+            return elementAsPanel.Children().GetAt(0).try_as<winrt::UIElement>();
         }
     }
 
