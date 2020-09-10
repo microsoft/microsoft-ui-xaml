@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -388,7 +389,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var isOpen = true;
             
-            if(ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Controls.Primitives.FlyoutBase","IsOpen"))
+            if(PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 RunOnUIThread.Execute(() =>
                 {
