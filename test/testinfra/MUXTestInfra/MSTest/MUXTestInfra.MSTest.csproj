@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots@KitsRoot10)</UniversalCRTSdkDir>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
+    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
+    <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.2</Version>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Reference Include="Windows.winmd">
+      <HintPath>$(WindowsMetadataPath)\windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+  </ItemGroup>
+
+  <Import Project="..\MUXTestInfra.Shared.projitems" />
+</Project>

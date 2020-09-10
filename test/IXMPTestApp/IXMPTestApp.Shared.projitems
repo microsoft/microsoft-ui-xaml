@@ -130,10 +130,6 @@
       <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\MUXTestUtilities\MUXTestUtilities.vcxproj">
-      <Project>{e7d6b510-3761-478a-8e22-72558dad924e}</Project>
-      <Name>MUXTestUtilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
