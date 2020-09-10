@@ -58,12 +58,12 @@ private:
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
 
-    winrt::UIElement TryGetRepeaterElementFromRadioButton(const winrt::RadioButton& radioButton);
-    bool TryGetRepeaterElementIndexFromRadioButton(const winrt::RadioButton& radioButton, const winrt::ItemsRepeater& repeater, int& index);
-    winrt::ToggleButton TryGetRadioButtonFromRepeaterElement(const winrt::UIElement& element);
-    winrt::ToggleButton TryGetRadioButtonFromRepeaterElementIndex(int index, const winrt::ItemsRepeater& repeater);
+    winrt::UIElement TryGetRepeaterElement(const winrt::UIElement& radioButton);
+    bool TryGetRepeaterElementIndex(const winrt::UIElement& radioButton, const winrt::ItemsRepeater& repeater, int& index);
+    winrt::UIElement TryGetRadioButtonAsUIElement(const winrt::UIElement& repeaterElement);
+    winrt::UIElement TryGetRadioButtonAsUIElement(int repeaterElementIndex, const winrt::ItemsRepeater& repeater);
 
-    bool IsRepeaterOwnedRadioButton(const winrt::DependencyObject& element, const winrt::ItemsRepeater& repeater);
+    bool IsRepeaterOwnedElement(const winrt::DependencyObject& element, const winrt::ItemsRepeater& repeater);
 
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();
