@@ -33,7 +33,11 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressBar.idl" />
