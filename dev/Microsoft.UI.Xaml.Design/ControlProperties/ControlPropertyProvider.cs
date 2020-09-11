@@ -1,25 +1,24 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Windows.Design.Metadata;
-using System;
 using System.ComponentModel;
+using Microsoft.VisualStudio.DesignTools.Extensibility.Metadata;
 
 namespace Microsoft.UI.Xaml.Design.ControlProvider
 {
     abstract class ControlPropertyProvider
     {
-        private AttributeTableBuilder builder;
+        private static AttributeTableBuilder builder;
         private static CategoryAttribute CommonCategory = new CategoryAttribute("Common");
         
         /// <summary>
         /// The control type this control property provider will work with and add properties to.
         /// </summary>
-        public abstract Type controlType { get; }
+        public abstract string ControlName { get; }
 
-        public ControlPropertyProvider(AttributeTableBuilder builder)
+        internal static void SetGlobalTableBuilder(AttributeTableBuilder newBuilder)
         {
-            this.builder = builder;
+            builder = newBuilder;
         }
 
         /// <summary>
@@ -34,7 +33,7 @@ namespace Microsoft.UI.Xaml.Design.ControlProvider
         protected void RegisterCommonProperty(string name)
         {
             builder.AddCustomAttributes(
-                controlType,
+                ControlReferenceLookupTable.GetReference(ControlName),
                 name,
                 CommonCategory
             );

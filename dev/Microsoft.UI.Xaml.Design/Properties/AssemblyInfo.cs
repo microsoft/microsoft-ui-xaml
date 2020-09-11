@@ -2,9 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml.Design;
-using Microsoft.Windows.Design.Metadata;
+using Microsoft.VisualStudio.DesignTools.Extensibility.Metadata;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following

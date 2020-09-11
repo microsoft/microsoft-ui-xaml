@@ -47,13 +47,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|arm'">
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86" />
+    <Reference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControlProperties\ControlPropertyProvider.cs" />
     <Compile Include="ControlProperties\NumberBoxPropertyProvider.cs" />
+    <Compile Include="ControlReferenceLookupTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegisterMetadata.cs" />
   </ItemGroup>
@@ -73,12 +77,6 @@
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.SwipeControl.bmp" />
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.ToggleSplitButton.bmp" />
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.TreeView.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\dll\Microsoft.UI.Xaml.vcxproj">
-      <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
-      <Name>Microsoft.UI.Xaml</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
