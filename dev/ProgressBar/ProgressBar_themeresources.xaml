@@ -21,8 +21,8 @@
             <x:Double x:Key="ProgressBarIndicatorPauseOpacity">1</x:Double>
             <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
             <Thickness x:Key="ProgressBarBorderThemeThickness">1</Thickness>
-            <contract7NotPresent:Color x:Key="SystemErrorTextColor">#C50500</contract7NotPresent:Color>
-            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="#C50500"/>
+            <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="#FFF000"/>
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
