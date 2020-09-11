@@ -40,12 +40,17 @@ private:
     void SetLottieBackgroundColor(const winrt::IAnimatedVisualSource);
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnPlayerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void UpdateStates();
     void ApplyTemplateSettings();
     void UpdateLottieProgress();
 
+    void UnhookEventsAndClearFields();
+
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
+
+    winrt::AnimatedVisualPlayer::Loaded_revoker m_playerLoadedRevoker{};
 
     double m_oldValue{ 0 };
 };

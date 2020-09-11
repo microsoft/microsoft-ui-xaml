@@ -41,12 +41,27 @@ winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
     return winrt::make<ProgressRingAutomationPeer>(*this);
 }
 
+void ProgressRing::UnhookEventsAndClearFields()
+{
+    m_playerLoadedRevoker.revoke();
+
+    m_layoutRoot.set(nullptr);
+    m_player.set(nullptr);
+}
+
 void ProgressRing::OnApplyTemplate()
 {
+    UnhookEventsAndClearFields();
+
     winrt::IControlProtected controlProtected{ *this };
 
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
-    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
+
+    if (const auto player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected))
+    {
+        m_player.set(player);
+        m_playerLoadedRevoker = player.Loaded(winrt::auto_revoke, { this, &ProgressRing::OnPlayerLoaded });
+    }
 
     SetAnimatedVisualPlayerSource();
     UpdateLottieProgress();
@@ -66,6 +81,11 @@ void ProgressRing::OnIndeterminateSourcePropertyChanged(winrt::DependencyPropert
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     ApplyTemplateSettings();
+}
+
+void ProgressRing::OnPlayerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    UpdateStates();
 }
 
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
