@@ -76,7 +76,7 @@ The flavor to use for nuget build (`debug` or `release`). Defaults to `release`.
 #### -BuildArch
 The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`. Defaults to `x86`.
 #### -OutputDir
-The folder where the NuGet package will be generated in
+The folder in which the NuGet package will be generated.
 #### -SkipFrameworkPackage
 Can be specified to skip building a framework package. Defaults to `False`.
 In order to generate framework packages, you need to generate package appx files. 
