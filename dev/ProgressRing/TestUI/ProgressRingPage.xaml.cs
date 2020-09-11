@@ -35,6 +35,7 @@ namespace MUXControlsTestApp
             //}
 
             var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(layoutRoot, 0);
+            animatedVisualPlayer.Loaded += (s, e2) => IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
 
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
             OpacityText.Text = layoutRoot.Opacity.ToString();
