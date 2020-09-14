@@ -77,7 +77,7 @@ The color picker looks for and uses the following parts in the control template.
 
 ## ColorPickerSlider
 
-A custom slider implementation used for the sliders in the `ColorPicker` control template. These sliders are unique in that they have a gradient background rendered to correspond with a defined HSV color channel (important notes on background below). Sliders provide a one-dimensional method of modifying a color channel. They are used for the third color channel not on the `ColorSpectrum` or the alpha channel.
+A custom slider implementation used for the sliders in the `ColorPicker` control template. These sliders are unique in that they have a gradient background rendered to correspond with a defined HSV color channel (important notes on background below). They are also customized to show the HSV channel and color name in a ToolTip instead of showing only a value. Sliders provide a one-dimensional method of modifying a color channel. They are used for the third color channel not on the `ColorSpectrum` or the alpha channel.
 
 Visually to the user, these sliders have a background rendered based on the assigned HSV color channel or alpha. For example, the background could be a gradient of the selected color from minimum saturation to maximum saturation if the slider represents the saturation channel. However, the slider itself does not draw this background gradient. The gradient is managed by the parent `ColorPicker` and shown underneath the slider as the fill of a background rectangle. For the alpha channel slider there is a further checkered background that is rendered separately and then blended using opacity. `ColorPickerSlider` and `ColorPicker` are intrinsically linked together and `ColorPickerSlider` is not intended as a stand-alone control.
 
@@ -133,8 +133,6 @@ Provides a way of drawing the `ColorSpectrum` background using the composition A
 * RGB and HSV channels are identified separately in most places. For example, HSV channels are represented by the `ColorPickerHsvChannel` enum. Since HSV is used as the primary representation internally there is no corresponding enum for RGB channels. In the control template, however, there are separate controls depending on the active color representation RGB/HSV. This means there is a duplication of a large number of controls. These could all be unified, for example, by referring to both hue and red as channel 1, etc. This greatly simplifies the effort required in the control template itself and removes duplicate controls. Instead, the same input controls can be used and only the active color representation set. Internal representation could add an enum for Channel1, Channel2, Channel3 and Alpha.
 
 * The 'ThirdDimension' slider really should not be named 'dimension'. 'Channel' is the standardized term so 'ThirdChannelSlider' would be a better choice. 'Components' is also the term used in control properties.
-
-* HSV color representation should be externally exposed by the color picker for those applications that require higher levels of precision. A new HsvColor struct should be added to the existing RGB struct already in WinUI.
 
 * The `ColorPickerSlider` could render its own background and be made a completely independent control. This would simplify the `ColorPicker` template and code-behind considerably.
 
