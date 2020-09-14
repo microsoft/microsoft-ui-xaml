@@ -45,20 +45,6 @@ NumberBox::NumberBox()
     LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
     SetDefaultStyleKey(this);
-    SetDefaultInputScope();
-}
-
-void NumberBox::SetDefaultInputScope()
-{
-    // Sets the default value of the InputScope property.
-    // Note that InputScope is a class that cannot be set to a default value within the IDL.
-    const auto inputScopeName = winrt::InputScopeName(winrt::InputScopeNameValue::Number);
-    const auto inputScope = winrt::InputScope();
-    inputScope.Names().Append(inputScopeName);
-
-    static_cast<NumberBox*>(this)->SetValue(s_InputScopeProperty, ValueHelper<winrt::InputScope>::BoxValueIfNecessary(inputScope));
-
-    return;
 }
 
 // This was largely copied from Calculator's GetRegionalSettingsAwareDecimalFormatter()
