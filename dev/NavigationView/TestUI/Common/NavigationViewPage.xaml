@@ -199,6 +199,7 @@
                         <CheckBox x:Name="PaneToggleButtonVisiblityCheckbox" AutomationProperties.Name="PaneToggleButtonVisiblityCheckbox" Content="Show Hamburger Button" Checked="PaneToggleButtonVisiblityCheckbox_Checked" Unchecked="PaneToggleButtonVisiblityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="AutoSuggestCheckbox" AutomationProperties.Name="AutoSuggestCheckbox" Content="Set AutoSuggestBox" IsChecked="True" Checked="AutoSuggestCheckbox_Checked" Unchecked="AutoSuggestCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="HeaderVisiblityCheckbox" AutomationProperties.Name="HeaderVisiblityCheckbox" Content="Always Show Header" Checked="HeaderVisiblityCheckbox_Checked" Unchecked="HeaderVisiblityCheckbox_Unchecked" Margin="5"/>
+                        <CheckBox x:Name="SuggestionChosenCheckbox" AutomationProperties.Name="SuggestionChosenCheckbox" Content="Qeury submitted" Margin="5"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -304,7 +305,9 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
             </ScrollViewer>
 
             <muxcontrols:NavigationView.AutoSuggestBox>
-                <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="PaneAutoSuggestBox"/>
+                <AutoSuggestBox x:Name="PaneAutoSuggestBox" QueryIcon="Find"
+                    SuggestionChosen="PaneAutoSuggestBox_SuggestionChosen"
+                    AutomationProperties.Name="PaneAutoSuggestBox" TextChanged="AutoSuggestBox_TextChanged"/>
             </muxcontrols:NavigationView.AutoSuggestBox>
 
             <muxcontrols:NavigationView.PaneFooter>
