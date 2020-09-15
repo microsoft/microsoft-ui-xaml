@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -7,9 +7,10 @@
 #include <synchapi.h>
 
 #include "AutoHandle.h"
+#include <winrt\base.h>
 
-namespace MUXControls { namespace Common {
-
+namespace AppTestAutomationHelpers 
+{
     class Event
     {
     public:
@@ -20,7 +21,7 @@ namespace MUXControls { namespace Common {
         {
             if (!m_handle.IsValid())
             {
-                throw ref new Platform::FailureException(L"Failed to create the event");
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Failed to create the event"));
             }
         }
 
@@ -31,7 +32,7 @@ namespace MUXControls { namespace Common {
         {
             if (!m_handle.IsValid())
             {
-                throw ref new Platform::FailureException(L"Failed to create the event");
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Failed to create the event"));
             }
         }
 
@@ -42,7 +43,7 @@ namespace MUXControls { namespace Common {
 
             if (SetEvent(m_handle) == 0)
             {
-                throw ref new Platform::FailureException(L"Failed to set the event"); // TODO: surface GetLastError() info.
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Failed to set the event"));
             }
         }
 
@@ -50,7 +51,7 @@ namespace MUXControls { namespace Common {
         {
             if (WaitForSingleObject(m_handle, INFINITE) != WAIT_OBJECT_0)
             {
-                throw ref new Platform::FailureException(L"Failed to wait for the event.");
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Failed to wait for the event"));
             }
         }
 
@@ -58,11 +59,11 @@ namespace MUXControls { namespace Common {
         {
             if (timeoutValueMs == INFINITE)
             {
-                throw ref new Platform::FailureException(L"Timeout cannnot be infinite.");
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Timeout cannnot be infinite."));
             }
 
             // Event timeouts can be frustrating when trying to debug tests. 
-            // Whe under the debugger we disable all timeouts.
+            // When under the debugger we disable all timeouts.
             if (IsDebuggerPresent() && !enforceUnderDebugger)
             {
                 timeoutValueMs = INFINITE;
@@ -70,7 +71,7 @@ namespace MUXControls { namespace Common {
 
             if (WaitForSingleObject(m_handle, timeoutValueMs) != WAIT_OBJECT_0)
             {
-                throw ref new Platform::FailureException(L"Timed out or failed to wait for the event."); // TODO: surface GetLastError() info.
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Timed out or failed to wait for the event."));
             }
         }
 
@@ -82,7 +83,7 @@ namespace MUXControls { namespace Common {
         bool WaitForNoThrow(long timeoutValueMs, bool enforceUnderDebugger = true)
         {
             // Event timeouts can be frustrating when trying to debug tests. 
-            // Whe under the debugger we disable all timeouts.
+            // When under the debugger we disable all timeouts.
             if (IsDebuggerPresent() && !enforceUnderDebugger)
             {
                 timeoutValueMs = INFINITE;
@@ -103,7 +104,8 @@ namespace MUXControls { namespace Common {
 
             if (ResetEvent(m_handle) == 0)
             {
-                throw ref new Platform::FailureException(L"Failed to reset the event"); // TODO: surface GetLastError() info.
+                throw winrt::hresult_error(E_FAIL, winrt::hstring(L"Failed to reset the event"));
+
             }
         }
 
@@ -120,5 +122,4 @@ namespace MUXControls { namespace Common {
         bool m_hasFired;
         int m_timesFired;
     };
-
-} } // namespace MUXControls::Common
+}

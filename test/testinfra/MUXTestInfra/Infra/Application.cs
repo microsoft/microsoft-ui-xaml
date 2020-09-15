@@ -29,6 +29,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using System.Runtime.InteropServices;
+using Windows.Foundation;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
@@ -39,27 +40,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private readonly string _packageName;
         private readonly string _packageFamilyName;
         private readonly string _appName;
+
+        private readonly string _appWindowTitle;
+        private readonly string _appProcessName;
+        private readonly string _appInstallerName;
+
         private readonly bool _isUWPApp;
+
+        private readonly string _certSerialNumber;
+        private readonly string _baseAppxDir;
 
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageName, string packageFamilyName, string appName, bool isUWPApp = true)
+        public Application(string packageName, string packageFamilyName, string appName, string testAppMainWindowTitle, string testAppProcessName, string testAppInstallerName, string certSerialNumber, string baseAppxDir, bool isUWPApp = true)
         {
             _packageName = packageName;
             _packageFamilyName = packageFamilyName;
             _appName = appName;
             _isUWPApp = isUWPApp;
+            _certSerialNumber = certSerialNumber;
+            _baseAppxDir = baseAppxDir;
+
+            _appWindowTitle = testAppMainWindowTitle;
+            _appProcessName = testAppProcessName;
+            _appInstallerName = testAppInstallerName;
 
             if (_isUWPApp)
             {
-                _windowCondition = UICondition.Create("@ClassName='Windows.UI.Core.CoreWindow' AND @Name={0}", _packageName);
-                _appFrameWindowCondition = UICondition.Create("@ClassName='ApplicationFrameWindow' AND @Name={0}", _packageName);
+                _windowCondition = UICondition.Create("@ClassName='Windows.UI.Core.CoreWindow' AND @Name={0}", _appWindowTitle);
+                _appFrameWindowCondition = UICondition.Create("@ClassName='ApplicationFrameWindow' AND @Name={0}", _appWindowTitle);
             }
             else
             {
-                _windowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _packageName);
-                _appFrameWindowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _packageName);
+                _windowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _appWindowTitle);
+                _appFrameWindowCondition = UICondition.Create("@ClassName='Window' AND @Name={0}", _appWindowTitle);
             }
         }
 
@@ -96,16 +111,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
             else if (didFindWindow)
             {
+                // topWindowObj should match either _windowCondition or _appFrameWindowCondition
+
                 if (topWindowObj.Matches(_windowCondition))
                 {
                     // If the top level window is CoreWindow, then there is no AppFrame window:
                     CoreWindow = topWindowObj;
                     ApplicationFrameWindow = null;
                 }
-                else
+                else // _appFrameWindowCondition
                 {
+                    if(!topWindowObj.Matches(_appFrameWindowCondition))
+                    {
+                        // This should never happen
+                        Verify.Fail($"Expected topWindowObj ({UIObjectToLoggableString(topWindowObj)}) to match _appFrameWindowCondition ({_appFrameWindowCondition})");
+                    }
+
                     // Maxmize window to ensure we can find UIA elements
-                    var appFrameWindow = new Window(CoreWindow);
+                    var appFrameWindow = new Window(topWindowObj);
                     if (appFrameWindow.CanMaximize)
                     {
                         appFrameWindow.SetWindowVisualState(WindowVisualState.Maximized);
@@ -153,11 +176,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             Wait.InitializeWaitHelper();
 
-#if USING_TAEF
             if (TestEnvironment.TestContext.Properties.Contains("WaitForAppDebugger"))
-#else
-            if (TestEnvironment.TestContext.Properties.ContainsKey("WaitForAppDebugger"))
-#endif
             {
                 Wait.ForAppDebugger();
             }
@@ -172,15 +191,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // When running from MUXControls repo we want to install the app.
             // When running in TestMD we also want to install the app.            
 #if USING_TAEF
-            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
+            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName, _appInstallerName);
 #else
-            BuildAndInstallTestAppIfNeeded();
+            InstallTestAppIfNeeded();
 #endif
-
 
             Log.Comment("Launching app {0}", _appName);
 
-            coreWindow = LaunchApp(_packageName);
+            coreWindow = LaunchApp();
 
             Verify.IsNotNull(coreWindow, "coreWindow");
 
@@ -206,33 +224,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             Log.Comment("15056441 tracing, device family:" + Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily);
 
-            // On phone, we work around different scale factors between devices by configuring the test app to
-            // lay out the test pages at the device's resolution, effectively giving us a scale factor of 1.0.
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-            {
-                Log.Comment("Enabling view scaling workaround on phone.");
-
-                try
-                {
-                    var viewScalingCheckBox = new CheckBox(coreWindow.Descendants.Find(UICondition.Create("@AutomationId='__ViewScalingCheckBox'")));
-                    using (var waiter = viewScalingCheckBox.GetToggledWaiter())
-                    {
-                        viewScalingCheckBox.Check();
-                    }
-                    Log.Comment("15056441 Tracing: New checkbox state is " + viewScalingCheckBox.ToggleState);
-                }
-                catch (UIObjectNotFoundException)
-                {
-                    Log.Error("Could not find the view scaling CheckBox.");
-                    LogDumpTree();
-                    throw;
-                }
-            }
-
             return coreWindow;
         }
 
-        private UIObject LaunchApp(string packageName)
+        private UIObject LaunchApp()
         {
             UIObject coreWindow = null;
 
@@ -245,16 +240,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 try
                 {
                     Log.Comment("Attempting launch, try #{0}...", retries);
-                    coreWindow = _isUWPApp ? LaunchUWPApp(packageName) : LaunchNonUWPApp(packageName);
+                    coreWindow = _isUWPApp ? LaunchUWPApp() : LaunchNonUWPApp(_packageName);
                     Log.Comment("Launch successful!");
                     break;
                 }
                 catch (Exception ex)
                 {
                     Log.Comment("Failed to launch app. Exception: " + ex.ToString());
-                    Log.Comment("Dumping UIA tree...");
-                    LogDumpTree();
-
+                    
                     if (retries < MaxLaunchRetries)
                     {
                         Log.Comment("UAPApp.Launch might not have waited long enough, trying again {0}", retries);
@@ -262,6 +255,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
                     else
                     {
+                        Log.Comment("Dumping UIA tree...");
+                        LogDumpTree();
                         Log.Error("Could not launch app {0} with top-level window condition '{1}'!", _appName, CreateTopLevelWindowCondition().ToString());
                         throw;
                     }
@@ -271,10 +266,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             return coreWindow;
         }
 
-        private UIObject LaunchUWPApp(string packageName)
+        private UIObject LaunchUWPApp()
         {
             Debug.Assert(_isUWPApp);
-            var nameCondition = UICondition.CreateFromName(packageName);
+            var nameCondition = UICondition.CreateFromName(_appWindowTitle);
             var topLevelWindowCondition = CreateTopLevelWindowCondition().AndWith(nameCondition);
             return UAPApp.Launch(_appName, topLevelWindowCondition);
         }
@@ -333,7 +328,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // This is just a sanity check. Under normal circumstances, there should only be 
             // one app process. 
             
-            var appProcesses = Process.GetProcessesByName(_packageName).ToList();
+            var appProcesses = Process.GetProcessesByName(_appProcessName).ToList();
 
             if (appWindowsProccessId != -1)
             {
@@ -516,126 +511,104 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        private void BuildAndInstallTestAppIfNeeded()
+#if !USING_TAEF
+        private void InstallTestAppIfNeeded()
         {
-            string[] architectures = { "x86", "x64", "ARM" };
-
-            // First, we need to figure out what the most recently built architecture was.
-            // Since MUXControls' interaction tests need to be built as AnyCPU, we can't just check our own architecture,
-            // so we'll check the last-write times of Microsoft.UI.Xaml.dll and MUXControlsTestApp.exe
-            // and go with what the latest was.
-            string baseDirectory = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
-
-            string mostRecentlyBuiltArchitecture = string.Empty;
+            string mostRecentlyBuiltAppx = string.Empty;
             DateTime timeMostRecentlyBuilt = DateTime.MinValue;
 
-            foreach (string architecture in architectures)
+            var exclude = new[] { "Microsoft.NET.CoreRuntime", "Microsoft.VCLibs" };
+
+            var files = Directory.GetFiles(_baseAppxDir, $"{_packageName}*.appx", SearchOption.AllDirectories).Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
+
+            if (files.Count() == 0)
             {
-                string muxPath = Path.Combine(baseDirectory, architecture, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll");
-                string testAppExePath = Path.Combine(baseDirectory, architecture, _packageName, _packageName + ".exe");
+                throw new Exception(string.Format("Failed to find '*.appx' in {0}'!", _baseAppxDir));
+            }
 
-                if (File.Exists(muxPath) && File.Exists(testAppExePath))
+            foreach (string file in files)
+            {
+                DateTime fileWriteTime = File.GetLastWriteTime(file);
+
+                if (fileWriteTime > timeMostRecentlyBuilt)
                 {
-                    DateTime muxWriteTime = File.GetLastWriteTime(muxPath);
-                    DateTime testAppExeWriteTime = File.GetLastWriteTime(testAppExePath);
-
-                    if (muxWriteTime > timeMostRecentlyBuilt || testAppExeWriteTime > timeMostRecentlyBuilt)
-                    {
-                        timeMostRecentlyBuilt = muxWriteTime > testAppExeWriteTime ? muxWriteTime : testAppExeWriteTime;
-                        mostRecentlyBuiltArchitecture = architecture;
-                    }
+                    timeMostRecentlyBuilt = fileWriteTime;
+                    mostRecentlyBuiltAppx = file;
                 }
             }
 
-            if (mostRecentlyBuiltArchitecture.Length == 0)
+            PackageManager packageManager = new PackageManager();
+            DeploymentResult result = null;
+
+            var installedPackages = packageManager.FindPackagesForUser(string.Empty, _packageFamilyName);
+            foreach (var installedPackage in installedPackages)
             {
-                Log.Warning("Could not find most recently built architecture!  Defaulting to x86.");
-                mostRecentlyBuiltArchitecture = "x86";
+                Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
+
+                AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
+                var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
+                removePackageOperation.Completed = (operation, status) =>
+                {
+                    if (status != AsyncStatus.Started)
+                    {
+                        result = operation.GetResults();
+                        removePackageCompleteEvent.Set();
+                    }
+                };
+                removePackageCompleteEvent.WaitOne();
+
+                if (!string.IsNullOrEmpty(result.ErrorText))
+                {
+                    Log.Error("Removal failed!");
+                    Log.Error("Package removal ActivityId = {0}", result.ActivityId);
+                    Log.Error("Package removal ErrorText = {0}", result.ErrorText);
+                    Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
+                }
+                else
+                {
+                    Log.Comment("Removal successful.");
+                }
             }
 
-            // We'll see if we need to install the app.
-            // Since we can't run as administrator in MSTest, we need to call out
-            // to a script that'll install the app for us.
-            string architectureDirectory = Path.Combine(baseDirectory, mostRecentlyBuiltArchitecture);
-            string testAppDirectory = Path.Combine(architectureDirectory, _packageName);
-            string appxDirectory = Path.Combine(testAppDirectory, "AppPackages", _packageName + "_Test");
-            string appxPath = Path.Combine(appxDirectory, _packageName + ".appx");
-            bool appXPackagingNecessary = false;
+            Log.Comment("Installing AppX...");
 
-            if (!File.Exists(appxPath))
+            Log.Comment("Checking if the app's certificate is installed...");
+
+            // If the certificate for the app is not present, installing it requires elevation.
+            // We'll run Add-AppDevPackage.ps1 without -Force in that circumstance so the user
+            // can be prompted to allow elevation.  We don't want to run it without -Force all the time,
+            // as that prompts the user to hit enter at the end of the install, which is an annoying
+            // and unnecessary step. The parameter is the SHA-1 hash of the certificate.
+
+            var certutilProcess = Process.Start(new ProcessStartInfo("certutil.exe",
+                    string.Format("-verifystore TrustedPeople {0}", _certSerialNumber)) {
+                UseShellExecute = true
+            });
+            certutilProcess.WaitForExit();
+
+            if(certutilProcess.ExitCode == 0)
             {
-                Log.Comment($".appx not found at '{appxPath}'");
-                // If the AppX doesn't even exist, then we definitely need to package it.
-                appXPackagingNecessary = true;
+                Log.Comment("Certificate is installed. Installing app...");
             }
             else
             {
-                // Otherwise, we need to package it if any of its contents have been built since the last packaging.
-                DateTime appxWriteTime = File.GetLastWriteTime(appxPath);
-                DateTime exeWriteTime = File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe"));
-                DateTime dllWriteTime = File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll"));
-
-                appXPackagingNecessary =
-                    exeWriteTime > appxWriteTime ||
-                    dllWriteTime > appxWriteTime;
-
-                Log.Comment($"AppX packaging necessary: {appXPackagingNecessary} (appxWriteTime = {appxWriteTime}, exeWriteTime = {exeWriteTime}, dllWriteTime = {dllWriteTime})");
+                Log.Comment("Certificate is not installed. Installing app and certificate...");
             }
 
-            // Only package the AppX or install the app if we need to - otherwise, we'll get unnecessary console windows showing up
-            // for a brief time on every test run, which would get very annoying very quickly.
-            if (appXPackagingNecessary)
+            var powershellProcess = Process.Start(new ProcessStartInfo("powershell",
+                    string.Format("-ExecutionPolicy Unrestricted -File {0}\\Add-AppDevPackage.ps1 {1}",
+                        Path.GetDirectoryName(mostRecentlyBuiltAppx),
+                        certutilProcess.ExitCode == 0 ? "-Force" : "")) {
+                UseShellExecute = true
+            });
+            powershellProcess.WaitForExit();
+
+            if (powershellProcess.ExitCode != 0)
             {
-                Log.Comment("Packaging and installing AppX...");
-
-                string buildAndInstallScript = Path.Combine(baseDirectory, "AnyCPU", "MUXControls.Test", "BuildAndInstallAppX.ps1");
-
-                ProcessStartInfo powershellProcessStartInfo =
-                    new ProcessStartInfo("powershell",
-                        string.Format("-ExecutionPolicy Unrestricted -File {0} {1} {2} {3} {4}",
-                            buildAndInstallScript,
-                            _packageName,
-                            mostRecentlyBuiltArchitecture,
-                            _appName,
-                            _packageFamilyName));
-
-                powershellProcessStartInfo.UseShellExecute = true;
-
-                Process powershellProcess = Process.Start(powershellProcessStartInfo);
-                powershellProcess.WaitForExit();
-
-                if (powershellProcess.ExitCode != 0)
-                {
-                    throw new Exception(string.Format("Failed to package and install AppX for {0}!", _packageName));
-                }
-            }
-            else
-            {
-                PackageManager packageManager = new PackageManager();
-                if (packageManager.FindPackagesForUser(string.Empty, _packageFamilyName).Count() == 0)
-                {
-                    Log.Comment("Packaging and installing AppX...");
-
-                    string buildAndInstallScript = Path.Combine(baseDirectory, "AnyCPU", "MUXControls.Test", "InstallAppX.ps1");
-
-                    ProcessStartInfo powershellProcessStartInfo =
-                        new ProcessStartInfo("powershell",
-                            string.Format("-ExecutionPolicy Unrestricted -File {0} {1}",
-                                buildAndInstallScript,
-                                appxDirectory));
-
-                    powershellProcessStartInfo.UseShellExecute = true;
-
-                    Process powershellProcess = Process.Start(powershellProcessStartInfo);
-                    powershellProcess.WaitForExit();
-
-                    if (powershellProcess.ExitCode != 0)
-                    {
-                        throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
-                    }
-                }
+                throw new Exception(string.Format("Failed to install AppX for {0}!", _packageName));
             }
         }
+#endif
 
         #endregion
 
@@ -648,6 +621,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             catch(Exception e)
             {
                 Log.Comment(e.Message);
+            }
+        }
+
+        // UIObjects expose a ToString method to give a human-readable representation of the object.
+        // But the string includes '{' and '}' which the test logger does not handle well.
+        private string UIObjectToLoggableString(UIObject obj)
+        {
+            if(obj == null)
+            {
+                return "Null";
+            }
+            else
+            {
+                return obj.ToString().Replace('{', '[').Replace('}', ']');
             }
         }
     }

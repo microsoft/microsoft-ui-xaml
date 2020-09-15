@@ -664,7 +664,6 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTabFocusNavigation();
     UpdateBackAndCloseButtonsVisibility();
     UpdateSingleSelectionFollowsFocusTemplateSetting();
-    UpdateNavigationViewUseSystemVisual();
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
@@ -1184,11 +1183,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             }();
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
-
-            if (ir != m_topNavRepeaterOverflowView.get())
-            {
-                nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
-            }
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -3165,45 +3159,6 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
-void NavigationView::UpdateNavigationViewUseSystemVisual()
-{
-    if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
-    {
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), ShouldShowFocusVisual());
-        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
-    }
-}
-
-bool NavigationView::ShouldShowFocusVisual()
-{
-    return SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
-}
-
-void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
-{
-    if (ir)
-    {
-        if (auto itemsSourceView = ir.ItemsSourceView())
-        {
-            const auto numberOfItems = itemsSourceView.Count();
-            for (int i = 0; i < numberOfItems; i++)
-            {
-                if (auto nvib = ir.TryGetElement(i))
-                {
-                    if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
-                    {
-                        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-                        nviImpl->UseSystemFocusVisuals(showFocusVisual);
-                    }
-                }
-
-            }
-        }
-    }
-}
-
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
     if (m_appliedTemplate && IsTopNavigationView())
@@ -3793,7 +3748,6 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_SelectionFollowsFocusProperty)
     {
         UpdateSingleSelectionFollowsFocusTemplateSetting();
-        UpdateNavigationViewUseSystemVisual();
     }
     else if (property == s_IsPaneToggleButtonVisibleProperty)
     {
@@ -3890,14 +3844,19 @@ void NavigationView::OnIsPaneOpenChanged()
     }
     else if (!m_isOpenPaneForInteraction && !isPaneOpen)
     {
-        if (auto splitView = m_rootSplitView.get())
+        if (const auto splitView = m_rootSplitView.get())
         {
-            // splitview.IsPaneOpen and nav.IsPaneOpen is two way binding. There is possible change that SplitView.IsPaneOpen=false, then
-            // nav.IsPaneOpen=false. We don't need to set force flag in this situation
-            if (splitView.IsPaneOpen())
-            {
-                m_wasForceClosed = true;
-            }
+            // splitview.IsPaneOpen and nav.IsPaneOpen is two way binding. If nav.IsPaneOpen=false and splitView.IsPaneOpen=true,
+            // then the pane has been closed by API and we treat it as a forced close.
+            // If, however, splitView.IsPaneOpen=false, then nav.IsPaneOpen is just following the SplitView here and the pane
+            // was closed, for example, due to app window resizing. We don't set the force flag in this situation.
+            m_wasForceClosed = splitView.IsPaneOpen();
+        }
+        else
+        {
+            // If there is no SplitView (for example it hasn't been loaded yet) then nav.IsPaneOpen was set directly
+            // so we treat it as a closed force.
+            m_wasForceClosed = true;
         }
     }
 

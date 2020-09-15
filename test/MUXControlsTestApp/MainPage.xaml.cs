@@ -180,13 +180,6 @@ namespace MUXControlsTestApp
             get { return TestInventory.Tests; }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            DependencyObject checkBox = SearchVisualTree(this.Frame, "ViewScalingCheckBox");
-            CheckBox cb = checkBox as CheckBox;
-            cb.IsChecked = true;
-        }
-
         DependencyObject SearchVisualTree(DependencyObject root, string name)
         {
             int size = VisualTreeHelper.GetChildrenCount(root);

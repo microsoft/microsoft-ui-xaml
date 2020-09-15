@@ -8,14 +8,6 @@
 
 const int CheckerSize = 4;
 
-Hsv FindNextNamedColor(
-    const Hsv &originalHsv,
-    winrt::ColorPickerHsvChannel channel,
-    IncrementDirection direction,
-    bool shouldWrap,
-    double minBound,
-    double maxBound);
-
 Hsv IncrementColorChannel(
     const Hsv &originalHsv,
     winrt::ColorPickerHsvChannel channel,

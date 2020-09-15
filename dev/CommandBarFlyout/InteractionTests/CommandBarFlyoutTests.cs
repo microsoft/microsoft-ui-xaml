@@ -50,8 +50,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal class CommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
-            public CommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base(new[] { "CommandBarFlyout Tests", "Base CommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
+            public CommandBarFlyoutTestSetupHelper(string languageOverride = "")
+                : base(new[] { "CommandBarFlyout Tests", "Base CommandBarFlyout Tests" }, new TestSetupHelperOptions{ LanguageOverride = languageOverride})
             {
                 statusReportingTextBox = FindElement.ById<Edit>("StatusReportingTextBox");
             }

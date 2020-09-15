@@ -44,8 +44,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal class TextCommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
-            public TextCommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base(new[] { "CommandBarFlyout Tests", "TextCommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
+            public TextCommandBarFlyoutTestSetupHelper(string languageOverride = "")
+                : base(new[] { "CommandBarFlyout Tests", "TextCommandBarFlyout Tests" }, new TestSetupHelperOptions{ LanguageOverride = languageOverride})
             {
                 FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
             }

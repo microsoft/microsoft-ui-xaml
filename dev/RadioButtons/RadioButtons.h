@@ -67,6 +67,8 @@ private:
     void Select(int index);
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
 
+    void UpdateItemTemplate();
+
     winrt::FindNextElementOptions GetFindNextElementOptions();
     bool MoveFocusNext();
     bool MoveFocusPrevious();
@@ -82,6 +84,8 @@ private:
     bool m_blockSelecting{ true };
 
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
+
+    com_ptr<RadioButtonsElementFactory> m_radioButtonsElementFactory{ nullptr };
 
     winrt::Control::Loaded_revoker m_repeaterLoadedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};

@@ -9,8 +9,12 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if USING_TAEF
 using WEX.Logging.Interop;
 using WEX.TestExecution;
+#else
+using Common;
+#endif
 using Windows.Foundation;
 using Windows.Management.Deployment;
 
@@ -25,11 +29,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the unit test app
         /// </summary>
-        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName)
+        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
-                FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, packageName + ".appx"));
+                FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, appInstallerName + ".appx"));
+                if (!appxFile.Exists)
+                {
+                    appxFile = new FileInfo(Path.Combine(deploymentDir, appInstallerName + ".appxbundle"));
+                }
                 if (appxFile.Exists)
                 {
                     PackageManager packageManager = new PackageManager();
@@ -139,9 +147,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the cert file for the appx so that it can be installed on the desktop environment
         /// </summary>
-        public static void InstallAppxCert(string deploymentDir, string packageName)
+        public static void InstallAppxCert(string deploymentDir, string certFileName)
         {
-            InstallCert(Path.Combine(deploymentDir, packageName + ".cer"));
+            InstallCert(Path.Combine(deploymentDir, certFileName));
         }
 
         public static void EnableSideloadingApps()
