@@ -17,6 +17,7 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
     float totalHeight = 0;
     float widthOfWidest = 0;
     float heightOfTallest = 0;
+    int nItems = 0;
 
     for (winrt::UIElement const& child : Children())
     {
@@ -26,10 +27,10 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
         if (childDesiredSize.Width != 0 && childDesiredSize.Height != 0)
         {
             const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
-            totalWidth += childDesiredSize.Width + (float)horizontalMargin.Left + (float)horizontalMargin.Right;
+            totalWidth += childDesiredSize.Width + (nItems > 0 ? (float)horizontalMargin.Left : 0) + (float)horizontalMargin.Right;
 
             const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
-            totalHeight += childDesiredSize.Height + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
+            totalHeight += childDesiredSize.Height + (nItems > 0 ? (float)verticalMargin.Top : 0) + (float)verticalMargin.Bottom;
 
             // ### maybe this needs to be fixed with the margins and stuff.
             if (childDesiredSize.Width > widthOfWidest)
@@ -41,20 +42,26 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
             {
                 heightOfTallest = childDesiredSize.Height;
             }
+
+            nItems++;
         }
     }
 
     // Since this panel is inside a *-sized grid column, availableSize.Width should not be infinite
-    if (totalWidth > availableSize.Width)
+    if (nItems == 1 || totalWidth > availableSize.Width)
     {
         m_isVertical = true;
+        const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(*this);
+
         desiredSize.Width = widthOfWidest;
-        desiredSize.Height = totalHeight;
+        desiredSize.Height = totalHeight + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
     }
     else
     {
         m_isVertical = false;
-        desiredSize.Width = totalWidth;
+        const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(*this);
+
+        desiredSize.Width = totalWidth + (float)horizontalMargin.Left + (float)horizontalMargin.Right;
         desiredSize.Height = heightOfTallest;
     }
 
@@ -78,7 +85,8 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
         OutputDebugString(L"InfoBarPanel::ArrangeOverride: layout vertical\n");
 
         // Layout elements vertically
-        float verticalOffset = 0.0;
+        float verticalOffset = (float)winrt::InfoBarPanel::GetVerticalMargin(*this).Top;
+        bool hasPreviousElement = false;
         for (winrt::UIElement const& child : Children())
         {
             if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
@@ -91,9 +99,11 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                     StringCchPrintf(strOut, ARRAYSIZE(strOut), L" - InfoBarPanel::ArrangeOverride: child height %f\n", desiredSize.Height);
                     OutputDebugString(strOut);
 
-                    verticalOffset += (float)verticalMargin.Top;
+                    verticalOffset += hasPreviousElement ? (float)verticalMargin.Top : 0;
                     child.Arrange(winrt::Rect{ (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });
                     verticalOffset += desiredSize.Height + (float)verticalMargin.Bottom;
+
+                    hasPreviousElement = true;
                 }
             }
         }
@@ -103,8 +113,8 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
         OutputDebugString(L"InfoBarPanel::ArrangeOverride: layout horizontal\n");
 
         // Layout elements horizontally
-        // ###.... can this just to a stackpanel?
-        float horizontalOffset = 0.0;
+        float horizontalOffset = (float)winrt::InfoBarPanel::GetHorizontalMargin(*this).Left;
+        bool hasPreviousElement = false;
         for (winrt::UIElement const& child : Children())
         {
             if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
@@ -114,9 +124,11 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                 {
                     auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
 
-                    horizontalOffset += (float)horizontalMargin.Left;
+                    horizontalOffset += hasPreviousElement ? (float)horizontalMargin.Left : 0;
                     child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalMargin.Top, desiredSize.Width, finalSize.Height });
                     horizontalOffset += desiredSize.Width + (float)horizontalMargin.Right;
+
+                    hasPreviousElement = true;
                 }
             }
         }
