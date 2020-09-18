@@ -30,14 +30,20 @@ jobs:
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
-      # Release_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
-      # Release_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Release'
-      #   PGOBuildMode: 'Optimize'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+      Release_Arm64:
+        buildPlatform: 'arm64'
+        buildConfiguration: 'Release'
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
