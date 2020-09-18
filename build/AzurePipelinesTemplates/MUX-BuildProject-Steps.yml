@@ -57,14 +57,25 @@ steps:
       command: custom
       arguments: restore ${{ parameters.solutionPath }} -Verbosity Detailed -NonInteractive -ConfigFile ${{ parameters.nugetConfigPath }} -MSBuildVersion 16.7
 
-  - task: VSBuild@1
+  # - task: VSBuild@1
+  #   displayName: 'Build solution ${{ parameters.solutionPath }}'
+  #   inputs:
+  #     solution: ${{ parameters.solutionPath }}
+  #     vsVersion: 16.7
+  #     platform: '$(buildPlatform)'
+  #     configuration: '$(buildConfiguration)'
+  #     msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+
+  - task: MSBuild@1
     displayName: 'Build solution ${{ parameters.solutionPath }}'
     inputs:
       solution: ${{ parameters.solutionPath }}
-      vsVersion: 16.7
+      msbuildLocationMethod: location
+      msbuildLocation: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\msbuild.exe
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-      msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+      msbuildArguments: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{ parameters.solutionPath }} binlog'
