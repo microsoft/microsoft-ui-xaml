@@ -11,7 +11,7 @@
             <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
             <Color x:Key="SystemControlErrorBackgroundColor">#33FFFFFF</Color>
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
-            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="#FFF000"/>
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#59FFFFFF" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF5B2EC5" />
@@ -22,7 +22,7 @@
             <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
             <Thickness x:Key="ProgressBarBorderThemeThickness">1</Thickness>
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
-            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="#FFF000"/>
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -35,7 +35,7 @@
             <Color x:Key="SystemControlErrorBackgroundColor">#29C50500</Color>
             <!-- Hex value for SystemErrorText at 0.16 opacity -->
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#C50500</contract7NotPresent:Color>
-            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="#C50500"/>
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#30000000" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF4617B4" />
