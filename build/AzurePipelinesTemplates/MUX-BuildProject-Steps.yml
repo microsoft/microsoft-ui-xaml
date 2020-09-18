@@ -61,7 +61,7 @@ steps:
     displayName: 'Build solution ${{ parameters.solutionPath }}'
     inputs:
       solution: ${{ parameters.solutionPath }}
-      vsVersion: 16.0
+      vsVersion: 16.7
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
       msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
