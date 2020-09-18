@@ -48,6 +48,7 @@ steps:
       restoreSolution: ${{ parameters.solutionPath }}
       feedsToUse: config
       nugetConfigPath: ${{ parameters.nugetConfigPath }}
+      arguments: -MSBuildVersion 16.7
 
   - task: VSBuild@1
     displayName: 'Build solution ${{ parameters.solutionPath }}'
