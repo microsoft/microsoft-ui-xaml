@@ -40,8 +40,8 @@ namespace MUXControls.ReleaseTest
             // If this is the test app from the OS repo, then it'll have been signed with a test cert
             // that doesn't need installation.
             Log.Comment("Installing the certificate for the test app");
-            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, TestEnvironment._nugetTestAppPackageName);
-            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, TestEnvironment._nugetTestAppCXPackageName);
+            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, TestApplicationInfo.MUXControlsTestApp.TestAppPackageName);
+            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, TestApplicationInfo.NugetPackageTestAppCX.TestAppPackageName);
 #endif
         }
     }

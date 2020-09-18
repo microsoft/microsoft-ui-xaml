@@ -511,6 +511,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
 
         fontIcon.Glyph(fontIconSource.Glyph());
         fontIcon.FontSize(fontIconSource.FontSize());
+        if (const auto newForeground = fontIconSource.Foreground())
+        {
+            fontIcon.Foreground(newForeground);
+        }
 
         if (fontIconSource.FontFamily())
         {
@@ -528,7 +532,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
     {
         winrt::SymbolIcon symbolIcon;
         symbolIcon.Symbol(symbolIconSource.Symbol());
-
+        if (const auto newForeground = symbolIconSource.Foreground())
+        {
+            symbolIcon.Foreground(newForeground);
+        }
         return symbolIcon;
     }
     else if (auto bitmapIconSource = iconSource.try_as<winrt::BitmapIconSource>())
@@ -544,7 +551,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
         }
-
+        if (const auto newForeground = bitmapIconSource.Foreground())
+        {
+            bitmapIcon.Foreground(newForeground);
+        }
         return bitmapIcon;
     }
     else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
@@ -555,7 +565,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             pathIcon.Data(pathIconSource.Data());
         }
-
+        if (const auto newForeground = pathIconSource.Foreground())
+        {
+            pathIcon.Foreground(newForeground);
+        }
         return pathIcon;
     }
 

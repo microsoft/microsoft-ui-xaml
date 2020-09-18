@@ -49,6 +49,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PersonPicture\APITests\PersonPicture_APITests.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioButtons\APITests\RadioButtons_APITests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\APITests\RatingControl_APITests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\APITests\Repeater_APITests.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />

@@ -19,7 +19,7 @@
                         <ContentPresenter
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"/>
-                        <local:ItemsRepeater x:Name="InnerRepeater" ItemTemplate="{TemplateBinding ItemTemplate}">
+                        <local:ItemsRepeater x:Name="InnerRepeater">
                             <local:ItemsRepeater.Layout>
                                 <primitives:ColumnMajorUniformToLargestGridLayout
                                     MaxColumns="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaxColumns}"

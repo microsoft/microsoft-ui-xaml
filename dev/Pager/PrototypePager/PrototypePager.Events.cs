@@ -96,6 +96,7 @@ namespace MUXControlsTestApp
             }
             
             DisablePageButtonsOnEdge();
+            OnPagerDisplayModeChanged();
         }
 
         private void OnComboBoxSelectionChanged()
@@ -113,10 +114,12 @@ namespace MUXControlsTestApp
         {
             switch (this.PagerDisplayMode)
             {
+                case PagerDisplayModes.Auto:
+                    VisualStateManager.GoToState(this, NumberOfPages < AutoDisplayModeNumberOfPagesThreshold ? ComboBoxVisibleVisualState : NumberBoxVisibleVisualState, false);
+                    break;
                 case PagerDisplayModes.NumberBox:
                     VisualStateManager.GoToState(this, NumberBoxVisibleVisualState, false);
                     break;
-                case PagerDisplayModes.Auto:
                 case PagerDisplayModes.ComboBox:
                     VisualStateManager.GoToState(this, ComboBoxVisibleVisualState, false);
                     break;

@@ -2,7 +2,8 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:utils="using:MUXControlsTestApp">
+    xmlns:utils="using:MUXControlsTestApp"
+    xmlns:helpers="using:AppTestAutomationHelpers">
 
     <Style x:Key="AutomationHelperStyle" TargetType="Control">
         <Setter Property="IsTabStop" Value="False"/>
@@ -70,22 +71,8 @@
                             </Grid>
 
                             <Grid x:Name="AutomationHelpersPanel" Grid.Row="1">
-
-                                <!-- Automation Helpers -->
-                                <!-- These are not visible, but are used via UIA. They are fundamental to the operation of our test automation, so they should not be collapsed since 
-                                that prevents them from showing up in the UIA tree.-->
                                 <Button x:Name="GoBackInvokerButton" AutomationProperties.AutomationId="__GoBackInvoker" Style="{StaticResource AutomationHelperStyle}" />
-                                <Button x:Name="CloseAppInvokerButton" AutomationProperties.AutomationId="__CloseAppInvoker" Style="{StaticResource AutomationHelperStyle}" />
-                                <Button x:Name="WaitForIdleInvokerButton" AutomationProperties.AutomationId="__WaitForIdleInvoker" Style="{StaticResource AutomationHelperStyle}" />
-                                <CheckBox x:Name="IdleStateEnteredCheckBox" AutomationProperties.AutomationId="__IdleStateEnteredCheckBox" Style="{StaticResource AutomationHelperStyle}" />
-                                <TextBox x:Name="ErrorReportingTextBox" AutomationProperties.AutomationId="__ErrorReportingTextBox" Style="{StaticResource AutomationHelperStyle}" />
-                                <TextBox x:Name="LogReportingTextBox" AutomationProperties.AutomationId="__LogReportingTextBox" Style="{StaticResource AutomationHelperStyle}" />
-                                <CheckBox x:Name="ViewScalingCheckBox" AutomationProperties.AutomationId="__ViewScalingCheckBox" Style="{StaticResource AutomationHelperStyle}" />
-                                <Button x:Name="WaitForDebuggerInvokerButton" AutomationProperties.AutomationId="__WaitForDebuggerInvoker" Style="{StaticResource AutomationHelperStyle}" />
-                                <CheckBox x:Name="DebuggerAttachedCheckBox" AutomationProperties.AutomationId="__DebuggerAttachedCheckBox" Style="{StaticResource AutomationHelperStyle}" />
-                                <TextBox x:Name="UnhandledExceptionReportingTextBox" AutomationProperties.AutomationId="__UnhandledExceptionReportingTextBox" Style="{StaticResource AutomationHelperStyle}" AcceptsReturn="True" />
-                                <CheckBox x:Name="TestContentLoadedCheckBox" IsChecked="False" AutomationProperties.AutomationId="__TestContentLoadedCheckBox" Content="TestContentLoadedCheckbox"  Style="{StaticResource AutomationHelperStyle}" />
-                                <CheckBox x:Name="KeyInputReceived" IsChecked="True" AutomationProperties.AutomationId="__KeyInputReceived" Style="{StaticResource AutomationHelperStyle}" />
+                                <helpers:TestAutomationHelpersPanel />
                             </Grid>
 
                             <ContentPresenter Grid.Row="2"
