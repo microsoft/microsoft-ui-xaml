@@ -78,7 +78,7 @@ namespace MUXControlsTestApp
             {
                 UpdateNumberPanel();
             }
-            PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
+            //PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
         }
 
         private void OnNumberOfPagesChanged()

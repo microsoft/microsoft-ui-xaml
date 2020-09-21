@@ -28,7 +28,7 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty PagerDisplayModeProperty =
             DependencyProperty.Register("PagerDisplayMode", typeof(PagerDisplayModes), typeof(PrototypePager), new PropertyMetadata(PagerDisplayModes.Auto, OnPropertyChanged));
 
-        /*  Universal Pager Properties
+        /*  Universal PagerControl Properties
          * 
          */
         public PagerTemplateSettings TemplateSettings

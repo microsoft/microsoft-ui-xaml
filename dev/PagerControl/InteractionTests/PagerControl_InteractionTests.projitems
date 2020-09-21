@@ -7,10 +7,10 @@
     <SharedGUID>A1553559-5786-4B44-AB9E-94AB95C86D4D</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Pager_InteractionTests</Import_RootNamespace>
+    <Import_RootNamespace>PagerControl_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)PagerTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PagerTestsPageElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PagerControlTestPageElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PagerControlTests.cs" />
   </ItemGroup>
 </Project>

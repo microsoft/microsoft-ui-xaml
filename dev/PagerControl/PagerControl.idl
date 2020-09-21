@@ -1,0 +1,101 @@
+﻿namespace MU_XC_NAMESPACE
+{
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum PagerControlDisplayMode
+{
+    Auto,
+    ComboBox,
+    NumberBox,
+    ButtonPanel,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum PagerControlButtonVisibility
+{
+    Visible,
+    HiddenOnEdge,
+    Hidden,
+};
+
+[WUXC_VERSION_PREVIEW]
+runtimeclass PagerControlSelectedIndexChangedEventArgs
+{
+    Int32 NewPageIndex{get; };
+    Int32 PreviousPageIndex{get; };
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
+{
+    PagerControl();
+
+    PagerControlDisplayMode DisplayMode;
+
+    Int32 NumberOfPages;
+
+    PagerControlButtonVisibility FirstButtonVisibility;
+    PagerControlButtonVisibility PreviousButtonVisibility;
+    PagerControlButtonVisibility NextButtonVisibility;
+    PagerControlButtonVisibility LastButtonVisibility;
+
+    Windows.UI.Xaml.Input.ICommand FirstButtonCommand;
+    Windows.UI.Xaml.Input.ICommand PreviousButtonCommand;
+    Windows.UI.Xaml.Input.ICommand NextButtonCommand;
+    Windows.UI.Xaml.Input.ICommand LastButtonCommand;
+    Windows.UI.Xaml.Input.ICommand PagerInputCommand;
+
+    Windows.UI.Xaml.Style FirstButtonStyle;
+    Windows.UI.Xaml.Style PreviousButtonStyle;
+    Windows.UI.Xaml.Style NextButtonStyle;
+    Windows.UI.Xaml.Style LastButtonStyle;
+
+    Boolean ButtonPanelAlwaysShowFirstLastPageIndex;
+
+    [MUX_DEFAULT_VALUE("1")]
+    Int32 SelectedPageIndex;
+
+    String PrefixText;
+    String SuffixText;
+
+    event Windows.Foundation.TypedEventHandler<PagerControl, PagerControlSelectedIndexChangedEventArgs> SelectedIndexChanged;
+
+    static Windows.UI.Xaml.DependencyProperty DisplayModeProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty FirstButtonVisibilityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonVisibilityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonVisibilityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LastButtonVisibilityProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty FirstButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LastButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PagerInputCommandProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty FirstButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LastButtonStyleProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty ButtonPanelAlwaysShowFirstLastPageIndexProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{get; };
+
+    static Windows.UI.Xaml.DependencyProperty PrefixTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SuffixTextProperty{ get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass PagerControlTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+        PagerControlTemplateSettings();
+}
+
+}

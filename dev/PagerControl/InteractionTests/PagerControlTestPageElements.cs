@@ -23,13 +23,13 @@ using Windows.UI.Composition;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    class PagerTestsPageElements
+    class PagerControlTestPageElements
     {
-        public UIObject GetPager()
+        public UIObject GetPagerControl()
         {
-            return GetElement(ref Pager, "TestPager");
+            return GetElement(ref PagerControl, "TestPager");
         }
-        private UIObject Pager;
+        private UIObject PagerControl;
 
         public UIObject GetPagerNumberBox()
         {
@@ -45,7 +45,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public UIObject GetNumberPanelButton(string elementName)
         {
-            foreach (var element in GetPager().Children)
+            foreach (var element in GetPagerControl().Children)
             {
                 if (element.AutomationId == elementName)
                 {
@@ -114,37 +114,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref FirstPageButtonVisibilityCheckBox, "FirstPageButtonVisibilityCheckBox");
         }
         private CheckBox FirstPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetPreviousPageButtonVisibilityCheckBox()
         {
             return GetElement(ref PreviousPageButtonVisibilityCheckBox, "PreviousPageButtonVisibilityCheckBox");
         }
         private CheckBox PreviousPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetNextPageButtonVisibilityCheckBox()
         {
             return GetElement(ref NextPageButtonVisibilityCheckBox, "NextPageButtonVisibilityCheckBox");
         }
         private CheckBox NextPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetLastPageButtonVisibilityCheckBox()
         {
             return GetElement(ref LastPageButtonVisibilityCheckBox, "LastPageButtonVisibilityCheckBox");
         }
         private CheckBox LastPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetFirstPageButtonIsEnabledCheckBox()
         {
             return GetElement(ref FirstPageButtonIsEnabledCheckBox, "FirstPageButtonIsEnabledCheckBox");
         }
         private CheckBox FirstPageButtonIsEnabledCheckBox;
-        
+
         public CheckBox GetPreviousPageButtonIsEnabledCheckBox()
         {
             return GetElement(ref PreviousPageButtonIsEnabledCheckBox, "PreviousPageButtonIsEnabledCheckBox");
         }
         private CheckBox PreviousPageButtonIsEnabledCheckBox;
-        
+
         public CheckBox GetNextPageButtonIsEnabledCheckBox()
         {
             return GetElement(ref NextPageButtonIsEnabledCheckBox, "NextPageButtonIsEnabledCheckBox");
@@ -246,13 +246,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return element;
         }
 
-        private T GetElementWithinPager<T>(ref T element, string elementName) where T: UIObject
+        private T GetElementWithinPager<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
             {
                 Log.Comment("Find the " + elementName);
 
-                foreach (T child in GetPager().Children)
+                foreach (T child in GetPagerControl().Children)
                 {
                     if (child.AutomationId == elementName)
                     {

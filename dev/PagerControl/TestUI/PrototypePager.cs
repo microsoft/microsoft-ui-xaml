@@ -81,8 +81,6 @@ namespace MUXControlsTestApp
 
         private int PreviousPageIndex = -1;
 
-        public event TypedEventHandler<PrototypePager, PageChangedEventArgs> PageChanged;
-
         public PrototypePager()
         {
             this.DefaultStyleKey = typeof(PrototypePager);
@@ -146,7 +144,7 @@ namespace MUXControlsTestApp
 
             templateApplied = true;
             // This is for the initial page being loaded whatever page that might be.
-            PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
+            //PageChanged?.Invoke(this, new PageChangedEventArgs(PreviousPageIndex, SelectedIndex - 1));
         }
     }
 

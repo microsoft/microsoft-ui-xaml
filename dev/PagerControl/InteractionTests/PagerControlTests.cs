@@ -21,7 +21,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.PagerTestsPageElements;
+using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.PagerControlTestPageElements;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Diagnostics;
 using Windows.UI.Xaml.Controls;
@@ -30,9 +30,9 @@ using Windows.UI.Core;
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class PagerTests
+    public class PagerControlTests
     {
-        PagerTestsPageElements elements;
+        PagerControlTestPageElements elements;
         int previousPage = -1;
         int AutoDisplayModeThresholdValue = 10;
         delegate void SetButtonVisibilityModeFunction(ButtonVisibilityModes mode);
@@ -57,15 +57,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void NumberBoxDisplayChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
 
                 SetNumberBoxDisplayMode();
                 VerifyNumberBoxDisplayMode();
                 VerifyPageChanged(0);
 
-                SendValueToNumberBox("3"); // Note: Pager displays numbers starting at 1 but the page changed event sends 0-based numbers
+                SendValueToNumberBox("3"); // Note: PagerControl displays numbers starting at 1 but the page changed event sends 0-based numbers
                 VerifyPageChanged(2);
 
                 SendValueToNumberBox("1");
@@ -84,7 +84,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SendValueToNumberBox("-100");
                 Verify.AreEqual("1", FindTextBox(elements.GetPagerNumberBox()).GetText()); // If under min, value should be clamped up to the min.
                 VerifyPageChanged(0);
-                
+
             }
         }
 
@@ -92,9 +92,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void ComboBoxDisplayChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 VerifyPageChanged(0);
 
                 SetComboBoxDisplayMode();
@@ -115,9 +115,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void AutoDisplayChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 VerifyPageChanged(0);
 
                 SetAutoDisplayMode();
@@ -138,9 +138,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void NumberPanelChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
 
                 VerifyPageChanged(0);
 
@@ -165,7 +165,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ChangeNumberOfPages();
                 VerifyNumberOfPages("100");
-                
+
 
                 SelectPageInNumberPanel(1);
                 VerifyPageChanged(0);
@@ -178,7 +178,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SelectPageInNumberPanel(3);
                 VerifyPageChanged(2);
                 VerifyNumberPanelContent("12345More100");
-                
+
                 SelectPageInNumberPanel(4);
                 VerifyPageChanged(3);
                 VerifyNumberPanelContent("12345More100");
@@ -193,7 +193,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SelectPageInNumberPanel(100);
                 VerifyPageChanged(99);
-                
+
                 VerifyNumberPanelContent("1More96979899100");
 
                 SelectPageInNumberPanel(99);
@@ -218,9 +218,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void NumberPanelChangingPageTest2()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
 
                 VerifyPageChanged(0);
 
@@ -298,9 +298,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void FirstPageButtonChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetLastPageButton());
 
@@ -320,9 +320,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void PreviousPageButtonChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
@@ -352,9 +352,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void NextPageButtonChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
                 VerifyPageChanged(1);
@@ -374,9 +374,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void LastPageButtonChangingPageTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetLastPageButton());
                 VerifyPageChanged(4);
@@ -424,10 +424,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             SetButtonVisibilityModeFunction SetButtonVisibilityMode;
             UIObject buttonBeingTested;
 
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
 
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 switch (buttonNamePrefix)
                 {
                     case "First":
@@ -498,9 +498,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void ChangingDisplayModeTest()
         {
-            using (var setup = new TestSetupHelper("Pager Tests"))
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
             {
-                elements = new PagerTestsPageElements();
+                elements = new PagerControlTestPageElements();
                 SetAutoDisplayMode();
                 VerifyAutoDisplayMode();
 
@@ -625,7 +625,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             InputHelper.LeftClick(elements.GetNumberOfPagesSetterButton());
         }
-        
+
         void IncrementNumberOfPages(int numberOfPagesToAdd)
         {
             for (int i = 0; i < numberOfPagesToAdd; i++)
@@ -756,7 +756,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("NonePreviousPageButtonVisibilityItem");
             }
         }
-        
+
         void SetNextPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
             if (mode == ButtonVisibilityModes.Auto)
@@ -776,7 +776,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("NoneNextPageButtonVisibilityItem");
             }
         }
-        
+
         void SetLastPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
             if (mode == ButtonVisibilityModes.Auto)
@@ -801,12 +801,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             SetDisplayMode("AutoDisplayModeItem");
         }
-        
+
         void SetNumberBoxDisplayMode()
         {
             SetDisplayMode("NumberBoxDisplayModeItem");
         }
-        
+
         void SetComboBoxDisplayMode()
         {
             SetDisplayMode("ComboBoxDisplayModeItem");
@@ -816,7 +816,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             SetDisplayMode("NumberPanelDisplayModeItem");
         }
-        
+
         void SetDisplayMode(string mode)
         {
             elements.GetDisplayModeComboBox().SelectItemByName(mode);
@@ -934,7 +934,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expected, elements.GetNumberBoxIsEnabledCheckBox().ToggleState == ToggleState.On);
         }
 
-        void VerifyNumberPanelVisibility(Visibility expected) 
+        void VerifyNumberPanelVisibility(Visibility expected)
         {
             Verify.AreEqual(expected == Visibility.Visible, elements.GetNumberPanelVisibilityCheckBox().ToggleState == ToggleState.On);
         }
