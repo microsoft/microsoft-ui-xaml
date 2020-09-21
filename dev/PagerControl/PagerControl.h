@@ -20,10 +20,11 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    winrt::PagerControlTemplateSettings TemplateSettings() { return m_templateSettings; };
 
     void RaiseSelectedIndexChanged();
-
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDisplayModeChanged();
     void UpdateDisplayModeAutoState();
     void OnSelectedIndexChanged(const int oldIndex);
@@ -46,4 +47,5 @@ private:
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_lastPageButtonClickRevoker{};
 
+    winrt::PagerControlTemplateSettings m_templateSettings;
 };

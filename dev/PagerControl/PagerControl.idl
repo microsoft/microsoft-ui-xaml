@@ -1,4 +1,4 @@
-﻿namespace MU_XC_NAMESPACE
+namespace MU_XC_NAMESPACE
 {
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -95,7 +95,7 @@ unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
 [webhosthidden]
 unsealed runtimeclass PagerControlTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-        PagerControlTemplateSettings();
+    PagerControlTemplateSettings();
 }
 
 }
