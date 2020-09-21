@@ -32,6 +32,7 @@ GlobalDependencyProperty PagerControlProperties::s_PreviousButtonStyleProperty{ 
 GlobalDependencyProperty PagerControlProperties::s_PreviousButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty PagerControlProperties::s_SelectedPageIndexProperty{ nullptr };
 GlobalDependencyProperty PagerControlProperties::s_SuffixTextProperty{ nullptr };
+GlobalDependencyProperty PagerControlProperties::s_TemplateSettingsProperty{ nullptr };
 
 PagerControlProperties::PagerControlProperties()
     : m_selectedIndexChangedEventSource{static_cast<PagerControl*>(this)}
@@ -250,6 +251,17 @@ void PagerControlProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnSuffixTextPropertyChanged));
     }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::PagerControlTemplateSettings>(),
+                winrt::name_of<winrt::PagerControl>(),
+                false /* isAttached */,
+                ValueHelper<winrt::PagerControlTemplateSettings>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
+    }
 }
 
 void PagerControlProperties::ClearProperties()
@@ -273,6 +285,7 @@ void PagerControlProperties::ClearProperties()
     s_PreviousButtonVisibilityProperty = nullptr;
     s_SelectedPageIndexProperty = nullptr;
     s_SuffixTextProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
 void PagerControlProperties::OnButtonPanelAlwaysShowFirstLastPageIndexPropertyChanged(
@@ -420,6 +433,14 @@ void PagerControlProperties::OnSelectedPageIndexPropertyChanged(
 }
 
 void PagerControlProperties::OnSuffixTextPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PagerControl>();
+    winrt::get_self<PagerControl>(owner)->OnPropertyChanged(args);
+}
+
+void PagerControlProperties::OnTemplateSettingsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -672,6 +693,19 @@ void PagerControlProperties::SuffixText(winrt::hstring const& value)
 winrt::hstring PagerControlProperties::SuffixText()
 {
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<PagerControl*>(this)->GetValue(s_SuffixTextProperty));
+}
+
+void PagerControlProperties::TemplateSettings(winrt::PagerControlTemplateSettings const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<PagerControl*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::PagerControlTemplateSettings>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::PagerControlTemplateSettings PagerControlProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::PagerControlTemplateSettings>::CastOrUnbox(static_cast<PagerControl*>(this)->GetValue(s_TemplateSettingsProperty));
 }
 
 winrt::event_token PagerControlProperties::SelectedIndexChanged(winrt::TypedEventHandler<winrt::PagerControl, winrt::PagerControlSelectedIndexChangedEventArgs> const& value)

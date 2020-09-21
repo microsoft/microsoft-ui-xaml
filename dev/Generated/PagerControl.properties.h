@@ -66,6 +66,9 @@ public:
     void SuffixText(winrt::hstring const& value);
     winrt::hstring SuffixText();
 
+    void TemplateSettings(winrt::PagerControlTemplateSettings const& value);
+    winrt::PagerControlTemplateSettings TemplateSettings();
+
     static winrt::DependencyProperty ButtonPanelAlwaysShowFirstLastPageIndexProperty() { return s_ButtonPanelAlwaysShowFirstLastPageIndexProperty; }
     static winrt::DependencyProperty DisplayModeProperty() { return s_DisplayModeProperty; }
     static winrt::DependencyProperty FirstButtonCommandProperty() { return s_FirstButtonCommandProperty; }
@@ -85,6 +88,7 @@ public:
     static winrt::DependencyProperty PreviousButtonVisibilityProperty() { return s_PreviousButtonVisibilityProperty; }
     static winrt::DependencyProperty SelectedPageIndexProperty() { return s_SelectedPageIndexProperty; }
     static winrt::DependencyProperty SuffixTextProperty() { return s_SuffixTextProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_ButtonPanelAlwaysShowFirstLastPageIndexProperty;
     static GlobalDependencyProperty s_DisplayModeProperty;
@@ -105,6 +109,7 @@ public:
     static GlobalDependencyProperty s_PreviousButtonVisibilityProperty;
     static GlobalDependencyProperty s_SelectedPageIndexProperty;
     static GlobalDependencyProperty s_SuffixTextProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     winrt::event_token SelectedIndexChanged(winrt::TypedEventHandler<winrt::PagerControl, winrt::PagerControlSelectedIndexChangedEventArgs> const& value);
     void SelectedIndexChanged(winrt::event_token const& token);
@@ -187,6 +192,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSuffixTextPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTemplateSettingsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

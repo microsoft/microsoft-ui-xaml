@@ -8,9 +8,99 @@
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
-    CppWinRTActivatableClassWithBasicFactory(PagerControlTemplateSettings)
+    CppWinRTActivatableClassWithDPFactory(PagerControlTemplateSettings)
 }
 
 #include "PagerControlTemplateSettings.g.cpp"
 
+GlobalDependencyProperty PagerControlTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
+GlobalDependencyProperty PagerControlTemplateSettingsProperties::s_NumberPanelItemsProperty{ nullptr };
+GlobalDependencyProperty PagerControlTemplateSettingsProperties::s_PagesProperty{ nullptr };
 
+PagerControlTemplateSettingsProperties::PagerControlTemplateSettingsProperties()
+{
+    EnsureProperties();
+}
+
+void PagerControlTemplateSettingsProperties::EnsureProperties()
+{
+    if (!s_DispatcherProperty)
+    {
+        s_DispatcherProperty =
+            InitializeDependencyProperty(
+                L"Dispatcher",
+                winrt::name_of<winrt::CoreDispatcher>(),
+                winrt::name_of<winrt::PagerControlTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::CoreDispatcher>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_NumberPanelItemsProperty)
+    {
+        s_NumberPanelItemsProperty =
+            InitializeDependencyProperty(
+                L"NumberPanelItems",
+                winrt::name_of<winrt::IVector<winrt::IInspectable>>(),
+                winrt::name_of<winrt::PagerControlTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_PagesProperty)
+    {
+        s_PagesProperty =
+            InitializeDependencyProperty(
+                L"Pages",
+                winrt::name_of<winrt::IVector<winrt::IInspectable>>(),
+                winrt::name_of<winrt::PagerControlTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
+                nullptr);
+    }
+}
+
+void PagerControlTemplateSettingsProperties::ClearProperties()
+{
+    s_DispatcherProperty = nullptr;
+    s_NumberPanelItemsProperty = nullptr;
+    s_PagesProperty = nullptr;
+}
+
+void PagerControlTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<PagerControlTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::CoreDispatcher PagerControlTemplateSettingsProperties::Dispatcher()
+{
+    return ValueHelper<winrt::CoreDispatcher>::CastOrUnbox(static_cast<PagerControlTemplateSettings*>(this)->GetValue(s_DispatcherProperty));
+}
+
+void PagerControlTemplateSettingsProperties::NumberPanelItems(winrt::IVector<winrt::IInspectable> const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<PagerControlTemplateSettings*>(this)->SetValue(s_NumberPanelItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IVector<winrt::IInspectable> PagerControlTemplateSettingsProperties::NumberPanelItems()
+{
+    return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<PagerControlTemplateSettings*>(this)->GetValue(s_NumberPanelItemsProperty));
+}
+
+void PagerControlTemplateSettingsProperties::Pages(winrt::IVector<winrt::IInspectable> const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<PagerControlTemplateSettings*>(this)->SetValue(s_PagesProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IVector<winrt::IInspectable> PagerControlTemplateSettingsProperties::Pages()
+{
+    return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<PagerControlTemplateSettings*>(this)->GetValue(s_PagesProperty));
+}

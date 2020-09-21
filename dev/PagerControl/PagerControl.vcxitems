@@ -23,6 +23,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PagerControl.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PagerControlTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PagerControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PagerControlTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)PagerControl.xaml">

@@ -1,4 +1,4 @@
-namespace MU_XC_NAMESPACE
+﻿namespace MU_XC_NAMESPACE
 {
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -20,11 +20,23 @@ enum PagerControlButtonVisibility
 };
 
 [WUXC_VERSION_PREVIEW]
+[webhosthidden]
 runtimeclass PagerControlSelectedIndexChangedEventArgs
 {
     Int32 NewPageIndex{get; };
     Int32 PreviousPageIndex{get; };
 };
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+unsealed runtimeclass PagerControlTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    PagerControlTemplateSettings();
+
+    Windows.Foundation.Collections.IVector<Object> Pages{ get; };
+    Windows.Foundation.Collections.IVector<Object> NumberPanelItems { get; };
+}
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -64,6 +76,10 @@ unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<PagerControl, PagerControlSelectedIndexChangedEventArgs> SelectedIndexChanged;
 
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    PagerControlTemplateSettings TemplateSettings{ get; };
+
     static Windows.UI.Xaml.DependencyProperty DisplayModeProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
@@ -91,11 +107,5 @@ unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SuffixTextProperty{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
-[webhosthidden]
-unsealed runtimeclass PagerControlTemplateSettings : Windows.UI.Xaml.DependencyObject
-{
-    PagerControlTemplateSettings();
-}
 
 }

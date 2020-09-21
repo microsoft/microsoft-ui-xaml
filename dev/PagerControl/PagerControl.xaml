@@ -7,7 +7,7 @@
     <Style TargetType="muxc:PagerControl">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="muxc:PagerControl">
+                <ControlTemplate TargetType="muxc:PagerControl" >
                     <Grid Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
@@ -88,7 +88,6 @@
                             <VisualStateGroup x:Name="PagerDisplayModeStates">
                                 <VisualState x:Name="NumberBoxVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="NumberBoxDisplay.IsEnabled" Value="True"/>
                                         <Setter Target="BoxPanels.Visibility" Value="Visible"/>
                                         <Setter Target="NumberBoxDisplay.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
@@ -132,16 +131,15 @@
                             <TextBlock x:Name="PrefixTextLabel" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <!--NumberBox Display-->
                             <muxc:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" Minimum="1"
-                                    Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedIndex, Mode=TwoWay}"
-                                    SmallChange="1" LargeChange="5"
-                                    IsEnabled="False" Visibility="Collapsed" />
+                                    Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}"
+                                    Minimum="1" SmallChange="1" LargeChange="5" Visibility="Collapsed" />
                             <!--ComboBox Display-->
                             <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
                                     ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
                                     IsEnabled="False" Visibility="Collapsed"/>
-                            <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Text="/"/>
-                            <TextBlock x:Name="SuffixTextLabel" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock x:Name="SuffixTextLabel" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            <TextBlock VerticalAlignment="Center" Margin="5,0,5,0"
+                                    Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" />
                         </StackPanel>
 
                         <muxc:ItemsRepeater x:Name="NumberPanelItemsRepeater" AutomationProperties.Name="NumberPanelItemsRepeater"
