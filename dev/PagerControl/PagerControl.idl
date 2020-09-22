@@ -68,7 +68,7 @@ unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
 
     Boolean ButtonPanelAlwaysShowFirstLastPageIndex;
 
-    [MUX_DEFAULT_VALUE("1")]
+    [MUX_DEFAULT_VALUE("0")]
     Int32 SelectedPageIndex;
 
     String PrefixText;

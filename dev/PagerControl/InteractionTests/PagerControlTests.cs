@@ -719,11 +719,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SetFirstPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityModes.Auto)
-            {
-                elements.GetFirstPageButtonVisibilityComboBox().SelectItemByName("AutoFirstPageButtonVisibilityItem");
-            }
-            else if (mode == ButtonVisibilityModes.AlwaysVisible)
+            if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetFirstPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisibleFirstPageButtonVisibilityItem");
             }
@@ -739,11 +735,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SetPreviousPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityModes.Auto)
-            {
-                elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("AutoPreviousPageButtonVisibilityItem");
-            }
-            else if (mode == ButtonVisibilityModes.AlwaysVisible)
+            if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisiblePreviousPageButtonVisibilityItem");
             }
@@ -759,11 +751,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SetNextPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityModes.Auto)
-            {
-                elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("AutoNextPageButtonVisibilityItem");
-            }
-            else if (mode == ButtonVisibilityModes.AlwaysVisible)
+            if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetNextPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisibleNextPageButtonVisibilityItem");
             }
@@ -779,11 +767,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SetLastPageButtonVisibilityMode(ButtonVisibilityModes mode)
         {
-            if (mode == ButtonVisibilityModes.Auto)
-            {
-                elements.GetLastPageButtonVisibilityComboBox().SelectItemByName("AutoLastPageButtonVisibilityItem");
-            }
-            else if (mode == ButtonVisibilityModes.AlwaysVisible)
+            if (mode == ButtonVisibilityModes.AlwaysVisible)
             {
                 elements.GetLastPageButtonVisibilityComboBox().SelectItemByName("AlwaysVisibleLastPageButtonVisibilityItem");
             }

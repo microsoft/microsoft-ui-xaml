@@ -39,6 +39,7 @@ const winrt::hstring c_suffixTextTextblockName = L"SuffixTextLabel";
 
 const winrt::hstring c_comboBoxName = L"ComboBoxDisplay";
 const winrt::hstring c_numberBoxName = L"NumberBoxDisplay";
+const winrt::hstring c_numberPanelIndicatorName = L"NumberPanelCurrentPageIndicator";
 const winrt::hstring c_firstPageButtonName = L"FirstPageButton";
 const winrt::hstring c_previousPageButtonName = L"PreviousPageButton";
 const winrt::hstring c_nextPageButtonName = L"NextPageButton";
@@ -46,7 +47,7 @@ const winrt::hstring c_lastPageButtonName = L"LastPageButton";
 
 const int c_AutoDisplayModeNumberOfPagesThreshold = 10; // This integer determines when to switch between NumberBoxDisplayMode and ComboBoxDisplayMode 
 
-
+/* Common functions */
 PagerControl::PagerControl()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_PagerControl);
@@ -105,13 +106,17 @@ void PagerControl::OnApplyTemplate()
         comboBox.SelectedIndex(SelectedPageIndex() - 1);
         m_comboBoxSelectionChangedRevoker = comboBox.SelectionChanged(winrt::auto_revoke, { this, &PagerControl::ComboBoxSelectionChanged });
     }
-
     if (const auto numberBox = GetTemplateChildT<winrt::NumberBox>(c_numberBoxName,*this))
     {
         m_numberBox.set(numberBox);
         numberBox.Value(SelectedPageIndex() + 1);
         m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
     }
+    if (const auto numberPanelIndicator = GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName,*this))
+    {
+        m_selectedPageIndicator.set(numberPanelIndicator);
+    }
+
     //if (PagerNumberPanel != null)
     //{
     //    UpdateNumberPanel();
@@ -124,7 +129,6 @@ void PagerControl::OnApplyTemplate()
     OnDisplayModeChanged();
     UpdateOnEdgeButtonVisualStates();
 }
-
 
 void  PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
@@ -171,6 +175,11 @@ void  PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == NumberOfPagesProperty())
     {
+        m_lastNumberOfPagesCount = winrt::unbox_value<int>(args.OldValue());
+        if (NumberOfPages() < SelectedPageIndex())
+        {
+            SelectedPageIndex(NumberOfPages() - 1);
+        }
         UpdateTemplateSettingElementLists();
         if (DisplayMode() == winrt::PagerControlDisplayMode::Auto)
         {
@@ -181,10 +190,17 @@ void  PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     else if (property == SelectedPageIndexProperty())
     {
         OnSelectedIndexChanged(winrt::unbox_value<int>(args.OldValue()));
+        if (DisplayMode() == winrt::PagerControlDisplayMode::ButtonPanel)
+        {
+            // NumberPanel needs to update based on multiple parameters.
+            // SelectedPageIndex is one of them, so let's do that now!
+            UpdateNumberPanel(NumberOfPages());
+        }
         UpdateOnEdgeButtonVisualStates();
     }
 }
 
+/* Property changed handlers */
 void PagerControl::OnDisplayModeChanged()
 {
     // Cache for performance reasons
@@ -212,6 +228,57 @@ void PagerControl::UpdateDisplayModeAutoState()
 {
     winrt::VisualStateManager::GoToState(*this, NumberOfPages() < c_AutoDisplayModeNumberOfPagesThreshold ?
         c_comboBoxVisibleVisualState : c_numberBoxVisibleVisualState, false);
+}
+
+void PagerControl::OnSelectedIndexChanged(const int oldIndex)
+{
+    m_lastSelectedPageIndex = oldIndex;
+
+    if (const auto comboBox = m_comboBox.get())
+    {
+        comboBox.SelectedIndex(SelectedPageIndex());
+    }
+
+    if (const auto numBox = m_numberBox.get())
+    {
+        numBox.Value(SelectedPageIndex() + 1);
+    }
+
+    UpdateOnEdgeButtonVisualStates();
+
+    RaiseSelectedIndexChanged();
+}
+
+void PagerControl::RaiseSelectedIndexChanged()
+{
+    auto args = winrt::make_self<PagerControlSelectedIndexChangedEventArgs>(m_lastSelectedPageIndex, SelectedPageIndex());
+    m_selectedIndexChangedEventSource(*this, *args);
+}
+
+void PagerControl::OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
+    const winrt::hstring visibleStateName,
+    const winrt::hstring hiddenStateName,
+    const int hiddenOnEdgePageCriteria)
+{
+    if (visibility == winrt::PagerControlButtonVisibility::Visible)
+    {
+        winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
+    }
+    else if (visibility == winrt::PagerControlButtonVisibility::Hidden)
+    {
+        winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
+    }
+    else
+    {
+        if (SelectedPageIndex() != hiddenOnEdgePageCriteria)
+        {
+            winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
+        }
+    }
 }
 
 void PagerControl::UpdateTemplateSettingElementLists()
@@ -243,55 +310,7 @@ void PagerControl::UpdateTemplateSettingElementLists()
     }
     else if (displayMode == winrt::PagerControlDisplayMode::ButtonPanel)
     {
-        const auto selectedIndex = SelectedPageIndex();
-
-    }
-
-
-}
-
-void PagerControl::OnSelectedIndexChanged(const int oldIndex)
-{
-    m_lastSelectedPageIndex = oldIndex;
-
-    if (const auto comboBox = m_comboBox.get())
-    {
-        comboBox.SelectedIndex(SelectedPageIndex());
-    }
-
-    if (const auto numBox = m_numberBox.get())
-    {
-        numBox.Value(SelectedPageIndex() + 1);
-    }
-
-    UpdateOnEdgeButtonVisualStates();
-
-    RaiseSelectedIndexChanged();
-}
-
-void PagerControl::OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
-    const winrt::hstring visibleStateName,
-    const winrt::hstring hiddenStateName,
-    const int hiddenOnEdgePageCriteria)
-{
-    if (visibility == winrt::PagerControlButtonVisibility::Visible)
-    {
-        winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
-    }
-    else if (visibility == winrt::PagerControlButtonVisibility::Hidden)
-    {
-        winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
-    }
-    else
-    {
-        if (SelectedPageIndex() != hiddenOnEdgePageCriteria)
-        {
-            winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
-        }
+        UpdateNumberPanel(numberOfPages);
     }
 }
 
@@ -371,6 +390,115 @@ void PagerControl::UpdateOnEdgeButtonVisualStates()
     }
 }
 
+/* NumberPanel logic */
+void PagerControl::UpdateNumberPanel(const int numberOfPages)
+{
+    if (numberOfPages < 7)
+    {
+        UpdateNumberPanelCollectionAllItems(numberOfPages);
+    }
+    else
+    {
+        const auto selectedIndex = SelectedPageIndex();
+        // Idea: Choose correct "template" based on SelectedPageIndex (x) and NumberOfPages (n)
+        // 1 2 3 4 5 6 ... n <-- Items
+        if (selectedIndex < 3)
+        {
+            // First two items selected, create following pattern:
+            // 1 2 3 4 5... n
+            UpdateNumberPanelCollectionStartWithEllipsis(numberOfPages, selectedIndex);
+        }
+        else if (selectedIndex > numberOfPages - 3)
+        {
+            // Last two items selected, create following pattern:
+            //1 [...] n-4 n-3 n-2 n-1 n
+            UpdateNumberPanelCollectionEndWithEllipsis(numberOfPages, selectedIndex);
+        }
+        else
+        {
+            // Neither start or end, so lets do this:
+            // 1 [...] x-2 x-1 x x+1 x+2 [...] n
+            // where x-2 > 1 and x+2 < n
+            UpdateNumberPanelCollectionCenterWithEllipsis(numberOfPages, selectedIndex);
+        }
+    }
+}
+
+void PagerControl::UpdateNumberPanelCollectionAllItems(int numberOfPages)
+{
+    // Check that the NumberOfPages did not change, so we can skip recreating collection
+    if (m_lastNumberOfPagesCount != numberOfPages)
+    {
+        m_numberPanelElements.Clear();
+        for (int i = 0; i < numberOfPages && i < 6; i++)
+        {
+            AppendButtonToNumberPanelList(i + 1);
+        }
+    }
+    MoveIdentifierToElement(SelectedPageIndex());
+}
+
+
+void PagerControl::UpdateNumberPanelCollectionStartWithEllipsis(int numberOfPages, int selectedIndex)
+{
+    if (m_lastNumberOfPagesCount != numberOfPages)
+    {
+        // Do a recalculation as the number of pages changed.
+        m_numberPanelElements.Clear();
+        AppendButtonToNumberPanelList(1);
+        AppendButtonToNumberPanelList(2);
+        AppendButtonToNumberPanelList(3);
+        AppendButtonToNumberPanelList(4);
+        AppendButtonToNumberPanelList(5);
+        AppendEllipsisIconToNumberPanelList();
+        AppendButtonToNumberPanelList(numberOfPages);
+    }
+}
+
+void PagerControl::UpdateNumberPanelCollectionEndWithEllipsis(int numberOfPages, int selectedIndex)
+{
+
+}
+
+void PagerControl::UpdateNumberPanelCollectionCenterWithEllipsis(int numberOfPages, int selectedIndex)
+{
+
+}
+
+void PagerControl::MoveIdentifierToElement(int index)
+{
+    if (const auto indicator = m_selectedPageIndicator.get())
+    {
+        if (const auto element = m_numberPanelElements.GetAt(index).try_as<winrt::FrameworkElement>())
+        {
+            const auto bounds = element.TransformToVisual(*this).TransformBounds(winrt::Rect::Rect(0,0,0,0));
+            const auto boundingRect = winrt::LayoutInformation::GetLayoutSlot(element);
+            const auto numberPanelRectMargins = indicator.Margin();
+            auto newMargin = indicator.Margin();
+            newMargin.Left = boundingRect.X;
+            newMargin.Top = boundingRect.Y;
+            newMargin.Right = boundingRect.X + boundingRect.Width;
+            newMargin.Bottom = boundingRect.Y + boundingRect.Height;
+        }
+    }
+}
+
+void PagerControl::AppendButtonToNumberPanelList(const int numberOfPages)
+{
+
+    winrt::Button button;
+    button.Content(winrt::box_value(numberOfPages));
+    m_numberPanelElements.Append(button);
+}
+
+void PagerControl::AppendEllipsisIconToNumberPanelList()
+{
+    winrt::SymbolIcon ellipsisIcon;
+    ellipsisIcon.Symbol(winrt::Symbol::More);
+    m_numberPanelElements.Append(ellipsisIcon);
+}
+
+/* Interaction event listeners */
 void PagerControl::ComboBoxSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
     if (const auto comboBox = m_comboBox.get())
@@ -420,10 +548,4 @@ void PagerControl::LastButtonClicked(const IInspectable& sender, const winrt::Ro
     {
         command.Execute(nullptr);
     }
-}
-
-void PagerControl::RaiseSelectedIndexChanged()
-{
-    auto args = winrt::make_self<PagerControlSelectedIndexChangedEventArgs>(m_lastSelectedPageIndex, SelectedPageIndex());
-    m_selectedIndexChangedEventSource(*this, *args);
 }

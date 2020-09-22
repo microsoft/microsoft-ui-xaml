@@ -274,7 +274,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public enum ButtonVisibilityModes
         {
-            Auto,
             AlwaysVisible,
             HiddenOnEdge,
             None

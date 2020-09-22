@@ -13,7 +13,6 @@
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -105,13 +104,12 @@
                                         <Setter Target="NumberBoxDisplay.Visibility" Value="Collapsed"/>
                                         <Setter Target="ComboBoxDisplay.Visibility" Value="Collapsed"/>
                                         <Setter Target="NumberPanelItemsRepeater.Visibility" Value="Visible"/>
-                                        <Setter Target="NumberPanelCurrentPageIdentifier.Visibility" Value="Visible"/>
+                                        <Setter Target="NumberPanelCurrentPageIndicator.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <StackPanel Orientation="Horizontal"
-                                    Grid.Row="0"
                                     Grid.Column="0"
                                     HorizontalAlignment="Right">
                             <Button x:Name="FirstPageButton"
@@ -127,7 +125,7 @@
                         </StackPanel>
                         
                         <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal"
-                                Grid.Row="0" Grid.Column="1">
+                                Grid.Column="1">
                             <TextBlock x:Name="PrefixTextLabel" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <!--NumberBox Display-->
                             <muxc:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -136,20 +134,21 @@
                             <!--ComboBox Display-->
                             <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
                                     ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
-                                    IsEnabled="False" Visibility="Collapsed"/>
+                                    IsEnabled="False" Visibility="Collapsed" SelectedIndex="0"/>
                             <TextBlock x:Name="SuffixTextLabel" VerticalAlignment="Center" Margin="5,0,0,0"/>
                             <TextBlock VerticalAlignment="Center" Margin="5,0,5,0"
                                     Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" />
                         </StackPanel>
 
                         <muxc:ItemsRepeater x:Name="NumberPanelItemsRepeater" AutomationProperties.Name="NumberPanelItemsRepeater"
-                                Grid.Row="0" Grid.Column="1" Visibility="Collapsed">
+                                ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NumberPanelItems}"
+                                Grid.Column="1" Visibility="Collapsed">
                             <muxc:ItemsRepeater.Layout>
                                 <muxc:StackLayout Orientation="Horizontal" Spacing="5"/>
                             </muxc:ItemsRepeater.Layout>
                         </muxc:ItemsRepeater>
 
-                        <Rectangle x:Name="NumberPanelCurrentPageIdentifier" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="0"
+                        <Rectangle x:Name="NumberPanelCurrentPageIndicator" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1"
                                 Visibility="Collapsed" Fill="#0064C1" RadiusX="1" RadiusY="1" Height="2" Width="{StaticResource NumberPanelButtonWidth}">
                             <Rectangle.Transitions>
                                 <TransitionCollection>
@@ -158,7 +157,7 @@
                             </Rectangle.Transitions>
                         </Rectangle>
                         
-                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Left">
                             <Button x:Name="NextPageButton"
                                 Style="{StaticResource NavigationBackButtonNormalStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"

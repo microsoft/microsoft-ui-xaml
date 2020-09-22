@@ -237,7 +237,7 @@ void PagerControlProperties::EnsureProperties()
                 winrt::name_of<int>(),
                 winrt::name_of<winrt::PagerControl>(),
                 false /* isAttached */,
-                ValueHelper<int>::BoxValueIfNecessary(1),
+                ValueHelper<int>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnSelectedPageIndexPropertyChanged));
     }
     if (!s_SuffixTextProperty)
