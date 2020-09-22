@@ -1,6 +1,6 @@
 # Contributing to the Windows UI Library
 
-We welcome your input and contributions to all aspects of WinUI, including bug reports, doc updates, feature proposals, code contributions and spec discussions.
+We welcome your input and contributions to all aspects of WinUI, including bug reports, doc updates, feature proposals, code contributions and API spec discussions.
 
 This document contains general guidance. More specific guidance is included in the documents linked below.
 
@@ -74,8 +74,8 @@ You can find usage examples of the controls available in WinUI in the Xaml Contr
  which can also be installed from the Windows Store:  
  https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt
  
- ## Spec discussions/API reviews
+ ## API spec discussions
 
-Before new features will be implemented the WinUI team will do a thorough spec discussion/API review. This can range from a single new API to an entire new control featuring dozens of new APIs. Joining such a discussion/review is a great opportunity for developers to help ensuring that new WinUI APIs will look and feel natural and are a joy to work with. In addition, spec discussions are the follow-up to feature proposals and will go into much finer details than the initial proposal. As such, taking part in these discussions gives developers the chance to be involved in the complete development process of new WinUI features - from their initial high-level inception right down to specific implementation/behavior details.
+Before new features will be implemented the WinUI team will do a thorough API spec discussion (API review). This can range from a single new API to an entire new control featuring dozens of new APIs. Joining such a spec discussion is a great opportunity for developers to help ensuring that new WinUI APIs will look and feel natural and are a joy to work with. In addition, spec discussions are the follow-up to feature proposals and will go into much finer details than the initial proposal. As such, taking part in these discussions gives developers the chance to be involved in the complete development process of new WinUI features - from their initial high-level inception right down to specific implementation/behavior details.
 
-These discussions will be take place in their own [repository](https://github.com/microsoft/microsoft-ui-xaml-specs). While specs for feature proposals will typically be linked to in the specific proposal on the WinUI repository, not all spec discussions/reviews will immediately be mentioned there. Thus, if you don't want to miss out on these, we recommend that you [watch the repository](https://docs.github.com/en/enterprise/2.15/user/articles/watching-and-unwatching-repositories).
+These discussions will be take place in their own [repository](https://github.com/microsoft/microsoft-ui-xaml-specs). While API specs for feature proposals will typically be linked to in the specific proposal on the WinUI repository, not all active API specs will immediately be mentioned there. Thus, if you don't want to miss out on them, we recommend that you [watch the repository](https://docs.github.com/en/enterprise/2.15/user/articles/watching-and-unwatching-repositories).
