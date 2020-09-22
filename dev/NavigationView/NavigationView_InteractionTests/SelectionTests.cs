@@ -39,7 +39,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             TestEnvironment.Initialize(testContext);
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: Multiple unreliable NavigationView tests #134
         public void SuppressSelectionItemInvokeTest()
         {
@@ -101,9 +102,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void SelectionFollowFocusTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
-                Log.Warning("Test is disabled on RS1 and earlier because SingleSelectionFollowFocus on RS2.");
+                Log.Warning("Test is disabled on RS2 and earlier because SingleSelectionFollowFocus isn't on RS1 and scrollviewer handles arrow keys on RS2.");
                 return;
             }
             var testScenarios = RegressionTestScenario.BuildTopNavRegressionTestScenarios();
@@ -151,10 +152,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void MenuItemAutomationSelectionTest()
         {
-            var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
+            // On RS2 scrollviewer handles arrow keys and this causes an issue with the current setup of the "NavigationView Test" test page
+            // used for the left NavigationView test. So instead we now execute this test on the "NavigationView Regression Test" test page for
+            // left navigation.
+            (string testPageName, bool isLeftNavTest)[] testScenarios = new (string, bool)[] 
+                { ("NavigationView Regression Test", true), ("NavigationView TopNav Test", false) };
+
             foreach (var testScenario in testScenarios)
             {
-                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.testPageName }))
                 {
                     UIObject firstItem = FindElement.ByName("Home");
                     UIObject secondItem = FindElement.ByName("Apps");
@@ -169,7 +175,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Log.Comment("Move focus to the second item by pressing down(left nav)/right(right nav) arrow once");
                     var key = Key.Right;
-                    if (testScenario.IsLeftNavTest)
+                    if (testScenario.isLeftNavTest)
                     {
                         key = Key.Down;
                     }
@@ -210,6 +216,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             {
                 var readSettingsSelectedButton = new Button(FindElement.ByName("ReadSettingsSelected"));
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
+
+                Log.Comment("Bring Settings into view.");
+                FindElement.ByName<Button>("BringSettingsIntoViewButton").Invoke();
+                Wait.ForIdle();
 
                 var settings = new Button(FindElement.ByName("Settings"));
                 settings.Click();

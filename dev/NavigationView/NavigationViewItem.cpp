@@ -316,6 +316,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
     switch (position)
     {
     case NavigationViewRepeaterPosition::LeftNav:
+    case NavigationViewRepeaterPosition::LeftFooter:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             // OnLeftNavigationReveal is introduced in RS6. 
@@ -327,6 +328,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
         }
         break;
     case NavigationViewRepeaterPosition::TopPrimary:
+    case NavigationViewRepeaterPosition::TopFooter:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             stateName = c_OnTopNavigationPrimaryReveal;
@@ -490,7 +492,9 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 
 bool NavigationViewItem::HasChildren()
 {
-    return MenuItems().Size() > 0 || (MenuItemsSource() != nullptr && m_repeater.get().ItemsSourceView().Count() > 0) || HasUnrealizedChildren();
+    return MenuItems().Size() > 0
+        || (MenuItemsSource() != nullptr && m_repeater != nullptr && m_repeater.get().ItemsSourceView().Count() > 0)
+        || HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
@@ -511,7 +515,8 @@ bool NavigationViewItem::ShouldShowContent()
 
 bool NavigationViewItem::IsOnLeftNav() const
 {
-    return Position() == NavigationViewRepeaterPosition::LeftNav;
+    auto const position = Position();
+    return position == NavigationViewRepeaterPosition::LeftNav || position == NavigationViewRepeaterPosition::LeftFooter;
 }
 
 bool NavigationViewItem::IsOnTopPrimary() const

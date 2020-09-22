@@ -82,7 +82,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(winrt::make<RadioButtonsElementFactory>()),
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnItemTemplatePropertyChanged));
     }
     if (!s_MaxColumnsProperty)

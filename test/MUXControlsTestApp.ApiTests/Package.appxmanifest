@@ -28,13 +28,4 @@
     <Capability Name="internetClient" />
     <Capability Name="internetClientServer" />
   </Capabilities>
-  <Extensions>
-    <Extension Category="windows.activatableClass.inProcessServer">
-      <InProcessServer>
-        <Path>MUXTestUtilities.dll</Path>
-        <ActivatableClass ActivatableClassId="MUXTestUtilities.IdleSynchronizer" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="MUXTestUtilities.deptestutilities_XamlTypeInfo.XamlMetaDataProvider" ThreadingModel="both" />
-      </InProcessServer>
-    </Extension>
-  </Extensions>
 </Package>

@@ -198,11 +198,15 @@ void NumberBox::OnApplyTemplate()
         m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
     }
 
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NumberBox::OnIsEnabledChanged });
+
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
 
     UpdateSpinButtonPlacement();
     UpdateSpinButtonEnabled();
+
+    UpdateVisualStateForIsEnabledChange();
 
     if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
         && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
@@ -216,7 +220,7 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
@@ -336,6 +340,16 @@ void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyC
 {
     ValidateInput();
     UpdateSpinButtonEnabled();
+}
+
+void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateVisualStateForIsEnabledChange();
+}
+
+void NumberBox::UpdateVisualStateForIsEnabledChange()
+{
+    winrt::VisualStateManager::GoToState(*this, IsEnabled() ? L"Normal" : L"Disabled", false);
 }
 
 void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
