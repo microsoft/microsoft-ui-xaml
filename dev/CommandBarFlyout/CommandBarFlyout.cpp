@@ -38,6 +38,73 @@ CommandBarFlyout::CommandBarFlyout()
             {
                 SharedHelpers::ForwardVectorChange(sender, commandBar.PrimaryCommands(), args);
             }
+            // We want to ensure that any interaction with secondary items causes the CommandBarFlyout
+            // to close, so we'll attach a Click handler to any buttons and Checked/Unchecked handlers
+            // to any toggle buttons that we get and close the flyout when they're invoked.
+            // The only exception is buttons with flyouts - in that case, clicking on the button
+            // will just open the flyout rather than executing an action, so we don't want that to
+            // do anything.
+            const int index = args.Index();
+            const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) {
+                Hide();
+            };
+
+            switch (args.CollectionChange())
+            {
+            case winrt::CollectionChange::ItemChanged:
+            {
+                auto element = sender.GetAt(index);
+                auto button = element.try_as<winrt::AppBarButton>();
+                auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
+
+                if (button && !button.Flyout())
+                {
+                    m_primaryButtonClickRevokerByIndexMap[index] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
+                    SharedHelpers::EraseIfExists(m_primaryToggleButtonCheckedRevokerByIndexMap, index);
+                    SharedHelpers::EraseIfExists(m_primaryToggleButtonUncheckedRevokerByIndexMap, index);
+                }
+                else if (toggleButton)
+                {
+                    SharedHelpers::EraseIfExists(m_primaryButtonClickRevokerByIndexMap, index);
+                    m_primaryToggleButtonCheckedRevokerByIndexMap[index] = toggleButton.Checked(winrt::auto_revoke, closeFlyoutFunc);
+                    m_primaryToggleButtonUncheckedRevokerByIndexMap[index] = toggleButton.Unchecked(winrt::auto_revoke, closeFlyoutFunc);
+                }
+                else
+                {
+                    SharedHelpers::EraseIfExists(m_primaryButtonClickRevokerByIndexMap, index);
+                    SharedHelpers::EraseIfExists(m_primaryToggleButtonCheckedRevokerByIndexMap, index);
+                    SharedHelpers::EraseIfExists(m_primaryToggleButtonUncheckedRevokerByIndexMap, index);
+                }
+                break;
+            }
+            case winrt::CollectionChange::ItemInserted:
+            {
+                auto element = sender.GetAt(index);
+                auto button = element.try_as<winrt::AppBarButton>();
+                auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
+
+                if (button && !button.Flyout())
+                {
+                    m_primaryButtonClickRevokerByIndexMap[index] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
+                }
+                else if (toggleButton)
+                {
+                    m_primaryToggleButtonCheckedRevokerByIndexMap[index] = toggleButton.Checked(winrt::auto_revoke, closeFlyoutFunc);
+                    m_primaryToggleButtonUncheckedRevokerByIndexMap[index] = toggleButton.Unchecked(winrt::auto_revoke, closeFlyoutFunc);
+                }
+                break;
+            }
+            case winrt::CollectionChange::ItemRemoved:
+                SharedHelpers::EraseIfExists(m_primaryButtonClickRevokerByIndexMap, index);
+                SharedHelpers::EraseIfExists(m_primaryToggleButtonCheckedRevokerByIndexMap, index);
+                SharedHelpers::EraseIfExists(m_primaryToggleButtonUncheckedRevokerByIndexMap, index);
+                break;
+            case winrt::CollectionChange::Reset:
+                SetPrimaryCommandsToCloseWhenExecuted();
+                break;
+            default:
+                MUX_ASSERT(false);
+            }
         }
     });
 
@@ -256,6 +323,34 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     m_commandBar.set(*commandBar);
     return presenter;
+}
+
+void CommandBarFlyout::SetPrimaryCommandsToCloseWhenExecuted()
+{
+    m_primaryButtonClickRevokerByIndexMap.clear();
+    m_primaryToggleButtonCheckedRevokerByIndexMap.clear();
+    m_primaryToggleButtonUncheckedRevokerByIndexMap.clear();
+
+    const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) {
+        Hide();
+    };
+
+    for (uint32_t i = 0; i < PrimaryCommands().Size(); i++)
+    {
+        auto element = PrimaryCommands().GetAt(i);
+        auto button = element.try_as<winrt::AppBarButton>();
+        auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
+
+        if (button && !button.Flyout())
+        {
+            m_primaryButtonClickRevokerByIndexMap[i] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
+        }
+        else if (toggleButton)
+        {
+            m_primaryToggleButtonCheckedRevokerByIndexMap[i] = toggleButton.Checked(winrt::auto_revoke, closeFlyoutFunc);
+            m_primaryToggleButtonUncheckedRevokerByIndexMap[i] = toggleButton.Unchecked(winrt::auto_revoke, closeFlyoutFunc);
+        }
+    }
 }
 
 void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
