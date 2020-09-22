@@ -28,12 +28,11 @@ New WinUI features will continue to be backward-compatible with a wide range of 
 WinUI can be used with .NET, but doesn't depend on .NET: WinUI is 100% C++ and can be used in unmanaged Windows apps, for example using standard C++17 via [C++/WinRT](https://docs.microsoft.com/windows/uwp/cpp-and-winrt-apis/).
 
 5. **More frequent updates**  
-WinUI is planned to ship roughly every 4 months, with monthly pre-release builds.  This is more of a guideline than a rule, but that is what the team strives for
+WinUI is planned to ship roughly every 4 months, with monthly pre-release builds.  This is more of a guideline than a rule, but that is what the team strives for.
 
 6. **Open source development and community engagement**  
- The WinUI 2 Controls Library is already open source on GitHub, and we plan to add the full WinUI 3 XAML framework into this repo in the coming months.  
-You can engage directly with Microsoft's core engineering team and contribute bug reports, feature ideas, and even code: see the [Contribution Guide](../CONTRIBUTING.md) for more info.  
-You can also try out the monthly pre-release builds to see new in-development features and help shape their final form.  
+ The WinUI 2 Controls Library is already open source on GitHub, and we plan to add the full WinUI 3 XAML framework into this repo in the coming months. You can engage directly with Microsoft's core engineering team and contribute bug reports, feature ideas, and even code: see the [Contribution Guide](../CONTRIBUTING.md) for more info.  You can also try out the monthly pre-release builds to see new in-development features and help shape their final form.  
+ 
 ## WinUI 2 Controls Library
 
 The next release of the **WinUI 2 Controls Library** will be v2.5, ETA late 2020. 
