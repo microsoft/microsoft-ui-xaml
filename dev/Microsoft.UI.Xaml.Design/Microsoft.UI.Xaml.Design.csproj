@@ -47,10 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|arm'">
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="16.7.30329.38" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
   </ItemGroup>
