@@ -81,9 +81,9 @@
                         <ComboBoxItem x:Name="ComboBoxDisplayModeItem" AutomationProperties.Name="ComboBoxDisplayModeItem">ComboBox</ComboBoxItem>
                         <ComboBoxItem x:Name="NumberPanelDisplayModeItem" AutomationProperties.Name="NumberPanelDisplayModeItem">NumberPanel</ComboBoxItem>
                     </ComboBox>
-
-                    <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Grid.Row="4" Click="NumberOfPagesSetterButtonClicked"/>
-                    <Button x:Name="IncreaseNumberOfPagesButton" Content="Increase NumberOfPages by 1" Grid.Row="5" Click="IncreaseNumberOfPagesButtonClicked"/>
+                    <CheckBox Content="ButtonPanelAlwaysShowFirstLastPageIndex" Grid.Row="4" IsChecked="{x:Bind TestPager.ButtonPanelAlwaysShowFirstLastPageIndex,Mode=TwoWay}"/>
+                    <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Grid.Column="0" Grid.Row="5" Click="NumberOfPagesSetterButtonClicked"/>
+                    <Button x:Name="IncreaseNumberOfPagesButton" Content="Increase NumberOfPages by 1" Grid.Column="1" Grid.Row="5" Click="IncreaseNumberOfPagesButtonClicked"/>
                 </Grid>
                 <Grid Grid.Column="1" Margin="5">
                     <Grid.ColumnDefinitions>

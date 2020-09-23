@@ -5,10 +5,12 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
     <Style TargetType="muxc:PagerControl">
+        <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PagerControl" >
-                    <Grid Background="{TemplateBinding Background}"
+                    <Grid x:Name="RootGrid"
+                        Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid.RowDefinitions>

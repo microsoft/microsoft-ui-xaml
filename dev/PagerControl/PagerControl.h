@@ -19,21 +19,28 @@ public:
     PagerControl();
     ~PagerControl();
 
-    // IFrameworkElement
+    /* IFrameworkElement */
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
+    winrt::AutomationPeer OnCreateAutomationPeer();
+    
     /* Property changed handlers */
     void OnDisplayModeChanged();
     void UpdateDisplayModeAutoState();
     void OnSelectedIndexChanged(const int oldIndex);
-    void RaiseSelectedIndexChanged();
     void OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
         const winrt::hstring visibleStateName,
         const winrt::hstring hiddenStateName,
         const int hiddenOnEdgeSelectedIndexCriteria);
+
+private:
+
+    /* UI updating */
     void UpdateTemplateSettingElementLists();
     void UpdateOnEdgeButtonVisualStates();
+
+    /* Eventing */
+    void RaiseSelectedIndexChanged();
 
     /* NumberPanel logic */
     void UpdateNumberPanel(const int numberOfPages);
@@ -42,10 +49,11 @@ public:
     void UpdateNumberPanelCollectionEndWithEllipsis(int numberOfPages, int selectedIndex);
     void UpdateNumberPanelCollectionCenterWithEllipsis(int numberOfPages, int selectedIndex);
     void MoveIdentifierToElement(int index);
-    void AppendButtonToNumberPanelList(const int numberOfPages);
+    void AppendButtonToNumberPanelList(const int pageNumber, const int numberOfPages);
     void AppendEllipsisIconToNumberPanelList();
 
     /* Interaction event listeners */
+    void OnRootGridKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void NumberBoxValueChanged(const winrt::IInspectable& sender, const winrt::NumberBoxValueChangedEventArgs& args);
     void ComboBoxSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void FirstButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -53,7 +61,7 @@ public:
     void NextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void LastButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
 
-private:
+
     int m_lastSelectedPageIndex = -1;
     int m_lastNumberOfPagesCount = 0;
 
@@ -62,6 +70,7 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_numberPanelRepeater{ this };
     tracker_ref<winrt::FrameworkElement> m_selectedPageIndicator{ this };
 
+    winrt::FrameworkElement::KeyDown_revoker m_rootGridKeyDownRevoker{};
     winrt::ComboBox::SelectionChanged_revoker m_comboBoxSelectionChangedRevoker{};
     winrt::NumberBox::ValueChanged_revoker m_numberBoxValueChangedRevoker{};
     winrt::Button::Click_revoker m_firstPageButtonClickRevoker{};

@@ -66,6 +66,7 @@ unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.Style NextButtonStyle;
     Windows.UI.Xaml.Style LastButtonStyle;
 
+    [MUX_DEFAULT_VALUE("true")]
     Boolean ButtonPanelAlwaysShowFirstLastPageIndex;
 
     [MUX_DEFAULT_VALUE("0")]
@@ -106,6 +107,5 @@ unsealed runtimeclass PagerControl : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty PrefixTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SuffixTextProperty{ get; };
 }
-
 
 }

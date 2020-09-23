@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)PagerControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PagerControlSelectedIndexChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PagerControlTemplateSettings.h" />
   </ItemGroup>
@@ -23,6 +24,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PagerControl.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PagerControlTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PagerControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PagerControlTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)PagerControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />

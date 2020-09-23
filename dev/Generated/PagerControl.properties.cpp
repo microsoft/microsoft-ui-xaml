@@ -50,7 +50,7 @@ void PagerControlProperties::EnsureProperties()
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::PagerControl>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxedDefaultValue(),
+                ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnButtonPanelAlwaysShowFirstLastPageIndexPropertyChanged));
     }
     if (!s_DisplayModeProperty)
