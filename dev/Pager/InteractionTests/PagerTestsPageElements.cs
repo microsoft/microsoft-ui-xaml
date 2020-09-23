@@ -43,6 +43,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject PagerComboBox;
 
+        public UIObject GetNumberPanelButton(string elementName)
+        {
+            foreach (var element in GetPager().Children)
+            {
+                if (element.AutomationId == elementName)
+                {
+                    return element;
+                }
+            }
+            return null;
+        }
+
         public UIObject GetFirstPageButton()
         {
             return GetElementWithinPager(ref FirstPageButton, "FirstPageButton");
@@ -97,29 +109,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private ComboBox DisplayModeComboBox;
 
-        public TextBlock GetFirstPageButtonVisibilityTextBlock()
+        public CheckBox GetFirstPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref FirstPageButtonVisibilityTextBlock, "FirstPageButtonVisibilityTextBlock");
+            return GetElement(ref FirstPageButtonVisibilityCheckBox, "FirstPageButtonVisibilityCheckBox");
         }
-        private TextBlock FirstPageButtonVisibilityTextBlock;
+        private CheckBox FirstPageButtonVisibilityCheckBox;
         
-        public TextBlock GetPreviousPageButtonVisibilityTextBlock()
+        public CheckBox GetPreviousPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref PreviousPageButtonVisibilityTextBlock, "PreviousPageButtonVisibilityTextBlock");
+            return GetElement(ref PreviousPageButtonVisibilityCheckBox, "PreviousPageButtonVisibilityCheckBox");
         }
-        private TextBlock PreviousPageButtonVisibilityTextBlock;
+        private CheckBox PreviousPageButtonVisibilityCheckBox;
         
-        public TextBlock GetNextPageButtonVisibilityTextBlock()
+        public CheckBox GetNextPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref NextPageButtonVisibilityTextBlock, "NextPageButtonVisibilityTextBlock");
+            return GetElement(ref NextPageButtonVisibilityCheckBox, "NextPageButtonVisibilityCheckBox");
         }
-        private TextBlock NextPageButtonVisibilityTextBlock;
+        private CheckBox NextPageButtonVisibilityCheckBox;
         
-        public TextBlock GetLastPageButtonVisibilityTextBlock()
+        public CheckBox GetLastPageButtonVisibilityCheckBox()
         {
-            return GetElement(ref LastPageButtonVisibilityTextBlock, "LastPageButtonVisibilityTextBlock");
+            return GetElement(ref LastPageButtonVisibilityCheckBox, "LastPageButtonVisibilityCheckBox");
         }
-        private TextBlock LastPageButtonVisibilityTextBlock;
+        private CheckBox LastPageButtonVisibilityCheckBox;
         
         public CheckBox GetFirstPageButtonIsEnabledCheckBox()
         {
@@ -145,11 +157,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox LastPageButtonIsEnabledCheckBox;
 
-        public TextBlock GetNumberBoxVisibilityTextBlock()
+        public CheckBox GetNumberBoxVisibilityCheckBox()
         {
-            return GetElement(ref NumberBoxVisibilityTextBlock, "NumberBoxVisibilityTextBlock");
+            return GetElement(ref NumberBoxVisibilityCheckBox, "NumberBoxVisibilityCheckBox");
         }
-        private TextBlock NumberBoxVisibilityTextBlock;
+        private CheckBox NumberBoxVisibilityCheckBox;
 
         public CheckBox GetNumberBoxIsEnabledCheckBox()
         {
@@ -157,11 +169,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox NumberBoxIsEnabledCheckBox;
 
-        public TextBlock GetComboBoxVisibilityTextBlock()
+        public CheckBox GetComboBoxVisibilityCheckBox()
         {
-            return GetElement(ref ComboBoxVisibilityTextBlock, "ComboBoxVisibilityTextBlock");
+            return GetElement(ref ComboBoxVisibilityCheckBox, "ComboBoxVisibilityCheckBox");
         }
-        private TextBlock ComboBoxVisibilityTextBlock;
+        private CheckBox ComboBoxVisibilityCheckBox;
 
         public CheckBox GetComboBoxIsEnabledCheckBox()
         {
@@ -169,16 +181,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox ComboBoxIsEnabledCheckBox;
 
-        public ListView GetEventOutputListView()
+        public CheckBox GetNumberPanelVisibilityCheckBox()
         {
-            return GetElement(ref EventOutputListView, "PagerEventListViewDisplay");
+            return GetElement(ref NumberPanelVisibilityCheckBox, "NumberPanelVisibilityCheckBox");
         }
-        private ListView EventOutputListView;
+        private CheckBox NumberPanelVisibilityCheckBox;
 
-        public string GetLastEventOutput()
+        public TextBlock GetNumberPanelContentTextBlock()
         {
-            return GetEventOutputListView().LastChild.Name;
+            return GetElement(ref NumberPanelContentTextBlock, "NumberPanelContentTextBlock");
         }
+        private TextBlock NumberPanelContentTextBlock;
+
+        public Button GetUpdateMarginTextBlockButton()
+        {
+            return GetElement(ref UpdateMarginTextBlockButton, "UpdateMarginTextBlockButton");
+        }
+        private Button UpdateMarginTextBlockButton;
+
+        public TextBlock GetCurrentPageIdentifierLeftMarginTextBlock()
+        {
+            return GetElement(ref CurrentPageIdentifierLeftMarginTextBlock, "CurrentPageIdentifierLeftMarginTextBlock");
+        }
+        private TextBlock CurrentPageIdentifierLeftMarginTextBlock;
+
+        public TextBlock GetNumberOfPagesTextBlock()
+        {
+            return GetElement(ref NumberOfPagesTextBlock, "NumberOfPagesTextBlock");
+        }
+        private TextBlock NumberOfPagesTextBlock;
+
+        public Button GetNumberOfPagesSetterButton()
+        {
+            return GetElement(ref NumberOfPagesSetterButton, "NumberOfPagesSetterButton");
+        }
+        private Button NumberOfPagesSetterButton;
+
+        public TextBlock GetCurrentPageTextBlock()
+        {
+            return GetElement(ref CurrentPageTextBlock, "CurrentPageTextBlock");
+        }
+        private TextBlock CurrentPageTextBlock;
+
+        public TextBlock GetPreviousPageTextBlock()
+        {
+            return GetElement(ref PreviousPageTextBlock, "PreviousPageTextBlock");
+        }
+        private TextBlock PreviousPageTextBlock;
+
+        public Button GetIncreaseNumberOfPagesButton()
+        {
+            return GetElement(ref IncreaseNumberOfPagesButton, "IncreaseNumberOfPagesButton");
+        }
+        private Button IncreaseNumberOfPagesButton;
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
@@ -197,7 +252,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Find the " + elementName);
 
-                foreach(T child in GetPager().Children)
+                foreach (T child in GetPager().Children)
                 {
                     if (child.AutomationId == elementName)
                     {
@@ -224,8 +279,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             HiddenOnEdge,
             None
         }
-
-        public bool ComboBoxDisplayModeActive = true;
-        public bool NumberBoxDisplayModeActive = false;
     }
 }

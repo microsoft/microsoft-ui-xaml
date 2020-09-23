@@ -283,5 +283,37 @@ namespace MUXControlsTestApp
         {
             NavView.SelectedItem = new CheckBox();
         }
+
+        private void ShoulderNavigationEnabledSetter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selectedItem = (e.AddedItems[0] as ComboBoxItem).Content as string;
+
+            switch (selectedItem)
+            {
+                case "Always":
+                    NavView.ShoulderNavigationEnabled = Microsoft.UI.Xaml.Controls.NavigationViewShoulderNavigationEnabled.Always;
+                    break;
+                case "WhenSelectionFollowsFocus":
+                    NavView.ShoulderNavigationEnabled = Microsoft.UI.Xaml.Controls.NavigationViewShoulderNavigationEnabled.WhenSelectionFollowsFocus;
+                    break;
+                case "Never":
+                    NavView.ShoulderNavigationEnabled = Microsoft.UI.Xaml.Controls.NavigationViewShoulderNavigationEnabled.Never;
+                    break;
+            }
+        }
+        private void SelectionFollowsFocusSetter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selectedItem = (e.AddedItems[0] as ComboBoxItem).Content as string;
+
+            if(selectedItem == "Enabled")
+            {
+                NavView.SelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus.Enabled;
+            }
+            else
+            {
+                NavView.SelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus.Disabled;
+
+            }
+        }
     }
 }

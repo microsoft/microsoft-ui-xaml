@@ -13,7 +13,7 @@
     <StackPanel>
         <StackPanel Orientation="Horizontal">
             <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
-                                            IsBackEnabled="True" Header="LeftMinimal" PaneDisplayMode="LeftMinimal">
+                                            IsBackEnabled="True" Header="LeftMinimal" PaneDisplayMode="LeftMinimal" Margin="10,0">
                 <StackPanel>
                     <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult"/>
                     <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>

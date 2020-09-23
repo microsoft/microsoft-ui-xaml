@@ -267,7 +267,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] //RatingControlTests.GamepadTest unreliable test #155
         public void GamepadTest()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This literally clicks the button corresponding to the test page.
@@ -663,7 +662,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // These two tests that try and test live mid-input visual changes are unreliable.
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void EnsureScaleMaintainedOnTap()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This literally clicks the button corresponding to the test page.
@@ -693,7 +692,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void VerifyRatingItemFallback()
         {
             // This test is actually performed in the test app itself, so go look at RatingControlPage.xaml.cs for the meat of it.

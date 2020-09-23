@@ -152,28 +152,30 @@
                             </Grid>
 
                             <Grid x:Name="ExpandCollapseChevron"
-                                    Grid.Column="1"
-                                    Padding="12,0,12,0"
-                                    Width="Auto"
-                                    Opacity="{TemplateBinding GlyphOpacity}"
-                                    Background="Transparent">
+                                Grid.Column="1"
+                                Padding="12,0,12,0"
+                                Width="Auto"
+                                Opacity="{TemplateBinding GlyphOpacity}"
+                                Background="Transparent">
                                 <TextBlock Foreground="{TemplateBinding GlyphBrush}"
-                                            Width="12" Height="12"
-                                            Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}" 
-                                            FontSize="{TemplateBinding GlyphSize}" Text="{TemplateBinding CollapsedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False" />
+                                    Width="12" Height="12"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}"
+                                    FontSize="{TemplateBinding GlyphSize}" Text="{TemplateBinding CollapsedGlyph}"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    IsTextScaleFactorEnabled="False"
+                                    IsHitTestVisible="False"/>
                                 <TextBlock Foreground="{TemplateBinding GlyphBrush}"
-                                            Width="12" Height="12"
-                                            Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
-                                            FontSize="{TemplateBinding GlyphSize}"
-                                            Text="{TemplateBinding ExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False"/>
+                                    Width="12" Height="12"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
+                                    FontSize="{TemplateBinding GlyphSize}"
+                                    Text="{TemplateBinding ExpandedGlyph}"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    IsTextScaleFactorEnabled="False"
+                                    IsHitTestVisible="False"/>
                             </Grid>
 
                             <ContentPresenter x:Name="ContentPresenter"

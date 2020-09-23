@@ -9,10 +9,7 @@
     <AppxBundle>Never</AppxBundle>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
-    <PackageCertificateThumbprint>FD1D6927F4521242F00B20C9DF66EA4F97175EE2</PackageCertificateThumbprint>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
   </PropertyGroup>
   <!-- We need to define NuGet references using this newer style for running tests locally in VS to work.
        However, for some reason, specifially in lab builds, using the below to resolve NuGet references
@@ -34,10 +31,10 @@
       <Version>6.2.8</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>1.3.2</Version>
+      <Version>2.1.2</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>1.3.2</Version>
+      <Version>2.1.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

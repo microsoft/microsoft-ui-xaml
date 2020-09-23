@@ -415,12 +415,13 @@
                 Visibility=Visible
                 RenderSize=0,0
           [Windows.UI.Xaml.Controls.Button]
-              Padding=12,0,12,0
+              Padding=8,5,8,6
               Foreground=#FF000000
               BorderThickness=1,1,1,1
-              BorderBrush=#00FFFFFF
+              BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
               Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
               CornerRadius=0,0,0,0
+              Width=48
               Name=TopNavOverflowButton
               Margin=0,0,0,0
               Height=40
@@ -1045,9 +1046,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -1303,9 +1302,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -1615,9 +1612,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -1873,9 +1868,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -2170,9 +2163,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -2428,9 +2419,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -2686,9 +2675,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -2944,9 +2931,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -3256,9 +3241,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -3514,9 +3497,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -3811,9 +3792,7 @@
                                             [Windows.UI.Xaml.Controls.TextBlock]
                                                 Padding=0,0,0,0
                                                 Foreground=#FF000000
-                                                Width=12
                                                 Margin=0,0,0,0
-                                                Height=12
                                                 FocusVisualSecondaryThickness=1,1,1,1
                                                 FocusVisualSecondaryBrush=#99FFFFFF
                                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -4476,7 +4455,7 @@
                       RenderSize=372,19
                 [Windows.UI.Xaml.Controls.Canvas]
                     Background=[NULL]
-                    Width=120
+                    Width=152
                     Name=PaneShadowReceiver
                     Margin=0,-32,-32,-32
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -4484,7 +4463,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=120,264
+                    RenderSize=152,264
             [Windows.UI.Xaml.Shapes.Rectangle]
                 StrokeThickness=1
                 Name=LightDismissLayer

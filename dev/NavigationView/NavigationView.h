@@ -157,6 +157,7 @@ private:
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
     void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable &, const winrt::IInspectable &);
+    void OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
@@ -165,8 +166,6 @@ private:
     void UpdateVisualState(bool useTransitions = false);
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
-    void UpdateNavigationViewUseSystemVisual();
-    static void PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual);
     void UpdatePaneShadow();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
@@ -236,6 +235,8 @@ private:
     void UpdatePaneTitleMargins();
     void UpdateLeftRepeaterItemSource(const winrt::IInspectable& items);
     void UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items);
+    void UpdateTopNavPrimaryRepeaterItemsSource(const winrt::IInspectable& items);
+    void UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items);
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
     bool UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
@@ -270,6 +271,8 @@ private:
     void OnTitleBarMetricsChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnTitleBarIsVisibleChanged(const winrt::CoreApplicationViewTitleBar& sender, const winrt::IInspectable& args);
     void UpdateTitleBarPadding();
+
+    void OnAutoSuggestBoxSuggestionChosen(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs& args);
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
@@ -318,7 +321,6 @@ private:
     bool ShouldPreserveNavigationViewRS3Behavior();
 
     bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
-    bool ShouldShowFocusVisual();
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void FocusNextDownItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
@@ -394,6 +396,7 @@ private:
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
+    winrt::AutoSuggestBox::SuggestionChosen_revoker m_autoSuggestBoxSuggestionChosenRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
@@ -423,6 +426,7 @@ private:
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_footerItemsCollectionChangedRevoker{};
 
+    winrt::ItemsSourceView::CollectionChanged_revoker m_topNavOverflowItemsCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
 
@@ -439,6 +443,12 @@ private:
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
 
     bool m_appliedTemplate{ false };
+
+    // Identifies whenever a call is the result of OnApplyTemplate
+    bool m_fromOnApplyTemplate{ false };
+
+    // Used to defer updating the SplitView displaymode property
+    bool m_updateVisualStateForDisplayModeFromOnLoaded{ false };
 
     // flag is used to stop recursive call. eg:
     // Customer select an item from SelectedItem property->ChangeSelection update ListView->LIstView raise OnSelectChange(we want stop here)->change property do do animation again.

@@ -26,13 +26,13 @@ namespace MUXControls.ReleaseTest
         [TestProperty("Platform", "Any")]
         public static void ClassInitialize(TestContext testContext)
         {
-            TestEnvironment.Initialize(testContext, TestType.AppThatUsesMuxIndirectly);
+            TestEnvironment.Initialize(testContext, TestApplicationInfo.AppThatUsesMUXIndirectly);
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            TestEnvironment.AssemblyCleanupWorker(TestType.AppThatUsesMuxIndirectly);
+            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.AppThatUsesMUXIndirectly);
         }
 
 

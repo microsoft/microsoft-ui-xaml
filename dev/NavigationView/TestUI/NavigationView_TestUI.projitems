@@ -10,6 +10,10 @@
     <Import_RootNamespace>NavigationView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)DialogWithNavView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewDataBinding.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -74,6 +78,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavOverflowButtonPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -96,6 +104,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DialogWithNavView.xaml.cs">
+      <DependentUpon>DialogWithNavView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewDataBinding.xaml.cs">
       <DependentUpon>HierarchicalNavigationViewDataBinding.xaml</DependentUpon>
     </Compile>
@@ -114,7 +125,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewIsPaneOpenPage.xaml.cs">
       <DependentUpon>NavigationViewIsPaneOpenPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml.cs" >
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml.cs">
       <DependentUpon>NavigationViewMenuItemStretchPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMinimalPage.xaml.cs">
@@ -143,6 +154,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInitPage.xaml.cs">
       <DependentUpon>NavigationViewInitPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavOverflowButtonPage.xaml.cs">
+      <DependentUpon>NavigationViewTopNavOverflowButtonPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TopMode\NavigationViewTopNavPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavPage.xaml</DependentUpon>

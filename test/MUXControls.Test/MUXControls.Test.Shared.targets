@@ -8,7 +8,6 @@
   <Import Project="..\..\dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <Import Project="..\..\dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <!-- -->
-  <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="..\..\dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
   <Import Project="..\..\dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="..\..\dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />

@@ -249,7 +249,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Verify that original menu items can be removed");
                     removeButton.Invoke();
                     Wait.ForIdle();
-                    VerifyElement.NotFound("Integer", FindBy.Name);
+                    VerifyElement.NotFound("HasChildItem", FindBy.Name);
 
                     Log.Comment("Verify that menu items can be added after removing");
                     addButton.Invoke();
@@ -497,8 +497,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
-        // Disabled due to: Bug 18650478: Test instability: NavigationViewTests.TitleBarTest
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18650478
         public void TitleBarTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -741,38 +740,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void MenuItemKeyboardInvokeTest()
         {
-            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
-            foreach (var testScenario in testScenarios)
+            // On RS2 scrollviewer handles arrow keys and this causes an issue with the current setup of the "NavigationView Test" test page
+            // used for the left NavigationView test. So instead we now execute this test on the "NavigationView Regression Test" test page for
+            // left navigation.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Regression Test" }))
             {
-                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                Log.Comment("Verify the first menu item has focus and is selected");
+                UIObject firstItem = FindElement.ByName("Home");
+                firstItem.SetFocus();
+                Verify.IsTrue(firstItem.HasKeyboardFocus);
+                Verify.IsTrue(Convert.ToBoolean(firstItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                Log.Comment("Move focus to the second menu item by pressing down arrow");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                Log.Comment("Verify second menu item has focus but is not selected");
+                UIObject secondItem = FindElement.ByName("Apps");
+                Verify.IsTrue(secondItem.HasKeyboardFocus);
+                Verify.IsFalse(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
                 {
-                    Log.Comment("Verify the first menu item has focus and is selected");
-                    UIObject firstItem = FindElement.ByName("Home");
-                    firstItem.SetFocus();
-                    Verify.IsTrue(firstItem.HasKeyboardFocus);
-                    Verify.IsTrue(Convert.ToBoolean(firstItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
-
-                    Log.Comment("Move focus to the second menu item by pressing down arrow");
-                    KeyboardHelper.PressKey(Key.Down);
+                    Log.Comment("Select the second item by pressing enter");
+                    KeyboardHelper.PressKey(Key.Enter);
                     Wait.ForIdle();
-
-                    Log.Comment("Verify second menu item has focus but is not selected");
-                    UIObject secondItem = FindElement.ByName("Apps");
-                    Verify.IsTrue(secondItem.HasKeyboardFocus);
-                    Verify.IsFalse(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
-
-                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
-                    {
-                        Log.Comment("Select the second item by pressing enter");
-                        KeyboardHelper.PressKey(Key.Enter);
-                        Wait.ForIdle();
-                        Verify.IsTrue(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
-                    }
-                    else
-                    {
-                        Log.Warning("Full test is not executing due to lack of selection on keyboard selection behaviour in older versions of ListView");
-                    }
+                    Verify.IsTrue(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+                }
+                else
+                {
+                    Log.Warning("Full test is not executing due to lack of selection on keyboard selection behaviour in older versions of ListView");
                 }
             }
         }
@@ -1102,7 +1099,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ToolTipTest() // Verify tooltips appear, and that their contents change when headers change
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1231,7 +1228,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ToolTipCustomContentTest() // Verify tooltips don't appear for custom NavViewItems (split off due to CatGates timeout)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -1460,7 +1457,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
         public void VerifyShouldPreserveNavigationViewRS3Behavior()
         {
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }))
+            // This test exercises how the navigation view intereacts with the titlebar, thus setting shouldRestrictInnerFrameSize to true (the default) doesn't allow us
+            // to exercise the scenario, thus requiring us to disable this. 
+            using (var setup = new TestSetupHelper(testNames: new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }, shouldRestrictInnerFrameSize: false))
             {
                 if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
                 {
@@ -1679,6 +1678,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
+        [TestMethod]
+        public void VerifyNoCrashWhenNavViewInContentDialog()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                Log.Comment("Open a ContentDialog with a NavView inside.");
+                Button openContentDialogButton = new Button(FindElement.ById("ContentDialogNavViewButton"));
+                openContentDialogButton.Invoke();
+                Wait.ForIdle();
 
+                Log.Comment("Close the ContentDialog with a NavView inside.");
+                Button closeContentDialogButton = new Button(FindElement.ByName("Button1ContentDialog"));
+                closeContentDialogButton.Invoke();
+                Wait.ForIdle();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemContentPresenterMargin()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var getTopLevelContentPresenterMarginButton = FindElement.ById<Button>("GetTopLevelNavViewItemContentPresenterMarginButton");
+                var getChildContentPresenterMarginButton = FindElement.ById<Button>("GetChildNavViewItemContentPresenterMarginButton");
+                var contentPresenterMarginTextBlock = new TextBlock(FindElement.ByName("NavViewItemContentPresenterMarginTextBlock"));
+
+                // Switch the NavigationView to closed compact mode
+                Log.Comment("Switch NavigationView to closed compact mode");
+                SetNavViewWidth(ControlWidth.Medium);
+                Wait.ForIdle();
+
+                // Verify that top-level items use the correct content margin
+                getTopLevelContentPresenterMarginButton.InvokeAndWait();
+                Verify.AreEqual("0,0,0,0", contentPresenterMarginTextBlock.DocumentText);
+
+                // Child items in closed compact mode are shown in a flyout. Verify that they are using the correct margin 
+                Log.Comment("Expand item with children");
+                UIObject hasChildItem = FindElement.ByName("HasChildItem");
+                InputHelper.LeftClick(hasChildItem);
+                Wait.ForIdle();
+
+                getChildContentPresenterMarginButton.InvokeAndWait();
+                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+
+                // Switch the NavigationView to expanded mode
+                Log.Comment("Switch NavigationView to expanded mode");
+                SetNavViewWidth(ControlWidth.Wide);
+                Wait.ForIdle();
+
+                // Verify that top-level items use the correct content margin
+                getTopLevelContentPresenterMarginButton.InvokeAndWait();
+                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+            }
+        }
     }
 }

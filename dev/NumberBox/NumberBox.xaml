@@ -137,9 +137,9 @@
                             HorizontalAlignment="Left">
 
                             <Grid x:Name="PopupContentRoot"
-                                Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
-                                BorderBrush="{ThemeResource ToolTipBorderBrush}"
-                                BorderThickness="{ThemeResource ToolTipBorderThemeThickness}"
+                                Background="{ThemeResource NumberBoxPopupBackground}"
+                                BorderBrush="{ThemeResource NumberBoxPopupBorderBrush}"
+                                BorderThickness="{ThemeResource NumberBoxPopupBorderThickness}"
                                 CornerRadius="{ThemeResource OverlayCornerRadius}">
 
                                 <Grid.RowDefinitions>
@@ -206,7 +206,7 @@
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="32"/>
-            <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
+            <Setter Property="Background" Value="{ThemeResource NumberBoxPopupSpinButtonBackground}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxPopupSpinButtonBorderThickness}"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>

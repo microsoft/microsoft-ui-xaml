@@ -571,9 +571,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHidden()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -589,9 +588,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
-        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
         [TestMethod]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 19342138
         public void EnsurePaneCanBeHiddenWithFixedWindowSize()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -823,6 +821,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
 
+                Log.Comment("Bring Settings into view.");
+                FindElement.ByName<Button>("BringSettingsIntoViewButton").Invoke();
+                Wait.ForIdle();
+
                 Button navButton = new Button(FindElement.ById("SettingsItem"));
                 Log.Comment("Verify that the SettingsItem size in Expanded mode and actual width is " + navButton.BoundingRectangle.Width);
 
@@ -951,6 +953,62 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 Log.Comment("paneCustomContentButton size actual width is " + paneCustomContentButton.BoundingRectangle.Width);
                 Verify.IsTrue(paneCustomContentButton.BoundingRectangle.Width <= widthCompactBoundary && paneCustomContentButton.BoundingRectangle.Width > 0);
+            }
+        }
+    
+    
+        [TestMethod]
+        public void SelectingAnItemInLeftCompactOrLeftMinimalClosesPane()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var configs = new ControlWidth[] { ControlWidth.Narrow, ControlWidth.Medium };
+
+                foreach(var width in configs)
+                {
+                    SetNavViewWidth(width);
+
+                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                    // Ensure pane is open.
+                    if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
+                    {
+                        using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
+                        {
+                            isPaneOpenCheckBox.Toggle();
+                            waiter.Wait();
+                        }
+                    }
+
+                    var querySubmittedCheckbox = new CheckBox(FindElement.ByName("SuggestionChosenCheckbox"));
+                    querySubmittedCheckbox.Uncheck();
+
+                    Wait.ForIdle();
+
+                    var autoSuggestBox = FindElement.ByName("PaneAutoSuggestBox");
+                    Verify.IsNotNull(autoSuggestBox);
+                    autoSuggestBox.SetFocus();
+
+
+                    var autoSuggestBoxEdit = new Edit(autoSuggestBox);
+                    Verify.IsNotNull(autoSuggestBoxEdit);
+                    // Search for something
+
+                    autoSuggestBoxEdit.SendKeys("Text");
+                    Wait.ForIdle();
+
+                    // Select item by clicking a bit lower
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Enter);
+
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(ToggleState.On, querySubmittedCheckbox.ToggleState,
+                        "Should've submitted a query");
+
+                    Verify.AreEqual(ToggleState.Off, new CheckBox(FindElement.ByName("IsPaneOpenCheckBox")).ToggleState,
+                        "Pane should be closed");
+                }
             }
         }
     }

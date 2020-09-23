@@ -233,7 +233,9 @@
     <x:Double x:Key="NavigationViewCompactPaneLength">40</x:Double>
     <x:Double x:Key="NavigationViewTopPaneHeight">40</x:Double>
     <x:Double x:Key="TopNavigationViewPaneCustomContentMinWidth">48</x:Double>
-    
+    <x:Double x:Key="TopNavigationViewOverflowButtonWidth">48</x:Double>
+    <x:Double x:Key="TopNavigationViewOverflowButtonHeight">40</x:Double>
+
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">40</x:Double>
     <x:Double x:Key="NavigationViewPaneHeaderRowMinHeight">4</x:Double>
 
@@ -254,10 +256,13 @@
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">10,0</Thickness>
     <Thickness x:Key="TopNavigationViewOverflowButtonMargin">0</Thickness>
     <Thickness x:Key="NavigationViewItemContentPresenterMargin">0,0,20,0</Thickness>
-    <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,16,0</Thickness>
+    <Thickness x:Key="NavigationViewCompactItemContentPresenterMargin">0,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemContentPresenterMargin">8,0,16,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemContentOnlyContentPresenterMargin">12,0</Thickness>
     <Thickness x:Key="NavigationViewItemExpandChevronMargin">-20,0,6,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemExpandChevronMargin">-16,0,0,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemIconOnlyExpandChevronMargin">0,0,0,0</Thickness>
+    <Thickness x:Key="TopNavigationViewItemContentOnlyExpandChevronMargin">-12,0,0,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowContentPresenterMargin">12,0,20,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowNoIconContentPresenterMargin">16,0,20,0</Thickness>
     <Thickness x:Key="TopNavigationViewItemOnOverflowExpandChevronMargin">-4,0,6,0</Thickness>
@@ -267,6 +272,9 @@
     <Thickness x:Key="TopNavigationViewOverflowMenuPadding">0,8</Thickness>
     <Thickness x:Key="NavigationViewItemChildrenMenuFlyoutPadding">0,8</Thickness>
 
+    <!-- The resource below must be defined at the app level in order to affect the expand/collapse chevron font size
+         used in the Top NavigationView's Overflow menu. -->
+    <x:Double x:Key="NavigationViewItemExpandedGlyphFontSize">12.0</x:Double>
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">
@@ -396,78 +404,10 @@
     <Style x:Key="NavigationViewOverflowButtonStyleWhenPaneOnTop" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
-        <Setter Property="Padding" Value="12,0" />
-        <Setter Property="Height" Value="{StaticResource PaneToggleButtonHeight}" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-        <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="FocusVisualMargin" Value="0" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Grid 
-                        x:Name="RootGrid" 
-                        Height="{TemplateBinding Height}"
-                        Background="{TemplateBinding Background}">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <StackPanel Padding="{TemplateBinding Padding}" Orientation="Horizontal">
-                            <ContentPresenter 
-                                x:Name="ContentPresenter"
-                                Content="{TemplateBinding Content}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Foreground="{TemplateBinding Foreground}"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw" />
-                            <FontIcon
-                                x:Name="Icon"
-                                Margin="8,0,0,-4"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="8"
-                                Glyph="&#xE96E;"
-                                Foreground="{TemplateBinding Foreground}"
-                                IsHitTestVisible="False" />
-                        </StackPanel>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="NavigationViewOverflowButtonNoLabelStyleWhenPaneOnTop" TargetType="Button">
-        <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
-        <Setter Property="Height" Value="{StaticResource PaneToggleButtonHeight}" />
-        <Setter Property="Width" Value="{StaticResource PaneToggleButtonWidth}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
+        <Setter Property="Height" Value="{StaticResource TopNavigationViewOverflowButtonHeight}" />
+        <Setter Property="Width" Value="{StaticResource TopNavigationViewOverflowButtonWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
@@ -488,6 +428,7 @@
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -495,6 +436,76 @@
                                         <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="Pressed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Rectangle 
+                            x:Name="PointerRectangle" 
+                            Fill="Transparent"
+                            Visibility="Collapsed"/>
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" />
+                        <FontIcon
+                            x:Name="Icon"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="20"
+                            Glyph="&#xE10C;"
+                            Foreground="{TemplateBinding Foreground}"
+                            IsHitTestVisible="False" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationViewOverflowButtonNoLabelStyleWhenPaneOnTop" TargetType="Button">
+        <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
+        <Setter Property="Height" Value="{StaticResource TopNavigationViewOverflowButtonHeight}" />
+        <Setter Property="Width" Value="{StaticResource TopNavigationViewOverflowButtonWidth}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid 
+                        x:Name="RootGrid" 
+                        Height="{TemplateBinding Height}"
+                        Width="{TemplateBinding Width}"
+                        Background="{TemplateBinding Background}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
+                                        <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
+                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="PointerOver" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
+                                        <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
+                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="RootGrid.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -507,14 +518,18 @@
                         <Rectangle 
                             x:Name="PointerRectangle" 
                             Fill="Transparent" />
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" />
                         <FontIcon
                             x:Name="Icon"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="16"
-                            Glyph="&#xE70D;"
+                            FontSize="20"
+                            Glyph="&#xE10C;"
                             Foreground="{TemplateBinding Foreground}"
                             IsHitTestVisible="False" />
                     </Grid>
@@ -553,7 +568,6 @@
                             </Storyboard>
                         </Grid.Resources>
                         
-
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PointerStates">
                                 <VisualState x:Name="Normal" />
@@ -690,7 +704,8 @@
                                     Content="{TemplateBinding Icon}" />
                                 </Viewbox>
 
-                                <ContentPresenter x:Name="ContentPresenter"
+                                <ContentPresenter
+                                    x:Name="ContentPresenter"
                                     Grid.Column="1"
                                     Margin="{ThemeResource NavigationViewItemContentPresenterMargin}"
                                     ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -702,7 +717,8 @@
                                     Padding="{TemplateBinding Padding}"
                                     AutomationProperties.AccessibilityView="Raw"/>
 
-                                <Grid x:Name="ExpandCollapseChevron"
+                                <Grid
+                                    x:Name="ExpandCollapseChevron"
                                     Grid.Column="2"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
@@ -710,15 +726,15 @@
                                     Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
                                     Background="Transparent">
                                     <TextBlock
-                                            Width="12" Height="12"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            FontSize="12.0"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                                        RenderTransformOrigin="0.5, 0.5"
+                                        Foreground="{ThemeResource NavigationViewItemForeground}"
+                                        FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
+                                        Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        IsTextScaleFactorEnabled="False">
                                         <TextBlock.RenderTransform>
                                             <RotateTransform x:Name="ExpandCollapseChevronRotateTransform" Angle="0"/>
                                         </TextBlock.RenderTransform>
@@ -872,22 +888,24 @@
                                     Padding="{TemplateBinding Padding}"
                                     AutomationProperties.AccessibilityView="Raw"/>
 
-                                <Grid x:Name="ExpandCollapseChevron"
+                                <Grid
+                                    x:Name="ExpandCollapseChevron"
                                     Grid.Column="2"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
                                     Width="40"
                                     Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
                                     Background="Transparent">
-                                    <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            Width="12" Height="12"
-                                            FontSize="12.0"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                                    <TextBlock
+                                        Foreground="{ThemeResource NavigationViewItemForeground}"
+                                        RenderTransformOrigin="0.5, 0.5"
+                                        FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
+                                        Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        IsTextScaleFactorEnabled="False">
                                         <TextBlock.RenderTransform>
                                             <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
                                         </TextBlock.RenderTransform>
@@ -1095,16 +1113,18 @@
                                 <VisualState x:Name="IconOnly">
                                     <VisualState.Setters>
                                         <Setter Target="PointerRectangle.Visibility" Value="Visible" />
-                                        <Setter Target="LayoutRoot.Width" Value="48" />
+                                        <Setter Target="LayoutRoot.MinWidth" Value="48" />
                                         <Setter Target="ContentPresenter.Visibility" Value="Collapsed" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="4,0,4,4" />
+                                        <Setter Target="ExpandCollapseChevron.Margin" Value="{ThemeResource TopNavigationViewItemIconOnlyExpandChevronMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ContentOnly">
                                     <VisualState.Setters>
                                         <Setter Target="IconBox.Visibility" Value="Collapsed" />
-                                        <Setter Target="ContentPresenter.Margin" Value="12,0" />
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyContentPresenterMargin}" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="12,0,12,4" />
+                                        <Setter Target="ExpandCollapseChevron.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyExpandChevronMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1163,22 +1183,24 @@
                                 ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"/>
-                            <Grid x:Name="ExpandCollapseChevron"
-                                    Grid.Column="2"
-                                    Visibility="Collapsed"
-                                    HorizontalAlignment="Right"
-                                    Width="24"
-                                    Margin="{ThemeResource TopNavigationViewItemExpandChevronMargin}"
-                                    Background="Transparent">
-                                <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            FontSize="8"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                            <Grid
+                                x:Name="ExpandCollapseChevron"
+                                Grid.Column="2"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Right"
+                                Width="40"
+                                Margin="{ThemeResource TopNavigationViewItemExpandChevronMargin}"
+                                Background="Transparent">
+                                <TextBlock
+                                    Foreground="{ThemeResource NavigationViewItemForeground}"
+                                    RenderTransformOrigin="0.5, 0.5"
+                                    FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
+                                    Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    IsTextScaleFactorEnabled="False">
                                     <TextBlock.RenderTransform>
                                         <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
                                     </TextBlock.RenderTransform>
@@ -1254,16 +1276,18 @@
                                 <VisualState x:Name="IconOnly">
                                     <VisualState.Setters>
                                         <Setter Target="PointerRectangle.Visibility" Value="Visible" />
-                                        <Setter Target="LayoutRoot.Width" Value="48" />
+                                        <Setter Target="LayoutRoot.MinWidth" Value="48" />
                                         <Setter Target="ContentPresenter.Visibility" Value="Collapsed" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="4,0" />
+                                        <Setter Target="ExpandCollapseChevron.Margin" Value="{ThemeResource TopNavigationViewItemIconOnlyExpandChevronMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ContentOnly">
                                     <VisualState.Setters>
                                         <Setter Target="IconBox.Visibility" Value="Collapsed" />
-                                        <Setter Target="ContentPresenter.Margin" Value="12,0" />
+                                        <Setter Target="ContentPresenter.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyContentPresenterMargin}" />
                                         <Setter Target="SelectionIndicatorGrid.Margin" Value="12,0" />
+                                        <Setter Target="ExpandCollapseChevron.Margin" Value="{ThemeResource TopNavigationViewItemContentOnlyExpandChevronMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -1316,22 +1340,24 @@
                                 Content="{TemplateBinding Content}"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"/>
-                            <Grid x:Name="ExpandCollapseChevron"
-                                    Grid.Column="2"
-                                    Visibility="Collapsed"
-                                    HorizontalAlignment="Right"
-                                    Width="24"
-                                    Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
-                                    Background="Transparent">
-                                <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            FontSize="8"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                            <Grid
+                                x:Name="ExpandCollapseChevron"
+                                Grid.Column="2"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Right"
+                                Width="40"
+                                Margin="{ThemeResource NavigationViewItemExpandChevronMargin}"
+                                Background="Transparent">
+                                <TextBlock
+                                    Foreground="{ThemeResource NavigationViewItemForeground}"
+                                    RenderTransformOrigin="0.5, 0.5"
+                                    FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
+                                    Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    IsTextScaleFactorEnabled="False">
                                     <TextBlock.RenderTransform>
                                         <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
                                     </TextBlock.RenderTransform>
@@ -1506,7 +1532,8 @@
                                     ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"/>
-                                <Grid x:Name="ExpandCollapseChevron"
+                                <Grid
+                                    x:Name="ExpandCollapseChevron"
                                     Grid.Column="2"
                                     Visibility="Collapsed"
                                     HorizontalAlignment="Right"
@@ -1514,15 +1541,16 @@
                                     Margin="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronMargin}"
                                     Padding="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronPadding}"
                                     Background="Transparent">
-                                    <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
-                                            Width="12" Height="12"
-                                            RenderTransformOrigin="0.5, 0.5"
-                                            FontSize="12.0"
-                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
-                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            IsTextScaleFactorEnabled="False">
+                                    <TextBlock
+                                        Foreground="{ThemeResource NavigationViewItemForeground}"
+                                        RenderTransformOrigin="0.5, 0.5"
+                                        FontSize="{ThemeResource NavigationViewItemExpandedGlyphFontSize}"
+                                        Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        IsTextScaleFactorEnabled="False">
                                         <TextBlock.RenderTransform>
                                             <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
                                         </TextBlock.RenderTransform>
