@@ -35,17 +35,17 @@ void InfoBar::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    //const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
 
     if (const auto closeButton = GetTemplateChildT<winrt::Button>(c_closeButtonName, controlProtected))
     {
         m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &InfoBar::OnCloseButtonClick });
 
         // Do localization for the close button
-        /* ### if (winrt::AutomationProperties::GetName(closeButton).empty())
+        if (winrt::AutomationProperties::GetName(closeButton).empty())
         {
-            winrt::AutomationProperties::SetName(closeButton, spinDownName);
-        }*/
+            const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonName);
+            winrt::AutomationProperties::SetName(closeButton, closeButtonName);
+        }
     }
 
     UpdateVisibility(m_notifyOpen);
@@ -69,29 +69,19 @@ void InfoBar::RaiseClosingEvent()
     auto const args = winrt::make_self<InfoBarClosingEventArgs>();
     args->Reason(m_lastCloseReason);
 
-    winrt::Deferral instance
-    { [strongThis = get_strong(), args] ()
-        {
-            strongThis->CheckThread();
-            if (!args->Cancel())
-            {
-                strongThis->UpdateVisibility();
-                strongThis->RaiseClosedEvent();
-            }
-            else
-            {
-                // The developer has changed the Cancel property to true, indicating that they wish to Cancel the
-                // closing of this tip, so we need to revert the IsOpen property to true.
-                strongThis->IsOpen(true);
-            }
-        }
-    };
-
-    args->SetDeferral(instance);
-
-    args->IncrementDeferralCount();
     m_closingEventSource(*this, *args);
-    args->DecrementDeferralCount();
+
+    if (!args->Cancel())
+    {
+        UpdateVisibility();
+        RaiseClosedEvent();
+    }
+    else
+    {
+        // The developer has changed the Cancel property to true, indicating that they wish to Cancel the
+        // closing of this tip, so we need to revert the IsOpen property to true.
+        IsOpen(true);
+    }
 }
 
 void InfoBar::RaiseClosedEvent()
@@ -132,7 +122,7 @@ void InfoBar::OnIsIconVisiblePropertyChanged(const winrt::DependencyPropertyChan
     UpdateIconVisibility();
 }
 
-void InfoBar::OnIsUserDismissablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void InfoBar::OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateCloseButton();
 }
@@ -194,13 +184,13 @@ void InfoBar::UpdateVisibility(bool notify)
 
 void InfoBar::UpdateSeverity()
 {
-    auto severityState = L"Default";
+    auto severityState = L"Informational";
 
     switch (Severity())
     {
-        case winrt::InfoBarSeverity::Critical: severityState = L"Critical"; break;
-        case winrt::InfoBarSeverity::Warning:  severityState = L"Warning";  break;
         case winrt::InfoBarSeverity::Success:  severityState = L"Success";  break;
+        case winrt::InfoBarSeverity::Warning:  severityState = L"Warning";  break;
+        case winrt::InfoBarSeverity::Critical: severityState = L"Critical"; break;
     };
 
     winrt::VisualStateManager::GoToState(*this, severityState, false);
@@ -226,5 +216,5 @@ void InfoBar::UpdateIconVisibility()
 
 void InfoBar::UpdateCloseButton()
 {
-    winrt::VisualStateManager::GoToState(*this, IsUserDismissable() ? L"CloseButtonVisible" : L"CloseButtonCollapsed", false);
+    winrt::VisualStateManager::GoToState(*this, IsClosable() ? L"CloseButtonVisible" : L"CloseButtonCollapsed", false);
 }

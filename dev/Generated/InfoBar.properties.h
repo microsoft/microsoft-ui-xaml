@@ -30,14 +30,14 @@ public:
     void IconSource(winrt::IconSource const& value);
     winrt::IconSource IconSource();
 
+    void IsClosable(bool value);
+    bool IsClosable();
+
     void IsIconVisible(bool value);
     bool IsIconVisible();
 
     void IsOpen(bool value);
     bool IsOpen();
-
-    void IsUserDismissable(bool value);
-    bool IsUserDismissable();
 
     void Message(winrt::hstring const& value);
     winrt::hstring Message();
@@ -58,9 +58,9 @@ public:
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
     static winrt::DependencyProperty ContentTemplateProperty() { return s_ContentTemplateProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
+    static winrt::DependencyProperty IsClosableProperty() { return s_IsClosableProperty; }
     static winrt::DependencyProperty IsIconVisibleProperty() { return s_IsIconVisibleProperty; }
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
-    static winrt::DependencyProperty IsUserDismissableProperty() { return s_IsUserDismissableProperty; }
     static winrt::DependencyProperty MessageProperty() { return s_MessageProperty; }
     static winrt::DependencyProperty SeverityProperty() { return s_SeverityProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
@@ -73,9 +73,9 @@ public:
     static GlobalDependencyProperty s_ContentProperty;
     static GlobalDependencyProperty s_ContentTemplateProperty;
     static GlobalDependencyProperty s_IconSourceProperty;
+    static GlobalDependencyProperty s_IsClosableProperty;
     static GlobalDependencyProperty s_IsIconVisibleProperty;
     static GlobalDependencyProperty s_IsOpenProperty;
-    static GlobalDependencyProperty s_IsUserDismissableProperty;
     static GlobalDependencyProperty s_MessageProperty;
     static GlobalDependencyProperty s_SeverityProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
@@ -99,15 +99,15 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnIsClosablePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnIsIconVisiblePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsOpenPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnIsUserDismissablePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

@@ -16,8 +16,7 @@
                         VerticalAlignment="Top"
                         Background="Transparent"
                         BorderBrush="{ThemeResource InfoBarBorderBrush}"
-                        BorderThickness="{ThemeResource InfoBarBorderThickness}"
-                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
+                        BorderThickness="{ThemeResource InfoBarBorderThickness}">
 
                         <VisualStateManager.VisualStateGroups>
                             
@@ -26,21 +25,21 @@
                                 
                                 <VisualState x:Name="Critical">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeverityCriticalStatusBrush}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarCriticalSeverityStatusBrush}"/>
                                         <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarCriticalIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeverityWarningStatusBrush}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityStatusBrush}"/>
                                         <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarWarningIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSeveritySuccessStatusBrush}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityStatusBrush}"/>
                                         <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -88,9 +87,8 @@
                         <Grid x:Name="ContentRoot"
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
-                            Background="{ThemeResource InfoBarSeverityDefaultStatusBrush}"
-                            Padding="{StaticResource InfoBarContentRootPadding}"
-                            XYFocusKeyboardNavigation="Enabled">
+                            Background="{ThemeResource InfoBarInformationalSeverityStatusBrush}"
+                            Padding="{StaticResource InfoBarContentRootPadding}">
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/> <!-- Icon -->
@@ -109,7 +107,7 @@
                                     VerticalAlignment="Top"
                                     Margin="{StaticResource InfoBarIconMargin}"
                                     FontSize="{StaticResource InfoBarIconFontSize}"
-                                    Text="{StaticResource InfoBarDefaultIconGlyph}"
+                                    Text="{StaticResource InfoBarInformationalIconGlyph}"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     AutomationProperties.AccessibilityView="Raw" />
 
@@ -120,7 +118,8 @@
                                     Margin="{StaticResource InfoBarIconMargin}"
                                     Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
 
-                            <primitives:InfoBarPanel Grid.Column="1"
+                            <primitives:InfoBarPanel
+                                Grid.Column="1"
                                 Margin="{StaticResource InfoBarPanelMargin}"
                                 primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarPanelHorizontalLayoutMargin}"
                                 primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarPanelVerticalLayoutMargin}">

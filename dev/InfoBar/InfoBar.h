@@ -29,7 +29,7 @@ public:
     void OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsIconVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIsUserDismissablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void OnCloseButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);

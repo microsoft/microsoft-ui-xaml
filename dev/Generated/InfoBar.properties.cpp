@@ -20,9 +20,9 @@ GlobalDependencyProperty InfoBarProperties::s_CloseButtonStyleProperty{ nullptr 
 GlobalDependencyProperty InfoBarProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_ContentTemplateProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IconSourceProperty{ nullptr };
+GlobalDependencyProperty InfoBarProperties::s_IsClosableProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IsIconVisibleProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_IsOpenProperty{ nullptr };
-GlobalDependencyProperty InfoBarProperties::s_IsUserDismissableProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_MessageProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_SeverityProperty{ nullptr };
 GlobalDependencyProperty InfoBarProperties::s_TemplateSettingsProperty{ nullptr };
@@ -115,6 +115,17 @@ void InfoBarProperties::EnsureProperties()
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
     }
+    if (!s_IsClosableProperty)
+    {
+        s_IsClosableProperty =
+            InitializeDependencyProperty(
+                L"IsClosable",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::InfoBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsClosablePropertyChanged));
+    }
     if (!s_IsIconVisibleProperty)
     {
         s_IsIconVisibleProperty =
@@ -137,17 +148,6 @@ void InfoBarProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsOpenPropertyChanged));
     }
-    if (!s_IsUserDismissableProperty)
-    {
-        s_IsUserDismissableProperty =
-            InitializeDependencyProperty(
-                L"IsUserDismissable",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::InfoBar>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsUserDismissablePropertyChanged));
-    }
     if (!s_MessageProperty)
     {
         s_MessageProperty =
@@ -167,7 +167,7 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBarSeverity>(),
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
-                ValueHelper<winrt::InfoBarSeverity>::BoxValueIfNecessary(winrt::InfoBarSeverity::Default),
+                ValueHelper<winrt::InfoBarSeverity>::BoxValueIfNecessary(winrt::InfoBarSeverity::Informational),
                 winrt::PropertyChangedCallback(&OnSeverityPropertyChanged));
     }
     if (!s_TemplateSettingsProperty)
@@ -203,9 +203,9 @@ void InfoBarProperties::ClearProperties()
     s_ContentProperty = nullptr;
     s_ContentTemplateProperty = nullptr;
     s_IconSourceProperty = nullptr;
+    s_IsClosableProperty = nullptr;
     s_IsIconVisibleProperty = nullptr;
     s_IsOpenProperty = nullptr;
-    s_IsUserDismissableProperty = nullptr;
     s_MessageProperty = nullptr;
     s_SeverityProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
@@ -218,6 +218,14 @@ void InfoBarProperties::OnIconSourcePropertyChanged(
 {
     auto owner = sender.as<winrt::InfoBar>();
     winrt::get_self<InfoBar>(owner)->OnIconSourcePropertyChanged(args);
+}
+
+void InfoBarProperties::OnIsClosablePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnIsClosablePropertyChanged(args);
 }
 
 void InfoBarProperties::OnIsIconVisiblePropertyChanged(
@@ -234,14 +242,6 @@ void InfoBarProperties::OnIsOpenPropertyChanged(
 {
     auto owner = sender.as<winrt::InfoBar>();
     winrt::get_self<InfoBar>(owner)->OnIsOpenPropertyChanged(args);
-}
-
-void InfoBarProperties::OnIsUserDismissablePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::InfoBar>();
-    winrt::get_self<InfoBar>(owner)->OnIsUserDismissablePropertyChanged(args);
 }
 
 void InfoBarProperties::OnSeverityPropertyChanged(
@@ -343,6 +343,19 @@ winrt::IconSource InfoBarProperties::IconSource()
     return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IconSourceProperty));
 }
 
+void InfoBarProperties::IsClosable(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InfoBar*>(this)->SetValue(s_IsClosableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool InfoBarProperties::IsClosable()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IsClosableProperty));
+}
+
 void InfoBarProperties::IsIconVisible(bool value)
 {
     [[gsl::suppress(con)]]
@@ -367,19 +380,6 @@ void InfoBarProperties::IsOpen(bool value)
 bool InfoBarProperties::IsOpen()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IsOpenProperty));
-}
-
-void InfoBarProperties::IsUserDismissable(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBar*>(this)->SetValue(s_IsUserDismissableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool InfoBarProperties::IsUserDismissable()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<InfoBar*>(this)->GetValue(s_IsUserDismissableProperty));
 }
 
 void InfoBarProperties::Message(winrt::hstring const& value)

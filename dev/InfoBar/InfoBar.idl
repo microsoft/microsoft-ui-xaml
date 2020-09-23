@@ -13,10 +13,10 @@ enum InfoBarCloseReason
 [webhosthidden]
 enum InfoBarSeverity
 {
-    Critical = 0,
-    Warning = 1,
-    Success = 2,
-    Default = 3
+    Informational = 0,
+    Success = 1,
+    Warning = 2,
+    Critical = 3,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -32,8 +32,6 @@ unsealed runtimeclass InfoBarClosingEventArgs
 {
     InfoBarCloseReason Reason { get; };
     Boolean Cancel { get; set; };
-
-    Windows.Foundation.Deferral GetDeferral();
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -61,7 +59,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     String Title{ get; set; };
     String Message{ get; set; };
 
-    [MUX_DEFAULT_VALUE("winrt::InfoBarSeverity::Default")]
+    [MUX_DEFAULT_VALUE("winrt::InfoBarSeverity::Informational")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     InfoBarSeverity Severity{ get; set; };
 
@@ -74,7 +72,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
 
     [MUX_DEFAULT_VALUE("true")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsUserDismissable{ get; set; };
+    Boolean IsClosable{ get; set; };
 
     Windows.UI.Xaml.Style CloseButtonStyle{ get; set; };
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
@@ -97,7 +95,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SeverityProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsIconVisibleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IsUserDismissableProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsClosableProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };

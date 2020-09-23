@@ -42,9 +42,9 @@ namespace MUXControlsTestApp
                     TestInfoBar.Severity = InfoBarSeverity.Success;
                     break;
 
-                case "Default":
+                case "Informational":
                 default:
-                    TestInfoBar.Severity = InfoBarSeverity.Default;
+                    TestInfoBar.Severity = InfoBarSeverity.Informational;
                     break;
             }
         }

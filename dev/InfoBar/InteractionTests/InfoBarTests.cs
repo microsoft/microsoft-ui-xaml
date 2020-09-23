@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -43,9 +43,82 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void BasicTest()
+        public void IsClosableTest()
         {
-            Log.Comment("InfoBar Basic Test");
+            using (var setup = new TestSetupHelper("InfoBar Tests"))
+            {
+                StatusBar infoBar = FindElement.ByName<StatusBar>("TestInfoBar");
+
+                Button closeButton = FindCloseButton(infoBar);
+                Verify.IsNotNull(closeButton, "Close button should be visible by default");
+
+                Uncheck("IsClosableCheckBox");
+                ElementCache.Clear();
+                closeButton = FindCloseButton(infoBar);
+                Verify.IsNull(closeButton, "Close button should not be visible when IsClosable=false");
+
+                Check("IsClosableCheckBox");
+                ElementCache.Clear();
+                closeButton = FindCloseButton(infoBar);
+                Verify.IsNotNull(closeButton, "Close button should be visible when IsClosable=true");
+            }
+        }
+
+        [TestMethod]
+        public void CloseTest()
+        {
+            using (var setup = new TestSetupHelper("InfoBar Tests"))
+            {
+                StatusBar infoBar = FindElement.ByName<StatusBar>("TestInfoBar");
+
+                Log.Comment("Clicking the close button");
+                Button closeButton = FindCloseButton(infoBar);
+                closeButton.InvokeAndWait();
+
+                ListBox events = FindElement.ByName<ListBox>("EventListBox");
+                //Log.Comment("Found events listbox with " + events.Items.Count + " items");
+                Verify.AreEqual("CloseButtonClick", events.Items[0].Name, "First event should be the CloseButtonClick event");
+                Verify.AreEqual("Closing: CloseButton", events.Items[1].Name, "Second event should be the Closing event, reason=CloseButton");
+                Verify.AreEqual("Closed: CloseButton", events.Items[2].Name, "Third event should be the Closed event, reason=CloseButton");
+
+                // ### PICK UP HERE
+            }
+        }
+
+        // ### can I just make a common test library for some of these?
+
+        void VerifyListBoxContents(string[] items)
+        {
+
+        }
+
+        Button FindCloseButton(UIObject parent)
+        {
+            foreach (UIObject elem in parent.Children)
+            {
+                if (elem.Name.Equals("Close"))
+                {
+                    return new Button(elem);
+                }
+            }
+            Log.Comment("Did not find Close button for object " + parent.Name);
+            return null;
+        }
+
+        void Check(string checkboxName)
+        {
+            CheckBox checkBox = FindElement.ByName<CheckBox>(checkboxName);
+            checkBox.Check();
+            Log.Comment("Checked " + checkboxName + " checkbox");
+            Wait.ForIdle();
+        }
+
+        void Uncheck(string checkboxName)
+        {
+            CheckBox checkBox = FindElement.ByName<CheckBox>(checkboxName);
+            checkBox.Uncheck();
+            Log.Comment("Unchecked " + checkboxName + " checkbox");
+            Wait.ForIdle();
         }
     }
 }
