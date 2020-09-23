@@ -25,24 +25,7 @@ namespace MUXControls.ReleaseTest
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-#if USING_TAEF
-            Log.Comment("TestContext.TestDeploymentDir    = {0}", testContext.TestDeploymentDir);
-            Log.Comment("TestContext.TestDir              = {0}", testContext.TestDir);
-            Log.Comment("TestContext.TestLogsDir          = {0}", testContext.TestLogsDir);
-            Log.Comment("TestContext.TestResultsDirectory = {0}", testContext.TestResultsDirectory);
-            Log.Comment("TestContext.DeploymentDirectory  = {0}", testContext.DeploymentDirectory);
-
-            // Enable side-loading
-            Log.Comment("Enable side loading apps");
-            TestAppInstallHelper.EnableSideloadingApps();
-
-            // Install the test app certificate if we're deploying the test app from the NuGet package.
-            // If this is the test app from the OS repo, then it'll have been signed with a test cert
-            // that doesn't need installation.
-            Log.Comment("Installing the certificate for the test app");
-            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, TestApplicationInfo.MUXControlsTestApp.TestAppPackageName);
-            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, TestApplicationInfo.NugetPackageTestAppCX.TestAppPackageName);
-#endif
+            TestEnvironment.AssemblyInitialize(testContext, TestApplicationInfo.NugetPackageTestAppCX.TestAppPackageName + ".cer");
         }
     }
 }
