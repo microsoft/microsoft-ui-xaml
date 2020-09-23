@@ -13,6 +13,8 @@ using Microsoft.UI.Xaml.Controls;
 
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
+using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Xaml.Automation;
 
 namespace MUXControlsTestApp
 {
@@ -53,25 +55,22 @@ namespace MUXControlsTestApp
         {
             if (TestInfoBar == null) return;
 
-            switch (e.AddedItems[0].ToString())
+            if (ActionButtonComboBox.SelectedIndex == 0)
             {
-                case "Button":
-                    var button = new Button();
-                    button.Content = "Action";
-                    TestInfoBar.ActionButton = button;
-                    break;
-
-                case "Hyperlink":
-                    var link = new HyperlinkButton();
-                    link.NavigateUri = new Uri("http://www.microsoft.com/");
-                    link.Content = "Informational link";
-                    TestInfoBar.ActionButton = link;
-                    break;
-
-                case "None":
-                default:
-                    TestInfoBar.ActionButton = null;
-                    break;
+                TestInfoBar.ActionButton = null;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 1)
+            {
+                var button = new Button();
+                button.Content = "Action";
+                TestInfoBar.ActionButton = button;
+            }
+            else if (ActionButtonComboBox.SelectedIndex == 2)
+            {
+                var link = new HyperlinkButton();
+                link.NavigateUri = new Uri("http://www.microsoft.com/");
+                link.Content = "Informational link";
+                TestInfoBar.ActionButton = link;
             }
         }
 
@@ -126,6 +125,7 @@ namespace MUXControlsTestApp
                 var content = new CheckBox();
                 content.Content = "Custom Content";
                 content.Margin = new Thickness(0, 0, 0, 6);
+                AutomationProperties.SetName(content, "CustomContentCheckBox");
                 TestInfoBar.Content = content;
             }
             else

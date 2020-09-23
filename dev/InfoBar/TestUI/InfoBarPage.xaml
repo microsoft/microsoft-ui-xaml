@@ -59,9 +59,9 @@
                     <TextBox x:Name="MessageTextBox" AutomationProperties.Name="MessageTextBox" Header="Message" Width="250" Text="You done goofed" HorizontalAlignment="Left"/>
 
                     <ComboBox x:Name="ActionButtonComboBox" AutomationProperties.Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
-                        <x:String>None</x:String>
-                        <x:String>Button</x:String>
-                        <x:String>Hyperlink</x:String>
+                        <ComboBoxItem Content="None" />
+                        <ComboBoxItem Content="Button" />
+                        <ComboBoxItem Content="Hyperlink" />
                     </ComboBox>
 
                     <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
@@ -94,7 +94,7 @@
                             </Style>
                         </ListBox.Resources>
                     </ListBox>
-                    <Button Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
+                    <Button AutomationProperties.Name="ClearButton" Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
                 </StackPanel>
             </Grid>
         </Grid>

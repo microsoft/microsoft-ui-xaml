@@ -160,6 +160,7 @@ void InfoBar::UpdateVisibility(bool notify)
                 }
 
                 winrt::VisualStateManager::GoToState(*this, L"InfoBarVisible", false);
+                winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Control);
                 m_isVisible = true;
             }
             else
@@ -176,6 +177,7 @@ void InfoBar::UpdateVisibility(bool notify)
                 }
 
                 winrt::VisualStateManager::GoToState(*this, L"InfoBarCollapsed", false);
+                winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
                 m_isVisible = false;
             }
         }
