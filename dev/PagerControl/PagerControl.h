@@ -59,6 +59,7 @@ private:
 
     tracker_ref<winrt::ComboBox> m_comboBox{ this };
     tracker_ref<winrt::NumberBox> m_numberBox{ this };
+    tracker_ref<winrt::ItemsRepeater> m_numberPanelRepeater{ this };
     tracker_ref<winrt::FrameworkElement> m_selectedPageIndicator{ this };
 
     winrt::ComboBox::SelectionChanged_revoker m_comboBoxSelectionChangedRevoker{};

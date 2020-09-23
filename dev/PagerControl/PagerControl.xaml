@@ -149,7 +149,8 @@
                         </muxc:ItemsRepeater>
 
                         <Rectangle x:Name="NumberPanelCurrentPageIndicator" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1"
-                                Visibility="Collapsed" Fill="#0064C1" RadiusX="1" RadiusY="1" Height="2" Width="{StaticResource NumberPanelButtonWidth}">
+                                Visibility="Collapsed" Fill="{ThemeResource PagerControlSelectionIndicatorForeground}" RadiusX="1" RadiusY="1" Height="2"
+                                Width="{StaticResource NumberPanelButtonWidth}">
                             <Rectangle.Transitions>
                                 <TransitionCollection>
                                     <RepositionThemeTransition/>

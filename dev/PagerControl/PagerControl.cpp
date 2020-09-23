@@ -39,6 +39,7 @@ const winrt::hstring c_suffixTextTextblockName = L"SuffixTextLabel";
 
 const winrt::hstring c_comboBoxName = L"ComboBoxDisplay";
 const winrt::hstring c_numberBoxName = L"NumberBoxDisplay";
+const winrt::hstring c_numberPanelRepeaterName = L"NumberPanelItemsRepeater";
 const winrt::hstring c_numberPanelIndicatorName = L"NumberPanelCurrentPageIndicator";
 const winrt::hstring c_firstPageButtonName = L"FirstPageButton";
 const winrt::hstring c_previousPageButtonName = L"PreviousPageButton";
@@ -111,6 +112,10 @@ void PagerControl::OnApplyTemplate()
         m_numberBox.set(numberBox);
         numberBox.Value(SelectedPageIndex() + 1);
         m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
+    }
+    if (const auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(c_numberPanelRepeaterName, *this))
+    {
+        m_numberPanelRepeater.set(repeater);
     }
     if (const auto numberPanelIndicator = GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName,*this))
     {
@@ -189,6 +194,17 @@ void  PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == SelectedPageIndexProperty())
     {
+        // Ensure that SelectedPageIndex will end up in the valid range of values
+        if (SelectedPageIndex() > NumberOfPages() - 1)
+        {
+            SelectedPageIndex(NumberOfPages() - 1);
+        }
+        else if (SelectedPageIndex() < 0)
+        {
+            SelectedPageIndex(0);
+        }
+
+        // Now handle the value changes
         OnSelectedIndexChanged(winrt::unbox_value<int>(args.OldValue()));
         if (DisplayMode() == winrt::PagerControlDisplayMode::ButtonPanel)
         {
@@ -402,13 +418,13 @@ void PagerControl::UpdateNumberPanel(const int numberOfPages)
         const auto selectedIndex = SelectedPageIndex();
         // Idea: Choose correct "template" based on SelectedPageIndex (x) and NumberOfPages (n)
         // 1 2 3 4 5 6 ... n <-- Items
-        if (selectedIndex < 3)
+        if (selectedIndex < 4)
         {
             // First two items selected, create following pattern:
             // 1 2 3 4 5... n
             UpdateNumberPanelCollectionStartWithEllipsis(numberOfPages, selectedIndex);
         }
-        else if (selectedIndex > numberOfPages - 3)
+        else if (selectedIndex >= numberOfPages - 4)
         {
             // Last two items selected, create following pattern:
             //1 [...] n-4 n-3 n-2 n-1 n
@@ -453,41 +469,90 @@ void PagerControl::UpdateNumberPanelCollectionStartWithEllipsis(int numberOfPage
         AppendEllipsisIconToNumberPanelList();
         AppendButtonToNumberPanelList(numberOfPages);
     }
+    // SelectedIndex is definitely the correct index here as we are counting from start
+    MoveIdentifierToElement(selectedIndex);
 }
 
 void PagerControl::UpdateNumberPanelCollectionEndWithEllipsis(int numberOfPages, int selectedIndex)
 {
-
+    if (m_lastNumberOfPagesCount != numberOfPages)
+    {
+        // Do a recalculation as the number of pages changed.
+        m_numberPanelElements.Clear();
+        AppendButtonToNumberPanelList(1);
+        AppendEllipsisIconToNumberPanelList();
+        AppendButtonToNumberPanelList(numberOfPages - 4);
+        AppendButtonToNumberPanelList(numberOfPages - 3);
+        AppendButtonToNumberPanelList(numberOfPages - 2);
+        AppendButtonToNumberPanelList(numberOfPages - 1);
+        AppendButtonToNumberPanelList(numberOfPages);
+    }
+    // We can only be either the last, the second from last or third from last
+    // => SelectedIndex = NumberOfPages - y with y in {1,2,3}
+    // Last item sits at index 6.
+    // SelectedPageIndex for the last page is NumberOfPages - 1.
+    // => SelectedItem = SelectedIndex - NumberOfPages + 7;
+    MoveIdentifierToElement(selectedIndex - numberOfPages + 7);
 }
 
 void PagerControl::UpdateNumberPanelCollectionCenterWithEllipsis(int numberOfPages, int selectedIndex)
 {
-
+    if (m_lastNumberOfPagesCount != numberOfPages)
+    {
+        // Do a recalculation as the number of pages changed.
+        m_numberPanelElements.Clear();
+        AppendButtonToNumberPanelList(1);
+        AppendEllipsisIconToNumberPanelList();
+        AppendButtonToNumberPanelList(selectedIndex - 1);
+        AppendButtonToNumberPanelList(selectedIndex);
+        AppendButtonToNumberPanelList(selectedIndex + 1);
+        AppendButtonToNumberPanelList(selectedIndex + 2);
+        AppendButtonToNumberPanelList(selectedIndex + 3);
+        AppendEllipsisIconToNumberPanelList();
+        AppendButtonToNumberPanelList(numberOfPages);
+    }
+    // So selectedIndex + 1 is our representation for SelectedIndex.
+    // SelectedIndex + 1 is the fifth element.
+    // Collections are base zero, so the index to underline is 4.
+    MoveIdentifierToElement(4);
 }
+
 
 void PagerControl::MoveIdentifierToElement(int index)
 {
     if (const auto indicator = m_selectedPageIndicator.get())
     {
-        if (const auto element = m_numberPanelElements.GetAt(index).try_as<winrt::FrameworkElement>())
+        if (const auto repeater = m_numberPanelRepeater.get())
         {
-            const auto bounds = element.TransformToVisual(*this).TransformBounds(winrt::Rect::Rect(0,0,0,0));
-            const auto boundingRect = winrt::LayoutInformation::GetLayoutSlot(element);
-            const auto numberPanelRectMargins = indicator.Margin();
-            auto newMargin = indicator.Margin();
-            newMargin.Left = boundingRect.X;
-            newMargin.Top = boundingRect.Y;
-            newMargin.Right = boundingRect.X + boundingRect.Width;
-            newMargin.Bottom = boundingRect.Y + boundingRect.Height;
+            repeater.UpdateLayout();
+            if (const auto element = repeater.TryGetElement(index).try_as<winrt::FrameworkElement>())
+            {
+                const auto boundingRect = element.TransformToVisual(repeater).TransformBounds(winrt::Rect::Rect(0, 0, (float)repeater.ActualWidth(), (float)repeater.ActualHeight()));
+                winrt::Thickness newMargin;
+                newMargin.Left = boundingRect.X;
+                newMargin.Top = 0;
+                newMargin.Right = 0;
+                newMargin.Bottom = 0;
+                indicator.Margin(newMargin);
+                indicator.Width(element.ActualWidth());
+            }
         }
     }
 }
 
-void PagerControl::AppendButtonToNumberPanelList(const int numberOfPages)
+void PagerControl::AppendButtonToNumberPanelList(const int pageNumber)
 {
 
     winrt::Button button;
-    button.Content(winrt::box_value(numberOfPages));
+    button.Content(winrt::box_value(pageNumber));
+    const auto buttonClickedFunc = [this](auto const& sender, auto const& args) {
+        if (const auto button = sender.try_as<winrt::Button>())
+        {
+            const int unboxedValue = winrt::unbox_value<int>(button.Content());
+            SelectedPageIndex(unboxedValue - 1);
+        }
+    };
+    button.Click(buttonClickedFunc);
     m_numberPanelElements.Append(button);
 }
 
