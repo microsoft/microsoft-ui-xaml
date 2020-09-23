@@ -30,11 +30,9 @@ winrt::AutomationPeer InfoBar::OnCreateAutomationPeer()
 
 void InfoBar::OnApplyTemplate()
 {
-    OutputDebugString(L"OnApplyTemplate()\n");
     m_applyTemplateCalled = true;
 
     winrt::IControlProtected controlProtected{ *this };
-
 
     if (const auto closeButton = GetTemplateChildT<winrt::Button>(c_closeButtonName, controlProtected))
     {
@@ -48,7 +46,7 @@ void InfoBar::OnApplyTemplate()
         }
     }
 
-    UpdateVisibility(m_notifyOpen);
+    UpdateVisibility(m_notifyOpen, true);
     m_notifyOpen = false;
 
     UpdateSeverity();
@@ -78,8 +76,8 @@ void InfoBar::RaiseClosingEvent()
     }
     else
     {
-        // The developer has changed the Cancel property to true, indicating that they wish to Cancel the
-        // closing of this tip, so we need to revert the IsOpen property to true.
+        // The developer has changed the Cancel property to true,
+        // so we need to revert the IsOpen property to true.
         IsOpen(true);
     }
 }
@@ -127,21 +125,19 @@ void InfoBar::OnIsClosablePropertyChanged(const winrt::DependencyPropertyChanged
     UpdateCloseButton();
 }
 
-void InfoBar::UpdateVisibility(bool notify)
+void InfoBar::UpdateVisibility(bool notify, bool force)
 {
-    OutputDebugString(IsOpen() ? L"Going to InfoBarVisible\n" : L"Going to InfoBarCollapsed\n");
-
     auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::InfoBarAutomationPeer>();
-    if (!m_applyTemplateCalled && notify)
+    if (!m_applyTemplateCalled)
     {
-        // ApplyTemplate() hasn't been called yet but IsOpen is already been set. Let's just delay until later.
-        notify = false;
+        // ApplyTemplate() hasn't been called yet but IsOpen has already been set.
+        // Since this method will be called again shortly from ApplyTemplate, we'll just wait so that we don't send two notifications.
         m_notifyOpen = true;
     }
     else
     {
-        // Don't do any work if nothing has changed.
-        if (IsOpen() != m_isVisible)
+        // Don't do any work if nothing has changed (unless we are forcing a update)
+        if (force || IsOpen() != m_isVisible)
         {
             if (IsOpen())
             {
@@ -152,11 +148,7 @@ void InfoBar::UpdateVisibility(bool notify)
                         Title().data(),
                         Message().data());
 
-                    WCHAR strOut[1024];
-                    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"Raise window opened: %s\n", notificationString.data());
-                    OutputDebugString(strOut);
-
-                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseWindowOpenedEvent(notificationString);
+                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseOpenedEvent(notificationString);
                 }
 
                 winrt::VisualStateManager::GoToState(*this, L"InfoBarVisible", false);
@@ -169,11 +161,7 @@ void InfoBar::UpdateVisibility(bool notify)
                 {
                     auto const notificationString = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarClosedNotification);
 
-                    WCHAR strOut[1024];
-                    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"Raise window closed: %s\n", notificationString.data());
-                    OutputDebugString(strOut);
-
-                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseWindowClosedEvent(notificationString);
+                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseClosedEvent(notificationString);
                 }
 
                 winrt::VisualStateManager::GoToState(*this, L"InfoBarCollapsed", false);

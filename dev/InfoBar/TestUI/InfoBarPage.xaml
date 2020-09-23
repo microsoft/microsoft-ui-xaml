@@ -54,9 +54,9 @@
                         <x:String>Custom Icon</x:String>
                     </ComboBox>
 
-                    <TextBox x:Name="TitleTextBox" AutomationProperties.Name="TitleTextBox" Header="Title" Width="250" Text="Oops" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TitleTextBox" AutomationProperties.Name="TitleTextBox" Header="Title" Width="250" Text="Title" HorizontalAlignment="Left"/>
 
-                    <TextBox x:Name="MessageTextBox" AutomationProperties.Name="MessageTextBox" Header="Message" Width="250" Text="You done goofed" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="MessageTextBox" AutomationProperties.Name="MessageTextBox" Header="Message" Width="250" Text="Message" HorizontalAlignment="Left"/>
 
                     <ComboBox x:Name="ActionButtonComboBox" AutomationProperties.Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
                         <ComboBoxItem Content="None" />
@@ -95,6 +95,9 @@
                         </ListBox.Resources>
                     </ListBox>
                     <Button AutomationProperties.Name="ClearButton" Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
+
+                    <TextBlock Text="Default InfoBar (should be invisible):" Margin="0,20,0,0"/>
+                    <controls:InfoBar AutomationProperties.Name="DefaultInfoBar" />
                 </StackPanel>
             </Grid>
         </Grid>

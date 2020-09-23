@@ -21,7 +21,7 @@
                         <VisualStateManager.VisualStateGroups>
                             
                             <VisualStateGroup x:Name="SeverityLevels">
-                                <VisualState x:Name="Default"/>
+                                <VisualState x:Name="Informational"/>
                                 
                                 <VisualState x:Name="Critical">
                                     <VisualState.Setters>
@@ -64,17 +64,16 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup>
-                                <VisualState x:Name="CloseButtonCollapsed"/>
-                                <VisualState x:Name="CloseButtonVisible">
+                                <VisualState x:Name="CloseButtonVisible"/>
+                                <VisualState x:Name="CloseButtonCollapsed">
                                     <VisualState.Setters>
-                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="InfoBarVisibility">
                                 <VisualState x:Name="InfoBarVisible"/>
-
                                 <VisualState x:Name="InfoBarCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Visibility" Value="Collapsed"/>
@@ -102,21 +101,21 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock x:Name="StandardIcon"
-                                    Grid.Column="0"
-                                    Visibility="Collapsed"
-                                    VerticalAlignment="Top"
-                                    Margin="{StaticResource InfoBarIconMargin}"
-                                    FontSize="{StaticResource InfoBarIconFontSize}"
-                                    Text="{StaticResource InfoBarInformationalIconGlyph}"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    AutomationProperties.AccessibilityView="Raw" />
+                                Grid.Column="0"
+                                Visibility="Collapsed"
+                                VerticalAlignment="Top"
+                                Margin="{StaticResource InfoBarIconMargin}"
+                                FontSize="{StaticResource InfoBarIconFontSize}"
+                                Text="{StaticResource InfoBarInformationalIconGlyph}"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                AutomationProperties.AccessibilityView="Raw" />
 
                             <Border x:Name="UserIconBorder"
-                                    Grid.Column="0"
-                                    Visibility="Collapsed"
-                                    VerticalAlignment="Top"
-                                    Margin="{StaticResource InfoBarIconMargin}"
-                                    Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
+                                Grid.Column="0"
+                                Visibility="Collapsed"
+                                VerticalAlignment="Top"
+                                Margin="{StaticResource InfoBarIconMargin}"
+                                Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
 
                             <primitives:InfoBarPanel
                                 Grid.Column="1"
@@ -173,17 +172,16 @@
                             </primitives:InfoBarPanel>
 
                             <ContentPresenter
-                                    Grid.Column="1"
-                                    Grid.Row="1"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                Grid.Column="1"
+                                Grid.Row="1"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"/>
 
                             <Button Name="CloseButton"
-                                    Grid.Column="2"
-                                    Visibility="Collapsed"
-                                    Command="{TemplateBinding CloseButtonCommand}" 
-                                    CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
-                                    Style="{TemplateBinding CloseButtonStyle}">
+                                Grid.Column="2"
+                                Command="{TemplateBinding CloseButtonCommand}" 
+                                CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
+                                Style="{TemplateBinding CloseButtonStyle}">
 
                                 <Viewbox Width="{StaticResource InfoBarCloseButtonGlyphSize}"
                                     Height="{StaticResource InfoBarCloseButtonGlyphSize}"

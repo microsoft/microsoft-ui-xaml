@@ -7,10 +7,6 @@
 
 winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
 {
-    WCHAR strOut[1024];
-    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"InfoBarPanel::MeasureOverride: availableSize %f %f\n", availableSize.Width, availableSize.Height);
-    OutputDebugString(strOut);
-
     winrt::Size desiredSize{};
 
     float totalWidth = 0;
@@ -26,13 +22,14 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
 
         if (childDesiredSize.Width != 0 && childDesiredSize.Height != 0)
         {
+            // Add up the width of all items if they were laid out horizontally
             const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalMargin(child);
             totalWidth += childDesiredSize.Width + (nItems > 0 ? (float)horizontalMargin.Left : 0) + (float)horizontalMargin.Right;
 
+            // Add up the height of all items if they were laid out vertically
             const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
             totalHeight += childDesiredSize.Height + (nItems > 0 ? (float)verticalMargin.Top : 0) + (float)verticalMargin.Bottom;
 
-            // ### maybe this needs to be fixed with the margins and stuff.
             if (childDesiredSize.Width > widthOfWidest)
             {
                 widthOfWidest = childDesiredSize.Width;
@@ -48,6 +45,7 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
     }
 
     // Since this panel is inside a *-sized grid column, availableSize.Width should not be infinite
+    // If there is only one item inside the panel, we will count it as vertical (the margins work out better that way)
     if (nItems == 1 || totalWidth > availableSize.Width)
     {
         m_isVertical = true;
@@ -65,10 +63,6 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
         desiredSize.Height = heightOfTallest;
     }
 
-    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"InfoBarPanel::MeasureOverride: %s layout, size %f %f\n",
-        m_isVertical ? L"vertical" : L"horizontal", desiredSize.Width, desiredSize.Height);
-    OutputDebugString(strOut);
-
     return desiredSize;
 }
 
@@ -76,14 +70,8 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
     winrt::Size result = finalSize;
 
-    WCHAR strOut[1024];
-    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"InfoBarPanel::ArrangeOverride: finalSize %f %f\n", finalSize.Width, finalSize.Height);
-    OutputDebugString(strOut);
-
     if (m_isVertical)
     {
-        OutputDebugString(L"InfoBarPanel::ArrangeOverride: layout vertical\n");
-
         // Layout elements vertically
         float verticalOffset = (float)winrt::InfoBarPanel::GetVerticalMargin(*this).Top;
         bool hasPreviousElement = false;
@@ -96,9 +84,6 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                 {
                     const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(child);
 
-                    StringCchPrintf(strOut, ARRAYSIZE(strOut), L" - InfoBarPanel::ArrangeOverride: child height %f\n", desiredSize.Height);
-                    OutputDebugString(strOut);
-
                     verticalOffset += hasPreviousElement ? (float)verticalMargin.Top : 0;
                     child.Arrange(winrt::Rect{ (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });
                     verticalOffset += desiredSize.Height + (float)verticalMargin.Bottom;
@@ -110,8 +95,6 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
     }
     else
     {
-        OutputDebugString(L"InfoBarPanel::ArrangeOverride: layout horizontal\n");
-
         // Layout elements horizontally
         float horizontalOffset = (float)winrt::InfoBarPanel::GetHorizontalMargin(*this).Left;
         bool hasPreviousElement = false;

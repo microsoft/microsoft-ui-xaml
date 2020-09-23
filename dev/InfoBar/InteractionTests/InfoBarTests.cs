@@ -118,14 +118,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("InfoBar Tests"))
             {
                 StatusBar infoBar = FindElement.ByName<StatusBar>("TestInfoBar");
-                Verify.IsNotNull(infoBar, "InfoBar should be visible by default");
+                Verify.IsNotNull(infoBar, "TestInfoBar should be visible by default");
 
                 Log.Comment("Close InfoBar and make sure it can't be found.");
                 Uncheck("IsOpenCheckBox");
                 ElementCache.Clear();
 
                 infoBar = FindElement.ByName<StatusBar>("TestInfoBar");
-                Verify.IsNull(infoBar, "InfoBar should not be in the accessible tree");
+                Verify.IsNull(infoBar, "TestInfoBar should not be in the accessible tree");
+
+                infoBar = FindElement.ByName<StatusBar>("DefaultInfoBar");
+                Verify.IsNull(infoBar, "By default, Infobar should not be visible");
             }
         }
 

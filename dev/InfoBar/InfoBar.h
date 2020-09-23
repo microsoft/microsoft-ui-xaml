@@ -37,7 +37,7 @@ private:
     void RaiseClosingEvent();
     void RaiseClosedEvent();
 
-    void UpdateVisibility(bool notify = true);
+    void UpdateVisibility(bool notify = true, bool force = false);
     void UpdateSeverity();
     void UpdateIcon();
     void UpdateIconVisibility();
