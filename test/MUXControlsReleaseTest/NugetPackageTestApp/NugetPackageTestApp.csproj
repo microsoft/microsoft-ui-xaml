@@ -171,7 +171,7 @@
       <Version>6.2.8</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.1.190606001</Version>
+      <Version>2.4.3</Version>
     </PackageReference>
     <PackageReference Include="MUXCustomBuildTasks">
       <Version>1.0.48</Version>
