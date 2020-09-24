@@ -9,12 +9,13 @@
     <Style TargetType="local:InfoBar">
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBar">
-                    <Border x:Name="Container" 
+                    <Border x:Name="ContentRoot" 
                         VerticalAlignment="Top"
-                        Background="Transparent"
+                        Background="{ThemeResource InfoBarInformationalSeverityStatusBrush}"
                         BorderBrush="{ThemeResource InfoBarBorderBrush}"
                         BorderThickness="{ThemeResource InfoBarBorderThickness}">
 
@@ -83,10 +84,10 @@
                             
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid x:Name="ContentRoot"
+                        <Grid
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
-                            Background="{ThemeResource InfoBarInformationalSeverityStatusBrush}"
+                            Background="{TemplateBinding Background}"
                             Padding="{StaticResource InfoBarContentRootPadding}">
 
                             <Grid.ColumnDefinitions>

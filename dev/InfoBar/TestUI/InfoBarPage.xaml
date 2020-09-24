@@ -74,6 +74,8 @@
 
                     <CheckBox x:Name="HasCustomContentCheckBox" AutomationProperties.Name="HasCustomContentCheckBox" Content="Has Custom Content" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
 
+                    <CheckBox x:Name="CustomBackgroundCheckBox" AutomationProperties.Name="CustomBackgroundCheckBox" Content="Custom Background Color" Checked="CustomBackgroundChanged" Unchecked="CustomBackgroundChanged"/>
+                    
                     <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
                 </StackPanel>
 

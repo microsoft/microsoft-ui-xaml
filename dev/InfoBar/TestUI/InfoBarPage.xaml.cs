@@ -145,5 +145,17 @@ namespace MUXControlsTestApp
                 TestInfoBar.CloseButtonStyle = Application.Current.Resources["InfoBarCloseButtonStyle"] as Style;
             }
         }
+
+        public void CustomBackgroundChanged(object sender, object args)
+        {
+            if (CustomBackgroundCheckBox.IsChecked.Value)
+            {
+                TestInfoBar.Background = new SolidColorBrush(Colors.Purple);
+            }
+            else
+            {
+                TestInfoBar.Background = new SolidColorBrush(Colors.Transparent);
+            }
+        }
     }
 }
