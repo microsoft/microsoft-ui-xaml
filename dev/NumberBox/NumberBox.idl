@@ -57,6 +57,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     // TextBox properties
     Object Header;
     Windows.UI.Xaml.DataTemplate HeaderTemplate;
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.UI.Xaml.Input.InputScope InputScope;
+    }
+
     String PlaceholderText;
     Windows.UI.Xaml.Controls.Primitives.FlyoutBase SelectionFlyout;
     Windows.UI.Xaml.Media.SolidColorBrush SelectionHighlightColor;
@@ -102,6 +108,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty InputScopeProperty{ get; };
+    }
+
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionHighlightColorProperty{ get; };
