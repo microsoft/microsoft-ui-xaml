@@ -578,7 +578,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SelectPageInNumberPanel(int index)
         {
-            InputHelper.LeftClick(elements.GetNumberPanelButton("Page Button " + index));
+            InputHelper.LeftClick(elements.GetNumberPanelButton(index.ToString()));
         }
 
         Edit FindTextBox(UIObject parent)
@@ -884,13 +884,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         void VerifyComboBoxDisabled()
         {
             VerifyComboBoxVisibility(Visibility.Collapsed);
-            VerifyComboBoxIsEnabled(false);
         }
 
         void VerifyNumberBoxDisabled()
         {
             VerifyNumberBoxVisibility(Visibility.Collapsed);
-            VerifyNumberBoxIsEnabled(false);
         }
 
         void VerifyNumberPanelDisabled()

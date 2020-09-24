@@ -1,28 +1,27 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Markup;
-using Windows.UI;
-using System.Windows.Input;
 
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Devices.AllJoyn;
-using System.Diagnostics;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using Windows.Foundation;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "PagerControl")]
     public sealed partial class PagerControlPage : TestPage
     {
+        ComboBox pagerComboBox;
+        NumberBox pagerNumberBox;
+        ItemsRepeater pagerItemsRepeater;
+
+        Button firstPageButton;
+        Button previousPageButton;
+        Button nextPageButton;
+        Button lastPageButton;
 
         public PagerControlPage()
         {
@@ -38,40 +37,52 @@ namespace MUXControlsTestApp
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextButtonVisibilityChanged;
             LastPageButtonVisibilityComboBox.SelectionChanged += OnLastButtonVisibilityChanged;
 
-            //TestPager.NumberPanelDisplayTestHook.ElementPrepared += OnElementPrepared;
+            var rootGrid = VisualTreeHelper.GetChild(TestPager, 0);
+            var backButtonsPanel = VisualTreeHelper.GetChild(rootGrid, 0);
+            firstPageButton = VisualTreeHelper.GetChild(backButtonsPanel, 0) as Button;
+            previousPageButton = VisualTreeHelper.GetChild(backButtonsPanel, 1) as Button;
 
+            var boxPanels = VisualTreeHelper.GetChild(rootGrid, 1);
+            pagerNumberBox = VisualTreeHelper.GetChild(boxPanels, 1) as NumberBox;
+            pagerComboBox = VisualTreeHelper.GetChild(boxPanels, 2) as ComboBox;
+            pagerItemsRepeater = VisualTreeHelper.GetChild(rootGrid, 2) as ItemsRepeater;
 
-            //NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
-            //ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
+            var forwardButtonsPanel = VisualTreeHelper.GetChild(rootGrid, 4);
+            nextPageButton = VisualTreeHelper.GetChild(forwardButtonsPanel, 0) as Button;
+            lastPageButton = VisualTreeHelper.GetChild(forwardButtonsPanel, 1) as Button;
+
+            NumberBoxVisibilityCheckBox.IsChecked = pagerNumberBox.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = pagerComboBox.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = pagerItemsRepeater.Visibility == Visibility.Visible;
+            NumberBoxIsEnabledCheckBox.IsChecked = pagerNumberBox.IsEnabled;
+            ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox.IsEnabled;
+
+            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible;
+            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible;
+            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible;
+
+            FirstPageButtonIsEnabledCheckBox.IsChecked = firstPageButton?.IsEnabled;
+            PreviousPageButtonIsEnabledCheckBox.IsChecked = previousPageButton?.IsEnabled;
+            NextPageButtonIsEnabledCheckBox.IsChecked = nextPageButton?.IsEnabled;
+            LastPageButtonIsEnabledCheckBox.IsChecked = lastPageButton?.IsEnabled;
             UpdateNumberPanelContentTextBlock(this, null);
-        }
-
-        private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
-        {
-            var element = args.Element as FrameworkElement;
-            if (element.Tag != null)
-            {
-                element.Name = "Page Button " + element.Tag;
-            }
         }
 
         private void UpdateNumberPanelContentTextBlock(object sender, NotifyCollectionChangedEventArgs args)
         {
             NumberPanelContentTextBlock.Text = "";
-            //foreach (var item in TestPager.NumberPanelDisplayTestHook.ItemsSource as ObservableCollection<object>)
-            //{
-            //    if (item.GetType() == typeof(SymbolIcon))
-            //    {
-            //        NumberPanelContentTextBlock.Text += (item as SymbolIcon).Symbol;
-            //    }
-            //    else
-            //    {
-            //        NumberPanelContentTextBlock.Text += item;
-            //    }
-            //}
+            foreach (var item in TestPager.TemplateSettings.NumberPanelItems)
+            {
+                if (item.GetType() == typeof(SymbolIcon))
+                {
+                    NumberPanelContentTextBlock.Text += (item as SymbolIcon).Symbol;
+                }
+                else if (item.GetType() == typeof(Button))
+                {
+                    NumberPanelContentTextBlock.Text += (item as Button).Content;
+                }
+            }
         }
 
         private void NumberOfPagesSetterButtonClicked(object sender, RoutedEventArgs args)
@@ -87,22 +98,33 @@ namespace MUXControlsTestApp
                 NumberOfPagesSetterButton.Content = "Set NumberOfPages to 100";
             }
 
-            //NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
-            //ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
+            NumberBoxVisibilityCheckBox.IsChecked = pagerNumberBox?.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = pagerComboBox?.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = pagerItemsRepeater?.Visibility == Visibility.Visible;
+            NumberBoxIsEnabledCheckBox.IsChecked = pagerNumberBox?.IsEnabled;
+            ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox?.IsEnabled;
+        }
+
+        private void NumberOfPagesInfinityButtonClicked(object sender, RoutedEventArgs args)
+        {
+            TestPager.NumberOfPages = -1;
+
+            NumberBoxVisibilityCheckBox.IsChecked = pagerNumberBox?.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = pagerComboBox?.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = pagerItemsRepeater?.Visibility == Visibility.Visible;
+            NumberBoxIsEnabledCheckBox.IsChecked = pagerNumberBox?.IsEnabled;
+            ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox?.IsEnabled;
         }
 
         private void IncreaseNumberOfPagesButtonClicked(object sender, RoutedEventArgs args)
         {
             TestPager.NumberOfPages += 1;
 
-            //NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
-            //ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
+            NumberBoxVisibilityCheckBox.IsChecked = pagerNumberBox?.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = pagerComboBox?.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = pagerItemsRepeater?.Visibility == Visibility.Visible;
+            NumberBoxIsEnabledCheckBox.IsChecked = pagerNumberBox?.IsEnabled;
+            ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox?.IsEnabled;
         }
 
         private void OnSelectedIndexChanged(PagerControl sender, PagerControlSelectedIndexChangedEventArgs args)
@@ -111,15 +133,15 @@ namespace MUXControlsTestApp
             PreviousPageTextBlock.Text = args.PreviousPageIndex.ToString();
             CurrentPageTextBlock.Text = args.NewPageIndex.ToString();
 
-            //FirstPageButtonVisibilityCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Visible;
-            //PreviousPageButtonVisibilityCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Visible;
-            //NextPageButtonVisibilityCheckBox.IsChecked = TestPager.NextPageButtonTestHook.Visibility == Visibility.Visible;
-            //LastPageButtonVisibilityCheckBox.IsChecked = TestPager.LastPageButtonTestHook.Visibility == Visibility.Visible;
+            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible;
+            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible;
+            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible;
 
-            //FirstPageButtonIsEnabledCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.IsEnabled;
-            //PreviousPageButtonIsEnabledCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.IsEnabled;
-            //NextPageButtonIsEnabledCheckBox.IsChecked = TestPager.NextPageButtonTestHook.IsEnabled;
-            //LastPageButtonIsEnabledCheckBox.IsChecked = TestPager.LastPageButtonTestHook.IsEnabled;
+            FirstPageButtonIsEnabledCheckBox.IsChecked = firstPageButton?.IsEnabled;
+            PreviousPageButtonIsEnabledCheckBox.IsChecked = previousPageButton?.IsEnabled;
+            NextPageButtonIsEnabledCheckBox.IsChecked = nextPageButton?.IsEnabled;
+            LastPageButtonIsEnabledCheckBox.IsChecked = lastPageButton?.IsEnabled;
         }
 
         private void OnDisplayModeChanged(object sender, SelectionChangedEventArgs e)
@@ -143,11 +165,11 @@ namespace MUXControlsTestApp
                 TestPager.DisplayMode = PagerControlDisplayMode.ButtonPanel;
             }
 
-            //NumberBoxVisibilityCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //ComboBoxVisibilityCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberPanelVisibilityCheckBox.IsChecked = TestPager.NumberPanelDisplayTestHook.Visibility == Visibility.Visible;
-            //NumberBoxIsEnabledCheckBox.IsChecked = TestPager.NumberBoxDisplayTestHook.IsEnabled;
-            //ComboBoxIsEnabledCheckBox.IsChecked = TestPager.ComboBoxDisplayTestHook.IsEnabled;
+            NumberBoxVisibilityCheckBox.IsChecked = pagerNumberBox?.Visibility == Visibility.Visible;
+            ComboBoxVisibilityCheckBox.IsChecked = pagerComboBox?.Visibility == Visibility.Visible;
+            NumberPanelVisibilityCheckBox.IsChecked = pagerItemsRepeater?.Visibility == Visibility.Visible;
+            NumberBoxIsEnabledCheckBox.IsChecked = pagerNumberBox?.IsEnabled;
+            ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox?.IsEnabled;
         }
 
         private void OnFirstButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -167,7 +189,7 @@ namespace MUXControlsTestApp
                 TestPager.FirstButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            //FirstPageButtonVisibilityCheckBox.IsChecked = TestPager.FirstPageButtonTestHook.Visibility == Visibility.Visible;
+            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible;
         }
 
         private void OnPreviousButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -187,7 +209,7 @@ namespace MUXControlsTestApp
                 TestPager.PreviousButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            //PreviousPageButtonVisibilityCheckBox.IsChecked = TestPager.PreviousPageButtonTestHook.Visibility == Visibility.Visible;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible;
         }
 
         private void OnNextButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -207,7 +229,7 @@ namespace MUXControlsTestApp
                 TestPager.NextButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            //NextPageButtonVisibilityCheckBox.IsChecked = TestPager.NextPageButtonTestHook.Visibility == Visibility.Visible;
+            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible;
         }
         private void OnLastButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -226,7 +248,7 @@ namespace MUXControlsTestApp
                 TestPager.LastButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            //LastPageButtonVisibilityCheckBox.IsChecked = TestPager.LastPageButtonTestHook.Visibility == Visibility.Visible;
+            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible;
         }
     }
 }

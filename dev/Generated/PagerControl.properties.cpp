@@ -171,7 +171,7 @@ void PagerControlProperties::EnsureProperties()
                 winrt::name_of<int>(),
                 winrt::name_of<winrt::PagerControl>(),
                 false /* isAttached */,
-                ValueHelper<int>::BoxedDefaultValue(),
+                ValueHelper<int>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnNumberOfPagesPropertyChanged));
     }
     if (!s_PagerInputCommandProperty)

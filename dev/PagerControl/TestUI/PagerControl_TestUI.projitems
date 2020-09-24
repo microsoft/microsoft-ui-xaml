@@ -19,10 +19,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)PagerControlPage.xaml.cs">
       <DependentUpon>PagerControlPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Events.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.Properties.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PrototypePager.TestHooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PrototypePagerElementFactory.cs" />
   </ItemGroup>
 </Project>

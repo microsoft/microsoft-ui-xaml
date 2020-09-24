@@ -27,7 +27,8 @@ public:
     /* Property changed handlers */
     void OnDisplayModeChanged();
     void UpdateDisplayModeAutoState();
-    void OnSelectedIndexChanged(const int oldIndex);
+    void OnNumberOfPagesChanged(const int oldValue);
+    void OnSelectedPageIndexChange(const int oldValue);
     void OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
         const winrt::hstring visibleStateName,
         const winrt::hstring hiddenStateName,
@@ -44,6 +45,7 @@ private:
 
     /* NumberPanel logic */
     void UpdateNumberPanel(const int numberOfPages);
+    void UpdateNumberOfPanelCollectionInfiniteItems();
     void UpdateNumberPanelCollectionAllItems(const int numberOfPages);
     void UpdateNumberPanelCollectionStartWithEllipsis(int numberOfPages, int selectedIndex);
     void UpdateNumberPanelCollectionEndWithEllipsis(int numberOfPages, int selectedIndex);

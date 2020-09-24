@@ -17,7 +17,7 @@
         </Grid.ColumnDefinitions>
 
         <Border BorderBrush="Black" BorderThickness="5" Grid.Column="0" VerticalAlignment="Center">
-            <muxc:PagerControl x:Name="TestPager" AutomationProperties.Name="TestPager" SelectedIndexChanged="OnSelectedIndexChanged" />
+            <muxc:PagerControl x:Name="TestPager" AutomationProperties.Name="TestPager" SelectedIndexChanged="OnSelectedIndexChanged" NumberOfPages="5"/>
         </Border>
 
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
@@ -55,22 +55,22 @@
                     <TextBlock Text="PagerControl Properties" Grid.Row="0" Grid.Column="0" Style="{StaticResource TitleTextBlockStyle}" Foreground="Green"/>
 
 
-                    <ComboBox x:Name="FirstPageButtonVisibilityComboBox" Grid.Row="1" Grid.Column="0" Header="First Page Button Visibility" SelectedIndex="0">
+                    <ComboBox x:Name="FirstPageButtonVisibilityComboBox" Grid.Row="1" Grid.Column="0" Header="First Page Button Visibility" SelectedIndex="1">
                         <ComboBoxItem x:Name="NoneFirstPageButtonVisibilityItem" AutomationProperties.Name="NoneFirstPageButtonVisibilityItem">None</ComboBoxItem>
                         <ComboBoxItem x:Name="AlwaysVisibleFirstPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisibleFirstPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
                         <ComboBoxItem x:Name="HiddenOnEdgeFirstPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgeFirstPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
                     </ComboBox>
-                    <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Grid.Row="2" Grid.Column="0" Header="Previous Page Button Visibility" SelectedIndex="0">
+                    <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Grid.Row="2" Grid.Column="0" Header="Previous Page Button Visibility" SelectedIndex="1">
                         <ComboBoxItem x:Name="NonePreviousPageButtonVisibilityItem" AutomationProperties.Name="NonePreviousPageButtonVisibilityItem">None</ComboBoxItem>
                         <ComboBoxItem x:Name="AlwaysVisiblePreviousPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisiblePreviousPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
                         <ComboBoxItem x:Name="HiddenOnEdgePreviousPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgePreviousPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
                     </ComboBox>
-                    <ComboBox x:Name="NextPageButtonVisibilityComboBox" Grid.Row="1" Grid.Column="1" Header="Next Page Button Visibility" SelectedIndex="0">
+                    <ComboBox x:Name="NextPageButtonVisibilityComboBox" Grid.Row="1" Grid.Column="1" Header="Next Page Button Visibility" SelectedIndex="1">
                         <ComboBoxItem x:Name="NoneNextPageButtonVisibilityItem" AutomationProperties.Name="NoneNextPageButtonVisibilityItem">None</ComboBoxItem>
                         <ComboBoxItem x:Name="AlwaysVisibleNextPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisibleNextPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
                         <ComboBoxItem x:Name="HiddenOnEdgeNextPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgeNextPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
                     </ComboBox>
-                    <ComboBox x:Name="LastPageButtonVisibilityComboBox" Grid.Row="2" Grid.Column="1" Header="Last Page Button Visibility" SelectedIndex="0">
+                    <ComboBox x:Name="LastPageButtonVisibilityComboBox" Grid.Row="2" Grid.Column="1" Header="Last Page Button Visibility" SelectedIndex="1">
                         <ComboBoxItem x:Name="NoneLastPageButtonVisibilityItem" AutomationProperties.Name="NoneLastPageButtonVisibilityItem">None</ComboBoxItem>
                         <ComboBoxItem x:Name="AlwaysVisibleLastPageButtonVisibilityItem" AutomationProperties.Name="AlwaysVisibleLastPageButtonVisibilityItem">AlwaysVisible</ComboBoxItem>
                         <ComboBoxItem x:Name="HiddenOnEdgeLastPageButtonVisibilityItem" AutomationProperties.Name="HiddenOnEdgeLastPageButtonVisibilityItem">HiddenOnEdge</ComboBoxItem>
@@ -82,8 +82,12 @@
                         <ComboBoxItem x:Name="NumberPanelDisplayModeItem" AutomationProperties.Name="NumberPanelDisplayModeItem">NumberPanel</ComboBoxItem>
                     </ComboBox>
                     <CheckBox Content="ButtonPanelAlwaysShowFirstLastPageIndex" Grid.Row="4" IsChecked="{x:Bind TestPager.ButtonPanelAlwaysShowFirstLastPageIndex,Mode=TwoWay}"/>
-                    <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Grid.Column="0" Grid.Row="5" Click="NumberOfPagesSetterButtonClicked"/>
-                    <Button x:Name="IncreaseNumberOfPagesButton" Content="Increase NumberOfPages by 1" Grid.Column="1" Grid.Row="5" Click="IncreaseNumberOfPagesButtonClicked"/>
+                    <StackPanel Grid.Row="5" >
+                        <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Click="NumberOfPagesSetterButtonClicked"/>
+                        <Button x:Name="NumberOfPagesInfinityButton" Content="Set NumberOfPages to -1 (aka Infinity mode)" Click="NumberOfPagesInfinityButtonClicked"/>
+                        <Button x:Name="IncreaseNumberOfPagesButton" Content="Increase NumberOfPages by 1" Click="IncreaseNumberOfPagesButtonClicked"/>
+                        
+                    </StackPanel>
                 </Grid>
                 <Grid Grid.Column="1" Margin="5">
                     <Grid.ColumnDefinitions>

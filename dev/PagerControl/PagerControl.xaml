@@ -110,6 +110,16 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="InfiniteItemsDisplayMode">
+                                <VisualState x:Name="FiniteItems"/>
+                                <VisualState x:Name="InfiniteItems">
+                                    <VisualState.Setters>
+                                        <Setter Target="SuffixTextLabel.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TotalNumberOfPagesLabel.Visibility" Value="Collapsed"/>
+                                        <Setter Target="LastPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <StackPanel Orientation="Horizontal"
                                     Grid.Column="0"
@@ -136,9 +146,9 @@
                             <!--ComboBox Display-->
                             <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
                                     ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
-                                    IsEnabled="False" Visibility="Collapsed" SelectedIndex="0"/>
+                                    Visibility="Collapsed" SelectedIndex="0"/>
                             <TextBlock x:Name="SuffixTextLabel" VerticalAlignment="Center" Margin="5,0,0,0"/>
-                            <TextBlock VerticalAlignment="Center" Margin="5,0,5,0"
+                            <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" x:Name="TotalNumberOfPagesLabel"
                                     Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" />
                         </StackPanel>
 

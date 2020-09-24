@@ -47,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             foreach (var element in GetPagerControl().Children)
             {
-                if (element.AutomationId == elementName)
+                if (element.Name == elementName)
                 {
                     return element;
                 }
