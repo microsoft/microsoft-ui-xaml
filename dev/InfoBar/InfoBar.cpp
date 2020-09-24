@@ -148,7 +148,7 @@ void InfoBar::UpdateVisibility(bool notify, bool force)
                         Title().data(),
                         Message().data());
 
-                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseOpenedEvent(notificationString);
+                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseOpenedEvent(Severity(), notificationString);
                 }
 
                 winrt::VisualStateManager::GoToState(*this, L"InfoBarVisible", false);
@@ -161,7 +161,7 @@ void InfoBar::UpdateVisibility(bool notify, bool force)
                 {
                     auto const notificationString = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarClosedNotification);
 
-                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseClosedEvent(notificationString);
+                    winrt::get_self<InfoBarAutomationPeer>(peer)->RaiseClosedEvent(Severity(), notificationString);
                 }
 
                 winrt::VisualStateManager::GoToState(*this, L"InfoBarCollapsed", false);

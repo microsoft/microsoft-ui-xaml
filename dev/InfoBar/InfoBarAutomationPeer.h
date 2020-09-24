@@ -13,9 +13,10 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetClassNameCore();
 
-    void RaiseClosedEvent(wstring_view const& displayString);
-    void RaiseOpenedEvent(wstring_view const& displayString);
+    void RaiseClosedEvent(winrt::InfoBarSeverity severity, wstring_view const& displayString);
+    void RaiseOpenedEvent(winrt::InfoBarSeverity severity, wstring_view const& displayString);
 
 private:
     winrt::InfoBar GetInfoBar();
+    winrt::Peers::AutomationNotificationProcessing GetProcessingForSeverity(winrt::InfoBarSeverity severity);
 };
