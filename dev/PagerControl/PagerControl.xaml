@@ -64,7 +64,11 @@
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
                                 <VisualState x:Name="PreviousPageButtonEnabled"/>
-                                <VisualState x:Name="PreviousPageButtonDisabled"/>
+                                <VisualState x:Name="PreviousPageButtonDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PreviousPageButton.IsEnabled" Value="False"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="NextPageButtonVisibilityStates">
                                 <VisualState x:Name="NextPageButtonVisible"/>

@@ -151,18 +151,22 @@ namespace MUXControlsTestApp
             if (item == this.AutoDisplayModeItem)
             {
                 TestPager.DisplayMode = PagerControlDisplayMode.Auto;
+                CustomizedPager.DisplayMode = PagerControlDisplayMode.Auto;
             }
             else if (item == this.NumberBoxDisplayModeItem)
             {
                 TestPager.DisplayMode = PagerControlDisplayMode.NumberBox;
+                CustomizedPager.DisplayMode = PagerControlDisplayMode.NumberBox;
             }
             else if (item == this.ComboBoxDisplayModeItem)
             {
                 TestPager.DisplayMode = PagerControlDisplayMode.ComboBox;
+                CustomizedPager.DisplayMode = PagerControlDisplayMode.ComboBox;
             }
             else if (item == this.NumberPanelDisplayModeItem)
             {
                 TestPager.DisplayMode = PagerControlDisplayMode.ButtonPanel;
+                CustomizedPager.DisplayMode = PagerControlDisplayMode.ButtonPanel;
             }
 
             NumberBoxVisibilityCheckBox.IsChecked = pagerNumberBox?.Visibility == Visibility.Visible;

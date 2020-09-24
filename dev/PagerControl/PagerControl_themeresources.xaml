@@ -19,10 +19,10 @@
 
         <x:Double x:Key="NumberPanelButtonWidth">32</x:Double>
 
-
     <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
         <Setter Property="MinWidth" Value="{StaticResource NumberPanelButtonWidth}"/>
         <Setter Property="MinHeight" Value="20"/>
         <Setter Property="Background" Value="Transparent"/>
     </Style>
+
 </ResourceDictionary>

@@ -16,9 +16,39 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border BorderBrush="Black" BorderThickness="5" Grid.Column="0" VerticalAlignment="Center">
+        <StackPanel BorderBrush="Black" BorderThickness="5" Grid.Column="0" VerticalAlignment="Center">
+
             <muxc:PagerControl x:Name="TestPager" AutomationProperties.Name="TestPager" SelectedIndexChanged="OnSelectedIndexChanged" NumberOfPages="5"/>
-        </Border>
+            <muxc:PagerControl x:Name="CustomizedPager" NumberOfPages="5" Margin="0,50,0,0">
+                <muxc:PagerControl.FirstButtonStyle>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#7A0002"/>
+                    </Style>
+                </muxc:PagerControl.FirstButtonStyle>
+                <muxc:PagerControl.PreviousButtonStyle>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#BAB300"/>
+                    </Style>
+                </muxc:PagerControl.PreviousButtonStyle>
+                <muxc:PagerControl.NextButtonStyle>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#00910D"/>
+                    </Style>
+                </muxc:PagerControl.NextButtonStyle>
+                <muxc:PagerControl.LastButtonStyle>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#00066E"/>
+                    </Style>
+                </muxc:PagerControl.LastButtonStyle>
+                <muxc:PagerControl.Resources>
+                    <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
+                        <Setter Property="MinWidth" Value="50"/>
+                        <Setter Property="MinHeight" Value="20"/>
+                        <Setter Property="Background" Value="#8000A8"/>
+                    </Style>
+                </muxc:PagerControl.Resources>
+            </muxc:PagerControl>
+        </StackPanel>
 
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
             <Grid>
