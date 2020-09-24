@@ -38,6 +38,7 @@ private:
 
     /* UI updating */
     void UpdateTemplateSettingElementLists();
+    void FillComboBoxCollectionToSize(const int numberOfPages);
     void UpdateOnEdgeButtonVisualStates();
 
     /* Eventing */

@@ -52,6 +52,7 @@ const winrt::hstring c_nextPageButtonName = L"NextPageButton";
 const winrt::hstring c_lastPageButtonName = L"LastPageButton";
 
 const int c_AutoDisplayModeNumberOfPagesThreshold = 10; // This integer determines when to switch between NumberBoxDisplayMode and ComboBoxDisplayMode 
+const int c_infiniteModeComboBoxItemsIncrement = 100;
 
 /* Common functions */
 PagerControl::PagerControl()
@@ -85,7 +86,7 @@ void PagerControl::OnApplyTemplate()
     {
         m_rootGridKeyDownRevoker = rootGrid.KeyDown(winrt::auto_revoke, { this, &PagerControl::OnRootGridKeyDown });
     }
-    if (const auto prefixTextBlock = GetTemplateChildT<winrt::TextBlock>(c_prefixTextTextblockName,*this))
+    if (const auto prefixTextBlock = GetTemplateChildT<winrt::TextBlock>(c_prefixTextTextblockName, *this))
     {
         prefixTextBlock.Text(ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPrefixTextName));
     }
@@ -111,14 +112,14 @@ void PagerControl::OnApplyTemplate()
         m_lastPageButtonClickRevoker = lastPageButton.Click(winrt::auto_revoke, { this, &PagerControl::LastButtonClicked });
     }
 
-    if (const auto comboBox = GetTemplateChildT<winrt::ComboBox>(c_comboBoxName,*this))
+    if (const auto comboBox = GetTemplateChildT<winrt::ComboBox>(c_comboBoxName, *this))
     {
         m_comboBox.set(comboBox);
         comboBox.SelectedIndex(SelectedPageIndex() - 1);
         winrt::AutomationProperties::SetName(comboBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
         m_comboBoxSelectionChangedRevoker = comboBox.SelectionChanged(winrt::auto_revoke, { this, &PagerControl::ComboBoxSelectionChanged });
     }
-    if (const auto numberBox = GetTemplateChildT<winrt::NumberBox>(c_numberBoxName,*this))
+    if (const auto numberBox = GetTemplateChildT<winrt::NumberBox>(c_numberBoxName, *this))
     {
         m_numberBox.set(numberBox);
         numberBox.Value(SelectedPageIndex() + 1);
@@ -129,7 +130,7 @@ void PagerControl::OnApplyTemplate()
     {
         m_numberPanelRepeater.set(repeater);
     }
-    if (const auto numberPanelIndicator = GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName,*this))
+    if (const auto numberPanelIndicator = GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName, *this))
     {
         m_selectedPageIndicator.set(numberPanelIndicator);
     }
@@ -361,27 +362,58 @@ void PagerControl::UpdateTemplateSettingElementLists()
     if (displayMode == winrt::PagerControlDisplayMode::ComboBox ||
         displayMode == winrt::PagerControlDisplayMode::Auto)
     {
-        const int currenComboBoxItemsCount = (int32_t)m_comboBoxEntries.Size();
-        if (currenComboBoxItemsCount <= numberOfPages)
+        if (numberOfPages > -1)
         {
-            // We are increasing the number of pages, so add the missing numbers.
-            for (int i = currenComboBoxItemsCount; i < numberOfPages; i++)
-            {
-                m_comboBoxEntries.Append(winrt::box_value(i + 1));
-            }
+            FillComboBoxCollectionToSize(numberOfPages);
         }
         else
         {
-            // We are decreasing the number of pages, so remove numbers starting at the end.
-            for (int i = currenComboBoxItemsCount; i > numberOfPages; i--)
+            if (m_comboBoxEntries.Size() < c_infiniteModeComboBoxItemsIncrement)
             {
-                m_comboBoxEntries.RemoveAt(i - 1);
+                FillComboBoxCollectionToSize(c_infiniteModeComboBoxItemsIncrement);
+                winrt::SymbolIcon moreIcon;
+                moreIcon.Symbol(winrt::Symbol::More);
+                m_comboBoxEntries.Append(moreIcon);
+            }
+            else if(SelectedPageIndex() == (int32_t)m_comboBoxEntries.Size() - 1)
+            {
+                m_comboBoxEntries.RemoveAt(m_comboBoxEntries.Size() - 1);
+                FillComboBoxCollectionToSize(m_comboBoxEntries.Size() + c_infiniteModeComboBoxItemsIncrement);
+                winrt::SymbolIcon moreIcon;
+                moreIcon.Symbol(winrt::Symbol::More);
+                m_comboBoxEntries.Append(moreIcon);
+                SelectedPageIndex();
+                if (const auto comboBox = m_comboBox.get())
+                {
+                    comboBox.IsDropDownOpen(true);
+                }
             }
         }
     }
     else if (displayMode == winrt::PagerControlDisplayMode::ButtonPanel)
     {
         UpdateNumberPanel(numberOfPages);
+    }
+}
+
+void PagerControl::FillComboBoxCollectionToSize(const int numberOfPages)
+{
+    const int currenComboBoxItemsCount = (int32_t)m_comboBoxEntries.Size();
+    if (currenComboBoxItemsCount <= numberOfPages)
+    {
+        // We are increasing the number of pages, so add the missing numbers.
+        for (int i = currenComboBoxItemsCount; i < numberOfPages; i++)
+        {
+            m_comboBoxEntries.Append(winrt::box_value(i + 1));
+        }
+    }
+    else
+    {
+        // We are decreasing the number of pages, so remove numbers starting at the end.
+        for (int i = currenComboBoxItemsCount; i > numberOfPages; i--)
+        {
+            m_comboBoxEntries.RemoveAt(i - 1);
+        }
     }
 }
 
@@ -610,7 +642,7 @@ void PagerControl::UpdateNumberPanelCollectionCenterWithEllipsis(int numberOfPag
         m_numberPanelElements.Clear();
         if (showFirstLastPageIndex)
         {
-            AppendButtonToNumberPanelList(1,numberOfPages);
+            AppendButtonToNumberPanelList(1, numberOfPages);
             AppendEllipsisIconToNumberPanelList();
         }
         AppendButtonToNumberPanelList(selectedIndex, numberOfPages);

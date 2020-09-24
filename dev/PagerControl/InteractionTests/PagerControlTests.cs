@@ -578,7 +578,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SelectPageInNumberPanel(int index)
         {
-            InputHelper.LeftClick(elements.GetNumberPanelButton(index.ToString()));
+            InputHelper.LeftClick(elements.GetNumberPanelButton("Page " + index.ToString()));
         }
 
         Edit FindTextBox(UIObject parent)
