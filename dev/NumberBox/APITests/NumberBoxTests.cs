@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using MUXControlsTestApp;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Input;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -103,6 +104,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(new CornerRadius(0), textBox.CornerRadius);
             });
+        }
+
+        [TestMethod]
+        public void VerifyInputScopePropogates()
+        {
+            var numberBox = SetupNumberBox();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                var inputTextBox = TestUtilities.FindDescendents<TextBox>(numberBox).Where(e => e.Name == "InputBox").Single();
+
+                Verify.AreEqual(1, inputTextBox.InputScope.Names.Count);
+                Verify.AreEqual(InputScopeNameValue.Number, inputTextBox.InputScope.Names[0].NameValue, "The default InputScope should be 'Number'.");
+
+                var scopeName = new InputScopeName();
+                scopeName.NameValue = InputScopeNameValue.CurrencyAmountAndSymbol;
+                var scope = new InputScope();
+                scope.Names.Add(scopeName);
+
+                numberBox.InputScope = scope;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(1, inputTextBox.InputScope.Names.Count);
+                Verify.AreEqual(InputScopeNameValue.CurrencyAmountAndSymbol, inputTextBox.InputScope.Names[0].NameValue, "The InputScope should be 'CurrencyAmountAndSymbol'.");
+            });
+
+            return;
         }
 
         [TestMethod]

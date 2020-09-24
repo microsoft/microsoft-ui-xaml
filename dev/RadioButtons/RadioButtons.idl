@@ -12,7 +12,6 @@ unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
 
     Object ItemsSource;
     Windows.Foundation.Collections.IVector<Object> Items{ get; };
-    [MUX_DEFAULT_VALUE("winrt::make<RadioButtonsElementFactory>()")]
     Object ItemTemplate;
 
     Windows.UI.Xaml.UIElement ContainerFromIndex(Int32 index);

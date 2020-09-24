@@ -76,12 +76,12 @@ function UninstallTestApps {
         # Get-AppxPackage to find the PackageFullName, we just have to manually construct the name.
         $packageFullName = "$($pkgName)_1.0.0.0_$($platform)__8wekyb3d8bbwe" 
         Write-Host "Removing $packageFullName if installed"
-        Remove-AppPackage $packageFullName -ErrorVariable appxerror -ErrorAction SilentlyContinue 
+        Remove-AppxPackage $packageFullName -ErrorVariable appxerror -ErrorAction SilentlyContinue 
         if($appxerror)
         {
             foreach($error in $appxerror)
             {
-                # In most cases, Remove-AppPackage will fail due to the package not being found. Don't treat this as an error.
+                # In most cases, Remove-AppxPackage will fail due to the package not being found. Don't treat this as an error.
                 if(!($error.Exception.Message -match "0x80073CF1"))
                 {
                     Write-Error $error

@@ -21,7 +21,6 @@
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
-  <ItemGroup />
   <!-- If we include the razzle includes in the csproj, VS raises warnings about referenced components not being found even if
        it's gated with the condition that we're building with build.exe.  To avoid that, we'll add the razzle includes
        in a props file that is only included when we're building with build.exe, which makes VS never see them. -->

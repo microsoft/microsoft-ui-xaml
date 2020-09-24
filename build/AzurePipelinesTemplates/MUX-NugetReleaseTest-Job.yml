@@ -69,6 +69,9 @@ jobs:
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
             <add key='local' value='${{parameters.pkgArtifactPath}}'/>
           </packageSources>
+          <config>
+            <add key="repositoryPath" value="$\..\..\..\packages" />
+          </config>
         </configuration>
         "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
         # Output for debugging

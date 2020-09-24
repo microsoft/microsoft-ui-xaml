@@ -23,6 +23,8 @@ using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewP
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
 using Microsoft.UI.Xaml.Controls;
+using MUXControlsTestApp.Utilities;
+using System.Collections.Generic;
 
 namespace MUXControlsTestApp
 {
@@ -734,6 +736,49 @@ namespace MUXControlsTestApp
             DependencyObject settings = FindVisualChildByName(NavView, "SettingsItem");
 
             SettingsSelectedState.Text = (settings as NavigationViewItem).IsSelected.ToString();
+        }
+
+        private async void ContentDialogNavViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogWithNavView dialog = new DialogWithNavView();
+            await dialog.ShowAsync();
+        }
+
+        private void GetTopLevelNavViewItemContentPresenterMarginButton_Click(object sender, RoutedEventArgs e)
+        {         
+            if (FindVisualChildByName(HomeItem, "ContentPresenter") is ContentPresenter presenter)
+            {
+                NavViewItemContentPresenterMarginTextBlock.Text = presenter.Margin.ToString();
+            }
+        }
+
+        private void GetChildNavViewItemContentPresenterMarginButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (FindVisualChildByName(ChildItem, "ContentPresenter") is ContentPresenter presenter)
+            {
+                NavViewItemContentPresenterMarginTextBlock.Text = presenter.Margin.ToString();
+            }
+        }
+
+        private void BringSettingsIntoViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavView.SettingsItem is NavigationViewItem settingsItem)
+            {
+                settingsItem.StartBringIntoView();
+            }
+        }
+
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            var suggestions = new List<string>();
+            suggestions.Add(sender.Text);
+            suggestions.Add(sender.Text + "1");
+            PaneAutoSuggestBox.ItemsSource = suggestions;
+        }
+
+        private void PaneAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            SuggestionChosenCheckbox.IsChecked = true;
         }
     }
 }

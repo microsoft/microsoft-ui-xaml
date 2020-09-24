@@ -457,7 +457,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         [TestMethod]
         public void TopPaddingTest()
         {
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
+            // We cannot restrict the inner framesize for this test because it interacts with the titlebar area.
+            using (var setup = new TestSetupHelper(testNames: new[] { "NavigationView Tests", "Top NavigationView Store Test" }, shouldRestrictInnerFrameSize: false))
             {
                 var moveContentUnderTitleBarButton = new Button(FindElement.ById("MoveContentUnderTopnavTitleBar"));
                 var flipIsTitleBarAutoPaddingEnabledButton = new Button(FindElement.ById("FlipIsTitleBarAutoPaddingEnabledButton"));
@@ -672,5 +673,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             }
         }
 
+        [TestMethod]
+        public void VerifyOverflowButtonIsCollapsedWhenOverflowMenuIsEmpty()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Overflow Button Test" }))
+            {
+                VerifyOverflowButtonIsVisibleAndOverflowMenuHasSingleItem();
+
+                Log.Comment("Verify that removing the final overflow menu item collapses the overflow button");
+                FindElement.ByName<Button>("RemoveLastItemButton").InvokeAndWait();
+
+                // Refresh the cache to make sure that the overflow button we are going to be searching for
+                // does not return as a false positive due to the caching mechanism.
+                ElementCache.Clear();
+
+                VerifyOverflowButtonIsCollapsed();
+
+                Log.Comment("Add menu item to show the overflow button again with the overflow menu item containing a single item");
+                FindElement.ByName<Button>("AddItem4Button").InvokeAndWait();
+
+                VerifyOverflowButtonIsVisibleAndOverflowMenuHasSingleItem();
+
+                Log.Comment("Verify that removing a primary menu item which creates enough room for the single overflow menu item to be moved into collapses the overflow button");
+                FindElement.ByName<Button>("RemoveFirstItemButton").InvokeAndWait();
+
+                // Refresh the cache to make sure that the overflow button we are going to be searching for
+                // does not return as a false positive due to the caching mechanism.
+                ElementCache.Clear();
+
+                VerifyOverflowButtonIsCollapsed();
+
+                void VerifyOverflowButtonIsVisibleAndOverflowMenuHasSingleItem()
+                {
+                    UIObject overflowButton = FindElement.ById("TopNavOverflowButton");
+                    Verify.IsNotNull(overflowButton, "The overflow button is required to be visible for this test");
+
+                    Log.Comment("Verify that the overflow menu contains a single item");
+                    overflowButton.Click();
+                    Wait.ForIdle();
+
+                    int numOverflowMenuItems = GetTopNavigationItems(TopNavPosition.Overflow).Count;
+                    Verify.IsTrue(numOverflowMenuItems == 1, "The overflow menu should only contain a single item");
+                }
+
+                void VerifyOverflowButtonIsCollapsed()
+                {
+                    UIObject overflowButton = FindElement.ById("TopNavOverflowButton");
+                    Verify.IsNull(overflowButton, "The overflow button should have been collapsed");
+                }
+            }
+        }
     }
 }

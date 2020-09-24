@@ -37,6 +37,14 @@
                 <ComboBoxItem Content="Right" />
             </ComboBox>
 
+            <ComboBox x:Name="InputScopeComboBox" AutomationProperties.Name="InputScopeComboBox" Header="InputScope" SelectedIndex="0" SelectionChanged="InputScope_Changed">
+                <ComboBoxItem Content="Number" />
+                <ComboBoxItem Content="Default" />
+                <ComboBoxItem Content="CurrencyAmountAndSymbol" />
+                <ComboBoxItem Content="TelephoneNumber" />
+                <ComboBoxItem Content="Formula" />
+            </ComboBox>
+
             <CheckBox x:Name="EnabledCheckBox" AutomationProperties.Name="EnabledCheckBox" IsChecked="True" Content="Enabled"/>
 
             <CheckBox x:Name="ExpressionCheckBox" AutomationProperties.Name="ExpressionCheckBox" IsChecked="False" Content="Accepts Expression"/>

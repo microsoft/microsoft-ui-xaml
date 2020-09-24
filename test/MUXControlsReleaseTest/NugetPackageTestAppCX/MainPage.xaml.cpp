@@ -54,7 +54,8 @@ void NugetPackageTestAppCX::MainPage::WaitForIdleInvokerButton_Click(Platform::O
     MainPage^ spThis = this;
     auto workItem = ref new Windows::System::Threading::WorkItemHandler([spThis](IAsyncAction^ workItem) mutable
     {
-        MUXTestUtilities::IdleSynchronizer::Wait();
+        AppTestAutomationHelpers::IdleSynchronizer idle(spThis->Dispatcher);
+        auto errorString = idle.TryWait();
 
         spThis->Dispatcher->RunAsync(
             Windows::UI::Core::CoreDispatcherPriority::Low,
