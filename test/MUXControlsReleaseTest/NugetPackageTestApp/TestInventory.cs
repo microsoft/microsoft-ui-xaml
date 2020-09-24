@@ -37,6 +37,11 @@ namespace NugetPackageTestApp
                     Name = "NavigationView with custom resources Tests",
                     PageType = typeof(NavigationViewWithCustomResourcesTestPage),
                 },
+                new TestDeclaration()
+                {
+                    Name = "Deprecated resources Tests",
+                    PageType = typeof(DeprecatedResourcesTestPage),
+                },
             };
         }
 
