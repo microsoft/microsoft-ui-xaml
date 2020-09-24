@@ -149,9 +149,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <StackPanel Orientation="Horizontal"
-                                    Grid.Column="0"
-                                    HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button x:Name="FirstPageButton"
                                     Style="{TemplateBinding FirstButtonStyle}"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -162,8 +160,7 @@
                                     Content="&#xE76B;"/>
                         </StackPanel>
                         
-                        <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal"
-                                Grid.Column="1">
+                        <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal" Grid.Column="1">
                             <TextBlock x:Name="PrefixTextLabel" Text="{TemplateBinding PrefixText}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <!--NumberBox Display-->
                             <muxc:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -188,8 +185,7 @@
                         </muxc:ItemsRepeater>
 
                         <Rectangle x:Name="NumberPanelCurrentPageIndicator" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1"
-                                Visibility="Collapsed" Fill="{ThemeResource PagerControlSelectionIndicatorForeground}" RadiusX="1" RadiusY="1" Height="2"
-                                Width="{StaticResource NumberPanelButtonWidth}">
+                                Visibility="Collapsed" Fill="{ThemeResource PagerControlSelectionIndicatorForeground}" RadiusX="1" RadiusY="1" Height="2">
                             <Rectangle.Transitions>
                                 <TransitionCollection>
                                     <RepositionThemeTransition/>

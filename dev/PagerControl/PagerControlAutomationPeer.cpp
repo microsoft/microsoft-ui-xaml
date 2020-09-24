@@ -37,7 +37,7 @@ hstring PagerControlAutomationPeer::GetNameCore()
 
     if (name.empty())
     {
-        if (auto PagerControl = Owner().try_as<winrt::PagerControl>())
+        if (const auto PagerControl = Owner().try_as<winrt::PagerControl>())
         {
             name = SharedHelpers::TryGetStringRepresentationFromObject(PagerControl.GetValue(winrt::AutomationProperties::NameProperty()));
         }
@@ -55,7 +55,7 @@ com_ptr<PagerControl> PagerControlAutomationPeer::GetImpl()
 {
     com_ptr<PagerControl> impl = nullptr;
 
-    if (auto pagerControl = Owner().try_as<winrt::PagerControl>())
+    if (const auto pagerControl = Owner().try_as<winrt::PagerControl>())
     {
         impl = winrt::get_self<PagerControl>(pagerControl)->get_strong();
     }
@@ -65,7 +65,7 @@ com_ptr<PagerControl> PagerControlAutomationPeer::GetImpl()
 
 winrt::com_array<winrt::IInspectable> PagerControlAutomationPeer::GetSelection()
 {
-    if (auto pager = GetImpl())
+    if (const auto pager = GetImpl())
     {
         return { winrt::box_value(pager->SelectedPageIndex()) };
     }

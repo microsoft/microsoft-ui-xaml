@@ -41,7 +41,7 @@
                     </Style>
                 </muxc:PagerControl.LastButtonStyle>
                 <muxc:PagerControl.Resources>
-                    <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
+                    <Style x:Key="PagerControlNumberPanelButtonStyle" TargetType="Button">
                         <Setter Property="MinWidth" Value="50"/>
                         <Setter Property="MinHeight" Value="20"/>
                         <Setter Property="Background" Value="#8000A8"/>
