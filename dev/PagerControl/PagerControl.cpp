@@ -371,22 +371,6 @@ void PagerControl::UpdateTemplateSettingElementLists()
             if (m_comboBoxEntries.Size() < c_infiniteModeComboBoxItemsIncrement)
             {
                 FillComboBoxCollectionToSize(c_infiniteModeComboBoxItemsIncrement);
-                winrt::SymbolIcon moreIcon;
-                moreIcon.Symbol(winrt::Symbol::More);
-                m_comboBoxEntries.Append(moreIcon);
-            }
-            else if(SelectedPageIndex() == (int32_t)m_comboBoxEntries.Size() - 1)
-            {
-                m_comboBoxEntries.RemoveAt(m_comboBoxEntries.Size() - 1);
-                FillComboBoxCollectionToSize(m_comboBoxEntries.Size() + c_infiniteModeComboBoxItemsIncrement);
-                winrt::SymbolIcon moreIcon;
-                moreIcon.Symbol(winrt::Symbol::More);
-                m_comboBoxEntries.Append(moreIcon);
-                SelectedPageIndex();
-                if (const auto comboBox = m_comboBox.get())
-                {
-                    comboBox.IsDropDownOpen(true);
-                }
             }
         }
     }

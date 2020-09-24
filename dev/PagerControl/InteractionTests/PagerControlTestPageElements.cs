@@ -1,29 +1,16 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using System;
-using System.Numerics;
 using Common;
 
-#if USING_TAEF
-using WEX.TestExecution;
-using WEX.TestExecution.Markup;
-using WEX.Logging.Interop;
-#else
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-#endif
-
-using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Foundation;
-using System.Collections.Generic;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Composition;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    class PagerControlTestPageElements
+    public class PagerControlTestPageElements
     {
         public UIObject GetPagerControl()
         {
@@ -235,6 +222,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button IncreaseNumberOfPagesButton;
 
+        public Button GetEnterInfinityModeButton()
+        {
+            return GetElement(ref EnterInfinityModeButton, "NumberOfPagesInfinityButton");
+        }
+        private Button EnterInfinityModeButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
@@ -264,19 +257,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return element;
         }
 
-        public enum DisplayModes
-        {
-            Auto,
-            NumberBox,
-            ComboBox,
-            NumberPanel
-        };
 
-        public enum ButtonVisibilityModes
-        {
-            AlwaysVisible,
-            HiddenOnEdge,
-            None
-        }
     }
 }

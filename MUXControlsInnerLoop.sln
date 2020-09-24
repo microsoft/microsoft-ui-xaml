@@ -475,6 +475,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PagerControl_TestUI", "dev\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PagerControl_InteractionTests", "dev\PagerControl\InteractionTests\PagerControl_InteractionTests.shproj", "{4F64C819-664F-436A-BCDB-8AB3019B9DD5}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PagerControl_APITests", "dev\PagerControl\APITests\PagerControl_APITests.shproj", "{CB2352E2-D633-41A3-8CDC-B28731A4C490}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -625,6 +627,7 @@ Global
 		dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems*{c332ceaf-68b6-4980-b6f3-b15e350cdce0}*SharedItemsImports = 13
 		dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems*{c4421632-51bc-469d-bc49-f1cbd9269d49}*SharedItemsImports = 13
 		dev\CheckBox\CheckBox.vcxitems*{c5c4a801-1f48-461c-a817-233d5fbd77aa}*SharedItemsImports = 9
+		dev\PagerControl\APITests\PagerControl_APITests.projitems*{cb2352e2-d633-41a3-8cdc-b28731a4c490}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems*{cbaaccf6-a27d-40b3-980b-adf51a2ebb89}*SharedItemsImports = 13
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{cddf46ef-aa2d-4bb3-b33e-98b3dbb3c41b}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\SliderInteraction.vcxitems*{d097a4d5-6b61-424d-99f0-f335eff41665}*SharedItemsImports = 9
@@ -1099,14 +1102,11 @@ Global
 		{990BBC65-1114-435D-B5CC-1EB8AAAD72DD} = {633B8D7A-3207-4BD3-8159-B65710AEA6FF}
 		{128E6F7A-578C-48DC-BD3F-750EC662C268} = {633B8D7A-3207-4BD3-8159-B65710AEA6FF}
 		{6F7831A4-48F8-41E8-A573-C567A1223CB5} = {05CB5DBD-A481-4DFF-B1A3-642F049D165C}
-		{2125B6DA-D822-4C1B-BA26-6ECCAE3EAF70} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
-		{4929A6E8-BAC9-4175-955E-F171080B5CFA} = {2125B6DA-D822-4C1B-BA26-6ECCAE3EAF70}
-		{C147DCB3-DDC0-4C79-9F2B-B8CC106D83A4} = {2125B6DA-D822-4C1B-BA26-6ECCAE3EAF70}
-		{27A219F1-6504-447C-BB98-39E620C7B778} = {2125B6DA-D822-4C1B-BA26-6ECCAE3EAF70}
 		{E7C2104F-770D-4375-8D3A-D173F222273A} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{AB3261A7-9A8D-4A27-AEA2-3AAC0419C889} = {E7C2104F-770D-4375-8D3A-D173F222273A}
 		{225C4174-3141-49B8-ADE2-C7D3408D5103} = {E7C2104F-770D-4375-8D3A-D173F222273A}
 		{4F64C819-664F-436A-BCDB-8AB3019B9DD5} = {E7C2104F-770D-4375-8D3A-D173F222273A}
+		{CB2352E2-D633-41A3-8CDC-B28731A4C490} = {E7C2104F-770D-4375-8D3A-D173F222273A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

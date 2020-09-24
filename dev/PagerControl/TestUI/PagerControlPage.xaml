@@ -84,7 +84,7 @@
                     <CheckBox Content="ButtonPanelAlwaysShowFirstLastPageIndex" Grid.Row="4" IsChecked="{x:Bind TestPager.ButtonPanelAlwaysShowFirstLastPageIndex,Mode=TwoWay}"/>
                     <StackPanel Grid.Row="5" >
                         <Button x:Name="NumberOfPagesSetterButton" Content="Set NumberOfPages to 100" Click="NumberOfPagesSetterButtonClicked"/>
-                        <Button x:Name="NumberOfPagesInfinityButton" Content="Set NumberOfPages to -1 (aka Infinity mode)" Click="NumberOfPagesInfinityButtonClicked"/>
+                        <Button x:Name="NumberOfPagesInfinityButton" AutomationProperties.Name="NumberOfPagesInfinityButton" Content="Set NumberOfPages to -1 (aka Infinity mode)" Click="NumberOfPagesInfinityButtonClicked"/>
                         <Button x:Name="IncreaseNumberOfPagesButton" Content="Increase NumberOfPages by 1" Click="IncreaseNumberOfPagesButtonClicked"/>
                         
                     </StackPanel>

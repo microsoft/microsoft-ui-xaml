@@ -10,6 +10,7 @@
     <Import_RootNamespace>PagerControl_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PagerControlTestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PagerControlTestPageElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PagerControlTests.cs" />
   </ItemGroup>
