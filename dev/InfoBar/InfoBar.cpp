@@ -131,7 +131,7 @@ void InfoBar::UpdateVisibility(bool notify, bool force)
     if (!m_applyTemplateCalled)
     {
         // ApplyTemplate() hasn't been called yet but IsOpen has already been set.
-        // Since this method will be called again shortly from ApplyTemplate, we'll just wait so that we don't send two notifications.
+        // Since this method will be called again shortly from ApplyTemplate, we'll just wait and send a notification then.
         m_notifyOpen = true;
     }
     else
