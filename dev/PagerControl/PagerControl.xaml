@@ -6,6 +6,10 @@
 
     <Style TargetType="muxc:PagerControl">
         <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
+        <Setter Property="FirstButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
+        <Setter Property="PreviousButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
+        <Setter Property="NextButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
+        <Setter Property="LastButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PagerControl" >
@@ -29,14 +33,20 @@
                                         <Setter Target="FirstPageButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FirstPageButtonIsEnabledStates">
-                                <VisualState x:Name="FirstPageButtonEnabled">
+                                <VisualState x:Name="FirstPageButtonHidden">
                                     <VisualState.Setters>
-                                        <Setter Target="FirstPageButton.IsEnabled" Value="true"/>
+                                        <Setter Target="FirstPageButton.Opacity" Value="0"/>
+                                        <Setter Target="FirstPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="FirstPageButtonDisabled"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="FirstPageButtonIsEnabledStates">
+                                <VisualState x:Name="FirstPageButtonEnabled"/>
+                                <VisualState x:Name="FirstPageButtonDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="FirstPageButton.IsEnabled" Value="False"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="PreviousPageButtonVisibilityStates">
                                 <VisualState x:Name="PreviousPageButtonVisible"/>
@@ -45,13 +55,15 @@
                                         <Setter Target="PreviousPageButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
-                                <VisualState x:Name="PreviousPageButtonEnabled">
+                                <VisualState x:Name="PreviousPageButtonHidden">
                                     <VisualState.Setters>
-                                        <Setter Target="PreviousPageButton.IsEnabled" Value="true"/>
+                                        <Setter Target="PreviousPageButton.Opacity" Value="0"/>
+                                        <Setter Target="PreviousPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
+                                <VisualState x:Name="PreviousPageButtonEnabled"/>
                                 <VisualState x:Name="PreviousPageButtonDisabled"/>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="NextPageButtonVisibilityStates">
@@ -66,7 +78,13 @@
                                 <VisualState x:Name="NextPageButtonEnabled"/>
                                 <VisualState x:Name="NextPageButtonDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="NextPageButton.IsEnabled" Value="false"/>
+                                        <Setter Target="NextPageButton.IsEnabled" Value="False"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NextPageButtonHidden">
+                                    <VisualState.Setters>
+                                        <Setter Target="NextPageButton.Opacity" Value="0"/>
+                                        <Setter Target="NextPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -82,7 +100,13 @@
                                 <VisualState x:Name="LastPageButtonEnabled"/>
                                 <VisualState x:Name="LastPageButtonDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="LastPageButton.IsEnabled" Value="false"/>
+                                        <Setter Target="LastPageButton.IsEnabled" Value="False"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="LastPageButtonHidden">
+                                    <VisualState.Setters>
+                                        <Setter Target="LastPageButton.Opacity" Value="0"/>
+                                        <Setter Target="LastPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -125,29 +149,28 @@
                                     Grid.Column="0"
                                     HorizontalAlignment="Right">
                             <Button x:Name="FirstPageButton"
-                                    IsEnabled="False"
-                                    Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                    Style="{TemplateBinding FirstButtonStyle}"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                                     Content="&#xE892;"/>
                             <Button x:Name="PreviousPageButton"
-                                    IsEnabled="False"
-                                    Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                    Style="{TemplateBinding PreviousButtonStyle}"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                                     Content="&#xE76B;"/>
                         </StackPanel>
                         
                         <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal"
                                 Grid.Column="1">
-                            <TextBlock x:Name="PrefixTextLabel" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="{TemplateBinding PrefixText}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <!--NumberBox Display-->
                             <muxc:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Margin="5,0,0,0"
                                     Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}"
                                     Minimum="1" SmallChange="1" LargeChange="5" Visibility="Collapsed" />
                             <!--ComboBox Display-->
                             <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
                                     ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
                                     Visibility="Collapsed" SelectedIndex="0"/>
-                            <TextBlock x:Name="SuffixTextLabel" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            <TextBlock Text="{TemplateBinding SuffixText}" VerticalAlignment="Center" Margin="5,0,0,0"/>
                             <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" x:Name="TotalNumberOfPagesLabel"
                                     Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" />
                         </StackPanel>
@@ -172,11 +195,11 @@
                         
                         <StackPanel Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Left">
                             <Button x:Name="NextPageButton"
-                                Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                Style="{TemplateBinding NextButtonStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 Content="&#xE76C;" />
                             <Button x:Name="LastPageButton"
-                                Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                Style="{TemplateBinding LastButtonStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 Content="&#xE893;"/>
                         </StackPanel>
@@ -186,10 +209,5 @@
         </Setter>
     </Style>
 
-    <Style x:Key="NumberPanelButtonStyle" TargetType="Button">
-        <Setter Property="MinWidth" Value="{StaticResource NumberPanelButtonWidth}"/>
-        <Setter Property="MinHeight" Value="20"/>
-        <Setter Property="Background" Value="Transparent"/>
-    </Style>
 
 </ResourceDictionary>

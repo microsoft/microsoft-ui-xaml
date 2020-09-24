@@ -17,21 +17,25 @@ const winrt::hstring c_numberPanelVisibleVisualState = L"NumberPanelVisible";
 
 const winrt::hstring c_firstPageButtonVisibleVisualState = L"FirstPageButtonVisible";
 const winrt::hstring c_firstPageButtonNotVisibleVisualState = L"FirstPageButtonCollapsed";
+const winrt::hstring c_firstPageButtonHiddenVisualState = L"FirstPageButtonHidden";
 const winrt::hstring c_firstPageButtonEnabledVisualState = L"FirstPageButtonEnabled";
 const winrt::hstring c_firstPageButtonDisabledVisualState = L"FirstPageButtonDisabled";
 
 const winrt::hstring c_previousPageButtonVisibleVisualState = L"PreviousPageButtonVisible";
 const winrt::hstring c_previousPageButtonNotVisibleVisualState = L"PreviousPageButtonCollapsed";
+const winrt::hstring c_previousPageButtonHiddenVisualState = L"PreviousPageButtonHidden";
 const winrt::hstring c_previousPageButtonEnabledVisualState = L"PreviousPageButtonEnabled";
 const winrt::hstring c_previousPageButtonDisabledVisualState = L"PreviousPageButtonDisabled";
 
 const winrt::hstring c_nextPageButtonVisibleVisualState = L"NextPageButtonVisible";
 const winrt::hstring c_nextPageButtonNotVisibleVisualState = L"NextPageButtonCollapsed";
+const winrt::hstring c_nextPageButtonHiddenVisualState = L"NextPageButtonHidden";
 const winrt::hstring c_nextPageButtonEnabledVisualState = L"NextPageButtonEnabled";
 const winrt::hstring c_nextPageButtonDisabledVisualState = L"NextPageButtonDisabled";
 
 const winrt::hstring c_lastPageButtonVisibleVisualState = L"LastPageButtonVisible";
 const winrt::hstring c_lastPageButtonNotVisibleVisualState = L"LastPageButtonCollapsed";
+const winrt::hstring c_lastPageButtonHiddenVisualState = L"LastPageButtonHidden";
 const winrt::hstring c_lastPageButtonEnabledVisualState = L"LastPageButtonEnabled";
 const winrt::hstring c_lastPageButtonDisabledVisualState = L"LastPageButtonDisabled";
 
@@ -39,8 +43,6 @@ const winrt::hstring c_finiteItemsModeState = L"FiniteItems";
 const winrt::hstring c_infiniteItemsModeState = L"InfiniteItems";
 
 const winrt::hstring c_rootGridName = L"RootGrid";
-const winrt::hstring c_prefixTextTextblockName = L"PrefixTextLabel";
-const winrt::hstring c_suffixTextTextblockName = L"SuffixTextLabel";
 
 const winrt::hstring c_comboBoxName = L"ComboBoxDisplay";
 const winrt::hstring c_numberBoxName = L"NumberBoxDisplay";
@@ -51,6 +53,7 @@ const winrt::hstring c_previousPageButtonName = L"PreviousPageButton";
 const winrt::hstring c_nextPageButtonName = L"NextPageButton";
 const winrt::hstring c_lastPageButtonName = L"LastPageButton";
 
+static constexpr auto c_numberPanelButtonStyleName = L"NumberPanelButtonStyle"sv; 
 const int c_AutoDisplayModeNumberOfPagesThreshold = 10; // This integer determines when to switch between NumberBoxDisplayMode and ComboBoxDisplayMode 
 const int c_infiniteModeComboBoxItemsIncrement = 100;
 
@@ -82,17 +85,17 @@ PagerControl::~PagerControl()
 
 void PagerControl::OnApplyTemplate()
 {
+    if (PrefixText().empty())
+    {
+        PrefixText(ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPrefixTextName));
+    }
+    if (SuffixText().empty())
+    {
+        SuffixText(ResourceAccessor::GetLocalizedStringResource(SR_PagerControlSuffixTextName));
+    }
     if (const auto rootGrid = GetTemplateChildT<winrt::FrameworkElement>(c_rootGridName, *this))
     {
         m_rootGridKeyDownRevoker = rootGrid.KeyDown(winrt::auto_revoke, { this, &PagerControl::OnRootGridKeyDown });
-    }
-    if (const auto prefixTextBlock = GetTemplateChildT<winrt::TextBlock>(c_prefixTextTextblockName, *this))
-    {
-        prefixTextBlock.Text(ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPrefixTextName));
-    }
-    if (const auto suffixTextBlock = GetTemplateChildT<winrt::TextBlock>(c_suffixTextTextblockName, *this))
-    {
-        suffixTextBlock.Text(ResourceAccessor::GetLocalizedStringResource(SR_PagerControlSuffixTextName));
     }
 
     if (const auto firstPageButton = GetTemplateChildT<winrt::Button>(c_firstPageButtonName, *this))
@@ -152,6 +155,7 @@ void PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             OnButtonVisibilityChanged(FirstButtonVisibility(),
                 c_firstPageButtonVisibleVisualState,
                 c_firstPageButtonNotVisibleVisualState,
+                c_firstPageButtonHiddenVisualState,
                 0);
         }
         else if (property == PreviousButtonVisibilityProperty())
@@ -159,6 +163,7 @@ void PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             OnButtonVisibilityChanged(PreviousButtonVisibility(),
                 c_previousPageButtonVisibleVisualState,
                 c_previousPageButtonNotVisibleVisualState,
+                c_previousPageButtonHiddenVisualState,
                 0);
         }
         else if (property == NextButtonVisibilityProperty())
@@ -166,6 +171,7 @@ void PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             OnButtonVisibilityChanged(NextButtonVisibility(),
                 c_nextPageButtonVisibleVisualState,
                 c_nextPageButtonNotVisibleVisualState,
+                c_nextPageButtonHiddenVisualState,
                 NumberOfPages() - 1);
         }
         else if (property == LastButtonVisibilityProperty())
@@ -173,6 +179,7 @@ void PagerControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             OnButtonVisibilityChanged(LastButtonVisibility(),
                 c_lastPageButtonVisibleVisualState,
                 c_lastPageButtonNotVisibleVisualState,
+                c_lastPageButtonHiddenVisualState,
                 NumberOfPages() - 1);
         }
         else if (property == DisplayModeProperty())
@@ -329,6 +336,7 @@ void PagerControl::RaiseSelectedIndexChanged()
 
 void PagerControl::OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
     const winrt::hstring visibleStateName,
+    const winrt::hstring collapsedStateName,
     const winrt::hstring hiddenStateName,
     const int hiddenOnEdgePageCriteria)
 {
@@ -338,7 +346,7 @@ void PagerControl::OnButtonVisibilityChanged(const winrt::PagerControlButtonVisi
     }
     else if (visibility == winrt::PagerControlButtonVisibility::Hidden)
     {
-        winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
+        winrt::VisualStateManager::GoToState(*this, collapsedStateName, false);
     }
     else
     {
@@ -446,7 +454,7 @@ void PagerControl::UpdateOnEdgeButtonVisualStates()
         }
         else
         {
-            winrt::VisualStateManager::GoToState(*this, c_firstPageButtonNotVisibleVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_firstPageButtonHiddenVisualState, false);
         }
     }
     if (PreviousButtonVisibility() == winrt::PagerControlButtonVisibility::HiddenOnEdge)
@@ -457,7 +465,7 @@ void PagerControl::UpdateOnEdgeButtonVisualStates()
         }
         else
         {
-            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonNotVisibleVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonHiddenVisualState, false);
         }
     }
     if (NextButtonVisibility() == winrt::PagerControlButtonVisibility::HiddenOnEdge)
@@ -468,7 +476,7 @@ void PagerControl::UpdateOnEdgeButtonVisualStates()
         }
         else
         {
-            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonNotVisibleVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
         }
     }
     if (LastButtonVisibility() == winrt::PagerControlButtonVisibility::HiddenOnEdge)
@@ -479,7 +487,7 @@ void PagerControl::UpdateOnEdgeButtonVisualStates()
         }
         else
         {
-            winrt::VisualStateManager::GoToState(*this, c_lastPageButtonNotVisibleVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_lastPageButtonHiddenVisualState, false);
         }
     }
 }
@@ -688,6 +696,8 @@ void PagerControl::AppendButtonToNumberPanelList(const int pageNumber, const int
         }
     };
     button.Click(buttonClickedFunc);
+    // Set the default style of buttons
+    button.Style(unbox_value<winrt::Style>(ResourceAccessor::ResourceLookup(*this, box_value(c_numberPanelButtonStyleName))));
     winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName) + L" " + winrt::to_hstring(pageNumber));
     winrt::AutomationProperties::SetPositionInSet(button, pageNumber);
     winrt::AutomationProperties::SetSizeOfSet(button, numberOfPages);

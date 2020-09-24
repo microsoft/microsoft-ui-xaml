@@ -31,6 +31,7 @@ public:
     void OnSelectedPageIndexChange(const int oldValue);
     void OnButtonVisibilityChanged(const winrt::PagerControlButtonVisibility visibility,
         const winrt::hstring visibleStateName,
+        const winrt::hstring collapsedStateName,
         const winrt::hstring hiddenStateName,
         const int hiddenOnEdgeSelectedIndexCriteria);
 
