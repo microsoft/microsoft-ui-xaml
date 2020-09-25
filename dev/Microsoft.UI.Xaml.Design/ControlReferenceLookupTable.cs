@@ -5,7 +5,7 @@ namespace Microsoft.UI.Xaml.Design
 {
     class ControlReferenceLookupTable
     {
-        const string WinUIRootNameSpace = "Microsoft.UI.Xaml.Control";
+        const string WinUIRootNameSpace = "Microsoft.UI.Xaml.Controls";
         public static string GetReference(string name)
         {
             return WinUIRootNameSpace + "." + name;
