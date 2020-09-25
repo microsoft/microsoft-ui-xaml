@@ -182,6 +182,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     TeachingTip teachingTip = new TeachingTip();
                     teachingTip.HeroContentPlacement = placementMode;
 
+                    // Open the teaching tip to enter the correct visual state for the HeroContentPlacement.
+                    teachingTip.IsOpen = true;
+
                     Content = teachingTip;
                     Content.UpdateLayout();
 

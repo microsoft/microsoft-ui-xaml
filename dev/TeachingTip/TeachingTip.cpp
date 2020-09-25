@@ -1013,12 +1013,6 @@ void TeachingTip::OnHeroContentPlacementChanged()
     switch (HeroContentPlacement())
     {
     case winrt::TeachingTipHeroContentPlacementMode::Auto:
-        // If there is no target for the TeachingTip we don't display a tail. As such, we will always display the hero content
-        // in the header of the TeachingTip.
-        if (!Target())
-        {
-            DoUpdateDynamicHeroContentPlacementToTop();
-        }
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Top:
         DoUpdateDynamicHeroContentPlacementToTop();
