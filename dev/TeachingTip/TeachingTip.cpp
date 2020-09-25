@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -44,7 +44,6 @@ void TeachingTip::OnApplyTemplate()
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
     m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
-    m_iconBorder.set(GetTemplateChildT<winrt::Border>(s_iconBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
@@ -557,7 +556,7 @@ bool TeachingTip::PositionUntargetedPopup()
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     if (auto&& popup = m_popup.get())
     {
-        switch (PreferredPlacement())
+        switch (GetFlowDirectionAdjustedPlacement(PreferredPlacement()))
         {
         case winrt::TeachingTipPlacementMode::Auto:
         case winrt::TeachingTipPlacementMode::Bottom:
@@ -1344,6 +1343,49 @@ void TeachingTip::ClosePopup()
     }
 }
 
+winrt::TeachingTipPlacementMode TeachingTip::GetFlowDirectionAdjustedPlacement(const winrt::TeachingTipPlacementMode& placementMode)
+{
+    if (FlowDirection() == winrt::FlowDirection::LeftToRight)
+    {
+        return placementMode;
+    }
+    else
+    {
+        switch (placementMode)
+        {
+            case winrt::TeachingTipPlacementMode::Auto:
+                return winrt::TeachingTipPlacementMode::Auto;
+            case winrt::TeachingTipPlacementMode::Left:
+                return winrt::TeachingTipPlacementMode::Right;
+            case winrt::TeachingTipPlacementMode::Right:
+                return winrt::TeachingTipPlacementMode::Left;
+            case winrt::TeachingTipPlacementMode::Top:
+                return winrt::TeachingTipPlacementMode::Top;
+            case winrt::TeachingTipPlacementMode::Bottom:
+                return winrt::TeachingTipPlacementMode::Bottom;
+            case winrt::TeachingTipPlacementMode::LeftBottom:
+                return winrt::TeachingTipPlacementMode::RightBottom;
+            case winrt::TeachingTipPlacementMode::LeftTop:
+                return winrt::TeachingTipPlacementMode::RightTop;
+            case winrt::TeachingTipPlacementMode::TopLeft:
+                return winrt::TeachingTipPlacementMode::TopRight;
+            case winrt::TeachingTipPlacementMode::TopRight:
+                return winrt::TeachingTipPlacementMode::TopLeft;
+            case winrt::TeachingTipPlacementMode::RightTop:
+                return winrt::TeachingTipPlacementMode::LeftTop;
+            case winrt::TeachingTipPlacementMode::RightBottom:
+                return winrt::TeachingTipPlacementMode::LeftBottom;
+            case winrt::TeachingTipPlacementMode::BottomRight:
+                return winrt::TeachingTipPlacementMode::BottomLeft;
+            case winrt::TeachingTipPlacementMode::BottomLeft:
+                return winrt::TeachingTipPlacementMode::BottomRight;
+            case winrt::TeachingTipPlacementMode::Center:
+                return winrt::TeachingTipPlacementMode::Center;
+        }
+    }
+    return winrt::TeachingTipPlacementMode::Auto;
+}
+
 void TeachingTip::OnTargetChanged()
 {
     m_targetLayoutUpdatedRevoker.revoke();
@@ -1669,7 +1711,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     // SetReturnTopForOutOfWindowBounds test hook.
     if (!ShouldConstrainToRootBounds() && m_returnTopForOutOfWindowPlacement)
     {
-        auto const placement = PreferredPlacement();
+        auto const placement =  GetFlowDirectionAdjustedPlacement(PreferredPlacement());
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
             return std::make_tuple(winrt::TeachingTipPlacementMode::Top, false);
@@ -1894,7 +1936,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::RightBottom] = false;
     }
 
-    auto const priorities = GetPlacementFallbackOrder(PreferredPlacement());
+    auto const wantedDirection = GetFlowDirectionAdjustedPlacement(PreferredPlacement());
+    auto const priorities = GetPlacementFallbackOrder(wantedDirection);
 
     for (auto const mode : priorities)
     {

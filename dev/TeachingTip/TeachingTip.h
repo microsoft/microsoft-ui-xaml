@@ -122,6 +122,8 @@ private:
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
+    winrt::TeachingTipPlacementMode GetFlowDirectionAdjustedPlacement(const winrt::TeachingTipPlacementMode& placementMode);
+
     void SetViewportChangedEvent(const gsl::strict_not_null<winrt::FrameworkElement>& target);
     void RevokeViewportChangedEvent();
     void WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&);
@@ -171,7 +173,6 @@ private:
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
     tracker_ref<winrt::Border> m_heroContentBorder{ this };
-    tracker_ref<winrt::Border> m_iconBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
@@ -274,7 +275,6 @@ private:
     static constexpr wstring_view s_nonHeroContentRootGridName{ L"NonHeroContentRootGrid"sv };
     static constexpr wstring_view s_shadowTargetName{ L"ShadowTarget"sv };
     static constexpr wstring_view s_heroContentBorderName{ L"HeroContentBorder"sv };
-    static constexpr wstring_view s_iconBorderName{ L"IconBorder"sv };
     static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
     static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };
     static constexpr wstring_view s_subtitleTextBoxName{ L"SubtitleTextBlock"sv };

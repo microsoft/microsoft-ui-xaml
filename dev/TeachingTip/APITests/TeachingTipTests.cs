@@ -169,6 +169,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void PropagatePropertiesDown()
+        {
+            TextBlock content = null;
+            TeachingTip tip = null;
+            RunOnUIThread.Execute(() =>
+            {
+                content = new TextBlock() {
+                    Text = "Some text"
+                };
+
+                tip = new TeachingTip() {
+                    Content = content,
+                    FontSize = 22,
+                    Foreground = new SolidColorBrush() {
+                        Color = Colors.Red
+                    }
+                };
+
+                Content = tip;
+                Content.UpdateLayout();
+                tip.IsOpen = true;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(Math.Abs(22 - content.FontSize) < 1);
+                var foregroundBrush = content.Foreground as SolidColorBrush;
+                Verify.AreEqual(Colors.Red, foregroundBrush.Color);
+            });
+        }
+
+
+        [TestMethod]
         public void TeachingTipHeroContentPlacementTest()
         {
             RunOnUIThread.Execute(() =>

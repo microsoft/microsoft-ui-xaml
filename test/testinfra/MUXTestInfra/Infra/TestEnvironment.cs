@@ -27,50 +27,113 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Windows.UI.Notifications;
+using System.IO;
+using System.Reflection;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland, AppThatUsesMuxIndirectly };
+    public class TestApplicationInfo
+    {
+        public string TestAppPackageName { get; private set; }
+        public string TestAppName { get; private set; }
+        public string TestAppPackageFamilyName { get; private set; }
 
-    // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup
-    // fixtures get executed.  It won't actually host any tests.
-    [TestClass]
+        public string TestAppMainWindowTitle { get; private set; }
+        public string ProcessName { get; private set; }
+        public string InstallerName { get; private set; }
+        public bool IsUwpApp { get; private set; }
+        public string CertSerialNumber { get; private set; }
+
+        public string BaseAppxDir { get; private set; }
+
+        public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string certSerialNumber, string baseAppxDir)
+            : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppPackageName, testAppPackageName, testAppPackageName, certSerialNumber, baseAppxDir)
+        {
+
+        }
+
+        public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, string certSerialNumber, string baseAppxDir)
+            : this(testAppPackageName, testAppName, testAppPackageFamilyName, testAppMainWindowTitle, processName, installerName, isUwpApp: true, certSerialNumber, baseAppxDir)
+        {
+        }
+
+        public TestApplicationInfo(string testAppPackageName, string testAppName, string testAppPackageFamilyName, string testAppMainWindowTitle, string processName, string installerName, bool isUwpApp, string certSerialNumber, string baseAppxDir)
+        {
+            this.TestAppPackageName = testAppPackageName;
+            this.TestAppName = testAppName;
+            this.TestAppPackageFamilyName = testAppPackageFamilyName;
+
+            this.TestAppMainWindowTitle = testAppMainWindowTitle;
+            this.ProcessName = processName;
+            this.InstallerName = installerName;
+
+            this.IsUwpApp = isUwpApp;
+
+            this.CertSerialNumber = certSerialNumber;
+            this.BaseAppxDir = baseAppxDir;
+        }
+
+        private const string MUXCertSerialNumber = "fd1d6927f4521242f00b20c9df66ea4f97175ee2";
+
+        private static string MUXBaseAppxDir
+        {
+            get
+            {
+                string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string baseDirectory = Directory.GetParent(assemblyDir).Parent.FullName;
+                return baseDirectory;
+            }
+        }
+
+        public static TestApplicationInfo MUXControlsTestApp
+        {
+            get
+            {
+#if USING_TAEF
+                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
+#else
+                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
+#endif
+                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
+        public static TestApplicationInfo NugetPackageTestApp
+        {
+            get
+            {
+                return new TestApplicationInfo("NugetPackageTestApp", "NugetPackageTestApp_8wekyb3d8bbwe!App", "NugetPackageTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
+        public static TestApplicationInfo AppThatUsesMUXIndirectly
+        {
+            get
+            {
+                return new TestApplicationInfo("AppThatUsesMUXIndirectly", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
+        public static TestApplicationInfo MUXControlsTestAppWPFPackage
+        {
+            get
+            {
+                return new TestApplicationInfo("MUXControlsTestAppWPFPackage", "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App", "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
+        public static TestApplicationInfo NugetPackageTestAppCX
+        {
+            get
+            {
+                return new TestApplicationInfo("NugetPackageTestAppCX", "NugetPackageTestAppCX_8wekyb3d8bbwe!App", "NugetPackageTestAppCX_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+    }
+
     public class TestEnvironment
     {
-
-#if USING_TAEF
-        private const string _testAppPackageName = "MUXControlsTestApp";
-        private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
-        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
-#elif !INNERLOOP_BUILD
-        private const string _testAppPackageName = "MUXControlsTestApp";
-        private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
-        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
-#else
-        private const string _testAppPackageName = "MUXControlsInnerLoopTestApp";
-        private const string _testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
-        private const string _testAppPackageFamilyName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe";
-#endif
-
-        public const string _nugetTestAppPackageName = "NugetPackageTestApp";
-        private const string _nugetTestAppName = "NugetPackageTestApp_8wekyb3d8bbwe!App";
-        private const string _nugetTestAppPackageFamilyName = "NugetPackageTestApp_8wekyb3d8bbwe";
-
-        public const string _appThatUsesMUXIndirectlyPackageName = "AppThatUsesMUXIndirectly";
-        private const string _appThatUsesMUXIndirectlyName = "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App";
-        private const string _appThatUsesMUXIndirectlyPackageFamilyName = "AppThatUsesMUXIndirectly_8wekyb3d8bbwe";
-
-        public const string _nugetTestAppCXPackageName = "NugetPackageTestAppCX";
-        private const string _nugetTestAppCXName = "NugetPackageTestAppCX_8wekyb3d8bbwe!App";
-        private const string _nugetTestAppCXPackageFamilyName = "NugetPackageTestAppCX_8wekyb3d8bbwe";
-
-        private const string _wpfXamlIslandPackageName = "MUXControlsTestAppWPFPackage";
-        private const string _wfpXamlIslandAppName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App";
-        private const string _wpfXamlIslandPackageFamilyName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe";
-
-        
-
-
         public static TestContext TestContext { get; private set; }
 
         public static bool IsLogVerbose { get; private set; }
@@ -97,13 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        [AssemblyInitialize]
-        [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
-        [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
-        [TestProperty("Hosting:Mode", "UAP")]
-        // Default value for tests is to not run on phone. Test Classes or Test Methods can override
-        [TestProperty("MUXControlsTestEnabledForPhone", "False")]
-        public static void AssemblyInitialize(TestContext testContext)
+        public static void AssemblyInitialize(TestContext testContext, string certFileName)
         {
             if (!PlatformConfiguration.IsDevice(DeviceType.OneCore))
             {
@@ -134,22 +191,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // If this is the MUXControlsTestApp from the OS repo, then it'll have been signed with a test cert
             // that doesn't need installation.
             Log.Comment("Installing the certificate for the test app");
-            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, "MUXControlsTestApp");
+            TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, certFileName);
 #endif
         }
 
-        [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
-            AssemblyCleanupWorker(TestType.MuxControls);
+            AssemblyCleanupWorker(TestApplicationInfo.MUXControlsTestApp);
         }
 
-        public static void AssemblyCleanupWorker(TestType testType)
+        public static void AssemblyCleanupWorker(TestApplicationInfo testAppInfo)
         {
             // This executed in a different context from the tests, so it doesn't have a reference
             // to Application object created by them, so just create a local one (configured to not launch the
             // app) so that we can close it.
-            var app = CreateApplication(testType);
+            var app = CreateApplication(testAppInfo);
             app.Close();
 
             Log.Comment("Killing processes we might have inadvertently started...");
@@ -162,32 +218,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-        private static Application CreateApplication(TestType type)
+        private static Application CreateApplication(TestApplicationInfo info)
         {
-            if (type == TestType.Nuget) return new Application(_nugetTestAppPackageName, _nugetTestAppPackageFamilyName, _nugetTestAppName);
-            if (type == TestType.NugetCX) return new Application(_nugetTestAppCXPackageName, _nugetTestAppCXPackageFamilyName, _nugetTestAppCXName);
-            if (type == TestType.WPFXAMLIsland) return new Application(_wpfXamlIslandPackageName, _wpfXamlIslandPackageFamilyName, _wfpXamlIslandAppName, false /* isUWPApp */);
-            if (type == TestType.AppThatUsesMuxIndirectly) return new Application(_appThatUsesMUXIndirectlyPackageName, _appThatUsesMUXIndirectlyPackageFamilyName, _appThatUsesMUXIndirectlyName);
-            return new Application(_testAppPackageName, _testAppPackageFamilyName, _testAppName);
+            return new Application(
+                info.TestAppPackageName,
+                info.TestAppPackageFamilyName,
+                info.TestAppName,
+                info.TestAppMainWindowTitle,
+                info.ProcessName,
+                info.InstallerName,
+                info.CertSerialNumber,
+                info.BaseAppxDir);
+        }
+
+        public static void Initialize(TestContext testContext)
+        {
+            Initialize(testContext, TestApplicationInfo.MUXControlsTestApp);
         }
 
         // Tests classes call this from their ClassInitialize methods to init our Application instance
         // and launching the application if necessary.
-        public static void Initialize(TestContext testContext, TestType type = TestType.MuxControls)
+        public static void Initialize(TestContext testContext, TestApplicationInfo testAppInfo)
         {
             TestContext = testContext;
 
-#if USING_TAEF
             IsLogVerbose = TestContext.Properties.Contains("LogVerbose");
             IsLogSuperVerbose = TestContext.Properties.Contains("LogSuperVerbose");
 
             if (TestContext.Properties.Contains("WaitForDebugger"))
-#else
-            IsLogVerbose = TestContext.Properties.ContainsKey("LogVerbose");
-            IsLogSuperVerbose = TestContext.Properties.ContainsKey("LogSuperVerbose");
-
-            if (TestContext.Properties.ContainsKey("WaitForDebugger"))
-#endif
             {
                 var processId = Process.GetCurrentProcess().Id;
                 while (!Debugger.IsAttached)
@@ -199,7 +257,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 Debugger.Break();
             }
 
-            Application = CreateApplication(type);
+            Application = CreateApplication(testAppInfo);
 
             // Initialize relies on TestEnvironment.Application to be set, so we'll call this method
             // outside of the constructor.
@@ -208,10 +266,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #else
             Application.Initialize(true);
 #endif
-        }
-
-        public static void ScheduleAppRestartIfNeeded()
-        {
         }
 
         public static void LogDumpTree(UIObject root = null)
@@ -326,7 +380,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
         }
-        
+
         private static UIntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = new UIntPtr(0xfffffffd);
         private static UIntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new UIntPtr(0xfffffffc);
 

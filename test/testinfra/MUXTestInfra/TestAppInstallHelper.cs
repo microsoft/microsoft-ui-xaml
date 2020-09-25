@@ -9,8 +9,12 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if USING_TAEF
 using WEX.Logging.Interop;
 using WEX.TestExecution;
+#else
+using Common;
+#endif
 using Windows.Foundation;
 using Windows.Management.Deployment;
 
@@ -25,12 +29,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the unit test app
         /// </summary>
-        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName)
+        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName, string appInstallerName)
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
-                FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, packageName + ".appx"));
-                if (appxFile.Exists)
+                FileInfo FirstFileWithExtension(params string[] extensions)
+                {
+                    Log.Comment("Searching for Package file. Base dir: {0}", deploymentDir);
+                    FileInfo fileInfo = null;
+                    foreach (var ext in extensions)
+                    {
+                        fileInfo = new FileInfo(Path.Combine(deploymentDir, $"{appInstallerName}.{ext}"));
+                        if (fileInfo.Exists)
+                        {
+                            Log.Comment("File '{0}' found!", fileInfo.FullName);
+                            break;
+                        }
+                        else
+                        {
+                            Log.Comment("File '{0}' not found.", fileInfo.FullName);
+                        }
+                    }
+
+                    return fileInfo;
+                }
+
+                var packageFile = FirstFileWithExtension("appx", "appxbundle", "msix");
+
+                if (packageFile?.Exists == true)
                 {
                     PackageManager packageManager = new PackageManager();
                     DeploymentResult result = null;
@@ -80,7 +106,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         }
                     }
 
-                    var packageUri = new Uri(Path.Combine(deploymentDir, appxFile.FullName));
+                    var packageUri = new Uri(Path.Combine(deploymentDir, packageFile.FullName));
 
                     Log.Comment("Installing Test Appx Package: {0}", packageUri.AbsolutePath);
 
@@ -139,9 +165,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the cert file for the appx so that it can be installed on the desktop environment
         /// </summary>
-        public static void InstallAppxCert(string deploymentDir, string packageName)
+        public static void InstallAppxCert(string deploymentDir, string certFileName)
         {
-            InstallCert(Path.Combine(deploymentDir, packageName + ".cer"));
+            InstallCert(Path.Combine(deploymentDir, certFileName));
         }
 
         public static void EnableSideloadingApps()
