@@ -161,10 +161,9 @@
                         </StackPanel>
                         
                         <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal" Grid.Column="1">
-                            <TextBlock x:Name="PrefixTextLabel" Text="{TemplateBinding PrefixText}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock x:Name="PrefixTextLabel" Text="{TemplateBinding PrefixText}" VerticalAlignment="Center" Margin="5,0,5,0"/>
                             <!--NumberBox Display-->
                             <muxc:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    Margin="5,0,0,0"
                                     Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}"
                                     Minimum="1" SmallChange="1" LargeChange="5" Visibility="Collapsed" />
                             <!--ComboBox Display-->
@@ -208,6 +207,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 
 </ResourceDictionary>

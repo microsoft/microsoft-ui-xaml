@@ -100,18 +100,22 @@ void PagerControl::OnApplyTemplate()
 
     if (const auto firstPageButton = GetTemplateChildT<winrt::Button>(c_firstPageButtonName, *this))
     {
+        winrt::AutomationProperties::SetName(firstPageButton, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlFirstPageButtonTextName));
         m_firstPageButtonClickRevoker = firstPageButton.Click(winrt::auto_revoke, { this, &PagerControl::FirstButtonClicked });
     }
     if (const auto previousPageButton = GetTemplateChildT<winrt::Button>(c_previousPageButtonName, *this))
     {
+        winrt::AutomationProperties::SetName(previousPageButton, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPreviousPageButtonTextName));
         m_previousPageButtonClickRevoker = previousPageButton.Click(winrt::auto_revoke, { this, &PagerControl::PreviousButtonClicked });
     }
     if (const auto nextPageButton = GetTemplateChildT<winrt::Button>(c_nextPageButtonName, *this))
     {
+        winrt::AutomationProperties::SetName(nextPageButton, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlNextPageButtonTextName));
         m_nextPageButtonClickRevoker = nextPageButton.Click(winrt::auto_revoke, { this, &PagerControl::NextButtonClicked });
     }
     if (const auto lastPageButton = GetTemplateChildT<winrt::Button>(c_lastPageButtonName, *this))
     {
+        winrt::AutomationProperties::SetName(lastPageButton, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlLastPageButtonTextName));
         m_lastPageButtonClickRevoker = lastPageButton.Click(winrt::auto_revoke, { this, &PagerControl::LastButtonClicked });
     }
 
@@ -280,17 +284,14 @@ void PagerControl::OnNumberOfPagesChanged(const int oldValue)
 void PagerControl::OnSelectedPageIndexChange(const int oldValue)
 {
     // If we don't have any pages, there is nothing we should do.
-    if (NumberOfPages() > -1)
+    // Ensure that SelectedPageIndex will end up in the valid range of values
+    if (SelectedPageIndex() > NumberOfPages() - 1 && NumberOfPages() > -1)
     {
-        // Ensure that SelectedPageIndex will end up in the valid range of values
-        if (SelectedPageIndex() > NumberOfPages() - 1)
-        {
-            SelectedPageIndex(NumberOfPages() - 1);
-        }
-        else if (SelectedPageIndex() < 0)
-        {
-            SelectedPageIndex(0);
-        }
+        SelectedPageIndex(NumberOfPages() - 1);
+    }
+    else if (SelectedPageIndex() < 0)
+    {
+        SelectedPageIndex(0);
     }
     // Now handle the value changes
     m_lastSelectedPageIndex = oldValue;
