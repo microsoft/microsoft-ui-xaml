@@ -468,6 +468,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6F7831A4-4
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PagerControl", "PagerControl", "{E7C2104F-770D-4375-8D3A-D173F222273A}"
+	ProjectSection(SolutionItems) = preProject
+		dev\PagerControl\readme.md = dev\PagerControl\readme.md
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PagerControl", "dev\PagerControl\PagerControl.vcxitems", "{AB3261A7-9A8D-4A27-AEA2-3AAC0419C889}"
 EndProject
