@@ -502,7 +502,7 @@ void PagerControl::UpdateNumberPanel(const int numberOfPages)
     {
         UpdateNumberOfPanelCollectionInfiniteItems();
     }
-    else if (numberOfPages < 7)
+    else if (numberOfPages < 8)
     {
         UpdateNumberPanelCollectionAllItems(numberOfPages);
     }
@@ -513,13 +513,13 @@ void PagerControl::UpdateNumberPanel(const int numberOfPages)
         // 1 2 3 4 5 6 ... n <-- Items
         if (selectedIndex < 4)
         {
-            // First two items selected, create following pattern:
+            // First four items selected, create following pattern:
             // 1 2 3 4 5... n
             UpdateNumberPanelCollectionStartWithEllipsis(numberOfPages, selectedIndex);
         }
         else if (selectedIndex >= numberOfPages - 4)
         {
-            // Last two items selected, create following pattern:
+            // Last four items selected, create following pattern:
             //1 [...] n-4 n-3 n-2 n-1 n
             UpdateNumberPanelCollectionEndWithEllipsis(numberOfPages, selectedIndex);
         }
@@ -527,7 +527,7 @@ void PagerControl::UpdateNumberPanel(const int numberOfPages)
         {
             // Neither start or end, so lets do this:
             // 1 [...] x-2 x-1 x x+1 x+2 [...] n
-            // where x-2 > 1 and x+2 < n
+            // where x > 4 and x < n - 4
             UpdateNumberPanelCollectionCenterWithEllipsis(numberOfPages, selectedIndex);
         }
     }
@@ -564,7 +564,7 @@ void PagerControl::UpdateNumberPanelCollectionAllItems(int numberOfPages)
     if (m_lastNumberOfPagesCount != numberOfPages)
     {
         m_numberPanelElements.Clear();
-        for (int i = 0; i < numberOfPages && i < 6; i++)
+        for (int i = 0; i < numberOfPages && i < 7; i++)
         {
             AppendButtonToNumberPanelList(i + 1, numberOfPages);
         }
