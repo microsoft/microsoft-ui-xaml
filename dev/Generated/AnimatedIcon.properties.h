@@ -30,6 +30,9 @@ public:
     void PlaybackRate(double value);
     double PlaybackRate();
 
+    void Position(double value);
+    double Position();
+
     void Source(winrt::IAnimatedVisualSource const& value);
     winrt::IAnimatedVisualSource Source();
 
@@ -43,6 +46,7 @@ public:
     static winrt::DependencyProperty IsAnimatedVisualLoadedProperty() { return s_IsAnimatedVisualLoadedProperty; }
     static winrt::DependencyProperty IsPlayingProperty() { return s_IsPlayingProperty; }
     static winrt::DependencyProperty PlaybackRateProperty() { return s_PlaybackRateProperty; }
+    static winrt::DependencyProperty PositionProperty() { return s_PositionProperty; }
     static winrt::DependencyProperty SourceProperty() { return s_SourceProperty; }
     static winrt::DependencyProperty StretchProperty() { return s_StretchProperty; }
 
@@ -53,6 +57,7 @@ public:
     static GlobalDependencyProperty s_IsAnimatedVisualLoadedProperty;
     static GlobalDependencyProperty s_IsPlayingProperty;
     static GlobalDependencyProperty s_PlaybackRateProperty;
+    static GlobalDependencyProperty s_PositionProperty;
     static GlobalDependencyProperty s_SourceProperty;
     static GlobalDependencyProperty s_StretchProperty;
 
@@ -68,6 +73,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnPlaybackRatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPositionPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

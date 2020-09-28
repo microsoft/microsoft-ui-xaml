@@ -91,6 +91,8 @@ private:
 
     void OnStretchPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
+    void OnPositionPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+
     void UpdateContent();
     void UnloadContent();
 

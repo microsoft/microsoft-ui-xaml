@@ -33,6 +33,10 @@ unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.UI.Xaml.Media.Stretch Stretch;
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Double Position;
+
+
     void Pause();
     Windows.Foundation.IAsyncAction PlayAsync(Double fromProgress, Double toProgress, Boolean looped);
     void Resume();
@@ -49,6 +53,7 @@ unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
     static Windows.UI.Xaml.DependencyProperty PlaybackRateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty StretchProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PositionProperty{ get; };
 }
 
 }

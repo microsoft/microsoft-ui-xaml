@@ -20,6 +20,7 @@ GlobalDependencyProperty AnimatedIconProperties::s_FallbackContentProperty{ null
 GlobalDependencyProperty AnimatedIconProperties::s_IsAnimatedVisualLoadedProperty{ nullptr };
 GlobalDependencyProperty AnimatedIconProperties::s_IsPlayingProperty{ nullptr };
 GlobalDependencyProperty AnimatedIconProperties::s_PlaybackRateProperty{ nullptr };
+GlobalDependencyProperty AnimatedIconProperties::s_PositionProperty{ nullptr };
 GlobalDependencyProperty AnimatedIconProperties::s_SourceProperty{ nullptr };
 GlobalDependencyProperty AnimatedIconProperties::s_StretchProperty{ nullptr };
 
@@ -107,6 +108,17 @@ void AnimatedIconProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(1),
                 winrt::PropertyChangedCallback(&OnPlaybackRatePropertyChanged));
     }
+    if (!s_PositionProperty)
+    {
+        s_PositionProperty =
+            InitializeDependencyProperty(
+                L"Position",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::AnimatedIcon>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPositionPropertyChanged));
+    }
     if (!s_SourceProperty)
     {
         s_SourceProperty =
@@ -140,6 +152,7 @@ void AnimatedIconProperties::ClearProperties()
     s_IsAnimatedVisualLoadedProperty = nullptr;
     s_IsPlayingProperty = nullptr;
     s_PlaybackRateProperty = nullptr;
+    s_PositionProperty = nullptr;
     s_SourceProperty = nullptr;
     s_StretchProperty = nullptr;
 }
@@ -166,6 +179,14 @@ void AnimatedIconProperties::OnPlaybackRatePropertyChanged(
 {
     auto owner = sender.as<winrt::AnimatedIcon>();
     winrt::get_self<AnimatedIcon>(owner)->OnPlaybackRatePropertyChanged(args);
+}
+
+void AnimatedIconProperties::OnPositionPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedIcon>();
+    winrt::get_self<AnimatedIcon>(owner)->OnPositionPropertyChanged(args);
 }
 
 void AnimatedIconProperties::OnSourcePropertyChanged(
@@ -273,6 +294,19 @@ void AnimatedIconProperties::PlaybackRate(double value)
 double AnimatedIconProperties::PlaybackRate()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<AnimatedIcon*>(this)->GetValue(s_PlaybackRateProperty));
+}
+
+void AnimatedIconProperties::Position(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<AnimatedIcon*>(this)->SetValue(s_PositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double AnimatedIconProperties::Position()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<AnimatedIcon*>(this)->GetValue(s_PositionProperty));
 }
 
 void AnimatedIconProperties::Source(winrt::IAnimatedVisualSource const& value)

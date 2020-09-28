@@ -14,7 +14,7 @@
 void  AnimatedIcon::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
-    
+
     // TODO: Implement
 }
 */
@@ -496,7 +496,7 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
     return (heightScale > widthScale)
         ? winrt::Size{ availableSize.Width, m_animatedVisualSize.y * widthScale }
     : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
-    
+
 }
 
 // Public API.
@@ -589,7 +589,7 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
     m_rootVisual.Size(arrangedSize);
     const auto z = 1.0F;
     m_rootVisual.Scale({ scale, z });
-    
+
     return finalSize;
 }
 
@@ -966,7 +966,7 @@ void AnimatedIcon::SetFallbackContent(winrt::UIElement const& uiElement)
 {
     // Clear out the existing content.
     // TODO: Ranjesh
-    /* 
+    /*
     Children().Clear();
 
     // Place the content in the tree.
@@ -993,4 +993,12 @@ void AnimatedIcon::OnStretchPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const&)
 {
     InvalidateMeasure();
+}
+
+void AnimatedIcon::OnPositionPropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    double from = unbox_value<double>(args.OldValue());
+    double to = unbox_value<double>(args.NewValue());
+    PlayAsync(from, to, false);
 }

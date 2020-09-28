@@ -15,13 +15,78 @@
         <StackPanel Orientation="Vertical">
             <controls:NavigationViewItem Content="Hello">
                 <controls:NavigationViewItem.Icon>
-                    <controls:AnimatedIcon Width="200" Height="200">
+                    <controls:AnimatedIcon Width="200" Height="200" x:Name="animatedIcon" AutoPlay="False">
                         <controls:AnimatedIcon.Source>
-                            <lottie:LottieLogo />
+                            <lottie:ProgressRingDeterminate  />
                         </controls:AnimatedIcon.Source>
                     </controls:AnimatedIcon>
                 </controls:NavigationViewItem.Icon>
             </controls:NavigationViewItem>
+            <Button x:Name="debugButton" Content="Advance animated icon in NavigationViewItem" />
+
+            <Button Content="Hello Button" Width="200" Height="40">
+                <Button.Style>
+                    <Style  TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Grid>
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal">
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="animatedIcon" Storyboard.TargetProperty="Position">
+                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOver">
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="animatedIcon" Storyboard.TargetProperty="Position">
+                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="0.25" />
+                                                        </ObjectAnimationUsingKeyFrames>
+
+                                                    </Storyboard>
+                                                </VisualState>
+                                                <VisualState x:Name="Pressed">
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="animatedIcon" Storyboard.TargetProperty="Position">
+                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="0.5" />
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </VisualState>
+                                                <VisualState x:Name="Disabled" />
+                                                
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+
+                                        <ContentPresenter
+                                            x:Name="ContentPresenter"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            Content="{TemplateBinding Content}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                            Padding="{TemplateBinding Padding}"
+                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            AutomationProperties.AccessibilityView="Raw" />
+
+                                        <controls:AnimatedIcon  x:Name="animatedIcon" AutoPlay="False" Position="0" HorizontalAlignment="Right">
+                                            <controls:AnimatedIcon.Source>
+                                                <lottie:ProgressRingDeterminate  />
+                                            </controls:AnimatedIcon.Source>
+                                        </controls:AnimatedIcon>
+
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            </Button>
+
         </StackPanel>
     </Grid>
 </local:TestPage>
