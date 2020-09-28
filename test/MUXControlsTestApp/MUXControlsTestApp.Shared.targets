@@ -88,4 +88,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBar\TestUI\InfoBar_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
 </Project>

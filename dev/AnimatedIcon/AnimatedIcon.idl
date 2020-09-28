@@ -1,0 +1,54 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[contentproperty("Source")]
+//[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+//[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
+{
+    AnimatedIcon();
+
+    Object Diagnostics{ get; };
+    Windows.Foundation.TimeSpan Duration{ get; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IAnimatedVisualSource Source;
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.UI.Xaml.DataTemplate FallbackContent;
+
+    [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean AutoPlay;
+    Boolean IsAnimatedVisualLoaded{ get; };
+    Boolean IsPlaying{ get; };
+    [MUX_DEFAULT_VALUE("1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Double PlaybackRate;
+
+    Windows.UI.Composition.CompositionObject ProgressObject{ get; };
+
+    [MUX_DEFAULT_VALUE("winrt::Stretch::Uniform")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.UI.Xaml.Media.Stretch Stretch;
+
+    void Pause();
+    Windows.Foundation.IAsyncAction PlayAsync(Double fromProgress, Double toProgress, Boolean looped);
+    void Resume();
+    void SetProgress(Double progress);
+    void Stop();
+
+    // Dependency properties
+    static Windows.UI.Xaml.DependencyProperty AutoPlayProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DiagnosticsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DurationProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty FallbackContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsAnimatedVisualLoadedProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsPlayingProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PlaybackRateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty StretchProperty{ get; };
+}
+
+}
