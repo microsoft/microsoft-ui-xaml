@@ -119,23 +119,28 @@ void PagerControl::OnApplyTemplate()
         m_lastPageButtonClickRevoker = lastPageButton.Click(winrt::auto_revoke, { this, &PagerControl::LastButtonClicked });
     }
 
-    m_comboBox.set(GetTemplateChildT<winrt::ComboBox>(c_comboBoxName, *this));
     m_comboBoxSelectionChangedRevoker.revoke();
-    if (const auto comboBox = m_comboBox.get())
-    {
-        comboBox.SelectedIndex(SelectedPageIndex() - 1);
-        winrt::AutomationProperties::SetName(comboBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
-        m_comboBoxSelectionChangedRevoker = comboBox.SelectionChanged(winrt::auto_revoke, { this, &PagerControl::ComboBoxSelectionChanged });
-    }
+    [this](const winrt::ComboBox comboBox) {
+        m_comboBox.set(comboBox);
+        if (comboBox)
+        {
+            comboBox.SelectedIndex(SelectedPageIndex() - 1);
+            winrt::AutomationProperties::SetName(comboBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
+            m_comboBoxSelectionChangedRevoker = comboBox.SelectionChanged(winrt::auto_revoke, { this, &PagerControl::ComboBoxSelectionChanged });
+        }
+    }(GetTemplateChildT<winrt::ComboBox>(c_comboBoxName, *this));
 
-    m_numberBox.set(GetTemplateChildT<winrt::NumberBox>(c_numberBoxName, *this));
     m_numberBoxValueChangedRevoker.revoke();
-    if (const auto numberBox = m_numberBox.get())
-    {
-        numberBox.Value(SelectedPageIndex() + 1);
-        winrt::AutomationProperties::SetName(numberBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
-        m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
-    }
+    [this](const winrt::NumberBox numberBox) {
+        m_numberBox.set(numberBox);
+        if (numberBox)
+        {
+            numberBox.Value(SelectedPageIndex() + 1);
+            winrt::AutomationProperties::SetName(numberBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
+            m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
+        }
+    }(GetTemplateChildT<winrt::NumberBox>(c_numberBoxName, *this));
+
     m_numberPanelRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(c_numberPanelRepeaterName, *this));
     m_selectedPageIndicator.set(GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName, *this));
 
@@ -388,11 +393,11 @@ void PagerControl::UpdateTemplateSettingElementLists()
 
 void PagerControl::FillComboBoxCollectionToSize(const int numberOfPages)
 {
-    const int currenComboBoxItemsCount = (int32_t)m_comboBoxEntries.Size();
-    if (currenComboBoxItemsCount <= numberOfPages)
+    const int currentComboBoxItemsCount = (int32_t)m_comboBoxEntries.Size();
+    if (currentComboBoxItemsCount <= numberOfPages)
     {
         // We are increasing the number of pages, so add the missing numbers.
-        for (int i = currenComboBoxItemsCount; i < numberOfPages; i++)
+        for (int i = currentComboBoxItemsCount; i < numberOfPages; i++)
         {
             m_comboBoxEntries.Append(winrt::box_value(i + 1));
         }
@@ -400,9 +405,9 @@ void PagerControl::FillComboBoxCollectionToSize(const int numberOfPages)
     else
     {
         // We are decreasing the number of pages, so remove numbers starting at the end.
-        for (int i = currenComboBoxItemsCount; i > numberOfPages; i--)
+        for (int i = currentComboBoxItemsCount; i > numberOfPages; i--)
         {
-            m_comboBoxEntries.RemoveAt(i - 1);
+            m_comboBoxEntries.RemoveAtEnd();
         }
     }
 }
