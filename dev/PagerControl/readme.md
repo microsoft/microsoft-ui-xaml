@@ -9,7 +9,7 @@ The PagerControl is structured into different multiple areas:
 - Property changes
 - Updating NumberPanel buttons
 
-Both the ComboBox and NumberPanel need collections to render that are not easily created by through XAML as they require some logic.
+Both the ComboBox and NumberPanel need collections to render that are not easily created through XAML as they require some logic.
 To pass those collections to the visual layer, we use TemplateSettings. 
 For performance reasons, the collections are stored inside the PagerControl and are not modified through the TemplateSettings object but rather through the reference inside the PagerControl.
 Since the collections on the TemplateSettings are readonly, this way of accessing is always modifying the correct items.
@@ -36,7 +36,11 @@ Below are all the named template parts of the PagerControl template. Next to the
 
 There are two areas of flows, 1. property changes and 2. user interactions.
 Every user interaction essentially only modifies a single property (generally SelectedPageIndex).
-Because of that, we will only discuss property change flows
+Because of that, we will only discuss property change flows.
+
+*Note:* Updating the TemplateSettings is done lazily, that means, we only update the collection that get's currently rendered.
+If we are displaying the ComboBox, we only update the ComboBox collection and if we are showing the NumberPanel, we only update the NumberPanel item collection.
+That's why we are updating the TemplateSettings not only when the NumberOfPages changes but also when the DisplayMode changes.
 
 #### First/Previous/Next/Last-ButtonVisibility property
 1. Reevaluate the visibility of the button in question
@@ -62,7 +66,8 @@ DisplayMode Auto will show a NumberBox. In "infinity mode", we do not show the l
 2. Adjust the selection of ComboBox or NumberBox respectively
 3. Update edge buttons visibility
 4. Update TemplateSettings collections
-5. Raise SelectedIndexChanged event on control and automation peer
+5. Move the selection indicator if necessary
+6. Raise SelectedIndexChanged event on control and automation peer
 
 #### ButtonPanelAlwaysShowFirstLastPage property
 1. Update TemplateSettings collections for NumberPanel

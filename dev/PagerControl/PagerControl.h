@@ -49,10 +49,10 @@ private:
     void UpdateNumberPanel(const int numberOfPages);
     void UpdateNumberOfPanelCollectionInfiniteItems();
     void UpdateNumberPanelCollectionAllItems(const int numberOfPages);
-    void UpdateNumberPanelCollectionStartWithEllipsis(int numberOfPages, int selectedIndex);
-    void UpdateNumberPanelCollectionEndWithEllipsis(int numberOfPages, int selectedIndex);
-    void UpdateNumberPanelCollectionCenterWithEllipsis(int numberOfPages, int selectedIndex);
-    void MoveIdentifierToElement(int index);
+    void UpdateNumberPanelCollectionStartWithEllipsis(const int numberOfPages, const int selectedIndex);
+    void UpdateNumberPanelCollectionEndWithEllipsis(const int numberOfPages, const int selectedIndex);
+    void UpdateNumberPanelCollectionCenterWithEllipsis(const int numberOfPages, const int selectedIndex);
+    void MoveIdentifierToElement(const int index);
     void AppendButtonToNumberPanelList(const int pageNumber, const int numberOfPages);
     void AppendEllipsisIconToNumberPanelList();
 

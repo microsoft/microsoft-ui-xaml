@@ -9,15 +9,15 @@ class PagerControlSelectedIndexChangedEventArgs :
     public winrt::implementation::PagerControlSelectedIndexChangedEventArgsT<PagerControlSelectedIndexChangedEventArgs>
 {
 public:
-    PagerControlSelectedIndexChangedEventArgs(const int oldIndex,const int newIndex) :
-        m_PreviousPageIndex(oldIndex), m_NewPageIndex(newIndex) {};
+    PagerControlSelectedIndexChangedEventArgs(const int previousIndex,const int newIndex) :
+        m_previousPageIndex(previousIndex), m_newPageIndex(newIndex) {};
 
-    int NewPageIndex() { return m_NewPageIndex; };
-    int PreviousPageIndex() { return m_PreviousPageIndex; };
+    int NewPageIndex() { return m_newPageIndex; };
+    int PreviousPageIndex() { return m_previousPageIndex; };
 
 private:
 
-    int m_NewPageIndex = -1;
-    int m_PreviousPageIndex = -1;
+    int m_newPageIndex = -1;
+    int m_previousPageIndex = -1;
 
 };
