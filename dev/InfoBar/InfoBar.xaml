@@ -84,6 +84,7 @@
                             
                         </VisualStateManager.VisualStateGroups>
 
+                        <!-- Background is used here so that it overrides the severity status color if set. -->
                         <Grid
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
@@ -146,7 +147,8 @@
                                 <ContentPresenter
                                     Grid.Column="2"
                                     primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarActionHorizontalLayoutMargin}"
-                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarActionVerticalLayoutMargin}" 
+                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarActionVerticalLayoutMargin}"
+                                    VerticalAlignment="Top"
                                     Content="{TemplateBinding ActionButton}">
                                     
                                     <ContentPresenter.Resources>

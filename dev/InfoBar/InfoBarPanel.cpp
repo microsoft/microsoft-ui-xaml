@@ -13,7 +13,11 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
     float totalHeight = 0;
     float widthOfWidest = 0;
     float heightOfTallest = 0;
+    float heightOfTallestInHorizontal = 0;
     int nItems = 0;
+
+    const auto parent = this->Parent().try_as<winrt::FrameworkElement>();
+    const float minHeight = !parent ? 0.0f : (float)(parent.MinHeight() - (Margin().Top + Margin().Bottom));
 
     for (winrt::UIElement const& child : Children())
     {
@@ -40,13 +44,21 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
                 heightOfTallest = childDesiredSize.Height;
             }
 
+            const float childHeightInHorizontal = childDesiredSize.Height + (float)horizontalMargin.Top + float(horizontalMargin.Bottom);
+            if (childHeightInHorizontal > heightOfTallestInHorizontal)
+            {
+                heightOfTallestInHorizontal = childHeightInHorizontal;
+            }
+
             nItems++;
         }
     }
 
     // Since this panel is inside a *-sized grid column, availableSize.Width should not be infinite
     // If there is only one item inside the panel, we will count it as vertical (the margins work out better that way)
-    if (nItems == 1 || totalWidth > availableSize.Width)
+    // Also, if the height of any item is taller than the desired min height of the InfoBar,
+    // the items should be laid out vertically even though they may seem to fit due to text wrapping.
+    if (nItems == 1 || totalWidth > availableSize.Width || (minHeight > 0 && heightOfTallestInHorizontal > minHeight))
     {
         m_isVertical = true;
         const auto verticalMargin = winrt::InfoBarPanel::GetVerticalMargin(*this);
