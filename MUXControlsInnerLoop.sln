@@ -638,6 +638,7 @@ Global
 		dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems*{c4421632-51bc-469d-bc49-f1cbd9269d49}*SharedItemsImports = 13
 		dev\CheckBox\CheckBox.vcxitems*{c5c4a801-1f48-461c-a817-233d5fbd77aa}*SharedItemsImports = 9
 		dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems*{cbaaccf6-a27d-40b3-980b-adf51a2ebb89}*SharedItemsImports = 13
+		dev\InfoBar\InfoBar.vcxitems*{ccc102b7-f5ef-479d-94f1-008d189448b1}*SharedItemsImports = 9
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{cddf46ef-aa2d-4bb3-b33e-98b3dbb3c41b}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\SliderInteraction.vcxitems*{d097a4d5-6b61-424d-99f0-f335eff41665}*SharedItemsImports = 9
 		dev\TabView\InteractionTests\TabView_InteractionTests.projitems*{d1e297b4-5e5b-4807-8624-4141c817a98a}*SharedItemsImports = 13

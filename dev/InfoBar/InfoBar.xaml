@@ -27,21 +27,21 @@
                                 <VisualState x:Name="Critical">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarCriticalSeverityStatusBrush}"/>
-                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarCriticalIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarCriticalIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityStatusBrush}"/>
-                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarWarningIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarWarningIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityStatusBrush}"/>
-                                        <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -102,13 +102,13 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock x:Name="StandardIcon"
+                            <FontIcon x:Name="StandardIcon"
                                 Grid.Column="0"
                                 Visibility="Collapsed"
                                 VerticalAlignment="Top"
                                 Margin="{StaticResource InfoBarIconMargin}"
                                 FontSize="{StaticResource InfoBarIconFontSize}"
-                                Text="{StaticResource InfoBarInformationalIconGlyph}"
+                                Glyph="{StaticResource InfoBarInformationalIconGlyph}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 AutomationProperties.AccessibilityView="Raw" />
 
