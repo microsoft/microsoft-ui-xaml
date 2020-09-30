@@ -38,6 +38,14 @@ The **MUXControls.sln** solution is used to build all feature areas (such as con
 Generally, you will want to set your configuration to **Debug**, **x64**, and 
 select **MUXControlsTestApp** as your startup project in Visual Studio. To retrieve the appropriate dependencies, right click on the solution in the Solution Explorer and select "Restore NuGet Packages". 
 
+If you get the following error while building the project:
+```
+BSCMAKE : error BK1520: internal limit exceeded; cannot generate source database file; please consider removing option /FR or /Fr from compiler command line
+```
+You will need to disable Browse Information in Visual Studio here: 
+
+![drop folder](images/BrowseInformation.png) 
+
 #### Working with the MUXControlsInnerLoop solution
 To work on a specific feature or control using the MUXControlsInnerLoop solution you will need to modify the **InnerLoopAreas.props** file to include the desired controls and projects. For example, to work on the ItemsRepeater control you will need to add
 ```xml
