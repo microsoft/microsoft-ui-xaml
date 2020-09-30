@@ -211,21 +211,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyClearingTabViewItemSourceDoesNotCrash()
         {
-            TabView tabView = null;
             RunOnUIThread.Execute(() =>
             {
-                tabView = new TabView();
+                TabView tabView = new TabView();
                 var tabItemsSource = new ObservableCollection<string>() { "Tab 1", "Tab 2" };
                 tabView.TabItemsSource = tabItemsSource;
 
                 Content = tabView;
                 Content.UpdateLayout();
 
-                Log.Comment("Clear the specified tab items source");
+                // Clearing the ItemsSource should not crash the app.
+                Log.Comment("Clear the specified tab items source");     
                 tabItemsSource.Clear();
-
-                // If we don't get here, app has crashed. This verify signals that clearing the items source did not cause a crash.
-                Verify.IsTrue(true);
             });
         }
 
