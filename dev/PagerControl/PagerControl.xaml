@@ -151,10 +151,12 @@
                         </VisualStateManager.VisualStateGroups>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button x:Name="FirstPageButton"
+                                    ToolTipService.ToolTip="{Binding ElementName=FirstPageButton, Path=(AutomationProperties.Name)}"
                                     Style="{TemplateBinding FirstButtonStyle}"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                                     Content="&#xE892;"/>
                             <Button x:Name="PreviousPageButton"
+                                    ToolTipService.ToolTip="{Binding ElementName=PreviousPageButton, Path=(AutomationProperties.Name)}"
                                     Style="{TemplateBinding PreviousButtonStyle}"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                                     Content="&#xE76B;"/>
@@ -194,10 +196,12 @@
                         
                         <StackPanel Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Left">
                             <Button x:Name="NextPageButton"
+                                ToolTipService.ToolTip="{Binding ElementName=NextPageButton, Path=(AutomationProperties.Name)}"
                                 Style="{TemplateBinding NextButtonStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 Content="&#xE76C;" />
                             <Button x:Name="LastPageButton"
+                                ToolTipService.ToolTip="{Binding ElementName=LastPageButton, Path=(AutomationProperties.Name)}"
                                 Style="{TemplateBinding LastButtonStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 Content="&#xE893;"/>

@@ -119,15 +119,15 @@
   </resheader>
   <data name="PagerControlFirstPageButtonText" xml:space="preserve">
     <value>First page</value>
-    <comment>Automation name for the first page button</comment>
+    <comment>Automation name and tooltip text for the first page button </comment>
   </data>
   <data name="PagerControlLastPageButtonText" xml:space="preserve">
     <value>Last page</value>
-    <comment>Automation name for the last page button</comment>
+    <comment>Automation name and tooltip text for the last page button</comment>
   </data>
   <data name="PagerControlNextPageButtonText" xml:space="preserve">
     <value>Next page</value>
-    <comment>Automation name for the next page button</comment>
+    <comment>Automation name and tooltip text for the next page button</comment>
   </data>
   <data name="PagerControlPageText" xml:space="preserve">
     <value>Page</value>
@@ -139,7 +139,7 @@
   </data>
   <data name="PagerControlPreviousPageButtonText" xml:space="preserve">
     <value>Previous page</value>
-    <comment>Automation name for the previous page button</comment>
+    <comment>Automation name and tooltip text for the previous page button</comment>
   </data>
   <data name="PagerControlSuffixText" xml:space="preserve">
     <value>of</value>
