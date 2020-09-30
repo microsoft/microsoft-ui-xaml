@@ -6,10 +6,10 @@
 
     <Style TargetType="muxc:PagerControl">
         <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
-        <Setter Property="FirstButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
-        <Setter Property="PreviousButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
-        <Setter Property="NextButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
-        <Setter Property="LastButtonStyle" Value="{StaticResource NavigationBackButtonNormalStyle}"/>
+        <Setter Property="FirstButtonStyle" Value="{StaticResource PagerControlPageNavigationButtonStyle}"/>
+        <Setter Property="PreviousButtonStyle" Value="{StaticResource PagerControlPageNavigationButtonStyle}"/>
+        <Setter Property="NextButtonStyle" Value="{StaticResource PagerControlPageNavigationButtonStyle}"/>
+        <Setter Property="LastButtonStyle" Value="{StaticResource PagerControlPageNavigationButtonStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PagerControl" >
