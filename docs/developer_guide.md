@@ -70,8 +70,7 @@ This can be accomplished by running the following commands in git:
 git update-index --skip-worktree InnerLoopAreas.props
 git update-index --skip-worktree MUXControlsInnerLoop.sln
 ```
-That didn't work
-We're sorry, but stephenlpeters@gmail.com can't be found in the uievolution-my.sharepoint.com directory. Please try again later, while we try to automatically fix this for you.
+
 ### Creating a NuGet package
 
 To create a NuGet package for a given build flavor (release/debug) and build arch (x64/x86/ARM/ARM64), you first need to build the solution in that configuration.
