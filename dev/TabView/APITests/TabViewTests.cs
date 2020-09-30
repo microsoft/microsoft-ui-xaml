@@ -229,6 +229,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyTabViewWithoutTabsDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TabView tabView = new TabView();
+                Content = tabView;
+
+                // Creating a TabView without tabs should not crash the app.
+                Content.UpdateLayout();
+            });       
+        }
+
         private static void VerifyTabWidthVisualStates(TabView tabView, IList<object> items, bool isCompact)
         {
             var listView = VisualTreeUtils.FindVisualChildByName(tabView, "TabListView") as TabViewListView;
