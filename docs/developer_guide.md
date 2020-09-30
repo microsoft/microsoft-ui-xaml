@@ -44,7 +44,7 @@ BSCMAKE : error BK1520: internal limit exceeded; cannot generate source database
 ```
 You will need to disable Browse Information in Visual Studio here: 
 
-![drop folder](images/BrowseInformation.png) 
+![](images/BrowseInformation.PNG) 
 
 #### Working with the MUXControlsInnerLoop solution
 To work on a specific feature or control using the MUXControlsInnerLoop solution you will need to modify the **InnerLoopAreas.props** file to include the desired controls and projects. For example, to work on the ItemsRepeater control you will need to add
@@ -70,7 +70,8 @@ This can be accomplished by running the following commands in git:
 git update-index --skip-worktree InnerLoopAreas.props
 git update-index --skip-worktree MUXControlsInnerLoop.sln
 ```
-
+That didn't work
+We're sorry, but stephenlpeters@gmail.com can't be found in the uievolution-my.sharepoint.com directory. Please try again later, while we try to automatically fix this for you.
 ### Creating a NuGet package
 
 To create a NuGet package for a given build flavor (release/debug) and build arch (x64/x86/ARM/ARM64), you first need to build the solution in that configuration.
