@@ -209,24 +209,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyClearingTabViewItemSourceDoesNotCrash()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                TabView tabView = new TabView();
-                var tabItemsSource = new ObservableCollection<string>() { "Tab 1", "Tab 2" };
-                tabView.TabItemsSource = tabItemsSource;
-
-                Content = tabView;
-                Content.UpdateLayout();
-
-                // Clearing the ItemsSource should not crash the app.
-                Log.Comment("Clear the specified tab items source");     
-                tabItemsSource.Clear();
-            });
-        }
-
-        [TestMethod]
         public void VerifyTabViewWithoutTabsDoesNotCrash()
         {
             RunOnUIThread.Execute(() =>
@@ -236,6 +218,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Creating a TabView without tabs should not crash the app.
                 Content.UpdateLayout();
+
+                var tabItemsSource = new ObservableCollection<string>() { "Tab 1", "Tab 2" };
+                tabView.TabItemsSource = tabItemsSource;
+
+                // Clearing the ItemsSource should not crash the app.
+                Log.Comment("Clear the specified tab items source");
+                tabItemsSource.Clear();
             });       
         }
 
