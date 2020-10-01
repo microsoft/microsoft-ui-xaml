@@ -32,8 +32,8 @@ namespace MUXControlsTestApp
 
             switch (severityName)
             {
-                case "Critical":
-                    TestInfoBar.Severity = InfoBarSeverity.Critical;
+                case "Error":
+                    TestInfoBar.Severity = InfoBarSeverity.Error;
                     break;
 
                 case "Warning":

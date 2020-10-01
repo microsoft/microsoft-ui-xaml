@@ -7,6 +7,7 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
     <Style TargetType="local:InfoBar">
+        <Setter Property="Foreground" Value="{StaticResource InfoBarForeground}"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
@@ -15,7 +16,7 @@
                 <ControlTemplate TargetType="local:InfoBar">
                     <Border x:Name="ContentRoot" 
                         VerticalAlignment="Top"
-                        Background="{ThemeResource InfoBarInformationalSeverityStatusBrush}"
+                        Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
                         BorderBrush="{ThemeResource InfoBarBorderBrush}"
                         BorderThickness="{ThemeResource InfoBarBorderThickness}">
 
@@ -23,25 +24,28 @@
                             
                             <VisualStateGroup x:Name="SeverityLevels">
                                 <VisualState x:Name="Informational"/>
-                                
-                                <VisualState x:Name="Critical">
+
+                                <VisualState x:Name="Error">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarCriticalSeverityStatusBrush}"/>
-                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarCriticalIconGlyph}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"/>
+                                        <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarErrorIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Foreground" Value="{StaticResource InfoBarErrorSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Warning">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityStatusBrush}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarWarningIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Foreground" Value="{StaticResource InfoBarWarningSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Success">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityStatusBrush}"/>
+                                        <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
+                                        <Setter Target="StandardIcon.Foreground" Value="{StaticResource InfoBarSuccessSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -109,6 +113,7 @@
                                 Margin="{StaticResource InfoBarIconMargin}"
                                 FontSize="{StaticResource InfoBarIconFontSize}"
                                 Glyph="{StaticResource InfoBarInformationalIconGlyph}"
+                                Foreground="{StaticResource InfoBarInformationalSeverityIconForeground}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 AutomationProperties.AccessibilityView="Raw" />
 

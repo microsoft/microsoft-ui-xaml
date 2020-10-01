@@ -43,7 +43,7 @@
 
                 <StackPanel Orientation="Vertical" Spacing="6" HorizontalAlignment="Left">
                     <ComboBox x:Name="SeverityComboBox" AutomationProperties.Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
-                        <x:String>Critical</x:String>
+                        <x:String>Error</x:String>
                         <x:String>Warning</x:String>
                         <x:String>Success</x:String>
                         <x:String>Informational</x:String>

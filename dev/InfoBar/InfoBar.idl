@@ -16,7 +16,7 @@ enum InfoBarSeverity
     Informational = 0,
     Success = 1,
     Warning = 2,
-    Critical = 3,
+    Error = 3,
 };
 
 [WUXC_VERSION_MUXONLY]

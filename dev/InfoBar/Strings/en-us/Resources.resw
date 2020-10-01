@@ -125,6 +125,10 @@
     <value>InfoBar dismissed</value>
     <comment>The string read by narrator when the InfoBar closes.</comment>
   </data>
+  <data name="InfoBarCustomLandmarkName" xml:space="preserve">
+    <value>InfoBar</value>
+    <comment>This is the custom landmark used to denote an InfoBar to narrator.</comment>
+  </data>
   <data name="InfoBarOpenedNotification" xml:space="preserve">
     <value>%1!s! %2!s!</value>
     <comment>The formatted string read by narrator when the InfoBar opens: "{Title} {Message}"</comment>

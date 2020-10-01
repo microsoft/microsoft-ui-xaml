@@ -13,6 +13,7 @@
 #include "../ResourceHelper/Utils.h"
 
 static constexpr wstring_view c_closeButtonName{ L"CloseButton"sv };
+static constexpr wstring_view c_contentRootName{ L"ContentRoot"sv };
 
 InfoBar::InfoBar()
 {
@@ -44,6 +45,11 @@ void InfoBar::OnApplyTemplate()
             const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonName);
             winrt::AutomationProperties::SetName(closeButton, closeButtonName);
         }
+    }
+
+    if (auto&& contentRootGrid = GetTemplateChildT<winrt::Button>(c_contentRootName, controlProtected))
+    {
+        winrt::AutomationProperties::SetLocalizedLandmarkType(contentRootGrid, ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCustomLandmarkName));
     }
 
     UpdateVisibility(m_notifyOpen, true);
@@ -180,7 +186,7 @@ void InfoBar::UpdateSeverity()
     {
         case winrt::InfoBarSeverity::Success:  severityState = L"Success";  break;
         case winrt::InfoBarSeverity::Warning:  severityState = L"Warning";  break;
-        case winrt::InfoBarSeverity::Critical: severityState = L"Critical"; break;
+        case winrt::InfoBarSeverity::Error:    severityState = L"Error"; break;
     };
 
     winrt::VisualStateManager::GoToState(*this, severityState, false);

@@ -53,7 +53,7 @@ winrt::Peers::AutomationNotificationProcessing InfoBarAutomationPeer::GetProcess
 {
     winrt::Peers::AutomationNotificationProcessing processing = winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent;
 
-    if (severity == winrt::InfoBarSeverity::Critical
+    if (severity == winrt::InfoBarSeverity::Error
         || severity == winrt::InfoBarSeverity::Warning)
     {
         processing = winrt::Peers::AutomationNotificationProcessing::ImportantAll;
