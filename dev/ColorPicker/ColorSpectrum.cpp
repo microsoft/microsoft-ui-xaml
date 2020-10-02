@@ -188,21 +188,11 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         IncrementDirection::Higher;
 
     // Image is flipped in RightToLeft, so we need to invert direction in that case.
-    if (FlowDirection() == winrt::FlowDirection::RightToLeft &&
+    // The combination saturation and value is also flipped, so we need to invert in that case too.
+    // If both are false, we don't need to invert.
+    // If both are true, we would invert twice, so not invert at all.
+    if ((FlowDirection() == winrt::FlowDirection::RightToLeft) != isSaturationValue &&
         (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
-    {
-        if (direction == IncrementDirection::Higher)
-        {
-            direction = IncrementDirection::Lower;
-        }
-        else
-        {
-            direction = IncrementDirection::Higher;
-        }
-    }
-
-    // The SaturationValue configuration is also inverted, so invert to ensure correct left right navigation
-    if (isSaturationValue && (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
     {
         if (direction == IncrementDirection::Higher)
         {
