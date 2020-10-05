@@ -118,6 +118,11 @@ namespace MUXControlsTestApp
             EventListBox.Items.Clear();
         }
 
+        public void SetForegroundClick(object sender, object args)
+        {
+            TestInfoBar.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
         public void HasCustomContentChanged(object sender, object args)
         {
             if (HasCustomContentCheckBox.IsChecked.Value)

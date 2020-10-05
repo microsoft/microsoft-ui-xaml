@@ -64,6 +64,8 @@
                         <ComboBoxItem Content="Hyperlink" />
                     </ComboBox>
 
+                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
+
                     <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
 
                     <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />

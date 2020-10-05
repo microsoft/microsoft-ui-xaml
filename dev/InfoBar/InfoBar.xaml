@@ -7,7 +7,6 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
     <Style TargetType="local:InfoBar">
-        <Setter Property="Foreground" Value="{StaticResource InfoBarForeground}"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="CloseButtonStyle" Value="{StaticResource InfoBarCloseButtonStyle}" />
         <Setter Property="Background" Value="Transparent" />
@@ -85,7 +84,17 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            
+
+                            <VisualStateGroup>
+                                <VisualState x:Name="ForegroundNotSet"/>
+                                <VisualState x:Name="ForegroundSet">
+                                    <VisualState.Setters>
+                                        <Setter Target="Title.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}"/>
+                                        <Setter Target="Message.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
                         </VisualStateManager.VisualStateGroups>
 
                         <!-- Background is used here so that it overrides the severity status color if set. -->
@@ -133,6 +142,7 @@
                                 <TextBlock x:Name="Title"
                                     Grid.Column="0"
                                     Text="{TemplateBinding Title}"
+                                    Foreground="{ThemeResource InfoBarTitleForeground}"
                                     primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarTitleHorizontalLayoutMargin}"
                                     primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarTitleVerticalLayoutMargin}"
                                     TextWrapping="WrapWholeWords"
@@ -142,7 +152,8 @@
 
                                 <TextBlock x:Name="Message" 
                                     Grid.Column="1"
-                                    Text="{TemplateBinding Message}" 
+                                    Text="{TemplateBinding Message}"
+                                    Foreground="{ThemeResource InfoBarMessageForeground}"
                                     primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarMessageHorizontalLayoutMargin}"
                                     primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarMessageVerticalLayoutMargin}"
                                     TextWrapping="WrapWholeWords"

@@ -18,7 +18,8 @@
             <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
-            <StaticResource x:Key="InfoBarForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
             <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
@@ -36,7 +37,8 @@
             <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
-            <StaticResource x:Key="InfoBarForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
             <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
@@ -54,7 +56,8 @@
             <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
-            <StaticResource x:Key="InfoBarForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
 
             <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />

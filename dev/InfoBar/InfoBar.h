@@ -42,6 +42,9 @@ private:
     void UpdateIcon();
     void UpdateIconVisibility();
     void UpdateCloseButton();
+    void UpdateForeground();
+
+    void OnForegroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     winrt::InfoBarCloseReason m_lastCloseReason{ winrt::InfoBarCloseReason::Programmatic };
 

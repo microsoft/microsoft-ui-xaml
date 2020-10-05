@@ -21,6 +21,8 @@ InfoBar::InfoBar()
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::InfoBarTemplateSettings>());
 
+    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &InfoBar::OnForegroundChanged });
+
     SetDefaultStyleKey(this);
 }
 
@@ -59,6 +61,7 @@ void InfoBar::OnApplyTemplate()
     UpdateIcon();
     UpdateIconVisibility();
     UpdateCloseButton();
+    UpdateForeground();
 }
 
 void InfoBar::OnCloseButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -213,4 +216,15 @@ void InfoBar::UpdateIconVisibility()
 void InfoBar::UpdateCloseButton()
 {
     winrt::VisualStateManager::GoToState(*this, IsClosable() ? L"CloseButtonVisible" : L"CloseButtonCollapsed", false);
+}
+
+void InfoBar::OnForegroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdateForeground();
+}
+
+void InfoBar::UpdateForeground()
+{
+    // If Foreground is set, then change Title and Message Foreground to match.
+    winrt::VisualStateManager::GoToState(*this, ReadLocalValue(winrt::Control::ForegroundProperty()) == winrt::DependencyProperty::UnsetValue() ? L"ForegroundNotSet" : L"ForegroundSet", false);
 }
