@@ -475,6 +475,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Pager_TestUI", "dev\Pager\T
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PrototypePager", "dev\Pager\PrototypePager\PrototypePager.shproj", "{675373CE-6ACD-4C4B-A009-09A3C9B218E6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Expander", "Expander", "{93FAB536-1139-4FD1-B0BF-97C0C6FAB378}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Expander", "dev\Expander\Expander.vcxitems", "{EC3B6F65-32C6-4BC8-8902-EE0B397E2787}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_TestUI", "dev\Expander\TestUI\Expander_TestUI.shproj", "{50C1F1D3-20AA-49A8-9E4C-CF4E5811A1D8}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_InteractionTests", "dev\Expander\InteractionTests\Expander_InteractionTests.shproj", "{D6DF4AB9-FACC-4E51-8C57-6B1F96919365}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -539,6 +547,7 @@ Global
 		dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems*{4a87b4f1-4b6f-435a-950e-b2bb32a16001}*SharedItemsImports = 13
 		dev\CalendarDatePicker\CalendarDatePicker.vcxitems*{4da91b32-6723-4377-9287-ca403ef00ce4}*SharedItemsImports = 9
 		dev\Materials\Reveal\APITests\Reveal_APITests.projitems*{5049ea6c-88ce-4ed5-8692-947eec9e52bc}*SharedItemsImports = 13
+		dev\Expander\TestUI\Expander_TestUI.projitems*{50c1f1d3-20aa-49a8-9e4c-cf4e5811a1d8}*SharedItemsImports = 13
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{50e838a2-a886-46c9-ab0b-a57f510ce643}*SharedItemsImports = 13
 		dev\PersonPicture\APITests\PersonPicture_APITests.projitems*{5243ef2c-f250-48bd-b633-39cc2a0a38aa}*SharedItemsImports = 13
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{549c8eb7-e099-4eab-a1f6-faa3fa79b9e0}*SharedItemsImports = 13
@@ -595,6 +604,7 @@ Global
 		dev\Common\Common.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\DropDownButton\DropDownButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Effects\Microsoft.UI.Composition.Effects.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Expander\Expander.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\IconSource\IconSource.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Lights\Lights.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -631,6 +641,7 @@ Global
 		dev\TabView\InteractionTests\TabView_InteractionTests.projitems*{d1e297b4-5e5b-4807-8624-4141c817a98a}*SharedItemsImports = 13
 		dev\Pager\InteractionTests\Pager_InteractionTests.projitems*{d59c7b8e-5c09-4856-8af3-25585a888707}*SharedItemsImports = 5
 		dev\MenuFlyout\MenuFlyout.vcxitems*{d5c2b2a0-50af-4ace-939d-17d1ed79fd6f}*SharedItemsImports = 9
+		dev\Expander\InteractionTests\Expander_InteractionTests.projitems*{d6df4ab9-facc-4e51-8c57-6b1f96919365}*SharedItemsImports = 13
 		dev\IconSource\APITests\IconSource_APITests.projitems*{d73627e9-564c-4a72-a12d-f6c82f17ad0d}*SharedItemsImports = 13
 		dev\DropDownButton\InteractionTests\DropDownButton_InteractionTests.projitems*{d9ac3716-5608-40d0-999f-26f4b544be33}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{dbec0be4-ba3f-41c9-a303-af98201be6dc}*SharedItemsImports = 13
@@ -1104,6 +1115,10 @@ Global
 		{3566798E-9E24-44EF-B89D-2A62AE8F697A} = {0EC260CC-03C7-4790-B16A-43428EBCF5AD}
 		{675121BF-CABC-48E7-9C9D-4571BC507406} = {0EC260CC-03C7-4790-B16A-43428EBCF5AD}
 		{675373CE-6ACD-4C4B-A009-09A3C9B218E6} = {0EC260CC-03C7-4790-B16A-43428EBCF5AD}
+		{93FAB536-1139-4FD1-B0BF-97C0C6FAB378} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{EC3B6F65-32C6-4BC8-8902-EE0B397E2787} = {93FAB536-1139-4FD1-B0BF-97C0C6FAB378}
+		{50C1F1D3-20AA-49A8-9E4C-CF4E5811A1D8} = {93FAB536-1139-4FD1-B0BF-97C0C6FAB378}
+		{D6DF4AB9-FACC-4E51-8C57-6B1F96919365} = {93FAB536-1139-4FD1-B0BF-97C0C6FAB378}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
