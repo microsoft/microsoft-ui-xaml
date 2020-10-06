@@ -20,6 +20,8 @@ GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateSelectorProperty{ n
 GlobalDependencyProperty ExpanderProperties::s_IsExpandedProperty{ nullptr };
 
 ExpanderProperties::ExpanderProperties()
+    : m_collapsedEventSource{static_cast<Expander*>(this)}
+    , m_expandedEventSource{static_cast<Expander*>(this)}
 {
     EnsureProperties();
 }
@@ -171,4 +173,24 @@ void ExpanderProperties::IsExpanded(bool value)
 bool ExpanderProperties::IsExpanded()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_IsExpandedProperty));
+}
+
+winrt::event_token ExpanderProperties::Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable> const& value)
+{
+    return m_collapsedEventSource.add(value);
+}
+
+void ExpanderProperties::Collapsed(winrt::event_token const& token)
+{
+    m_collapsedEventSource.remove(token);
+}
+
+winrt::event_token ExpanderProperties::Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable> const& value)
+{
+    return m_expandedEventSource.add(value);
+}
+
+void ExpanderProperties::Expanded(winrt::event_token const& token)
+{
+    m_expandedEventSource.remove(token);
 }

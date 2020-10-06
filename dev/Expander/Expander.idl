@@ -23,9 +23,11 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     ExpandDirection ExpandDirection{ get; set; };
 
+    event Windows.Foundation.TypedEventHandler<Expander, Object> Expanded;
+    event Windows.Foundation.TypedEventHandler<Expander, Object> Collapsed;
+
     static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ExpandDirectionProperty{ get; };
-
 }
 
 [WUXC_VERSION_MUXONLY]

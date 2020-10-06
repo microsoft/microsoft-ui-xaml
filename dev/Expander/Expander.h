@@ -24,7 +24,14 @@ public:
     winrt::ExpandDirection m_expandedDirection{ winrt::ExpandDirection::Down };
     bool m_isExpanded{ false };
 
+    void RaiseExpandingEvent(const winrt::Expander& container);
+    void RaiseCollapsedEvent(const winrt::Expander& container);
+
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+protected:
+    virtual void OnExpanded() {};
+    virtual void OnCollapsed() {};
 
 };

@@ -21,6 +21,14 @@ void Expander::OnApplyTemplate()
     // TODO: Implement
 }
 
+void Expander::RaiseExpandingEvent(const winrt::Expander& container)
+{
+}
+
+void Expander::RaiseCollapsedEvent(const winrt::Expander& container)
+{
+}
+
 void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     // TODO: Implement
