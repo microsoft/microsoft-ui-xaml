@@ -290,7 +290,8 @@ void PagerControl::OnSelectedPageIndexChange(const int oldValue)
 {
     // If we don't have any pages, there is nothing we should do.
     // Ensure that SelectedPageIndex will end up in the valid range of values
-    if (SelectedPageIndex() > NumberOfPages() - 1 && NumberOfPages() > -1)
+    // Special case is NumberOfPages being 0, in that case, don't verify upperbound restrictions
+    if (SelectedPageIndex() > NumberOfPages() - 1 && NumberOfPages() > 0)
     {
         SelectedPageIndex(NumberOfPages() - 1);
     }
