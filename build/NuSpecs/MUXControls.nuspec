@@ -22,7 +22,7 @@
     <file target="lib\uap10.0" src="Intellisense\Microsoft.UI.Xaml.xml"/>
 
     <file target="lib\uap10.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
-    <file target="lib\uap10.0\Design" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.design.dll"/>
+    <file target="lib\uap10.0\Design" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.DesignTools\Microsoft.UI.Xaml.design.dll"/>
 
     <file target="runtimes" src="$RUNTIMESDIR$\**\*.*"/>
 

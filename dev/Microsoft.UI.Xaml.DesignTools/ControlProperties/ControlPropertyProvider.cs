@@ -4,7 +4,7 @@
 using System.ComponentModel;
 using Microsoft.VisualStudio.DesignTools.Extensibility.Metadata;
 
-namespace Microsoft.UI.Xaml.Design.ControlProvider
+namespace Microsoft.UI.Xaml.DesignTools.ControlProvider
 {
     abstract class ControlPropertyProvider
     {

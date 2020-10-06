@@ -9,8 +9,8 @@
     <ProjectGuid>{1CEEC8E3-419A-4304-841C-08A334B9E4FF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.UI.Xaml.Design</RootNamespace>
-    <AssemblyName>Microsoft.UI.Xaml.Design</AssemblyName>
+    <RootNamespace>Microsoft.UI.Xaml.DesignTools</RootNamespace>
+    <AssemblyName>Microsoft.UI.Xaml.DesignTools</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

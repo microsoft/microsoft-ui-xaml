@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.UI.Xaml.Design;
-using Microsoft.UI.Xaml.Design.ControlProvider;
+using Microsoft.UI.Xaml.DesignTools;
+using Microsoft.UI.Xaml.DesignTools.ControlProvider;
 using Microsoft.VisualStudio.DesignTools.Extensibility.Metadata;
 
 [assembly: ProvideMetadata(typeof(RegisterMetadata))]
-namespace Microsoft.UI.Xaml.Design
+namespace Microsoft.UI.Xaml.DesignTools
 {
     public class RegisterMetadata : IProvideAttributeTable
     {

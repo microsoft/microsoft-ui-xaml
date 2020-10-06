@@ -35,7 +35,7 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll $
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml\
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.winmd $FullPublishDir\Microsoft.UI.Xaml\sdk\
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPublishDir\Microsoft.UI.Xaml\
-PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.dll $FullPublishDir\Microsoft.UI.Xaml.Design\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.DesignTools\Microsoft.UI.Xaml.DesignTools.dll $FullPublishDir\Microsoft.UI.Xaml.DesignTools\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml.FrameworkPackagePRI\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\

@@ -458,7 +458,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MUXControls.Test", "MUXCont
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MUXControlsTestApp", "MUXControlsTestApp", "{666B53C4-A747-4538-AA51-8FF9DEE1BF60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.Design", "dev\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.csproj", "{1CEEC8E3-419A-4304-841C-08A334B9E4FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.DesignTools", "dev\Microsoft.UI.Xaml.DesignTools\Microsoft.UI.Xaml.DesignTools.csproj", "{1CEEC8E3-419A-4304-841C-08A334B9E4FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RadioMenuFlyoutItem", "RadioMenuFlyoutItem", "{00832735-360B-46BB-9BFA-B8C281951D55}"
 EndProject
