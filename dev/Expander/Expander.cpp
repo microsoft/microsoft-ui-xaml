@@ -23,5 +23,10 @@ void Expander::OnApplyTemplate()
 
 void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    
+    // TODO: Implement
+}
+
+void Expander::OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    // TODO: Implement
 }

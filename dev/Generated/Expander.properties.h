@@ -9,20 +9,39 @@ class ExpanderProperties
 public:
     ExpanderProperties();
 
+    void ExpandDirection(winrt::ExpandDirection const& value);
+    winrt::ExpandDirection ExpandDirection();
+
+    void Header(winrt::IInspectable const& value);
+    winrt::IInspectable Header();
+
+    void HeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate HeaderTemplate();
+
+    void HeaderTemplateSelector(winrt::DataTemplate const& value);
+    winrt::DataTemplate HeaderTemplateSelector();
+
     void IsExpanded(bool value);
     bool IsExpanded();
 
-    void Placeholder(winrt::IInspectable const& value);
-    winrt::IInspectable Placeholder();
-
+    static winrt::DependencyProperty ExpandDirectionProperty() { return s_ExpandDirectionProperty; }
+    static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
+    static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
+    static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
     static winrt::DependencyProperty IsExpandedProperty() { return s_IsExpandedProperty; }
-    static winrt::DependencyProperty PlaceholderProperty() { return s_PlaceholderProperty; }
 
+    static GlobalDependencyProperty s_ExpandDirectionProperty;
+    static GlobalDependencyProperty s_HeaderProperty;
+    static GlobalDependencyProperty s_HeaderTemplateProperty;
+    static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
     static GlobalDependencyProperty s_IsExpandedProperty;
-    static GlobalDependencyProperty s_PlaceholderProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnExpandDirectionPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsExpandedPropertyChanged(
         winrt::DependencyObject const& sender,

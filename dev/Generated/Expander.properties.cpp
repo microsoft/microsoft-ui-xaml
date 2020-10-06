@@ -13,8 +13,11 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "Expander.g.cpp"
 
+GlobalDependencyProperty ExpanderProperties::s_ExpandDirectionProperty{ nullptr };
+GlobalDependencyProperty ExpanderProperties::s_HeaderProperty{ nullptr };
+GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateProperty{ nullptr };
+GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateSelectorProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_IsExpandedProperty{ nullptr };
-GlobalDependencyProperty ExpanderProperties::s_PlaceholderProperty{ nullptr };
 
 ExpanderProperties::ExpanderProperties()
 {
@@ -23,6 +26,50 @@ ExpanderProperties::ExpanderProperties()
 
 void ExpanderProperties::EnsureProperties()
 {
+    if (!s_ExpandDirectionProperty)
+    {
+        s_ExpandDirectionProperty =
+            InitializeDependencyProperty(
+                L"ExpandDirection",
+                winrt::name_of<winrt::ExpandDirection>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ExpandDirection>::BoxValueIfNecessary(winrt::ExpandDirection::Down),
+                winrt::PropertyChangedCallback(&OnExpandDirectionPropertyChanged));
+    }
+    if (!s_HeaderProperty)
+    {
+        s_HeaderProperty =
+            InitializeDependencyProperty(
+                L"Header",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_HeaderTemplateProperty)
+    {
+        s_HeaderTemplateProperty =
+            InitializeDependencyProperty(
+                L"HeaderTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_HeaderTemplateSelectorProperty)
+    {
+        s_HeaderTemplateSelectorProperty =
+            InitializeDependencyProperty(
+                L"HeaderTemplateSelector",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_IsExpandedProperty)
     {
         s_IsExpandedProperty =
@@ -34,23 +81,23 @@ void ExpanderProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
-    if (!s_PlaceholderProperty)
-    {
-        s_PlaceholderProperty =
-            InitializeDependencyProperty(
-                L"Placeholder",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::Expander>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
 }
 
 void ExpanderProperties::ClearProperties()
 {
+    s_ExpandDirectionProperty = nullptr;
+    s_HeaderProperty = nullptr;
+    s_HeaderTemplateProperty = nullptr;
+    s_HeaderTemplateSelectorProperty = nullptr;
     s_IsExpandedProperty = nullptr;
-    s_PlaceholderProperty = nullptr;
+}
+
+void ExpanderProperties::OnExpandDirectionPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::Expander>();
+    winrt::get_self<Expander>(owner)->OnExpandDirectionPropertyChanged(args);
 }
 
 void ExpanderProperties::OnIsExpandedPropertyChanged(
@@ -59,6 +106,58 @@ void ExpanderProperties::OnIsExpandedPropertyChanged(
 {
     auto owner = sender.as<winrt::Expander>();
     winrt::get_self<Expander>(owner)->OnIsExpandedPropertyChanged(args);
+}
+
+void ExpanderProperties::ExpandDirection(winrt::ExpandDirection const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_ExpandDirectionProperty, ValueHelper<winrt::ExpandDirection>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::ExpandDirection ExpanderProperties::ExpandDirection()
+{
+    return ValueHelper<winrt::ExpandDirection>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_ExpandDirectionProperty));
+}
+
+void ExpanderProperties::Header(winrt::IInspectable const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IInspectable ExpanderProperties::Header()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderProperty));
+}
+
+void ExpanderProperties::HeaderTemplate(winrt::DataTemplate const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DataTemplate ExpanderProperties::HeaderTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderTemplateProperty));
+}
+
+void ExpanderProperties::HeaderTemplateSelector(winrt::DataTemplate const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_HeaderTemplateSelectorProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DataTemplate ExpanderProperties::HeaderTemplateSelector()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderTemplateSelectorProperty));
 }
 
 void ExpanderProperties::IsExpanded(bool value)
@@ -72,17 +171,4 @@ void ExpanderProperties::IsExpanded(bool value)
 bool ExpanderProperties::IsExpanded()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_IsExpandedProperty));
-}
-
-void ExpanderProperties::Placeholder(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<Expander*>(this)->SetValue(s_PlaceholderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable ExpanderProperties::Placeholder()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_PlaceholderProperty));
 }

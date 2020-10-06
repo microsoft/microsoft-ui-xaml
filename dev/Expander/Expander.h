@@ -21,5 +21,10 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
+    winrt::ExpandDirection m_expandedDirection{ winrt::ExpandDirection::Down };
+    bool m_isExpanded{ false };
+
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
 };
