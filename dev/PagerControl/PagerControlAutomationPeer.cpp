@@ -74,7 +74,10 @@ winrt::com_array<winrt::IInspectable> PagerControlAutomationPeer::GetSelection()
 
 void PagerControlAutomationPeer::RaiseSelectionChanged(double oldIndex, double newIndex)
 {
-    __super::RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
-        winrt::PropertyValue::CreateDouble(oldIndex),
-        winrt::PropertyValue::CreateDouble(newIndex));
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
+            winrt::PropertyValue::CreateDouble(oldIndex),
+            winrt::PropertyValue::CreateDouble(newIndex));
+    }
 }

@@ -32,6 +32,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             InputHelper.LeftClick(elements.GetPagerComboBox());
             InputHelper.LeftClick(elements.GetPagerComboBox().Children[index]);
+            Wait.ForIdle();
         }
 
         protected void SendValueToNumberBox(string value)
@@ -48,6 +49,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         protected void SelectPageInNumberPanel(int index)
         {
             InputHelper.LeftClick(elements.GetNumberPanelButton("Page " + index.ToString()));
+            Wait.ForIdle();
         }
 
         protected Edit FindTextBox(UIObject parent)

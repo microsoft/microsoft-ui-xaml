@@ -57,10 +57,10 @@ namespace MUXControlsTestApp
             NumberBoxIsEnabledCheckBox.IsChecked = pagerNumberBox.IsEnabled;
             ComboBoxIsEnabledCheckBox.IsChecked = pagerComboBox.IsEnabled;
 
-            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible;
-            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible;
-            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible;
-            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible;
+            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible && firstPageButton?.Opacity != 0;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible && previousPageButton?.Opacity != 0;
+            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible && nextPageButton?.Opacity != 0;
+            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible && lastPageButton?.Opacity != 0;
 
             FirstPageButtonIsEnabledCheckBox.IsChecked = firstPageButton?.IsEnabled;
             PreviousPageButtonIsEnabledCheckBox.IsChecked = previousPageButton?.IsEnabled;
@@ -133,10 +133,10 @@ namespace MUXControlsTestApp
             PreviousPageTextBlock.Text = args.PreviousPageIndex.ToString();
             CurrentPageTextBlock.Text = args.NewPageIndex.ToString();
 
-            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible;
-            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible;
-            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible;
-            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible;
+            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible && firstPageButton?.Opacity != 0;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible && previousPageButton?.Opacity != 0;
+            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible && nextPageButton?.Opacity != 0;
+            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible && lastPageButton?.Opacity != 0;
 
             FirstPageButtonIsEnabledCheckBox.IsChecked = firstPageButton?.IsEnabled;
             PreviousPageButtonIsEnabledCheckBox.IsChecked = previousPageButton?.IsEnabled;
@@ -193,7 +193,7 @@ namespace MUXControlsTestApp
                 TestPager.FirstButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible;
+            FirstPageButtonVisibilityCheckBox.IsChecked = firstPageButton?.Visibility == Visibility.Visible && firstPageButton?.Opacity != 0;
         }
 
         private void OnPreviousButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -213,7 +213,7 @@ namespace MUXControlsTestApp
                 TestPager.PreviousButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible;
+            PreviousPageButtonVisibilityCheckBox.IsChecked = previousPageButton?.Visibility == Visibility.Visible && previousPageButton?.Opacity != 0;
         }
 
         private void OnNextButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -233,7 +233,7 @@ namespace MUXControlsTestApp
                 TestPager.NextButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible;
+            NextPageButtonVisibilityCheckBox.IsChecked = nextPageButton?.Visibility == Visibility.Visible && nextPageButton?.Opacity != 0;
         }
         private void OnLastButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -252,7 +252,7 @@ namespace MUXControlsTestApp
                 TestPager.LastButtonVisibility = PagerControlButtonVisibility.HiddenOnEdge;
             }
 
-            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible;
+            LastPageButtonVisibilityCheckBox.IsChecked = lastPageButton?.Visibility == Visibility.Visible && lastPageButton?.Opacity != 0;
         }
     }
 }
