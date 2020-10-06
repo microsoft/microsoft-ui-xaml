@@ -11,18 +11,9 @@
 
     <StackPanel Margin="12">
         <TextBlock Text="Sample AutoSuggestBoxes" Style="{ThemeResource StandardGroupHeader}"/>
-        <AutoSuggestBox Background="Yellow" />
-        <AutoSuggestBox Header="AutoSuggestBox with header" Background="Blue" Height="200" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Left"/>
-        <TextBlock Height="150"></TextBlock>
-        <AutoSuggestBox x:Name="SearchDownload" Width="475" Height="150"
-                     Text="hello"
-                   VerticalContentAlignment="Top"
-                     HorizontalContentAlignment="Left"
-
-                        
-                        
-                
-				QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+        <AutoSuggestBox/>
+        <AutoSuggestBox Header="AutoSuggestBox with header"/>
+        <AutoSuggestBox Header="AutoSuggestBox with suggestions" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
     </StackPanel>
 
 </local:TestPage>
