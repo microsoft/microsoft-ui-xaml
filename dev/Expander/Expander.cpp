@@ -6,12 +6,18 @@
 #include "Expander.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "ExpanderAutomationPeer.h"
 
 Expander::Expander()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Expander);
 
     SetDefaultStyleKey(this);
+}
+
+winrt::AutomationPeer Expander::OnCreateAutomationPeer()
+{
+    return winrt::make<ExpanderAutomationPeer>(*this);
 }
 
 void Expander::OnApplyTemplate()

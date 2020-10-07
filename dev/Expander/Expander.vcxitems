@@ -16,10 +16,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Expander.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Expander.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Expander.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Expander.xaml">
@@ -33,5 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)Expander.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.idl" />
   </ItemGroup>
 </Project>

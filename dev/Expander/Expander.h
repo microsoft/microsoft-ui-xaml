@@ -18,6 +18,9 @@ public:
     Expander();
     ~Expander() {}
 
+    // IUIElement
+    virtual winrt::AutomationPeer OnCreateAutomationPeer();
+
     // IFrameworkElement
     void OnApplyTemplate();
 
