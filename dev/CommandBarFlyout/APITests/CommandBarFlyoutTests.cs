@@ -194,7 +194,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // Pre-RS5, CommandBarFlyouts always open expanded, so to put us in a known good state,
                 // we'll collapse the flyout before we do anything else.
-                commandBar.IsOpen = false;
+                commandBar.Visibility = Visibility.Collapsed;
             });
 
             IdleSynchronizer.Wait();
@@ -210,6 +210,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 originalWidth = commandBar.ActualWidth;
                 originalHeight = commandBar.ActualHeight;
 
+                // For PRE-RS5, we need to uncollapse the flyout.
+                commandBar.Visibility = Visibility.Visible;
+                // For later versions, the flyout is closed, so we need to open it now.
                 commandBar.IsOpen = true;
             });
 
