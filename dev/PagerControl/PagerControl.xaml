@@ -171,7 +171,7 @@
                             <!--ComboBox Display-->
                             <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center"
                                     ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}"
-                                    Visibility="Collapsed" SelectedIndex="0"/>
+                                    Visibility="Collapsed"/>
                             <TextBlock x:Name="SuffixTextLabel" Text="{TemplateBinding SuffixText}" VerticalAlignment="Center" Margin="5,0,0,0"/>
                             <TextBlock x:Name="TotalNumberOfPagesLabel" VerticalAlignment="Center" Margin="5,0,5,0"
                                     Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" />
