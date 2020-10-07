@@ -38,6 +38,14 @@ The **MUXControls.sln** solution is used to build all feature areas (such as con
 Generally, you will want to set your configuration to **Debug**, **x64**, and 
 select **MUXControlsTestApp** as your startup project in Visual Studio. To retrieve the appropriate dependencies, right click on the solution in the Solution Explorer and select "Restore NuGet Packages". 
 
+If you get the following error while building the project:
+```
+BSCMAKE : error BK1520: internal limit exceeded; cannot generate source database file; please consider removing option /FR or /Fr from compiler command line
+```
+You will need to disable Browse Information in Visual Studio here: 
+
+![](images/BrowseInformation.PNG) 
+
 #### Working with the MUXControlsInnerLoop solution
 To work on a specific feature or control using the MUXControlsInnerLoop solution you will need to modify the **InnerLoopAreas.props** file to include the desired controls and projects. For example, to work on the ItemsRepeater control you will need to add
 ```xml
@@ -76,7 +84,7 @@ The flavor to use for nuget build (`debug` or `release`). Defaults to `release`.
 #### -BuildArch
 The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`. Defaults to `x86`.
 #### -OutputDir
-The folder where the NuGet package will be generated in
+The folder in which the NuGet package will be generated.
 #### -SkipFrameworkPackage
 Can be specified to skip building a framework package. Defaults to `False`.
 In order to generate framework packages, you need to generate package appx files. 

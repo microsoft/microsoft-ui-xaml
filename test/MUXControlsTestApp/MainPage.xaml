@@ -59,7 +59,6 @@
             </ItemsControl>
         </ScrollViewer>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
-            <Button Content="Magic Scale Change" Click="Button_Click"/>
             <CheckBox x:Name="LongAnimationsDisabled" AutomationProperties.AutomationId="LongAnimationsDisabled" Content="Long Animations Disabled" Checked="LongAnimationsDisabled_Checked" Unchecked="LongAnimationsDisabled_Unchecked" Margin="10,0,0,0"/>
 
             <ComboBox

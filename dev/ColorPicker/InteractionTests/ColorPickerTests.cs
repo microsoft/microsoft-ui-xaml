@@ -245,8 +245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             EnableAlpha = 1,
             EnableMoreButton = 2,
             EnableNonEnglishLanguage = 4,
-            DisableRestartOnDispose = 8,
-            DisableColorSpectrumLoadWait = 16
+            DisableColorSpectrumLoadWait = 8
         }
 
         public class Color
@@ -285,8 +284,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 private set;
             }
 
-            public ColorPickerTestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base(testName, languageOverride : languageOverride, attemptRestartOnDispose : attemptRestartOnDispose)
+            public ColorPickerTestSetupHelper(string testName, string languageOverride = "")
+                : base(testName, new TestSetupHelperOptions{ LanguageOverride = languageOverride})
             {
                 Current = this;
 
@@ -1223,7 +1222,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = SetupColorPickerTest(
                 TestOptions.EnableAlpha |
                 TestOptions.EnableMoreButton |
-                TestOptions.DisableRestartOnDispose |
                 TestOptions.DisableColorSpectrumLoadWait))
             {
                 GetLocalizedText(englishStrings);
@@ -1238,14 +1236,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TestOptions.EnableAlpha |
                 TestOptions.EnableMoreButton |
                 TestOptions.EnableNonEnglishLanguage |
-                TestOptions.DisableRestartOnDispose |
                 TestOptions.DisableColorSpectrumLoadWait))
             {
                 GetLocalizedText(otherLanguageStrings);
             }
 
             LocalizationHelper.CompareStringSets(englishStrings, otherLanguageStrings);
-            TestEnvironment.ScheduleAppRestartIfNeeded();
         }
 
         private void GetLocalizedText(IList<string> stringList)
@@ -1292,8 +1288,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var setup = new ColorPickerTestSetupHelper(
                 "ColorPicker Tests",
-                languageOverride : (options & TestOptions.EnableNonEnglishLanguage) == TestOptions.EnableNonEnglishLanguage ? "ja-JP" : "",
-                attemptRestartOnDispose : (options & TestOptions.DisableRestartOnDispose) != TestOptions.DisableRestartOnDispose);
+                languageOverride : (options & TestOptions.EnableNonEnglishLanguage) == TestOptions.EnableNonEnglishLanguage ? "ja-JP" : "");
 
             // On CHK builds, waiting for the color spectrum to load can take a while, which contributes
             // several seconds towards CatGates' 30-second timeout. As a result, we should only wait

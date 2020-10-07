@@ -24,6 +24,7 @@ using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
 using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
+using System.Collections.Generic;
 
 namespace MUXControlsTestApp
 {
@@ -765,6 +766,19 @@ namespace MUXControlsTestApp
             {
                 settingsItem.StartBringIntoView();
             }
+        }
+
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            var suggestions = new List<string>();
+            suggestions.Add(sender.Text);
+            suggestions.Add(sender.Text + "1");
+            PaneAutoSuggestBox.ItemsSource = suggestions;
+        }
+
+        private void PaneAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            SuggestionChosenCheckbox.IsChecked = true;
         }
     }
 }

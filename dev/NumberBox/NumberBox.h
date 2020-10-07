@@ -90,6 +90,8 @@ private:
 
     void MoveCaretToTextEnd();
 
+    void SetDefaultInputScope();
+
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
 
