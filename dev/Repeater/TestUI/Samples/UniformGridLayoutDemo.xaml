@@ -1,0 +1,43 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.UniformGridLayoutDemo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+
+    <Page.Resources>
+        <!-- The Layout specifications used: -->
+        <controls:UniformGridLayout x:Name="UniformGridLayout"
+                                MinRowSpacing="8" MinColumnSpacing="8"
+                                MaximumRowsOrColumns="4"/>
+
+        <!-- The DataTemplate used: CircularTemplate-->
+
+        <DataTemplate x:Key="CircularTemplate" x:DataType="x:String">
+            <Grid Background="Red"
+                  Width="100"
+                  Height="100">
+                <TextBlock Text="{x:Bind}" 
+                           FontSize="20"/>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <StackPanel Orientation="Horizontal">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+            HorizontalScrollMode="Auto" 
+            IsVerticalScrollChainingEnabled="False"
+            AutomationProperties.Name="RepeaterScrollViewer"
+            MaxHeight="500">
+            <controls:ItemsRepeater x:Name="UniformGridRepeater"
+                ItemsSource="{x:Bind collection}"
+                Layout="{StaticResource UniformGridLayout}"
+                ItemTemplate="{StaticResource CircularTemplate}"
+            />
+        </ScrollViewer>
+        <StackPanel>
+            <Button AutomationProperties.Name="GetRepeaterActualHeightButton"
+                    Click="GetRepeaterActualHeightButtonClick">Get actual Repeater height</Button>
+            <TextBlock x:Name="RepeaterActualHeightLabel" AutomationProperties.Name="RepeaterActualHeightLabel"/>
+        </StackPanel>
+    </StackPanel>
+</Page>
