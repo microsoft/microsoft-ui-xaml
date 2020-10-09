@@ -20,7 +20,6 @@
             <controls:ProgressRing
                 x:Name="TestProgressRing"
                 AutomationProperties.Name="TestProgressRing"
-                IsTabStop="True"
                 IsActive="{x:Bind ShowIsActiveCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
             />
