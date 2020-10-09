@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -49,8 +49,25 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
-    m_titleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, controlProtected));
-    m_subtitleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, controlProtected));
+    [this](const winrt::UIElement textBlock)
+    {
+        m_titleTextBox.set(textBlock);
+        if (textBlock != nullptr)
+        {
+            ToggleVisibilityForEmptyContent(textBlock, Title());
+        }
+
+    }(GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, controlProtected));
+    [this](const winrt::UIElement textBlock)
+    {
+        m_subtitleTextBox.set(textBlock);
+        if (textBlock != nullptr)
+        {
+            ToggleVisibilityForEmptyContent(textBlock, Subtitle());
+        }
+
+    }(GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, controlProtected));
+
 
     if (auto&& container = m_container.get())
     {
