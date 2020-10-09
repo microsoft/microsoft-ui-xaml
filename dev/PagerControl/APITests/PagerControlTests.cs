@@ -151,5 +151,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
         }
+
+        [TestMethod]
+        public void VerifyEmptyPagerDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Content = new PagerControl();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(Content);
+            });
+        }
     }
 }

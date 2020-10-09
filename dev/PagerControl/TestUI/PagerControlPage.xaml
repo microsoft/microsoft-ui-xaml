@@ -48,8 +48,6 @@
                     </Style>
                 </muxc:PagerControl.Resources>
             </muxc:PagerControl>
-            <!-- This is just to verify that we don't end up in infinite loops -->
-            <muxc:PagerControl/>
         </StackPanel>
 
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
