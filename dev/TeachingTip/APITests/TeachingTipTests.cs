@@ -203,6 +203,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifySubTitleBlockVisibilityOnInitialUnset()
+        {
+            TeachingTip teachingTip = null;
+            RunOnUIThread.Execute(() =>
+            {
+                teachingTip = new TeachingTip();
+                teachingTip.IsOpen = true;
+                Content = teachingTip;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("", teachingTip.Title);
+                Verify.AreEqual(Visibility.Collapsed,
+                    TeachingTipTestHooks.GetTitleVisibility(teachingTip));
+                Verify.AreEqual("", teachingTip.Subtitle);
+                Verify.AreEqual(Visibility.Collapsed,
+                    TeachingTipTestHooks.GetSubtitleVisibility(teachingTip));
+            });
+        }
 
         [TestMethod]
         public void TeachingTipHeroContentPlacementTest()
