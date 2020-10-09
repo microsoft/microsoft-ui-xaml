@@ -178,8 +178,8 @@ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
-    tracker_ref<winrt::UIElement> m_titleTextBox{ this };
-    tracker_ref<winrt::UIElement> m_subtitleTextBox{ this };
+    tracker_ref<winrt::UIElement> m_titleTextBlock{ this };
+    tracker_ref<winrt::UIElement> m_subtitleTextBlock{ this };
 
     weak_ref<winrt::DependencyObject> m_previouslyFocusedElement{ };
 

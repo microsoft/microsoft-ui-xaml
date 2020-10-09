@@ -51,7 +51,7 @@ void TeachingTip::OnApplyTemplate()
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
     [this](const winrt::UIElement textBlock)
     {
-        m_titleTextBox.set(textBlock);
+        m_titleTextBlock.set(textBlock);
         if (textBlock != nullptr)
         {
             ToggleVisibilityForEmptyContent(textBlock, Title());
@@ -60,7 +60,7 @@ void TeachingTip::OnApplyTemplate()
     }(GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, controlProtected));
     [this](const winrt::UIElement textBlock)
     {
-        m_subtitleTextBox.set(textBlock);
+        m_subtitleTextBlock.set(textBlock);
         if (textBlock != nullptr)
         {
             ToggleVisibilityForEmptyContent(textBlock, Subtitle());
@@ -190,14 +190,14 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_TitleProperty)
     {
         SetPopupAutomationProperties();
-        if (ToggleVisibilityForEmptyContent(m_titleTextBox.get(), Title()))
+        if (ToggleVisibilityForEmptyContent(m_titleTextBlock.get(), Title()))
         {
             TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
         }
     }
     else if (property == s_SubtitleProperty)
     {
-        if (ToggleVisibilityForEmptyContent(m_subtitleTextBox.get(), Subtitle()))
+        if (ToggleVisibilityForEmptyContent(m_subtitleTextBlock.get(), Subtitle()))
         {
             TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
         }
@@ -2421,7 +2421,7 @@ double TeachingTip::GetVerticalOffset()
 
 winrt::Visibility TeachingTip::GetTitleVisibility()
 {
-    if (auto&& titleTextBox = m_titleTextBox.get())
+    if (auto&& titleTextBox = m_titleTextBlock.get())
     {
         return titleTextBox.Visibility();
     }
@@ -2430,7 +2430,7 @@ winrt::Visibility TeachingTip::GetTitleVisibility()
 
 winrt::Visibility TeachingTip::GetSubtitleVisibility()
 {
-    if (auto&& subtitleTextBox = m_subtitleTextBox.get())
+    if (auto&& subtitleTextBox = m_subtitleTextBlock.get())
     {
         return subtitleTextBox.Visibility();
     }
