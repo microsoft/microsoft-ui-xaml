@@ -3,17 +3,13 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.Control
+unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
 {
     Expander();
 
     Object Header{ get; set; };
     Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
     Windows.UI.Xaml.DataTemplate HeaderTemplateSelector{ get; set; };
-
-    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty{ get; };
 
     [MUX_DEFAULT_VALUE("false")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -25,6 +21,11 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<Expander, Object> Expanded;
     event Windows.Foundation.TypedEventHandler<Expander, Object> Collapsed;
+
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty{ get; };
+
 
     static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ExpandDirectionProperty{ get; };

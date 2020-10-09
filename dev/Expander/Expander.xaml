@@ -9,10 +9,20 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
                     <StackPanel>
-                        <ContentPresenter x:Name="ExpanderHeader"
-                                          Content="{TemplateBinding Header}"
-                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                          ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"/>
+                        <ContentControl IsTabStop="True" UseSystemFocusVisuals="True">
+                            <ContentPresenter
+                                x:Name="ExpanderHeader"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"/>
+                        </ContentControl>
+                        
+                        <ContentPresenter
+                            x:Name="ExpanderContent"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"/>
+
                     </StackPanel>
                 </ControlTemplate>
             </Setter.Value>

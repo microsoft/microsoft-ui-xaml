@@ -16,6 +16,7 @@
                 <controls:Expander.Header>
                     <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This is the header of an expander." />
                 </controls:Expander.Header>
+                <TextBlock> This is the content</TextBlock>
             </controls:Expander>
         </StackPanel>
     </Grid>

@@ -24,9 +24,9 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    winrt::ExpandDirection m_expandedDirection{ winrt::ExpandDirection::Down };
     bool m_isExpanded{ false };
-
+    winrt::ExpandDirection m_expandedDirection{ winrt::ExpandDirection::Down };
+    
     void RaiseExpandingEvent(const winrt::Expander& container);
     void RaiseCollapsedEvent(const winrt::Expander& container);
 
