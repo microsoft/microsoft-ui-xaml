@@ -505,7 +505,7 @@ void ViewModel::Append(winrt::IInspectable const& value)
 {
     GetVectorInnerImpl()->Append(value);
     winrt::TreeViewNode newNode = value.as<winrt::TreeViewNode>();
-
+    
     // Hook up events and save tokens
     auto tvnNewNode = winrt::get_self<TreeViewNode>(newNode);
     m_collectionChangedEventTokenVector.push_back(tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged }));
@@ -923,7 +923,7 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
     switch (collectionChange)
     {
         // Reset case, commonly seen when a TreeNode is cleared.
-        // removes all nodes that need removing then
+        // removes all nodes that need removing then 
         // toggles a collapse / expand to ensure order.
     case (winrt::CollectionChange::Reset):
     {
