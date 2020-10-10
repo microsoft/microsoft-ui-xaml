@@ -54,7 +54,7 @@ bool TreeViewListAutomationPeer::CanSelectMultiple()
     return IsMultiselect()? true: __super::CanSelectMultiple();
 }
 
-bool TreeViewListAutomationPeer::IsSelectionRequried()
+bool TreeViewListAutomationPeer::IsSelectionRequired()
 {
     return IsMultiselect()? false : __super::CanSelectMultiple();
 }
