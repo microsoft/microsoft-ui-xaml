@@ -5,48 +5,110 @@
 #include "common.h"
 #include "ExpanderAutomationPeer.h"
 #include "Utils.h"
+#include "ResourceAccessor.h"
 
 #include "ExpanderAutomationPeer.properties.cpp"
+
+// WPF ExpanderAutomationPeer:
+// https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Automation/Peers/ExpanderAutomationPeer.cs
 
 ExpanderAutomationPeer::ExpanderAutomationPeer(winrt::Expander const& owner)
     : ReferenceTracker(owner)
 {
 }
 
+// IAutomationPeerOverrides
+
 winrt::IInspectable ExpanderAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    return winrt::IInspectable();
+    if (patternInterface == winrt::PatternInterface::ExpandCollapse)
+    {
+        return *this;
+    }
+
+    return __super::GetPatternCore(patternInterface);
 }
 
 hstring ExpanderAutomationPeer::GetClassNameCore()
 {
-    return hstring();
+    // WPF uses "Expander" as its class name
+    return winrt::hstring_name_of<winrt::Expander>();
 }
 
 hstring ExpanderAutomationPeer::GetNameCore()
 {
-    return hstring();
+    winrt::hstring returnHString = __super::GetNameCore();
+
+    // If a name hasn't been provided by AutomationProperties.Name in markup
+    if (returnHString.empty())
+    {
+        // It'll be up to the app to determine the automation label for
+        // when they're using a PlaceholderValue vs. Value.
+        returnHString = ResourceAccessor::GetLocalizedStringResource(SR_ExpanderDefaultControlName);
+    }
+    return returnHString;
 }
 
 winrt::AutomationControlType ExpanderAutomationPeer::GetAutomationControlTypeCore()
 {
-    return winrt::AutomationControlType();
+    // WPF uses "Group" as its control type core
+    return winrt::AutomationControlType::Group;
 }
+
+// IExpandCollapseProvider 
 
 winrt::ExpandCollapseState ExpanderAutomationPeer::ExpandCollapseState()
 {
-    return winrt::ExpandCollapseState();
+    auto state = winrt::ExpandCollapseState::Collapsed;
+    if (auto const expander = Owner().try_as<winrt::Expander>())
+    {
+        state = expander.IsExpanded() ?
+            winrt::ExpandCollapseState::Expanded :
+            winrt::ExpandCollapseState::Collapsed;
+    }
+
+    return state;
 }
 
 void ExpanderAutomationPeer::Expand()
 {
+    if (auto const expander = Owner().try_as<winrt::Expander>())
+    {
+        expander.IsExpanded(true);
+    }   
+}
+
+void ExpanderAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState)
+{
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
+            winrt::ExpandCollapseState::Collapsed :
+            winrt::ExpandCollapseState::Expanded;
+
+        // box_value(oldState) doesn't work here, use ReferenceWithABIRuntimeClassName to make Narrator unbox it.
+        RaisePropertyChangedEvent(winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
+            box_value(oldState),
+            box_value(newState));
+    }
 }
 
 void ExpanderAutomationPeer::Collapse()
 {
+    if (auto const expander = Owner().try_as<winrt::Expander>())
+    {
+        expander.IsExpanded(false);
+    }
 }
 
 com_ptr<Expander> ExpanderAutomationPeer::GetImpl()
 {
-    return com_ptr<Expander>();
+    com_ptr<Expander> impl = nullptr;
+
+    if (auto expander = Owner().try_as<winrt::Expander>())
+    {
+        impl = winrt::get_self<Expander>(expander)->get_strong();
+    }
+
+    return impl;
 }

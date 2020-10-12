@@ -24,17 +24,18 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    bool m_isExpanded{ false };
-    winrt::ExpandDirection m_expandedDirection{ winrt::ExpandDirection::Down };
-    
+    // IControlOverrides overrides
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+    void OnGotFocus(winrt::RoutedEventArgs const& e);
+    void OnLostFocus(winrt::RoutedEventArgs const& e);
+
     void RaiseExpandingEvent(const winrt::Expander& container);
     void RaiseCollapsedEvent(const winrt::Expander& container);
 
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-protected:
-    virtual void OnExpanded() {};
-    virtual void OnCollapsed() {};
+private:
+    bool m_hasFocus{ false };
 
 };

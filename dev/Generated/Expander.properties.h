@@ -18,8 +18,8 @@ public:
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
 
-    void HeaderTemplateSelector(winrt::DataTemplate const& value);
-    winrt::DataTemplate HeaderTemplateSelector();
+    void HeaderTemplateSelector(winrt::DataTemplateSelector const& value);
+    winrt::DataTemplateSelector HeaderTemplateSelector();
 
     void IsExpanded(bool value);
     bool IsExpanded();

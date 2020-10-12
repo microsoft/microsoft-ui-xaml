@@ -11,13 +11,49 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        
         <StackPanel Orientation="Vertical">
-            <controls:Expander >
+            <StackPanel.ChildrenTransitions>
+                <TransitionCollection>
+                    <RepositionThemeTransition />
+                </TransitionCollection>
+            </StackPanel.ChildrenTransitions>
+            <controls:Expander HorizontalContentAlignment="Left" IsExpanded="True">
                 <controls:Expander.Header>
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This is the header of an expander." />
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This is the header of expander1." />
                 </controls:Expander.Header>
                 <TextBlock> This is the content</TextBlock>
             </controls:Expander>
+            <controls:Expander AutomationProperties.Name="Expander2" HorizontalContentAlignment="Left" IsExpanded="False">
+                <controls:Expander.Header>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This is the header of expander2." />
+                </controls:Expander.Header>
+                <TextBlock> This is the content</TextBlock>
+            </controls:Expander>
+            <controls:Expander AutomationProperties.Name="Expander4" HorizontalContentAlignment="Left" IsExpanded="False">
+                <controls:Expander.Header>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="Expander inside expander" />
+                </controls:Expander.Header>
+                <controls:Expander AutomationProperties.Name="Expander5" HorizontalContentAlignment="Center" IsExpanded="False">
+                    <controls:Expander.Header>
+                        <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="Expander inside expander 2" />
+                    </controls:Expander.Header>
+                    <StackPanel>
+                        <Button>Button1</Button>
+                        <Button>Button2</Button>
+                    </StackPanel>
+                </controls:Expander>
+            </controls:Expander>
+            <controls:Expander AutomationProperties.Name="Expander3" HorizontalContentAlignment="Left" IsExpanded="False">
+                <controls:Expander.Header>
+                    <Button>This is a button in the header</Button>
+                </controls:Expander.Header>
+                <StackPanel>
+                    <Button>Button1</Button>
+                    <Button>Button2</Button>
+                </StackPanel>
+            </controls:Expander>
+            
         </StackPanel>
     </Grid>
 </local:TestPage>

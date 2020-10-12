@@ -66,10 +66,10 @@ void ExpanderProperties::EnsureProperties()
         s_HeaderTemplateSelectorProperty =
             InitializeDependencyProperty(
                 L"HeaderTemplateSelector",
-                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::DataTemplateSelector>(),
                 winrt::name_of<winrt::Expander>(),
                 false /* isAttached */,
-                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_IsExpandedProperty)
@@ -80,7 +80,7 @@ void ExpanderProperties::EnsureProperties()
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::Expander>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
+                ValueHelper<bool>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
 }
@@ -149,17 +149,17 @@ winrt::DataTemplate ExpanderProperties::HeaderTemplate()
     return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderTemplateProperty));
 }
 
-void ExpanderProperties::HeaderTemplateSelector(winrt::DataTemplate const& value)
+void ExpanderProperties::HeaderTemplateSelector(winrt::DataTemplateSelector const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<Expander*>(this)->SetValue(s_HeaderTemplateSelectorProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    static_cast<Expander*>(this)->SetValue(s_HeaderTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::DataTemplate ExpanderProperties::HeaderTemplateSelector()
+winrt::DataTemplateSelector ExpanderProperties::HeaderTemplateSelector()
 {
-    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderTemplateSelectorProperty));
+    return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderTemplateSelectorProperty));
 }
 
 void ExpanderProperties::IsExpanded(bool value)

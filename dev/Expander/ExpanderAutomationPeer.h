@@ -21,8 +21,10 @@ public:
 
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState();
-    void Expand();
     void Collapse();
+    void Expand();
+    void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState);
+
 
 private:
     com_ptr<Expander> GetImpl();

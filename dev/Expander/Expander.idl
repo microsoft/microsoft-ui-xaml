@@ -9,9 +9,8 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
 
     Object Header{ get; set; };
     Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
-    Windows.UI.Xaml.DataTemplate HeaderTemplateSelector{ get; set; };
+    Windows.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector{ get; set; };
 
-    [MUX_DEFAULT_VALUE("false")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsExpanded{ get; set; };
 
@@ -19,7 +18,9 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     ExpandDirection ExpandDirection{ get; set; };
 
+    // TODO: Expander, ExpanderExpandedEventArgs
     event Windows.Foundation.TypedEventHandler<Expander, Object> Expanded;
+    // TODO: Expander, ExpanderCollapsedEventArgs
     event Windows.Foundation.TypedEventHandler<Expander, Object> Collapsed;
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };

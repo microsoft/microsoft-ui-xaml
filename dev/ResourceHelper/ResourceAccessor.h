@@ -163,5 +163,7 @@ public:
 #define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
+#define SR_ExpanderDefaultControlName L"ExpanderDefaultControlName"
+
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
