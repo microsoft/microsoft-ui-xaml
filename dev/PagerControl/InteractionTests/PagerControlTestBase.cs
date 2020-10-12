@@ -30,9 +30,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         protected void SelectValueInPagerComboBox(int index)
         {
+            // Open ComboBox.
             InputHelper.LeftClick(elements.GetPagerComboBox());
-            InputHelper.LeftClick(elements.GetPagerComboBox().Children[index]);
             Wait.ForIdle();
+            // Index is the actual PagerControl SelectedIndex, so we need to add 1 here 
+            // to result in the user friendly name being displayed in the ComboBox.
+            new ComboBox(elements.GetPagerComboBox()).SelectItemByName((index + 1).ToString());
         }
 
         protected void SendValueToNumberBox(string value)
@@ -275,6 +278,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         protected void SetDisplayMode(string mode)
         {
             elements.GetDisplayModeComboBox().SelectItemByName(mode);
+            Wait.ForIdle();
         }
 
         protected void VerifyAutoDisplayMode()
