@@ -26,16 +26,11 @@ public:
 
     // IControlOverrides overrides
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
-    void OnGotFocus(winrt::RoutedEventArgs const& e);
-    void OnLostFocus(winrt::RoutedEventArgs const& e);
 
     void RaiseExpandingEvent(const winrt::Expander& container);
     void RaiseCollapsedEvent(const winrt::Expander& container);
 
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
-private:
-    bool m_hasFocus{ false };
 
 };

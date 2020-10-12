@@ -36,13 +36,13 @@ public:
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
     static GlobalDependencyProperty s_IsExpandedProperty;
 
-    winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable> const& value);
+    winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs> const& value);
     void Collapsed(winrt::event_token const& token);
-    winrt::event_token Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable> const& value);
+    winrt::event_token Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandedEventArgs> const& value);
     void Expanded(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable>> m_collapsedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable>> m_expandedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs>> m_collapsedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandedEventArgs>> m_expandedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

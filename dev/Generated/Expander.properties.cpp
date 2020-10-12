@@ -175,7 +175,7 @@ bool ExpanderProperties::IsExpanded()
     return ValueHelper<bool>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_IsExpandedProperty));
 }
 
-winrt::event_token ExpanderProperties::Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable> const& value)
+winrt::event_token ExpanderProperties::Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs> const& value)
 {
     return m_collapsedEventSource.add(value);
 }
@@ -185,7 +185,7 @@ void ExpanderProperties::Collapsed(winrt::event_token const& token)
     m_collapsedEventSource.remove(token);
 }
 
-winrt::event_token ExpanderProperties::Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::IInspectable> const& value)
+winrt::event_token ExpanderProperties::Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandedEventArgs> const& value)
 {
     return m_expandedEventSource.add(value);
 }

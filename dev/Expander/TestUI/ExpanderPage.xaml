@@ -18,39 +18,69 @@
                     <RepositionThemeTransition />
                 </TransitionCollection>
             </StackPanel.ChildrenTransitions>
+            
             <controls:Expander HorizontalContentAlignment="Left" IsExpanded="True">
                 <controls:Expander.Header>
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This is the header of expander1." />
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is expanded by default." />
                 </controls:Expander.Header>
-                <TextBlock> This is the content</TextBlock>
+                <TextBlock>Content</TextBlock>
             </controls:Expander>
+            
             <controls:Expander AutomationProperties.Name="Expander2" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This is the header of expander2." />
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is not expanded by default." />
                 </controls:Expander.Header>
-                <TextBlock> This is the content</TextBlock>
+                <TextBlock>Content</TextBlock>
             </controls:Expander>
-            <controls:Expander AutomationProperties.Name="Expander4" HorizontalContentAlignment="Left" IsExpanded="False">
+            
+            <controls:Expander AutomationProperties.Name="ParentExpander" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="Expander inside expander" />
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander has an expander inside" />
                 </controls:Expander.Header>
-                <controls:Expander AutomationProperties.Name="Expander5" HorizontalContentAlignment="Center" IsExpanded="False">
+                <controls:Expander AutomationProperties.Name="NestedExpander" HorizontalContentAlignment="Left" IsExpanded="False" Margin="30,0,0,0" >
                     <controls:Expander.Header>
-                        <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="Expander inside expander 2" />
+                        <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="Nested expander" />
                     </controls:Expander.Header>
-                    <StackPanel>
+                    <StackPanel HorizontalAlignment="Left">
                         <Button>Button1</Button>
                         <Button>Button2</Button>
                     </StackPanel>
                 </controls:Expander>
             </controls:Expander>
-            <controls:Expander AutomationProperties.Name="Expander3" HorizontalContentAlignment="Left" IsExpanded="False">
+            
+            <controls:Expander AutomationProperties.Name="ExpanderWithButtons" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
                     <Button>This is a button in the header</Button>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <Button>Button1</Button>
-                    <Button>Button2</Button>
+                    <TextBlock>Content</TextBlock>
+                </StackPanel>
+            </controls:Expander>
+
+            <controls:Expander AutomationProperties.Name="ExpanderWithUpwardsDirection" HorizontalContentAlignment="Left" ExpandDirection="Up" IsExpanded="False">
+                <controls:Expander.Header>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}">This expander will expand upwards</TextBlock>
+                </controls:Expander.Header>
+                <StackPanel>
+                    <TextBlock>Content</TextBlock>
+                </StackPanel>
+            </controls:Expander>
+
+            <controls:Expander AutomationProperties.Name="ExpanderWithLeftwardsDirection" HorizontalContentAlignment="Left" ExpandDirection="Left" IsExpanded="False">
+                <controls:Expander.Header>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}">This expander will expand leftwards</TextBlock>
+                </controls:Expander.Header>
+                <StackPanel>
+                    <TextBlock>Content</TextBlock>
+                </StackPanel>
+            </controls:Expander>
+
+            <controls:Expander AutomationProperties.Name="ExpanderWithRightwardsDirection" HorizontalContentAlignment="Left" ExpandDirection="Right" IsExpanded="False">
+                <controls:Expander.Header>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}">This expander will expand rightwards</TextBlock>
+                </controls:Expander.Header>
+                <StackPanel>
+                    <TextBlock>Content</TextBlock>
                 </StackPanel>
             </controls:Expander>
             

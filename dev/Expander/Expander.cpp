@@ -26,6 +26,7 @@ void Expander::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
+    // Check if it's expanded
     if (ExpanderProperties::IsExpanded())
     {
         winrt::VisualStateManager::GoToState(*this, L"Expanded", true);
@@ -36,12 +37,29 @@ void Expander::OnApplyTemplate()
         winrt::VisualStateManager::GoToState(*this, L"Collapsed", true);
         this->RaiseCollapsedEvent(*this);
     }
+
+    // Check the direction
+    switch(ExpanderProperties::ExpandDirection())
+    {
+    case winrt::ExpandDirection::Down:
+    case winrt::ExpandDirection::Up:
+    case winrt::ExpandDirection::Left:
+    case winrt::ExpandDirection::Right:
+        break;
+    }
+
 }
 
-void Expander::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
+void Expander::OnKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
 {
-    if (m_hasFocus &&
-        e.Key() == winrt::VirtualKey::Space)
+    // This is to make sure that if there's nested expanders, we don't expand
+    // the parents.
+    if (eventArgs.Handled())
+    {
+        return;
+    }
+
+    if (eventArgs.Key() == winrt::VirtualKey::Space)
     {
         if (ExpanderProperties::IsExpanded())
         {
@@ -57,22 +75,12 @@ void Expander::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
             ExpanderProperties::IsExpanded(true);
             this->RaiseCollapsedEvent(*this);
         }
+        // We handled it, make sure the parents don't expand/collapse
+        eventArgs.Handled(true);
         return;
     }
 
-    __super::OnKeyDown(e);
-}
-
-void Expander::OnGotFocus(winrt::RoutedEventArgs const& e)
-{
-    __super::OnGotFocus(e);
-    m_hasFocus = true;
-}
-
-void Expander::OnLostFocus(winrt::RoutedEventArgs const& e)
-{
-    __super::OnLostFocus(e);
-    m_hasFocus = false;
+    __super::OnKeyDown(eventArgs);
 }
 
 void Expander::RaiseExpandingEvent(const winrt::Expander& container)
@@ -85,9 +93,9 @@ void Expander::RaiseCollapsedEvent(const winrt::Expander& container)
 
 void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    bool newValue = unbox_value<bool>(args.NewValue());
+    bool shouldExpand = unbox_value<bool>(args.NewValue());
 
-    if (newValue)
+    if (shouldExpand)
     {
         winrt::VisualStateManager::GoToState(*this, L"Expanded", true);
         this->RaiseExpandingEvent(*this);
@@ -101,5 +109,15 @@ void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChange
 
 void Expander::OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // TODO: Implement
+    winrt::ExpandDirection newDirection = unbox_value<winrt::ExpandDirection>(args.NewValue());
+
+    switch (newDirection)
+    {
+    case winrt::ExpandDirection::Down:
+    case winrt::ExpandDirection::Up:
+    case winrt::ExpandDirection::Left:
+    case winrt::ExpandDirection::Right:
+        break;
+    }
+
 }
