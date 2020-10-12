@@ -32,11 +32,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject PagerNumberBox;
 
-        public UIObject GetPagerComboBox()
+        public ComboBox GetPagerComboBox()
         {
-            return GetElementWithinPager(ref PagerComboBox, "ComboBoxDisplay");
+            if (PagerComboBox == null)
+            {
+                UIObject uiObject = null;
+                GetElementWithinPager(ref uiObject, "ComboBoxDisplay");
+                PagerComboBox = new ComboBox(uiObject);
+            }
+            return PagerComboBox;
         }
-        private UIObject PagerComboBox;
+        private ComboBox PagerComboBox;
 
         public UIObject GetNumberPanelButton(string elementName)
         {

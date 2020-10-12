@@ -35,7 +35,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
             // Index is the actual PagerControl SelectedIndex, so we need to add 1 here 
             // to result in the user friendly name being displayed in the ComboBox.
-            new ComboBox(elements.GetPagerComboBox()).SelectItemByName((index + 1).ToString());
+            elements.GetPagerComboBox().SelectItemByName((index + 1).ToString());
         }
 
         protected void SendValueToNumberBox(string value)
