@@ -35,8 +35,7 @@ void InfoBarAutomationPeer::RaiseOpenedEvent(winrt::InfoBarSeverity severity, ws
 
 void InfoBarAutomationPeer::RaiseClosedEvent(winrt::InfoBarSeverity severity, wstring_view const& displayString)
 {
-    winrt::Peers::AutomationNotificationProcessing processing = winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent;
-
+    const winrt::Peers::AutomationNotificationProcessing processing = winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent;
 
     if (winrt::IAutomationPeer7 automationPeer7 = *this)
     {
@@ -51,7 +50,7 @@ void InfoBarAutomationPeer::RaiseClosedEvent(winrt::InfoBarSeverity severity, ws
 
 winrt::Peers::AutomationNotificationProcessing InfoBarAutomationPeer::GetProcessingForSeverity(winrt::InfoBarSeverity severity)
 {
-    winrt::Peers::AutomationNotificationProcessing processing = winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent;
+    const winrt::Peers::AutomationNotificationProcessing processing = winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent;
 
     if (severity == winrt::InfoBarSeverity::Error
         || severity == winrt::InfoBarSeverity::Warning)
