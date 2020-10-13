@@ -37,16 +37,7 @@ hstring ExpanderAutomationPeer::GetClassNameCore()
 
 hstring ExpanderAutomationPeer::GetNameCore()
 {
-    winrt::hstring returnHString = __super::GetNameCore();
-
-    // If a name hasn't been provided by AutomationProperties.Name in markup
-    if (returnHString.empty())
-    {
-        // It'll be up to the app to determine the automation label for
-        // when they're using a PlaceholderValue vs. Value.
-        returnHString = ResourceAccessor::GetLocalizedStringResource(SR_ExpanderDefaultControlName);
-    }
-    return returnHString;
+    return __super::GetNameCore();
 }
 
 winrt::AutomationControlType ExpanderAutomationPeer::GetAutomationControlTypeCore()

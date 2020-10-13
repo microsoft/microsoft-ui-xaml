@@ -10,6 +10,8 @@
 #include "Utils.h"
 #include "winnls.h"
 
+static constexpr auto c_toggleButton = L"ExpanderHeader"sv;
+
 Expander::Expander()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Expander);
@@ -25,6 +27,21 @@ winrt::AutomationPeer Expander::OnCreateAutomationPeer()
 void Expander::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
+
+    // If the expander doesn't have any AutomationProperties.Name set,
+    // we will try setting one based on the header. This is how
+    // WPF's expanders work.
+    if (winrt::AutomationProperties::GetName(*this).empty())
+    {
+        auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_toggleButton, *this);
+        if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(toggleButton))
+        {
+            if (!peer.GetNameCore().empty())
+            {
+                winrt::AutomationProperties::SetName(*this, peer.GetNameCore());
+            }
+        }
+    }
 
     // Check if it's expanded
     if (ExpanderProperties::IsExpanded())
@@ -64,16 +81,12 @@ void Expander::OnKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
         if (ExpanderProperties::IsExpanded())
         {
             // If it's currently expanded, we will collapse
-            winrt::VisualStateManager::GoToState(*this, L"Collapsed", true);
             ExpanderProperties::IsExpanded(false);
-            this->RaiseExpandingEvent(*this);
         }
         else
         {
             // If it's currently collapsed, we will expand
-            winrt::VisualStateManager::GoToState(*this, L"Expanded", true);
             ExpanderProperties::IsExpanded(true);
-            this->RaiseCollapsedEvent(*this);
         }
         // We handled it, make sure the parents don't expand/collapse
         eventArgs.Handled(true);
@@ -104,6 +117,16 @@ void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChange
     {
         winrt::VisualStateManager::GoToState(*this, L"Collapsed", true);
         this->RaiseCollapsedEvent(*this);
+    }
+
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        auto expanderPeer = peer.as<ExpanderAutomationPeer>();
+        expanderPeer->RaiseExpandCollapseAutomationEvent(
+            IsExpanded() ?
+            winrt::ExpandCollapseState::Expanded :
+            winrt::ExpandCollapseState::Collapsed
+        );
     }
 }
 
