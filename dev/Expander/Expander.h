@@ -13,7 +13,6 @@ class Expander :
     public ReferenceTracker<Expander, winrt::implementation::ExpanderT>,
     public ExpanderProperties
 {
-
 public:
     Expander();
     ~Expander() {}
@@ -33,4 +32,6 @@ public:
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+private:
+    void UpdateExpandDirection();
 };

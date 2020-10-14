@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
     
-    <Thickness x:Key="ExpanderExpandChevronMargin">-20,0,6,0</Thickness>
+    <Thickness x:Key="ExpanderExpandChevronMargin">8</Thickness>
     <StaticResource x:Key="ExpanderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <x:String x:Key="ExpanderExpandedGlyph">&#xE70D;</x:String>
 

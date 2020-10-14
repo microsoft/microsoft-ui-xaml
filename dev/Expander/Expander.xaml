@@ -9,13 +9,13 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
-                    <StackPanel>
+                    <Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ExpandStates">
                                 <VisualState x:Name="Expanded">
                                     <VisualState.Storyboard>
                                         <Storyboard>
-                                            <PopInThemeAnimation TargetName="ExpanderContent" FromVerticalOffset="-200" FromHorizontalOffset="0"/>
+                                            <PopInThemeAnimation x:Name="PopIn" TargetName="ExpanderContent" FromVerticalOffset="-50" FromHorizontalOffset="0"/>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ExpanderContent" Storyboard.TargetProperty="Visibility">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -30,7 +30,52 @@
                                     </VisualState.Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="ExpandDirectionStates">
+                                <VisualState x:Name="Down" />
+                                <VisualState x:Name="Up">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpanderHeader.(Grid.Row)" Value="1" />
+                                        <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
+                                        <Setter Target="Row0.Height" Value="*" />
+                                        <Setter Target="Row1.Height" Value="Auto" />
+                                        <Setter Target="PopIn.FromVerticalOffset" Value="50" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Right">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
+                                        <Setter Target="ExpanderContent.(Grid.Column)" Value="1" />
+                                        <Setter Target="Row0.Height" Value="*" />
+                                        <Setter Target="Row1.Height" Value="Auto" />
+                                        <Setter Target="Column0.Width" Value="Auto" />
+                                        <Setter Target="Column1.Width" Value="*" />
+                                        <Setter Target="PopIn.FromVerticalOffset" Value="0" />
+                                        <Setter Target="PopIn.FromHorizontalOffset" Value="-50" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Left">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpanderHeader.(Grid.Column)" Value="1" />
+                                        <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
+                                        <Setter Target="Row0.Height" Value="*" />
+                                        <Setter Target="Row1.Height" Value="Auto" />
+                                        <Setter Target="Column0.Width" Value="*" />
+                                        <Setter Target="Column1.Width" Value="Auto" />
+                                        <Setter Target="PopIn.FromVerticalOffset" Value="0" />
+                                        <Setter Target="PopIn.FromHorizontalOffset" Value="50" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition x:Name="Row0" Height="Auto" />
+                            <RowDefinition x:Name="Row1" Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="Column0" Width="*" />
+                            <ColumnDefinition x:Name="Column1" Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
                         <ToggleButton
                             x:Name="ExpanderHeader"
@@ -41,25 +86,24 @@
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
-                            IsChecked="{Binding Path=IsExpanded,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
+                            IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                             Foreground="{TemplateBinding Foreground}"
                             Padding="{TemplateBinding Padding}"
                             FontFamily="{TemplateBinding FontFamily}"
                             FontSize="{TemplateBinding FontSize}"
                             FontStyle="{TemplateBinding FontStyle}"
                             FontStretch="{TemplateBinding FontStretch}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            FontWeight="{TemplateBinding FontWeight}" />
 
                         <ContentPresenter
                             x:Name="ExpanderContent"
+                            Grid.Row="1"
                             Visibility="Collapsed"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                             />
-                    </StackPanel>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -67,6 +111,7 @@
 
     <Style x:Key="ExpanderDownHeaderStyle" TargetType="ToggleButton">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
@@ -74,7 +119,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <VisualStateManager.VisualStateGroups>
@@ -143,7 +188,6 @@
                         <Grid
                             x:Name="ExpandCollapseChevron"
                             Grid.Column="1"
-                            HorizontalAlignment="Right"
                             Width="40"
                             Margin="{ThemeResource ExpanderExpandChevronMargin}"
                             Background="Transparent">
