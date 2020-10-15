@@ -28,6 +28,8 @@ void TabViewItem::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
+    m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"ContentPresenter", controlProtected));
+
     auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
     auto internalTabView = tabView
         ? winrt::get_self<TabView>(tabView)
@@ -57,6 +59,7 @@ void TabViewItem::OnApplyTemplate()
         return closeButton;
         }());
 
+    OnHeaderChanged();
     OnIconSourceChanged();
 
     if (tabView)
@@ -163,7 +166,6 @@ void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
     UpdateWidthModeVisualState();
 }
 
-
 void TabViewItem::UpdateCloseButton()
 {
     if (!IsClosable())
@@ -239,6 +241,16 @@ void TabViewItem::OnIsClosablePropertyChanged(const winrt::DependencyPropertyCha
 
 void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    OnHeaderChanged();
+}
+
+void TabViewItem::OnHeaderChanged()
+{
+    if (const auto headerContentPresenter = m_headerContentPresenter.get())
+    {
+        headerContentPresenter.Content(Header());
+    }
+
     if (m_firstTimeSettingToolTip)
     {
         m_firstTimeSettingToolTip = false;
@@ -251,7 +263,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
                 toolTip.Placement(winrt::Controls::Primitives::PlacementMode::Mouse);
                 winrt::ToolTipService::SetToolTip(*this, toolTip);
                 return toolTip;
-            }());
+                }());
         }
     }
 
@@ -261,13 +273,16 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
         auto headerContent = Header();
         auto potentialString = headerContent.try_as<winrt::IPropertyValue>();
 
-        if (potentialString && potentialString.Type() == winrt::PropertyType::String)
+        // Only show tooltip if header is a non-empty string.
+        if (potentialString && potentialString.Type() == winrt::PropertyType::String && !potentialString.GetString().empty())
         {
             toolTip.Content(headerContent);
+            toolTip.IsEnabled(true);
         }
         else
         {
             toolTip.Content(nullptr);
+            toolTip.IsEnabled(false);
         }
     }
 }
