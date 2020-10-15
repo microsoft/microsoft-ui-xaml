@@ -56,7 +56,7 @@ bool TreeViewListAutomationPeer::CanSelectMultiple()
 
 bool TreeViewListAutomationPeer::IsSelectionRequired()
 {
-    return IsMultiselect()? false : __super::CanSelectMultiple();
+    return false;
 }
 
 winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> TreeViewListAutomationPeer::GetSelection()
