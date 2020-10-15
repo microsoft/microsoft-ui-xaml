@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Provider;
+using Windows.UI.Xaml.Controls;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -31,7 +32,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TabViewTests : ApiTestBase
     {
-
         [TestMethod]
         public void VerifyCompactTabWidthVisualStates()
         {
@@ -142,7 +142,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var selectionItemProvider = GetProviderFromTVI(tvi0);
-                Verify.IsTrue(selectionItemProvider.IsSelected,"Item should be selected");
+                Verify.IsTrue(selectionItemProvider.IsSelected, "Item should be selected");
 
                 selectionItemProvider = GetProviderFromTVI(tvi1);
                 Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected");
@@ -150,7 +150,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Change selection through automationpeer");
                 selectionItemProvider.Select();
                 Verify.IsTrue(selectionItemProvider.IsSelected, "Item should have been selected");
-                
+
                 selectionItemProvider = GetProviderFromTVI(tvi0);
                 Verify.IsFalse(selectionItemProvider.IsSelected, "Item should not be selected anymore");
 
@@ -165,6 +165,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(provider);
                 return provider;
             }
+        }
+
+        [TestMethod]
+        public void TabViewItemHeaderTest()
+        {
+            TabViewItem tvi0 = null;
+            TabViewItem tvi1 = null;
+            TabViewItem tvi2 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var tabView = new TabView();
+
+                tvi0 = CreateTabViewItem(null, "tab0Content");
+                tvi1 = CreateTabViewItem("", "tab1Content");
+                tvi2 = CreateTabViewItem("tab2", "tab2Content");
+
+                tabView.TabItems.Add(tvi0);
+                tabView.TabItems.Add(tvi1);
+                tabView.TabItems.Add(tvi2);
+
+                Content = tabView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Verify headers
+                var headerContentPresenter1 = VisualTreeUtils.FindVisualChildByName(tvi0, "ContentPresenter") as ContentPresenter;
+                var headerContentPresenter2 = VisualTreeUtils.FindVisualChildByName(tvi1, "ContentPresenter") as ContentPresenter;
+                var headerContentPresenter3 = VisualTreeUtils.FindVisualChildByName(tvi2, "ContentPresenter") as ContentPresenter;
+
+                Verify.AreEqual(null, headerContentPresenter1.Content, "tvi0's header should have been [null]");
+                Verify.AreEqual("", headerContentPresenter2.Content, "tvi1's header should have been the empty string");
+                Verify.AreEqual("tab2", headerContentPresenter3.Content, "tvi2's header should have been \"tab2\"");
+
+                // Verify ToolTips
+                var toolTip0 = ToolTipService.GetToolTip(tvi0) as ToolTip;
+                var toolTip1 = ToolTipService.GetToolTip(tvi1) as ToolTip;
+                var toolTip2 = ToolTipService.GetToolTip(tvi2) as ToolTip;
+
+                bool testCondition = toolTip0.IsEnabled == false && toolTip0.Content == null;
+                Verify.IsTrue(testCondition, "tvi0's ToolTip should have been disabled with [null] as content");
+
+                testCondition = toolTip1.IsEnabled == false && toolTip1.Content == null;
+                Verify.IsTrue(testCondition, "tvi1's ToolTip should have been disabled with [null] as content");
+
+                testCondition = toolTip2.IsEnabled == true && toolTip2.Content is string s && s == "tab2";
+                Verify.IsTrue(testCondition, "tvi2's ToolTip should have been enabled with \"tab2\" as content");
+            });
         }
 
         private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
@@ -198,6 +249,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             tabViewItem.Header = name;
             tabViewItem.IconSource = new Microsoft.UI.Xaml.Controls.SymbolIconSource() { Symbol = icon };
+            tabViewItem.IsClosable = closable;
+            tabViewItem.IsEnabled = enabled;
+
+            return tabViewItem;
+        }
+
+        private static TabViewItem CreateTabViewItem(string name, object content, bool closable = true, bool enabled = true)
+        {
+            var tabViewItem = new TabViewItem();
+
+            tabViewItem.Header = name;
+            tabViewItem.Content = content;
             tabViewItem.IsClosable = closable;
             tabViewItem.IsEnabled = enabled;
 
