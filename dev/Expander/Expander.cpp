@@ -46,16 +46,16 @@ void Expander::OnApplyTemplate()
     // Check if it's expanded
     if (ExpanderProperties::IsExpanded())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Expanded", true);
+        winrt::VisualStateManager::GoToState(*this, L"Expanded", false);
         this->RaiseExpandingEvent(*this);
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"Collapsed", true);
+        winrt::VisualStateManager::GoToState(*this, L"Collapsed", false);
         this->RaiseCollapsedEvent(*this);
     }
 
-    UpdateExpandDirection();
+    UpdateExpandDirection(false);
 }
 
 void Expander::OnKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
@@ -123,25 +123,25 @@ void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChange
 
 void Expander::OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
-    UpdateExpandDirection();
+    UpdateExpandDirection(true);
 }
 
-void Expander::UpdateExpandDirection()
+void Expander::UpdateExpandDirection(bool useTransitions)
 {
     const auto direction = ExpandDirection();
     switch (direction)
     {
     case winrt::ExpandDirection::Down:
-        winrt::VisualStateManager::GoToState(*this, L"Down", true);
+        winrt::VisualStateManager::GoToState(*this, L"Down", useTransitions);
         break;
     case winrt::ExpandDirection::Up:
-        winrt::VisualStateManager::GoToState(*this, L"Up", true);
+        winrt::VisualStateManager::GoToState(*this, L"Up", useTransitions);
         break;
     case winrt::ExpandDirection::Left:
-        winrt::VisualStateManager::GoToState(*this, L"Left", true);
+        winrt::VisualStateManager::GoToState(*this, L"Left", useTransitions);
         break;
     case winrt::ExpandDirection::Right:
-        winrt::VisualStateManager::GoToState(*this, L"Right", true);
+        winrt::VisualStateManager::GoToState(*this, L"Right", useTransitions);
         break;
     }
 }

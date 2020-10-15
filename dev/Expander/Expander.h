@@ -33,5 +33,5 @@ public:
     void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    void UpdateExpandDirection();
+    void UpdateExpandDirection(bool useTransitions);
 };
