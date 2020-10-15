@@ -40,4 +40,3 @@ private:
     winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
 };
 
-CppWinRTActivatableClassWithBasicFactory(DropDownButton);

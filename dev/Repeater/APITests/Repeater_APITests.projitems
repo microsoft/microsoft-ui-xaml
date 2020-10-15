@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\CollectionChangeEventArgsConverters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CustomItemsSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CustomItemsSourceView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ReadOnlyNotifyPropertyChangedCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ElementAnimatorDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\LayoutExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\FlowLayoutDerived.cs" />
@@ -26,11 +27,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockViewGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockVirtualizingLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\SharedHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\TestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\WinRTCollection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\DataAsElementElementFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollPresenterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollViewerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ElementAnimatorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ElementFromElementElementFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutCollectionChangeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IndexPathTests.cs" />

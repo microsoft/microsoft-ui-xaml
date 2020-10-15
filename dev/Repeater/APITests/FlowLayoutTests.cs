@@ -41,7 +41,7 @@ using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class FlowLayoutTests : TestsBase
+    public class FlowLayoutTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateStackLayout()
@@ -580,6 +580,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateGridLayoutDesiredSizingWithMaxRowsOrColumnsSet()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
+                {
+                    Log.Comment(string.Format("ScrollOrientation: {0}", scrollOrientation));
+                    var om = new OrientationBasedMeasures(scrollOrientation, useLayoutRounding: true);
+                    const int numItems = 4;
+
+                    int itemSize = 100;
+
+                    LayoutPanel panel = new LayoutPanel();
+                    var layout = new UniformGridLayout() {
+                        Orientation = scrollOrientation.ToOrthogonalLayoutOrientation(),
+                        ItemsJustification = UniformGridLayoutItemsJustification.Start,
+                        MinItemWidth = itemSize,
+                        MinItemHeight = itemSize,
+                        MinRowSpacing = 0,
+                        MinColumnSpacing = 0
+                    };
+                    
+                    for (int i = 0; i < numItems; i++)
+                    {
+                        panel.Children.Add(new Button() { Content = i,Width = itemSize,Height = itemSize });
+                    }
+                    
+                    panel.Layout = layout;
+                    Content = panel;
+
+                    // Place in top left corner to prevent stretch of panel
+                    panel.VerticalAlignment = VerticalAlignment.Top;
+                    panel.HorizontalAlignment = HorizontalAlignment.Left;
+                    layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+
+                    for(int i = 1; i < numItems; i++)
+                    {
+                        layout.MaximumRowsOrColumns = i;
+                        panel.UpdateLayout();
+
+                        if (om.IsVerical)
+                        {
+                            // Vertical so fill columns first
+                            Verify.AreEqual(itemSize * i, panel.DesiredSize.Width);
+                            Verify.AreEqual(Math.Ceiling((double)numItems / (double)i) * itemSize, panel.DesiredSize.Height);
+                        }
+                        else
+                        {
+                            // Horizontal, fill rows first
+                            Verify.AreEqual(itemSize * i, panel.DesiredSize.Height);
+                            Verify.AreEqual(Math.Ceiling((double)numItems / (double)i) * itemSize, panel.DesiredSize.Width);
+                        }
+                    }
+
+                }
+            });
+        }
 
         [TestMethod]
         public void ValidateFlowLayout()
@@ -1543,22 +1601,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         break;
 
                     case LayoutChoice.Grid:
-                        var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
-                        var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
-                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
+                        {
+                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                            layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
+                        }
                         break;
 
                     case LayoutChoice.Flow:
-                        layout = new FlowLayoutDerived()
                         {
-                            MinColumnSpacing = lineSpacing,
-                            OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
+                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                            layout = new FlowLayoutDerived()
                             {
-                                Verify.AreEqual(0, startIndex % 4);
-                                Verify.AreEqual(4, countInLine);
-                                Verify.AreEqual(lineSize, itemSize);
-                            }
-                        };
+                                MinRowSpacing = minRowSpacing,
+                                MinColumnSpacing = minColumnSpacing,
+                                OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
+                                {
+                                    Verify.AreEqual(0, startIndex % 4);
+                                    Verify.AreEqual(4, countInLine);
+                                    Verify.AreEqual(lineSize, itemSize);
+                                }
+                            };
+                        }
                         break;
 
                     default:

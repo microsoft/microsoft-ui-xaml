@@ -130,10 +130,6 @@
       <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\MUXTestUtilities\MUXTestUtilities.vcxproj">
-      <Project>{e7d6b510-3761-478a-8e22-72558dad924e}</Project>
-      <Name>MUXTestUtilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
@@ -196,6 +192,7 @@
     <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(CSharpTargetsFilePath)" />
+  <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\CustomInlineTasks.targets" />
   <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage" Condition="$(BuildingWithBuildExe) != 'true'">
     <RunPowershellScript Path="$(MSBuildThisFileDirectory)\..\..\tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" />

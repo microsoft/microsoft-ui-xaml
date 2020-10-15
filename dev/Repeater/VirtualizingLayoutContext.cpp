@@ -7,7 +7,7 @@
 #include "VirtualizingLayoutContext.h"
 #include "VirtualLayoutContextAdapter.h"
 
-CppWinRTActivatableClassWithBasicFactory(VirtualizingLayoutContext);
+#include "VirtualizingLayoutContext.properties.cpp"
 
 #pragma region IVirtualizingLayoutContext
 

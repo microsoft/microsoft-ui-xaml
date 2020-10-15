@@ -8,6 +8,8 @@
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
 
+#include "TextCommandBarFlyout.properties.cpp"
+
 TextCommandBarFlyout::TextCommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TextCommandBarFlyout);
@@ -16,7 +18,12 @@ TextCommandBarFlyout::TextCommandBarFlyout()
         [this](auto const&, auto const&)
         {
             UpdateButtons();
+        }
+    });
 
+    Opened({
+        [this](auto const&, auto const&)
+        {
             // If there aren't any primary commands and we aren't opening expanded,
             // or if there are just no commands at all, then we'll have literally no UI to show. 
             // We'll just close the flyout in that case - nothing should be opening us
@@ -92,8 +99,8 @@ void TextCommandBarFlyout::InitializeButtonWithProperties(
 
             if (acceleratorKeyString.size() > 0)
             {
-                WCHAR acceleratorKeyChar = acceleratorKeyString[0];
-                winrt::VirtualKey acceleratorKey = SharedHelpers::GetVirtualKeyFromChar(acceleratorKeyChar);
+                const WCHAR acceleratorKeyChar = acceleratorKeyString[0];
+                const winrt::VirtualKey acceleratorKey = SharedHelpers::GetVirtualKeyFromChar(acceleratorKeyChar);
 
                 if (acceleratorKey != winrt::VirtualKey::None)
                 {
@@ -145,8 +152,8 @@ void TextCommandBarFlyout::UpdateButtons()
     PrimaryCommands().Clear();
     SecondaryCommands().Clear();
 
-    auto buttonsToAdd = GetButtonsToAdd();
-    auto addButtonToCommandsIfPresent =
+    const auto buttonsToAdd = GetButtonsToAdd();
+    const auto addButtonToCommandsIfPresent =
         [buttonsToAdd, this](auto buttonType, auto commandsList)
         {
             if ((buttonsToAdd & buttonType) != TextControlButtons::None)
@@ -154,7 +161,7 @@ void TextCommandBarFlyout::UpdateButtons()
                 commandsList.Append(GetButton(buttonType));
             }
         };
-    auto addRichEditButtonToCommandsIfPresent =
+    const auto addRichEditButtonToCommandsIfPresent =
         [buttonsToAdd, this](auto buttonType, auto commandsList, auto getIsChecked)
         {
             if ((buttonsToAdd & buttonType) != TextControlButtons::None)
@@ -250,7 +257,7 @@ void TextCommandBarFlyout::UpdateButtons()
             m_proofingMenuItemClickRevokers.clear();
             m_proofingMenuToggleItemClickRevokers.clear();
 
-            auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
+            const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
 
             // We might encounter MenuFlyoutSubItems, so we'll add them to this list
             // in order to ensure that we hook up handlers to their entries as well.
@@ -433,7 +440,7 @@ TextControlButtons TextCommandBarFlyout::GetRichEditBoxButtonsToAdd(winrt::RichE
     {
         if (auto richEditBox6 = richEditBox.try_as<winrt::IRichEditBox6>())
         {
-            auto disabledFormattingAccelerators = richEditBox6.DisabledFormattingAccelerators();
+            const auto disabledFormattingAccelerators = richEditBox6.DisabledFormattingAccelerators();
 
             if ((disabledFormattingAccelerators & winrt::DisabledFormattingAccelerators::Bold) != winrt::DisabledFormattingAccelerators::Bold)
             {
@@ -596,7 +603,7 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
 
     try
     {
-        auto executeRichTextBlockCopyCommand =
+        const auto executeRichTextBlockCopyCommand =
             [this](winrt::RichTextBlock const& richTextBlockTarget)
         {
             if (auto richTextBlock6 = richTextBlockTarget.try_as<winrt::IRichTextBlock6>())
@@ -912,7 +919,7 @@ void TextCommandBarFlyout::ExecuteSelectAllCommand()
 
 winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons textControlButton)
 {
-    auto foundButton = m_buttons.find(textControlButton);
+    const auto foundButton = m_buttons.find(textControlButton);
 
     if (foundButton != m_buttons.end())
     {
@@ -925,7 +932,7 @@ winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons tex
         case TextControlButtons::Cut:
             {
                 winrt::AppBarButton button;
-                auto executeFunc = [this]() { ExecuteCutCommand(); };
+                const auto executeFunc = [this]() { ExecuteCutCommand(); };
 
                 if (SharedHelpers::IsStandardUICommandAvailable())
                 {
@@ -948,7 +955,7 @@ winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons tex
         case TextControlButtons::Copy:
             {
                 winrt::AppBarButton button;
-                auto executeFunc = [this]() { ExecuteCopyCommand(); };
+                const auto executeFunc = [this]() { ExecuteCopyCommand(); };
 
                 if (SharedHelpers::IsStandardUICommandAvailable())
                 {
@@ -971,7 +978,7 @@ winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons tex
         case TextControlButtons::Paste:
             {
                 winrt::AppBarButton button;
-                auto executeFunc = [this]() { ExecutePasteCommand(); };
+                const auto executeFunc = [this]() { ExecutePasteCommand(); };
 
                 if (SharedHelpers::IsStandardUICommandAvailable())
                 {
@@ -1038,7 +1045,7 @@ winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons tex
         case TextControlButtons::Undo:
             {
                 winrt::AppBarButton button;
-                auto executeFunc = [this]() { ExecuteUndoCommand(); };
+                const auto executeFunc = [this]() { ExecuteUndoCommand(); };
 
                 if (SharedHelpers::IsStandardUICommandAvailable())
                 {
@@ -1061,7 +1068,7 @@ winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons tex
         case TextControlButtons::Redo:
             {
                 winrt::AppBarButton button;
-                auto executeFunc = [this]() { ExecuteRedoCommand(); };
+                const auto executeFunc = [this]() { ExecuteRedoCommand(); };
 
                 if (SharedHelpers::IsStandardUICommandAvailable())
                 {
@@ -1084,7 +1091,7 @@ winrt::ICommandBarElement TextCommandBarFlyout::GetButton(TextControlButtons tex
         case TextControlButtons::SelectAll:
             {
                 winrt::AppBarButton button;
-                auto executeFunc = [this]() { ExecuteSelectAllCommand(); };
+                const auto executeFunc = [this]() { ExecuteSelectAllCommand(); };
 
                 if (SharedHelpers::IsStandardUICommandAvailable())
                 {

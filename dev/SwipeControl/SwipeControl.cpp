@@ -281,7 +281,7 @@ void SwipeControl::InertiaStateEntered(
     //Instead we check to ensure that the current position and the ModifiedRestingPosition have the same sign (multiply to a positive number)
     //If they do not then we are in this situation and want the end result of the interaction to be the closed state, so close without any animation and return
     //to prevent further processing of this inertia state.
-    auto flickToOppositeSideCheck = m_interactionTracker.get().Position() * args.ModifiedRestingPosition().Value();
+    const auto flickToOppositeSideCheck = m_interactionTracker.get().Position() * args.ModifiedRestingPosition().Value();
     if (m_isHorizontal ? flickToOppositeSideCheck.x < 0 : flickToOppositeSideCheck.y < 0)
     {
         CloseWithoutAnimation();
@@ -679,9 +679,9 @@ void SwipeControl::AttachDismissingHandlers()
 
     if (winrt::IUIElement10 uiElement10 = *this)
     {
-        if (auto xamlRoot = uiElement10.XamlRoot())
+        if (const auto xamlRoot = uiElement10.XamlRoot())
         {
-            if (auto&& xamlRootContent = xamlRoot.Content())
+            if (const auto xamlRootContent = xamlRoot.Content())
             {
                 m_xamlRootPointerPressedEventRevoker = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
                     xamlRootContent,
@@ -775,11 +775,11 @@ void SwipeControl::DismissSwipeOnAnExternalTap(winrt::Point const& tapPoint)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    winrt::GeneralTransform transform = TransformToVisual(nullptr);
-    winrt::Point p(0, 0);
+    const winrt::GeneralTransform transform = TransformToVisual(nullptr);
+    const winrt::Point p(0, 0);
 
     // start of the swipe control
-    auto transformedElementOrigin = transform.TransformPoint(p);
+    const auto transformedElementOrigin = transform.TransformPoint(p);
 
     // If point is not within the item's bounds, close it.
     if (*this && tapPoint.X < transformedElementOrigin.X || tapPoint.Y < transformedElementOrigin.Y ||
@@ -817,7 +817,7 @@ void SwipeControl::GetTemplateParts()
     }
     m_swipeContentStackPanel.get().Orientation(m_isHorizontal ? winrt::Orientation::Horizontal : winrt::Orientation::Vertical);
 
-    if (auto lookedUpStyle = SharedHelpers::FindResource(s_swipeItemStyleName, winrt::Application::Current().Resources()))
+    if (auto lookedUpStyle = SharedHelpers::FindInApplicationResources(s_swipeItemStyleName))
     {
         m_swipeItemStyle.set(lookedUpStyle.try_as<winrt::UI::Xaml::Style>());
     }
@@ -1030,9 +1030,9 @@ winrt::Visual SwipeControl::FindVisualInteractionSourceVisual()
 
 void SwipeControl::EnsureClip()
 {
-    float width = static_cast<float>(ActualWidth());
-    float height = static_cast<float>(ActualHeight());
-    winrt::Rect rect = { 0.0f, 0.0f, width, height };
+    const float width = static_cast<float>(ActualWidth());
+    const float height = static_cast<float>(ActualHeight());
+    const winrt::Rect rect = { 0.0f, 0.0f, width, height };
     winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangleGeometry;
     rectangleGeometry.Rect(rect);
     Clip(rectangleGeometry);
@@ -1042,7 +1042,7 @@ void SwipeControl::CloseWithoutAnimation()
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    bool wasIdle = m_isIdle;
+    const bool wasIdle = m_isIdle;
     m_interactionTracker.get().TryUpdatePosition({ 0.0f, 0.0f, 0.0f });
     if (wasIdle)
     {
@@ -1146,7 +1146,7 @@ void SwipeControl::AlignStackPanel()
         {
             if (m_isHorizontal)
             {
-                auto swipeContentStackPanelHorizontalAlignment = m_createdContent == CreatedContent::Left ? winrt::HorizontalAlignment::Left :
+                const auto swipeContentStackPanelHorizontalAlignment = m_createdContent == CreatedContent::Left ? winrt::HorizontalAlignment::Left :
                     m_createdContent == CreatedContent::Right ? winrt::HorizontalAlignment::Right :
                     winrt::HorizontalAlignment::Stretch;
 
@@ -1155,7 +1155,7 @@ void SwipeControl::AlignStackPanel()
             }
             else
             {
-                auto swipeContentStackPanelVerticalAlignment = m_createdContent == CreatedContent::Top ? winrt::VerticalAlignment::Top :
+                const auto swipeContentStackPanelVerticalAlignment = m_createdContent == CreatedContent::Top ? winrt::VerticalAlignment::Top :
                     m_createdContent == CreatedContent::Bottom ? winrt::VerticalAlignment::Bottom :
                     winrt::VerticalAlignment::Stretch;
 
@@ -1263,11 +1263,10 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 {
     winrt::AppBarButton itemAsButton;
     winrt::get_self<SwipeItem>(swipeItem)->GenerateControl(itemAsButton, m_swipeItemStyle.get());
-    auto resources = winrt::Application::Current().Resources();
 
     if (!swipeItem.Background())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindResource(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName))
         {
             itemAsButton.Background(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1275,7 +1274,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Foreground())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindResource(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName, resources))
+        if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName))
         {
             itemAsButton.Foreground(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1322,19 +1321,18 @@ void SwipeControl::UpdateExecuteBackgroundColor(const winrt::SwipeItem& swipeIte
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    auto resources = winrt::Application::Current().Resources();
     winrt::Brush background = nullptr;
 
     if (!m_thresholdReached)
     {
-        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBackgroundBrush = SharedHelpers::FindInApplicationResources(s_executeSwipeItemPreThresholdBackgroundResourceName))
         {
             background = lookedUpBackgroundBrush.try_as<winrt::Brush>();
         }
     }
     else
     {
-        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPostThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBackgroundBrush = SharedHelpers::FindInApplicationResources(s_executeSwipeItemPostThresholdBackgroundResourceName))
         {
             background = lookedUpBackgroundBrush.try_as<winrt::Brush>();
         }
@@ -1358,18 +1356,17 @@ void SwipeControl::UpdateExecuteForegroundColor(const winrt::SwipeItem& swipeIte
         if (auto appBarButton = m_swipeContentStackPanel.get().Children().GetAt(0).as<winrt::AppBarButton>())
         {
             winrt::Brush foreground = nullptr;
-            auto resources = winrt::Application::Current().Resources();
 
             if (!m_thresholdReached)
             {
-                if (auto lookedUpForegroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPreThresholdForegroundResourceName, resources))
+                if (auto lookedUpForegroundBrush = SharedHelpers::FindInApplicationResources(s_executeSwipeItemPreThresholdForegroundResourceName))
                 {
                     foreground = lookedUpForegroundBrush.try_as<winrt::Brush>();
                 }
             }
             else
             {
-                if (auto lookedUpForegroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPostThresholdForegroundResourceName, resources))
+                if (auto lookedUpForegroundBrush = SharedHelpers::FindInApplicationResources(s_executeSwipeItemPostThresholdForegroundResourceName))
                 {
                     foreground = lookedUpForegroundBrush.try_as<winrt::Brush>();
                 }
@@ -1397,7 +1394,7 @@ void SwipeControl::UpdateColorsIfRevealItems()
 
     winrt::Brush rootGridBackground = nullptr;
 
-    if (auto lookedUpBrush = SharedHelpers::FindResource(s_swipeItemBackgroundResourceName, winrt::Application::Current().Resources()))
+    if (auto lookedUpBrush = SharedHelpers::FindInApplicationResources(s_swipeItemBackgroundResourceName))
     {
         rootGridBackground = lookedUpBrush.try_as<winrt::Brush>();
     }
@@ -1627,8 +1624,8 @@ void SwipeControl::UpdateThresholdReached(float value)
 {
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    bool oldValue = m_thresholdReached;
-    float effectiveStackPanelSize = static_cast<float>((m_isHorizontal ? m_swipeContentStackPanel.get().ActualWidth() : m_swipeContentStackPanel.get().ActualHeight()) - 1);
+    const bool oldValue = m_thresholdReached;
+    const float effectiveStackPanelSize = static_cast<float>((m_isHorizontal ? m_swipeContentStackPanel.get().ActualWidth() : m_swipeContentStackPanel.get().ActualHeight()) - 1);
     if (!m_isOpen || m_lastActionWasOpening)
     {
         //If we are opening new swipe items then we need to scroll open c_ThresholdValue

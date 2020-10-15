@@ -10,6 +10,8 @@
     <Import_RootNamespace>RadioButtons_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)RadioButtonsFocusTestPageElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RadioButtonsTestPageElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RadioButtonsTests.cs" />
   </ItemGroup>
 </Project>

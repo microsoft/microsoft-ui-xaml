@@ -16,7 +16,5 @@ public:
     void DisplayMode(winrt::NavigationViewDisplayMode value);
 
 private:
-    winrt::NavigationViewDisplayMode m_DisplayMode;
+    winrt::NavigationViewDisplayMode m_DisplayMode{};
 };
-
-//CppWinRTActivatableClassWithBasicFactory(NavigationViewDisplayModeChangedEventArgs);

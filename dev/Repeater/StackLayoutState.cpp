@@ -7,7 +7,7 @@
 #include "FlowLayoutAlgorithm.h"
 #include "StackLayoutState.h"
 
-CppWinRTActivatableClassWithBasicFactory(StackLayoutState);
+#include "StackLayoutState.properties.cpp"
 
 void StackLayoutState::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,
@@ -29,8 +29,8 @@ void StackLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutCon
 
 void StackLayoutState::OnElementMeasured(int elementIndex, double majorSize, double minorSize)
 {
-    int estimationBufferIndex = elementIndex % m_estimationBuffer.size();
-    bool alreadyMeasured = m_estimationBuffer[estimationBufferIndex] != 0;
+    const int estimationBufferIndex = elementIndex % m_estimationBuffer.size();
+    const bool alreadyMeasured = m_estimationBuffer[estimationBufferIndex] != 0;
     if (!alreadyMeasured)
     {
         m_totalElementsMeasured++;
@@ -43,7 +43,7 @@ void StackLayoutState::OnElementMeasured(int elementIndex, double majorSize, dou
     m_maxArrangeBounds = std::max(m_maxArrangeBounds, minorSize);
 }
 
-void StackLayoutState::OnArrangeLayoutEnd()
+void StackLayoutState::OnMeasureStart()
 {
     m_maxArrangeBounds = 0.0;
 }

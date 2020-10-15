@@ -6,9 +6,7 @@ Param(
     [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
-    [string]$BuildUri = $env:BUILD_BUILDURI,
-    [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT,
-    [bool]$CheckJobAttempt
+    [string]$BuildUri = $env:BUILD_BUILDURI
 )
 
 . "$PSScriptRoot/AzurePipelinesHelperScripts.ps1"
@@ -31,27 +29,6 @@ $timesSeenByRunName = @{}
       
 foreach ($testRun in $testRuns.value)
 {
-    # The same build for a pull request can have multiple test runs associated with it if the build owner opted to re-run a test run.
-    # We should only pay attention to the current attempt version.
-    # NB: If in the future we have pull request builds do multiple test runs as part of the same build definition, we'll need to revisit this.
-    if ($CheckJobAttempt)
-    {
-        if (-not $timesSeenByRunName.ContainsKey($testRun.name))
-        {
-            $timesSeenByRunName[$testRun.name] = 0
-        }
-        
-        $timesSeen = $timesSeenByRunName[$testRun.name] + 1
-        $timesSeenByRunName[$testRun.name] = $timesSeen
-
-        # The same build can have multiple test runs associated with it if the build owner opted to re-run a test run.
-        # We should only pay attention to the current attempt version.
-        if ($timesSeen -ne $JobAttempt)
-        {
-            continue
-        }
-    }
-
     $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
         
     Write-Host "Marking test run `"$($testRun.name)`" as in progress so we can change its results to account for unreliable tests."
@@ -62,7 +39,17 @@ foreach ($testRun in $testRuns.value)
         
     foreach ($testResult in $testResults.value)
     {
+        $testNeedsSubResultProcessing = $false
         if ($testResult.outcome -eq "NotExecuted")
+        {
+            $testNeedsSubResultProcessing = $true
+        }
+        elseif($testResult.outcome -eq "Failed")
+        {
+            $testNeedsSubResultProcessing = $testResult.errorMessage -like "*_subresults.json*"
+        }
+
+        if ($testNeedsSubResultProcessing)
         {
             Write-Host "  Test $($testResult.testCaseTitle) was detected as unreliable. Updating..."
             
@@ -95,20 +82,12 @@ foreach ($testRun in $testRuns.value)
                 
                 if ($rerun.outcome -ne "Passed")
                 {
-                    $screenshots = "$($rerunResults.blobPrefix)/$($rerun.screenshots -join @"
-$($rerunResults.blobSuffix)
-$($rerunResults.blobPrefix)
-"@)$($rerunResults.blobSuffix)"
-
                     # We subtract 1 from the error index because we added 1 so we could use 0
                     # as a default value not injected into the JSON in order to keep its size down.
                     # We did this because there's a maximum size enforced for the errorMessage parameter
                     # in the Azure DevOps REST API.
                     $fullErrorMessage = @"
 Log: $($rerunResults.blobPrefix)/$($rerun.log)$($rerunResults.blobSuffix)
-
-Screenshots:
-$screenshots
 
 Error log:
 $($rerunResults.errors[$rerun.errorIndex - 1])

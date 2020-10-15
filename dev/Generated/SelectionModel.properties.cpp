@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SelectionModel.h"
 
-CppWinRTActivatableClassWithBasicFactory(SelectionModel)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(SelectionModel)
+}
+
+#include "SelectionModel.g.cpp"
 
 
 SelectionModelProperties::SelectionModelProperties()

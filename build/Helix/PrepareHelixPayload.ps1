@@ -24,7 +24,7 @@ Copy-Item "$nugetPackagesDir\taef.redist.wlk.10.31.180822002\build\Binaries\$Pla
 New-Item -ItemType Directory -Force -Path "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\runtimes\win-$Platform\lib\netcoreapp2.1\*" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\runtimes\win-$Platform\native\*" "$payloadDir\.NETCoreApp2.1\"
-Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.38\tools\$platform\WttLog.dll" $payloadDir
+Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.48\tools\$platform\WttLog.dll" $payloadDir
 
 function Copy-If-Exists
 {
@@ -43,6 +43,7 @@ function Copy-If-Exists
 
 # Copy files from the 'drop' artifact dir
 Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\Test\MUXTestInfra.TAEF.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\AppThatUsesMUXIndirectly_Test\*" $payloadDir
@@ -69,4 +70,4 @@ Copy-Item "build\helix\runtests.cmd" $payloadDir
 Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir"
 Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir"
 Copy-Item "version.props" "$payloadDir"
-Copy-Item "build\Helix\CopyVisualTreeMasters.ps1" "$payloadDir"
+Copy-Item "build\Helix\CopyVisualTreeVerificationFiles.ps1" "$payloadDir"

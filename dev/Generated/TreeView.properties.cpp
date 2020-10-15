@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeView.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeView)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeView)
+}
+
+#include "TreeView.g.cpp"
 
 GlobalDependencyProperty TreeViewProperties::s_CanDragItemsProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_CanReorderItemsProperty{ nullptr };
@@ -16,6 +21,7 @@ GlobalDependencyProperty TreeViewProperties::s_ItemContainerTransitionsProperty{
 GlobalDependencyProperty TreeViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_ItemTemplateProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_ItemTemplateSelectorProperty{ nullptr };
+GlobalDependencyProperty TreeViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_SelectionModeProperty{ nullptr };
 
 TreeViewProperties::TreeViewProperties()
@@ -24,6 +30,7 @@ TreeViewProperties::TreeViewProperties()
     , m_dragItemsStartingEventSource{static_cast<TreeView*>(this)}
     , m_expandingEventSource{static_cast<TreeView*>(this)}
     , m_itemInvokedEventSource{static_cast<TreeView*>(this)}
+    , m_selectionChangedEventSource{static_cast<TreeView*>(this)}
 {
     EnsureProperties();
 }
@@ -118,6 +125,17 @@ void TreeViewProperties::EnsureProperties()
                 ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_SelectedItemProperty)
+    {
+        s_SelectedItemProperty =
+            InitializeDependencyProperty(
+                L"SelectedItem",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TreeView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnSelectedItemPropertyChanged));
+    }
     if (!s_SelectionModeProperty)
     {
         s_SelectionModeProperty =
@@ -141,10 +159,19 @@ void TreeViewProperties::ClearProperties()
     s_ItemsSourceProperty = nullptr;
     s_ItemTemplateProperty = nullptr;
     s_ItemTemplateSelectorProperty = nullptr;
+    s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
 }
 
 void TreeViewProperties::OnItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeView>();
+    winrt::get_self<TreeView>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewProperties::OnSelectedItemPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -162,7 +189,10 @@ void TreeViewProperties::OnSelectionModePropertyChanged(
 
 void TreeViewProperties::CanDragItems(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_CanDragItemsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewProperties::CanDragItems()
@@ -172,7 +202,10 @@ bool TreeViewProperties::CanDragItems()
 
 void TreeViewProperties::CanReorderItems(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_CanReorderItemsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewProperties::CanReorderItems()
@@ -182,7 +215,10 @@ bool TreeViewProperties::CanReorderItems()
 
 void TreeViewProperties::ItemContainerStyle(winrt::Style const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemContainerStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Style TreeViewProperties::ItemContainerStyle()
@@ -192,7 +228,10 @@ winrt::Style TreeViewProperties::ItemContainerStyle()
 
 void TreeViewProperties::ItemContainerStyleSelector(winrt::StyleSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemContainerStyleSelectorProperty, ValueHelper<winrt::StyleSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::StyleSelector TreeViewProperties::ItemContainerStyleSelector()
@@ -202,7 +241,10 @@ winrt::StyleSelector TreeViewProperties::ItemContainerStyleSelector()
 
 void TreeViewProperties::ItemContainerTransitions(winrt::TransitionCollection const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemContainerTransitionsProperty, ValueHelper<winrt::TransitionCollection>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TransitionCollection TreeViewProperties::ItemContainerTransitions()
@@ -212,7 +254,10 @@ winrt::TransitionCollection TreeViewProperties::ItemContainerTransitions()
 
 void TreeViewProperties::ItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TreeViewProperties::ItemsSource()
@@ -222,7 +267,10 @@ winrt::IInspectable TreeViewProperties::ItemsSource()
 
 void TreeViewProperties::ItemTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate TreeViewProperties::ItemTemplate()
@@ -232,7 +280,10 @@ winrt::DataTemplate TreeViewProperties::ItemTemplate()
 
 void TreeViewProperties::ItemTemplateSelector(winrt::DataTemplateSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_ItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplateSelector TreeViewProperties::ItemTemplateSelector()
@@ -240,9 +291,25 @@ winrt::DataTemplateSelector TreeViewProperties::ItemTemplateSelector()
     return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TreeView*>(this)->GetValue(s_ItemTemplateSelectorProperty));
 }
 
+void TreeViewProperties::SelectedItem(winrt::IInspectable const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TreeView*>(this)->SetValue(s_SelectedItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IInspectable TreeViewProperties::SelectedItem()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TreeView*>(this)->GetValue(s_SelectedItemProperty));
+}
+
 void TreeViewProperties::SelectionMode(winrt::TreeViewSelectionMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeView*>(this)->SetValue(s_SelectionModeProperty, ValueHelper<winrt::TreeViewSelectionMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TreeViewSelectionMode TreeViewProperties::SelectionMode()
@@ -298,4 +365,14 @@ winrt::event_token TreeViewProperties::ItemInvoked(winrt::TypedEventHandler<winr
 void TreeViewProperties::ItemInvoked(winrt::event_token const& token)
 {
     m_itemInvokedEventSource.remove(token);
+}
+
+winrt::event_token TreeViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TreeView, winrt::TreeViewSelectionChangedEventArgs> const& value)
+{
+    return m_selectionChangedEventSource.add(value);
+}
+
+void TreeViewProperties::SelectionChanged(winrt::event_token const& token)
+{
+    m_selectionChangedEventSource.remove(token);
 }

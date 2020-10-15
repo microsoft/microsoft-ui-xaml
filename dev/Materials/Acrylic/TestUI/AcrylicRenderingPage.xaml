@@ -9,21 +9,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="400"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <StackPanel Orientation="Vertical">
+            <TextBlock Text="Test results" Style="{ThemeResource StandardGroupHeader}"/>
             <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" AutomationProperties.Name="TestResult" IsReadOnly="True"/>
-            <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" Content="Test Acrylic Rendering" Click="RunTestButton_Clicked"/>
-            <Button x:Name="SetLuminosityButton" AutomationProperties.AutomationId="SetLuminosityButton" Content="Set Luminosity to 1.0" Click="SetLuminosityButton_Clicked"/>
-            <Button x:Name="UnsetLuminosityButton" AutomationProperties.AutomationId="UnsetLuminosityButton" Content="Restore Luminosity to Auto mode" Click="UnsetLuminosityButton_Clicked"/>
+            <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
+            <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton"
+                    Content="Test Acrylic Rendering" Click="RunTestButton_Clicked" Margin="0,0,0,4"/>
+            <Button x:Name="SetLuminosityButton" AutomationProperties.AutomationId="SetLuminosityButton"
+                    Content="Set Luminosity to 1.0" Click="SetLuminosityButton_Clicked" Margin="0,0,0,4"/>
+            <Button x:Name="UnsetLuminosityButton" AutomationProperties.AutomationId="UnsetLuminosityButton"
+                    Content="Restore Luminosity to Auto mode" Click="UnsetLuminosityButton_Clicked"/>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" Grid.Column="1">
-            <TextBlock Text="Acrylic" />
+        <StackPanel Orientation="Vertical" Grid.Column="1" Margin="16,0,0,0">
+            <TextBlock Text="Acrylic test area" Style="{ThemeResource StandardGroupHeader}"/>
             <Grid x:Name="ContainerGrid">
                 <StackPanel x:Name="ContainerSP" Orientation="Horizontal">
                     <Rectangle x:Name="Rectangle1" Height="200" Width="200" Fill="Red"/>

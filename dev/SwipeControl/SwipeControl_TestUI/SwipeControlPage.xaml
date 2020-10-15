@@ -79,25 +79,43 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        
+        <!-- Vertical Swipes -->
+        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+            <TextBlock Text="Vertical SwipeView tests" Style="{ThemeResource StandardGroupHeader}"/>
+            <StackPanel Orientation="Horizontal" Height="500" >
+                <ListViewItem AutomationProperties.Name="SwipeControl8" x:Name="SwipeControl8" Background="LightBlue">
+                    <muxc:SwipeControl x:Name="sc8" TopItems="{StaticResource FourRevealItems}" BottomItems="{StaticResource ExecuteItemsVertical}" >
+                        <TextBlock Text="SwipeControl 8"/>
+                    </muxc:SwipeControl>
+                </ListViewItem>
+                <ListViewItem AutomationProperties.Name="SwipeControl9" Background="LightGreen">
+                    <muxc:SwipeControl x:Name="sc9" TopItems="{StaticResource ExecuteItemsProgramaticCloseVertical}" BottomItems="{StaticResource TwoRevealItems}" >
+                        <TextBlock Text="SwipeControl 9"/>
+                    </muxc:SwipeControl>
+                </ListViewItem>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical" Width="118">
+                    <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                    <CheckBox x:Name="SwipeItem8OpenCheckBox" AutomationProperties.Name="SwipeItem8OpenCheckBox" IsChecked="false" IsEnabled="false" Width="40"/>
+                    <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                    <CheckBox x:Name="SwipeItem8IdleCheckBox" AutomationProperties.Name="SwipeItem8IdleCheckBox" IsChecked="true" IsEnabled="false"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Width="118">
+                    <TextBlock VerticalAlignment="Center">O:</TextBlock>
+                    <CheckBox x:Name="SwipeItem9OpenCheckBox" AutomationProperties.Name="SwipeItem9OpenCheckBox" IsChecked="false" IsEnabled="false"/>
+                    <TextBlock VerticalAlignment="Center">I:</TextBlock>
+                    <CheckBox x:Name="SwipeItem9IdleCheckBox" AutomationProperties.Name="SwipeItem9IdleCheckBox" IsChecked="true" IsEnabled="false"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
 
         <!-- Horizontal Swipes -->
         <StackPanel Grid.Column="1" Margin="2">
-            <Button Content="Reset" AutomationProperties.Name="ResetButton" Click="OnResetClick"/>
-            <TextBlock AutomationProperties.Name="TextBlock" x:Name="textBlock" Text="TextBlock"/>
-            <TextBlock AutomationProperties.Name="PositionX" x:Name="PositionX" Text="TextBlock"/>
-            <TextBlock AutomationProperties.Name="PositionY" x:Name="PositionY" Text="TextBlock"/>
-            <TextBlock AutomationProperties.Name="SwipeState" x:Name="SwipeState" Text="TextBlock"/>
+            <TextBlock Text="Horizontal SwipeView test controls" Style="{ThemeResource StandardGroupHeader}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Widths:" Margin="1" VerticalAlignment="Center"/>
-                <TextBox AutomationProperties.Name="TextBox" x:Name="TextBox" Margin="1"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Swipe3BackgroundColor:" Margin="1"/>
-                <TextBlock AutomationProperties.Name="Swipe3BackgroundColorTextBlock" x:Name="Swipe3BackgroundColorTextBlock" Margin="1"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-                <StackPanel x:Name="SwipePanel" Background="AliceBlue" Width="400">
+                <StackPanel x:Name="SwipePanel" Background="{ThemeResource SystemChromeMediumColor}" Width="400">
                     <ListView TabNavigation="local">
                         <!-- Testing commanding, swipe to reveal, and executing -->
                         <!-- Items should be cropped as the height is less than the recommended 40px -->
@@ -223,37 +241,26 @@
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
+
+            <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,8,0,0">
+                <TextBlock Text="State and options" Style="{ThemeResource StandardGroupHeader}"/>
+                <Button Content="Reset" AutomationProperties.Name="ResetButton" Click="OnResetClick"/>
+                <TextBlock AutomationProperties.Name="TextBlock" x:Name="textBlock" Text="TextBlock"/>
+                <TextBlock AutomationProperties.Name="PositionX" x:Name="PositionX" Text="TextBlock"/>
+                <TextBlock AutomationProperties.Name="PositionY" x:Name="PositionY" Text="TextBlock"/>
+                <TextBlock AutomationProperties.Name="SwipeState" x:Name="SwipeState" Text="TextBlock"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Widths:" Margin="1" VerticalAlignment="Center"/>
+                    <TextBox AutomationProperties.Name="TextBox" x:Name="TextBox" Margin="1"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Swipe3BackgroundColor:" Margin="1"/>
+                    <TextBlock AutomationProperties.Name="Swipe3BackgroundColorTextBlock" x:Name="Swipe3BackgroundColorTextBlock" Margin="1"/>
+                </StackPanel>
+            </StackPanel>
+
         </StackPanel>
 
-        <!-- Vertical Swipes -->
-        <StackPanel Grid.Column="0" Margin="2">
-            <StackPanel Orientation="Horizontal" Height="500" >
-                <ListViewItem AutomationProperties.Name="SwipeControl8" x:Name="SwipeControl8" Background="LightBlue">
-                    <muxc:SwipeControl x:Name="sc8" TopItems="{StaticResource FourRevealItems}" BottomItems="{StaticResource ExecuteItemsVertical}" >
-                        <TextBlock Text="SwipeControl 8"/>
-                    </muxc:SwipeControl>
-                </ListViewItem>
-                <ListViewItem AutomationProperties.Name="SwipeControl9" Background="LightGreen">
-                    <muxc:SwipeControl x:Name="sc9" TopItems="{StaticResource ExecuteItemsProgramaticCloseVertical}" BottomItems="{StaticResource TwoRevealItems}" >
-                        <TextBlock Text="SwipeControl 9"/>
-                    </muxc:SwipeControl>
-                </ListViewItem>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <StackPanel Orientation="Vertical" Width="118">
-                    <TextBlock VerticalAlignment="Center">O:</TextBlock>
-                    <CheckBox x:Name="SwipeItem8OpenCheckBox" AutomationProperties.Name="SwipeItem8OpenCheckBox" IsChecked="false" IsEnabled="false" Width="40"/>
-                    <TextBlock VerticalAlignment="Center">I:</TextBlock>
-                    <CheckBox x:Name="SwipeItem8IdleCheckBox" AutomationProperties.Name="SwipeItem8IdleCheckBox" IsChecked="true" IsEnabled="false"/>
-                </StackPanel>
-                <StackPanel Orientation="Vertical" Width="118">
-                    <TextBlock VerticalAlignment="Center">O:</TextBlock>
-                    <CheckBox x:Name="SwipeItem9OpenCheckBox" AutomationProperties.Name="SwipeItem9OpenCheckBox" IsChecked="false" IsEnabled="false"/>
-                    <TextBlock VerticalAlignment="Center">I:</TextBlock>
-                    <CheckBox x:Name="SwipeItem9IdleCheckBox" AutomationProperties.Name="SwipeItem9IdleCheckBox" IsChecked="true" IsEnabled="false"/>
-                </StackPanel>
-            </StackPanel>
-        </StackPanel>
 
         <Grid Grid.Column="2" Margin="2">
             <Grid.RowDefinitions>

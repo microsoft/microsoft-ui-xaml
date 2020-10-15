@@ -4,6 +4,4 @@ EXPORTS
 DllMain PRIVATE
 DllGetActivationFactory PRIVATE
 DllCanUnloadNow PRIVATE
-DllGetClassObject PRIVATE
-XamlTestHookFreeControlsResourceLibrary PRIVATE
 SendTelemetryOnSuspend PRIVATE

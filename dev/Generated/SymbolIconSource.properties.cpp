@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SymbolIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(SymbolIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SymbolIconSource)
+}
+
+#include "SymbolIconSource.g.cpp"
 
 GlobalDependencyProperty SymbolIconSourceProperties::s_SymbolProperty{ nullptr };
 
@@ -39,7 +44,10 @@ void SymbolIconSourceProperties::ClearProperties()
 
 void SymbolIconSourceProperties::Symbol(winrt::Symbol const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SymbolIconSource*>(this)->SetValue(s_SymbolProperty, ValueHelper<winrt::Symbol>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Symbol SymbolIconSourceProperties::Symbol()

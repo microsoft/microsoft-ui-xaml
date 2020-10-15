@@ -13,15 +13,22 @@ parameters:
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
   useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
+    Debug_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'debug'
+      # %3b is the escape code for ';' which is used as the delimiter
+      openHelixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
+      closedHelixTargetQueues: 'windows.10.amd64.clientrs2.xaml%3bwindows.10.amd64.clientrs5.xaml'
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
-      # %3b is the escape code for ';' which is used as the delimiter
-      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
+      openHelixTargetQueues: 'windows.10.amd64.client19h1.open.xaml%3bwindows.10.amd64.clientrs3.open.xaml'
+      closedHelixTargetQueues: 'windows.10.amd64.client19h1.xaml%3bwindows.10.amd64.clientrs3.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs4.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
+      openHelixTargetQueues: 'windows.10.amd64.clientrs4.open.xaml'
+      closedHelixTargetQueues: 'windows.10.amd64.clientrs4.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -30,12 +37,14 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
-  variables:
-    artifactsDir: $(Build.SourcesDirectory)\Artifacts
-    taefPath: $(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)
   strategy:
     maxParallel: ${{ parameters.maxParallel }}
     matrix: ${{ parameters.matrix }}
+  variables:
+    artifactsDir: $(Build.SourcesDirectory)\Artifacts
+    taefPath: $(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)
+    helixCommonArgs: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory) /p:rerunPassesRequiredToAvoidFailure=${{parameters.rerunPassesRequiredToAvoidFailure}}'
+
       
   steps:
   - task: CmdLine@1
@@ -127,11 +136,24 @@ jobs:
       artifactName: ${{ parameters.artifactName }}
       
   - task: DotNetCoreCLI@2
-    displayName: 'Run tests in Helix'
+    displayName: 'Run tests in Helix (open queues)'
+    condition: eq(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+      arguments: '$(helixCommonArgs) /p:IsExternal=true /p:Creator=WinUI /p:HelixTargetQueues=$(openHelixTargetQueues)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run tests in Helix (closed queues)'
+    condition: ne(variables['System.CollectionUri'],'https://dev.azure.com/ms/')
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      HelixAccessToken: $(HelixApiAccessToken)
+    inputs:
+      command: custom
+      projects: build\Helix\RunTestsInHelix.proj
+      custom: msbuild
+      arguments: '$(helixCommonArgs) /p:HelixTargetQueues=$(closedHelixTargetQueues)'

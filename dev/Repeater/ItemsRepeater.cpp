@@ -277,8 +277,14 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
 {
-    auto virtInfo = TryGetVirtualizationInfo(element);
-    return m_viewManager.GetElementIndex(virtInfo);
+    // Verify that element is actually a child of this ItemsRepeater
+    auto const parent = winrt::VisualTreeHelper::GetParent(element);
+    if (parent == *this)
+    {
+        auto virtInfo = TryGetVirtualizationInfo(element);
+        return m_viewManager.GetElementIndex(virtInfo);
+    }
+    return -1;
 }
 
 winrt::UIElement ItemsRepeater::GetElementFromIndexImpl(int index)
@@ -366,14 +372,17 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 
     if (property == s_ItemsSourceProperty)
     {
-        auto newValue = args.NewValue();
-        auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
-        if (newValue && !newDataSource)
+        if (args.NewValue() != args.OldValue())
         {
-            newDataSource = winrt::ItemsSourceView(newValue);
-        }
+            auto newValue = args.NewValue();
+            auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
+            if (newValue && !newDataSource)
+            {
+                newDataSource = winrt::ItemsSourceView(newValue);
+            }
 
-        OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+            OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+        }
     }
     else if (property == s_ItemTemplateProperty)
     {
@@ -453,10 +462,8 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
 // can be used to make logging a little easier to read.
 int ItemsRepeater::Indent()
 {
-    int indent = 1;
-
-    // Expensive, so we do it only in debug builds.
 #ifdef _DEBUG
+    // Expensive, so we do it only in debug builds.
     auto parent = this->Parent().as<winrt::FrameworkElement>();
     while (parent && !parent.try_as<winrt::ItemsRepeater>())
     {
@@ -466,11 +473,11 @@ int ItemsRepeater::Indent()
     if (parent)
     {
         auto parentRepeater = winrt::get_self<ItemsRepeater>(parent.as<winrt::ItemsRepeater>());
-        indent = parentRepeater->Indent();
+        return parentRepeater->Indent() * 4;
     }
 #endif
 
-    return indent * 4;
+    return 4;
 }
 
 void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -509,31 +516,33 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         m_itemsSourceViewChanged.revoke();
     }
 
+   
+
     if (newValue)
     {
         m_itemsSourceViewChanged = newValue.CollectionChanged(winrt::auto_revoke, { this, &ItemsRepeater::OnItemsSourceViewChanged });
     }
 
-    if (auto layout = Layout())
+    if (auto const layout = Layout())
     {
-        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
-        {
-            auto args = winrt::NotifyCollectionChangedEventArgs(
-                winrt::NotifyCollectionChangedAction::Reset,
-                nullptr /* newItems */,
-                nullptr /* oldItems */,
-                -1 /* newIndex */,
-                -1 /* oldIndex */);
-            args.Action();
-            m_processingItemsSourceChange.set(args);
-            auto processingChange = gsl::finally([this]()
-                {
-                    m_processingItemsSourceChange.set(nullptr);
-                });
+        auto const args = winrt::NotifyCollectionChangedEventArgs(
+            winrt::NotifyCollectionChangedAction::Reset,
+            nullptr /* newItems */,
+            nullptr /* oldItems */,
+            -1 /* newIndex */,
+            -1 /* oldIndex */);
+        args.Action();
+        auto const processingChange = gsl::finally([this]()
+            {
+                m_processingItemsSourceChange.set(nullptr);
+            });
+        m_processingItemsSourceChange.set(args);
 
+        if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
-        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
@@ -544,6 +553,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
                     ClearElementImpl(element);
                 }
             }
+
+            Children().Clear();
         }
 
         InvalidateMeasure();
@@ -561,36 +572,34 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     // have already been created and are now in the tree. The easiest way to do that
     // would be to do a reset.. Note that this has to be done before we change the template
     // so that the cleared elements go back into the old template.
-    if (auto layout = Layout())
+    if (auto const layout = Layout())
     {
-        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
-        {
-            auto args = winrt::NotifyCollectionChangedEventArgs(
-                winrt::NotifyCollectionChangedAction::Reset,
-                nullptr /* newItems */,
-                nullptr /* oldItems */,
-                -1 /* newIndex */,
-                -1 /* oldIndex */);
-            args.Action();
-            m_processingItemsSourceChange.set(args);
-            auto processingChange = gsl::finally([this]()
-                {
-                    m_processingItemsSourceChange.set(nullptr);
-                });
+        auto const args = winrt::NotifyCollectionChangedEventArgs(
+            winrt::NotifyCollectionChangedAction::Reset,
+            nullptr /* newItems */,
+            nullptr /* oldItems */,
+            -1 /* newIndex */,
+            -1 /* oldIndex */);
+        args.Action();
+        auto const processingChange = gsl::finally([this]()
+            {
+                m_processingItemsSourceChange.set(nullptr);
+            });
+        m_processingItemsSourceChange.set(args);
 
+        if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
-        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
-            auto children = Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
+            for (auto const& child : Children())
             {
-                auto element = children.GetAt(i);
-                if (GetVirtualizationInfo(element)->IsRealized())
+                if (GetVirtualizationInfo(child)->IsRealized())
                 {
-                    ClearElementImpl(element);
+                    ClearElementImpl(child);
                 }
             }
         }
@@ -612,7 +621,17 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
-            if (!dataTemplate.LoadContent().as<winrt::FrameworkElement>()) {
+            if (auto content = dataTemplate.LoadContent().as<winrt::FrameworkElement>())
+            {
+                // Due to bug https://github.com/microsoft/microsoft-ui-xaml/issues/3057, we need to get the framework
+                // to take ownership of the extra implicit ref that was returned by LoadContent. The simplest way to do
+                // this is to add it to a Children collection and immediately remove it.
+                auto children = Children();
+                children.Append(content);
+                children.RemoveAtEnd();
+            }
+            else
+            {
                 // We have a DataTemplate which is empty, so we need to set it to true
                 m_isItemTemplateEmpty = true;
             }
@@ -714,7 +733,7 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
 
     if (auto layout = Layout())
     {
-        if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
         }

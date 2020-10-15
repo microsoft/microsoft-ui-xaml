@@ -39,11 +39,12 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 using ElementRealizationOptions = Microsoft.UI.Xaml.Controls.ElementRealizationOptions;
 using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
 using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
+using Windows.UI.Xaml.Media;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class LayoutTests : TestsBase
+    public class LayoutTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateMappingAndAutoRecycling()
@@ -190,6 +191,111 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.IsGreaterThan(measureCount, 1);
                 Verify.IsGreaterThan(arrangeCount, 1);
             });
+        }
+
+        [TestMethod]
+        public void ValidateStackLayoutDoesNotRetainIncorrectMinorWidth()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = Enumerable.Range(0, 1)
+                };
+
+                Content = new ScrollViewer() 
+                {
+                    Content = repeater,
+                    Width = 400,
+                };
+
+                Content.UpdateLayout();
+
+                // Measure with large width.
+                repeater.Measure(new Size(600, 100));
+                Verify.AreEqual(600, repeater.DesiredSize.Width);
+                // Measure with smaller width again before arrange. 
+                // StackLayout has to pick up the smaller width for its extent.
+                repeater.Measure(new Size(300, 100));
+                Verify.AreEqual(300, repeater.DesiredSize.Width);
+
+                Content.UpdateLayout();
+                Verify.AreEqual(400, repeater.ActualWidth);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateStackLayoutDisabledVirtualizationWithItemsRepeater()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                var stackLayout = new StackLayout();
+                stackLayout.DisableVirtualization = true;
+                repeater.Layout = stackLayout;
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+
+                var scrollViewer = new ScrollViewer() {
+                    Content = repeater
+                };
+                scrollViewer.Height = 100;
+                Content = scrollViewer;
+                Content.UpdateLayout();
+
+                for (int i = 0; i < repeater.ItemsSourceView.Count; i++)
+                {
+                    var child = repeater.TryGetElement(i) as Button;
+                    Verify.IsNotNull(child);
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyUniformGridLayoutDoesntCrashWhenTryingToScrollToEnd()
+        {
+
+            ItemsRepeater repeater = null;
+            ScrollViewer scrollViewer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater {
+                    ItemsSource = Enumerable.Range(0, 1000).Select(i => new Border {
+                        Background = new SolidColorBrush(Colors.Blue),
+                        Child = new TextBlock { Text = "#" + i }
+                    }).ToArray(),
+                    Layout = new UniformGridLayout {
+                        MinItemWidth = 100,
+                        MinItemHeight = 40,
+                        MinRowSpacing = 10,
+                        MinColumnSpacing = 10
+                    }
+                };
+                scrollViewer = new ScrollViewer { Content = repeater };
+                Content = scrollViewer;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollViewer.ChangeView(0, repeater.ActualHeight, null);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollViewer.ChangeView(0, 0, null);
+            });
+
+            IdleSynchronizer.Wait();
+
+            // The test guards against an app crash, so this is enough to verify
+            Verify.IsTrue(true);
         }
 
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(

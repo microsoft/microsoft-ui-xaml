@@ -12,5 +12,3 @@ public:
     static bool SimulateTouch();
     static void SimulateTouch(bool value);
 };
-
-CppWinRTActivatableClassWithBasicFactory(SplitButtonTestApi);

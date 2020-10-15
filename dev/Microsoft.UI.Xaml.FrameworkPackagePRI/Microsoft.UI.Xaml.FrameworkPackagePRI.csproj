@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9638BF0D-2AA8-4642-A9F1-790BF7FBECF2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.UI.Xaml</RootNamespace>
+    <AssemblyName>Microsoft.UI.Xaml</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <CompactXamlFile>$(OutDir)\DensityStyles\Compact.xaml</CompactXamlFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>6.2.9</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(CompactXamlFile)">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>DensityStyles\Compact.xaml</Link>
+    </Page>
+  </ItemGroup>
+  <!-- 
+  Generate Compact.xaml which is the packaged to Microsoft.UI.Xaml.pri, and finally picked up by framework package
+  <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx://Microsoft.UI.Xaml.$(MUXVersionMajor).$(MUXVersionMinor)/Microsoft.UI.Xaml/DensityStyles/Compact.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+  </ResourceDictionary>
+  -->
+  <Target Name="GenerateCompactXaml" BeforeTargets="BeforeBuild" Outputs="$(CompactXamlFile)">
+    <WriteLinesToFile File="$(CompactXamlFile)" Lines="%3CResourceDictionary xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;%3E" Overwrite="true" />
+    <WriteLinesToFile File="$(CompactXamlFile)" Lines="  %3CResourceDictionary.MergedDictionaries%3E" />
+    <WriteLinesToFile File="$(CompactXamlFile)" Lines="      %3CResourceDictionary Source=&quot;ms-appx://Microsoft.UI.Xaml.$(MUXVersionMajor).$(MUXVersionMinor)/Microsoft.UI.Xaml/DensityStyles/Compact.xaml&quot;/%3E" />
+    <WriteLinesToFile File="$(CompactXamlFile)" Lines="  %3C/ResourceDictionary.MergedDictionaries%3E" />
+    <WriteLinesToFile File="$(CompactXamlFile)" Lines="%3C/ResourceDictionary%3E" />
+    <ItemGroup>
+      <FileWrites Include="$(CompactXamlFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_FixXamlCompactXbfPackaging" AfterTargets="GetPackagingOutputs">
+    <!-- only keep Compact.xbf in the pri-->
+    <ItemGroup>
+      <XamlCompactXbfPackagingOutputToBeRemoved Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' != 'Microsoft.UI.Xaml\DensityStyles\Compact.xbf'" />
+      <PackagingOutputs Remove="@(XamlCompactXbfPackagingOutputToBeRemoved)" />
+    </ItemGroup>
+  </Target>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
+    <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

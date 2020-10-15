@@ -5,6 +5,7 @@
 #include "common.h"
 #include "MUXControlsFactory.h"
 #include "SharedHelpers.h"
+#include <roapi.h>
 
 bool SharedHelpers::s_isOnXboxInitialized{ false };
 bool SharedHelpers::s_isOnXbox{ false };
@@ -143,14 +144,6 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
-{
-    static bool s_isApplicationViewGetDisplayRegionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
-    return s_isApplicationViewGetDisplayRegionsAvailable;
-}
-
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =
@@ -206,6 +199,12 @@ bool SharedHelpers::IsIsLoadedAvailable()
     return s_isAvailable;
 }
 
+bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
+{
+    static bool s_isAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
+    return s_isAvailable;
+}
+
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
@@ -256,15 +255,22 @@ bool SharedHelpers::IsAPIContractV3Available()
     return IsAPIContractVxAvailable<3>();
 }
 
+void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
+
 bool SharedHelpers::IsInFrameworkPackage()
 {
     static bool isInFrameworkPackage = []() {
         // Special type that we manually list here which is not part of the Nuget dll distribution package. 
         // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
-        Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
-        winrt::com_ptr<IActivationFactory> activationFactory;
-        if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
+        // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
+        // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
+        // mater what comes back for the activationfactory. If it succeeds it means we're running against
+        // the framework package.
+
+        winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
+        winrt::IActivationFactory activationFactory;
+
+        if (SUCCEEDED(RoGetActivationFactory(static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
         {
             return true;
         }
@@ -366,7 +372,7 @@ void SharedHelpers::ScheduleActionAfterWait(
     // The callback that is given to CreateTimer is called off of the UI thread.
     // In order to make this useful by making it so we can interact with XAML objects,
     // we'll use the dispatcher to first post our work to the UI thread before executing it.
-    winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
+    auto timer = winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
         [action, dispatcherHelper](auto const&)
         {
             dispatcherHelper.RunAsync(action);
@@ -384,7 +390,7 @@ winrt::InMemoryRandomAccessStream SharedHelpers::CreateStreamFromBytes(const win
     writer.WriteBytes(winrt::array_view<const byte>(bytes));
     SyncWait(writer.StoreAsync());
     SyncWait(writer.FlushAsync());
-    writer.DetachStream();
+    auto detachedStream = writer.DetachStream();
     writer.Close();
 
     stream.Seek(0);
@@ -405,7 +411,7 @@ void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> c
             callback();
         });
     }
-    catch (winrt::hresult_error &e)
+    catch (const winrt::hresult_error &e)
     {
         // DirectUI::CompositionTarget::add_Rendering can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown,
         // and there is evidence from Watson that such calls are made in real apps (see Bug 13554197).
@@ -422,7 +428,7 @@ bool SharedHelpers::DoRectsIntersect(
     const winrt::Rect& rect1,
     const winrt::Rect& rect2)
 {
-    auto doIntersect =
+    const auto doIntersect =
         !(rect1.Width <= 0 || rect1.Height <= 0 || rect2.Width <= 0 || rect2.Height <= 0) &&
         (rect2.X <= rect1.X + rect1.Width) &&
         (rect2.X + rect2.Width >= rect1.X) &&
@@ -435,6 +441,11 @@ winrt::IInspectable SharedHelpers::FindResource(const std::wstring_view& resourc
 {
     auto boxedResource = box_value(resource);
     return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : defaultValue;
+}
+
+winrt::IInspectable SharedHelpers::FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue)
+{
+    return SharedHelpers::FindResource(resource, winrt::Application::Current().Resources(), defaultValue);
 }
 
 // When checkVisibility is True, IsAncestor additionally checks if any UIElement from the 'child'
@@ -500,6 +511,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
 
         fontIcon.Glyph(fontIconSource.Glyph());
         fontIcon.FontSize(fontIconSource.FontSize());
+        if (const auto newForeground = fontIconSource.Foreground())
+        {
+            fontIcon.Foreground(newForeground);
+        }
 
         if (fontIconSource.FontFamily())
         {
@@ -517,7 +532,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
     {
         winrt::SymbolIcon symbolIcon;
         symbolIcon.Symbol(symbolIconSource.Symbol());
-
+        if (const auto newForeground = symbolIconSource.Foreground())
+        {
+            symbolIcon.Foreground(newForeground);
+        }
         return symbolIcon;
     }
     else if (auto bitmapIconSource = iconSource.try_as<winrt::BitmapIconSource>())
@@ -533,7 +551,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
         }
-
+        if (const auto newForeground = bitmapIconSource.Foreground())
+        {
+            bitmapIcon.Foreground(newForeground);
+        }
         return bitmapIcon;
     }
     else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
@@ -544,7 +565,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             pathIcon.Data(pathIconSource.Data());
         }
-
+        if (const auto newForeground = pathIconSource.Foreground())
+        {
+            pathIcon.Foreground(newForeground);
+        }
         return pathIcon;
     }
 
@@ -709,4 +733,10 @@ winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspe
     }
     
     return returnHString;
+}
+
+/* static */
+winrt::float4 SharedHelpers::RgbaColor(const winrt::Color& color)
+{
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }

@@ -39,6 +39,8 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void SetItemsSource(winrt::TreeViewNode const& node, winrt::IInspectable const& value);
+
 public:
     // IFrameworkElementOverrides
     void OnApplyTemplate();
@@ -82,7 +84,7 @@ private:
     void UpdateTreeViewItemVisualState(TreeNodeSelectionState const& state);
     void RaiseSelectionChangeEvents(bool isSelected);
 
-    static bool IsDirectionalKey(winrt::VirtualKey key);
+    static bool constexpr IsDirectionalKey(winrt::VirtualKey key);
 
     DispatcherHelper m_dispatcherHelper{ *this };
 };

@@ -118,7 +118,7 @@ void CommandingHelpers::BindToIconSourcePropertyIfUnset(
 
     if (!localIconSource)
     {
-        SharedHelpers::SetBinding(uiCommand, L"IconSource", target, iconSourceProperty, WUXIconSourceToMUXIconSourceConverter());
+        SharedHelpers::SetBinding(uiCommand, L"IconSource", target, iconSourceProperty, winrt::make<WUXIconSourceToMUXIconSourceConverter>());
     }
 }
 
@@ -129,7 +129,7 @@ void CommandingHelpers::BindToIconPropertyIfUnset(
 {
     if (!target.ReadLocalValue(iconProperty).try_as<winrt::IconElement>())
     {
-        SharedHelpers::SetBinding(uiCommand, L"Icon", target, iconProperty, IconSourceToIconSourceElementConverter());
+        SharedHelpers::SetBinding(uiCommand, L"Icon", target, iconProperty, winrt::make<IconSourceToIconSourceElementConverter>());
     }
 }
 

@@ -10,6 +10,7 @@ class SharedHelpers
 public:
     static bool IsAnimationsEnabled();
     static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
+    static winrt::IInspectable FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue = nullptr);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
     static bool IsInDesignModeV2();
@@ -41,8 +42,6 @@ public:
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
-    static bool IsApplicationViewGetDisplayRegionsAvailable();
-
     static bool IsControlCornerRadiusAvailable();
 
     static bool IsTranslationFacadeAvailable(const winrt::UIElement& element);
@@ -56,6 +55,8 @@ public:
     static bool IsThemeShadowAvailable();
 
     static bool IsIsLoadedAvailable();
+
+    static bool IsCompositionRadialGradientBrushAvailable();
 
     // Actual OS version checks
     static bool IsAPIContractV9Available(); // 19H2
@@ -193,6 +194,15 @@ public:
         }
     }
 
+    static bool IsTrue(winrt::IReference<bool> const& nullableBool)
+    {
+        if (nullableBool)
+        {
+            return nullableBool.GetBoolean();
+        }
+        return false;
+    }
+
     template<typename AncestorType>
     static AncestorType GetAncestorOfType(winrt::DependencyObject const& firstGuess)
     {
@@ -252,7 +262,7 @@ public:
         winrt::IObservableVector<ElementType> const& destination,
         winrt::IVectorChangedEventArgs const& args)
     {
-        uint32_t index = args.Index();
+        const uint32_t index = args.Index();
 
         switch (args.CollectionChange())
         {
@@ -280,7 +290,7 @@ public:
     template <typename IndexType, typename ElementType>
     static void EraseIfExists(std::map<IndexType, ElementType>& map, IndexType const& index)
     {
-        auto it = map.find(index);
+        const auto it = map.find(index);
         if (it != map.end())
         {
             map.erase(it);
@@ -298,6 +308,8 @@ public:
                 winrt::box_value(newValue));
         }
     }
+
+    static winrt::float4 RgbaColor(winrt::Color const& color);
 
 private:
     SharedHelpers() = default;

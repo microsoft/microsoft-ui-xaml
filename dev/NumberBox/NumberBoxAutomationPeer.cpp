@@ -8,6 +8,8 @@
 #include "NumberBoxAutomationPeer.h"
 #include "Utils.h"
 
+#include "NumberBoxAutomationPeer.properties.cpp"
+
 NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBox const& owner)
     : ReferenceTracker(owner)
 {
@@ -27,6 +29,21 @@ winrt::IInspectable NumberBoxAutomationPeer::GetPatternCore(winrt::PatternInterf
 hstring NumberBoxAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::NumberBox>();
+}
+
+hstring NumberBoxAutomationPeer::GetNameCore()
+{
+    winrt::hstring name = __super::GetNameCore();
+
+    if (name.empty())
+    {
+        if (auto numberBox = Owner().try_as<winrt::NumberBox>())
+        {
+            name = SharedHelpers::TryGetStringRepresentationFromObject(numberBox.Header());
+        }
+    }
+
+    return name;
 }
 
 winrt::AutomationControlType NumberBoxAutomationPeer::GetAutomationControlTypeCore()
@@ -64,12 +81,12 @@ double NumberBoxAutomationPeer::Value()
 
 double NumberBoxAutomationPeer::SmallChange()
 {
-    return GetImpl()->StepFrequency();
+    return GetImpl()->SmallChange();
 }
 
 double NumberBoxAutomationPeer::LargeChange()
 {
-    return GetImpl()->StepFrequency();
+    return GetImpl()->LargeChange();
 }
 
 void NumberBoxAutomationPeer::SetValue(double value)

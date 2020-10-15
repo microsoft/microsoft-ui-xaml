@@ -220,17 +220,6 @@ if ($Configuration -ilike "debug")
     #$PackageName += ".Debug"
 }
 
-# Allow single URI to access Compact.xaml from both framework package and nuget package
-$compactxaml = 
-@"
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="ms-appx://$PackageName/Microsoft.UI.Xaml/DensityStyles/Compact.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
-</ResourceDictionary>
-"@
-Set-Content -Value $compactxaml $fullOutputPath\Compact.xaml
-
 # AppxManifest needs some pieces generated per-flavor.
 $manifestContents = Get-Content $fullOutputPath\PackageContents\AppxManifest.xml
 $manifestContents = $manifestContents.Replace('$(PackageName)', "$PackageName")

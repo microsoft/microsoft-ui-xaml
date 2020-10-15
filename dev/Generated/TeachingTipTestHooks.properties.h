@@ -21,12 +21,18 @@ public:
     void OffsetChanged(winrt::event_token const& token);
     winrt::event_token OpenedStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
     void OpenedStatusChanged(winrt::event_token const& token);
+    winrt::event_token SubtitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
+    void SubtitleVisibilityChanged(winrt::event_token const& token);
+    winrt::event_token TitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
+    void TitleVisibilityChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectiveHeroContentPlacementChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectivePlacementChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_idleStatusChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_offsetChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_openedStatusChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_subtitleVisibilityChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_titleVisibilityChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

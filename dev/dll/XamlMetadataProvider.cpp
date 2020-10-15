@@ -26,7 +26,10 @@ bool XamlMetadataProvider::RegisterXamlType(
 {
     if (!s_types)
     {
+#pragma warning(push)
+#pragma warning(disable : 26409) // Disable r.11, see comment in header file
         s_types = new std::vector<Entry>();
+#pragma warning(pop)
     }
 
     Entry type{ typeName, createXamlTypeCallback };

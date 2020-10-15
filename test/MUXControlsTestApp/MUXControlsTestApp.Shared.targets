@@ -1,6 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- These depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
+       We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
+       to non-public types.  So for now we'll just exclude these from the OS repo. -->
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <!-- -->
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
@@ -22,8 +30,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\TestUI\RatingControl_TestUI.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\TestUI\Repeater_TestUI.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Scroller\TestUI\Scroller_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollViewer\TestUI\ScrollViewer_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollView\TestUI\ScrollView_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitButton\TestUI\SplitButton_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
@@ -41,11 +49,12 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PersonPicture\APITests\PersonPicture_APITests.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioButtons\APITests\RadioButtons_APITests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\APITests\RatingControl_APITests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\APITests\Repeater_APITests.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Scroller\APITests\Scroller_APITests.projitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollViewer\APITests\ScrollViewer_APITests.projitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollPresenter\APITests\ScrollPresenter_APITests.projitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollView\APITests\ScrollView_APITests.projitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitButton\APITests\SplitButton_APITests.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TreeView\APITests\TreeView_APITests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
@@ -61,22 +70,22 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\FlipView\TestUI\FlipView_TestUI.projitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'"/>
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pager\PrototypePager\PrototypePager.projitems" Label="Shared" Condition="$(FeaturePagerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pager\TestUI\Pager_TestUI.projitems" Label="Shared" Condition="$(FeaturePagerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\TestUI\CalendarView_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\APITests\CalendarView_APITests.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitView\TestUI\SplitView_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
-  <!-- These depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
-       We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
-       to non-public types.  So for now we'll just exclude these from the OS repo. -->
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBar\TestUI\InfoBar_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
 </Project>

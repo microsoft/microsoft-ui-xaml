@@ -17,43 +17,59 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <ScrollViewer Grid.Column="0" Height="Auto">
-            <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Center" Width="Auto" Height="Auto">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Click count:</TextBlock>
-                    <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock" Margin="4,0,0,0" Text="0"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Flyout opened:</TextBlock>
-                    <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock" Margin="4,0,0,0" Text="0"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Flyout closed:</TextBlock>
-                    <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock" Margin="4,0,0,0" Text="0"/>
-                </StackPanel>
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Width="Auto" Height="Auto">
+                    <TextBlock Text="Demo controls" Style="{ThemeResource StandardGroupHeader}" Margin="0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <controls:DropDownButton x:Name="TestDropDownButton" AutomationProperties.Name="TestDropDownButton" Content="Test Button" Click="TestDropDownButton_Click">
+                            <controls:DropDownButton.Flyout>
+                                <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Placement="Bottom" Opened="TestDropDownButtonFlyout_Opened" Closed="TestDropDownButtonFlyout_Closed">
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:DropDownButton.Flyout>
+                        </controls:DropDownButton>
 
-                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                    <controls:DropDownButton x:Name="TestDropDownButton" AutomationProperties.Name="TestDropDownButton" Content="Test Button" Click="TestDropDownButton_Click">
-                        <controls:DropDownButton.Flyout>
-                            <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Placement="Bottom" Opened="TestDropDownButtonFlyout_Opened" Closed="TestDropDownButtonFlyout_Closed">
-                                <TextBlock Text="Hello"/>
-                            </Flyout>
-                        </controls:DropDownButton.Flyout>
-                    </controls:DropDownButton>
+                        <Button Margin="6,0,0,0" Content="For Comparison">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <TextBlock Text="Button flyout"/>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
 
-                    <Button Margin="6,0,0,0" Content="For Comparison">
-                        <Button.Flyout>
-                            <Flyout>
-                                <TextBlock Text="Button flyout"/>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
-                </StackPanel>
+                
+                <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}" Margin="0,16,0,8"/>
+                <CheckBox x:Name="SetFlyoutCheckbox" AutomationProperties.Name="SetFlyoutCheckbox" IsChecked="True"
+                        Content="Flyout set" Checked="SetFlyoutCheckbox_Checked" Unchecked="SetFlyoutCheckbox_Unchecked"/>
 
-                <CheckBox x:Name="SetFlyoutCheckbox" AutomationProperties.Name="SetFlyoutCheckbox" Content="Flyout set" Checked="SetFlyoutCheckbox_Checked" Unchecked="SetFlyoutCheckbox_Unchecked"/>
+                <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}" Margin="0,16,0,8"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0">Click count:</TextBlock>
+                    <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock"
+                               Margin="4,0,0,0" Text="0" Grid.Row="0" Grid.Column="1"/>
+                    <TextBlock Grid.Row="1">Flyout opened:</TextBlock>
+                    <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock"
+                               Margin="4,0,0,0" Text="0" Grid.Row="1" Grid.Column="1"/>
+                    <TextBlock Grid.Row="2">Flyout closed:</TextBlock>
+                    <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock"
+                               Margin="4,0,0,0" Text="0" Grid.Row="2" Grid.Column="1"/>
+                </Grid>
+
+
             </StackPanel>
         </ScrollViewer>
     </Grid>

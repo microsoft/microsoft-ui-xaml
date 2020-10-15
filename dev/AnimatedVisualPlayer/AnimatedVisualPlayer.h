@@ -12,7 +12,7 @@
 
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection
 // in Panel. The Children collection holds the fallback content.
-struct AnimatedVisualPlayer final :
+struct AnimatedVisualPlayer:
     public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
     public AnimatedVisualPlayerProperties
 {
@@ -78,8 +78,6 @@ private:
         winrt::event_token m_batchCompletedToken{0};
         winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
     };
-
-    void CompleteCurrentPlay();
 
     void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 

@@ -2,139 +2,178 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AnimatedVisualPlayerTests;
+using Common;
 using Microsoft.Graphics.Canvas;
-using Windows.Foundation.Metadata;
 using Windows.Graphics;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
 
 namespace MUXControlsTestApp
 {
-    public class FallbackGrid : Windows.UI.Xaml.Controls.Grid
+    public sealed class FallbackGrid : Grid
     {
+        internal const int RectangleWidth = 100;
+        internal const int RectangleHeight = 100;
+        internal static readonly Color RectangleColor = Colors.Red;
+        // Gets the most recently created FallbackGrid
+        internal static FallbackGrid Latest;
+
         public FallbackGrid()
         {
-            _fallbackGrid = this;
-
+            Latest = this;
             Windows.UI.Xaml.Shapes.Rectangle rect = new Windows.UI.Xaml.Shapes.Rectangle();
-            rect.MinWidth = 100;
-            rect.MinHeight = 100;
-            rect.MaxWidth = 100;
-            rect.MaxHeight = 100;
-            rect.Fill = new SolidColorBrush(Colors.Red);
+            rect.MaxWidth = rect.MinWidth = RectangleWidth;
+            rect.MaxHeight = rect.MinHeight = RectangleHeight;
+            rect.Fill = new SolidColorBrush(RectangleColor);
             Children.Add(rect);
         }
-
-        static public FallbackGrid _fallbackGrid = null;
     }
 
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     [TopLevelTestPage(Name = "AnimatedVisualPlayer", Icon = "Animations.png")]
     public sealed partial class AnimatedVisualPlayerPage : TestPage
     {
-        private Visual _visual;
-
         public AnimatedVisualPlayerPage()
         {
             this.InitializeComponent();
-
-            _visual = ElementCompositionPreview.GetElementVisual(Player);
+            SetAutomationPeerNames(PageGrid);
         }
 
-        private async void PlayButton_Click(object sender, RoutedEventArgs e)
+        // Set the AutomationPeer name to be the same as the x:Name on each FrameworkElement
+        // that is a child of the given panel, and continue recursively into any panel children.
+        // This is so we don't need to set both properties on the elements in XAML.
+        void SetAutomationPeerNames(Panel root)
         {
-            bool isPlaying = Player.IsPlaying;
-            IsPlayingTextBoxBeforePlaying.Text = isPlaying.ToString();
+            foreach (var child in root.Children)
+            { 
+                if (child is FrameworkElement element)
+                {
+                    // Copy the x:Name into the AutomationPeer name unless it already has an AutomationPeer name.
+                    var name = element.Name;
+                    if (!string.IsNullOrEmpty(name) && string.IsNullOrEmpty(AutomationProperties.GetName(element)))
+                    {
+                        AutomationProperties.SetName(element, name);
+                    }
 
+                    if (child is Panel panel)
+                    {
+                        // Recurse to get the rest of the tree.
+                        SetAutomationPeerNames(panel);
+                    }
+                }
+            }
+        }
+
+        async void Play(double from, double to, TextBox statusTextBox)
+        {
+            IsPlayingTextBoxBeforePlaying.Text = Player.IsPlaying.ToString();
+
+            // Start playing and concurrently get the IsPlaying state.
             Task task1 = Player.PlayAsync(0, 1, false).AsTask();
             Task task2 = GetIsPlayingAsync();
 
+            // Wait for playing to finish.
             await Task.WhenAll(task1, task2);
-
-            ProgressTextBox.Text = Constants.PlayingEndedText;
+            statusTextBox.Text = Constants.PlayingEndedText;
         }
 
-        private async void ToZeroKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        void PlayForward(double fromProgress, double toProgress, TextBox statusTextBox)
         {
-            await Player.PlayAsync(0.35, 0, false);
-
-            ToZeroKeyframeAnimationProgressTextBox.Text = Constants.PlayingEndedText;
+            Player.PlaybackRate = 1;
+            Play(fromProgress, toProgress, statusTextBox);
         }
 
-        private async void FromOneKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        // Play from 0 to 1.
+        void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            await Player.PlayAsync(1, 0.35, false);
-
-            FromOneKeyframeAnimationProgressTextBox.Text = Constants.PlayingEndedText;
+            IsPlayingTextBoxBeforePlaying.Text = Player.IsPlaying.ToString();
+            PlayForward(0, 1, ProgressTextBox);
         }
 
-        private async void ReverseNegativePlaybackRateAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        // Play forwards from 0.35 to 0.
+        void ToZeroKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
         {
-            Player.PlaybackRate = 0 - Int32.Parse(Constants.OneText);
-            Task task1 = Player.PlayAsync(0, 1, false).AsTask();
-            Task task2 = ReverseNegativePlaybackRateAnimationAsync();
-
-            await Task.WhenAll(task1, task2);
-
-            //
-            // The player's PlayAsync returns immediately in RS4 or lower windows build.
-            // Thus, Constants.OneText is set to ...TextBox's content in order to
-            // satisfy the interaction test that uses Accessibility.
-            //
-            if (IsRS5OrHigher())
-            {
-                CompositionPropertySet progressPropertySet = (CompositionPropertySet)Player.ProgressObject;
-                float value = 0f;
-                progressPropertySet.TryGetScalar("progress", out value);
-                ReverseNegativePlaybackRateAnimationTextBox.Text = value.ToString();
-            }
-            else
-            {
-                ReverseNegativePlaybackRateAnimationTextBox.Text = Constants.OneText;
-            }
+            PlayForward(0.35, 0, ToZeroKeyframeAnimationProgressTextBox);
         }
 
-        private async void ReversePositivePlaybackRateAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        // Play forwards from 0.35 to 0.3.
+        void AroundTheEndAnimationPlayButton_Click(object sender, RoutedEventArgs e)
         {
-            Player.PlaybackRate = Int32.Parse(Constants.OneText);
-            Task task1 = Player.PlayAsync(0, 1, false).AsTask();
-            Task task2 = ReversePositivePlaybackRateAnimationAsync();
-
-            await Task.WhenAll(task1, task2);
-
-            //
-            // The player's PlayAsync returns immediately in RS4 or lower windows build.
-            // Thus, Constants.ZeroText is set to ...TextBox's content in order to
-            // satisfy the interaction test that uses Accessibility.
-            //
-            if (IsRS5OrHigher())
-            {
-                CompositionPropertySet progressPropertySet = (CompositionPropertySet)Player.ProgressObject;
-                float value = 1f;
-                progressPropertySet.TryGetScalar("progress", out value);
-                ReversePositivePlaybackRateAnimationTextBox.Text = value.ToString();
-            }
-            else
-            {
-                ReversePositivePlaybackRateAnimationTextBox.Text = Constants.ZeroText;
-            }
+            PlayForward(0.35, 0.3, AroundTheEndAnimationProgressTextBox);
         }
         
-        private void Player_PointerMoved(object sender, RoutedEventArgs e)
+        // Play forwards from 1 to 0.35.
+        void FromOneKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            PlayForward(1, 0.35, FromOneKeyframeAnimationProgressTextBox);
+        }
+
+        // Play backwards from 1 to 0.5 then forwards from 0.5 to 1.
+        async void ReverseNegativePlaybackRateAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Start playing backwards from 1 to 0.
+            Player.PlaybackRate = -1;
+            Task task1 = Player.PlayAsync(0, 1, false).AsTask();
+
+            // Reverse direction after half of the animation duration.
+            Task task2 = DelayForHalfAnimationDurationThenReverse();
+
+            await Task.WhenAll(task1, task2);
+
+            SetTextBoxTextToPlayerProgress(
+                ReverseNegativePlaybackRateAnimationTextBox,
+                defaultValueForPreRs5: Constants.OneText);
+        }
+
+        // Play forward from 0 to 0.5 then backward from 0.5 to 0.
+        async void ReversePositivePlaybackRateAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Start playing forward from 0 to 1.
+            Player.PlaybackRate = 1;
+            Task task1 = Player.PlayAsync(0, 1, false).AsTask();
+
+            // Reverse direction after half of the animation duration.
+            Task task2 = DelayForHalfAnimationDurationThenReverse();
+
+            await Task.WhenAll(task1, task2);
+
+            SetTextBoxTextToPlayerProgress(
+                ReversePositivePlaybackRateAnimationTextBox,
+                defaultValueForPreRs5: Constants.ZeroText);
+        }
+
+        void SetTextBoxTextToPlayerProgress(TextBox textBox, string defaultValueForPreRs5)
+        {
+            // The player's PlayAsync returns immediately in RS4 or lower windows build.
+            // For those builds set the text box with the given default value so that the tests will pass.
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                // Read the progress value from the player.
+                var progressPropertySet = (CompositionPropertySet)Player.ProgressObject;
+                progressPropertySet.TryGetScalar("progress", out var value);
+                textBox.Text = value.ToString();
+            }
+            else
+            {
+                textBox.Text = defaultValueForPreRs5;
+            }
+        }
+
+        void Player_PointerMoved(object sender, RoutedEventArgs e)
         {
             HittestingTextBox.Text = Constants.PointerMovedText;
         }
-        
-        private async Task GetIsPlayingAsync()
+
+        async Task GetIsPlayingAsync()
         {
             //
             // This artificial delay of 200ms is to ensure that the player's PlayAsync
@@ -147,11 +186,10 @@ namespace MUXControlsTestApp
             // Thus, Constants.TrueText is set to IsPlayingTextBoxBeingPlaying's content
             // in order to satisfy the interaction test that uses Accessibility.
             //
-            if (IsRS5OrHigher())
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 Player.Pause();
-                bool isPlaying = Player.IsPlaying;
-                IsPlayingTextBoxBeingPlaying.Text = isPlaying.ToString();
+                IsPlayingTextBoxBeingPlaying.Text = Player.IsPlaying.ToString();
                 Player.Resume();
             }
             else
@@ -160,56 +198,48 @@ namespace MUXControlsTestApp
             }
         }
 
-        private async Task ReverseNegativePlaybackRateAnimationAsync()
+        // Delays for half of the duration of the current play then reverses direction.
+        async Task DelayForHalfAnimationDurationThenReverse()
         {
-            int delayTimeSpan = (int)(0.5 * Player.Duration.TotalMilliseconds);
+            var delayTimeSpan = TimeSpan.FromTicks((long)(0.5 * Player.Duration.Ticks));
             await Task.Delay(delayTimeSpan);
 
+            // Pause, change direction, resume in the new direction.
             Player.Pause();
-            Player.PlaybackRate = (double)(Int32.Parse(Constants.OneText));
+            Player.PlaybackRate *= -1;
             Player.Resume();
         }
 
-        private async Task ReversePositivePlaybackRateAnimationAsync()
-        {
-            int delayTimeSpan = (int)(0.5 * Player.Duration.TotalMilliseconds);
-            await Task.Delay(delayTimeSpan);
-
-            Player.Pause();
-            Player.PlaybackRate = 0 - (double)(Int32.Parse(Constants.OneText));
-            Player.Resume();
-        }
-
-        private async void FallenBackButton_ClickAsync(Object sender, RoutedEventArgs e)
+        async void FallenBackButton_ClickAsync(object sender, RoutedEventArgs e)
         {
             // VisualCapture helper functionality is only available since RS5. Because API
-            // method GraphicsCaptureItem.CreateFromVisual is a RS5 feature.
-            if (IsRS5OrHigher())
+            // method GraphicsCaptureItem.CreateFromVisual is an RS5 feature.
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
+                // nullsource is a source that always fails. We use it to trigger the fallback behavior.
                 Player.Source = new AnimatedVisuals.nullsource();
-                CanvasBitmap canvasBitmap = await RenderVisualToBitmapAsync(_visual);
 
-                Color[] colors = canvasBitmap.GetPixelColors(0, 0, 1, 1);
-                if (colors.Length > 0 && colors[0].Equals(Colors.Red/*FallenBackContent Color*/))
-                {
-                    FallenBackTextBox.Text = Constants.TrueText;
-                }
-                else
-                {
-                    FallenBackTextBox.Text = Constants.FalseText;
-                }
+                // Scrape the pixels from the Player. There should be a red rectangle where the content would go.
+                var playerVisual = ElementCompositionPreview.GetElementVisual(Player);
+                CanvasBitmap canvasBitmap = await RenderVisualToBitmapAsync(playerVisual);
+
+                var colors = canvasBitmap.GetPixelColors();
+                var redPixelCount = colors.Where(c => c == FallbackGrid.RectangleColor).Count();
+
+                // Check that the number of red pixels is at least half the number of pixels in the
+                // FallbackGrid. We require only half to allow for any scaling or borders or anything
+                // that is not important to determining whether or not we are showing the
+                // FallbackGrid.
+                FallenBackTextBox.Text = redPixelCount >= FallbackGrid.RectangleHeight * FallbackGrid.RectangleWidth * 0.5
+                    ? Constants.TrueText
+                    : Constants.FalseText;
             }
             else
             {
-                var parent = FallbackGrid._fallbackGrid != null ? FallbackGrid._fallbackGrid.Parent : null;
-                if (parent == Player)
-                {
-                    FallenBackTextBox.Text = Constants.TrueText;
-                }
-                else
-                {
-                    FallenBackTextBox.Text = Constants.FalseText;
-                }
+                var parent = FallbackGrid.Latest?.Parent;
+                FallenBackTextBox.Text = parent == Player
+                    ? Constants.TrueText
+                    : Constants.FalseText;
             }
         }
 
@@ -267,11 +297,6 @@ namespace MUXControlsTestApp
             }
 
             return await tcs.Task;
-        }
-
-        private bool IsRS5OrHigher()
-        {
-            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7);
         }
     }
 }

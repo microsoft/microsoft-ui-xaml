@@ -44,7 +44,11 @@ namespace RuntimeProfiler
         ProfId_TabView,
         ProfId_TabViewItem,
         ProfId_ProgressBar,
+        ProfId_ProgressRing,
         ProfId_NumberBox,
+        ProfId_RadialGradientBrush,
+        ProfId_InfoBar,
+        ProfId_Pager,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
@@ -81,8 +85,3 @@ namespace RuntimeProfiler
             RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
         } \
     }
-
-
-
-
-

@@ -18,12 +18,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBarTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBarAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBarTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBarTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBarAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBarTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -34,5 +36,8 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressBar.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

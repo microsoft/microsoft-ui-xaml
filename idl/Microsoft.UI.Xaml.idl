@@ -153,7 +153,6 @@ namespace MU_X_XTI_NAMESPACE
     }
 }
 
-
 namespace MU_XC_NAMESPACE
 {
     [WUXC_VERSION_MUXONLY]

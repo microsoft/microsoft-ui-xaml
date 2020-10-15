@@ -30,10 +30,42 @@
         </Grid>
 
         <ScrollViewer x:Name="Sidebar" VerticalScrollMode="Auto">
-            <StackPanel>
-                <StackPanel>
-                    <TextBlock FontSize="12" Text="Test Name:"/>
-                    <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox" SelectedIndex="0">
+            <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12" BorderThickness="0" Padding="0">
+                <StackPanel.Resources>
+                    <Style x:Key="AcrylicStackPanelStyle" TargetType="StackPanel">
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush" Value="{ThemeResource SystemChromeDisabledLowColor}" />
+                        <Setter Property="Padding" Value="6" />
+                    </Style>
+                    <Style TargetType="Button">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        <Setter Property="Margin" Value="0,4,0,0" />
+                    </Style>
+                    <Style TargetType="ToggleButton">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        <Setter Property="Margin" Value="0,4,0,0" />
+                    </Style>
+                </StackPanel.Resources>
+                
+                <TextBlock Text="Test results" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Style="{ThemeResource AcrylicStackPanelStyle}">
+                    <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" AutomationProperties.Name="TestResult" IsReadOnly="True"/>
+                    <TextBlock x:Name="CompositionBrushPointer" AutomationProperties.AutomationId="CompositionBrushPointer"/>
+                    <TextBlock x:Name="NoiseBrushPointer" AutomationProperties.AutomationId="NoiseBrushPointer"/>
+                    <TextBlock x:Name="IsUsingAcrylicBrush" AutomationProperties.AutomationId="IsUsingAcrylicBrush"/>
+                </StackPanel>
+
+                <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Style="{ThemeResource AcrylicStackPanelStyle}">
+                    <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
+                    <Button x:Name="SetAcrylicBrushButton" AutomationProperties.AutomationId="SetAcrylicBrushButton" Content="Set Acrylic Brush" Click="SetAcrylicBrushButton_Click"/>
+                    <Button x:Name="UpdateStateButton" AutomationProperties.AutomationId="UpdateStateButton" Content="Update AB state description" Click="UpdateStateButton_Click"/>
+                    <Button x:Name="CreateAcrylicEffectBrush" AutomationProperties.AutomationId="CreateAcrylicEffectBrush" Content="CreateAcrylicEffectBrush" Click="CreateAcrylicEffectBrush_Click"/>
+                </StackPanel>
+
+                <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Style="{ThemeResource AcrylicStackPanelStyle}">
+                    <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox" Header="Test name:" SelectedIndex="0">
                         <ComboBoxItem AutomationProperties.Name="BasicAcrylicOnRectangle">BasicAcrylicOnRectangle</ComboBoxItem>
                         <ComboBoxItem AutomationProperties.Name="AcrylicPropertyChanges">AcrylicPropertyChanges</ComboBoxItem>
                         <ComboBoxItem AutomationProperties.Name="HideAndShowWindow">HideAndShowWindow</ComboBoxItem>
@@ -45,23 +77,12 @@
                         <ComboBoxItem AutomationProperties.Name="AcrylicNoiseCache">AcrylicNoiseCache</ComboBoxItem>
                         <ComboBoxItem AutomationProperties.Name="VerifyAcrylicBrushEffect">VerifyAcrylicBrushEffect</ComboBoxItem>
                     </ComboBox>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock FontSize="12" Text="Test Result:"/>
-                    <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" AutomationProperties.Name="TestResult" IsReadOnly="True"/>
-                </StackPanel>
-                <TextBlock x:Name="CompositionBrushPointer" AutomationProperties.AutomationId="CompositionBrushPointer"/>
-                <TextBlock x:Name="NoiseBrushPointer" AutomationProperties.AutomationId="NoiseBrushPointer"/>
-                <TextBlock x:Name="IsUsingAcrylicBrush" AutomationProperties.AutomationId="IsUsingAcrylicBrush"/>
-                <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
-                <Button x:Name="SetAcrylicBrushButton" AutomationProperties.AutomationId="SetAcrylicBrushButton" Content="Set Acrylic Brush" Click="SetAcrylicBrushButton_Click"/>
-                <Button x:Name="UpdateStateButton" AutomationProperties.AutomationId="UpdateStateButton" Content="Update AB state description" Click="UpdateStateButton_Click"/>
-                <ToggleButton x:Name="TintColorButton" Content="TintColor Chooser" Checked="TintColorButton_Checked" Unchecked="TintColorButton_Unchecked"/>
-                <ToggleButton x:Name="BackgroundSourceButton" Content="BackgroundSource [-> HostBackdrop]" Checked="BackgroundSourceButton_Checked" Unchecked="BackgroundSourceButton_Unchecked"/>
-                <ToggleButton x:Name="FallbackColorButton" Content="FallbackColor [-> Orange]" Checked="FallbackColorButton_Checked" Unchecked="FallbackColorButton_Unchecked"/>
-                <ToggleButton x:Name="AlwaysUseFallbackButton" Content="AlwaysUseFallback [-> True]" Checked="AlwaysUseFallbackButton_Checked" Unchecked="AlwaysUseFallbackButton_Unchecked"/>
-                <ToggleButton x:Name="AnimateBackgroundButton" Content="Animate Background" Checked="AnimateBackgroundButton_Checked" Unchecked="AnimateBackgroundButton_Unchecked"/>
-                <Button x:Name="CreateAcrylicEffectBrush" AutomationProperties.AutomationId="CreateAcrylicEffectBrush" Content="CreateAcrylicEffectBrush" Click="CreateAcrylicEffectBrush_Click"/>
+                    <ToggleButton x:Name="TintColorButton" Content="TintColor Chooser" Checked="TintColorButton_Checked" Unchecked="TintColorButton_Unchecked"/>
+                    <ToggleButton x:Name="BackgroundSourceButton" Content="BackgroundSource [-> HostBackdrop]" Checked="BackgroundSourceButton_Checked" Unchecked="BackgroundSourceButton_Unchecked"/>
+                    <ToggleButton x:Name="FallbackColorButton" Content="FallbackColor [-> Orange]" Checked="FallbackColorButton_Checked" Unchecked="FallbackColorButton_Unchecked"/>
+                    <ToggleButton x:Name="AlwaysUseFallbackButton" Content="AlwaysUseFallback [-> True]" Checked="AlwaysUseFallbackButton_Checked" Unchecked="AlwaysUseFallbackButton_Unchecked"/>
+                    <ToggleButton x:Name="AnimateBackgroundButton" Content="Animate Background" Checked="AnimateBackgroundButton_Checked" Unchecked="AnimateBackgroundButton_Unchecked"/>
+
                 <StackPanel Orientation="Vertical">
                     <TextBlock VerticalAlignment="Top" FontSize="12">TintOpacity:</TextBlock>
                     <Slider x:Name="TintOpacity" Width="200" Minimum="0.0" Maximum="1.0" StepFrequency="0.05" Value="0.6" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Tint Opacity" ValueChanged="TintOpacity_ValueChanged" />
@@ -82,6 +103,7 @@
                     <Slider x:Name="ScaleTransformSlider" Width="200" Minimum="0.1" Maximum="3" StepFrequency="0.1" Value="1" HorizontalAlignment="Left" ToolTipService.ToolTip="Adjust Rectangle ScaleTransform"/>
                 </StackPanel>
                 <Viewbox x:Name="Viewbox"/>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 

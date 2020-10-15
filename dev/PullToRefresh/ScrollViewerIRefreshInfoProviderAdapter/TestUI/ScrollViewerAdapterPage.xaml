@@ -9,11 +9,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" VerticalAlignment="Center" x:Name="root">
-      <Button x:Name="AdaptOnSVWithoutWaitingForLoadedButton" AutomationProperties.Name="AdaptOnSVWithoutWaitingForLoadedButton" Content="Adapt On SV Without Waiting For Loaded"/>
-      <Button x:Name="RemoveButton" AutomationProperties.Name="RemoveButton" Content="Remove"/>
-      <Button x:Name="GCButton" AutomationProperties.Name="GCButton" Content="Garbage Collect"/>
-      <Button x:Name="CheckLeaksButton" AutomationProperties.Name="CheckLeaksButton" Content="Check Leaks"/>
-      <Grid x:Name="TestRoot"/>
+    <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="root" Margin="12">
+        <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
+        <Button x:Name="AdaptOnSVWithoutWaitingForLoadedButton" Content="Adapt On SV Without Waiting For Loaded"
+                AutomationProperties.Name="AdaptOnSVWithoutWaitingForLoadedButton" Margin="0,4,0,4"/>
+        <Button x:Name="RemoveButton" AutomationProperties.Name="RemoveButton" Content="Remove" Margin="0,4,0,4"/>
+        <Button x:Name="GCButton" AutomationProperties.Name="GCButton" Content="Garbage Collect" Margin="0,4,0,4"/>
+        <Button x:Name="CheckLeaksButton" AutomationProperties.Name="CheckLeaksButton" Content="Check Leaks" Margin="0,4,0,4"/>
+
+        <TextBlock Text="Test Grid" Style="{ThemeResource StandardGroupHeader}" Margin="0,16,0,8"/>
+        <Grid x:Name="TestRoot" Background="{ThemeResource SystemListLowColor}"/>
     </StackPanel>
 </local:TestPage>

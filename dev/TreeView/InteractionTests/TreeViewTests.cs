@@ -95,22 +95,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 SetContentMode(isContentMode);
 
-                UIObject ItemRoot = LabelFirstItem();
+                UIObject itemRoot = LabelFirstItem();
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("1", ReadResult());
 
-                InputHelper.Tap(ItemRoot);
+                InputHelper.Tap(itemRoot);
 
                 // Should be expanded now
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
 
-                InputHelper.Tap(ItemRoot);
+                ClickButton("AddSecondLevelOfNodes");
+                ClickButton("LabelItems");
 
-                // Should be collapsed now
+                var root0 = FindElement.ById("Root.0");
+                InputHelper.Tap(root0);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("5", ReadResult());
+
+                InputHelper.Tap(itemRoot);
                 ClickButton("GetItemCount");
                 Verify.AreEqual("1", ReadResult());
+
+                InputHelper.Tap(itemRoot);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("5", ReadResult());
+
+                var root1 = FindElement.ById("Root.1");
+                InputHelper.Tap(root1);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("8", ReadResult());
+
+                // Collapse and expand
+                InputHelper.Tap(itemRoot);
+                InputHelper.Tap(itemRoot);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("8", ReadResult());
             }
         }
 
@@ -1685,9 +1706,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectGamepadTest();
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
-        //[TestProperty("TestSuite", "B")]
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_ContentMode()
         {
             TreeViewMultiSelectGamepadTest(isContentMode:true);
@@ -1898,7 +1918,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickButton("SetupDragDropHandlersForApiTest");
                 UIObject dragUIObject = LabelFirstItem();
                 InputHelper.DragDistance(dragUIObject, dragUIObject.BoundingRectangle.Height, Direction.South);
-                Verify.AreEqual("DragItemsStarting:Root->DragItemsCompleted:Root", ReadResult());
+                Verify.AreEqual("DragItemsStarting:Root\nDragItemsCompleted:Root", ReadResult());
             }
         }
 
@@ -1918,8 +1938,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TreeViewDragMultipleItemsTest(bool isContentMode = false)
         {
-            if (IsPhoneDevice() || IsLowerThanRS2() ||
-              (isContentMode && IsLowerThanRS5()))
+            // InputHelper.DragToTarget() does not work properly on lower versions
+            if (IsLowerThanRS5())
             {
                 return;
             }
@@ -1951,8 +1971,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 UIObject dragUIObject = FindElement.ByName("Root.0");
                 Verify.IsNotNull(dragUIObject, "Verifying Root.0 is found");
-                InputHelper.DragDistance(dragUIObject, dragUIObject.BoundingRectangle.Height / 2, Direction.South);
-                Verify.AreEqual("DragItemsStarting:Root.0|Root.1->DragItemsCompleted:Root.0|Root.1", ReadResult());
+                UIObject dropUIObject = FindElement.ByName("Root.2");
+                Verify.IsNotNull(dropUIObject, "Verifying Root.2 is found");
+                InputHelper.DragToTarget(dragUIObject, dropUIObject);
+                Verify.AreEqual("DragItemsStarting:Root.0|Root.1\nDragItemsCompleted:Root.0|Root.1\nNewParent: Root.2", ReadResult());
             }
         }
 
@@ -2474,6 +2496,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // test for #1756 https://github.com/microsoft/microsoft-ui-xaml/issues/1756
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectRegressionTest()
+        {
+            // Running 5 times since the the bug doesn't repro consistently.
+            for(int i = 0; i < 5; i++)
+            {
+                using (var setup = new TestSetupHelper("TreeView Tests"))
+                {
+                    ClickButton("AddExtraNodes");
+                    ClickButton("LabelItems");
+
+                    ClickButton("SelectLastRootNode");
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Node 50", ReadResult());
+
+                    UIObject node1 = FindElement.ByName("Node 1");
+                    Verify.IsNotNull(node1, "Verifying Node 1 is found");
+                    InputHelper.Tap(node1);
+
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Node 1", ReadResult());
+                }
+            }
+        }
+
         // Regression test for bug 16833853
         [TestMethod]
         [TestProperty("TestSuite", "B")]
@@ -2732,6 +2781,117 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("GetChildrenOrder");
                 Verify.AreEqual("Root | Root.0 | Root.0.0 | Root.1 | Root.1.0 | Root.1.1 | Root.1.2 | Root.2", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1790
+        public void ItemsSourceResyncTest()
+        {
+            // TreeView databinding only works on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
+
+                ClickButton("ResetItemsSource");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("4", ReadResult());
+
+                ClickButton("ResetItemsSourceAsync");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("6", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void ItemsSourceSwitchForthAndBackTest()
+        {
+            // TreeView databinding only works on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                ClickButton("SwapItemsSource");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("2", ReadResult());
+
+                ClickButton("SwapItemsSource");
+                Wait.ForIdle();
+                ClickButton("ExpandRootNode");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("4", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite","C")]
+        public void SelectedItemBindingsWork()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                var setContentButton = new Button(FindElement.ByName("TwoWayBoundButton"));
+                var setSelectedItemButton = new Button(FindElement.ByName("SelectRoot2Item"));
+                var readResultButton = new Button(FindElement.ByName("ReadBindingResult"));
+
+                setContentButton.Click();
+                Wait.ForIdle();
+
+                readResultButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Root.1;Root.1",ReadResult());
+
+                setSelectedItemButton.Click();
+                Wait.ForIdle();
+                readResultButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Root.2;Root.2", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void SingleSelectWithUnrealizedChildrenDoesNotMoveSelection()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewUnrealizedChildrenTestPage" }))
+            {
+                TapOnTreeViewAt(50, 12, "GetSelectedItemName");
+
+                Log.Comment("Selecting item");
+                ClickButton("GetSelectedItemName");
+                Wait.ForIdle();
+
+                Log.Comment("Verifying current selection");
+                var textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
+                Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
+
+                Log.Comment("Expanding selected item");
+                TapOnTreeViewAt(12, 12, "GetSelectedItemName");
+                Wait.ForIdle();
+
+                Log.Comment("Verifying selection again");
+                ClickButton("GetSelectedItemName");
+                Wait.ForIdle();
+                textBlock = new TextBlock(FindElement.ByName("SelectedItemName"));
+                Verify.AreEqual("Item: 0; layer: 3", textBlock.GetText());
             }
         }
 

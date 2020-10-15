@@ -4,9 +4,11 @@
 #pragma once
 
 #include "RecyclePool.g.h"
+#include "RecyclePool.properties.h"
 
 class RecyclePool :
-    public ReferenceTracker<RecyclePool, winrt::implementation::RecyclePoolT, winrt::composing>
+    public ReferenceTracker<RecyclePool, winrt::implementation::RecyclePoolT, winrt::composing>,
+    public RecyclePoolProperties
 {
 public:
 #pragma region IRecyclePool
@@ -39,7 +41,6 @@ public:
     static winrt::hstring GetReuseKey(winrt::UIElement const& element);
     static void SetReuseKey(winrt::UIElement const& element, winrt::hstring const& value);
 
-    static winrt::DependencyProperty PoolInstanceProperty() { return s_poolInstanceProperty; }
     static winrt::RecyclePool GetPoolInstance(winrt::DataTemplate const& dataTemplate);
     static void SetPoolInstance(winrt::DataTemplate const& dataTemplate, winrt::RecyclePool const& recyclePool);
 #pragma endregion
@@ -52,7 +53,6 @@ public:
 
 private:
     static GlobalDependencyProperty s_reuseKeyProperty;
-    static GlobalDependencyProperty s_poolInstanceProperty;
     static GlobalDependencyProperty s_originTemplateProperty;
 
     winrt::Panel EnsureOwnerIsPanelOrNull(const winrt::UIElement& owner);

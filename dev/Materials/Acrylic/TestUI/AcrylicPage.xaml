@@ -13,5 +13,6 @@
         <Button x:Name="navigateToColorAcrylic" AutomationProperties.Name="navigateToColorAcrylic" Margin="2" HorizontalAlignment="Stretch">Color Acrylic Tests</Button>
         <Button x:Name="navigateToMarkupAcrylic" AutomationProperties.Name="navigateToMarkupAcrylic" Margin="2" HorizontalAlignment="Stretch">Markup Acrylic Tests</Button>
         <Button x:Name="navigateToRenderingAcrylic" AutomationProperties.Name="navigateToRenderingAcrylic" Margin="2" HorizontalAlignment="Stretch">Rendering Acrylic Tests</Button>
+        <Button x:Name="navigateToLuminosityAcrylicTest" AutomationProperties.Name="LuminosityAcrylicTest" Margin="2" HorizontalAlignment="Stretch">Luminosity Acrylic Tests</Button>
     </StackPanel>
 </local:TestPage>

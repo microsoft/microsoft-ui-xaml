@@ -17,6 +17,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NumberBox.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NumberBox.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NumberBoxAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NumberBoxParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NumberBox.xaml">
@@ -34,6 +35,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)NumberBox.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NumberBoxAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NumberBoxParser.h" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

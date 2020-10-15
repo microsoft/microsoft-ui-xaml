@@ -12,7 +12,7 @@
 #include "Microsoft.UI.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-CppWinRTActivatableClassWithBasicFactory(RevealHoverLight)
+#include "RevealHoverLight.properties.cpp"
 
 static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear,{ 0.f, 0.f },{ 0.f, 0.f } };
 static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier,{ 0.5f, 0.f } ,{ 0.6f, 1.f } };
@@ -288,7 +288,7 @@ void RevealHoverLight::EnsureCompositionResources()
             SetSpotLightStateImmediate(m_compositionSpotLight, m_colorsProxy, m_offsetProps, m_spotLightStates[RevealHoverSpotlightState_AnimToOff]);
 
             m_pointer = winrt::ElementCompositionPreview::GetPointerPositionPropertySet(element);
-            auto elementVisual = winrt::ElementCompositionPreview::GetElementVisual(element);
+            const auto elementVisual = winrt::ElementCompositionPreview::GetElementVisual(element);
 
             m_offsetAnimation.SetReferenceParameter(L"pointer", m_pointer);
             m_offsetAnimation.SetReferenceParameter(L"visual", elementVisual);
@@ -405,7 +405,7 @@ void RevealHoverLight::GotoLightState(LightEvents e)
         break;
     }
 
-    auto initState = m_currentLightState;
+    const auto initState = m_currentLightState;
     switch (initState)
     {
     case LightStates::Off:
@@ -643,7 +643,7 @@ void RevealHoverLight::GotoLightStateHelper(LightStates target, bool skipAnimati
             // Like below, we add UserControl:
             //  <Grid><UserControl><Border Name="myBorderElement"></Border></UserControl></Grid>
             //  then RevealBrush::SetState(myBorderElement, RevealBrushState::Pressed);
-            winrt::FocusState focusState = targetControl ? targetControl.FocusState() : winrt::FocusState::Keyboard;
+            auto const focusState = targetControl ? targetControl.FocusState() : winrt::FocusState::Keyboard;
 
             // Only center the hover light if the element has KB focus and to the best of our knowledge 
             // it is the keyboard and not pointer that's responsible for current press.

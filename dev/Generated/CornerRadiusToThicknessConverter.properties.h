@@ -12,9 +12,14 @@ public:
     void ConversionKind(winrt::CornerRadiusToThicknessConverterKind const& value);
     winrt::CornerRadiusToThicknessConverterKind ConversionKind();
 
+    void Multiplier(double value);
+    double Multiplier();
+
     static winrt::DependencyProperty ConversionKindProperty() { return s_ConversionKindProperty; }
+    static winrt::DependencyProperty MultiplierProperty() { return s_MultiplierProperty; }
 
     static GlobalDependencyProperty s_ConversionKindProperty;
+    static GlobalDependencyProperty s_MultiplierProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

@@ -8,10 +8,10 @@
 
 
 IScrollControllerProperties::IScrollControllerProperties()
-    : m_interactionInfoChangedEventSource{static_cast<IScrollController*>(this)}
+    : m_addScrollVelocityRequestedEventSource{static_cast<IScrollController*>(this)}
+    , m_interactionInfoChangedEventSource{static_cast<IScrollController*>(this)}
     , m_interactionRequestedEventSource{static_cast<IScrollController*>(this)}
     , m_scrollByRequestedEventSource{static_cast<IScrollController*>(this)}
-    , m_scrollFromRequestedEventSource{static_cast<IScrollController*>(this)}
     , m_scrollToRequestedEventSource{static_cast<IScrollController*>(this)}
 {
 }
@@ -22,6 +22,16 @@ void IScrollControllerProperties::EnsureProperties()
 
 void IScrollControllerProperties::ClearProperties()
 {
+}
+
+winrt::event_token IScrollControllerProperties::AddScrollVelocityRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerAddScrollVelocityRequestedEventArgs> const& value)
+{
+    return m_addScrollVelocityRequestedEventSource.add(value);
+}
+
+void IScrollControllerProperties::AddScrollVelocityRequested(winrt::event_token const& token)
+{
+    m_addScrollVelocityRequestedEventSource.remove(token);
 }
 
 winrt::event_token IScrollControllerProperties::InteractionInfoChanged(winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable> const& value)
@@ -52,16 +62,6 @@ winrt::event_token IScrollControllerProperties::ScrollByRequested(winrt::TypedEv
 void IScrollControllerProperties::ScrollByRequested(winrt::event_token const& token)
 {
     m_scrollByRequestedEventSource.remove(token);
-}
-
-winrt::event_token IScrollControllerProperties::ScrollFromRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs> const& value)
-{
-    return m_scrollFromRequestedEventSource.add(value);
-}
-
-void IScrollControllerProperties::ScrollFromRequested(winrt::event_token const& token)
-{
-    m_scrollFromRequestedEventSource.remove(token);
 }
 
 winrt::event_token IScrollControllerProperties::ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value)

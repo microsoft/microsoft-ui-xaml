@@ -3,7 +3,7 @@
 
 #pragma once
 
-// Abstraction layer between the ParallaxView and its ScrollViewer/Scroller source.
+// Abstraction layer between the ParallaxView and its ScrollViewer/ScrollPresenter source.
 class ScrollInputHelper
 {
 public:
@@ -27,9 +27,9 @@ public:
 
 private:
     static winrt::RichEditBox GetRichEditBoxParent(const winrt::DependencyObject& childElement);
-    static void GetChildScrollerOrScrollViewer(
+    static void GetChildScrollPresenterOrScrollViewer(
         const winrt::DependencyObject& rootElement,
-        _Out_ winrt::Scroller* scroller,
+        _Out_ winrt::ScrollPresenter* scrollPresenter,
         _Out_ winrt::FxScrollViewer* scrollViewer);
     winrt::UIElement GetScrollContentElement() const;
     winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
@@ -37,7 +37,7 @@ private:
     winrt::FxZoomMode GetEffectiveZoomMode() const;
 
     void SetScrollViewer(const winrt::FxScrollViewer& scrollViewer);
-    void SetScroller(const winrt::Scroller& scroller);
+    void SetScrollPresenter(const winrt::ScrollPresenter& scrollPresenter);
 
     void UpdateOutOfBoundsPanSize();
     void UpdateContentSize();
@@ -63,7 +63,7 @@ private:
     void ProcessTargetElementChange();
     void ProcessContentSizeChange();
     void ProcessScrollViewerContentChange();
-    void ProcessScrollerContentChange();
+    void ProcessScrollPresenterContentChange();
     void ProcessScrollViewerZoomModeChange();
 
     void OnSourceElementChanged(bool allowSourceElementLoadedHookup);
@@ -77,7 +77,7 @@ private:
     void OnSourceSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnSourceContentSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnScrollViewerPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
-    void OnScrollerPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnScrollPresenterPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnScrollViewerContentPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnScrollViewerDirectManipulationStarted(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnScrollViewerDirectManipulationCompleted(const winrt::IInspectable& sender, const winrt::IInspectable& args);
@@ -90,10 +90,10 @@ private:
     void UnhookSourceControlTemplateChanged();
     void HookTargetElementLoaded();
     void UnhookTargetElementLoaded();
-    void HookScrollerPropertyChanged();
-    void UnhookScrollerPropertyChanged();
-    void HookScrollerContentPropertyChanged();
-    void UnhookScrollerContentPropertyChanged();
+    void HookScrollPresenterPropertyChanged();
+    void UnhookScrollPresenterPropertyChanged();
+    void HookScrollPresenterContentPropertyChanged();
+    void UnhookScrollPresenterContentPropertyChanged();
     void HookScrollViewerPropertyChanged();
     void UnhookScrollViewerPropertyChanged();
     void HookScrollViewerContentPropertyChanged();
@@ -114,7 +114,7 @@ private:
     tracker_ref<winrt::UIElement> m_sourceElement{ m_owner };
     tracker_ref<winrt::UIElement> m_targetElement{ m_owner };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ m_owner };
-    tracker_ref<winrt::Scroller> m_scroller{ m_owner };
+    tracker_ref<winrt::ScrollPresenter> m_scrollPresenter{ m_owner };
     tracker_ref<winrt::FrameworkElement> m_sourceContent{ m_owner };
     tracker_ref<winrt::RichEditBox> m_richEditBox{ m_owner };
     winrt::CompositionPropertySet m_internalSourcePropertySet{ nullptr };
@@ -141,7 +141,7 @@ private:
     winrt::event_token m_scrollViewerContentHorizontalAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerContentVerticalAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerContentChangedToken{ 0 };
-    winrt::event_token m_scrollerContentChangedToken{ 0 };
+    winrt::event_token m_scrollPresenterContentChangedToken{ 0 };
     winrt::event_token m_scrollViewerHorizontalContentAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerVerticalContentAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerZoomModeChangedToken{ 0 };

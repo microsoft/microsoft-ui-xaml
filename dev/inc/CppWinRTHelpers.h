@@ -55,7 +55,10 @@ struct ValueHelper
 {
     static T GetDefaultValue()
     {
-        return T{};
+#pragma warning(push)
+#pragma warning(disable : 26444) 
+        return T{};    
+#pragma warning(pop)
     }
 
     static winrt::IInspectable BoxValueIfNecessary(T const& value)
@@ -147,12 +150,12 @@ struct PropertyChanged_revoker
    PropertyChanged_revoker() noexcept = default;
    PropertyChanged_revoker(PropertyChanged_revoker const&) = delete;
    PropertyChanged_revoker& operator=(PropertyChanged_revoker const&) = delete;
-   PropertyChanged_revoker(PropertyChanged_revoker&& other)
+   PropertyChanged_revoker(PropertyChanged_revoker&& other) noexcept
    {
        move_from(other);
    }
 
-   PropertyChanged_revoker& operator=(PropertyChanged_revoker&& other)
+   PropertyChanged_revoker& operator=(PropertyChanged_revoker&& other) noexcept
    {
        move_from(other);
        return *this;
@@ -160,7 +163,7 @@ struct PropertyChanged_revoker
 
    PropertyChanged_revoker(winrt::DependencyObject const& object, const winrt::DependencyProperty&  dp, int64_t token) :
         m_object(object),
-        m_property(std::move(dp)),
+        m_property(dp),
         m_token(token)
     {}
 
@@ -212,7 +215,7 @@ private:
 
 inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, winrt::DependencyPropertyChangedCallback const& callback)
 {
-    auto value = object.RegisterPropertyChangedCallback(dp, callback);
+    const auto value = object.RegisterPropertyChangedCallback(dp, callback);
     return { object, dp, value };
 }
 
@@ -262,6 +265,7 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 template <typename D, typename T, typename ... I>
 struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
+    using composable = T;
     using class_type = typename T;
 
     operator class_type() const noexcept

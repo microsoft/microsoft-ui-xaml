@@ -7,7 +7,9 @@
 #include "TabViewAutomationPeer.g.h"
 
 class TabViewAutomationPeer :
-    public ReferenceTracker<TabViewAutomationPeer, winrt::implementation::TabViewAutomationPeerT>
+    public ReferenceTracker<TabViewAutomationPeer,
+    winrt::implementation::TabViewAutomationPeerT,
+    winrt::ISelectionProvider>
 {
 
 public:
@@ -17,6 +19,9 @@ public:
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-};
 
-CppWinRTActivatableClassWithBasicFactory(TabViewAutomationPeer);
+    // ISelectionProvider
+    bool CanSelectMultiple();
+    bool IsSelectionRequired();
+    winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
+};

@@ -7,7 +7,8 @@ parameters:
   pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   helixType: 'test/nuget'
-  matrix: 
+  test_matrix: ''
+  matrix:
     Debug_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'Debug'
@@ -23,7 +24,7 @@ parameters:
     Release_arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
-      
+
 jobs:
 - job: ${{ parameters.buildJobName }}
   dependsOn:
@@ -51,8 +52,8 @@ jobs:
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
   - ${{ if parameters.pkgArtifactPath }}:
-    - task: DownloadBuildArtifacts@0 
-      inputs: 
+    - task: DownloadBuildArtifacts@0
+      inputs:
         artifactName: drop
         downloadPath: $(artifactDownloadPath)
 
@@ -68,6 +69,9 @@ jobs:
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
             <add key='local' value='${{parameters.pkgArtifactPath}}'/>
           </packageSources>
+          <config>
+            <add key="repositoryPath" value="$\..\..\..\packages" />
+          </config>
         </configuration>
         "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
         # Output for debugging
@@ -121,4 +125,5 @@ jobs:
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
       rerunPassesRequiredToAvoidFailure: 5
-  
+      ${{if ne(parameters.test_matrix, '') }}:
+        matrix: ${{ parameters.test_matrix }}

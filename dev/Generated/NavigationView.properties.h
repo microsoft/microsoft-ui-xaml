@@ -30,6 +30,12 @@ public:
     void ExpandedModeThresholdWidth(double value);
     double ExpandedModeThresholdWidth();
 
+    void FooterMenuItems(winrt::IVector<winrt::IInspectable> const& value);
+    winrt::IVector<winrt::IInspectable> FooterMenuItems();
+
+    void FooterMenuItemsSource(winrt::IInspectable const& value);
+    winrt::IInspectable FooterMenuItemsSource();
+
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
@@ -121,6 +127,8 @@ public:
     static winrt::DependencyProperty ContentOverlayProperty() { return s_ContentOverlayProperty; }
     static winrt::DependencyProperty DisplayModeProperty() { return s_DisplayModeProperty; }
     static winrt::DependencyProperty ExpandedModeThresholdWidthProperty() { return s_ExpandedModeThresholdWidthProperty; }
+    static winrt::DependencyProperty FooterMenuItemsProperty() { return s_FooterMenuItemsProperty; }
+    static winrt::DependencyProperty FooterMenuItemsSourceProperty() { return s_FooterMenuItemsSourceProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty IsBackButtonVisibleProperty() { return s_IsBackButtonVisibleProperty; }
@@ -157,6 +165,8 @@ public:
     static GlobalDependencyProperty s_ContentOverlayProperty;
     static GlobalDependencyProperty s_DisplayModeProperty;
     static GlobalDependencyProperty s_ExpandedModeThresholdWidthProperty;
+    static GlobalDependencyProperty s_FooterMenuItemsProperty;
+    static GlobalDependencyProperty s_FooterMenuItemsSourceProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_IsBackButtonVisibleProperty;
@@ -188,8 +198,12 @@ public:
 
     winrt::event_token BackRequested(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewBackRequestedEventArgs> const& value);
     void BackRequested(winrt::event_token const& token);
+    winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemCollapsedEventArgs> const& value);
+    void Collapsed(winrt::event_token const& token);
     winrt::event_token DisplayModeChanged(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewDisplayModeChangedEventArgs> const& value);
     void DisplayModeChanged(winrt::event_token const& token);
+    winrt::event_token Expanding(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemExpandingEventArgs> const& value);
+    void Expanding(winrt::event_token const& token);
     winrt::event_token ItemInvoked(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemInvokedEventArgs> const& value);
     void ItemInvoked(winrt::event_token const& token);
     winrt::event_token PaneClosed(winrt::TypedEventHandler<winrt::NavigationView, winrt::IInspectable> const& value);
@@ -204,7 +218,9 @@ public:
     void SelectionChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewBackRequestedEventArgs>> m_backRequestedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemCollapsedEventArgs>> m_collapsedEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewDisplayModeChangedEventArgs>> m_displayModeChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemExpandingEventArgs>> m_expandingEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemInvokedEventArgs>> m_itemInvokedEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::IInspectable>> m_paneClosedEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewPaneClosingEventArgs>> m_paneClosingEventSource;
@@ -236,6 +252,14 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnExpandedModeThresholdWidthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnFooterMenuItemsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnFooterMenuItemsSourcePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

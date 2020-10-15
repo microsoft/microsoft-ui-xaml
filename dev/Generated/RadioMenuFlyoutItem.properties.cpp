@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RadioMenuFlyoutItem.h"
 
-CppWinRTActivatableClassWithDPFactory(RadioMenuFlyoutItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RadioMenuFlyoutItem)
+}
+
+#include "RadioMenuFlyoutItem.g.cpp"
 
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_GroupNameProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_IsCheckedProperty{ nullptr };
@@ -66,7 +71,10 @@ void RadioMenuFlyoutItemProperties::OnIsCheckedPropertyChanged(
 
 void RadioMenuFlyoutItemProperties::GroupName(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioMenuFlyoutItem*>(this)->SetValue(s_GroupNameProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RadioMenuFlyoutItemProperties::GroupName()
@@ -76,7 +84,10 @@ winrt::hstring RadioMenuFlyoutItemProperties::GroupName()
 
 void RadioMenuFlyoutItemProperties::IsChecked(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioMenuFlyoutItem*>(this)->SetValue(s_IsCheckedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool RadioMenuFlyoutItemProperties::IsChecked()

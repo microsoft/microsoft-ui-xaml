@@ -18,7 +18,7 @@ void SelectionTreeHelper::TraverseIndexPath(
     auto node = root;
     for (int depth = 0; depth < path.GetSize(); depth++)
     {
-        int childIndex = path.GetAt(depth);
+        const int childIndex = path.GetAt(depth);
         nodeAction(node, path, depth, childIndex);
 
         if (depth < path.GetSize() - 1)
@@ -40,9 +40,9 @@ void SelectionTreeHelper::Traverse(
 
     while (pendingNodes.size() > 0)
     {
-        auto nextNode = pendingNodes.back();
+        const auto nextNode = pendingNodes.back();
         pendingNodes.pop_back();
-        int count = realizeChildren ? nextNode.Node->DataCount() : nextNode.Node->ChildrenNodeCount();
+        const int count = realizeChildren ? nextNode.Node->DataCount() : nextNode.Node->ChildrenNodeCount();
         for (int i = count - 1; i >= 0; i--)
         {
             std::shared_ptr<SelectionNode> child = nextNode.Node->GetAt(i, realizeChildren);
@@ -80,12 +80,12 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
         true, /* realizeChildren */
         [&start, &end, &pendingNodes](std::shared_ptr<SelectionNode> node, const winrt::IndexPath& path, int depth, int childIndex)
     {
-        auto currentPath = StartPath(path, depth);
-        bool isStartPath = IsSubSet(start, currentPath);
-        bool isEndPath = IsSubSet(end, currentPath);
+        const auto currentPath = StartPath(path, depth);
+        const bool isStartPath = IsSubSet(start, currentPath);
+        const bool isEndPath = IsSubSet(end, currentPath);
 
-        int startIndex = depth < start.GetSize() && isStartPath ? start.GetAt(depth) : 0;
-        int endIndex = depth < end.GetSize() && isEndPath ? end.GetAt(depth) : node->DataCount() - 1;
+        const int startIndex = depth < start.GetSize() && isStartPath ? std::max(0, start.GetAt(depth)) : 0;
+        const int endIndex = depth < end.GetSize() && isEndPath ? std::min(node->DataCount() - 1, end.GetAt(depth)) : node->DataCount() - 1;
 
         for (int i = endIndex; i >= startIndex; i--)
         {
@@ -102,16 +102,16 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
     // current path is less than the end path.
     while (pendingNodes.size() > 0)
     {
-        auto info = pendingNodes.back();
+        const auto info = pendingNodes.back();
         pendingNodes.pop_back();
-        int depth = info.Path.GetSize();
-        bool isStartPath = IsSubSet(start, info.Path);
-        bool isEndPath = IsSubSet(end, info.Path);
-        int startIndex = depth < start.GetSize() && isStartPath ? start.GetAt(depth) : 0;
-        int endIndex = depth < end.GetSize() && isEndPath ? end.GetAt(depth) : info.Node->DataCount() - 1;
+        const int depth = info.Path.GetSize();
+        const bool isStartPath = IsSubSet(start, info.Path);
+        const bool isEndPath = IsSubSet(end, info.Path);
+        const int startIndex = depth < start.GetSize() && isStartPath ? start.GetAt(depth) : 0;
+        const int endIndex = depth < end.GetSize() && isEndPath ? end.GetAt(depth) : info.Node->DataCount() - 1;
         for (int i = endIndex; i >= startIndex; i--)
         {
-            auto child = info.Node->GetAt(i, true /* realizeChild */);
+            const auto child = info.Node->GetAt(i, true /* realizeChild */);
             if (child)
             {
                 auto childPath = winrt::get_self<IndexPath>(info.Path)->CloneWithChildIndex(i);
@@ -132,15 +132,21 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
 // static 
 bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::IndexPath& subset)
 {
-    bool isSubset = true;
-    for (int i = 0; i < subset.GetSize(); i++)
+    const auto subsetSize = subset.GetSize();
+    if (path.GetSize() < subsetSize)
     {
-        isSubset = path.GetAt(i) == subset.GetAt(i);
-        if (!isSubset)
-            break;
+        return false;
     }
 
-    return isSubset;
+    for (int i = 0; i < subsetSize; i++)
+    {
+        if (path.GetAt(i) != subset.GetAt(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // static 

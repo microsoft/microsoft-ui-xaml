@@ -1,19 +1,30 @@
-<FileList>
+﻿<FileList>
   <File Reference="Microsoft.UI.Xaml.winmd">
     <ToolboxItems VSCategory="Microsoft.UI.Xaml" BlendCategory="Microsoft.UI.Xaml">
+      <Item Type="Microsoft.UI.Xaml.Media.RadialGradientBrush" />
+      <Item Type="Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer" />
       <Item Type="Microsoft.UI.Xaml.Controls.ColorPicker" />
       <Item Type="Microsoft.UI.Xaml.Controls.CommandBarFlyout" />
       <Item Type="Microsoft.UI.Xaml.Controls.DropDownButton" />
+      <Item Type="Microsoft.UI.Xaml.Controls.ItemsRepeater" />
       <Item Type="Microsoft.UI.Xaml.Controls.MenuBar" />
       <Item Type="Microsoft.UI.Xaml.Controls.NavigationView" />
+      <Item Type="Microsoft.UI.Xaml.Controls.NumberBox" />
       <Item Type="Microsoft.UI.Xaml.Controls.ParallaxView" />
       <Item Type="Microsoft.UI.Xaml.Controls.PersonPicture" />
+      <Item Type="Microsoft.UI.Xaml.Controls.ProgressBar" />
+      <Item Type="Microsoft.UI.Xaml.Controls.ProgressRing" />
+      <Item Type="Microsoft.UI.Xaml.Controls.RadioButtons" />
       <Item Type="Microsoft.UI.Xaml.Controls.RatingControl" />
       <Item Type="Microsoft.UI.Xaml.Controls.RefreshContainer" />
       <Item Type="Microsoft.UI.Xaml.Controls.SplitButton" />
       <Item Type="Microsoft.UI.Xaml.Controls.SwipeControl" />
+      <Item Type="Microsoft.UI.Xaml.Controls.TabView" />
+      <Item Type="Microsoft.UI.Xaml.Controls.TeachingTip" />
+      <Item Type="Microsoft.UI.Xaml.Controls.TextCommandBarFlyout" />
       <Item Type="Microsoft.UI.Xaml.Controls.ToggleSplitButton" />
       <Item Type="Microsoft.UI.Xaml.Controls.TreeView" />
+      <Item Type="Microsoft.UI.Xaml.Controls.TwoPaneView" />
     </ToolboxItems>
   </File>
 </FileList>

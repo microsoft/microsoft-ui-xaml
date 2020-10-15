@@ -106,6 +106,7 @@ unsealed runtimeclass ItemsSourceView: Windows.UI.Xaml.Interop.INotifyCollection
     Boolean HasKeyIndexMapping{ get; };
     String KeyFromIndex(Int32 index);
     Int32 IndexFromKey(String key);
+    Int32 IndexOf(IInspectable item);
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -152,7 +153,10 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty { get; };
     static Windows.UI.Xaml.DependencyProperty LayoutProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
+    }
     static Windows.UI.Xaml.DependencyProperty HorizontalCacheLengthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalCacheLengthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
@@ -431,6 +435,12 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SpacingProperty { get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        Boolean DisableVirtualization{ get; set; };
+        static Windows.UI.Xaml.DependencyProperty DisableVirtualizationProperty{ get; };
+    }
 
    // Removing until we are ready to expose.
    // overridable FlowLayoutAnchorInfo GetAnchorForRealizationRect(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context);

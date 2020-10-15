@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeViewNode.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeViewNode)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeViewNode)
+}
+
+#include "TreeViewNode.g.cpp"
 
 GlobalDependencyProperty TreeViewNodeProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty TreeViewNodeProperties::s_DepthProperty{ nullptr };
@@ -92,7 +97,10 @@ void TreeViewNodeProperties::OnIsExpandedPropertyChanged(
 
 void TreeViewNodeProperties::Content(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewNode*>(this)->SetValue(s_ContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable TreeViewNodeProperties::Content()
@@ -102,7 +110,10 @@ winrt::IInspectable TreeViewNodeProperties::Content()
 
 void TreeViewNodeProperties::Depth(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewNode*>(this)->SetValue(s_DepthProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int TreeViewNodeProperties::Depth()
@@ -112,7 +123,10 @@ int TreeViewNodeProperties::Depth()
 
 void TreeViewNodeProperties::HasChildren(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewNode*>(this)->SetValue(s_HasChildrenProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewNodeProperties::HasChildren()
@@ -122,7 +136,10 @@ bool TreeViewNodeProperties::HasChildren()
 
 void TreeViewNodeProperties::IsExpanded(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TreeViewNode*>(this)->SetValue(s_IsExpandedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool TreeViewNodeProperties::IsExpanded()

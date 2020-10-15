@@ -6,6 +6,7 @@
 #include "AutoSuggestBoxHelper.h"
 #include "DispatcherHelper.h"
 #include "CornerRadiusFilterConverter.h"
+#include "ResourceAccessor.h"
 
 static constexpr auto c_popupName = L"SuggestionsPopup"sv;
 static constexpr auto c_popupBorderName = L"SuggestionsContainer"sv;
@@ -103,8 +104,8 @@ void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sen
 
 void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoSuggestBox, bool isPopupOpen)
 {
-    auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(autoSuggestBox, box_value(c_controlCornerRadiusKey)));
-    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(autoSuggestBox, box_value(c_overlayCornerRadiusKey)));
+    auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(autoSuggestBox, box_value(c_controlCornerRadiusKey)));
+    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(autoSuggestBox, box_value(c_overlayCornerRadiusKey)));
 
     if (winrt::IControl7 autoSuggextBoxControl7 = autoSuggestBox)
     {
@@ -116,10 +117,10 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
         auto const isOpenDown = IsPopupOpenDown(autoSuggestBox);
         auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
-        auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
+        const auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
         popupRadius = cornerRadiusConverter->Convert(popupRadius, popupRadiusFilter);
 
-        auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
+        const auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
         textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
     }
 
@@ -151,15 +152,10 @@ bool AutoSuggestBoxHelper::IsPopupOpenDown(const winrt::AutoSuggestBox& autoSugg
     {
         if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_textBoxName, autoSuggestBox))
         {
-            auto transform = popupBorder.TransformToVisual(textBox);
-            auto popupTop = transform.TransformPoint(winrt::Point(0, 0));
+            const auto transform = popupBorder.TransformToVisual(textBox);
+            const auto popupTop = transform.TransformPoint(winrt::Point(0, 0));
             verticalOffset = popupTop.Y;
         }
     }
     return verticalOffset >= 0;
-}
-
-winrt::IInspectable AutoSuggestBoxHelper::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
-{
-    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }

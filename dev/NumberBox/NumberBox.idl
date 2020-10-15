@@ -1,23 +1,24 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum NumberBoxSpinButtonPlacementMode
 {
     Hidden,
+    Compact,
     Inline
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-enum NumberBoxBasicValidationMode
+enum NumberBoxValidationMode
 {
     InvalidInputOverwritten,
     Disabled
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass NumberBoxValueChangedEventArgs
 {
@@ -25,7 +26,7 @@ runtimeclass NumberBoxValueChangedEventArgs
     Double NewValue{ get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 {
@@ -39,32 +40,56 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double Maximum;
 
-    [MUX_DEFAULT_VALUE("0")]
+    [MUX_DEFAULT_VALUE("std::numeric_limits<double>::quiet_NaN()")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double Value;
 
     [MUX_DEFAULT_VALUE("1")]
-    Double StepFrequency;
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Double SmallChange;
 
-    String Header;
+    [MUX_DEFAULT_VALUE("10")]
+    Double LargeChange;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
 
+    // TextBox properties
+    Object Header;
+    Windows.UI.Xaml.DataTemplate HeaderTemplate;
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.UI.Xaml.Input.InputScope InputScope;
+    }
+
     String PlaceholderText;
+    Windows.UI.Xaml.Controls.Primitives.FlyoutBase SelectionFlyout;
+    Windows.UI.Xaml.Media.SolidColorBrush SelectionHighlightColor;
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        [MUX_DEFAULT_VALUE("winrt::TextAlignment::Left")]
+        Windows.UI.Xaml.TextAlignment TextAlignment;
+    }
+
+    Windows.UI.Xaml.TextReadingOrder TextReadingOrder;
+    Boolean PreventKeyboardDisplayOnProgrammaticFocus;
+    Object Description;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    NumberBoxBasicValidationMode BasicValidationMode;
+    NumberBoxValidationMode ValidationMode;
 
     [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode{ get; set; };
 
     [MUX_DEFAULT_VALUE("false")]
-    Boolean HyperScrollEnabled;
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsWrapEnabled;
 
     [MUX_DEFAULT_VALUE("false")]
-    Boolean WrapEnabled;
+    Boolean AcceptsExpression;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateNumberFormatter")]
@@ -75,16 +100,37 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty MinimumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaximumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
-
-    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SmallChangeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LargeChangeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty InputScopeProperty{ get; };
+    }
+
+    static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectionHighlightColorProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty TextAlignmentProperty{ get; };
+    }
+
+    static Windows.UI.Xaml.DependencyProperty TextReadingOrderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreventKeyboardDisplayOnProgrammaticFocusProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty ValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty WrapEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsWrapEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty AcceptsExpressionProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty NumberFormatterProperty{ get; };
 }
@@ -94,7 +140,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass NumberBoxAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {

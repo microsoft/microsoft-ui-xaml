@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ColorSpectrum.h"
 
-CppWinRTActivatableClassWithDPFactory(ColorSpectrum)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(ColorSpectrum)
+}
+
+#include "ColorSpectrum.g.cpp"
 
 GlobalDependencyProperty ColorSpectrumProperties::s_ColorProperty{ nullptr };
 GlobalDependencyProperty ColorSpectrumProperties::s_ComponentsProperty{ nullptr };
@@ -235,7 +240,10 @@ void ColorSpectrumProperties::OnShapePropertyChanged(
 
 void ColorSpectrumProperties::Color(winrt::Color const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_ColorProperty, ValueHelper<winrt::Color>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Color ColorSpectrumProperties::Color()
@@ -245,7 +253,10 @@ winrt::Color ColorSpectrumProperties::Color()
 
 void ColorSpectrumProperties::Components(winrt::ColorSpectrumComponents const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_ComponentsProperty, ValueHelper<winrt::ColorSpectrumComponents>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ColorSpectrumComponents ColorSpectrumProperties::Components()
@@ -255,7 +266,10 @@ winrt::ColorSpectrumComponents ColorSpectrumProperties::Components()
 
 void ColorSpectrumProperties::HsvColor(winrt::float4 const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_HsvColorProperty, ValueHelper<winrt::float4>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::float4 ColorSpectrumProperties::HsvColor()
@@ -265,7 +279,10 @@ winrt::float4 ColorSpectrumProperties::HsvColor()
 
 void ColorSpectrumProperties::MaxHue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_MaxHueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorSpectrumProperties::MaxHue()
@@ -275,7 +292,10 @@ int ColorSpectrumProperties::MaxHue()
 
 void ColorSpectrumProperties::MaxSaturation(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_MaxSaturationProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorSpectrumProperties::MaxSaturation()
@@ -285,7 +305,10 @@ int ColorSpectrumProperties::MaxSaturation()
 
 void ColorSpectrumProperties::MaxValue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_MaxValueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorSpectrumProperties::MaxValue()
@@ -295,7 +318,10 @@ int ColorSpectrumProperties::MaxValue()
 
 void ColorSpectrumProperties::MinHue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_MinHueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorSpectrumProperties::MinHue()
@@ -305,7 +331,10 @@ int ColorSpectrumProperties::MinHue()
 
 void ColorSpectrumProperties::MinSaturation(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_MinSaturationProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorSpectrumProperties::MinSaturation()
@@ -315,7 +344,10 @@ int ColorSpectrumProperties::MinSaturation()
 
 void ColorSpectrumProperties::MinValue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_MinValueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorSpectrumProperties::MinValue()
@@ -325,7 +357,10 @@ int ColorSpectrumProperties::MinValue()
 
 void ColorSpectrumProperties::Shape(winrt::ColorSpectrumShape const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorSpectrum*>(this)->SetValue(s_ShapeProperty, ValueHelper<winrt::ColorSpectrumShape>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ColorSpectrumShape ColorSpectrumProperties::Shape()

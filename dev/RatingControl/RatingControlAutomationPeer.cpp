@@ -7,6 +7,8 @@
 #include "RatingControlAutomationPeer.h"
 #include "Utils.h"
 
+#include "RatingControlAutomationPeer.properties.cpp"
+
 RatingControlAutomationPeer::RatingControlAutomationPeer(winrt::FrameworkElement const& owner)
     : ReferenceTracker(owner)
 {
@@ -149,7 +151,7 @@ winrt::RatingControl RatingControlAutomationPeer::GetRatingControl()
 int RatingControlAutomationPeer::DetermineFractionDigits(double value)
 {
     value = value * 100;
-    int intValue = (int)value;
+    const int intValue = (int)value;
 
     // When reading out the Value_Value, we want clients to read out the least number of digits
     // possible. We don't want a 3 (represented as a double) to be read out as 3.00...
@@ -192,8 +194,8 @@ winrt::hstring RatingControlAutomationPeer::GenerateValue_ValueString(const winr
 
     std::wstring maxRatingString = std::to_wstring(GetRatingControl().MaxRating());
 
-    int fractionDigits = DetermineFractionDigits(ratingValue);
-    int sigDigits = DetermineSignificantDigits(ratingValue, fractionDigits);
+    const int fractionDigits = DetermineFractionDigits(ratingValue);
+    const int sigDigits = DetermineSignificantDigits(ratingValue, fractionDigits);
     formatter.FractionDigits(fractionDigits);
     rounder.SignificantDigits(sigDigits);
     winrt::hstring ratingString = formatter.Format(ratingValue);

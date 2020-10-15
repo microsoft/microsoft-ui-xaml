@@ -6,7 +6,7 @@
 
 #include "SliderInteraction.h"
 
-CppWinRTActivatableClassWithBasicFactory(SliderInteraction)
+#include "SliderInteraction.properties.cpp"
 
 winrt::Orientation SliderInteraction::Orientation()
 {
@@ -15,8 +15,7 @@ winrt::Orientation SliderInteraction::Orientation()
 
 void SliderInteraction::Orientation(winrt::Orientation const& value)
 {
-
-    auto orientation = value;
+    const auto orientation = value;
     if (orientation != m_orientation)
     {
         m_orientation = orientation;
@@ -183,9 +182,9 @@ void SliderInteraction::OnPointerMoved(winrt::UIElement const& sender, winrt::Po
     {
         const auto& target = sender;
         const auto& pointerArgs = args;
-        auto position = pointerArgs.GetCurrentPoint(target).Position();
+        const auto position = pointerArgs.GetCurrentPoint(target).Position();
 
-        winrt::Point delta(m_capturePosition.X - position.X, m_capturePosition.Y - position.Y);
+        const winrt::Point delta(m_capturePosition.X - position.X, m_capturePosition.Y - position.Y);
 
         UpdatePosition(m_orientation == winrt::Orientation::Horizontal ? -delta.X : -delta.Y);
     }

@@ -5,6 +5,8 @@
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
+#include "TeachingTipAutomationPeer.properties.cpp"
+
 TeachingTipAutomationPeer::TeachingTipAutomationPeer(winrt::TeachingTip const& owner) : ReferenceTracker(owner)
 {
 }

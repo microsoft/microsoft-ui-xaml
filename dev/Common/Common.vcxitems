@@ -29,13 +29,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.h" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <Priority>1</Priority>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverters.idl" />
   </ItemGroup>

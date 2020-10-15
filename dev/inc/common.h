@@ -3,9 +3,6 @@
 
 #pragma once
 
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Numerics;
 

@@ -14,16 +14,15 @@ public:
     InspectingDataSource(const winrt::IInspectable& source);
     ~InspectingDataSource();
 
-#pragma region IDataSourceOverrides
+#pragma region ItemsSourceViewOverrides
 
     int32_t GetSizeCore() override;
     winrt::IInspectable GetAtCore(int index) override;
     bool HasKeyIndexMappingCore() override;
     winrt::hstring KeyFromIndexCore(int index) override;
     int IndexFromKeyCore(winrt::hstring const& id) override;
+    int IndexOfCore(winrt::IInspectable const& value);
 #pragma endregion
-
-    int IndexOf(winrt::IInspectable const& value);
 
 private:
     winrt::Collections::IVector<winrt::IInspectable>
@@ -45,6 +44,7 @@ private:
         const winrt::Collections::IVectorChangedEventArgs& e);
 
     tracker_ref<winrt::Collections::IVector<winrt::IInspectable>> m_vector{ this };
+    tracker_ref<winrt::Collections::IVectorView<winrt::IInspectable>> m_vectorView{ this };
 
     // To unhook event from data source
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };

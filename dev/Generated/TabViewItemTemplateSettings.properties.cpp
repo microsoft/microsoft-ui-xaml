@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TabViewItemTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(TabViewItemTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TabViewItemTemplateSettings)
+}
+
+#include "TabViewItemTemplateSettings.g.cpp"
 
 GlobalDependencyProperty TabViewItemTemplateSettingsProperties::s_IconElementProperty{ nullptr };
 
@@ -37,7 +42,10 @@ void TabViewItemTemplateSettingsProperties::ClearProperties()
 
 void TabViewItemTemplateSettingsProperties::IconElement(winrt::IconElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<TabViewItemTemplateSettings*>(this)->SetValue(s_IconElementProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IconElement TabViewItemTemplateSettingsProperties::IconElement()

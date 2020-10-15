@@ -6,50 +6,11 @@
 #include "common.h"
 #include "SwipeTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(SwipeTestHooks)
-
-
-SwipeTestHooksProperties::SwipeTestHooksProperties()
-    : m_idleStatusChangedEventSource{static_cast<SwipeTestHooks*>(this)}
-    , m_lastInteractedWithSwipeControlChangedEventSource{static_cast<SwipeTestHooks*>(this)}
-    , m_openedStatusChangedEventSource{static_cast<SwipeTestHooks*>(this)}
+namespace winrt::Microsoft::UI::Private::Controls
 {
+    CppWinRTActivatableClassWithBasicFactory(SwipeTestHooks)
 }
 
-void SwipeTestHooksProperties::EnsureProperties()
-{
-}
+#include "SwipeTestHooks.g.cpp"
 
-void SwipeTestHooksProperties::ClearProperties()
-{
-}
 
-winrt::event_token SwipeTestHooksProperties::IdleStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value)
-{
-    return m_idleStatusChangedEventSource.add(value);
-}
-
-void SwipeTestHooksProperties::IdleStatusChanged(winrt::event_token const& token)
-{
-    m_idleStatusChangedEventSource.remove(token);
-}
-
-winrt::event_token SwipeTestHooksProperties::LastInteractedWithSwipeControlChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value)
-{
-    return m_lastInteractedWithSwipeControlChangedEventSource.add(value);
-}
-
-void SwipeTestHooksProperties::LastInteractedWithSwipeControlChanged(winrt::event_token const& token)
-{
-    m_lastInteractedWithSwipeControlChangedEventSource.remove(token);
-}
-
-winrt::event_token SwipeTestHooksProperties::OpenedStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value)
-{
-    return m_openedStatusChangedEventSource.add(value);
-}
-
-void SwipeTestHooksProperties::OpenedStatusChanged(winrt::event_token const& token)
-{
-    m_openedStatusChangedEventSource.remove(token);
-}

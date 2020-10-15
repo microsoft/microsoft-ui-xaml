@@ -25,6 +25,7 @@ private:
 public:
     static winrt::hstring GetLocalizedStringResource(const wstring_view &resourceName);
     static winrt::LoadedImageSurface GetImageSurface(const wstring_view &assetName, winrt::Size imageSize);
+    static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 
     static bool IsResourceIdNull(ResourceIdType resourceId)
     {
@@ -45,6 +46,7 @@ public:
 #define SR_NavigationCloseButtonName L"NavigationCloseButtonName"
 #define SR_NavigationOverflowButtonName L"NavigationOverflowButtonName"
 #define SR_NavigationOverflowButtonText L"NavigationOverflowButtonText"
+#define SR_NavigationOverflowButtonToolTip L"NavigationOverflowButtonToolTip"
 #define SR_SettingsButtonName L"SettingsButtonName"
 #define SR_NavigationViewSearchButtonName L"NavigationViewSearchButtonName"
 #define SR_TextAlphaLabel L"TextAlphaLabel"
@@ -112,6 +114,11 @@ public:
 #define SR_PlaceAfterString L"PlaceAfterString"
 #define SR_PlaceBeforeString L"PlaceBeforeString"
 #define SR_PlaceBetweenString L"PlaceBetweenString"
+#define SR_ProgressRingName L"ProgressRingName"
+#define SR_ProgressRingIndeterminateStatus L"ProgressRingIndeterminateStatus"
+#define SR_ProgressBarIndeterminateStatus L"ProgressBarIndeterminateStatus"
+#define SR_ProgressBarPausedStatus L"ProgressBarPausedStatus"
+#define SR_ProgressBarErrorStatus L"ProgressBarErrorStatus"
 #define SR_RatingLocalizedControlType L"RatingLocalizedControlType"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"
 #define SR_ProofingMenuItemLabel L"ProofingMenuItemLabel"
@@ -150,6 +157,10 @@ public:
 #define SR_TabViewAddButtonName L"TabViewAddButtonName"
 #define SR_TabViewAddButtonTooltip L"TabViewAddButtonTooltip"
 #define SR_TabViewCloseButtonName L"TabViewCloseButtonName"
+#define SR_TabViewCloseButtonTooltip L"TabViewCloseButtonTooltip"
+#define SR_TabViewCloseButtonTooltipWithKA L"TabViewCloseButtonTooltipWithKA"
+#define SR_TabViewScrollDecreaseButtonTooltip L"TabViewScrollDecreaseButtonTooltip"
+#define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 

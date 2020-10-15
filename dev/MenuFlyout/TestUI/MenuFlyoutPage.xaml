@@ -9,9 +9,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
 
-        <Button Content="MenuFlyout">
+        <Button Content="MenuFlyout" VerticalAlignment="Top">
             <Button.Flyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Text="MenuFlyoutItem"/>

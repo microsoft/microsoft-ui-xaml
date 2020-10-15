@@ -22,61 +22,100 @@
         </Grid.ColumnDefinitions>
 
         <ScrollViewer Grid.Column="0" Height="Auto">
-            <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Center" Width="Auto" Height="Auto">
-                <CheckBox x:Name="SimulateTouchCheckBox" AutomationProperties.Name="SimulateTouchCheckBox" Content="Simulate Touch" Checked="SimulateTouchCheckBox_Checked" Unchecked="SimulateTouchCheckBox_Unchecked"/>
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Center"
+                        Width="Auto" Height="Auto">
+                <StackPanel Style="{ThemeResource StandardGroupingStackPanel}">
+                    <TextBlock Text="Interaction test area" Style="{ThemeResource StandardGroupHeader}"/>
+                    <CheckBox x:Name="SimulateTouchCheckBox" AutomationProperties.Name="SimulateTouchCheckBox"
+                              Content="Simulate Touch" Checked="SimulateTouchCheckBox_Checked" Unchecked="SimulateTouchCheckBox_Unchecked"/>
+                    <TextBlock Text="Status" FontSize="22"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>Click count:</TextBlock>
+                        <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>Flyout opened:</TextBlock>
+                        <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>Flyout closed:</TextBlock>
+                        <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Click count:</TextBlock>
-                    <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                    <TextBlock Text="Test SplitButton" FontSize="22"/>
+                    <controls:SplitButton x:Name="TestSplitButton" AutomationProperties.Name="TestSplitButton" Margin="0,12,0,0" Content="Test Button" Click="TestSplitButton_Click">
+                        <controls:SplitButton.Flyout>
+                            <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Opened="TestSplitButtonFlyout_Opened" Closed="TestSplitButtonFlyout_Closed">
+                                <TextBlock Text="Hello"/>
+                            </Flyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Flyout opened:</TextBlock>
-                    <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock" Margin="4,0,0,0" Text="0"/>
+
+                <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,8,0,0">
+                    <TextBlock Text="Demo controls" Style="{ThemeResource StandardGroupHeader}"/>
+                    <controls:SplitButton Margin="0,12,0,0" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12">
+                        <controls:SplitButton.Flyout>
+                            <Flyout>
+                                <TextBlock Text="This button has a glyph as content"/>
+                            </Flyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
+
+                    <StackPanel Orientation="Horizontal">
+                        <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="300" Height="50">
+                            <controls:SplitButton.Flyout>
+                                <Flyout>
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                        <controls:SplitButton Margin="8,12,0,0" Content="Reveal SplitButton (default)" Style="{ThemeResource SplitButtonRevealStyle}" Width="300" Height="50">
+                            <controls:SplitButton.Flyout>
+                                <Flyout>
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                    </StackPanel>
+
+                    <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (topleft)" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Width="400" Height="50">
+                        <controls:SplitButton.Flyout>
+                            <Flyout>
+                                <TextBlock Text="Hello"/>
+                            </Flyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
+
+                    <util:ControlStateViewer x:Name="ControlStateViewer" Margin="0,16,0,0"/>
+
+                    <util:ControlStateViewer x:Name="ToggleControlStateViewer" Margin="0,6,0,0"/>
+
+                    <controls:SplitButton Content="Bottom center flyout">
+                        <controls:SplitButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="SubAction 1" />
+                                <MenuFlyoutItem Text="SubAction2" />
+                            </MenuFlyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
+
+                    <controls:SplitButton Content="Top aligned flyout">
+                        <controls:SplitButton.Flyout>
+                            <MenuFlyout Placement="Top">
+                                <MenuFlyoutItem Text="SubAction 1" />
+                                <MenuFlyoutItem Text="SubAction2" />
+                            </MenuFlyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
+                    
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Flyout closed:</TextBlock>
-                    <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock" Margin="4,0,0,0" Text="0"/>
-                </StackPanel>
-
-                <controls:SplitButton x:Name="TestSplitButton" AutomationProperties.Name="TestSplitButton" Margin="0,12,0,0" Content="Test Button" Click="TestSplitButton_Click">
-                    <controls:SplitButton.Flyout>
-                        <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Opened="TestSplitButtonFlyout_Opened" Closed="TestSplitButtonFlyout_Closed">
-                            <TextBlock Text="Hello"/>
-                        </Flyout>
-                    </controls:SplitButton.Flyout>
-                </controls:SplitButton>
-
-                <controls:SplitButton Margin="0,12,0,0" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12">
-                    <controls:SplitButton.Flyout>
-                        <Flyout>
-                            <TextBlock Text="This button has a glyph as content"/>
-                        </Flyout>
-                    </controls:SplitButton.Flyout>
-                </controls:SplitButton>
-
-                <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="400" Height="50">
-                    <controls:SplitButton.Flyout>
-                        <Flyout>
-                            <TextBlock Text="Hello"/>
-                        </Flyout>
-                    </controls:SplitButton.Flyout>
-                </controls:SplitButton>
-
-                <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (topleft)" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Width="400" Height="50">
-                    <controls:SplitButton.Flyout>
-                        <Flyout>
-                            <TextBlock Text="Hello"/>
-                        </Flyout>
-                    </controls:SplitButton.Flyout>
-                </controls:SplitButton>
-
-                <util:ControlStateViewer x:Name="ControlStateViewer" Margin="0,16,0,0"/>
-
-                <util:ControlStateViewer x:Name="ToggleControlStateViewer" Margin="0,6,0,0"/>
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="12,0,0,0">
+        <StackPanel Grid.Column="1"  Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Left"
+                    Margin="8,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}">
+            <TextBlock Text="Demo interaction controls" Style="{ThemeResource StandardGroupHeader}"/>
             <StackPanel Orientation="Horizontal">
                 <controls:ToggleSplitButton x:Name="ToggleSplitButton" AutomationProperties.Name="ToggleSplitButton" Content="Toggle" IsCheckedChanged="ToggleSplitButton_IsCheckedChanged" Click="ToggleSplitButton_Click">
                     <controls:SplitButton.Flyout>
@@ -95,6 +134,11 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Toggle State on Click:</TextBlock>
                 <TextBlock x:Name="ToggleStateOnClickTextBlock" AutomationProperties.Name="ToggleStateOnClickTextBlock" Margin="4,0,0,0" Text="Unchecked"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,12">
+                <controls:ToggleSplitButton x:Name="BindingToggleSplitButton" Content="IsChecked" IsChecked="{Binding IsChecked, ElementName=IsCheckedCheckBox, Mode=TwoWay}"/>
+                <CheckBox x:Name="IsCheckedCheckBox" Content="IsChecked" IsChecked="False" Margin="12,0,0,0"/>
             </StackPanel>
 
             <controls:ToggleSplitButton Content="Initially Checked" IsChecked="True"/>

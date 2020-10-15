@@ -78,7 +78,7 @@
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
             <StackPanel Orientation="Horizontal">
                 <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
-                    <Grid Background="Bisque" Margin="5" MinWidth="300">
+                    <Grid Background="{ThemeResource SystemChromeLowColor}" Margin="5" MinWidth="300" Padding="6">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -166,20 +166,20 @@
                         <Button AutomationProperties.Name="SetIconButton" Click="OnSetIconButtonClicked" Grid.Column="1" Grid.Row="5">Set</Button>
 
                         <TextBlock Grid.Row="6" Text="Title:" Foreground="Red"/>
-                        <ComboBox x:Name="TitleComboBox" Grid.Row="7">
+                        <ComboBox x:Name="TitleComboBox" AutomationProperties.Name="TitleComboBox" Grid.Row="7">
                             <ComboBoxItem x:Name="TitleNo">No title</ComboBoxItem>
                             <ComboBoxItem x:Name="TitleSmall">Small text</ComboBoxItem>
                             <ComboBoxItem x:Name="TitleLong">Long text</ComboBoxItem>
                         </ComboBox>
-                        <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
+                        <Button AutomationProperties.Name="SetTitleButton" Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
 
                         <TextBlock Grid.Row="8" Text="Subtitle:" Foreground="Red"/>
-                        <ComboBox x:Name="SubtitleComboBox" Grid.Row="9">
+                        <ComboBox x:Name="SubtitleComboBox" AutomationProperties.Name="SubtitleComboBox" Grid.Row="9">
                             <ComboBoxItem x:Name="SubtitleNo">No subtitle</ComboBoxItem>
                             <ComboBoxItem x:Name="SubtitleSmall">Small text</ComboBoxItem>
                             <ComboBoxItem x:Name="SubtitleLong">Long text</ComboBoxItem>
                         </ComboBox>
-                        <Button Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
+                        <Button AutomationProperties.Name="SetSubtitleButton" Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
 
                         <TextBlock Grid.Row="10" Text="Content:" Foreground="Red"/>
                         <ComboBox x:Name="ContentComboBox" Grid.Row="11">
@@ -308,8 +308,9 @@
                 </ScrollViewer>
 
                 <ScrollViewer>
-                    <Grid Margin="5" MinWidth="300">
+                    <Grid Margin="5" MinWidth="300" Padding="6">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -409,11 +410,19 @@
                             <TextBlock Text="Vert: "/>
                             <TextBlock x:Name="PopupVerticalOffsetTextBlock" AutomationProperties.Name="PopupVerticalOffsetTextBlock"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.Column="1">
                             <TextBlock Text="Hor: "/>
                             <TextBlock x:Name="PopupHorizontalOffsetTextBlock" AutomationProperties.Name="PopupHorizontalOffsetTextBlock"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="8" Text="Teaching Tip Size:" Foreground="Red"/>
+                        <TextBlock Grid.Row="7" Text="Teaching Tip Info:" Foreground="Red"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="8">
+                            <TextBlock Text="Title Vis:"/>
+                            <TextBlock x:Name="TitleVisibilityTextBlock" AutomationProperties.Name="TitleVisibilityTextBlock"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Grid.Row="8" Grid.Column="1">
+                            <TextBlock Text="Subtitle Vis:"/>
+                            <TextBlock x:Name="SubtitleVisibilityTextBlock" AutomationProperties.Name="SubtitleVisibilityTextBlock"/>
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Row="9">
                             <TextBlock Text="Height: "/>
                             <TextBlock x:Name="TipHeightTextBlock" AutomationProperties.Name="TipHeightTextBlock"/>
@@ -539,15 +548,20 @@
                         <Slider Grid.Row="46" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="TailElevationSliderChanged" Value="0"/>
 
                         <TextBlock Grid.Row="47" Foreground="Red" Text="Is Page RTL" VerticalAlignment="Center"/>
-                        <CheckBox Grid.Row="47" Grid.Column="1" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
+                        <CheckBox Grid.Row="47" Grid.Column="1" AutomationProperties.Name="PageRTLCheckbox" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
                         <Button Grid.Row="48" Grid.Column="0" x:Name="RemoveTeachingTipButton" Click="RemoveTeachingTipButton_Click">Remove tooltip from page</Button>
                         <CheckBox  Grid.Row="48" Grid.Column="1" x:Name="VisualTreeTeachingTipContentTextBlockUnloaded">Visual tree teachingtip unloaded</CheckBox>
                         <Button Grid.Row="49" x:Name="RemoveButtonFromVisualTreeButton" Click="RemoveOpenButton_Click">Remove button from visual tree</Button>
+                        <StackPanel Grid.Row="50" Orientation="Horizontal">
+                            <Button x:Name="GetEdgeTeachingTipOffset" Click="GetEdgeTeachingTipOffset_Clicked"
+                                    AutomationProperties.Name="GetEdgeTeachingTipOffset">Get TeachingTip on edge offset</Button>
+                            <TextBlock x:Name="EdgeTeachingTipOffset" AutomationProperties.Name="EdgeTeachingTipOffset">0;0</TextBlock>
+                        </StackPanel>
                     </Grid>
                 </ScrollViewer>
 
                 <!-- Logging Output -->
-                <Grid Background="Bisque" Margin="5" MaxWidth="400">
+                <Grid Background="{ThemeResource SystemChromeLowColor}" Margin="5" MaxWidth="400" Padding="6">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -571,5 +585,29 @@
             </StackPanel>
         </ScrollViewer>
 
+        <Grid Grid.Column="2">
+            <Button x:Name="targetButtonRightEdge" HorizontalAlignment="Right" AutomationProperties.Name="TargetButtonRightEdge" VerticalAlignment="Top" Click="OnShowButtonClickedRightEdge"
+                    Height="40" Width="100">Click to open TeachingTip
+                <Button.Resources>
+                    <muxc:TeachingTip x:Name="TeachingTipInResourcesOnEdge" 
+                                          AutomationProperties.Name="TeachingTipInResourcesOnEdge"
+                                          Title="We've Added Auto Saving!" 
+                                          Subtitle="Documents will now automatically save to OneDrive." 
+                                          Target="{x:Bind targetButtonRightEdge}">
+                        <muxc:TeachingTip.IconSource>
+                            <muxc:SymbolIconSource Symbol="People"/>
+                        </muxc:TeachingTip.IconSource>
+                        <muxc:TeachingTip.HeroContent>
+                            <Grid MinHeight="200" MinWidth="200" Background="red"/>
+                        </muxc:TeachingTip.HeroContent>
+                        <muxc:TeachingTip.Content>
+                            <StackPanel Orientation="Horizontal"   >
+                                <TextBlock>Just some demo text</TextBlock>
+                            </StackPanel>
+                        </muxc:TeachingTip.Content>
+                    </muxc:TeachingTip>
+                </Button.Resources>
+            </Button>
+        </Grid>
     </Grid>
 </local:TestPage>

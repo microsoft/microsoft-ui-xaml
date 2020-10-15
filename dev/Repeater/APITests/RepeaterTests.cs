@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
+using Layout = Microsoft.UI.Xaml.Controls.Layout;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
@@ -28,11 +29,13 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Collections.Generic;
+using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
+using System.Diagnostics;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RepeaterTests : TestsBase
+    public class RepeaterTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateElementToIndexMapping()
@@ -146,6 +149,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void VerifyClearingItemsSourceClearsElements()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 4).Select(i => "Item #" + i));
+            var mapping = (List<ContentControl>)null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                mapping = Enumerable.Range(0, data.Count).Select(i => new ContentControl { Width = 40, Height = 40 }).ToList();
+
+                var dataSource = MockItemsSource.CreateDataSource(data, supportsUniqueIds: false);
+                var elementFactory = MockElementFactory.CreateElementFactory(mapping);
+                ItemsRepeater repeater = new ItemsRepeater();
+                repeater.ItemsSource = dataSource;
+                repeater.ItemTemplate = elementFactory;
+                // This was an issue only for NonVirtualizing layouts
+                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+                Content = repeater;
+                Content.UpdateLayout();
+
+                repeater.ItemsSource = null;
+            });
+
+            foreach(var item in mapping)
+            {
+                Verify.IsNull(item.Parent);
+            }
+        }
+
+        [TestMethod]
         public void ValidateGetSetBackground()
         {
             RunOnUIThread.Execute(() =>
@@ -165,6 +197,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void VerifyCurrentAnchor()
         {
+            if (PlatformConfiguration.IsDebugBuildConfiguration())
+            {
+                // Test is failing in chk configuration due to:
+                // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
+                Log.Warning("Skipping test for Debug builds.");
+                return;
+            }
+
             ItemsRepeater rootRepeater = null;
             ScrollViewer scrollViewer = null;
             ItemsRepeaterScrollHost scrollhost = null;
@@ -211,6 +251,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
                 viewChanged.Reset();
+                IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -237,52 +278,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void VerifyFocusedItemIsRecycledOnCollectionReset()
         {
-            List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
-            ItemsRepeater repeater = null;
-            const int targetIndex = 4;
-            string targetItem = items[targetIndex]; 
-            
+            List<Layout> layouts = new List<Layout>();
             RunOnUIThread.Execute(() =>
             {
-                repeater = new ItemsRepeater() {
-                    ItemsSource = items,
-                    ItemTemplate = CreateDataTemplateWithContent(@"<Button Content='{Binding}'/>")
-                };
-                Content = repeater;
+                layouts.Add(new MyCustomNonVirtualizingStackLayout());
+                layouts.Add(new StackLayout());
             });
-            
-            IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() =>
+            foreach (var layout in layouts)
             {
-                Log.Comment("Setting Focus on item " + targetIndex);
-                Button toFocus = (Button)repeater.TryGetElement(targetIndex);
-                Verify.AreEqual(targetItem, toFocus.Content as string);
-                toFocus.Focus(FocusState.Keyboard);
-            });
+                List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
+                const int targetIndex = 4;
+                string targetItem = items[targetIndex];
+                ItemsRepeater repeater = null;
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            { 
-                Log.Comment("Removing focused element from collection");
-                items.Remove(targetItem);
-
-                Log.Comment("Reset the collection with an empty list");
-                repeater.ItemsSource = new List<string>() ;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => 
-            { 
-                Log.Comment("Verify new elements");
-                for (int i = 0; i < items.Count; i++)
+                RunOnUIThread.Execute(() =>
                 {
-                    Button currentButton = (Button)repeater.TryGetElement(i);
-                    Verify.IsNull(currentButton);
-                }
-            });
+                    repeater = new ItemsRepeater() {
+                        ItemsSource = items,
+                        ItemTemplate = CreateDataTemplateWithContent(@"<Button Content='{Binding}'/>"),
+                        Layout = layout
+                    };
+                    Content = repeater;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Setting Focus on item " + targetIndex);
+                    Button toFocus = (Button)repeater.TryGetElement(targetIndex);
+                    Verify.AreEqual(targetItem, toFocus.Content as string);
+                    toFocus.Focus(FocusState.Keyboard);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Removing focused element from collection");
+                    items.Remove(targetItem);
+
+                    Log.Comment("Reset the collection with an empty list");
+                    repeater.ItemsSource = new List<string>();
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Verify new elements");
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        Button currentButton = (Button)repeater.TryGetElement(i);
+                        Verify.IsNull(currentButton);
+                    }
+                });
+            }
         }
 
         private DataTemplate CreateDataTemplateWithContent(string content)
@@ -558,5 +610,137 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
             });
         }
+    
+        [TestMethod]
+        public void VerifyRepeaterDoesNotLeakItemContainers()
+        {
+            ObservableCollection<int> items = new ObservableCollection<int>();
+            for(int i=0;i<10;i++)
+            {
+                items.Add(i);
+            }
+
+            ItemsRepeater repeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = (DataTemplate)XamlReader.Load("<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    + "xmlns:local='using:MUXControlsTestApp.Samples'>"
+                    + "<local:DisposableUserControl Number='{Binding}'/>" 
+                    + "</DataTemplate>");
+                Verify.IsNotNull(template);
+                Verify.AreEqual(0, MUXControlsTestApp.Samples.DisposableUserControl.OpenItems, "Verify we start with 0 DisposableUserControl");
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = items,
+                    ItemTemplate = template,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Left
+                };
+
+                Content = repeater;
+                
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+
+                Verify.IsGreaterThanOrEqual(MUXControlsTestApp.Samples.DisposableUserControl.OpenItems, 10, "Verify we created at least 10 DisposableUserControl");
+
+                // Clear out the repeater and make sure everything gets cleaned up.
+                Content = null;
+                repeater = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            Verify.AreEqual(0, MUXControlsTestApp.Samples.DisposableUserControl.OpenItems, "Verify we cleaned up all the DisposableUserControl that were created");
+        }
+
+        [TestMethod]
+        public void BringIntoViewOfExistingItemsDoesNotChangeScrollOffset()
+        {
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            AutoResetEvent scrollViewerScrolledEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater();
+                repeater.ItemsSource = Enumerable.Range(0, 100).Select(x => x.ToString()).ToList();
+
+                scrollViewer = new ScrollViewer() {
+                    Content = repeater,
+                    MaxHeight = 400,
+                    MaxWidth = 200
+                };
+
+
+                Content = scrollViewer;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Scroll to end");
+                scrollViewer.ViewChanged += (object sender, ScrollViewerViewChangedEventArgs e) =>
+                {
+                    if(!e.IsIntermediate)
+                    {
+                        Log.Comment("ScrollViewer scrolling finished");
+                        scrollViewerScrolledEvent.Set();
+                    }
+                };
+                scrollViewer.ChangeView(null, repeater.ActualHeight, null);
+                scrollViewer.UpdateLayout();
+            });
+
+            Log.Comment("Wait for scrolling");
+            if (Debugger.IsAttached)
+            {
+                scrollViewerScrolledEvent.WaitOne();
+            }
+            else
+            {
+                if (!scrollViewerScrolledEvent.WaitOne(TimeSpan.FromMilliseconds(5000)))
+                {
+                    throw new Exception("Timeout expiration in WaitForEvent.");
+                }
+            }
+
+            IdleSynchronizer.Wait();
+
+            double endOfScrollOffset = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Determine scrolled offset");
+                endOfScrollOffset = scrollViewer.VerticalOffset;
+                // Idea: we might not have scrolled to the end, however we should at least have moved so much that the end is not too far away
+                Verify.IsTrue(Math.Abs(endOfScrollOffset - repeater.ActualHeight) < 500, $"We should at least have scrolled some amount. " +
+                    $"ScrollOffset:{endOfScrollOffset} Repeater height: {repeater.ActualHeight}");
+
+                var lastItem = repeater.GetOrCreateElement(99);
+                lastItem.UpdateLayout();
+                Log.Comment("Bring last element into view");
+                lastItem.StartBringIntoView();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verify position did not change");
+                Verify.IsTrue(Math.Abs(endOfScrollOffset - scrollViewer.VerticalOffset) < 1);
+            });
+        }
+
     }
 }

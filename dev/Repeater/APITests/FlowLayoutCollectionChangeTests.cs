@@ -36,7 +36,7 @@ using System.Collections.Generic;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class FlowLayoutCollectionChangeTests : TestsBase
+    public class FlowLayoutCollectionChangeTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateInserts()
@@ -307,6 +307,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void CanMoveItem()
+        {
+            CustomItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList()));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            var viewChangedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = SetupRepeater(dataSource, ref scrollViewer);
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChangedEvent.Set();
+                    }
+                };
+                scrollViewer.ChangeView(null, 400, null, true);
+            });
+
+            Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTime), "Waiting for ViewChanged.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(4, realized);
+
+                Log.Comment("Move before realized range.");
+                dataSource.Move(oldIndex: 0, newIndex: 1, count: 2, reset: false);
+                repeater.UpdateLayout();
+
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(4, realized);
+
+                Log.Comment("Move in realized range.");
+                dataSource.Move(oldIndex: 3, newIndex: 5, count: 2, reset: false);
+                repeater.UpdateLayout();
+
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(4, realized);
+
+                Log.Comment("Move after realized range");
+                dataSource.Move(oldIndex: 7, newIndex: 8, count: 2, reset: false);
+                repeater.UpdateLayout();
+
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(4, realized);
+            });
+        }
+
+        [TestMethod]
         public void VerifyElement0OwnershipInUniformGridLayout()
         {
             CustomItemsSource dataSource = null;
@@ -388,7 +441,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void ReplaceMultipleItems()
         {
             // TODO: Lower prioirty scenario. Tracked by work item: 9738020

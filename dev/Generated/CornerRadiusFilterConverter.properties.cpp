@@ -6,7 +6,12 @@
 #include "common.h"
 #include "CornerRadiusFilterConverter.h"
 
-CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
+}
+
+#include "CornerRadiusFilterConverter.g.cpp"
 
 GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_FilterProperty{ nullptr };
 GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_ScaleProperty{ nullptr };
@@ -50,7 +55,10 @@ void CornerRadiusFilterConverterProperties::ClearProperties()
 
 void CornerRadiusFilterConverterProperties::Filter(winrt::CornerRadiusFilterKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CornerRadiusFilterConverter*>(this)->SetValue(s_FilterProperty, ValueHelper<winrt::CornerRadiusFilterKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CornerRadiusFilterKind CornerRadiusFilterConverterProperties::Filter()
@@ -60,7 +68,10 @@ winrt::CornerRadiusFilterKind CornerRadiusFilterConverterProperties::Filter()
 
 void CornerRadiusFilterConverterProperties::Scale(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CornerRadiusFilterConverter*>(this)->SetValue(s_ScaleProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CornerRadiusFilterConverterProperties::Scale()

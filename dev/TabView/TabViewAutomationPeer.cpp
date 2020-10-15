@@ -8,6 +8,8 @@
 #include "TabViewAutomationPeer.h"
 #include "Utils.h"
 
+#include "TabViewAutomationPeer.properties.cpp"
+
 TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView const& owner)
     : ReferenceTracker(owner)
 {
@@ -16,6 +18,10 @@ TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView const& owner)
 // IAutomationPeerOverrides
 winrt::IInspectable TabViewAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
+    if (patternInterface == winrt::PatternInterface::Selection)
+    {
+        return *this;
+    }
     return __super::GetPatternCore(patternInterface);
 }
 
@@ -29,3 +35,27 @@ winrt::AutomationControlType TabViewAutomationPeer::GetAutomationControlTypeCore
     return winrt::AutomationControlType::Tab;
 }
 
+bool TabViewAutomationPeer::CanSelectMultiple()
+{
+    return false;
+}
+
+bool TabViewAutomationPeer::IsSelectionRequired()
+{
+    return true;
+}
+
+winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> TabViewAutomationPeer::GetSelection()
+{
+    if (auto tabView = Owner().try_as<TabView>())
+    {
+        if (auto tabViewItem = tabView->ContainerFromIndex(tabView->SelectedIndex()).try_as<winrt::TabViewItem>())
+        {
+            if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(tabViewItem))
+            {
+                return { ProviderFromPeer(peer) };
+            }
+        }
+    }
+    return {};
+}
