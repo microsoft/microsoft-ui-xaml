@@ -1091,5 +1091,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
             });
         }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemToolTip()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+
+                // Item with null content
+                var menuItem1 = new NavigationViewItem();
+
+                // Item with empty string as content
+                var menuItem2 = new NavigationViewItem();
+                menuItem2.Content = "";
+
+                // Item with null content and custom tooltip
+                var menuItem3 = new NavigationViewItem();
+                ToolTipService.SetToolTip(menuItem3, "Custom tooltip");
+
+                // Item with non-empty string content
+                var menuItem4 = new NavigationViewItem();
+                menuItem4.Content = "Item 4";
+
+                navView.MenuItems.Add(menuItem1);
+                navView.MenuItems.Add(menuItem2);
+                navView.MenuItems.Add(menuItem3);
+                navView.MenuItems.Add(menuItem4);
+
+                Content = navView;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(null, ToolTipService.GetToolTip(menuItem1), "Item 1's tooltip should have been [null].");
+                Verify.AreEqual(null, ToolTipService.GetToolTip(menuItem2), "Item 2's tooltip should have been [null].");
+                Verify.AreEqual("Custom tooltip", ToolTipService.GetToolTip(menuItem3), "Item 3's tooltip should have been \"Custom tooltip\".");
+                Verify.AreEqual("Item 4", ToolTipService.GetToolTip(menuItem4), "Item 4's tooltip should have been \"Item 4\".");
+            });
+        }
     }
 }
