@@ -79,6 +79,7 @@
 
                         <ToggleButton
                             x:Name="ExpanderHeader"
+                            AutomationProperties.AutomationId="ExpanderToggleButton"
                             MinWidth="0"
                             MinHeight="0"
                             Style="{StaticResource ExpanderDownHeaderStyle}"

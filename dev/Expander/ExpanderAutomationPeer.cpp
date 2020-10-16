@@ -46,6 +46,24 @@ winrt::AutomationControlType ExpanderAutomationPeer::GetAutomationControlTypeCor
     return winrt::AutomationControlType::Group;
 }
 
+bool ExpanderAutomationPeer::HasKeyboardFocusCore()
+{
+    auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
+
+    for (auto peer : childrenPeers)
+    {
+        if (peer.GetAutomationId() == L"ExpanderToggleButton")
+        {
+            // Since the EventsSource of the toggle button
+            // is the same as the expander's, we need to
+            // redirect the focus of the expander and base it on the toggle button's.
+            return peer.HasKeyboardFocus();
+        }
+    }
+
+    return GetInner().as<winrt::IAutomationPeerOverrides>().HasKeyboardFocusCore();
+}
+
 // IExpandCollapseProvider 
 
 winrt::ExpandCollapseState ExpanderAutomationPeer::ExpandCollapseState()

@@ -18,6 +18,7 @@ public:
     hstring GetClassNameCore();
     hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    bool HasKeyboardFocusCore();
 
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState();
