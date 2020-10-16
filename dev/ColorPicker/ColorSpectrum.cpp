@@ -124,6 +124,7 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
         case winrt::ColorSpectrumComponents::SaturationValue:
             isSaturationValue = true;
+            [[fallthrough]]; // fallthrough is explicitly wanted
         case winrt::ColorSpectrumComponents::SaturationHue:
             incrementChannel = winrt::ColorPickerHsvChannel::Saturation;
             break;
@@ -151,6 +152,7 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
         case winrt::ColorSpectrumComponents::SaturationValue:
             isSaturationValue = true;
+            [[fallthrough]]; // fallthrough is explicitly wanted
         case winrt::ColorSpectrumComponents::HueValue:
             incrementChannel = winrt::ColorPickerHsvChannel::Value;
             break;
