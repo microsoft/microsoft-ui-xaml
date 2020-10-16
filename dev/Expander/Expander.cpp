@@ -9,6 +9,8 @@
 #include "ExpanderAutomationPeer.h"
 #include "Utils.h"
 #include "winnls.h"
+#include "ExpanderCollapsedEventArgs.h"
+#include "ExpanderExpandingEventArgs.h"
 
 static constexpr auto c_toggleButton = L"ExpanderHeader"sv;
 
@@ -76,10 +78,16 @@ void Expander::OnApplyTemplate()
 
 void Expander::RaiseExpandingEvent(const winrt::Expander& container)
 {
+    auto eventArgs = winrt::make_self<ExpanderExpandingEventArgs>(*this);
+    eventArgs->ExpandingContent(container.Content());
+    m_expandingEventSource(*this, *eventArgs);
 }
 
 void Expander::RaiseCollapsedEvent(const winrt::Expander& container)
 {
+    auto eventArgs = winrt::make_self<ExpanderCollapsedEventArgs>(*this);
+    eventArgs->CollapsedContent(container.Content());
+    m_collapsedEventSource(*this, *eventArgs);
 }
 
 void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

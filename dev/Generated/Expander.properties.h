@@ -38,11 +38,11 @@ public:
 
     winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs> const& value);
     void Collapsed(winrt::event_token const& token);
-    winrt::event_token Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandedEventArgs> const& value);
-    void Expanded(winrt::event_token const& token);
+    winrt::event_token Expanding(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandingEventArgs> const& value);
+    void Expanding(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderCollapsedEventArgs>> m_collapsedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandedEventArgs>> m_expandedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandingEventArgs>> m_expandingEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

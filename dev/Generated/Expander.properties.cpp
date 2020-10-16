@@ -21,7 +21,7 @@ GlobalDependencyProperty ExpanderProperties::s_IsExpandedProperty{ nullptr };
 
 ExpanderProperties::ExpanderProperties()
     : m_collapsedEventSource{static_cast<Expander*>(this)}
-    , m_expandedEventSource{static_cast<Expander*>(this)}
+    , m_expandingEventSource{static_cast<Expander*>(this)}
 {
     EnsureProperties();
 }
@@ -185,12 +185,12 @@ void ExpanderProperties::Collapsed(winrt::event_token const& token)
     m_collapsedEventSource.remove(token);
 }
 
-winrt::event_token ExpanderProperties::Expanded(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandedEventArgs> const& value)
+winrt::event_token ExpanderProperties::Expanding(winrt::TypedEventHandler<winrt::Expander, winrt::ExpanderExpandingEventArgs> const& value)
 {
-    return m_expandedEventSource.add(value);
+    return m_expandingEventSource.add(value);
 }
 
-void ExpanderProperties::Expanded(winrt::event_token const& token)
+void ExpanderProperties::Expanding(winrt::event_token const& token)
 {
-    m_expandedEventSource.remove(token);
+    m_expandingEventSource.remove(token);
 }

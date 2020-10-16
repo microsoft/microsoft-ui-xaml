@@ -15,11 +15,15 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderExpandingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderCollapsedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Expander.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Expander.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderExpandingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderCollapsedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Expander.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.cpp" />
   </ItemGroup>
