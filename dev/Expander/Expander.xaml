@@ -5,7 +5,7 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
     <Style TargetType="local:Expander">
-        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
@@ -79,7 +79,6 @@
 
                         <ToggleButton
                             x:Name="ExpanderHeader"
-                            IsTabStop="False"
                             MinWidth="0"
                             MinHeight="0"
                             Style="{StaticResource ExpanderDownHeaderStyle}"
