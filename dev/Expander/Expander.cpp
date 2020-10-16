@@ -44,8 +44,8 @@ void Expander::OnApplyTemplate()
         {
             auto expanderEventsSource = expanderPeer.EventsSource() != nullptr ?
                                             expanderPeer.EventsSource() : 
-                                                expanderPeer;
-            toggleButtonPeer.EventsSource(expanderPeer);
+                                             expanderPeer;
+            toggleButtonPeer.EventsSource(expanderEventsSource);
         }
 
         // 2. If the expander doesn't have any AutomationProperties.Name set,
