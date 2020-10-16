@@ -18,19 +18,19 @@
                     <RepositionThemeTransition IsStaggeringEnabled="False" />
                 </TransitionCollection>
             </StackPanel.ChildrenTransitions>
-            
-            <controls:Expander HorizontalContentAlignment="Left" IsExpanded="True">
+
+            <controls:Expander AutomationProperties.AutomationId="ExpandedExpander" HorizontalContentAlignment="Left" IsExpanded="True">
                 <controls:Expander.Header>
                     <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is expanded by default." />
                 </controls:Expander.Header>
-                <TextBlock>Content</TextBlock>
+                <TextBlock AutomationProperties.AutomationId="ExpandedExpanderContent">Content</TextBlock>
             </controls:Expander>
-            
-            <controls:Expander AutomationProperties.Name="Expander2" HorizontalContentAlignment="Left" IsExpanded="False">
+
+            <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is not expanded by default." />
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is collapsed by default." />
                 </controls:Expander.Header>
-                <TextBlock>Content</TextBlock>
+                <TextBlock AutomationProperties.AutomationId="CollapsedExpanderContent">Content</TextBlock>
             </controls:Expander>
             
             <controls:Expander AutomationProperties.Name="ParentExpander" HorizontalContentAlignment="Left" IsExpanded="False">
