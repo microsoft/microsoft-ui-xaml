@@ -121,6 +121,10 @@
     <value>Close</value>
     <comment>Automation name of the close button.</comment>
   </data>
+  <data name="InfoBarCloseButtonTooltip" xml:space="preserve">
+    <value>Close</value>
+    <comment>The tooltip that appears on the Close button in InfoBar.</comment>
+  </data>
   <data name="InfoBarClosedNotification" xml:space="preserve">
     <value>InfoBar dismissed</value>
     <comment>The string read by narrator when the InfoBar closes.</comment>

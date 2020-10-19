@@ -47,6 +47,12 @@ void InfoBar::OnApplyTemplate()
             const auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonName);
             winrt::AutomationProperties::SetName(closeButton, closeButtonName);
         }
+
+        // Setup the tooltip for the close button
+        auto tooltip = winrt::ToolTip();
+        const auto closeButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCloseButtonTooltip);
+        tooltip.Content(box_value(closeButtonTooltipText));
+        winrt::ToolTipService::SetToolTip(closeButton, tooltip);
     }
 
     if (auto&& contentRootGrid = GetTemplateChildT<winrt::Button>(c_contentRootName, controlProtected))

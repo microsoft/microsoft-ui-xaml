@@ -167,5 +167,6 @@ public:
 #define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
 #define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
 #define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
+#define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
