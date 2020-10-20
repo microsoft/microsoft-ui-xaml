@@ -69,8 +69,8 @@ private:
     winrt::UIElement::PointerEntered_revoker m_pointerEnteredRevoker{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
 
-    winrt::IInspectable m_onMenuBarItemPointerPressedHandler{ nullptr };
-    winrt::IInspectable m_onMenuBarItemKeyDownHandler{ nullptr };
+    RoutedEventHandler_revoker m_onMenuBarItemPointerPressedRevoker{};
+    RoutedEventHandler_revoker m_onMenuBarItemKeyDownRevoker{};
 
     PropertyChanged_revoker m_pressedRevoker{};
     PropertyChanged_revoker m_pointerOverRevoker{};
