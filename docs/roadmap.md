@@ -143,7 +143,7 @@ Blank - Not included, or not planned to be included
 | Acrylic material                                                            |            |           |       | &#128994; |
 | Reveal Highlight                                                            |            |           |       | &#128994; |
 | Fluent Shadows                                                              |  &#128311;                  |  &#128311;                 |  &#128311;             | &#128994; |
-| Rounded corners                                                             |            |           |       | &#128994; |
+| Rounded corners for top-level windows and popups                            |            |           |       | &#128994; |
 | Media Controls                                                              |            |           |       | &#128994; |
 | Input validation for data fields                                            |  &#128311;                  |  &#128311;                 | &#129002;     | &#128994; |
 | [`<MapControl>`](https://docs.microsoft.com/uwp/api/windows.ui.xaml.controls.maps.mapcontrol?view=winrt-19041)                                                                 |            |           |       | &#129002;     |

@@ -88,6 +88,8 @@ private:
     void UpdateButtonsState();
     void UpdateDynamicHeroContentPlacementToTop();
     void UpdateDynamicHeroContentPlacementToBottom();
+    void UpdateDynamicHeroContentPlacementToTopImpl();
+    void UpdateDynamicHeroContentPlacementToBottomImpl();
 
     static void OnPropertyChanged(
         const winrt::DependencyObject& sender,
@@ -119,6 +121,8 @@ private:
     void RaiseClosingEvent(bool attachDeferralCompletedHandler);
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
+
+    winrt::TeachingTipPlacementMode GetFlowDirectionAdjustedPlacement(const winrt::TeachingTipPlacementMode& placementMode);
 
     void SetViewportChangedEvent(const gsl::strict_not_null<winrt::FrameworkElement>& target);
     void RevokeViewportChangedEvent();
