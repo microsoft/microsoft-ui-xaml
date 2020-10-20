@@ -110,13 +110,13 @@ We know that for many of our developers, the choice to adopt WinUI 3 is dependen
 For questions or status updates on either features listed here, or features not on this list, you can file an issue on [our repo](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=question&template=question.md&title=Question%3A+%5Byour+question+here%5D) or ask during our [monthly community calls](communitycalls/WinUICommunityCall.ics). 
 
 ### Legend
-&#128994; - &#128994;, or planned to be included
+&#128994; - Included, or planned to be included
 
 &#128311; - Partial capability 
 
 &#129002; - Stretch goal 
 
-Blank -  , or not planned to be included
+Blank -  Not included, or not planned to be included
 
 **Preview 2** is our latest release. 
 
