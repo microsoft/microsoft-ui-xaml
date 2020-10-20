@@ -11,7 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DesignModeHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IdleSynchronizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigateToTestCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDeclaration.cs" />
@@ -24,5 +23,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\testinfra\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj">
+      <Project>{128e6f7a-578c-48dc-bd3f-750ec662c268}</Project>
+      <Name>AppTestAutomationHelpers</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

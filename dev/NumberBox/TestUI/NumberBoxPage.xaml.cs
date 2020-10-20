@@ -11,6 +11,7 @@ using Windows.Globalization.NumberFormatting;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 
 namespace MUXControlsTestApp
@@ -25,6 +26,25 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
             TestNumberBox.RegisterPropertyChangedCallback(NumberBox.TextProperty, new DependencyPropertyChangedCallback(TextPropertyChanged));
+        }
+
+        private void InputScope_Changed(object sender, RoutedEventArgs e)
+        {
+            if (TestNumberBox != null &&
+                sender is ComboBox comboBox &&
+                comboBox.SelectedItem is ComboBoxItem item)
+            {
+                var scopeName = new InputScopeName();
+                scopeName.NameValue = (InputScopeNameValue)Enum.Parse(typeof(InputScopeNameValue), item.Content?.ToString() ?? string.Empty, true);
+                
+                var scope = new InputScope();
+                scope.Names.Add(scopeName);
+
+                TestNumberBox.InputScope = scope;
+
+                // Help testing by returning focus to the NumberBox to see the keyboard change
+                TestNumberBox.Focus(FocusState.Keyboard);
+            }
         }
 
         private void SpinMode_Changed(object sender, RoutedEventArgs e)

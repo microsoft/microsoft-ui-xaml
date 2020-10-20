@@ -412,6 +412,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox effectiveTeachingTipContentUnloadedCheckbox;
 
+        public CheckBox GetPageRTLCheckbox()
+        {
+            return GetElement(ref effectivePageRTLCheckbox, "PageRTLCheckbox");
+        }
+        private CheckBox effectivePageRTLCheckbox;
+
         public Button GetRemoveOpenButtonFromVisualTreeButton()
         {
             return GetElement(ref effectiveRemoveOpenButton, "RemoveButtonFromVisualTreeButton");

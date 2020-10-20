@@ -26,7 +26,7 @@ namespace MUXControls.ReleaseTest
         [TestProperty("Platform", "Any")]
         public static void ClassInitialize(TestContext testContext)
         {
-            TestEnvironment.Initialize(testContext, TestType.NugetCX);
+            TestEnvironment.Initialize(testContext, TestApplicationInfo.NugetPackageTestAppCX);
         }
 
         [TestCleanup]
@@ -38,7 +38,7 @@ namespace MUXControls.ReleaseTest
         [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
-            TestEnvironment.AssemblyCleanupWorker(TestType.NugetCX);
+            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.NugetPackageTestAppCX);
         }
 
         [TestMethod]

@@ -321,6 +321,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void VerifyVisualTree()
         {
             ColorPicker colorPicker = null;
