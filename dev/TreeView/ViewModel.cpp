@@ -12,7 +12,7 @@
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
-// i.e. the node is alreay gone when we get to ItemRemoved callback.
+// i.e. the node is already gone when we get to ItemRemoved callback.
 #pragma region SelectedTreeNodeVector
 
 typedef typename VectorOptionsFromFlag<winrt::TreeViewNode, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> SelectedTreeNodeVectorOptions;
@@ -149,7 +149,7 @@ public:
 
 #pragma endregion
 
-// Similiar to SelectedNodesVector above, we need to make decisions before the item is inserted or removed.
+// Similar to SelectedNodesVector above, we need to make decisions before the item is inserted or removed.
 // we can't use vector change events because the event already happened when event hander gets called.
 #pragma region SelectedItemsVector
 
@@ -668,7 +668,7 @@ int ViewModel::GetNextIndexInFlatTree(const winrt::TreeViewNode& node)
 // When ViewModel receives a event, it only includes the sender(parent TreeViewNode) and index.
 // We can't use sender[index] directly because it is already updated/removed
 // To find the removed TreeViewNode:
-//   calcuate allOpenedDescendantsCount in sender[0..index-1] first
+//   calculate allOpenedDescendantsCount in sender[0..index-1] first
 //   then add offset and finally return TreeViewNode by looking up the flat tree.
 winrt::TreeViewNode ViewModel::GetRemovedChildTreeViewNodeByIndex(winrt::TreeViewNode const& node, unsigned int childIndex)
 {
