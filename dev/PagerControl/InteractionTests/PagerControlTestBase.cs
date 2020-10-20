@@ -24,7 +24,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     public class PagerControlTestBase
     {
         protected PagerControlTestPageElements elements;
-        protected int previousPage = -1;
         protected int AutoDisplayModeThresholdValue = 10;
         protected delegate void SetButtonVisibilityModeFunction(ButtonVisibilityModes mode);
 
@@ -121,9 +120,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         protected void VerifyPageChanged(int expectedPage)
         {
             Verify.AreEqual(expectedPage, GetCurrentPageAsInt());
-            Verify.AreEqual(previousPage, GetPreviousPageAsInt());
-            Log.Comment($"Changing to page {expectedPage} from {previousPage}");
-            previousPage = expectedPage;
+            Log.Comment($"Changing to page {expectedPage}");
         }
 
         protected void VerifyButton(UIObject button, Visibility expectedVisibility, bool shouldBeEnabled)
@@ -435,7 +432,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetButtonVisibilityMode(visMode);
                     GetLastPage();
                     // If we're not on the first page then navigate to the first page.
-                    if (previousPage != 0)
+                    if (GetCurrentPageAsInt() != 0)
                     {
                         SelectValueInPagerComboBox(0);
                         VerifyPageChanged(0);

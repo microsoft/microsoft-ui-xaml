@@ -112,7 +112,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-
         [TestMethod]
         public void VerifyComboBoxItemsInfiniteItems()
         {
@@ -166,6 +165,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsNotNull(Content);
             });
+        }
+
+        [TestMethod]
+        public void VerifySelectedIndexChangedEventArgs()
+        {
+            PagerControl pager = null;
+            var previousIndex = -2;
+            var newIndex = -2;
+            RunOnUIThread.Execute(() =>
+            {
+                pager = new PagerControl();
+                pager.SelectedIndexChanged += Pager_SelectedIndexChanged;
+                Content = pager;
+
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySelectionChanged(-1, 0);
+
+                pager.NumberOfPages = 10;
+                VerifySelectionChanged(-1, 0);
+
+                pager.SelectedPageIndex = 9;
+                VerifySelectionChanged(0, 9);
+
+                pager.SelectedPageIndex = 4;
+                VerifySelectionChanged(9, 4);
+            });
+
+            void Pager_SelectedIndexChanged(PagerControl sender, PagerControlSelectedIndexChangedEventArgs args)
+            {
+                previousIndex = args.PreviousPageIndex;
+                newIndex = args.NewPageIndex;
+            }
+
+            void VerifySelectionChanged(int expectedPreviousIndex, int expectedNewIndex)
+            {
+                Verify.AreEqual(expectedPreviousIndex, previousIndex, "Expected PreviousPageIndex:" + expectedPreviousIndex + ", actual: " + previousIndex);
+                Verify.AreEqual(expectedNewIndex, newIndex, "Expected PreviousPageIndex:" + expectedNewIndex + ", actual: " + newIndex);
+            }
         }
     }
 }

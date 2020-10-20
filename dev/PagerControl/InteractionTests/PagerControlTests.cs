@@ -267,7 +267,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ChangeNumberOfPages();
                 VerifyNumberOfPages("100");
 
-
                 InputHelper.LeftClick(elements.GetFirstPageButton());
                 VerifyPageChanged(0);
                 VerifyNumberPanelContent("12345More100");
@@ -383,13 +382,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetLastPageButton());
 
-                previousPage = 4;
                 InputHelper.LeftClick(elements.GetFirstPageButton());
                 VerifyPageChanged(0);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
-                previousPage = 1;
                 InputHelper.LeftClick(elements.GetFirstPageButton());
                 VerifyPageChanged(0);
             }
@@ -405,13 +402,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyPageChanged(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
-                previousPage = 1;
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
                 VerifyPageChanged(0);
 
                 InputHelper.LeftClick(elements.GetLastPageButton());
 
-                previousPage = 4;
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
                 VerifyPageChanged(3);
 
@@ -462,8 +457,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.LeftClick(elements.GetFirstPageButton());
                 InputHelper.LeftClick(elements.GetNextPageButton());
-
-                previousPage = 1;
 
                 InputHelper.LeftClick(elements.GetLastPageButton());
                 VerifyPageChanged(4);
