@@ -62,10 +62,6 @@ function Append-HelixAccessTokenToUrl
             $url = "$($url)?access_token=$($token)"
         }
     }
-    else
-    {
-        Write-Host "The Helix Access Token was empty, returning the URL as is."
-    }
     return $url
 }
 
@@ -140,16 +136,6 @@ foreach ($testRun in $testRuns.value)
                     catch
                     {
                         Log-Error "Failed to download $($verificationFile.Name) to $destination : $($_.Exception.Message) -- URL: $($verificationFile.Link)"
-                        Write-Host "Trying backup download"
-                        try
-                        {
-                            $backupDestination = "$visualTreeVerificationFolder\$($verificationFile.Name)"
-                            $webClient.DownloadFile($fileurl, $backupDestination)
-                        }
-                        catch
-                        {
-                            Log-Error "Backup also failed to download $($verificationFile.Name) to $backupDestination : $($_.Exception.Message) -- URL: $($verificationFile.Link)"
-                        }
                     }
                 }
 
