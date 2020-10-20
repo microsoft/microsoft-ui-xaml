@@ -25,6 +25,7 @@ using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -167,7 +168,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             loadedEvent.WaitOne();
         }
 
-
         [TestMethod]
         public void PropagatePropertiesDown()
         {
@@ -201,8 +201,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var foregroundBrush = content.Foreground as SolidColorBrush;
                 Verify.AreEqual(Colors.Red, foregroundBrush.Color);
             });
-
         }
 
+
+        [TestMethod]
+        public void TeachingTipHeroContentPlacementTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var iPlacementMode in Enum.GetValues(typeof(TeachingTipHeroContentPlacementMode)))
+                {
+                    var placementMode = (TeachingTipHeroContentPlacementMode)iPlacementMode;
+
+                    Log.Comment($"Verifying TeachingTipHeroContentPlacementMode [{placementMode}]");
+
+                    TeachingTip teachingTip = new TeachingTip();
+                    teachingTip.HeroContentPlacement = placementMode;
+
+                    // Open the teaching tip to enter the correct visual state for the HeroContentPlacement.
+                    teachingTip.IsOpen = true;
+
+                    Content = teachingTip;
+                    Content.UpdateLayout();
+
+                    Verify.IsTrue(teachingTip.HeroContentPlacement == placementMode, $"HeroContentPlacement should have been [{placementMode}]");
+                    
+                    var root = VisualTreeUtils.FindVisualChildByName(teachingTip, "Container") as FrameworkElement;
+
+                    switch (placementMode)
+                    {
+                        case TeachingTipHeroContentPlacementMode.Auto:
+                            Verify.IsTrue(IsVisualStateActive(root, "HeroContentPlacementStates", "HeroContentTop"),
+                                "The [HeroContentTop] visual state should have been active");
+                            break;
+                        case TeachingTipHeroContentPlacementMode.Top:
+                            Verify.IsTrue(IsVisualStateActive(root, "HeroContentPlacementStates", "HeroContentTop"), 
+                                "The [HeroContentTop] visual state should have been active");
+                            break;
+                        case TeachingTipHeroContentPlacementMode.Bottom:
+                            Verify.IsTrue(IsVisualStateActive(root, "HeroContentPlacementStates", "HeroContentBottom"),
+                                "The [HeroContentBottom] visual state should have been active");
+                            break;
+                    }
+                }
+            });
+
+            bool IsVisualStateActive(FrameworkElement root, string groupName, string stateName)
+            {
+                foreach (var group in VisualStateManager.GetVisualStateGroups(root))
+                {
+                    if (group.Name == groupName)
+                    {
+                        return group.CurrentState != null && group.CurrentState.Name == stateName;
+                    }
+                }
+
+                return false;
+            }
+        }
     }
 }

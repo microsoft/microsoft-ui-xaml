@@ -56,6 +56,7 @@
             <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ComboBoxBackgroundUnfocused" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -165,6 +166,7 @@
             <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ComboBoxBackgroundUnfocused" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -300,6 +302,7 @@
             <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ComboBoxBackgroundUnfocused" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ComboBoxForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -504,6 +507,9 @@
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
                                             Duration="0" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HighlightBackground" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxBackgroundFocused}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HighlightBackground" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxBackgroundBorderBrushFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
