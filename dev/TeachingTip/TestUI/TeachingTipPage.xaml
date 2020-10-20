@@ -548,7 +548,7 @@
                         <Slider Grid.Row="46" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="TailElevationSliderChanged" Value="0"/>
 
                         <TextBlock Grid.Row="47" Foreground="Red" Text="Is Page RTL" VerticalAlignment="Center"/>
-                        <CheckBox Grid.Row="47" Grid.Column="1" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
+                        <CheckBox Grid.Row="47" Grid.Column="1" AutomationProperties.Name="PageRTLCheckbox" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
                         <Button Grid.Row="48" Grid.Column="0" x:Name="RemoveTeachingTipButton" Click="RemoveTeachingTipButton_Click">Remove tooltip from page</Button>
                         <CheckBox  Grid.Row="48" Grid.Column="1" x:Name="VisualTreeTeachingTipContentTextBlockUnloaded">Visual tree teachingtip unloaded</CheckBox>
                         <Button Grid.Row="49" x:Name="RemoveButtonFromVisualTreeButton" Click="RemoveOpenButton_Click">Remove button from visual tree</Button>

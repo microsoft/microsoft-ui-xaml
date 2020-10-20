@@ -34,18 +34,27 @@ public:
     void OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
+    void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
 private:
     void SetAnimatedVisualPlayerSource();
     void SetLottieForegroundColor(const winrt::IAnimatedVisualSource);
     void SetLottieBackgroundColor(const winrt::IAnimatedVisualSource);
-    void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void UpdateStates();
     void ApplyTemplateSettings();
     void UpdateLottieProgress();
 
+    void CoerceMinimum();
+    void CoerceMaximum();
+    void CoerceValue();
+    bool IsInBounds(double value);
+
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
 
     double m_oldValue{ 0 };
+    bool m_rangeBasePropertyUpdating{ false };
 };

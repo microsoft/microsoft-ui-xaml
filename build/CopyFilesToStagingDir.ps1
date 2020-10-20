@@ -38,6 +38,7 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPubli
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.DesignTools\Microsoft.UI.Xaml.DesignTools.dll $FullPublishDir\Microsoft.UI.Xaml.DesignTools\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml.FrameworkPackagePRI\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXTestInfra.TAEF.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
 
 # pgosweep and vcruntime are required to run pgo instrumented test run. They are placed from the
@@ -64,7 +65,6 @@ if($PublishAppxFiles)
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\IXMPTestApp.TAEF\IXMPTestApp.pdb $symbolsOutputDir
-PublishFile -IfExists $FullBuildOutput\MUXTestUtilities\MUXTestUtilities.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControls.Test\MUXControls.Test.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp.TAEF\MUXControlsTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.pdb $symbolsOutputDir
