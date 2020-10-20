@@ -519,14 +519,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             var exclude = new[] { "Microsoft.NET.CoreRuntime", "Microsoft.VCLibs" };
 
-            var files = Directory.GetFiles(_baseAppxDir, $"{_packageName}*.appx", SearchOption.AllDirectories).Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
+            var files = Directory.GetFiles(_baseAppxDir, $"{_packageName}*.appx", SearchOption.AllDirectories).ToList();
+            files.AddRange(Directory.GetFiles(_baseAppxDir, $"{_packageName}*.msix", SearchOption.AllDirectories));
 
-            if (files.Count() == 0)
+            var filteredFiles = files.Where(f => !exclude.Any(Path.GetFileNameWithoutExtension(f).Contains));
+
+            if (filteredFiles.Count() == 0)
             {
-                throw new Exception(string.Format("Failed to find '*.appx' in {0}'!", _baseAppxDir));
+                throw new Exception(string.Format("Failed to find '*.appx' or '*.msix' in {0}'!", _baseAppxDir));
             }
 
-            foreach (string file in files)
+            foreach (string file in filteredFiles)
             {
                 DateTime fileWriteTime = File.GetLastWriteTime(file);
 
