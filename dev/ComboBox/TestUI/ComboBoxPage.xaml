@@ -25,5 +25,20 @@
             <ComboBoxItem Content="Item 2"/>
             <ComboBoxItem Content="Item 3"/>
         </contract7Present:ComboBox>
+
+        <ComboBox SelectedIndex="0" Header="Focus resource lookup test">
+            <ComboBox.Resources>
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="Green"/>
+                    <SolidColorBrush x:Key="ComboBoxBackgroundUnfocused" Color="Red"/>
+                    <SolidColorBrush x:Key="ComboBoxBackgroundBorderBrushFocused" Color="Blue"/>
+                    <SolidColorBrush x:Key="ComboBoxBackgroundBorderBrushUnfocused" Color="Yellow"/>
+                </ResourceDictionary>
+            </ComboBox.Resources>
+            <ComboBoxItem Content="Item 1"/>
+            <ComboBoxItem Content="Item 2"/>
+            <ComboBoxItem Content="Item 3"/>
+        </ComboBox>
+
     </StackPanel>
 </local:TestPage>
