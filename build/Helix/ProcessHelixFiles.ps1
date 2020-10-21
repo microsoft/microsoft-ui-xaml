@@ -51,13 +51,16 @@ function Log-Error
 function Append-HelixAccessTokenToUrl
 {
     Param ([string]$url, [string]$token)
-    if($url.Contains("?"))
+    if($token)
     {
-        $url = "$($url)&access_token=$($token)"
-    }
-    else
-    {
-        $url = "$($url)?access_token=$($token)"
+        if($url.Contains("?"))
+        {
+            $url = "$($url)&access_token=$($token)"
+        }
+        else
+        {
+            $url = "$($url)?access_token=$($token)"
+        }
     }
     return $url
 }
@@ -132,7 +135,7 @@ foreach ($testRun in $testRuns.value)
                     }
                     catch
                     {
-                        Log-Error "Failed to download $($file.Name): $($_.Exception.Message)"
+                        Log-Error "Failed to download $($verificationFile.Name) to $destination : $($_.Exception.Message) -- URL: $($verificationFile.Link)"
                     }
                 }
 
