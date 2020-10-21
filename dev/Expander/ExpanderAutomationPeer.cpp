@@ -61,7 +61,9 @@ bool ExpanderAutomationPeer::HasKeyboardFocusCore()
         }
     }
 
-    return GetInner().as<winrt::IAutomationPeerOverrides>().HasKeyboardFocusCore();
+    // If the toggle button doesn't have the current focus, then
+    // the expander's not focused.
+    return false;
 }
 
 // IExpandCollapseProvider 

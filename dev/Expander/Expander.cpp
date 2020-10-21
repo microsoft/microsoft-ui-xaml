@@ -30,7 +30,9 @@ void Expander::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
     auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_toggleButton, *this);
-
+    GettingFocus({ this, &Expander::OnExpanderGettingFocus });
+    LosingFocus({ this, &Expander::OnExpanderLosingFocus });
+    //OnGotFocus
     // We will do 2 things with the toggle button's peer:
     // 1. Set the events source of the toggle button peer to
     // the expander's automation peer. This is is because we
@@ -119,6 +121,143 @@ void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChange
 void Expander::OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
     UpdateExpandDirection(true);
+}
+
+void Expander::OnExpanderGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
+{
+    auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_toggleButton, *this);
+    if (args.Direction() == winrt::FocusNavigationDirection::None)
+    {
+        
+        auto nextElement = args.NewFocusedElement();
+        if (auto expander = nextElement.try_as<winrt::Expander>())
+        {
+            
+            if (winrt::AutomationPeer expanderPeer = winrt::FrameworkElementAutomationPeer::FromElement(expander))
+            {
+                auto children = expanderPeer.GetChildrenCore();
+
+                for (auto peer : children)
+                {
+                    if (peer.GetAutomationId() == L"ExpanderToggleButton")
+                    {
+                        auto toggleButtonPeer = peer.as<winrt::FrameworkElementAutomationPeer>();
+                        // Since the EventsSource of the toggle button
+                        // is the same as the expander's, we need to
+                        // redirect the focus of the expander and base it on the toggle button's.
+                        args.TrySetNewFocusedElement(toggleButtonPeer.Owner());
+                        return;
+                    }
+                }
+            }
+
+
+        }
+        return;
+    }
+    if (args.NewFocusedElement() == *this && args.OldFocusedElement() == toggleButton)
+    {
+        auto direction = args.Direction();
+      
+        auto nextElement = winrt::FocusManager::FindNextFocusableElement(direction);
+        //options.ExclusionRect(rect);
+        //findElementOptions.SearchRoot(nullptr);
+        //auto nextElement = winrt::FocusManager::FindNextElement(args.Direction(), options);
+        if (auto expander = nextElement.try_as<winrt::Expander>())
+        {
+            if (expander == *this)
+            {
+                if (winrt::AutomationPeer expanderPeer = winrt::FrameworkElementAutomationPeer::FromElement(expander))
+                {
+
+                    auto previousSibling = expanderPeer.Navigate(winrt::AutomationNavigationDirection::PreviousSibling);
+                    if (auto previousSiblingPeer = previousSibling.try_as<winrt::FrameworkElementAutomationPeer>())
+                    {
+                        args.TrySetNewFocusedElement(previousSiblingPeer.Owner());
+                    }
+                    else if (previousSibling == nullptr)
+                    {
+                        winrt::Rect rect;
+                        rect.X = expander.Translation().x;
+                        rect.Y = expander.Translation().y;
+                        const winrt::FindNextElementOptions options;
+                        options.ExclusionRect(rect);
+                        options.SearchRoot(nullptr);
+                        auto nextElement = winrt::FocusManager::FindNextElement(winrt::FocusNavigationDirection::Up, options);
+                        if (nextElement != nullptr)
+                            args.TrySetNewFocusedElement(nextElement);
+                        return;
+                    }
+                    args.Cancel();
+                    return;
+                }
+            }
+            else
+            {
+                args.TrySetNewFocusedElement(expander);
+            }
+            
+            
+        }
+        args.TrySetNewFocusedElement(nextElement);
+        return;
+  
+    }
+    else if (args.NewFocusedElement() == *this && args.OldFocusedElement() != toggleButton)
+    {
+        args.TrySetNewFocusedElement(toggleButton);
+        return;
+    }
+    
+
+    
+}
+
+void Expander::OnExpanderLosingFocus(const winrt::IInspectable& sender, const winrt::LosingFocusEventArgs& args)
+{
+    return;
+    winrt::UIElement elem(nullptr);
+    auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_toggleButton, *this);
+
+    if (IsExpanded())
+    {
+        if (args.OldFocusedElement() == toggleButton)
+        {
+            // Try focusing child of toggle button
+            if (winrt::AutomationPeer toggleButtonPeer = winrt::FrameworkElementAutomationPeer::FromElement(toggleButton))
+            {
+                auto el = toggleButtonPeer.Navigate(winrt::AutomationNavigationDirection::FirstChild);
+
+                if (el != nullptr)
+                {
+                    //args.TrySetNewFocusedElement(el.as<winrt::FrameworkElementAutomationPeer>().Owner());
+                }
+            }
+            auto contentX = (this->Content()).as<winrt::UIElement>();
+            if (winrt::AutomationPeer contentXPeer = winrt::FrameworkElementAutomationPeer::FromElement(contentX))
+                args.TrySetNewFocusedElement(contentX);
+
+            // If that doesn't work, try focusing expanded content
+
+            // finally, if that didnt work, fallback to default behavior
+        }
+        return;
+    }
+    if (args.Direction() != winrt::FocusNavigationDirection::None) {
+        elem = winrt::FocusManager::FindNextFocusableElement(args.Direction());
+        if (auto e = elem.try_as<winrt::Button>())
+        {
+            return;
+        }
+        if (auto e = elem.try_as<winrt::Expander>())
+        {
+            return;
+        }
+    }
+
+
+    //args.TrySetNewFocusedElement();
+    return;
 }
 
 void Expander::UpdateExpandDirection(bool useTransitions)

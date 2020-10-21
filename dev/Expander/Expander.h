@@ -30,6 +30,9 @@ public:
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void OnExpanderGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
+    void OnExpanderLosingFocus(const winrt::IInspectable& sender, const winrt::LosingFocusEventArgs& args);
+
 private:
     void UpdateExpandDirection(bool useTransitions);
 };
