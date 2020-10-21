@@ -26,15 +26,6 @@
                 <TextBlock AutomationProperties.AutomationId="ExpandedExpanderContent">Content</TextBlock>
             </controls:Expander>
             
-            <controls:Expander  HorizontalContentAlignment="Left" IsExpanded="True" >
-                <controls:Expander.Header>
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="Expander with buttons" />
-                </controls:Expander.Header>
-                <StackPanel HorizontalAlignment="Left">
-                    <Button>Button1</Button>
-                    <Button>Button2</Button>
-                </StackPanel>
-            </controls:Expander>
             <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
                     <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is collapsed by default." />
@@ -59,7 +50,7 @@
             
             <controls:Expander AutomationProperties.Name="ExpanderWithButtons" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
-                    <Button>This is a button in the header</Button>
+                    <ToggleButton>This is a toggle button in the header</ToggleButton>
                 </controls:Expander.Header>
                 <StackPanel>
                     <TextBlock>Content</TextBlock>

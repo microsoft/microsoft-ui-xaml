@@ -66,6 +66,25 @@ bool ExpanderAutomationPeer::HasKeyboardFocusCore()
     return false;
 }
 
+winrt::AutomationPeer ExpanderAutomationPeer::GetPeerFromPointCore(winrt::Point point)
+{
+    auto peer = __super::GetPeerFromPointCore(point);
+    // We will focus the ToggleButton to synchronize the narrator selection
+    // with the current focus control.
+    if (auto controlPeer = peer.try_as<winrt::FrameworkElementAutomationPeer>())
+    {
+        if (auto control = controlPeer.Owner().try_as<winrt::Control>())
+        {
+            control.Focus(winrt::FocusState::Programmatic);
+            return peer;
+        }
+    }
+
+    // If we couldn't focus the control, fall back and just focus the peer
+    peer.SetFocus();
+    return peer;
+}
+
 // IExpandCollapseProvider 
 
 winrt::ExpandCollapseState ExpanderAutomationPeer::ExpandCollapseState()
