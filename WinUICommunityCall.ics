@@ -20,28 +20,27 @@ END:DAYLIGHT
 END:VTIMEZONE
 BEGIN:VEVENT
 CLASS:PUBLIC
-CREATED:20201015T141103Z
-DESCRIPTION:Join us for our monthly WinUI Community Call where we bring out
-	 members of the WinUI team to update you on our progress\, demo cool new f
-	eatures\, and answer all of your questions about the platform. \n \nWatch 
-	on YouTube Live at 9AM PDT: https://youtu.be/pzM1it35nbc\n \n
-DTEND;TZID="Eastern Standard Time":20201021T130000
-DTSTAMP:20201015T141103Z
-DTSTART;TZID="Eastern Standard Time":20201021T120000
-LAST-MODIFIED:20201015T141103Z
+CREATED:20201022T193734Z
+DESCRIPTION:On this edition of the App Development Community Standup\, Kevi
+	n Gallo will welcome members of the WinUI team to discuss WinUI 3 Preview 
+	3. \n
+DTEND;TZID="Eastern Standard Time":20201117T130000
+DTSTAMP:20201022T193734Z
+DTSTART;TZID="Eastern Standard Time":20201117T120000
+LAST-MODIFIED:20201022T193734Z
 PRIORITY:5
 SEQUENCE:0
-SUMMARY;LANGUAGE=en-us:WinUI Community Call - October
+SUMMARY;LANGUAGE=en-us:App Development Community Standup
 TRANSP:OPAQUE
-UID:040000008200E00074C5B7101A82E00800000000F0A8E285DB90D601000000000000000
-	0100000001F74CF60D9A22F479698DE980F84FCF8
+UID:040000008200E00074C5B7101A82E0080000000060233E4389A8D601000000000000000
+	010000000299A92329E66F74E87529571BA4CBCB6
 X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml" 
 	xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-mic
 	rosoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/
 	12/omml" xmlns="http://www.w3.org/TR/REC-html40"><head><meta name=ProgId c
 	ontent=Word.Document><meta name=Generator content="Microsoft Word 15"><met
 	a name=Originator content="Microsoft Word 15"><link rel=File-List href="ci
-	d:filelist.xml@01D690DB.85E2F710"><!--[if gte mso 9]><xml>\n<o:OfficeDocum
+	d:filelist.xml@01D6A889.433E7180"><!--[if gte mso 9]><xml>\n<o:OfficeDocum
 	entSettings>\n<o:AllowPNG/>\n</o:OfficeDocumentSettings>\n</xml><![endif]-
 	-><!--[if gte mso 9]><xml>\n<w:WordDocument>\n<w:SpellingState>Clean</w:Sp
 	ellingState>\n<w:TrackMoves/>\n<w:TrackFormatting/>\n<w:EnvelopeVis/>\n<w:
@@ -507,43 +506,40 @@ X-ALT-DESC;FMTTYPE=text/html:<html xmlns:v="urn:schemas-microsoft-com:vml"
 	2485 9 0 511 0\;}\n/* Style Definitions */\np.MsoNormal\, li.MsoNormal\, d
 	iv.MsoNormal\n	{mso-style-unhide:no\;\n	mso-style-qformat:yes\;\n	mso-styl
 	e-parent:""\;\n	margin:0in\;\n	mso-pagination:widow-orphan\;\n	font-size:1
-	1.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-fareast-font-family:Ca
-	libri\;}\na:link\, span.MsoHyperlink\n	{mso-style-priority:99\;\n	color:#0
-	563C1\;\n	text-decoration:underline\;\n	text-underline:single\;}\na:visite
-	d\, span.MsoHyperlinkFollowed\n	{mso-style-noshow:yes\;\n	mso-style-priori
-	ty:99\;\n	color:#954F72\;\n	text-decoration:underline\;\n	text-underline:s
-	ingle\;}\nspan.EmailStyle17\n	{mso-style-type:personal-compose\;\n	mso-sty
-	le-noshow:yes\;\n	mso-style-unhide:no\;\n	mso-ansi-font-size:11.0pt\;\n	ms
-	o-bidi-font-size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-asci
-	i-font-family:Calibri\;\n	mso-fareast-font-family:Calibri\;\n	mso-hansi-fo
-	nt-family:Calibri\;\n	mso-bidi-font-family:"Times New Roman"\;\n	color:win
-	dowtext\;}\n.MsoChpDefault\n	{mso-style-type:export-only\;\n	mso-default-p
-	rops:yes\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:C
-	alibri\;\n	mso-fareast-font-family:Calibri\;\n	mso-hansi-font-family:Calib
-	ri\;\n	mso-bidi-font-family:"Times New Roman"\;}\n@page WordSection1\n	{si
-	ze:8.5in 11.0in\;\n	margin:1.0in 1.0in 1.0in 1.0in\;\n	mso-header-margin:.
-	5in\;\n	mso-footer-margin:.5in\;\n	mso-paper-source:0\;}\ndiv.WordSection1
-	\n	{page:WordSection1\;}\n--></style><!--[if gte mso 10]><style>/* Style D
-	efinitions */\ntable.MsoNormalTable\n	{mso-style-name:"Table Normal"\;\n	m
-	so-tstyle-rowband-size:0\;\n	mso-tstyle-colband-size:0\;\n	mso-style-nosho
-	w:yes\;\n	mso-style-priority:99\;\n	mso-style-parent:""\;\n	mso-padding-al
-	t:0in 5.4pt 0in 5.4pt\;\n	mso-para-margin:0in\;\n	mso-pagination:widow-orp
-	han\;\n	font-size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-asc
-	ii-font-family:Calibri\;\n	mso-hansi-font-family:Calibri\;\n	mso-bidi-font
-	-family:"Times New Roman"\;}\n</style><![endif]--><!--[if gte mso 9]><xml>
-	\n<o:shapedefaults v:ext="edit" spidmax="1026" />\n</xml><![endif]--><!--[
-	if gte mso 9]><xml>\n<o:shapelayout v:ext="edit">\n<o:idmap v:ext="edit" d
-	ata="1" />\n</o:shapelayout></xml><![endif]--></head><body lang=EN-US link
-	="#0563C1" vlink="#954F72" style='tab-interval:.5in\;word-wrap:break-word'
-	><div class=WordSection1><p class=MsoNormal>Join us for our monthly WinUI 
-	Community Call where we bring out members of the WinUI team to update you 
-	on our progress\, demo cool new features\, and answer all of your question
-	s about the platform. <o:p></o:p></p><p class=MsoNormal><o:p>&nbsp\;</o:p>
-	</p><p class=MsoNormal>Watch on YouTube Live at 9AM PDT: <a href="https://
-	youtu.be/pzM1it35nbc">https://youtu.be/pzM1it35nbc</a><o:p></o:p></p><p cl
-	ass=MsoNormal><span style='mso-ascii-font-family:Calibri\;mso-fareast-font
-	-family:Calibri\;mso-hansi-font-family:Calibri\;mso-bidi-font-family:"Time
-	s New Roman"'><o:p>&nbsp\;</o:p></span></p></div></body></html>
+	1.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:Cali
+	bri\;\n	mso-fareast-font-family:Calibri\;\n	mso-hansi-font-family:Calibri\
+	;\n	mso-bidi-font-family:"Times New Roman"\;}\na:link\, span.MsoHyperlink\
+	n	{mso-style-noshow:yes\;\n	mso-style-priority:99\;\n	color:#0563C1\;\n	te
+	xt-decoration:underline\;\n	text-underline:single\;}\na:visited\, span.Mso
+	HyperlinkFollowed\n	{mso-style-noshow:yes\;\n	mso-style-priority:99\;\n	co
+	lor:#954F72\;\n	text-decoration:underline\;\n	text-underline:single\;}\nsp
+	an.EmailStyle17\n	{mso-style-type:personal-compose\;\n	mso-style-noshow:ye
+	s\;\n	mso-style-unhide:no\;\n	mso-ansi-font-size:11.0pt\;\n	mso-bidi-font-
+	size:11.0pt\;\n	font-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-famil
+	y:Calibri\;\n	mso-fareast-font-family:Calibri\;\n	mso-hansi-font-family:Ca
+	libri\;\n	mso-bidi-font-family:"Times New Roman"\;\n	color:windowtext\;}\n
+	span.SpellE\n	{mso-style-name:""\;\n	mso-spl-e:yes\;}\n.MsoChpDefault\n	{m
+	so-style-type:export-only\;\n	mso-default-props:yes\;\n	font-family:"Calib
+	ri"\,sans-serif\;\n	mso-ascii-font-family:Calibri\;\n	mso-fareast-font-fam
+	ily:Calibri\;\n	mso-hansi-font-family:Calibri\;\n	mso-bidi-font-family:"Ti
+	mes New Roman"\;}\n@page WordSection1\n	{size:8.5in 11.0in\;\n	margin:1.0i
+	n 1.0in 1.0in 1.0in\;\n	mso-header-margin:.5in\;\n	mso-footer-margin:.5in\
+	;\n	mso-paper-source:0\;}\ndiv.WordSection1\n	{page:WordSection1\;}\n--></
+	style><!--[if gte mso 10]><style>/* Style Definitions */\ntable.MsoNormalT
+	able\n	{mso-style-name:"Table Normal"\;\n	mso-tstyle-rowband-size:0\;\n	ms
+	o-tstyle-colband-size:0\;\n	mso-style-noshow:yes\;\n	mso-style-priority:99
+	\;\n	mso-style-parent:""\;\n	mso-padding-alt:0in 5.4pt 0in 5.4pt\;\n	mso-p
+	ara-margin:0in\;\n	mso-pagination:widow-orphan\;\n	font-size:11.0pt\;\n	fo
+	nt-family:"Calibri"\,sans-serif\;\n	mso-ascii-font-family:Calibri\;\n	mso-
+	hansi-font-family:Calibri\;\n	mso-bidi-font-family:"Times New Roman"\;}\n<
+	/style><![endif]--><!--[if gte mso 9]><xml>\n<o:shapedefaults v:ext="edit"
+	 spidmax="1026" />\n</xml><![endif]--><!--[if gte mso 9]><xml>\n<o:shapela
+	yout v:ext="edit">\n<o:idmap v:ext="edit" data="1" />\n</o:shapelayout></x
+	ml><![endif]--></head><body lang=EN-US link="#0563C1" vlink="#954F72" styl
+	e='tab-interval:.5in\;word-wrap:break-word'><div class=WordSection1><p cla
+	ss=MsoNormal>On this edition of the App Development Community Standup\, Ke
+	vin Gallo will welcome members of the WinUI team to discuss WinUI 3 Previe
+	w 3. <o:p></o:p></p></div></body></html>
 X-MICROSOFT-CDO-BUSYSTATUS:BUSY
 X-MICROSOFT-CDO-IMPORTANCE:1
 X-MICROSOFT-DISALLOW-COUNTER:FALSE
