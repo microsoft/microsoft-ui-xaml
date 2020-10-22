@@ -47,8 +47,8 @@ namespace RuntimeProfiler
         ProfId_ProgressRing,
         ProfId_NumberBox,
         ProfId_RadialGradientBrush,
-        ProfId_Pager,
         ProfId_InfoBar,
+        ProfId_PagerControl,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
