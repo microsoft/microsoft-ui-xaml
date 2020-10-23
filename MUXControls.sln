@@ -984,6 +984,7 @@ Global
 		dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems*{e98f3da3-3c00-4f2e-bf3b-2d2ad9d176bc}*SharedItemsImports = 13
 		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{e9ac4938-ec2a-46d3-85bf-27316db8cc4d}*SharedItemsImports = 13
 		test\MUXControls.Test\MUXControls.Test.Shared.projitems*{e9fc52cd-519a-41bb-8092-523ffa9d5617}*SharedItemsImports = 13
+		dev\Expander\Expander.vcxitems*{ec3b6f65-32c6-4bc8-8902-ee0b397e2787}*SharedItemsImports = 9
 		dev\AutoSuggestBox\InteractionTests\AutoSuggestBox_InteractionTests.projitems*{ed3e2182-d259-4dc0-b7bb-9b4219762f4c}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems*{ed7dba65-8f09-44f3-8d25-7bb5a7a89609}*SharedItemsImports = 9
 		dev\TreeView\TreeView.vcxitems*{eeb38379-3a5c-439f-bb5e-535d75f2b6c1}*SharedItemsImports = 9

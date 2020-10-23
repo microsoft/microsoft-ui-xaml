@@ -25,6 +25,89 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
+    public class Expander : UIObject, IExpandCollapse
+    {
+        public Expander(UIObject uiObject)
+            : base(uiObject)
+        {
+            this.Initialize();
+        }
+
+        private void Initialize()
+        {
+            _expandCollapsePattern = new ExpandCollapseImplementation(this);
+        }
+
+        public void ExpandAndWait()
+        {
+            using (var waiter = GetExpandedWaiter())
+            {
+                Expand();
+                waiter.Wait();
+            }
+
+            Wait.ForIdle();
+        }
+
+        public void CollapseAndWait()
+        {
+            using (var waiter = GetCollapsedWaiter())
+            {
+                Collapse();
+                waiter.Wait();
+            }
+
+            Wait.ForIdle();
+        }
+
+        public void Expand()
+        {
+            _expandCollapsePattern.Expand();
+        }
+
+        public void Collapse()
+        {
+            _expandCollapsePattern.Collapse();
+        }
+
+        public UIEventWaiter GetExpandedWaiter()
+        {
+            return _expandCollapsePattern.GetExpandedWaiter();
+        }
+
+        public UIEventWaiter GetCollapsedWaiter()
+        {
+            return _expandCollapsePattern.GetCollapsedWaiter();
+        }
+
+        public ExpandCollapseState ExpandCollapseState
+        {
+            get { return _expandCollapsePattern.ExpandCollapseState; }
+        }
+
+        new public static IFactory<Expander> Factory
+        {
+            get
+            {
+                if (null == Expander._factory)
+                {
+                    Expander._factory = new ExpanderFactory();
+                }
+                return Expander._factory;
+            }
+        }
+
+        private IExpandCollapse _expandCollapsePattern;
+        private static IFactory<Expander> _factory = null;
+        private class ExpanderFactory : IFactory<Expander>
+        {
+            public Expander Create(UIObject element)
+            {
+                return new Expander(element);
+            }
+        }
+    }
+
     [TestClass]
     public class ExpanderTests
     {
@@ -49,61 +132,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void BasicTest()
+        public void ExpandCollapseViaAutomation()
         {
-            Log.Comment("Expander Basic Test");
+            using (var setup = new TestSetupHelper("Expander Tests"))
+            {
+                Expander expander = FindElement.ByName<Expander>(ExpandedExpanderAutomationId);
+
+                Log.Comment("Collapse using UIA ExpandCollapse pattern");
+                expander.CollapseAndWait();
+                //// Should be collapsed now
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
+
+                Log.Comment("Expand using UIA ExpandCollapse pattern");
+                expander.ExpandAndWait();
+                //// Should be expanded now
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
+            }
         }
 
         [TestMethod]
-        public void DoesExpandWithKeyboard()
+        public void ExpandCollapseViaKeyboard()
         {
-            if (!ApiInformation.IsPropertyPresent("Windows.UI.Xaml.UIElement", "Interactions"))
+            using (var setup = new TestSetupHelper("Expander Tests"))
             {
-                Log.Warning("UIElement.Interactions not supported on this build.");
-                return;
+                Expander expander = FindElement.ByName<Expander>(ExpandedExpanderAutomationId);
+
+                Log.Comment("Collapse using keyboard space key.");
+                expander.SetFocus();
+                Wait.ForIdle();
+                // This should collapse it.
+                KeyboardHelper.PressKey(Key.Space);
+                // Should be collapsed now
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
+
+                Log.Comment("Expand using keyboard space key.");
+                expander.SetFocus();
+                Wait.ForIdle();
+                // This should expand it again.
+                KeyboardHelper.PressKey(Key.Space);
+                // Should be expanded now
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
             }
-
-            Log.Comment("The expander's content, when collapsed should not load.");
-            var collapsedExpanderContent = FindElement.ById(CollapsedExpanderContentAutomationId);
-            Verify.IsNull(collapsedExpanderContent, "Verifying that the collapsed content is not loaded.");
-
-            Log.Comment("Focus the expander.");
-            var collapsedExpander = FindElement.ById(CollapsedExpanderAutomationId);
-            collapsedExpander.SetFocus();
-            Wait.ForIdle();
-
-            Log.Comment("Press the SPACE key to expand the expander.");
-            collapsedExpander.SendKeys("{SPACE}");
-
-            Log.Comment("Find the previously collapsed content, it should now be available.");
-            collapsedExpanderContent = FindElement.ById(CollapsedExpanderContentAutomationId);
-            Verify.IsNotNull(collapsedExpanderContent, "Verifying that the collapsed content is now loaded.");
-        }
-
-        [TestMethod]
-        public void DoesCollapseWithKeyboard()
-        {
-            if (!ApiInformation.IsPropertyPresent("Windows.UI.Xaml.UIElement", "Interactions"))
-            {
-                Log.Warning("UIElement.Interactions not supported on this build.");
-                return;
-            }
-
-            Log.Comment("The expander's content, when expanded should be loaded.");
-            var expandedExpanderContent = FindElement.ById(ExpandedExpanderContentAutomationId);
-            Verify.IsNotNull(expandedExpanderContent, "Verifying that the expanded content is loaded.");
-
-            Log.Comment("Focus the expander.");
-            var expandedExpander = FindElement.ById(ExpandedExpanderAutomationId);
-            expandedExpander.SetFocus();
-            Wait.ForIdle();
-
-            Log.Comment("Press the SPACE key to collapse the expander.");
-            expandedExpander.SendKeys("{SPACE}");
-
-            Log.Comment("The previously expanded content should now be unloaded.");
-            expandedExpanderContent = FindElement.ById(ExpandedExpanderContentAutomationId);
-            Verify.IsNull(expandedExpanderContent, "Verifying that the expanded content is now unloaded.");
         }
     }
 }
