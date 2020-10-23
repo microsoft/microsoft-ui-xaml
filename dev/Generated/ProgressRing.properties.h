@@ -21,20 +21,35 @@ public:
     void IsIndeterminate(bool value);
     bool IsIndeterminate();
 
+    void Maximum(double value);
+    double Maximum();
+
+    void Minimum(double value);
+    double Minimum();
+
     void TemplateSettings(winrt::ProgressRingTemplateSettings const& value);
     winrt::ProgressRingTemplateSettings TemplateSettings();
+
+    void Value(double value);
+    double Value();
 
     static winrt::DependencyProperty DeterminateSourceProperty() { return s_DeterminateSourceProperty; }
     static winrt::DependencyProperty IndeterminateSourceProperty() { return s_IndeterminateSourceProperty; }
     static winrt::DependencyProperty IsActiveProperty() { return s_IsActiveProperty; }
     static winrt::DependencyProperty IsIndeterminateProperty() { return s_IsIndeterminateProperty; }
+    static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
+    static winrt::DependencyProperty MinimumProperty() { return s_MinimumProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
+    static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
     static GlobalDependencyProperty s_DeterminateSourceProperty;
     static GlobalDependencyProperty s_IndeterminateSourceProperty;
     static GlobalDependencyProperty s_IsActiveProperty;
     static GlobalDependencyProperty s_IsIndeterminateProperty;
+    static GlobalDependencyProperty s_MaximumProperty;
+    static GlobalDependencyProperty s_MinimumProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
+    static GlobalDependencyProperty s_ValueProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
@@ -52,6 +67,18 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsIndeterminatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMaximumPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinimumPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnValuePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

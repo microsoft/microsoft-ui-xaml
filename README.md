@@ -7,7 +7,7 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 
 WinUI 2 is a library of controls that provides official native Microsoft UI controls and features for Windows [UWP apps](https://docs.microsoft.com/windows/uwp/index). WinUI 2 can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
-WinUI 3 is the next version of the WinUI framework, shipping later this year. It dramatically expands WinUI into a full UX framework, making WinUI available for all types of Windows apps – from Win32 to UWP – for use as the UI layer.
+WinUI 3 is the next version of the WinUI framework, shipping in 2021. It dramatically expands WinUI into a full UX framework, making WinUI available for all types of Windows apps – from Win32 to UWP – for use as the UI layer.
  
 ## WinUI Community Calls
 
