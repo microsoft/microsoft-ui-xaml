@@ -106,6 +106,15 @@ AddAttribute $xml $import "Condition" "`$(Feature$($controlName)Enabled) == 'tru
 $xml.Project.AppendChild($import);
 $xml.Save($testAppProject)
 
+$testAppProject = $muxControlsDir + "\test\MUXControlsTestApp\MUXControlsTestApp.Shared.targets";
+[xml]$xml = Get-Content $testAppProject
+$import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
+AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\APITests\$($controlName)_APITests.projitems"
+AddAttribute $xml $import "Label" "Shared"
+AddAttribute $xml $import "Condition" "`$(Feature$($controlName)Enabled) == 'true'"
+$xml.Project.AppendChild($import);
+$xml.Save($testAppProject)
+
 # Add new profiler id to RuntimeProfiler.h
 FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s*ProfId_Size.*\s*})" @"
 
@@ -158,11 +167,13 @@ namespace SolutionHelper
                 SolutionFolder newControlFolder = (SolutionFolder)devSolutionFolder.AddSolutionFolder("$controlName").Object;
 
                 Console.WriteLine("Adding projects:");
-                Console.WriteLine("Adding source");
+                Console.WriteLine(" -Adding source");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems");
-                Console.WriteLine("Adding test UI");
+                Console.WriteLine(" -Adding API test");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\APITests\\$($controlName)_APITests.shproj");
+                Console.WriteLine(" -Adding test UI");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\TestUI\\$($controlName)_TestUI.shproj");
-                Console.WriteLine("Adding interactions test");
+                Console.WriteLine(" -Adding interactions test");
                 newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj");
                 Console.WriteLine("Finished adding projects, saving solution");
 
