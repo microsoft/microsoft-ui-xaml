@@ -19,7 +19,12 @@
                 </TransitionCollection>
             </StackPanel.ChildrenTransitions>
 
-            
+            <controls:Expander x:Name ="ExpandedExpander" AutomationProperties.Name="ExpandedExpander"  HorizontalContentAlignment="Left" IsExpanded="True">
+                <controls:Expander.Header>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Text="This expander is expanded by default." />
+                </controls:Expander.Header>
+                <TextBlock AutomationProperties.AutomationId="ExpandedExpanderContent">Content</TextBlock>
+            </controls:Expander>
             
             <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" HorizontalContentAlignment="Left" IsExpanded="False">
                 <controls:Expander.Header>
