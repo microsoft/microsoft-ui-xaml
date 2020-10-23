@@ -116,11 +116,11 @@ For questions or status updates on either features listed here, or features not 
 
 &#129002; - Stretch goal 
 
-Blank -  , or not planned to be included
+Blank -  Not included, or not planned to be included
 
 **Preview 2** is our latest release. 
 
-| Customer Capability                                                         | Preview 2 (July 2020) | Preview 3 (Nov 2020) | WinUI 3.0 (2021) | Post-3.0         |
+| Customer Capability                                                         | Preview 2 (July 2020) | Preview 3 (Nov 2020) | WinUI 3.0 (2021) | Post-3.0 (3.x releases)        |
 |-----------------------------------------------------------------------------|-----------------------|----------------------|------------------|------------------|
 | WinUI in Desktop (Win32) apps                                               | &#128994;              | &#128994;             | &#128994; | &#128994; |
 | Supports MSIX Deployment                                                    | &#128994;              | &#128994;             | &#128994; | &#128994; |
@@ -145,7 +145,7 @@ Blank -  , or not planned to be included
 | Title Bar customization for UWP apps                                        |            |           |       | &#128994; |
 | Acrylic material                                                            |            |           |       | &#128994; |
 | Reveal Highlight                                                            |            |           |       | &#128994; |
-| Rounded corners                                                             |            |           |       | &#128994; |
+| Rounded corners for top level windows and popups                                                          |            |           |       | &#128994; |
 | Media Controls                                                              |            |           |       | &#128994; |
 | `<InkCanvas>`                                                                 |            |           |       | &#128994; |
 | `<Map Control>`                                                                |            |           |       | &#129002;     |

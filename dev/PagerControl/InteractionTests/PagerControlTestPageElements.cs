@@ -1,7 +1,7 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using System;
-using System.Numerics;
 using Common;
 
 #if USING_TAEF
@@ -13,23 +13,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Foundation;
-using System.Collections.Generic;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Composition;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    class PagerTestsPageElements
+    public class PagerControlTestPageElements
     {
-        public UIObject GetPager()
+        public UIObject GetPagerControl()
         {
-            return GetElement(ref Pager, "TestPager");
+            return GetElement(ref PagerControl, "TestPager");
         }
-        private UIObject Pager;
+        private UIObject PagerControl;
 
         public UIObject GetPagerNumberBox()
         {
@@ -37,17 +32,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject PagerNumberBox;
 
-        public UIObject GetPagerComboBox()
+        public ComboBox GetPagerComboBox()
         {
-            return GetElementWithinPager(ref PagerComboBox, "ComboBoxDisplay");
+            if (PagerComboBox == null)
+            {
+                UIObject uiObject = null;
+                GetElementWithinPager(ref uiObject, "ComboBoxDisplay");
+                PagerComboBox = new ComboBox(uiObject);
+            }
+            return PagerComboBox;
         }
-        private UIObject PagerComboBox;
+        private ComboBox PagerComboBox;
 
         public UIObject GetNumberPanelButton(string elementName)
         {
-            foreach (var element in GetPager().Children)
+            foreach (var element in GetPagerControl().Children)
             {
-                if (element.AutomationId == elementName)
+                if (element.Name == elementName)
                 {
                     return element;
                 }
@@ -114,37 +115,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref FirstPageButtonVisibilityCheckBox, "FirstPageButtonVisibilityCheckBox");
         }
         private CheckBox FirstPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetPreviousPageButtonVisibilityCheckBox()
         {
             return GetElement(ref PreviousPageButtonVisibilityCheckBox, "PreviousPageButtonVisibilityCheckBox");
         }
         private CheckBox PreviousPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetNextPageButtonVisibilityCheckBox()
         {
             return GetElement(ref NextPageButtonVisibilityCheckBox, "NextPageButtonVisibilityCheckBox");
         }
         private CheckBox NextPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetLastPageButtonVisibilityCheckBox()
         {
             return GetElement(ref LastPageButtonVisibilityCheckBox, "LastPageButtonVisibilityCheckBox");
         }
         private CheckBox LastPageButtonVisibilityCheckBox;
-        
+
         public CheckBox GetFirstPageButtonIsEnabledCheckBox()
         {
             return GetElement(ref FirstPageButtonIsEnabledCheckBox, "FirstPageButtonIsEnabledCheckBox");
         }
         private CheckBox FirstPageButtonIsEnabledCheckBox;
-        
+
         public CheckBox GetPreviousPageButtonIsEnabledCheckBox()
         {
             return GetElement(ref PreviousPageButtonIsEnabledCheckBox, "PreviousPageButtonIsEnabledCheckBox");
         }
         private CheckBox PreviousPageButtonIsEnabledCheckBox;
-        
+
         public CheckBox GetNextPageButtonIsEnabledCheckBox()
         {
             return GetElement(ref NextPageButtonIsEnabledCheckBox, "NextPageButtonIsEnabledCheckBox");
@@ -235,6 +236,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button IncreaseNumberOfPagesButton;
 
+        public Button GetEnterInfinityModeButton()
+        {
+            return GetElement(ref EnterInfinityModeButton, "NumberOfPagesInfinityButton");
+        }
+        private Button EnterInfinityModeButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
@@ -246,13 +253,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return element;
         }
 
-        private T GetElementWithinPager<T>(ref T element, string elementName) where T: UIObject
+        private T GetElementWithinPager<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
             {
                 Log.Comment("Find the " + elementName);
 
-                foreach (T child in GetPager().Children)
+                foreach (T child in GetPagerControl().Children)
                 {
                     if (child.AutomationId == elementName)
                     {
@@ -264,20 +271,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return element;
         }
 
-        public enum DisplayModes
-        {
-            Auto,
-            NumberBox,
-            ComboBox,
-            NumberPanel
-        };
 
-        public enum ButtonVisibilityModes
-        {
-            Auto,
-            AlwaysVisible,
-            HiddenOnEdge,
-            None
-        }
     }
 }
