@@ -20,7 +20,8 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     bool HasKeyboardFocusCore();
     winrt::AutomationPeer GetPeerFromPointCore(winrt::Point point);
-    
+    winrt::IVector<winrt::AutomationPeer> GetChildrenCore();
+
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState();
     void Collapse();

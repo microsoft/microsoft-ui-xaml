@@ -111,11 +111,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class ExpanderTests
     {
-        public const string ExpandedExpanderAutomationId = "ExpandedExpander";
-        public const string CollapsedExpanderAutomationId = "CollapsedExpander";
-        public const string ExpandedExpanderContentAutomationId = "ExpandedExpanderContent";
-        public const string CollapsedExpanderContentAutomationId = "CollapsedExpanderContent";
-
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
@@ -132,45 +127,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void ExpandCollapseViaAutomation()
+        public void ExpandCollapseAutomationTests()
         {
             using (var setup = new TestSetupHelper("Expander Tests"))
             {
-                Expander expander = FindElement.ByName<Expander>(ExpandedExpanderAutomationId);
+                Expander expander = FindElement.ByName<Expander>("ExpandedExpander");
+                expander.SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Collapse using keyboard space key.");
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
+
+                Log.Comment("Expand using keyboard space key.");
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
+
+                Log.Comment("Collapse by clicking.");
+                expander.Click();
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
+                
+                Log.Comment("Expand by clicking.");
+                expander.Click();
+                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
 
                 Log.Comment("Collapse using UIA ExpandCollapse pattern");
                 expander.CollapseAndWait();
-                //// Should be collapsed now
                 Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
 
                 Log.Comment("Expand using UIA ExpandCollapse pattern");
                 expander.ExpandAndWait();
-                //// Should be expanded now
-                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
-            }
-        }
-
-        [TestMethod]
-        public void ExpandCollapseViaKeyboard()
-        {
-            using (var setup = new TestSetupHelper("Expander Tests"))
-            {
-                Expander expander = FindElement.ByName<Expander>(ExpandedExpanderAutomationId);
-
-                Log.Comment("Collapse using keyboard space key.");
-                expander.SetFocus();
-                Wait.ForIdle();
-                // This should collapse it.
-                KeyboardHelper.PressKey(Key.Space);
-                // Should be collapsed now
-                Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Collapsed);
-
-                Log.Comment("Expand using keyboard space key.");
-                expander.SetFocus();
-                Wait.ForIdle();
-                // This should expand it again.
-                KeyboardHelper.PressKey(Key.Space);
-                // Should be expanded now
                 Verify.AreEqual(expander.ExpandCollapseState, ExpandCollapseState.Expanded);
             }
         }

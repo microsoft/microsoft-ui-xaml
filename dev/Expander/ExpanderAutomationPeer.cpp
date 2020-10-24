@@ -6,6 +6,7 @@
 #include "ExpanderAutomationPeer.h"
 #include "Utils.h"
 #include "ResourceAccessor.h"
+#include <Vector.h>
 
 #include "ExpanderAutomationPeer.properties.cpp"
 
@@ -48,6 +49,7 @@ winrt::AutomationControlType ExpanderAutomationPeer::GetAutomationControlTypeCor
 
 bool ExpanderAutomationPeer::HasKeyboardFocusCore()
 {
+    // We are not going to call the overriden one because that one doesn't have the toggle button.
     auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
 
     for (auto peer : childrenPeers)
@@ -66,13 +68,44 @@ bool ExpanderAutomationPeer::HasKeyboardFocusCore()
     return false;
 }
 
+// This function gets called when there's narrator and the user is trying to touch the expander
+// If this happens, we will return the toggle button's peer and focus it programmatically,
+// to synchronize this touch focus with the keyboard one.
 winrt::AutomationPeer ExpanderAutomationPeer::GetPeerFromPointCore(winrt::Point point)
 {
-    auto peer = __super::GetPeerFromPointCore(point);
-    // We will try focusing the peer to sync narrator focus
-    // with the keyboard focus.
-    peer.SetFocus();
-    return peer;    
+    auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
+
+    for (auto peer : childrenPeers)
+    {
+        if (peer.GetAutomationId() == L"ExpanderToggleButton")
+        {
+            auto frameworkElementPeer = peer.as<winrt::FrameworkElementAutomationPeer>();
+            auto toggleButton = frameworkElementPeer.Owner().as<winrt::ToggleButton>();
+            toggleButton.Focus(winrt::FocusState::Programmatic);
+            return peer;
+        }
+    }
+
+    return __super::GetPeerFromPointCore(point);    
+}
+
+// We are going to take out the toggle button off the children, because we are setting
+// the toggle button's event source to this automation peer. This removes any cyclical
+// dependency.
+winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
+{
+    auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
+    auto peers = winrt::make<Vector<winrt::AutomationPeer, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>(
+                                        static_cast<int>(childrenPeers.Size() - 1) /* capacity */);
+    for (auto peer : childrenPeers)
+    {
+        if (peer.GetAutomationId() != L"ExpanderToggleButton")
+        {
+            peers.Append(peer);
+        }
+    }
+
+    return peers;
 }
 
 // IExpandCollapseProvider 
