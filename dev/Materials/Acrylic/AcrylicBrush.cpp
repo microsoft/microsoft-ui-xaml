@@ -43,7 +43,7 @@ AcrylicBrush::~AcrylicBrush()
 void AcrylicBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 {
     // XCBB will use Fallback rendering, so do not run derived Brush code.
-    if (SharedHelpers::IsInDesignMode()) { return; }
+    if (SharedHelpers::IsInDesignMode()) return;
 
     bool hasNewMaterialPolicy = false;
     winrt::XamlIsland xamlIsland = winrt::XamlIsland::GetIslandFromElement(element.try_as<winrt::UIElement>());
@@ -267,15 +267,13 @@ void AcrylicBrush::OnFallbackColorChanged(const winrt::DependencyObject& /*sende
     // If it changes dynamically and we're using the fallback brush, make sure we update it now.
     if (m_brush)
     {
-        if (m_isUsingAcrylicBrush && !m_isWaitingForFallbackAnimationComplete)
+        if (!m_isUsingAcrylicBrush || m_isWaitingForFallbackAnimationComplete)
         {
             // It's AcrylicBrush but not crossfading effect, then do nothing because effect doesn't includes FallbackColor.Color 
-        }
-        else
-        {
             m_brush.StartAnimation(
                 (m_isUsingAcrylicBrush || m_isWaitingForFallbackAnimationComplete) ? FallbackColorColor : L"Color",
-                MakeColorAnimation(FallbackColor(), TintTransitionDuration(), m_brush.Compositor()));
+                MakeColorAnimation(FallbackColor(), TintTransitionDuration(), m_brush.Compositor())
+            );
         }
     }
 }
@@ -336,15 +334,7 @@ winrt::Color AcrylicBrush::GetEffectiveTintColor()
 
     // Update tintColor's alpha with the combined opacity value
     // If LuminosityOpacity was specified, we don't intervene into users parameters
-    if (TintLuminosityOpacity() != nullptr)
-    {
-        tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity));
-    }
-    else
-    {
-        const double tintOpacityModifier = GetTintOpacityModifier(tintColor);
-        tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity * tintOpacityModifier));
-    }
+    tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity * (TintLuminosityOpacity() == nullptr ? tintOpacityModifier : 1)));
 
     return tintColor;
 }
@@ -353,9 +343,7 @@ double GetTintOpacityModifier(winrt::Color tintColor)
 {
     // TintOpacityModifier affects the 19H1+ Luminosity-based recipe only
     if (!SharedHelpers::Is19H1OrHigher())
-    {
         return 1.0;
-    }
 
     // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by 
     // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure 
@@ -431,35 +419,30 @@ winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double
 
     // If luminosity opacity is specified, just use the values as is
     if (luminosityOpacity != nullptr)
-    {
         return ColorFromRgba(rgbTintColor, std::clamp(luminosityOpacity.GetDouble(), 0.0, 1.0));
-    }
-    else
-    {
-        // To create the Luminosity blend input color without luminosity opacity,
-        // we're taking the TintColor input, converting to HSV, and clamping the V between these values
-        const double minHsvV = 0.125;
-        const double maxHsvV = 0.965;
+    
+    // To create the Luminosity blend input color without luminosity opacity,
+    // we're taking the TintColor input, converting to HSV, and clamping the V between these values
+    const double minHsvV = 0.125;
+    const double maxHsvV = 0.965;
 
-        const Hsv hsvTintColor = RgbToHsv(rgbTintColor);
+    const Hsv hsvTintColor = RgbToHsv(rgbTintColor);
 
-        const auto clampedHsvV = std::clamp(hsvTintColor.v, minHsvV, maxHsvV);
+    const auto clampedHsvV = std::clamp(hsvTintColor.v, minHsvV, maxHsvV);
 
-        const Hsv hsvLuminosityColor = Hsv(hsvTintColor.h, hsvTintColor.s, clampedHsvV);
-        const Rgb rgbLuminosityColor = HsvToRgb(hsvLuminosityColor);
+    const Hsv hsvLuminosityColor = Hsv(hsvTintColor.h, hsvTintColor.s, clampedHsvV);
+    const Rgb rgbLuminosityColor = HsvToRgb(hsvLuminosityColor);
 
-        // Now figure out luminosity opacity
-        // Map original *tint* opacity to this range
-        const double minLuminosityOpacity = 0.15;
-        const double maxLuminosityOpacity = 1.03;
+    // Now figure out luminosity opacity
+    // Map original *tint* opacity to this range
+    const double minLuminosityOpacity = 0.15;
+    const double maxLuminosityOpacity = 1.03;
 
-        const double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
-        const double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
+    const double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
+    const double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
 
-        // Finally, combine the luminosity opacity and the HsvV-clamped tint color
-        return ColorFromRgba(rgbLuminosityColor, std::min(mappedTintOpacity, 1.0));
-    }
-
+    // Finally, combine the luminosity opacity and the HsvV-clamped tint color
+    return ColorFromRgba(rgbLuminosityColor, std::min(mappedTintOpacity, 1.0));
 }
 
 void AcrylicBrush::EnsureNoiseBrush()
@@ -571,10 +554,9 @@ void AcrylicBrush::UpdateWindowActivationStatus()
 void AcrylicBrush::OnNoiseChanged(const com_ptr<MaterialHelperBase>& sender)
 {
     m_noiseChanged = true;
+    
     if (m_isConnected)
-    {
         UpdateAcrylicStatus();
-    }
 }
 
 void AcrylicBrush::UpdateAcrylicStatus()
@@ -967,14 +949,10 @@ void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateA
         acrylicBrush.Properties().InsertColor(TintColorColor, tintColor);
 
         if (SharedHelpers::Is19H1OrHigher() && !m_isUsingOpaqueBrush)
-        {
             acrylicBrush.Properties().InsertColor(LuminosityColorColor, luminosityColor);
-        }
 
         if (useCrossFadeEffect)
-        {
             acrylicBrush.Properties().InsertColor(FallbackColorColor, fallbackColor);
-        }
 
         // Update the AcrylicBrush
         m_brush = acrylicBrush;
