@@ -85,6 +85,24 @@ void MenuBarItem::AttachEventHandlers()
         m_pointerOverRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPointerOverProperty(), { this, &MenuBarItem::OnVisualPropertyChanged });
     }
 
+    m_onMenuBarItemPointerPressedRevoker = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
+        *this,
+        [this](auto const& sender, auto const& args)
+        {
+            OnMenuBarItemPointerPressed(sender, args);
+        },
+        true /*handledEventsToo*/
+    );
+
+    m_onMenuBarItemKeyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
+        *this,
+        [this](auto const& sender, auto const& args)
+        {
+            OnMenuBarItemKeyDown(sender, args);
+        },
+        true /*handledEventsToo*/
+     );
+
     if (auto flyout = m_flyout.get())
     {
         m_flyoutClosedRevoker = flyout.Closed(winrt::auto_revoke, { this, &MenuBarItem::OnFlyoutClosed });
@@ -92,12 +110,6 @@ void MenuBarItem::AttachEventHandlers()
     }
 
     m_pointerEnteredRevoker = PointerEntered(winrt::auto_revoke, { this, &MenuBarItem::OnMenuBarItemPointerEntered });
-
-    m_onMenuBarItemPointerPressedHandler = winrt::box_value<winrt::PointerEventHandler>({ this, &MenuBarItem::OnMenuBarItemPointerPressed });
-    AddHandler(winrt::UIElement::PointerPressedEvent(), m_onMenuBarItemPointerPressedHandler, true);
-
-    m_onMenuBarItemKeyDownHandler = winrt::box_value<winrt::KeyEventHandler>({ this, &MenuBarItem::OnMenuBarItemKeyDown });
-    AddHandler(winrt::UIElement::KeyDownEvent(), m_onMenuBarItemKeyDownHandler, true);
 
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &MenuBarItem::OnMenuBarItemAccessKeyInvoked });
 }
@@ -110,17 +122,8 @@ void MenuBarItem::DetachEventHandlers(bool useSafeGet)
     m_flyoutClosedRevoker.revoke();
     m_flyoutOpeningRevoker.revoke();
 
-    if (m_onMenuBarItemPointerPressedHandler)
-    {
-        RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_onMenuBarItemPointerPressedHandler);
-        m_onMenuBarItemPointerPressedHandler = nullptr;
-    }
-
-    if (m_onMenuBarItemKeyDownHandler)
-    {
-        RemoveHandler(winrt::UIElement::KeyDownEvent(), m_onMenuBarItemKeyDownHandler);
-        m_onMenuBarItemKeyDownHandler = nullptr;
-    }
+    m_onMenuBarItemPointerPressedRevoker.revoke();
+    m_onMenuBarItemKeyDownRevoker.revoke();
 }
 
 // Event Handlers
