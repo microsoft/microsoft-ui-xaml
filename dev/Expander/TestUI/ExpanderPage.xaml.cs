@@ -43,7 +43,9 @@ namespace MUXControlsTestApp
             var customControlPeer = FrameworkElementAutomationPeer.FromElement(CustomControl);
             var expanderPeer = FrameworkElementAutomationPeer.FromElement(ExpanderWithCustomEventsSource);
 
-            expanderPeer.EventsSource = customControlPeer;
+            // Commenting because of MuxTestInfra bug: 
+            // https://github.com/microsoft/microsoft-ui-xaml/issues/3491
+            //expanderPeer.EventsSource = customControlPeer;
         }
     }
 }
