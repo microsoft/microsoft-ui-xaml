@@ -52,30 +52,6 @@
                                         <Setter Target="PopIn.FromVerticalOffset" Value="50" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Right">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
-                                        <Setter Target="ExpanderContent.(Grid.Column)" Value="1" />
-                                        <Setter Target="Row0.Height" Value="*" />
-                                        <Setter Target="Row1.Height" Value="Auto" />
-                                        <Setter Target="Column0.Width" Value="Auto" />
-                                        <Setter Target="Column1.Width" Value="*" />
-                                        <Setter Target="PopIn.FromVerticalOffset" Value="0" />
-                                        <Setter Target="PopIn.FromHorizontalOffset" Value="-50" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Left">
-                                    <VisualState.Setters>
-                                        <Setter Target="ExpanderHeader.(Grid.Column)" Value="1" />
-                                        <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
-                                        <Setter Target="Row0.Height" Value="*" />
-                                        <Setter Target="Row1.Height" Value="Auto" />
-                                        <Setter Target="Column0.Width" Value="*" />
-                                        <Setter Target="Column1.Width" Value="Auto" />
-                                        <Setter Target="PopIn.FromVerticalOffset" Value="0" />
-                                        <Setter Target="PopIn.FromHorizontalOffset" Value="50" />
-                                    </VisualState.Setters>
-                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 

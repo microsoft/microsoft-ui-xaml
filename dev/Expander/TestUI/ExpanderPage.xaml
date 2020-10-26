@@ -67,24 +67,16 @@
                     </StackPanel>
                 </controls:Expander>
 
-                <controls:Expander AutomationProperties.Name="ExpanderWithLeftwardsDirection" HorizontalContentAlignment="Right" ExpandDirection="Left" IsExpanded="False">
-                    <controls:Expander.Header>
-                        <TextBlock Style="{StaticResource BaseTextBlockStyle}">Left</TextBlock>
-                    </controls:Expander.Header>
-                    <StackPanel>
-                        <TextBlock>Content</TextBlock>
-                    </StackPanel>
-                </controls:Expander>
-
-                <controls:Expander AutomationProperties.Name="ExpanderWithRightwardsDirection" HorizontalContentAlignment="Left" ExpandDirection="Right" IsExpanded="False">
-                    <controls:Expander.Header>
-                        <TextBlock Style="{StaticResource BaseTextBlockStyle}">Right</TextBlock>
-                    </controls:Expander.Header>
-                    <StackPanel>
-                        <TextBlock>Content</TextBlock>
-                    </StackPanel>
-                </controls:Expander>
-            
+                <local:TestControl x:Name="CustomControl" AutomationProperties.Name="CustomControl">
+                    <controls:Expander x:Name="ExpanderWithCustomEventsSource"  HorizontalContentAlignment="Left" ExpandDirection="Down" IsExpanded="False">
+                        <controls:Expander.Header>
+                            <TextBlock Style="{StaticResource HeaderTextBlockStyle}">This expander has a custom events source</TextBlock>
+                        </controls:Expander.Header>
+                        <StackPanel>
+                            <TextBlock>Content</TextBlock>
+                        </StackPanel>
+                    </controls:Expander>
+                </local:TestControl>
             </StackPanel>
         </ScrollViewer>
 

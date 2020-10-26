@@ -35,9 +35,7 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
 enum ExpandDirection
 {
     Down = 0,
-    Up = 1,
-    Left = 2,
-    Right = 3
+    Up = 1
 };
 
 [WUXC_VERSION_MUXONLY]
