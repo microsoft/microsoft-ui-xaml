@@ -12,7 +12,7 @@
 #include "ExpanderCollapsedEventArgs.h"
 #include "ExpanderExpandingEventArgs.h"
 
-static constexpr auto c_toggleButton = L"ExpanderHeader"sv;
+static constexpr auto c_expanderHeader = L"ExpanderHeader"sv;
 
 Expander::Expander()
 {
@@ -29,7 +29,7 @@ winrt::AutomationPeer Expander::OnCreateAutomationPeer()
 void Expander::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
-    auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_toggleButton, *this);
+    auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_expanderHeader, *this);
     // We will do 2 things with the toggle button's peer:
     // 1. Set the events source of the toggle button peer to
     // the expander's automation peer. This is is because we
@@ -61,59 +61,31 @@ void Expander::OnApplyTemplate()
         }
     }
 
-    // Check if it's expanded
-    if (ExpanderProperties::IsExpanded())
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Expanded", false);
-        this->RaiseExpandingEvent(*this);
-    }
-    else
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Collapsed", false);
-        this->RaiseCollapsedEvent(*this);
-    }
-
+    UpdateExpandState(false);
     UpdateExpandDirection(false);
 }
 
 
 void Expander::RaiseExpandingEvent(const winrt::Expander& container)
 {
-    auto eventArgs = winrt::make_self<ExpanderExpandingEventArgs>(*this);
-    eventArgs->ExpandingContent(container.Content());
-    m_expandingEventSource(*this, *eventArgs);
+    m_expandingEventSource(*this, nullptr);
 }
 
 void Expander::RaiseCollapsedEvent(const winrt::Expander& container)
 {
-    auto eventArgs = winrt::make_self<ExpanderCollapsedEventArgs>(*this);
-    eventArgs->CollapsedContent(container.Content());
-    m_collapsedEventSource(*this, *eventArgs);
+    m_collapsedEventSource(*this, nullptr);
 }
 
-void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
-    bool shouldExpand = unbox_value<bool>(args.NewValue());
-
-    if (shouldExpand)
+    UpdateExpandState(true);
+    if (IsExpanded())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Expanded", true);
-        this->RaiseExpandingEvent(*this);
+        RaiseExpandingEvent(*this);
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"Collapsed", true);
-        this->RaiseCollapsedEvent(*this);
-    }
-
-    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
-    {
-        auto expanderPeer = peer.as<ExpanderAutomationPeer>();
-        expanderPeer->RaiseExpandCollapseAutomationEvent(
-            shouldExpand ?
-            winrt::ExpandCollapseState::Expanded :
-            winrt::ExpandCollapseState::Collapsed
-        );
+        RaiseCollapsedEvent(*this);
     }
 }
 
@@ -133,5 +105,28 @@ void Expander::UpdateExpandDirection(bool useTransitions)
     case winrt::ExpandDirection::Up:
         winrt::VisualStateManager::GoToState(*this, L"Up", useTransitions);
         break;
+    }
+}
+
+void Expander::UpdateExpandState(bool useTransitions)
+{
+    const auto isExpanded = IsExpanded();
+    if (isExpanded)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Expanded", useTransitions);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Collapsed", useTransitions);
+    }
+
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        auto expanderPeer = peer.as<ExpanderAutomationPeer>();
+        expanderPeer->RaiseExpandCollapseAutomationEvent(
+            isExpanded ?
+            winrt::ExpandCollapseState::Expanded :
+            winrt::ExpandCollapseState::Collapsed
+        );
     }
 }

@@ -32,4 +32,5 @@ public:
 
 private:
     void UpdateExpandDirection(bool useTransitions);
+    void UpdateExpandState(bool useTransitions);
 };

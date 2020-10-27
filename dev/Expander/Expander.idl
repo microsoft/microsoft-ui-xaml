@@ -39,17 +39,17 @@ enum ExpandDirection
 };
 
 [WUXC_VERSION_MUXONLY]
+[default_interface]
 [webhosthidden]
 runtimeclass ExpanderExpandingEventArgs
 {
-    Object ExpandingContent{ get; };
 }
 
 [WUXC_VERSION_MUXONLY]
+[default_interface]
 [webhosthidden]
 runtimeclass ExpanderCollapsedEventArgs
 {
-    Object CollapsedContent{ get; };
 }
 
 }
