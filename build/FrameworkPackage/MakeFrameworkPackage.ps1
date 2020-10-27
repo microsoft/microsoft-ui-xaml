@@ -148,6 +148,8 @@ if (-not $PackageNameSuffix)
     $PackageNameSuffix = "$($versionMajor).$($versionMinor)"
 }
 
+$PackageNameSuffix = "CBS"
+
 # Calculate the version the same as our nuget package.
 
 if ($VersionOverride)
