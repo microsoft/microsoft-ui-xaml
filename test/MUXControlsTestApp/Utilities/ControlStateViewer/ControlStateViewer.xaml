@@ -15,6 +15,12 @@
     </UserControl.Resources>
 
     <Grid BorderThickness="1" BorderBrush="Gray" Padding="10,10,10,0">
-        <GridView x:Name="StateGridView" SelectionMode="None"/>
+        <GridView x:Name="StateGridView" SelectionMode="None">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+        </GridView>
     </Grid>
 </UserControl>

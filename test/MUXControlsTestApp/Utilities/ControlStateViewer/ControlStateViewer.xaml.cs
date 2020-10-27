@@ -73,6 +73,13 @@ namespace MUXControlsTestApp.Utilities
                 c.Loaded += Control_Loaded;
                 c.DataContext = state;
 
+                // Special setup for some controls that need a bit of help
+                if (_controlType == typeof(Slider))
+                {
+                    c.Width = 100;
+                    (c as Slider).Value = 30;
+                }
+
                 ContentControl cc = c as ContentControl;
                 if (cc != null)
                 {
@@ -91,7 +98,10 @@ namespace MUXControlsTestApp.Utilities
             Control c = sender as Control;
             if (c != null)
             {
-                VisualStateManager.GoToState(c, c.DataContext as string, false);
+                foreach (string state in (c.DataContext as string).Split('|'))
+                {
+                    VisualStateManager.GoToState(c, state, false);
+                }
             }
         }
     }
