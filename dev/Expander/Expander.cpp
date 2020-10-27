@@ -27,38 +27,41 @@ winrt::AutomationPeer Expander::OnCreateAutomationPeer()
 void Expander::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
-    auto toggleButton = GetTemplateChildT<winrt::ToggleButton>(c_expanderHeader, *this);
-    // We will do 2 things with the toggle button's peer:
-    // 1. Set the events source of the toggle button peer to
-    // the expander's automation peer. This is is because we
-    // don't want to announce the toggle button's on/off property
-    // changes, but the expander's expander/collapse property changes
-    // (or on the events source that's set, if it's set) and
-    //
-    // 2. Set the expander's automation properties name to the
-    // toggleButton's in case the expander doesn't have one. This just follows
-    // what WPF does.
-    if (winrt::AutomationPeer toggleButtonPeer = winrt::FrameworkElementAutomationPeer::FromElement(toggleButton))
-    {
-        // 1. Set the events source of the toggle button peer to the expander's.
-        if (winrt::AutomationPeer expanderPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
-        {
-            auto expanderEventsSource = expanderPeer.EventsSource() != nullptr ?
-                                            expanderPeer.EventsSource() : 
-                                             expanderPeer;
-            toggleButtonPeer.EventsSource(expanderEventsSource);
-        }
 
-        // 2. If the expander doesn't have any AutomationProperties.Name set,
-        // we will try setting one based on the header. This is how
-        // WPF's expanders work.
-        if (winrt::AutomationProperties::GetName(*this).empty()
-            && !toggleButtonPeer.GetNameCore().empty())
+    if (auto toggleButton = GetTemplateChildT<winrt::FrameworkElement>(c_expanderHeader, *this))
+    {
+        // We will do 2 things with the toggle button's peer:
+        // 1. Set the events source of the toggle button peer to
+        // the expander's automation peer. This is is because we
+        // don't want to announce the toggle button's on/off property
+        // changes, but the expander's expander/collapse property changes
+        // (or on the events source that's set, if it's set) and
+        //
+        // 2. Set the expander's automation properties name to the
+        // toggleButton's in case the expander doesn't have one. This just follows
+        // what WPF does.
+        if (winrt::AutomationPeer toggleButtonPeer = winrt::FrameworkElementAutomationPeer::FromElement(toggleButton))
         {
-            winrt::AutomationProperties::SetName(*this, toggleButtonPeer.GetNameCore());
+            // 1. Set the events source of the toggle button peer to the expander's.
+            if (winrt::AutomationPeer expanderPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+            {
+                auto expanderEventsSource = expanderPeer.EventsSource() != nullptr ?
+                    expanderPeer.EventsSource() :
+                    expanderPeer;
+                toggleButtonPeer.EventsSource(expanderEventsSource);
+            }
+
+            // 2. If the expander doesn't have any AutomationProperties.Name set,
+            // we will try setting one based on the header. This is how
+            // WPF's expanders work.
+            if (winrt::AutomationProperties::GetName(*this).empty()
+                && !toggleButtonPeer.GetNameCore().empty())
+            {
+                winrt::AutomationProperties::SetName(*this, toggleButtonPeer.GetNameCore());
+            }
         }
     }
-
+    
     UpdateExpandState(false);
     UpdateExpandDirection(false);
 }

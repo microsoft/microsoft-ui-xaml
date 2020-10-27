@@ -69,6 +69,7 @@
                             AutomationProperties.AutomationId="ExpanderToggleButton"
                             MinWidth="0"
                             MinHeight="0"
+                            IsEnabled="{TemplateBinding IsEnabled}"
                             Style="{StaticResource ExpanderDownHeaderStyle}"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"

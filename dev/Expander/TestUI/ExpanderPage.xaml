@@ -67,6 +67,15 @@
                     </StackPanel>
                 </controls:Expander>
 
+                <controls:Expander IsEnabled="False" AutomationProperties.Name="ExpanderNotEnabled" HorizontalContentAlignment="Left" ExpandDirection="Down" IsExpanded="False">
+                    <controls:Expander.Header>
+                        <TextBlock Style="{StaticResource HeaderTextBlockStyle}">This expander is not enabled</TextBlock>
+                    </controls:Expander.Header>
+                    <StackPanel>
+                        <TextBlock>Content</TextBlock>
+                    </StackPanel>
+                </controls:Expander>
+
                 <local:TestControl x:Name="CustomControl" AutomationProperties.Name="CustomControl">
                     <controls:Expander x:Name="ExpanderWithCustomEventsSource"  HorizontalContentAlignment="Left" ExpandDirection="Down" IsExpanded="False">
                         <controls:Expander.Header>
