@@ -217,10 +217,29 @@
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
             <local:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundBrush"
-                BackgroundSource="HostBackdrop"
-                TintColor="{StaticResource SystemChromeAltHighColor}"
+                TintColor="#1C1C1C"
                 TintOpacity="0.8"
-                FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
+                FallbackColor="#2C2C2C"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="SystemControlTransientAcrylicElementBrush"
+                TintColor="#1C1C1C"
+                TintOpacity="0.8"
+                FallbackColor="#2C2C2C"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="SystemControlTransientBackgroundInverseBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.8"
+                FallbackColor="#FCFCFC"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="SystemControlBaseAcrylicBrush"
+                TintColor="#1C1C1C"
+                TintOpacity="0.8"
+                FallbackColor="#202020"
+                BackgroundSource="HostBackdrop"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.419"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -435,10 +454,30 @@
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.14" />
             <local:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundBrush"
-                BackgroundSource="HostBackdrop"
-                TintColor="{StaticResource SystemChromeAltHighColor}"
+                TintColor="#FCFCFC"
                 TintOpacity="0.8"
-                FallbackColor="{StaticResource SystemChromeMediumLowColor}" />  
+                FallbackColor="#FCFCFC"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="SystemControlTransientAcrylicElementBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.8"
+                FallbackColor="#FCFCFC"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="SystemControlTransientBackgroundInverseBrush"
+                TintColor="#1C1C1C"
+                TintOpacity="0.8"
+                FallbackColor="#202020"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="SystemControlBaseAcrylicBrush"
+                TintColor="#F3F3F3"
+                TintOpacity="0.8"
+                FallbackColor="#F3F3F3"
+                BackgroundSource="HostBackdrop"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>
+
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -482,6 +521,10 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <StaticResource x:Key="SystemControlTransientBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
             <StaticResource x:Key="SystemControlTransientBackgroundBrush" ResourceKey="SystemChromeMediumLowColor" />
+            <StaticResource x:Key="SystemControlTransientAcrylicElementBrush" ResourceKey="SystemChromeMediumLowColor" />
+            <StaticResource x:Key="SystemControlTransientBackgroundInverseBrush" ResourceKey="SystemBaseMediumHighColor" />
+            <StaticResource x:Key="SystemControlBaseAcrylicBrush" ResourceKey="SystemChromeMediumLowColor" />
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemChromeWhiteColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

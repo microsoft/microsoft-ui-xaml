@@ -35,6 +35,11 @@
     <Image Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256X256_PNG.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AcrylicBrush_19h1_themeresources.xaml">
+      <Version>19H1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)AcrylicBrush_rs1_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
