@@ -4,8 +4,6 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
-
-    <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

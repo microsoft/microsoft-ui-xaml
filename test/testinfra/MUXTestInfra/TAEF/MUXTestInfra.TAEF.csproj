@@ -6,7 +6,6 @@
     <TargetFrameworkVersion>v2.1</TargetFrameworkVersion>
 
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
-    <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
 
     <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
   </PropertyGroup>
