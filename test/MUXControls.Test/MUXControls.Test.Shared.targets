@@ -40,4 +40,5 @@
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\InteractionTests\AnimatedIcon_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
 </Project>

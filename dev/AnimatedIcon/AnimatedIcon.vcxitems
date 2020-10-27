@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{F1C8A5A1-B1B0-4095-8849-E550FCF2EBF6}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);ANIMATEDICON_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AnimatedIcon.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AnimatedIcon_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AnimatedIconDevDesign.md" />
+    <None Include="$(MSBuildThisFileDirectory)SegmentLookup.md" />
+  </ItemGroup>
+</Project>

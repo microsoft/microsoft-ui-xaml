@@ -263,6 +263,7 @@
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
