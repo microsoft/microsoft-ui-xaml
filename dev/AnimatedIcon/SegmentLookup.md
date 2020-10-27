@@ -99,38 +99,40 @@ If the designer forgets (or purposefully omits) one of the start or end markers,
 Given the above requirements I purpose the following algorithm. We will use the example of StateGroup1 being changed from Normal to PointerOver while StateGroup2 is set to Off to make the more concrete
 ### Example:
 OnStateGroup1PropertyChanged
-1. Check for `NormalOffToPointerOverOffStart` and `NormalOffToPointerOverOffEnd`. If either is found return[^1].
-2. Check for `OffNormalToOffPointerOverStart` and `OffNormalToOffPointerOverEnd`. If either is found return[^1].
+1. Check for `NormalOffToPointerOverOffStart` and `NormalOffToPointerOverOffEnd`. If either is found return<sup>1</sup>.
+2. Check for `OffNormalToOffPointerOverStart` and `OffNormalToOffPointerOverEnd`. If either is found return<sup>1</sup>.
 3. Check for `PointerOverOffToNormalOffStart` and `PointerOverOffToNormalOffEnd`. If *both* are found return the segment in reverse.
 4. Check for `OffPointerOverToOffNormalStart` and `OffPointerOverToOffNormalEnd`. If *both* are found return the segment in reverse.
-5. Check for `NormalToPointerOverStart` and `NormalToPointerOverEnd`. If either is found return[^1].
+5. Check for `NormalToPointerOverStart` and `NormalToPointerOverEnd`. If either is found return<sup>1</sup>.
 6. Check for `PointerOverToNormalStart` and `PointerOverToNormalEnd`. If *both* is found return the segment in reverse.
 7. Return a hard cut to position 0.0.
 
-[^1]: If only one of the paired markers is found we would return a hard cut to the position specified by the single marker.
-
 ### Formalized algorithm with 3 state groups:
 OnStateGroup1PropertyChanged
-1. Check for `[PrevStateGroup1][StateGroup2][StateGroup3]To[NewStateGroup1][StateGroup2][StateGroup3]Start` and `[PrevStateGroup1][StateGroup2][StateGroup3]To[NewStateGroup1][StateGroup2][StateGroup3]End`. If either is found return[^1].
-2. Check for `[PrevStateGroup1][StateGroup3][StateGroup2]To[NewStateGroup1][StateGroup3][StateGroup2]Start` and `[PrevStateGroup1][StateGroup3][StateGroup2]To[NewStateGroup1][StateGroup3][StateGroup2]End`. If either is found return[^1].
-3. Check for `[StateGroup2][PrevStateGroup1][StateGroup3]To[StateGroup2][NewStateGroup1][StateGroup3]Start` and `[StateGroup2][PrevStateGroup1][StateGroup3]To[StateGroup2][NewStateGroup1][StateGroup3]End`. If either is found return[^1].
-4. Check for `[StateGroup2][StateGroup3][PrevStateGroup1]To[StateGroup2][StateGroup3][NewStateGroup1]Start` and `[StateGroup2][StateGroup3][PrevStateGroup1]To[StateGroup2][StateGroup3][NewStateGroup1]End`. If either is found return[^1].
-5. Check for `[StateGroup3][PrevStateGroup1][StateGroup2]To[StateGroup3][NewStateGroup1][StateGroup2]Start` and `[StateGroup3][PrevStateGroup1][StateGroup2]To[StateGroup3][NewStateGroup1][StateGroup2]End`. If either is found return[^1].
-6. Check for `[StateGroup3][StateGroup2][PrevStateGroup1]To[StateGroup3][StateGroup2][NewStateGroup1]Start` and `[StateGroup3][StateGroup2][PrevStateGroup1]To[StateGroup3][StateGroup2][NewStateGroup1]End`. If either is found return[^1].
+1. Check for `[PrevStateGroup1][StateGroup2][StateGroup3]To[NewStateGroup1][StateGroup2][StateGroup3]Start` and `[PrevStateGroup1][StateGroup2][StateGroup3]To[NewStateGroup1][StateGroup2][StateGroup3]End`. If either is found return<sup>1</sup>.
+2. Check for `[PrevStateGroup1][StateGroup3][StateGroup2]To[NewStateGroup1][StateGroup3][StateGroup2]Start` and `[PrevStateGroup1][StateGroup3][StateGroup2]To[NewStateGroup1][StateGroup3][StateGroup2]End`. If either is found return<sup>1</sup>.
+3. Check for `[StateGroup2][PrevStateGroup1][StateGroup3]To[StateGroup2][NewStateGroup1][StateGroup3]Start` and `[StateGroup2][PrevStateGroup1][StateGroup3]To[StateGroup2][NewStateGroup1][StateGroup3]End`. If either is found return<sup>1</sup>.
+4. Check for `[StateGroup2][StateGroup3][PrevStateGroup1]To[StateGroup2][StateGroup3][NewStateGroup1]Start` and `[StateGroup2][StateGroup3][PrevStateGroup1]To[StateGroup2][StateGroup3][NewStateGroup1]End`. If either is found return<sup>1</sup>.
+5. Check for `[StateGroup3][PrevStateGroup1][StateGroup2]To[StateGroup3][NewStateGroup1][StateGroup2]Start` and `[StateGroup3][PrevStateGroup1][StateGroup2]To[StateGroup3][NewStateGroup1][StateGroup2]End`. If either is found return<sup>1</sup>.
+6. Check for `[StateGroup3][StateGroup2][PrevStateGroup1]To[StateGroup3][StateGroup2][NewStateGroup1]Start` and `[StateGroup3][StateGroup2][PrevStateGroup1]To[StateGroup3][StateGroup2][NewStateGroup1]End`. If either is found return<sup>1</sup>.
 7. Check for `[NewStateGroup1][StateGroup2][StateGroup3]To[PrevStateGroup1][StateGroup2][StateGroup3]Start` and `[NewStateGroup1][StateGroup2][StateGroup3]To[PrevStateGroup1][StateGroup2][StateGroup3]End`. If *both* are found return the segment in reverse.
 8. Check for `[NewStateGroup1][StateGroup3][StateGroup2]To[PrevStateGroup1][StateGroup3][StateGroup2]Start` and `[NewStateGroup1][StateGroup3][StateGroup2]To[PrevStateGroup1][StateGroup3][StateGroup2]End`. If *both* are found return the segment in reverse.
 9. Check for `[StateGroup2][NewStateGroup1][StateGroup3]To[StateGroup2][PrevStateGroup1][StateGroup3]Start` and `[StateGroup2][NewStateGroup1][StateGroup3]To[StateGroup2][PrevStateGroup1][StateGroup3]End`. If *both* are found return the segment in reverse.
 10. Check for `[StateGroup2][StateGroup3][NewStateGroup1]To[StateGroup2][StateGroup3][PrevStateGroup1]Start` and `[StateGroup2][StateGroup3][NewStateGroup1]To[StateGroup2][StateGroup3][PrevStateGroup1]End`. If *both* are found return the segment in reverse.
 11. Check for `[StateGroup3][NewStateGroup1][StateGroup2]To[StateGroup3][PrevStateGroup1][StateGroup2]Start` and `[StateGroup3][NewStateGroup1][StateGroup2]To[StateGroup3][PrevStateGroup1][StateGroup2]End`. If *both* are found return the segment in reverse.
 12. Check for `[StateGroup3][StateGroup2][NewStateGroup1]To[StateGroup3][StateGroup2][PrevStateGroup1]Start` and `[StateGroup3][StateGroup2][NewStateGroup1]To[StateGroup3][StateGroup2][PrevStateGroup1]End`. If *both* are found return the segment in reverse.
-13. Check for `[PrevStateGroup1][StateGroup2]To[NewStateGroup1][StateGroup2]Start` and `[PrevStateGroup1][StateGroup2]To[NewStateGroup1][StateGroup2]End`. If either is found return[^1].
-14. Check for `[StateGroup2][PrevStateGroup1]To[StateGroup2][NewStateGroup1]Start` and `[StateGroup2][PrevStateGroup1]To[StateGroup2][NewStateGroup1]End`. If either is found return[^1].
-15. Check for `[PrevStateGroup1][StateGroup3]To[NewStateGroup1][StateGroup3]Start` and `[PrevStateGroup1][StateGroup3]To[NewStateGroup1][StateGroup3]End`. If either is found return[^1].
-16. Check for `[StateGroup3][PrevStateGroup1]To[StateGroup3][NewStateGroup1]Start` and `[StateGroup3][PrevStateGroup1]To[StateGroup3][NewStateGroup1]End`. If either is found return[^1].
+13. Check for `[PrevStateGroup1][StateGroup2]To[NewStateGroup1][StateGroup2]Start` and `[PrevStateGroup1][StateGroup2]To[NewStateGroup1][StateGroup2]End`. If either is found return<sup>1</sup>.
+14. Check for `[StateGroup2][PrevStateGroup1]To[StateGroup2][NewStateGroup1]Start` and `[StateGroup2][PrevStateGroup1]To[StateGroup2][NewStateGroup1]End`. If either is found return<sup>1</sup>.
+15. Check for `[PrevStateGroup1][StateGroup3]To[NewStateGroup1][StateGroup3]Start` and `[PrevStateGroup1][StateGroup3]To[NewStateGroup1][StateGroup3]End`. If either is found return<sup>1</sup>.
+16. Check for `[StateGroup3][PrevStateGroup1]To[StateGroup3][NewStateGroup1]Start` and `[StateGroup3][PrevStateGroup1]To[StateGroup3][NewStateGroup1]End`. If either is found return<sup>1</sup>.
 17. Check for `[NewStateGroup1][StateGroup2]To[PrevStateGroup1][StateGroup2]Start` and `[NewStateGroup1][StateGroup2]To[PrevStateGroup1][StateGroup2]End`. If *both* are found return the segment in reverse.
 18. Check for `[StateGroup2][NewStateGroup1]To[StateGroup2][PrevStateGroup1]Start` and `[StateGroup2][NewStateGroup1]To[StateGroup2][PrevStateGroup1]End`. If *both* are found return the segment in reverse.
 19. Check for `[NewStateGroup1][StateGroup3]To[PrevStateGroup1][StateGroup3]Start` and `[NewStateGroup1][StateGroup3]To[PrevStateGroup1][StateGroup3]End`. If *both* are found return the segment in reverse.
 20. Check for `[StateGroup3][NewStateGroup1]To[StateGroup3][PrevStateGroup1]Start` and `[StateGroup3][NewStateGroup1]To[StateGroup3][PrevStateGroup1]End`. If *both* are found return the segment in reverse.
-21. Check for `[PrevStateGroup1]To[NewStateGroup1]Start` and `[PrevStateGroup1]To[NewStateGroup1]End`. If either is found return[^1].
+21. Check for `[PrevStateGroup1]To[NewStateGroup1]Start` and `[PrevStateGroup1]To[NewStateGroup1]End`. If either is found return<sup>1</sup>.
 22. Check for `[NewStateGroup1]To[PrevStateGroup1]Start` and `[NewStateGroup1]To[PrevStateGroup1]End`. If *both* are found return the segment in reverse.
 24. Return a hard cut to position 0.0.
+
+
+
+1: If only one of the paired markers is found we would return a hard cut to the position specified by the single marker.
