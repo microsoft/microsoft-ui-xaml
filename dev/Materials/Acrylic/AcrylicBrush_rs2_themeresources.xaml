@@ -239,7 +239,7 @@
                 TintOpacity="0.8"
                 FallbackColor="#202020"
                 BackgroundSource="HostBackdrop"/>
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.419"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">

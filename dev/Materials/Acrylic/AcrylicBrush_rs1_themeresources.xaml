@@ -49,7 +49,7 @@
             <StaticResource x:Key="SystemControlTransientAcrylicElementBrush" ResourceKey="SystemChromeMediumLowColor" />
             <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="#F2F2F2" />
             <StaticResource x:Key="SystemControlBaseAcrylicBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.419"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
