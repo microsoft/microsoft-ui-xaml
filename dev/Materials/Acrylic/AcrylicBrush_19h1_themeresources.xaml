@@ -69,11 +69,11 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="SystemControlTransientBackgroundBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="SystemControlTransientAcrylicElementBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="SystemControlTransientBackgroundInverseBrush" ResourceKey="SystemBaseMediumHighColor" />
-            <StaticResource x:Key="SystemControlBaseAcrylicBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <StaticResource x:Key="SystemControlDefaultBrighteningBrush" ResourceKey="SystemChromeWhiteColor"/>
+            <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="SystemControlTransientAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemControlBaseAcrylicBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>
