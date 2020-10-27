@@ -9,8 +9,6 @@
 #include "ExpanderAutomationPeer.h"
 #include "Utils.h"
 #include "winnls.h"
-#include "ExpanderCollapsedEventArgs.h"
-#include "ExpanderExpandingEventArgs.h"
 
 static constexpr auto c_expanderHeader = L"ExpanderHeader"sv;
 
