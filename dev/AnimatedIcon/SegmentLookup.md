@@ -60,7 +60,10 @@ AnimatedIcon is being designed to provide developers and designers a method for 
 |  DisabledOff -> NormalOff |   | 
 |  DisabledOff -> PointerOverOff |   | 
 |  DisabledOff -> PressedOff |   | 
+
+
 In order to specify an animation for every state transitions the Lottie author will need to specify 120 markers with the following format:
+
 |  [FromState]To[ToState]Start	 |       [FromState]To[ToState]End   |
 |:---:|:---:|
 | NormalDraggingToPointerOverDraggingStart | PointerOverDraggingToNormalDraggingEnd |
