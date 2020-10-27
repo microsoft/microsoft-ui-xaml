@@ -162,6 +162,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     if (isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
+        m_autoSuggestBoxSuggestionChosenRevoker.revoke();
     }
 }
 
@@ -3744,6 +3745,14 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_AutoSuggestBoxProperty)
     {
         InvalidateTopNavPrimaryLayout();
+        if (args.OldValue())
+        {
+            m_autoSuggestBoxSuggestionChosenRevoker.revoke();
+        }
+        if (const auto newAutoSuggestBox = args.NewValue().try_as<winrt::AutoSuggestBox>())
+        {
+            m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
+        }
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {
@@ -4471,6 +4480,15 @@ void NavigationView::UpdateTitleBarPadding()
         {
             GetTemplateSettings()->TopPadding(topPadding);
         }
+    }
+}
+
+void NavigationView::OnAutoSuggestBoxSuggestionChosen(const winrt::AutoSuggestBox& sender, const winrt::Windows::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs& args)
+{
+    // When in compact or minimal, we want to close pane when an item gets selected.
+    if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.SelectedItem() != nullptr)
+    {
+        ClosePane();
     }
 }
 

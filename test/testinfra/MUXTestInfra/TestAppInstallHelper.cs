@@ -33,12 +33,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             if (!TestAppxInstalled.Contains(packageFamilyName))
             {
-                FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, appInstallerName + ".appx"));
-                if (!appxFile.Exists)
+                FileInfo FirstFileWithExtension(params string[] extensions)
                 {
-                    appxFile = new FileInfo(Path.Combine(deploymentDir, appInstallerName + ".appxbundle"));
+                    Log.Comment("Searching for Package file. Base dir: {0}", deploymentDir);
+                    FileInfo fileInfo = null;
+                    foreach (var ext in extensions)
+                    {
+                        fileInfo = new FileInfo(Path.Combine(deploymentDir, $"{appInstallerName}.{ext}"));
+                        if (fileInfo.Exists)
+                        {
+                            Log.Comment("File '{0}' found!", fileInfo.FullName);
+                            break;
+                        }
+                        else
+                        {
+                            Log.Comment("File '{0}' not found.", fileInfo.FullName);
+                        }
+                    }
+
+                    return fileInfo;
                 }
-                if (appxFile.Exists)
+
+                var packageFile = FirstFileWithExtension("appx", "appxbundle", "msix");
+
+                if (packageFile?.Exists == true)
                 {
                     PackageManager packageManager = new PackageManager();
                     DeploymentResult result = null;
@@ -88,7 +106,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         }
                     }
 
-                    var packageUri = new Uri(Path.Combine(deploymentDir, appxFile.FullName));
+                    var packageUri = new Uri(Path.Combine(deploymentDir, packageFile.FullName));
 
                     Log.Comment("Installing Test Appx Package: {0}", packageUri.AbsolutePath);
 
