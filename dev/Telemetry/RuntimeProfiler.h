@@ -85,3 +85,4 @@ namespace RuntimeProfiler
             RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
         } \
     }
+
