@@ -85,9 +85,11 @@ This requires that our lookup algorithm check the most verbose state name (i.e. 
 This requires that if at the end of the lookup algorithm we have not found a segment of the Lottie animation to play then we should not fail. I am proposing that we do not want to leave the animation in its current state, that might be the end of a pressed animation for example.  Instead I propose we cut to position 0.0 of the Lottie file, which will behave as the default position.
 
 ##### 3) Allow the designer to specify multiple transitions with the same marker if they have the same animation 
-There are two use cases I see here. First the designer doesn't care about one of the orthogonal state groups. In the proposed states maybe they only have animations for the ToggleSates, not the CommonStates.The designer should not have to specify NormalOn -> NormalOff, On -> Off should be sufficient. On->Off would also cover PointerOverOn->PointerOverOff PressedOn->PressedOff and DisabledOn->DisabledOff if those weren't seperately specified.
+There are three use cases I see here. First the designer doesn't care about one of the orthogonal state groups. In the proposed states maybe they only have animations for the ToggleSates, not the CommonStates.The designer should not have to specify NormalOn -> NormalOff, On -> Off should be sufficient. On->Off would also cover PointerOverOn->PointerOverOff PressedOn->PressedOff and DisabledOn->DisabledOff if those weren't seperately specified.
 
 Second, the designer wants state transitons to play in reverse to undo a transition. For example if the designer only specifies NormalOn->NormalOff then in the NormalOff->NormalOn transition we would play the NormalOn->NormalOff in reverse.
+
+Third, the designer wants to associate a single frame (not an animation) with a state. For example position 1.0 could be the disabled state.  In this case the marker "Disabled" would specifiy that.  When transitioning from Disabled specified in this manor you would either need something like DisabledToNormalStart and/or DisabedToNormalEnd OR a "Normal" marker. 
 
 ##### 4) Don't depend on the order the state groups are specified in.
  When there are multiple orthoginal state groups we don't want to fail if the designer or developer applies them in the wrong order. For instance if the designer specifies OnNormalToOffNormalStart and OnNormalToOffNormalEnd but the developer expects NormalOnToNormalOffStart and NormalOnToNormalOffEnd we should still function.
@@ -105,7 +107,10 @@ OnStateGroup1PropertyChanged
 4. Check for `OffPointerOverToOffNormalStart` and `OffPointerOverToOffNormalEnd`. If *both* are found return the segment in reverse.
 5. Check for `NormalToPointerOverStart` and `NormalToPointerOverEnd`. If either is found return<sup>1</sup>.
 6. Check for `PointerOverToNormalStart` and `PointerOverToNormalEnd`. If *both* is found return the segment in reverse.
-7. Return a hard cut to position 0.0.
+8. Check for `PointerOverOff`.  If it is found return a hard cut to that position.
+9. Check for `OffPointerOver`.  If it is found return a hard cut to that position.
+10. Check for `PointerOver`.  If it is found return a hard cut to that position.
+11. Return a hard cut to position 0.0.
 
 ### Formalized algorithm with 3 state groups:
 OnStateGroup1PropertyChanged
@@ -131,7 +136,18 @@ OnStateGroup1PropertyChanged
 20. Check for `[StateGroup3][NewStateGroup1]To[StateGroup3][PrevStateGroup1]Start` and `[StateGroup3][NewStateGroup1]To[StateGroup3][PrevStateGroup1]End`. If *both* are found return the segment in reverse.
 21. Check for `[PrevStateGroup1]To[NewStateGroup1]Start` and `[PrevStateGroup1]To[NewStateGroup1]End`. If either is found return<sup>1</sup>.
 22. Check for `[NewStateGroup1]To[PrevStateGroup1]Start` and `[NewStateGroup1]To[PrevStateGroup1]End`. If *both* are found return the segment in reverse.
-24. Return a hard cut to position 0.0.
+23. Check for `[NewStateGroup1][StateGroup2][StateGroup3]`. If it is found return a hard cut to that position.
+24. Check for `[NewStateGroup1][StateGroup3][StateGroup2]`. If it is found return a hard cut to that position.
+25. Check for `[StateGroup2][NewStateGroup1][StateGroup3]`. If it is found return a hard cut to that position.
+26. Check for `[StateGroup2][StateGroup3][NewStateGroup1]`. If it is found return a hard cut to that position.
+27. Check for `[StateGroup3][NewStateGroup1][StateGroup2]`. If it is found return a hard cut to that position.
+28. Check for `[StateGroup3][StateGroup2][NewStateGroup1]`. If it is found return a hard cut to that position.
+29. Check for `[NewStateGroup1][StateGroup2]`. If it is found return a hard cut to that position.
+30. Check for `[StateGroup2][NewStateGroup1]`. If it is found return a hard cut to that position.
+31. Check for `[NewStateGroup1][StateGroup3]`. If it is found return a hard cut to that position.
+32. Check for `[StateGroup3][NewStateGroup1]`. If it is found return a hard cut to that position.
+33. Check for `[NewStateGroup1]`. If it is found return a hard cut to that position.
+34. Return a hard cut to position 0.0.
 
 
 
