@@ -605,7 +605,6 @@ Global
 		dev\Materials\Acrylic\TestUI\AcrylicBrush_TestUI.projitems*{a800e818-7212-4fd7-ae3a-1dcab539db87}*SharedItemsImports = 13
 		dev\PagerControl\PagerControl.vcxitems*{ab3261a7-9a8d-4a27-aea2-3aac0419c889}*SharedItemsImports = 9
 		dev\Collections\Collections.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\ColorPicker\ColorPicker.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\CommonStyles\CommonStyles.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Common\Common.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\DropDownButton\DropDownButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -615,8 +614,9 @@ Global
 		dev\Lights\Lights.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\NumberBox\NumberBox.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4	
+		dev\Repeater\Repeater.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ResourceHelper\ResourceHelper.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\Slider\Slider.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SplitButton\SplitButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Telemetry\Telemetry.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TestHooks\TestHooks.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -655,9 +655,10 @@ Global
 		dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems*{ddb468e4-7b64-4301-8fcb-1bebbb1e689f}*SharedItemsImports = 13
 		dev\TreeView\APITests\TreeView_APITests.projitems*{de885c66-929c-464e-bac4-3e076ec46483}*SharedItemsImports = 13
 		dev\Pivot\TestUI\Pivot_TestUI.projitems*{deb3fa60-e4a7-4735-89f2-363c7c56b428}*SharedItemsImports = 13
-		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CommonManaged\CommonManaged.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4	
+		dev\NumberBox\APITests\NumberBox_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4	
+		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems*{e1c861e2-c4d9-41e1-aed7-5e203451bd4d}*SharedItemsImports = 13
 		dev\DatePicker\TestUI\DatePicker_TestUI.projitems*{e20f725c-3a53-463b-ada9-ff2088aaca4d}*SharedItemsImports = 13
@@ -673,9 +674,10 @@ Global
 		dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems*{f470a64e-780e-45aa-abb7-73a8734e51d7}*SharedItemsImports = 13
 		dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems*{f601284a-00c1-49f9-99b3-70d45585f784}*SharedItemsImports = 13
 		dev\SplitButton\SplitButton.vcxitems*{faf114dd-af1f-4d9f-a511-354c19912aad}*SharedItemsImports = 9
-		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CommonManaged\CommonManaged.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4	
+		dev\NumberBox\APITests\NumberBox_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4	
+		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\Slider\Slider.vcxitems*{fc2178ca-7f72-40f0-916c-a2b3750bbb6c}*SharedItemsImports = 9
 		dev\LayoutPanel\LayoutPanel.vcxitems*{fd3c1a00-0d07-4849-a3b9-646f0ff21d7b}*SharedItemsImports = 9
@@ -1128,6 +1130,10 @@ Global
 		{225C4174-3141-49B8-ADE2-C7D3408D5103} = {E7C2104F-770D-4375-8D3A-D173F222273A}
 		{4F64C819-664F-436A-BCDB-8AB3019B9DD5} = {E7C2104F-770D-4375-8D3A-D173F222273A}
 		{CB2352E2-D633-41A3-8CDC-B28731A4C490} = {E7C2104F-770D-4375-8D3A-D173F222273A}
+		{0EC260CC-03C7-4790-B16A-43428EBCF5AD} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}	
+		{3566798E-9E24-44EF-B89D-2A62AE8F697A} = {0EC260CC-03C7-4790-B16A-43428EBCF5AD}	
+		{675121BF-CABC-48E7-9C9D-4571BC507406} = {0EC260CC-03C7-4790-B16A-43428EBCF5AD}	
+		{675373CE-6ACD-4C4B-A009-09A3C9B218E6} = {0EC260CC-03C7-4790-B16A-43428EBCF5AD}
 		{1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{CCC102B7-F5EF-479D-94F1-008D189448B1} = {1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9}
 		{F470A64E-780E-45AA-ABB7-73A8734E51D7} = {1AD0CB4F-47F0-432B-8D4F-CE33FA3EB8A9}
