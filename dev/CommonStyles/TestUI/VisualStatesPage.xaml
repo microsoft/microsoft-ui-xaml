@@ -12,8 +12,6 @@
     <Page.Resources>
         <!-- Compact this a bit -->
         <x:Double x:Key="ToggleSwitchThemeMinWidth">80</x:Double>
-
-        
     </Page.Resources>
     
     <Grid>

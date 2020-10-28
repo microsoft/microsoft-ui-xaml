@@ -13,55 +13,56 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Utilities;
+using System.Runtime.CompilerServices;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "VisualStates")]
     public sealed partial class VisualStatesPage : Page
     {
-        private Dictionary<Type, List<string>> controls = new Dictionary<Type, List<string>>()
+        private List<ControlStateViewer> viewers = new List<ControlStateViewer>()
         {
-            {typeof(Button),
-                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" } },
+            new ControlStateViewer(typeof(Button),
+                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" }),
 
-            {typeof(ToggleButton),
-                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled", "Checked", "CheckedPointerOver", "CheckedPressed", "CheckedDisabled", "Indeterminate", "IndeterminatePointerOver", "IndeterminatePressed", "IndeterminateDisabled" } },
+            new ControlStateViewer(typeof(Button),
+                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" },
+                Application.Current.Resources["AccentButtonStyle"] as Style),
 
-            {typeof(Microsoft.UI.Xaml.Controls.DropDownButton),
-                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" } },
+            new ControlStateViewer(typeof(ToggleButton),
+                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled", "Checked", "CheckedPointerOver", "CheckedPressed", "CheckedDisabled", "Indeterminate", "IndeterminatePointerOver", "IndeterminatePressed", "IndeterminateDisabled" }),
 
-            {typeof(Microsoft.UI.Xaml.Controls.SplitButton),
-                new List<string>{ "Normal", "FlyoutOpen", "TouchPressed", "PrimaryPointerOver", "PrimaryPressed", "SecondaryPointerOver", "SecondaryPressed" } },
+            new ControlStateViewer(typeof(Microsoft.UI.Xaml.Controls.DropDownButton),
+                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" }),
 
-            {typeof(Microsoft.UI.Xaml.Controls.ToggleSplitButton),
-                new List<string>{ "Checked", "CheckedFlyoutOpen", "CheckedTouchPressed", "CheckedPrimaryPointerOver", "CheckedPrimaryPressed", "CheckedSecondaryPointerOver", "CheckedSecondaryPressed" } },
+            new ControlStateViewer(typeof(Microsoft.UI.Xaml.Controls.SplitButton),
+                new List<string>{ "Normal", "FlyoutOpen", "TouchPressed", "PrimaryPointerOver", "PrimaryPressed", "SecondaryPointerOver", "SecondaryPressed" }),
 
-            {typeof(HyperlinkButton),
-                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" } },
+            new ControlStateViewer(typeof(Microsoft.UI.Xaml.Controls.ToggleSplitButton),
+                new List<string>{ "Checked", "CheckedFlyoutOpen", "CheckedTouchPressed", "CheckedPrimaryPointerOver", "CheckedPrimaryPressed", "CheckedSecondaryPointerOver", "CheckedSecondaryPressed" }),
 
-            {typeof(CheckBox),
-                new List<string>(){ "UncheckedNormal", "UncheckedPointerOver", "UncheckedPressed", "UncheckedDisabled", "CheckedNormal", "CheckedPointerOver", "CheckedPressed", "CheckedDisabled", "IndeterminateNormal", "IndeterminatePointerOver", "IndeterminatePressed", "IndeterminateDisabled" } },
+            new ControlStateViewer(typeof(HyperlinkButton),
+                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" }),
 
-            {typeof(RadioButton),
-                new List<string>(){ "Unchecked|Normal", "Unchecked|PointerOver", "Unchecked|Pressed", "Unchecked|Disabled", "Checked|Normal", "Checked|PointerOver", "Checked|Pressed", "Checked|Disabled" } },
+            new ControlStateViewer(typeof(CheckBox),
+                new List<string>(){ "UncheckedNormal", "UncheckedPointerOver", "UncheckedPressed", "UncheckedDisabled", "CheckedNormal", "CheckedPointerOver", "CheckedPressed", "CheckedDisabled", "IndeterminateNormal", "IndeterminatePointerOver", "IndeterminatePressed", "IndeterminateDisabled" }),
+
+            new ControlStateViewer(typeof(RadioButton),
+                new List<string>(){ "Unchecked|Normal", "Unchecked|PointerOver", "Unchecked|Pressed", "Unchecked|Disabled", "Checked|Normal", "Checked|PointerOver", "Checked|Pressed", "Checked|Disabled" }),
             
-            {typeof(ToggleSwitch),
-                new List<string>(){ "Off|Normal", "Off|PointerOver", "Off|Pressed", "Off|Disabled", "On|Normal", "On|PointerOver", "On|Pressed", "On|Disabled" } },
+            new ControlStateViewer(typeof(ToggleSwitch),
+                new List<string>(){ "Off|Normal", "Off|PointerOver", "Off|Pressed", "Off|Disabled", "On|Normal", "On|PointerOver", "On|Pressed", "On|Disabled" }),
 
-            {typeof(Slider),
-                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" } },
+            new ControlStateViewer(typeof(Slider),
+                new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" }),
         };
 
         public VisualStatesPage()
         {
             this.InitializeComponent();
 
-            foreach (var pair in controls)
+            foreach (var viewer in viewers)
             {
-                ControlStateViewer viewer = new ControlStateViewer();
-                viewer.ControlType = pair.Key;
-                viewer.States = pair.Value;
-
                 ControlPanel.Children.Add(viewer);
             }
         }

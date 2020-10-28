@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace MUXControlsTestApp.Utilities
 {
@@ -16,10 +17,22 @@ namespace MUXControlsTestApp.Utilities
     {
         Type _controlType;
         List<string> _states;
+        Style _style;
 
         public ControlStateViewer()
         {
             this.InitializeComponent();
+        }
+
+        public ControlStateViewer(Type controlType, List<string> states, Style style = null)
+        {
+            this.InitializeComponent();
+
+            _controlType = controlType;
+            _states = states;
+            _style = style;
+
+            UpdateGrid();
         }
 
         public Type ControlType
@@ -70,6 +83,10 @@ namespace MUXControlsTestApp.Utilities
                 sp.Children.Add(textBlock);
 
                 Control c = Activator.CreateInstance(_controlType) as Control;
+                if (_style != null)
+                {
+                    c.Style = _style;
+                }
                 c.Loaded += Control_Loaded;
                 c.DataContext = state;
 
