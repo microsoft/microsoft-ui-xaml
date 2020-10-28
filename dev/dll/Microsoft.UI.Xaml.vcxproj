@@ -138,8 +138,9 @@
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
     <Import Project="..\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
-    <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'" />
-    <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" />
+    <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared"  Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'"/>
+    <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" />
+    <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'"/>
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
