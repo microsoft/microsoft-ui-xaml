@@ -49,7 +49,8 @@ void XamlControlsResources::UpdateSource()
             if (isInFrameworkPackage)
             {
                 packagePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR  "/Themes/";
-            } else if (isInCBSPackage)
+            }
+            else if (isInCBSPackage)
             {
                 packagePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR  "/Themes/";
             }
