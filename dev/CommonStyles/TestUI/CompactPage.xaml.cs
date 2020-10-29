@@ -70,9 +70,9 @@ namespace MUXControlsTestApp
         private void RunTest_Click(object sender, RoutedEventArgs e)
         {           
             SimpleVerify simpleVerify = new SimpleVerify();
-            FrameworkElement item = ListView.FindElementOfTypeInSubtree<ListViewItem>();
+            FrameworkElement item = ListView.FindVisualChildByType<ListViewItem>();
             VerifyHeight(simpleVerify, item, 32, "ListViewItem");
-            item = TreeView.FindElementOfTypeInSubtree<TreeViewItem>();
+            item = TreeView.FindVisualChildByType<TreeViewItem>();
             VerifyHeight(simpleVerify, item, 24, "TreeViewItem");
 
             VerifyHeight(simpleVerify, NavItem1, 32, "NavigationViewItem");
