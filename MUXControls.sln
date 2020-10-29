@@ -672,6 +672,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_TestUI", "dev\Expander\TestUI\Expander_TestUI.shproj", "{50C1F1D3-20AA-49A8-9E4C-CF4E5811A1D8}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Expander_InteractionTests", "dev\Expander\InteractionTests\Expander_InteractionTests.shproj", "{D6DF4AB9-FACC-4E51-8C57-6B1F96919365}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfoBar", "InfoBar", "{CEFD707F-6686-4CF4-8D4C-B5FECD50D739}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoBar", "dev\InfoBar\InfoBar.vcxitems", "{CCC102B7-F5EF-479D-94F1-008D189448B1}"
