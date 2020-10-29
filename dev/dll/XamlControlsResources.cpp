@@ -40,6 +40,7 @@ void XamlControlsResources::UpdateSource()
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
+            const bool isInCBSPackage = SharedHelpers::isInCBSPackage();
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
@@ -48,6 +49,9 @@ void XamlControlsResources::UpdateSource()
             if (isInFrameworkPackage)
             {
                 packagePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR  "/Themes/";
+            } else if (isInCBSPackage)
+            {
+                packagePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR  "/Themes/";
             }
 
             hstring releasePrefix;
@@ -100,6 +104,8 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
+            const bool isInCBSPackage = SharedHelpers::isInCBSPackage();
+
             if (isInFrameworkPackage)
             {
                 if (is19H1OrHigher)
@@ -121,6 +127,29 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 else
                 {
                     return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
+                }
+            }
+            else if (isInCBSPackage)
+            {
+                if (is19H1OrHigher)
+                {
+                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
+                }
+                else if (isRS5OrHigher)
+                {
+                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_generic.xaml";
+                }
+                else if (isRS4OrHigher)
+                {
+                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_generic.xaml";
+                }
+                else if (isRS3OrHigher)
+                {
+                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_generic.xaml";
+                }
+                else
+                {
+                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
                 }
             }
             else

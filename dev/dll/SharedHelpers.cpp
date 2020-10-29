@@ -257,28 +257,36 @@ bool SharedHelpers::IsAPIContractV3Available()
 
 void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
 
+bool IsInPackage(std::wstring_view detectorName)
+{
+    // Special type that we manually list here which is not part of the Nuget dll distribution package. 
+    // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
+    // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
+    // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
+    // mater what comes back for the activationfactory. If it succeeds it means we're running against
+    // the framework package.
+
+    winrt::hstring typeName{ detectorName };
+    winrt::IActivationFactory activationFactory;
+
+    if (SUCCEEDED(RoGetActivationFactory(static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 bool SharedHelpers::IsInFrameworkPackage()
 {
-    static bool isInFrameworkPackage = []() {
-        // Special type that we manually list here which is not part of the Nuget dll distribution package. 
-        // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
-        // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
-        // mater what comes back for the activationfactory. If it succeeds it means we're running against
-        // the framework package.
-
-        winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
-        winrt::IActivationFactory activationFactory;
-
-        if (SUCCEEDED(RoGetActivationFactory(static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
-        {
-            return true;
-        }
-
-        return false;
-    }();
-
+    static bool isInFrameworkPackage = IsInPackage(L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv);
     return isInFrameworkPackage;
+}
+
+bool SharedHelpers::IsInCBSPackage()
+{
+    static bool isInCBSPackage = IsInPackage(L"Microsoft.UI.Private.Controls.CBSPackageDetector"sv);
+    return isInCBSPackage;
 }
 
 // Platform scale helpers
