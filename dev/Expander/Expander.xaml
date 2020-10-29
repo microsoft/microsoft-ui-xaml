@@ -49,7 +49,7 @@
                                         <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
                                         <Setter Target="Row0.Height" Value="*" />
                                         <Setter Target="Row1.Height" Value="Auto" />
-                                        <Setter Target="PopIn.FromVerticalOffset" Value="50" />
+                                        <Setter Target="PopIn.FromVerticalOffset" Value="{ThemeResource ExpanderPopinVerticalOffset}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -69,19 +69,15 @@
                             AutomationProperties.AutomationId="ExpanderToggleButton"
                             MinWidth="0"
                             MinHeight="0"
+                            IsTabStop="{ThemeResource ExpanderHeaderIsTabStop}"
                             IsEnabled="{TemplateBinding IsEnabled}"
-                            Style="{StaticResource ExpanderDownHeaderStyle}"
+                            Style="{StaticResource ExpanderHeaderStyle}"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
                             IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                            Foreground="{TemplateBinding Foreground}"
                             Padding="{TemplateBinding Padding}"
-                            FontFamily="{TemplateBinding FontFamily}"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontStyle="{TemplateBinding FontStyle}"
-                            FontStretch="{TemplateBinding FontStretch}"
-                            FontWeight="{TemplateBinding FontWeight}" />
+                          />
 
                         <ContentPresenter
                             x:Name="ExpanderContent"
@@ -99,10 +95,10 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ExpanderDownHeaderStyle" TargetType="ToggleButton">
+    <Style x:Key="ExpanderHeaderStyle" TargetType="ToggleButton">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{ThemeResource ExpanderHeaderBackground}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
@@ -178,13 +174,13 @@
                         <Grid
                             x:Name="ExpandCollapseChevron"
                             Grid.Column="1"
-                            Width="40"
-                            Margin="{ThemeResource ExpanderExpandChevronMargin}"
-                            Background="Transparent">
+                            Width="{ThemeResource ExpanderChevronWidth}"
+                            Margin="{ThemeResource ExpanderChevronMargin}"
+                            Background="{ThemeResource ExpanderChevronBackground}">
                             <TextBlock
                                 RenderTransformOrigin="0.5, 0.5"
-                                Foreground="{ThemeResource ExpanderForeground}"
-                                Text="{StaticResource ExpanderExpandedGlyph}"
+                                Foreground="{ThemeResource ExpanderChevronForeground}"
+                                Text="{StaticResource ExpanderChevronGlyph}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
