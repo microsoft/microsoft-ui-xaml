@@ -136,21 +136,10 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 {
                     return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
                 }
-                else if (isRS5OrHigher)
-                {
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_generic.xaml";
-                }
-                else if (isRS4OrHigher)
-                {
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_generic.xaml";
-                }
-                else if (isRS3OrHigher)
-                {
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_generic.xaml";
-                }
                 else
                 {
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
+                    // CBS package doesn't apply to old platforms
+                    MUX_ASSERT(false);
                 }
             }
             else
