@@ -40,7 +40,7 @@ void XamlControlsResources::UpdateSource()
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
-            const bool isInCBSPackage = SharedHelpers::isInCBSPackage();
+            const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
