@@ -15,6 +15,8 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 GlobalDependencyProperty ExpanderProperties::s_ExpandDirectionProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_HeaderProperty{ nullptr };
+GlobalDependencyProperty ExpanderProperties::s_HeaderStyleProperty{ nullptr };
+GlobalDependencyProperty ExpanderProperties::s_HeaderStyleSelectorProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_HeaderTemplateSelectorProperty{ nullptr };
 GlobalDependencyProperty ExpanderProperties::s_IsExpandedProperty{ nullptr };
@@ -48,6 +50,28 @@ void ExpanderProperties::EnsureProperties()
                 winrt::name_of<winrt::Expander>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_HeaderStyleProperty)
+    {
+        s_HeaderStyleProperty =
+            InitializeDependencyProperty(
+                L"HeaderStyle",
+                winrt::name_of<winrt::Style>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Style>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_HeaderStyleSelectorProperty)
+    {
+        s_HeaderStyleSelectorProperty =
+            InitializeDependencyProperty(
+                L"HeaderStyleSelector",
+                winrt::name_of<winrt::StyleSelector>(),
+                winrt::name_of<winrt::Expander>(),
+                false /* isAttached */,
+                ValueHelper<winrt::StyleSelector>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_HeaderTemplateProperty)
@@ -89,6 +113,8 @@ void ExpanderProperties::ClearProperties()
 {
     s_ExpandDirectionProperty = nullptr;
     s_HeaderProperty = nullptr;
+    s_HeaderStyleProperty = nullptr;
+    s_HeaderStyleSelectorProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_HeaderTemplateSelectorProperty = nullptr;
     s_IsExpandedProperty = nullptr;
@@ -134,6 +160,32 @@ void ExpanderProperties::Header(winrt::IInspectable const& value)
 winrt::IInspectable ExpanderProperties::Header()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderProperty));
+}
+
+void ExpanderProperties::HeaderStyle(winrt::Style const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_HeaderStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Style ExpanderProperties::HeaderStyle()
+{
+    return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderStyleProperty));
+}
+
+void ExpanderProperties::HeaderStyleSelector(winrt::StyleSelector const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<Expander*>(this)->SetValue(s_HeaderStyleSelectorProperty, ValueHelper<winrt::StyleSelector>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::StyleSelector ExpanderProperties::HeaderStyleSelector()
+{
+    return ValueHelper<winrt::StyleSelector>::CastOrUnbox(static_cast<Expander*>(this)->GetValue(s_HeaderStyleSelectorProperty));
 }
 
 void ExpanderProperties::HeaderTemplate(winrt::DataTemplate const& value)

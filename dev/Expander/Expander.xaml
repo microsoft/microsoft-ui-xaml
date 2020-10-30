@@ -18,7 +18,6 @@
                focus the toggle button programmatically to sync the narrator focus with the keyboard focus.
                Without this override, the narrator user that focuses the expander on a touch screen will see that pressing "Tab"
                doesn't work how they would expect.-->
-    <Style TargetType="local:Expander">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
