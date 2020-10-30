@@ -200,7 +200,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTabStripFooterPropertyChanged));
     }
     if (!s_TabStripFooterTemplateProperty)
     {
@@ -300,6 +300,14 @@ void TabViewProperties::OnTabItemsSourcePropertyChanged(
 {
     auto owner = sender.as<winrt::TabView>();
     winrt::get_self<TabView>(owner)->OnTabItemsSourcePropertyChanged(args);
+}
+
+void TabViewProperties::OnTabStripFooterPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabView>();
+    winrt::get_self<TabView>(owner)->OnTabStripFooterPropertyChanged(args);
 }
 
 void TabViewProperties::OnTabWidthModePropertyChanged(
