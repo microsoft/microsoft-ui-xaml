@@ -105,7 +105,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
-            const bool isInCBSPackage = SharedHelpers::isInCBSPackage();
+            const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
 
             if (isInFrameworkPackage)
             {
