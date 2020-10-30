@@ -138,8 +138,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 }
                 else
                 {
-                    // CBS package doesn't apply to old platforms
-                    MUX_ASSERT(false);
+                    MUX_FAIL_FAST_MSG("CBS package doesn't apply to old platforms");
                 }
             }
             else
