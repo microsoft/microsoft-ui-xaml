@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
-    <Style TargetType="local:Expander">
+    <Style TargetType="local:Expander" BasedOn="{StaticResource DefaultExpanderStyle}"/>
+    
+    <Style x:Key="DefaultExpanderStyle" TargetType="local:Expander">
         <!-- We won't make this control tab stoppable, since the tab focus should go
             to the toggle button. For this logic, several things were made:
             1. Expander::OnApplyTemplate - We set the toggle button's events source to the expander's. This will announce expander properties
