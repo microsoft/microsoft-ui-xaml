@@ -60,11 +60,6 @@ void Expander::OnApplyTemplate()
                 winrt::AutomationProperties::SetName(*this, toggleButtonPeer.GetNameCore());
             }
         }
-
-        // Finally, we are going to sync the tab stop of the expander control
-        // with the toggle button's, and take off the tab stop of the expander.
-        toggleButton.IsTabStop(IsTabStop());
-        IsTabStop(false);
     }
 
     UpdateExpandState(false);

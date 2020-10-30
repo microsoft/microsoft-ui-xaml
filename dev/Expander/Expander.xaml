@@ -18,6 +18,7 @@
                focus the toggle button programmatically to sync the narrator focus with the keyboard focus.
                Without this override, the narrator user that focuses the expander on a touch screen will see that pressing "Tab"
                doesn't work how they would expect.-->
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
@@ -46,6 +47,7 @@
                                 <VisualState x:Name="Down" />
                                 <VisualState x:Name="Up">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpanderHeader.Style" Value="{StaticResource ExpanderHeaderUpStyle}"/>
                                         <Setter Target="ExpanderHeader.(Grid.Row)" Value="1" />
                                         <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
                                         <Setter Target="Row0.Height" Value="*" />
@@ -71,7 +73,7 @@
                             MinWidth="0"
                             MinHeight="0"
                             IsEnabled="{TemplateBinding IsEnabled}"
-                            Style="{StaticResource ExpanderHeaderStyle}"
+                            Style="{StaticResource ExpanderHeaderDownStyle}"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
@@ -95,7 +97,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ExpanderHeaderStyle" TargetType="ToggleButton">
+    <Style x:Key="ExpanderHeaderDownStyle" TargetType="ToggleButton">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Background" Value="{ThemeResource ExpanderHeaderBackground}" />
@@ -188,6 +190,108 @@
                                 IsTextScaleFactorEnabled="False">
                                 <TextBlock.RenderTransform>
                                     <RotateTransform x:Name="ExpandCollapseChevronRotateTransform" Angle="0"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Grid>
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="ExpanderHeaderUpStyle" TargetType="ToggleButton">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="{ThemeResource ExpanderHeaderBackground}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver" />
+                                <VisualState x:Name="Pressed" />
+                                <VisualState x:Name="Disabled" />
+                                <VisualState x:Name="Checked">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                            Storyboard.TargetProperty="Angle"
+                                            To="0.0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="CheckedPointerOver" >
+                                    <Storyboard >
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                            Storyboard.TargetProperty="Angle"
+                                            To="0.0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="CheckedPressed">
+                                    <Storyboard >
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                            Storyboard.TargetProperty="Angle"
+                                            To="0.0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="CheckedDisabled">
+                                    <Storyboard >
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                            Storyboard.TargetProperty="Angle"
+                                            To="0.0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Indeterminate" />
+                                <VisualState x:Name="IndeterminatePointerOver" />
+                                <VisualState x:Name="IndeterminatePressed" />
+                                <VisualState x:Name="IndeterminateDisabled" />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+
+                        <ContentPresenter 
+                            x:Name="ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw">
+                        </ContentPresenter>
+
+                        <Grid
+                            x:Name="ExpandCollapseChevron"
+                            Grid.Column="1"
+                            Width="{ThemeResource ExpanderChevronWidth}"
+                            Margin="{ThemeResource ExpanderChevronMargin}"
+                            Background="{ThemeResource ExpanderChevronBackground}">
+                            <TextBlock
+                                RenderTransformOrigin="0.5, 0.5"
+                                Foreground="{ThemeResource ExpanderChevronForeground}"
+                                Text="{StaticResource ExpanderChevronGlyph}"
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                IsTextScaleFactorEnabled="False">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform x:Name="ExpandCollapseChevronRotateTransform" Angle="180"/>
                                 </TextBlock.RenderTransform>
                             </TextBlock>
                         </Grid>

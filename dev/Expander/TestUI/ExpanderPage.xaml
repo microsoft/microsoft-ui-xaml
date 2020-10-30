@@ -77,7 +77,7 @@
                 </controls:Expander>
 
                 <local:TestControl IsTabStop="True" x:Name="CustomControl" AutomationProperties.Name="CustomControl">
-                    <controls:Expander IsTabStop="False" x:Name="ExpanderWithCustomEventsSource"  HorizontalContentAlignment="Left" ExpandDirection="Down" IsExpanded="False">
+                    <controls:Expander x:Name="ExpanderWithCustomEventsSource"  HorizontalContentAlignment="Left" ExpandDirection="Down" IsExpanded="False">
                         <controls:Expander.Header>
                             <TextBlock Style="{StaticResource HeaderTextBlockStyle}">This expander has a custom events source</TextBlock>
                         </controls:Expander.Header>

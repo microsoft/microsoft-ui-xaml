@@ -15,12 +15,6 @@ public:
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
-    void HeaderStyle(winrt::Style const& value);
-    winrt::Style HeaderStyle();
-
-    void HeaderStyleSelector(winrt::StyleSelector const& value);
-    winrt::StyleSelector HeaderStyleSelector();
-
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
 
@@ -32,16 +26,12 @@ public:
 
     static winrt::DependencyProperty ExpandDirectionProperty() { return s_ExpandDirectionProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
-    static winrt::DependencyProperty HeaderStyleProperty() { return s_HeaderStyleProperty; }
-    static winrt::DependencyProperty HeaderStyleSelectorProperty() { return s_HeaderStyleSelectorProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
     static winrt::DependencyProperty IsExpandedProperty() { return s_IsExpandedProperty; }
 
     static GlobalDependencyProperty s_ExpandDirectionProperty;
     static GlobalDependencyProperty s_HeaderProperty;
-    static GlobalDependencyProperty s_HeaderStyleProperty;
-    static GlobalDependencyProperty s_HeaderStyleSelectorProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
     static GlobalDependencyProperty s_IsExpandedProperty;

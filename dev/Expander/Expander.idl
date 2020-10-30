@@ -10,8 +10,6 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     Object Header{ get; set; };
     Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
     Windows.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector{ get; set; };
-    Windows.UI.Xaml.Style HeaderStyle{ get; set; };
-    Windows.UI.Xaml.Controls.StyleSelector HeaderStyleSelector{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsExpanded{ get; set; };
@@ -26,8 +24,6 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HeaderStyleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HeaderStyleSelectorProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ExpandDirectionProperty{ get; };
