@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
-    <Style TargetType="local:Expander">
-        <!-- We won't make this control tab stoppable, since the tab focus should go
+    <!-- We won't make this control tab stoppable, since the tab focus should go
             to the toggle button. For this logic, several things were made:
             1. Expander::OnApplyTemplate - We set the toggle button's events source to the expander's. This will announce expander properties
                (expand/collapse) changes to narrator. Without this, narrator would announce the toggle button's "on/off" logic
@@ -16,7 +15,7 @@
                focus the toggle button programmatically to sync the narrator focus with the keyboard focus.
                Without this override, the narrator user that focuses the expander on a touch screen will see that pressing "Tab"
                doesn't work how they would expect.-->
-        <Setter Property="IsTabStop" Value="False"/>
+    <Style TargetType="local:Expander">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
@@ -69,7 +68,6 @@
                             AutomationProperties.AutomationId="ExpanderToggleButton"
                             MinWidth="0"
                             MinHeight="0"
-                            IsTabStop="{ThemeResource ExpanderHeaderIsTabStop}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             Style="{StaticResource ExpanderHeaderStyle}"
                             Content="{TemplateBinding Header}"

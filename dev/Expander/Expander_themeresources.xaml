@@ -28,6 +28,5 @@
     <x:String x:Key="ExpanderChevronGlyph">&#xE70D;</x:String>
     <x:Double x:Key="ExpanderChevronWidth">40</x:Double>
     <x:Double x:Key="ExpanderPopinVerticalOffset">50</x:Double>
-    <x:Boolean x:Key="ExpanderHeaderIsTabStop">True</x:Boolean>
 
 </ResourceDictionary>
