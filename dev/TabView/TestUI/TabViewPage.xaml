@@ -170,7 +170,10 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <StackPanel>
+                            <Button x:Name="NewWindowTabViewPage" Click="NewWindowTabViewPage_Click">
+                                Open new window TabView page.
+                            </Button>
+                            <StackPanel Orientation="Horizontal">
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
                                         Margin="4" Click="TabViewSizingPageButton_Click"
                                         FontSize="20">TabView Sizing Page</Button>
@@ -274,6 +277,9 @@
                         TabDragStarting="OnTabDragStarting"
                         TabStripDragOver="OnTabStripDragOver"
                         TabStripDrop="OnTabStripDrop">
+                        <controls:TabView.TabStripFooter>
+                            <Grid x:Name="MinWidthFooter"></Grid>
+                        </controls:TabView.TabStripFooter>
 
                         <controls:TabView.TabItems>
 
@@ -284,7 +290,13 @@
 
                                 <TextBlock Padding="16" Text="Content"/>
                             </controls:TabViewItem>
+                            <controls:TabViewItem Header="Hello">
+                                <controls:TabViewItem.IconSource>
+                                    <controls:SymbolIconSource Symbol="Placeholder"/>
+                                </controls:TabViewItem.IconSource>
 
+                                <TextBlock Padding="16">Content</TextBlock>
+                            </controls:TabViewItem>
                         </controls:TabView.TabItems>
                     </controls:TabView>
                 </Grid>

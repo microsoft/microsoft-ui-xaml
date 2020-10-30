@@ -24,6 +24,9 @@ using Windows.Devices.PointOfService;
 using Windows.ApplicationModel.DataTransfer;
 using MUXControlsTestApp.Utilities;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 
 namespace MUXControlsTestApp
 {
@@ -62,6 +65,7 @@ namespace MUXControlsTestApp
 
             backgroundColorCache = BackgroundGrid.Background;
             activeTabContentBackgroundBrushCache = FirstTabContent.Background;
+            MinWidthFooter.MinWidth = 150;
             CacheFirstTabSelectedBackgroundPathFill();
         }
 
@@ -421,7 +425,24 @@ namespace MUXControlsTestApp
         {
             this.Frame.Navigate(typeof(TabViewTabItemsSourcePage));
         }
-        
+
+        private async void NewWindowTabViewPage_Click(object sender, RoutedEventArgs e)
+        {
+            CoreApplicationView newView = CoreApplication.CreateNewView();
+            int newViewId = 0;
+            await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                Frame frame = new Frame();
+                frame.Navigate(typeof(TabViewAppwindowPage), null);
+                Window.Current.Content = frame;
+                // You have to activate the window in order to show it later.
+                Window.Current.Activate();
+
+                newViewId = ApplicationView.GetForCurrentView().Id;
+            });
+            bool viewShown = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newViewId);
+        }
+
         private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
         {
             FirstTab.Header = "s";
