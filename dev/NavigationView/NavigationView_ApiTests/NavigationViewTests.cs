@@ -1093,8 +1093,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyNavigationViewItemToolTip()
+        public void VerifyNavigationViewItemToolTipCreation()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("On RS4 and earlier the test needs to be modified slightly.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 var navView = new NavigationView();
@@ -1119,13 +1125,70 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItems.Add(menuItem3);
                 navView.MenuItems.Add(menuItem4);
 
+                // Use a pane configuration where tooltips are shown.
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                navView.IsPaneOpen = false;
+
                 Content = navView;
-                Content.UpdateLayout();
+                navView.UpdateLayout();
 
                 Verify.AreEqual(null, ToolTipService.GetToolTip(menuItem1), "Item 1's tooltip should have been [null].");
                 Verify.AreEqual(null, ToolTipService.GetToolTip(menuItem2), "Item 2's tooltip should have been [null].");
                 Verify.AreEqual("Custom tooltip", ToolTipService.GetToolTip(menuItem3), "Item 3's tooltip should have been \"Custom tooltip\".");
-                Verify.AreEqual("Item 4", ToolTipService.GetToolTip(menuItem4), "Item 4's tooltip should have been \"Item 4\".");
+                Verify.AreEqual("Item 4", ToolTipService.GetToolTip(menuItem4), "Item 4's tooltip should have been  \"Item 4\".");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemToolTipPaneDisplayMode()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("On RS4 and earlier the test needs to be modified slightly.");
+                return;
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+
+                // Item with non-empty string content using in-built tooltip
+                var menuItem1 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+
+                // Item with custom tooltip
+                var menuItem2 = new NavigationViewItem();
+                menuItem2.Content = "Item 2";
+                ToolTipService.SetToolTip(menuItem2, "Custom tooltip");
+
+                navView.MenuItems.Add(menuItem1);
+                navView.MenuItems.Add(menuItem2);
+
+                Content = navView;
+
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.Left, true, null, "Custom tooltip");
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.Left, false, "Item 1", "Custom tooltip");
+
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.LeftCompact, true, null, "Custom tooltip");
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.LeftCompact, false, "Item 1", "Custom tooltip");
+
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.LeftMinimal, true, null, "Custom tooltip");
+
+                // Show tooltips again
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.Left, false, "Item 1", "Custom tooltip");
+
+                SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode.Top, false /* unused */, null, "Custom tooltip");
+
+                void SetPaneConfigAndVerifyToolTips(NavigationViewPaneDisplayMode paneDisplayMode, bool isPaneOpen, string expectedDefaultToolTip, string expectedCustomToolTip)
+                {
+                    Log.Comment($"Verifying tooltips with PaneDisplayMode=[{paneDisplayMode}] and IsPaneOpen=[{isPaneOpen}]");
+                    navView.PaneDisplayMode = paneDisplayMode;
+                    navView.IsPaneOpen = isPaneOpen;
+                    Content.UpdateLayout();
+
+                    Verify.AreEqual(expectedDefaultToolTip, ToolTipService.GetToolTip(menuItem1), $"Item 1's tooltip should have been \"{expectedDefaultToolTip ?? "null"}\".");
+                    Verify.AreEqual(expectedCustomToolTip, ToolTipService.GetToolTip(menuItem2), $"Item 2's tooltip should have been {expectedCustomToolTip}.");
+                }
             });
         }
     }
