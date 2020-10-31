@@ -139,6 +139,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 else
                 {
                     MUX_FAIL_FAST_MSG("CBS package doesn't apply to old platforms");
+                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
                 }
             }
             else
