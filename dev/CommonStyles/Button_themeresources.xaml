@@ -128,7 +128,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+    <Thickness x:Key="ButtonPadding">11,5,11,5</Thickness>
 
     <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}" />
 

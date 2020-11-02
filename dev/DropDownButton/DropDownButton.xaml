@@ -62,6 +62,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ChevronTextBlock" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
                                     </Storyboard>
                                 </VisualState>
@@ -109,10 +112,12 @@
                                 x:Name="ChevronTextBlock"
                                 Grid.Column="1"
                                 FontFamily="Segoe MDL2 Assets"
-                                FontSize="12"
+                                FontSize="8"
+                                Foreground="{ThemeResource ButtonForegroundPressed}"
                                 Text="&#xE70D;"
                                 VerticalAlignment="Center"
-                                Margin="6,0,0,0"
+                                Padding="2,2,2,2"
+                                Margin="8,0,0,0"
                                 IsTextScaleFactorEnabled="False"
                                 AutomationProperties.AccessibilityView="Raw"/>
                         </Grid>
