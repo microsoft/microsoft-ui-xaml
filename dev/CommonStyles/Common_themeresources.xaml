@@ -8,7 +8,6 @@
     -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-
             <!-- Colors -->
 
             <Color x:Key="TextFillColorPrimary">#FFFFFF</Color>
@@ -251,7 +250,6 @@
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
-
         <ResourceDictionary x:Key="Light">
 
             <!-- Colors -->
