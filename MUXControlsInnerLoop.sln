@@ -494,6 +494,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CalendarView", "CalendarVie
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CalendarView_APITests", "dev\CalendarView\APITests\CalendarView_APITests.shproj", "{AA73FBEB-6B3B-490C-B582-3993F0040061}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CalendarView_TestUI", "dev\CalendarView\TestUI\CalendarView_TestUI.shproj", "{5983A27F-CB27-4400-8277-BCB09D93777B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -565,6 +567,7 @@ Global
 		dev\PullToRefresh\TestUI\PTR_TestUI.projitems*{549c8eb7-e099-4eab-a1f6-faa3fa79b9e0}*SharedItemsImports = 13
 		dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems*{55cb08ca-19fe-4db9-8160-a4ec47984b95}*SharedItemsImports = 13
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{593e15d8-f6f9-4aba-ba65-c6927c178dbd}*SharedItemsImports = 13
+		dev\CalendarView\TestUI\CalendarView_TestUI.projitems*{5983a27f-cb27-4400-8277-bcb09d93777b}*SharedItemsImports = 13
 		dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems*{5bf80ae9-29df-4be9-858a-f095c8073473}*SharedItemsImports = 13
 		dev\PersonPicture\PersonPicture.vcxitems*{5fdf2501-aa3d-4082-ad45-d1f2a94c1213}*SharedItemsImports = 9
 		dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems*{6075e2d2-46d6-4000-bb77-56f0efe37389}*SharedItemsImports = 13
@@ -1136,6 +1139,7 @@ Global
 		{B0016539-9EE1-42B4-A247-FD45C8511656} = {1C5FF902-8C41-41D4-B137-9B27DA0A54AC}
 		{1C5FF902-8C41-41D4-B137-9B27DA0A54AC} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{AA73FBEB-6B3B-490C-B582-3993F0040061} = {1C5FF902-8C41-41D4-B137-9B27DA0A54AC}
+		{5983A27F-CB27-4400-8277-BCB09D93777B} = {1C5FF902-8C41-41D4-B137-9B27DA0A54AC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
