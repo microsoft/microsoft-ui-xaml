@@ -8,6 +8,211 @@
     -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
+            
+            <!-- Colors -->
+
+            <Color x:Key="TextFillColorPrimary">#FFFFFF</Color>
+            <Color x:Key="TextFillColorSecondary">#C5FFFFFF</Color>
+            <Color x:Key="TextFillColorTertiary">#87FFFFFF</Color>
+            <Color x:Key="TextFillColorDisabled">#5DFFFFFF</Color>
+            <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
+
+            <Color x:Key="AccentTextFillColorPrimary">#8DEBFF</Color>
+            <Color x:Key="AccentTextFillColorSecondary">#49D3FF</Color>
+            <Color x:Key="AccentTextFillColorTertiary">#C0FEFF</Color>
+            <Color x:Key="AccentTextFillColorDisabled">#5DFFFFFF</Color>
+
+            <Color x:Key="TextOnAccentFillColorPrimary">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentFillColorSecondary">#B3FFFFFF</Color>
+            <Color x:Key="TextOnAccentFillColorDisabled">#5DFFFFFF</Color>
+
+            <Color x:Key="TextOnAccentAAFillColorPrimary">#000000</Color>
+            <Color x:Key="TextOnAccentAAFillColorSecondary">#80000000</Color>
+            <Color x:Key="TextOnAccentAAFillColorDisabled">#87FFFFFF</Color>
+
+            <Color x:Key="ControlFillColorDefault">#0FFFFFFF</Color>
+            <Color x:Key="ControlFillColorSecondary">#15FFFFFF</Color>
+            <Color x:Key="ControlFillColorTertiary">#0BFFFFFF</Color>
+            <Color x:Key="ControlFillColorDisabled">#0BFFFFFF</Color>
+            <Color x:Key="ControlFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="ControlFillColorInputActive">#15FFFFFF</Color>
+
+            <Color x:Key="ControlAAFillColorDefault">#87FFFFFF</Color>
+            <Color x:Key="ControlAAFillColorDisabled">#3FFFFFFF</Color>
+
+            <Color x:Key="ControlSolidFillColorDefault">#454545</Color>
+
+            <Color x:Key="GhostFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="GhostFillColorSecondary">#05FFFFFF</Color>
+            <Color x:Key="GhostFillColorTertiary">#0BFFFFFF</Color>
+            <Color x:Key="GhostFillColorDisabled">#0BFFFFFF</Color>
+
+            <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="ControlAltFillColorSecondary">#1A000000</Color>
+            <Color x:Key="ControlAltFillColorTertiary">#0BFFFFFF</Color>
+            <Color x:Key="ControlAltFillColorQuarternary">#12000000</Color>
+            <Color x:Key="ControlAltFillColorDisabled">#00FFFFFF</Color>
+
+            <Color x:Key="ControlOnImageFillColorDefault">#B31C1C1C</Color>
+            <Color x:Key="ControlOnImageFillColorSecondary">#1A1A1A</Color>
+            <Color x:Key="ControlOnImageFillColorTertiary">#131313</Color>
+            <Color x:Key="ControlOnImageFillColorDisabled">#131313</Color>
+
+            <Color x:Key="AccentFillColorDefault">#0078D4</Color>
+            <Color x:Key="AccentFillColorSecondary">#006BC6</Color>
+            <Color x:Key="AccentFillColorTertiary">#0084D9</Color>
+            <Color x:Key="AccentFillColorDisabled">#0B000000</Color>
+
+            <Color x:Key="AccentAAFillColorDefault">#02C6FE</Color>
+            <Color x:Key="AccentAAFillColorSecondary">#49D3FF</Color>
+            <Color x:Key="AccentAAFillColorTertiary">#01B7F6</Color>
+            <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
+
+            <Color x:Key="ControlStrokeColorDefault">#33000000</Color>
+            <Color x:Key="ControlStrokeColorSecondary">#1A000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentBottom">#37000000</Color>
+
+            <Color x:Key="CardStrokeColorAll">#1A000000</Color>
+
+            <Color x:Key="ControlAAStrokeColorDefault">#8BFFFFFF</Color>
+            <Color x:Key="ControlAAStrokeColorDisabled">#28FFFFFF</Color>
+
+            <Color x:Key="SurfaceStrokeColorDefault">#15FFFFFF</Color>
+            <Color x:Key="SurfaceStrokeColorInverse">#0F000000</Color>
+
+            <Color x:Key="DividerStrokeColorDefault">#33000000</Color>
+
+            <Color x:Key="FocusStrokeColorOuter">#FFFFFF</Color>
+            <Color x:Key="FocusStrokeColorInner">#B3000000</Color>
+
+            <Color x:Key="CardBackgroundFillColorDefault">#0FFFFFFF</Color>
+            <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
+
+            <Color x:Key="SmokeFillColorDefault">#33000000</Color>
+
+            <Color x:Key="LayerFillColorDefault">#09FFFFFF</Color>
+            <Color x:Key="LayerFillColorSecondary">#05FFFFFF</Color>
+            <Color x:Key="LayerFillColorTertiary">#0EFFFFFF</Color>
+
+            <Color x:Key="SolidBackgroundFillColorBase">#202020</Color>
+            <Color x:Key="SolidBackgroundFillColorSecondary">#1C1C1C</Color>
+            <Color x:Key="SolidBackgroundFillColorTertiary">#282828</Color>
+
+            <!-- Brushes -->
+
+            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="{StaticResource TextFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="{StaticResource TextFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="{StaticResource TextFillColorTertiary}" />
+            <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="{StaticResource TextFillColorDisabled}" />
+            <SolidColorBrush x:Key="TextFillColorInverseBrush" Color="{StaticResource TextFillColorInverse}" />
+
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{StaticResource AccentTextFillColorPrimary}" />
+            <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{StaticResource AccentTextFillColorSecondary}" />
+            <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{StaticResource AccentTextFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentTextFillColorDisabledBrush" Color="{StaticResource AccentTextFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="{StaticResource TextOnAccentFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="{StaticResource TextOnAccentFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="{StaticResource TextOnAccentFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorPrimaryBrush" Color="{StaticResource TextOnAccentAAFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorSecondaryBrush" Color="{StaticResource TextOnAccentAAFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorDisabledBrush" Color="{StaticResource TextOnAccentAAFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="{StaticResource ControlFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="{StaticResource ControlFillColorSecondary}" />
+            <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="{StaticResource ControlFillColorTertiary}" />
+            <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="{StaticResource ControlFillColorDisabled}" />
+            <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="{StaticResource ControlFillColorTransparent}" />
+            <SolidColorBrush x:Key="ControlFillColorInputActiveBrush" Color="{StaticResource ControlFillColorInputActive}" />
+
+            <SolidColorBrush x:Key="ControlAAFillColorDefaultBrush" Color="{StaticResource ControlAAFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDisabledBrush" Color="{StaticResource ControlAAFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{StaticResource ControlSolidFillColorDefault}" />
+
+            <SolidColorBrush x:Key="GhostFillColorTransparentBrush" Color="{StaticResource GhostFillColorTransparent}" />
+            <SolidColorBrush x:Key="GhostFillColorSecondaryBrush" Color="{StaticResource GhostFillColorSecondary}" />
+            <SolidColorBrush x:Key="GhostFillColorTertiaryBrush" Color="{StaticResource GhostFillColorTertiary}" />
+            <SolidColorBrush x:Key="GhostFillColorDisabledBrush" Color="{StaticResource GhostFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="{StaticResource ControlAltFillColorTransparent}" />
+            <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{StaticResource ControlAltFillColorSecondary}" />
+            <SolidColorBrush x:Key="ControlAltFillColorTertiaryBrush" Color="{StaticResource ControlAltFillColorTertiary}" />
+            <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="{StaticResource ControlAltFillColorQuarternary}" />
+            <SolidColorBrush x:Key="ControlAltFillColorDisabledBrush" Color="{StaticResource ControlAltFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="{StaticResource ControlOnImageFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{StaticResource ControlOnImageFillColorSecondary}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{StaticResource ControlOnImageFillColorTertiary}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{StaticResource ControlOnImageFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{StaticResource AccentFillColorDefault}" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{StaticResource AccentFillColorSecondary}" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{StaticResource AccentFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="AccentAAFillColorDefaultBrush" Color="{StaticResource AccentAAFillColorDefault}" />
+            <SolidColorBrush x:Key="AccentAAFillColorSecondaryBrush" Color="{StaticResource AccentAAFillColorSecondary}" />
+            <SolidColorBrush x:Key="AccentAAFillColorTertiaryBrush" Color="{StaticResource AccentAAFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDisabledBrush" Color="{StaticResource AccentAAFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
+            <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentBottomBrush" Color="{StaticResource ControlStrokeColorOnAccentBottom}" />
+
+            <SolidColorBrush x:Key="CardStrokeColorAllBrush" Color="{StaticResource CardStrokeColorAll}" />
+
+            <SolidColorBrush x:Key="ControlAAStrokeColorDefaultBrush" Color="{StaticResource ControlAAStrokeColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{StaticResource ControlAAStrokeColorDisabled}" />
+
+            <SolidColorBrush x:Key="SurfaceStrokeColorDefaultBrush" Color="{StaticResource SurfaceStrokeColorDefault}" />
+            <SolidColorBrush x:Key="SurfaceStrokeColorInverseBrush" Color="{StaticResource SurfaceStrokeColorInverse}" />
+
+            <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="{StaticResource DividerStrokeColorDefault}" />
+
+            <SolidColorBrush x:Key="FocusStrokeColorOuterBrush" Color="{StaticResource FocusStrokeColorOuter}" />
+            <SolidColorBrush x:Key="FocusStrokeColorInnerBrush" Color="{StaticResource FocusStrokeColorInner}" />
+
+            <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+            <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+
+            <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{StaticResource SmokeFillColorDefault}" />
+
+            <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
+            <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{StaticResource LayerFillColorSecondary}" />
+            <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{StaticResource LayerFillColorTertiary}" />
+
+            <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
+
+            <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+
+            <!-- Elevation border brushes-->
+
+            <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorSecondary}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+
+            <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorOnAccentBottom}"/>
+                    <GradientStop Offset="1.0" Color="Transparent"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+            
+            <!-- Other -->
+            
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
@@ -16,7 +221,213 @@
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
+        
         <ResourceDictionary x:Key="Light">
+
+            <!-- Colors -->
+
+            <Color x:Key="TextFillColorPrimary">#E4000000</Color>
+            <Color x:Key="TextFillColorSecondary">#93000000</Color>
+            <Color x:Key="TextFillColorTertiary">#72000000</Color>
+            <Color x:Key="TextFillColorDisabled">#5C000000</Color>
+            <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
+
+            <Color x:Key="AccentTextFillColorPrimary">#0051A8</Color>
+            <Color x:Key="AccentTextFillColorSecondary">#003A8D</Color>
+            <Color x:Key="AccentTextFillColorTertiary">#0069C3</Color>
+            <Color x:Key="AccentTextFillColorDisabled">#5C000000</Color>
+
+            <Color x:Key="TextOnAccentFillColorPrimary">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentFillColorSecondary">#B3FFFFFF</Color>
+            <Color x:Key="TextOnAccentFillColorDisabled">#5C000000</Color>
+
+            <Color x:Key="TextOnAccentAAFillColorPrimary">#FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorSecondary">#B3FFFFFF</Color>
+            <Color x:Key="TextOnAccentAAFillColorDisabled">#FFFFFF</Color>
+
+            <Color x:Key="ControlFillColorDefault">#B3FFFFFF</Color>
+            <Color x:Key="ControlFillColorSecondary">#80F9F9F9</Color>
+            <Color x:Key="ControlFillColorTertiary">#4DF9F9F9</Color>
+            <Color x:Key="ControlFillColorDisabled">#4DF9F9F9</Color>
+            <Color x:Key="ControlFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="ControlFillColorInputActive">#FFFFFF</Color>
+
+            <Color x:Key="ControlAAFillColorDefault">#72000000</Color>
+            <Color x:Key="ControlAAFillColorDisabled">#51000000</Color>
+
+            <Color x:Key="ControlSolidFillColorDefault">#FFFFFF</Color>
+
+            <Color x:Key="GhostFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="GhostFillColorSecondary">#06000000</Color>
+            <Color x:Key="GhostFillColorTertiary">#0A000000</Color>
+            <Color x:Key="GhostFillColorDisabled">#00FFFFFF</Color>
+
+            <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="ControlAltFillColorSecondary">#06000000</Color>
+            <Color x:Key="ControlAltFillColorTertiary">#0F000000</Color>
+            <Color x:Key="ControlAltFillColorQuarternary">#18000000</Color>
+            <Color x:Key="ControlAltFillColorDisabled">#00FFFFFF</Color>
+
+            <Color x:Key="ControlOnImageFillColorDefault">#C9FFFFFF</Color>
+            <Color x:Key="ControlOnImageFillColorSecondary">#1A1A1A</Color>
+            <Color x:Key="ControlOnImageFillColorTertiary">#131313</Color>
+            <Color x:Key="ControlOnImageFillColorDisabled">#131313</Color>
+
+            <Color x:Key="AccentFillColorDefault">#0078D4</Color>
+            <Color x:Key="AccentFillColorSecondary">#006BC6</Color>
+            <Color x:Key="AccentFillColorTertiary">#0084D9</Color>
+            <Color x:Key="AccentFillColorDisabled">#11000000</Color>
+
+            <Color x:Key="AccentAAFillColorDefault">#0070CB</Color>
+            <Color x:Key="AccentAAFillColorSecondary">#0065BD</Color>
+            <Color x:Key="AccentAAFillColorTertiary">#0084D9</Color>
+            <Color x:Key="AccentAAFillColorDisabled">#37000000</Color>
+
+            <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
+            <Color x:Key="ControlStrokeColorSecondary">#1B000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentBottom">#37000000</Color>
+
+            <Color x:Key="CardStrokeColorAll">#0F000000</Color>
+
+            <Color x:Key="ControlAAStrokeColorDefault">#72000000</Color>
+            <Color x:Key="ControlAAStrokeColorDisabled">#37000000</Color>
+
+            <Color x:Key="SurfaceStrokeColorDefault">#0F000000</Color>
+            <Color x:Key="SurfaceStrokeColorInverse">#15FFFFFF</Color>
+
+            <Color x:Key="DividerStrokeColorDefault">#14000000</Color>
+
+            <Color x:Key="FocusStrokeColorOuter">#E4000000</Color>
+            <Color x:Key="FocusStrokeColorInner">#B3FFFFFF</Color>
+
+            <Color x:Key="CardBackgroundFillColorDefault">#B3FFFFFF</Color>
+            <Color x:Key="CardBackgroundFillColorSecondary">#80F6F6F6</Color>
+
+            <Color x:Key="SmokeFillColorDefault">#31000000</Color>
+
+            <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
+            <Color x:Key="LayerFillColorSecondary">#FFFFFF</Color>
+            <Color x:Key="LayerFillColorTertiary">#40FFFFFF</Color>
+
+            <Color x:Key="SolidBackgroundFillColorBase">#F3F3F3</Color>
+            <Color x:Key="SolidBackgroundFillColorSecondary">#EEEEEE</Color>
+            <Color x:Key="SolidBackgroundFillColorTertiary">#F9F9F9</Color>
+
+            <!-- Brushes -->
+
+            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="{StaticResource TextFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="{StaticResource TextFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="{StaticResource TextFillColorTertiary}" />
+            <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="{StaticResource TextFillColorDisabled}" />
+            <SolidColorBrush x:Key="TextFillColorInverseBrush" Color="{StaticResource TextFillColorInverse}" />
+
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{StaticResource AccentTextFillColorPrimary}" />
+            <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{StaticResource AccentTextFillColorSecondary}" />
+            <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{StaticResource AccentTextFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentTextFillColorDisabledBrush" Color="{StaticResource AccentTextFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="{StaticResource TextOnAccentFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="{StaticResource TextOnAccentFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="{StaticResource TextOnAccentFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorPrimaryBrush" Color="{StaticResource TextOnAccentAAFillColorPrimary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorSecondaryBrush" Color="{StaticResource TextOnAccentAAFillColorSecondary}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorDisabledBrush" Color="{StaticResource TextOnAccentAAFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="{StaticResource ControlFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="{StaticResource ControlFillColorSecondary}" />
+            <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="{StaticResource ControlFillColorTertiary}" />
+            <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="{StaticResource ControlFillColorDisabled}" />
+            <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="{StaticResource ControlFillColorTransparent}" />
+            <SolidColorBrush x:Key="ControlFillColorInputActiveBrush" Color="{StaticResource ControlFillColorInputActive}" />
+
+            <SolidColorBrush x:Key="ControlAAFillColorDefaultBrush" Color="{StaticResource ControlAAFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDisabledBrush" Color="{StaticResource ControlAAFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{StaticResource ControlSolidFillColorDefault}" />
+
+            <SolidColorBrush x:Key="GhostFillColorTransparentBrush" Color="{StaticResource GhostFillColorTransparent}" />
+            <SolidColorBrush x:Key="GhostFillColorSecondaryBrush" Color="{StaticResource GhostFillColorSecondary}" />
+            <SolidColorBrush x:Key="GhostFillColorTertiaryBrush" Color="{StaticResource GhostFillColorTertiary}" />
+            <SolidColorBrush x:Key="GhostFillColorDisabledBrush" Color="{StaticResource GhostFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="{StaticResource ControlAltFillColorTransparent}" />
+            <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{StaticResource ControlAltFillColorSecondary}" />
+            <SolidColorBrush x:Key="ControlAltFillColorTertiaryBrush" Color="{StaticResource ControlAltFillColorTertiary}" />
+            <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="{StaticResource ControlAltFillColorQuarternary}" />
+            <SolidColorBrush x:Key="ControlAltFillColorDisabledBrush" Color="{StaticResource ControlAltFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="{StaticResource ControlOnImageFillColorDefault}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{StaticResource ControlOnImageFillColorSecondary}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{StaticResource ControlOnImageFillColorTertiary}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{StaticResource ControlOnImageFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{StaticResource AccentFillColorDefault}" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{StaticResource AccentFillColorSecondary}" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{StaticResource AccentFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="AccentAAFillColorDefaultBrush" Color="{StaticResource AccentAAFillColorDefault}" />
+            <SolidColorBrush x:Key="AccentAAFillColorSecondaryBrush" Color="{StaticResource AccentAAFillColorSecondary}" />
+            <SolidColorBrush x:Key="AccentAAFillColorTertiaryBrush" Color="{StaticResource AccentAAFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDisabledBrush" Color="{StaticResource AccentAAFillColorDisabled}" />
+
+            <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
+            <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentBottomBrush" Color="{StaticResource ControlStrokeColorOnAccentBottom}" />
+
+            <SolidColorBrush x:Key="CardStrokeColorAllBrush" Color="{StaticResource CardStrokeColorAll}" />
+
+            <SolidColorBrush x:Key="ControlAAStrokeColorDefaultBrush" Color="{StaticResource ControlAAStrokeColorDefault}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{StaticResource ControlAAStrokeColorDisabled}" />
+
+            <SolidColorBrush x:Key="SurfaceStrokeColorDefaultBrush" Color="{StaticResource SurfaceStrokeColorDefault}" />
+            <SolidColorBrush x:Key="SurfaceStrokeColorInverseBrush" Color="{StaticResource SurfaceStrokeColorInverse}" />
+
+            <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="{StaticResource DividerStrokeColorDefault}" />
+
+            <SolidColorBrush x:Key="FocusStrokeColorOuterBrush" Color="{StaticResource FocusStrokeColorOuter}" />
+            <SolidColorBrush x:Key="FocusStrokeColorInnerBrush" Color="{StaticResource FocusStrokeColorInner}" />
+
+            <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+            <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+
+            <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{StaticResource SmokeFillColorDefault}" />
+
+            <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
+            <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{StaticResource LayerFillColorSecondary}" />
+            <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{StaticResource LayerFillColorTertiary}" />
+
+            <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
+
+            <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+
+            <!-- Elevation border brushes-->
+            
+            <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorSecondary}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+            
+            <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorOnAccentBottom}"/>
+                    <GradientStop Offset="1.0" Color="Transparent"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+            
+            <!-- Other -->
+            
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
@@ -25,7 +436,10 @@
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
+        
         <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemColorHighlightColor}" />

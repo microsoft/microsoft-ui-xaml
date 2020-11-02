@@ -20,6 +20,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Foundation;
 
 using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestPageElements;
+using System.Drawing;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -800,20 +801,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     var themingComboBox = elements.GetThemingComboBox();
                     themingComboBox.SelectItemByName("Light");
 
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                    // Substring removes the opacity of the color, as that may vary
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText().Substring(3), "Default button foreground should be black");
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText().Substring(3), "Default content foreground should be black");
 
                     // Change to Dark, make sure the font switches to light
                     themingComboBox.SelectItemByName("Dark");
 
-                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be white");
-                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be white");
+                    Verify.AreEqual("FFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText().Substring(3), "Default button foreground should be white");
+                    Verify.AreEqual("FFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText().Substring(3), "Default content foreground should be white");
 
                     // Change to Light, make sure the font switches to dark
                     themingComboBox.SelectItemByName("Light");
 
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText().Substring(3), "Default button foreground should be black");
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText().Substring(3), "Default content foreground should be black");
                 }
             }
         }
