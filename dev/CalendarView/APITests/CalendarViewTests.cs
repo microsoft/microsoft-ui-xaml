@@ -38,5 +38,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             VisualTreeTestHelper.VerifyVisualTree(root: calendarView, verificationFileNamePrefix: "CalendarView");
         }
+
+        [TestMethod]
+        public void VerifyToolTips()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var calendarView = new CalendarView();
+
+                Content = calendarView;
+                Content.UpdateLayout();
+
+                var previousButton = calendarView.FindVisualChildByName("PreviousButton") as Button;
+                var nextButton = calendarView.FindVisualChildByName("NextButton") as Button;
+
+                Verify.AreEqual("Previous", ToolTipService.GetToolTip(previousButton));
+                Verify.AreEqual("Next", ToolTipService.GetToolTip(nextButton));
+            });
+        }
     }
 }
