@@ -131,7 +131,7 @@
     <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true' Or $(FeatureComboBoxEnabled) == 'productOnly'" />
     <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true' Or $(FeaturePivotEnabled) == 'productOnly'" />
     <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
-    <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
+    <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true' Or $(FeatureCalendarViewEnabled) == 'productOnly'" />
     <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
     <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
