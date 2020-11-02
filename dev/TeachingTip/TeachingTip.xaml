@@ -99,12 +99,12 @@
                             <VisualStateGroup x:Name="IconStates">
                                 <VisualState x:Name="Icon">
                                     <VisualState.Setters>
-                                        <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithIcon}"/>
+                                        <Setter Target="IconPresenter.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithIcon}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="NoIcon">
                                     <VisualState.Setters>
-                                        <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
+                                        <Setter Target="IconPresenter.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -550,8 +550,7 @@
                                             Child="{TemplateBinding HeroContent}"
                                             Background="{TemplateBinding Background}"/>
                                     <Grid x:Name="NonHeroContentRootGrid" Grid.Row="1">
-                                        <ScrollViewer Foreground="{TemplateBinding Foreground}"
-                                                      VerticalScrollBarVisibility="Auto">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
                                             <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
                                                 <Grid Grid.Row="0">
                                                     <Grid.ColumnDefinitions>
@@ -559,13 +558,23 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <Border x:Name="IconBorder" Grid.Column="0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
+                                                    <ContentPresenter x:Name="IconPresenter" Grid.Column="0" Foreground="{TemplateBinding Foreground}">
+                                                        <Border Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
+                                                    </ContentPresenter>
                                                     <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
-                                                        <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
-                                                        <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}" TextWrapping="WrapWholeWords"/>
+                                                        <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords"
+                                                            Foreground="{ThemeResource TeachingTipTitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
+                                                            FontWeight="SemiBold"/>
+                                                        <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}"
+                                                            Foreground="{ThemeResource TeachingTipSubtitleForegroundBrush}" FontFamily="{TemplateBinding FontFamily}"
+                                                            TextWrapping="WrapWholeWords"/>
                                                     </StackPanel>
                                                 </Grid>
-                                                <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
+                                                <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"
+                                                        Background="{TemplateBinding Background}" Foreground="{TemplateBinding Foreground}"
+                                                        FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                                        FontStyle="{TemplateBinding FontStyle}" FontFamily="{TemplateBinding FontFamily}"
+                                                        FontStretch="{TemplateBinding FontStretch}"/>
                                                 <Grid Grid.Row="2">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
@@ -593,8 +602,7 @@
                                                 Background="Transparent"
                                                 VerticalAlignment="Top"
                                                 HorizontalAlignment="Right"
-                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}"
-                                                Foreground="{TemplateBinding Foreground}">
+                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}">
                                             <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
                                                      Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
                                                 <SymbolIcon Symbol="Cancel"/>

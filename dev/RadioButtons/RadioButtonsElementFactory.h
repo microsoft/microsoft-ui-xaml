@@ -10,9 +10,12 @@ class RadioButtonsElementFactory :
 {
 public:
     RadioButtonsElementFactory();
-    
+
+    void UserElementFactory(const winrt::IInspectable& newValue);
     winrt::UIElement GetElementCore(const winrt::ElementFactoryGetArgs& args) override;
     void RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args) override;
+
 private:
+    winrt::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 };
 

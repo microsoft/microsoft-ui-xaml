@@ -46,6 +46,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var readSettingsSelectedButton = new Button(FindElement.ByName("ReadSettingsSelected"));
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
 
+                Log.Comment("Bring Settings into view.");
+                FindElement.ByName<Button>("BringSettingsIntoViewButton").Invoke();
+                Wait.ForIdle();
+
                 var leftSettingsItem = new Button(FindElement.ByName("Settings"));
                 leftSettingsItem.Click();
 
@@ -156,7 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     UIObject firstItem = FindElement.ByName("Home");
                     UIObject appsItem = FindElement.ByName("Apps");
-                    UIObject lastItem = FindElement.ByName("Integer");
+                    UIObject lastItem = FindElement.ByName("HasChildItem");
 
                     Log.Comment("Make sure something inside the ListView other than the first item has input focus");
                     appsItem.SetFocus();

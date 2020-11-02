@@ -27,9 +27,6 @@ ProgressRing::ProgressRing()
 
     RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
-    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
     
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
 
@@ -66,14 +63,6 @@ void ProgressRing::OnIndeterminateSourcePropertyChanged(winrt::DependencyPropert
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     ApplyTemplateSettings();
-}
-
-void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
-{
-    if (!IsIndeterminate())
-    {
-        UpdateLottieProgress();
-    }
 }
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -152,6 +141,66 @@ void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChan
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateStates();
+}
+
+
+void ProgressRing::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (!m_rangeBasePropertyUpdating)
+    {
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_rangeBasePropertyUpdating = false;
+            });
+        m_rangeBasePropertyUpdating = true;
+
+        CoerceValue();
+
+        if (!IsIndeterminate())
+        {
+            UpdateLottieProgress();
+        }
+    }
+}
+
+void ProgressRing::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (!m_rangeBasePropertyUpdating)
+    {
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_rangeBasePropertyUpdating = false;
+            });
+        m_rangeBasePropertyUpdating = true;
+
+        CoerceMinimum();
+        CoerceValue();
+
+        if (!IsIndeterminate())
+        {
+            UpdateLottieProgress();
+        }
+    }
+}
+
+void ProgressRing::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (!m_rangeBasePropertyUpdating)
+    {
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_rangeBasePropertyUpdating = false;
+            });
+        m_rangeBasePropertyUpdating = true;
+
+        CoerceMaximum();
+        CoerceValue();
+
+        if (!IsIndeterminate())
+        {
+            UpdateLottieProgress();
+        }
+    }
 }
 
 void ProgressRing::SetAnimatedVisualPlayerSource()
@@ -252,9 +301,10 @@ void ProgressRing::UpdateLottieProgress()
     if (auto&& player = m_player.get())
     {
         const double value = Value();
-        const double range = Maximum() - Minimum();
-        const double fromProgress = m_oldValue / range;
-        const double toProgress = value / range;
+        const double min = Minimum();
+        const double range = Maximum() - min;
+        const double fromProgress = (m_oldValue - min) / range;
+        const double toProgress = (value - min) / range;
 
         const auto _ = player.PlayAsync(fromProgress, toProgress, false);
         m_oldValue = value;
@@ -331,4 +381,46 @@ void ProgressRing::ApplyTemplateSettings()
 
     templateSettings->EllipseOffset(thicknessEllipseOffset);
     templateSettings->MaxSideLength(width);
+}
+
+void ProgressRing::CoerceMinimum()
+{
+    const auto max = Maximum();
+    if (Minimum() > max)
+    {
+        Minimum(max);
+    }
+}
+
+void ProgressRing::CoerceMaximum()
+{
+    const auto min = Minimum();
+    if (Maximum() < min)
+    {
+        Maximum(min);
+    }
+}
+
+void ProgressRing::CoerceValue()
+{
+    // Validate that the value is in bounds
+    const auto value = Value();
+    if (!std::isnan(value) && !IsInBounds(value))
+    {
+        // Coerce value to be within range
+        const auto max = Maximum();
+        if (value > max)
+        {
+            Value(max);
+        }
+        else
+        {
+            Value(Minimum());
+        }
+    }
+}
+
+bool ProgressRing::IsInBounds(double value)
+{
+    return (value >= Minimum() && value <= Maximum());
 }

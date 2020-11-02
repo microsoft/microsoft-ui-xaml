@@ -542,10 +542,6 @@
         </Setter>
     </Style>
 
-    <!--Note: Even though UseSystemFocusVisuals is set to True here in the Style, and because
-    bindings in Styles are only evaluated once, we were unable to bring a TemplateSettings.UseSystemFocusVisuals
-    to handle the removal of the focus rect when SelectionFollowsFocus is enabled. Therefore, that has
-    been done in code and it's updated whenever SelectionFollowsFocus is changed.-->
     <Style TargetType="local:NavigationViewItem">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
