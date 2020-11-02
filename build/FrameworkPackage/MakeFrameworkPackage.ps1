@@ -229,7 +229,7 @@ $manifestContents = $manifestContents.Replace('$(ActivatableTypes)', "$Activatab
 $manifestContents = $manifestContents.Replace('$(Version)', "$Version")
 Set-Content -Value $manifestContents $fullOutputPath\PackageContents\AppxManifest.xml
 
-$manifestContents = $manifestContents.Replace('$PackageName', "Microsoft.UI.Xaml.CBS")
+$manifestContents = $manifestContents.Replace("$PackageName", "Microsoft.UI.Xaml.CBS")
 $manifestContents = $manifestContents.Replace('FrameworkPackageDetector', "CBSPackageDetector")
 Set-Content -Value $manifestContents $fullOutputPath\CBSAppxManifest.xml
 
