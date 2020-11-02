@@ -1,5 +1,5 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<ResourceDictionary 
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
@@ -445,7 +445,10 @@
                                 </VisualStateGroup.Transitions>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.MinViewWidth}">
+                        <Grid
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.MinViewWidth}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="40" />
                                 <RowDefinition Height="*" />
@@ -456,9 +459,35 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Button x:Name="HeaderButton" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HeaderText}" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreViews}" Style="{StaticResource NavigationButtonStyle}" Foreground="{TemplateBinding Foreground}" Padding="12,0,0,0" HorizontalContentAlignment="Left" />
-                                <Button x:Name="PreviousButton" Grid.Column="1" Content="&#xE0E4;" FontFamily="{ThemeResource SymbolThemeFontFamily}" IsTabStop="True" Padding="1" Foreground="{TemplateBinding Foreground}" HorizontalContentAlignment="Center" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentBefore}" Style="{StaticResource NavigationButtonStyle}" />
-                                <Button x:Name="NextButton" Grid.Column="2" Content="&#xE0E5;" FontFamily="{ThemeResource SymbolThemeFontFamily}" IsTabStop="True" Padding="1" Foreground="{TemplateBinding Foreground}" HorizontalContentAlignment="Center" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentAfter}" Style="{StaticResource NavigationButtonStyle}" />
+                                <Button x:Name="HeaderButton"
+                                    Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HeaderText}"
+                                    IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreViews}"
+                                    Style="{StaticResource NavigationButtonStyle}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Padding="12,0,0,0"
+                                    HorizontalContentAlignment="Left" />
+                                <Button x:Name="PreviousButton"
+                                    Grid.Column="1"
+                                    Content="&#xE0E4;"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    IsTabStop="True"
+                                    Padding="1"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalContentAlignment="Center"
+                                    IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentBefore}"
+                                    Style="{StaticResource NavigationButtonStyle}"
+                                    ToolTipService.ToolTip="{Binding ElementName=PreviousButton, Path=(AutomationProperties.Name)}" />
+                                <Button x:Name="NextButton"
+                                    Grid.Column="2"
+                                    Content="&#xE0E5;"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    IsTabStop="True"
+                                    Padding="1"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalContentAlignment="Center"
+                                    IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentAfter}"
+                                    Style="{StaticResource NavigationButtonStyle}"
+                                    ToolTipService.ToolTip="{Binding ElementName=NextButton, Path=(AutomationProperties.Name)}" />
                             </Grid>
                             <Grid x:Name="Views" Grid.Row="1">
                                 <Grid.Clip>
