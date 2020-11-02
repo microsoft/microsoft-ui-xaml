@@ -126,8 +126,7 @@ foreach ($testRun in $testRuns.value)
                 }
                 foreach($verificationFile in $visualTreeVerificationFiles)
                 {
-                    $directory = $(get-location).Path
-                    $destination = "$directory\$visualTreeVerificationFolder\$($verificationFile.Name)"
+                    $destination = "$visualTreeVerificationFolder\$($verificationFile.Name)"
                     $fileurl = Append-HelixAccessTokenToUrl $verificationFile.Link  $HelixAccessToken
                     try
                     {

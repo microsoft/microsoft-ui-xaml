@@ -207,14 +207,6 @@ namespace MUXControlsTestApp
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
 #endif
 
-#if FEATURE_INFOBAR_ENABLED 
-            AppendResourceToMergedDictionaries("InfoBarStyles.xaml");
-#endif
-
-#if FEATURE_PAGER_ENABLED
-            AppendResourceToMergedDictionaries("PrototypePager.xaml");
-#endif
-
             // For test purposes, add styles that disable long animations.
             DisableLongAnimations = true;
 
