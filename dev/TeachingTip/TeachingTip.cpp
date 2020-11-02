@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -44,6 +44,7 @@ void TeachingTip::OnApplyTemplate()
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
     m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
+    m_mainContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(s_mainContentPresenterName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
@@ -1119,11 +1120,28 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
 
             if (f6Button)
             {
-                auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, auto const& args) {
+                auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, const winrt::GettingFocusEventArgs& args) {
                     m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
                 });
                 const bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
                 args.Handled(setFocus);
+            }
+            // If there is no close button, try setting focus on the tip's custom content.
+            else if (const auto mainContentPresenter = m_mainContentPresenter.get())
+            {
+                if (const auto focusableElement = winrt::FocusManager::FindFirstFocusableElement(mainContentPresenter))
+                {
+                    // A focusable element can be a Hyperlink which does not expose a GettingFocus event. As such, we use the FocusManager API here. 
+                    auto const scopedRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke, [this, focusableElement](auto const&, const winrt::GettingFocusEventArgs& args) {
+                        if (args.NewFocusedElement() == focusableElement)
+                        {
+                            m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
+                        }
+                    });
+
+                    const bool setFocus = SetFocus(focusableElement, winrt::FocusState::Keyboard);
+                    args.Handled(setFocus);
+                }
             }
         }
     }

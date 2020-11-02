@@ -173,6 +173,7 @@ private:
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
     tracker_ref<winrt::Border> m_heroContentBorder{ this };
+    tracker_ref<winrt::ContentPresenter> m_mainContentPresenter{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
