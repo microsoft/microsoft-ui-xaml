@@ -47,7 +47,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-
         [TestMethod]
         public void CloseReasonIsAccurate()
         {
@@ -681,7 +680,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-
         [TestMethod]
         public void NoIconDoesNotCrash()
         {
@@ -705,7 +703,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
-
 
         [TestMethod]
         public void CanSwitchShouldConstrainToRootBounds()
@@ -740,7 +737,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-
         [TestMethod]
         public void TipsWhichDoNotFitDoNotOpen()
         {
@@ -755,7 +751,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollTargetIntoView();
                     ScrollBy(10);
                     UseTestWindowBounds(10, 10, 10, 10);
-
 
                     elements.GetShowButton().InvokeAndWait();
 
@@ -774,7 +769,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
-
 
         [TestMethod]
         public void VerifyTheming()
@@ -929,6 +923,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 OpenTeachingTip();
                 UseF6ToReturnToTestPageToCloseTip();
                 SetCloseButtonContent(CloseButtonContentOptions.NoText);
+            }
+        }
+
+        [TestMethod]
+        public void F6PutsFocusOnContentIfNoCloseButton()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                ScrollTargetIntoView();
+
+                ClearTeachingTipDebugMessages();
+
+                // A light-dismissable teaching tip has no close button.
+                EnableLightDismiss(true);
+
+                //Configure the teaching tip so that it only has one focusable child element - a content button.
+                SetContent(ContentOptions.Button);
+                SetHeroContent(HeroContentOptions.NoContent);
+
+                OpenTeachingTip();
+
+                Log.Comment("Set focus on custom button by pressing F6.");
+                KeyboardHelper.PressKey(Key.F6);
+
+                var message = GetTeachingTipDebugMessage(0);
+                Verify.IsTrue(message.ToString().Contains("Content Button GotKeyboardFocus Event"));
+
+                Log.Comment("Set focus back to teaching tip by pressing F6 again.");
+                KeyboardHelper.PressKey(Key.F6);
+
+                message = GetTeachingTipDebugMessage(1);
+                Verify.IsTrue(message.ToString().Contains("Content Button LostFocus Event"));
+
+                Log.Comment("Verify teaching tip is still open.");
+                WaitAndVerifyIfCheckStateUnchanged(elements.GetIsOpenCheckBox(), ToggleState.On);
+
+                Log.Comment("Close teaching tip by pressing Esc.");
+                KeyboardHelper.PressKey(Key.Escape);
+
+                WaitForTipClosed();
             }
         }
 
@@ -1127,6 +1162,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     break;
             }
             elements.GetSetPreferredPlacementButton().InvokeAndWait();
+        }
+
+        private void SetContent(ContentOptions content)
+        {
+            switch (content)
+            {
+                case ContentOptions.RedSquare:
+                    elements.GetContentComboBox().SelectItemByName("Red Square");
+                    break;
+                case ContentOptions.BlueSquare:
+                    elements.GetContentComboBox().SelectItemByName("Blue Square");
+                    break;
+                case ContentOptions.Image:
+                    elements.GetContentComboBox().SelectItemByName("Image");
+                    break;
+                case ContentOptions.AutoSaveImage:
+                    elements.GetContentComboBox().SelectItemByName("AutoSave Image");
+                    break;
+                case ContentOptions.ShortText:
+                    elements.GetContentComboBox().SelectItemByName("Short Text");
+                    break;
+                case ContentOptions.LongText:
+                    elements.GetContentComboBox().SelectItemByName("Long Text");
+                    break;
+                case ContentOptions.Button:
+                    elements.GetContentComboBox().SelectItemByName("Button");
+                    break;
+                default:
+                    elements.GetContentComboBox().SelectItemByName("No Content");
+                    break;
+            }
+
+            elements.GetSetContentButton().InvokeAndWait();
         }
 
         private void SetHeroContent(HeroContentOptions heroContent)
@@ -1473,6 +1541,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 return false;
+            }
+        }
+
+        private bool WaitAndVerifyIfCheckStateUnchanged(CheckBox checkBox, ToggleState state, double millisecondsTimeout = 2000)
+        {
+            using (UIEventWaiter waiter = checkBox.GetToggledWaiter())
+            {
+                if (checkBox.ToggleState != state)
+                {
+                    return false;
+                }
+
+                Log.Comment($"Waiting for {millisecondsTimeout}ms after which a toggle state change would have typically occured", millisecondsTimeout);
+                waiter.TryWait(TimeSpan.FromMilliseconds(millisecondsTimeout));
+
+                return checkBox.ToggleState == state;
             }
         }
     }

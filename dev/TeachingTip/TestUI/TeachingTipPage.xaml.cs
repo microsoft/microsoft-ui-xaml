@@ -203,7 +203,6 @@ namespace MUXControlsTestApp
                 SymbolIconSource symbolIconSource = new SymbolIconSource();
                 symbolIconSource.Symbol = Symbol.People;
                 getTeachingTip().IconSource = symbolIconSource;
-                
             }
             else
             {
@@ -328,6 +327,23 @@ namespace MUXControlsTestApp
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/AutoSave.png");
                 image.Source = bitmapImage;
                 getTeachingTip().Content = image;
+            }
+            else if (this.ContentComboBox.SelectedItem == ContentButton)
+            {
+                Button button = new Button() { Content = "Content Button" };
+                button.GotFocus += (s, e) =>
+                {
+                    if (button.FocusState == FocusState.Keyboard)
+                    {
+                        AddToMessageBoard("Content Button GotKeyboardFocus Event");
+                    }
+                };
+                button.LostFocus += (s, e) => AddToMessageBoard("Content Button LostFocus Event");
+
+                StackPanel panel = new StackPanel() { Orientation = Orientation.Horizontal };
+                panel.Children.Add(button);
+
+                getTeachingTip().Content = panel;
             }
             else
             {
@@ -832,20 +848,12 @@ namespace MUXControlsTestApp
 
         public void OnTeachingTipClosed(object sender, TeachingTipClosedEventArgs args)
         {
-            if (lstTeachingTipEvents != null)
-            {
-                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
-                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
-            }
+            AddToMessageBoard(args.ToString() + " Reason: " + args.Reason.ToString());
         }
 
         public void OnTeachingTipClosing(TeachingTip sender, TeachingTipClosingEventArgs args)
         {
-            if (lstTeachingTipEvents != null)
-            {
-                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
-                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
-            }
+            AddToMessageBoard(args.ToString() + " Reason: " + args.Reason.ToString());
 
             CheckBox cancelClosesCheckBox = null;
             if (sender == TeachingTipInResources)
@@ -876,14 +884,21 @@ namespace MUXControlsTestApp
 
         public void OnTeachingTipActionButtonClicked(object sender, object args)
         {
-            lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + "Action Button Clicked Event");
-            lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            AddToMessageBoard("Action Button Clicked Event");
         }
 
         public void OnTeachingTipCloseButtonClicked(object sender, object args)
         {
-            lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + "Close Button Clicked Event");
-            lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            AddToMessageBoard("Close Button Clicked Event");
+        }
+
+        private void AddToMessageBoard(string message)
+        {
+            if (lstTeachingTipEvents != null)
+            {
+                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + message);
+                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            }
         }
 
         private void BtnClearTeachingTipEvents_Click(object sender, RoutedEventArgs e)
@@ -992,6 +1007,5 @@ namespace MUXControlsTestApp
         {
             ContentStackPanel.Children.Remove(targetButton);
         }
-        
     }
 }

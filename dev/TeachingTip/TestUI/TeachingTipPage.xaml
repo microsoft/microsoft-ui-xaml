@@ -21,15 +21,15 @@
             <ScrollViewer x:Name="ContentScrollViewer">
                 <StackPanel x:Name="ContentStackPanel">
                     <Grid Background="Green" Width="100" Height="1000"/>
-                    <muxc:TeachingTip x:Name="TeachingTipInVisualTree" 
-                                          AutomationProperties.Name="TeachingTipInVisualTree"
-                                          Title="We've Added Auto Saving!" 
-                                          Subtitle="Documents will now automatically save to OneDrive." 
-                                          Closed="OnTeachingTipClosed" 
-                                          Closing="OnTeachingTipClosing"
-                                          ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked"
-                                          Target="{x:Bind targetButton}">
+                    <muxc:TeachingTip x:Name="TeachingTipInVisualTree"
+                        AutomationProperties.Name="TeachingTipInVisualTree"
+                        Title="We've Added Auto Saving!" 
+                        Subtitle="Documents will now automatically save to OneDrive." 
+                        Closed="OnTeachingTipClosed" 
+                        Closing="OnTeachingTipClosing"
+                        ActionButtonClick="OnTeachingTipActionButtonClicked"
+                        CloseButtonClick="OnTeachingTipCloseButtonClicked"
+                        Target="{x:Bind targetButton}">
                         <muxc:TeachingTip.IconSource>
                             <muxc:SymbolIconSource Symbol="People"/>
                         </muxc:TeachingTip.IconSource>
@@ -182,16 +182,17 @@
                         <Button AutomationProperties.Name="SetSubtitleButton" Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
 
                         <TextBlock Grid.Row="10" Text="Content:" Foreground="Red"/>
-                        <ComboBox x:Name="ContentComboBox" Grid.Row="11">
+                        <ComboBox x:Name="ContentComboBox" AutomationProperties.Name="ContentComboBox" Grid.Row="11">
                             <ComboBoxItem x:Name="ContentRedSquare">Red Square</ComboBoxItem>
                             <ComboBoxItem x:Name="ContentBlueSquare">Blue Square</ComboBoxItem>
                             <ComboBoxItem x:Name="ContentImage">Image</ComboBoxItem>
                             <ComboBoxItem x:Name="ContentShort">Short Text</ComboBoxItem>
                             <ComboBoxItem x:Name="ContentLong">Long Text</ComboBoxItem>
-                            <ComboBoxItem x:Name="ContentAutoSave">AutoSaveImage</ComboBoxItem>
+                            <ComboBoxItem x:Name="ContentAutoSave">AutoSave Image</ComboBoxItem>
+                            <ComboBoxItem x:Name="ContentButton">Button</ComboBoxItem>
                             <ComboBoxItem x:Name="ContentNo">No Content</ComboBoxItem>
                         </ComboBox>
-                        <Button Click="OnSetContentButtonClicked" Grid.Row="11" Grid.Column="1">Set</Button>
+                        <Button AutomationProperties.Name="SetContentButton" Click="OnSetContentButtonClicked" Grid.Row="11" Grid.Column="1">Set</Button>
 
                         <TextBlock Grid.Row="12" Text="ActionButtonContent:" Foreground="Red"/>
                         <ComboBox x:Name="ActionButtonContentComboBox" SelectedIndex="0" Grid.Row="13">

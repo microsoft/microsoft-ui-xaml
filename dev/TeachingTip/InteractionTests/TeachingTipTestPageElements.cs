@@ -172,6 +172,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock popupVerticalOffsetTextBlock;
 
+        public ComboBox GetContentComboBox()
+        {
+            return GetElement(ref contentComboBox, "ContentComboBox");
+        }
+        private ComboBox contentComboBox;
+
+        public Button GetSetContentButton()
+        {
+            return GetElement(ref setContentButton, "SetContentButton");
+        }
+        private Button setContentButton;
+
         public ComboBox GetHeroContentComboBox()
         {
             return GetElement(ref heroContentComboBox, "HeroContentComboBox");
@@ -480,13 +492,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Auto
         }
 
+        public enum ContentOptions
+        {
+            RedSquare,
+            BlueSquare,
+            Image,
+            AutoSaveImage,
+            ShortText,
+            LongText,
+            Button,
+            NoContent
+        }
+
         public enum HeroContentOptions
         {
             RedSquare,
             BlueSquare,
             Image,
             NoContent
-        }
+        }   
 
         public enum TitleContentOptions
         {
