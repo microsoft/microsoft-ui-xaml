@@ -65,6 +65,9 @@ private:
 
     bool IsRepeaterOwnedElement(const winrt::DependencyObject& element, const winrt::ItemsRepeater& repeater);
 
+    void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
+    void UpdateVisualStateForIsEnabledChange();
+
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();
 
@@ -95,6 +98,7 @@ private:
     com_ptr<RadioButtonsElementFactory> m_radioButtonsElementFactory{ nullptr };
 
     winrt::Control::Loaded_revoker m_repeaterLoadedRevoker{};
+    winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};

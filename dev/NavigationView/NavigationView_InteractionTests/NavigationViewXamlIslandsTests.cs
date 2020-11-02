@@ -33,13 +33,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void ClassInitialize(TestContext testContext)
         {
-            TestEnvironment.Initialize(testContext, TestType.WPFXAMLIsland); 
+            TestEnvironment.Initialize(testContext, TestApplicationInfo.MUXControlsTestAppWPFPackage); 
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            TestEnvironment.AssemblyCleanupWorker(TestType.WPFXAMLIsland);
+            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.MUXControlsTestAppWPFPackage);
         }
 
         [TestMethod]

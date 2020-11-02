@@ -49,10 +49,6 @@
   <PropertyGroup Label="MUXControls.Test" Condition="'$(MSBuildProjectName)' == 'MUXControls.Test'">
   </PropertyGroup>
 
-  <!-- MUXTestUtilities Project-specific Properties -->
-  <PropertyGroup Label="MUXTestUtilities" Condition="'$(MSBuildProjectName)' == 'MUXTestUtilities'">
-  </PropertyGroup>
-
   <!-- MUXControlsTestApp Project-specific Properties -->
   <PropertyGroup Label="MUXControlsTestApp" Condition="'$(MSBuildProjectName)' == 'MUXControlsTestApp'">
   </PropertyGroup>

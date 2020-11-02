@@ -6,119 +6,105 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
+    mc:Ignorable="d">
 
-    <Grid  Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="3*"/>
-        </Grid.RowDefinitions>
-        <local:InfoBar x:Name="TestInfoBar" StatusColor="Pink" Title="Error" Message="Your program has an error." HorizontalAlignment="Left" VerticalAlignment="Top" IsOpen="True" ActionButtonClick="Test_ActionButtonClick" Closing="Test_Closing" Severity ="Critical" Width="1000">
-        </local:InfoBar>
-        <Grid Grid.Row="1">
+    <Page.Resources>
+        <Style x:Name="CustomCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource InfoBarCloseButtonStyle}">
+            <Style.Setters>
+                <Setter Property="Background" Value="Red"/>
+            </Style.Setters>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Grid.Row="0">
-                <TextBlock>Severity Level</TextBlock>
-                <ComboBox Name="SeverityCombo" SelectionChanged="ComboBox_SelectionChanged">
-                    <x:String>Critical</x:String>
-                    <x:String>Warning</x:String>
-                    <x:String>Informational</x:String>
-                    <x:String>Success</x:String>
-                    <x:String>Default</x:String>
-                    <x:String>None</x:String>
-                </ComboBox>
-                <Button x:Name="SeverityButton" Click="SeverityButton_Click" Content="Set" VerticalAlignment="Top"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <TextBlock>Status Color</TextBlock>
-                <ComboBox Name="ColorCombo" SelectionChanged="ColorCombo_SelectionChanged">
-                    <x:String>Purple</x:String>
-                    <x:String>No Color</x:String>
-                </ComboBox>
-                <Button x:Name="ColorButton" Click="ColorButton_Click" Content="Set" VerticalAlignment="Top"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="2">
-                <TextBlock>Icon</TextBlock>
-                <ComboBox x:Name="IconComboBox" SelectionChanged="IconComboBox_SelectionChanged">
-                    <x:String>Pin Icon</x:String>
-                    <x:String>No Icon</x:String>
-                </ComboBox>
-                <Button x:Name="IconButton" Click="IconButton_Click" Content="Set" VerticalAlignment="Top"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="3">
-                <TextBlock>Title</TextBlock>
-                <ComboBox x:Name="TitleComboBox" SelectionChanged="TitleComboBox_SelectionChanged">
-                    <x:String>Short Title</x:String>
-                    <x:String>Long Title</x:String>
-                    <x:String>No Title</x:String>
-                </ComboBox>
-                <Button x:Name="TitleButton" Click="TitleButton_Click" Content="Set" VerticalAlignment="Top"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="4">
-                <TextBlock>Message</TextBlock>
-                <ComboBox x:Name="MessageComboBox" SelectionChanged="MessageComboBox_SelectionChanged">
-                    <x:String>Short Message</x:String>
-                    <x:String>Long Message</x:String>
-                    <x:String>No Message</x:String>
-                </ComboBox>
-                <Button x:Name="MessageButton" Click="MessageButton_Click" Content="Set" VerticalAlignment="Top"/>
-            </StackPanel>
-            <Grid Grid.Row="5">
+
+            <controls:InfoBar x:Name="TestInfoBar" AutomationProperties.Name="TestInfoBar"
+                IsOpen="True"
+                Title="{x:Bind TitleTextBox.Text, Mode=OneWay}"
+                Message="{x:Bind MessageTextBox.Text, Mode=OneWay}"
+                IsIconVisible="{x:Bind IsIconVisibleCheckBox.IsChecked.Value, Mode=OneWay}"
+                IsClosable="{x:Bind IsClosableCheckBox.IsChecked.Value, Mode=OneWay}"
+                CloseButtonClick="OnCloseButtonClick"
+                Closing="OnClosing"
+                Closed="OnClosed"/>
+
+            <Grid Grid.Row="1" Margin="0,20,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Grid.Row="5">
-                    <TextBlock>Close Button Content</TextBlock>
-                    <ComboBox x:Name="CloseButtonContentComboBox" SelectionChanged="CloseButtonContentComboBox_SelectionChanged">
-                        <x:String>Short Text</x:String>
-                        <x:String>Long Text</x:String>
-                        <x:String>No Text</x:String>
+
+                <StackPanel Orientation="Vertical" contract5Present:Spacing="6" HorizontalAlignment="Left">
+                    <ComboBox x:Name="SeverityComboBox" AutomationProperties.Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
+                        <x:String>Error</x:String>
+                        <x:String>Warning</x:String>
+                        <x:String>Success</x:String>
+                        <x:String>Informational</x:String>
                     </ComboBox>
-                    <Button x:Name="CloseButtonContentButton" Click="CloseButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
+
+                    <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" Header="Icon" SelectionChanged="IconComboBox_SelectionChanged" SelectedIndex="0">
+                        <x:String>Default Icon</x:String>
+                        <x:String>Custom Icon</x:String>
+                    </ComboBox>
+
+                    <TextBox x:Name="TitleTextBox" AutomationProperties.Name="TitleTextBox" Header="Title" Width="250" Text="Title" HorizontalAlignment="Left"/>
+
+                    <TextBox x:Name="MessageTextBox" AutomationProperties.Name="MessageTextBox" Header="Message" Width="250" Text="Message" HorizontalAlignment="Left"/>
+
+                    <ComboBox x:Name="ActionButtonComboBox" AutomationProperties.Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
+                        <ComboBoxItem Content="None" />
+                        <ComboBoxItem Content="Button" />
+                        <ComboBoxItem Content="Hyperlink" />
+                    </ComboBox>
+
+                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
+
+                    <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
+
+                    <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />
+
+                    <CheckBox x:Name="IsIconVisibleCheckBox" AutomationProperties.Name="IsIconVisibleCheckBox" Content="IsIconVisible" IsChecked="True"/>
+
+                    <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Content="IsClosable" IsChecked="True"/>
+
+                    <CheckBox x:Name="HasCustomContentCheckBox" AutomationProperties.Name="HasCustomContentCheckBox" Content="Has Custom Content" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
+
+                    <CheckBox x:Name="CustomBackgroundCheckBox" AutomationProperties.Name="CustomBackgroundCheckBox" Content="Custom Background Color" Checked="CustomBackgroundChanged" Unchecked="CustomBackgroundChanged"/>
+                    
+                    <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Column="1">
-                    <TextBlock>Show Close Button</TextBlock>
-                    <CheckBox Name="ShowClose" Content="Show Close" Checked="ShowClose_Checked" Unchecked="ShowClose_Unchecked"/>
-                    <Button x:Name="ShowCloseButton" Click="ShowCloseButton_Click" Content="Set"/>
-                </StackPanel>
-            </Grid>
-            <StackPanel Orientation="Horizontal" Grid.Row="6">
-                <TextBlock>Action Button Content</TextBlock>
-                <ComboBox x:Name="ActionButtonContentComboBox" SelectionChanged="ActionButtonContentComboBox_SelectionChanged">
-                    <x:String>Short Text</x:String>
-                    <x:String>Long Text</x:String>
-                    <x:String>No Text</x:String>
-                </ComboBox>
-                <Button x:Name="ActionButtonContentButton" Click="ActionButtonContent_Click" Content="Set" VerticalAlignment="Top"/>
-            </StackPanel>
-            <Grid Grid.Row="7">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Open</TextBlock>
-                    <CheckBox Name="IsOpen" Content="IsOpen" Checked="IsOpen_Checked" Unchecked="IsOpen_Unchecked"/>
-                    <Button x:Name="IsOpenButton" Click="IsOpenButton_Click" Content="Set"/>
-                </StackPanel>
-                <StackPanel Orientation = "Horizontal" Grid.Column="1">
-                    <TextBlock>Cancel Closing</TextBlock>
-                    <CheckBox Name="Cancel" Content="Cancel" Checked="Cancel_Checked" Unchecked="Cancel_Unchecked"/>
+
+                <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
+                    <TextBlock>Events:</TextBlock>
+                    <ListBox x:Name="EventListBox" AutomationProperties.Name="EventListBox" MinWidth="150" MaxHeight="380">
+                        <ListBox.Resources>
+                            <Style TargetType="ListBoxItem">
+                                <Style.Setters>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <TextBlock Text="{TemplateBinding Content}"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style.Setters>
+                            </Style>
+                        </ListBox.Resources>
+                    </ListBox>
+                    <Button AutomationProperties.Name="ClearButton" Content="Clear" Margin="0,6,0,0" Click="ClearButtonClick"/>
+
+                    <TextBlock Text="Default InfoBar (should be invisible):" Margin="0,20,0,0"/>
+                    <controls:InfoBar AutomationProperties.Name="DefaultInfoBar" />
                 </StackPanel>
             </Grid>
         </Grid>
-
     </Grid>
 </local:TestPage>
