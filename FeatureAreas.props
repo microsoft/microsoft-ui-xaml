@@ -84,6 +84,10 @@
   <!-- Dependencies for IconSource -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureIconSourceEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for InfoBar -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBarEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
   <!-- Dependencies for Interactions -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInteractionsEnabled) == 'true'">
   </PropertyGroup>
@@ -266,7 +270,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
-    <DefineConstants Condition="$(FeatureInfoBarEnabled) =='true'">$(DefineConstants);FEATURE_INFOBAR_ENABLED</DefineConstants>
     <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>

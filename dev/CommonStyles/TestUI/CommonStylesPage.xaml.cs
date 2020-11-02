@@ -221,7 +221,7 @@ namespace MUXControlsTestApp
 
         private void ListViewItemDensityTest_Click(object sender, RoutedEventArgs e)
         {
-            var item = ListView1.FindElementOfTypeInSubtree<ListViewItem>();
+            var item = ListView1.FindVisualChildByType<ListViewItem>();
             SimpleVerify simpleVerify = new SimpleVerify();
             if (item != null)
             {

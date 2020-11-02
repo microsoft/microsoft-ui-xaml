@@ -99,6 +99,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
+        public static TestApplicationInfo MUXControlsInnerLoopTestApp
+        {
+            get
+            {
+#if USING_TAEF
+                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
+#else
+                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
+#endif
+                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", "MUXControlsInnerLoopTestApp", "MUXControlsTestApp", "MUXControlsTestApp", MUXCertSerialNumber, MUXBaseAppxDir);
+            }
+        }
+
         public static TestApplicationInfo NugetPackageTestApp
         {
             get
@@ -197,7 +210,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public static void AssemblyCleanup()
         {
+#if INNERLOOP_BUILD
+            AssemblyCleanupWorker(TestApplicationInfo.MUXControlsInnerLoopTestApp);
+#else
             AssemblyCleanupWorker(TestApplicationInfo.MUXControlsTestApp);
+#endif
         }
 
         public static void AssemblyCleanupWorker(TestApplicationInfo testAppInfo)
@@ -233,7 +250,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public static void Initialize(TestContext testContext)
         {
+#if INNERLOOP_BUILD
+            Initialize(testContext, TestApplicationInfo.MUXControlsInnerLoopTestApp);
+#else
             Initialize(testContext, TestApplicationInfo.MUXControlsTestApp);
+#endif
         }
 
         // Tests classes call this from their ClassInitialize methods to init our Application instance
