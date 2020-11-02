@@ -59,7 +59,7 @@ namespace MUXControlsTestApp.Utilities
             return null;
         }
 
-        public static T FindElementOfTypeInParentTree<T>(this DependencyObject element)
+        public static T FindVisualParentByType<T>(this DependencyObject element)
             where T : DependencyObject
         {
             if (element is null)
@@ -67,12 +67,9 @@ namespace MUXControlsTestApp.Utilities
                 return null;
             }
 
-            if (element is T)
-            {
-                return (T)element;
-            }
-
-            return FindElementOfTypeInParentTree<T>(VisualTreeHelper.GetParent(element));
+            return element is T elementAsT 
+                ? elementAsT 
+                : VisualTreeHelper.GetParent(element).FindVisualParentByType<T>();
         }
     }
 }

@@ -125,10 +125,10 @@ namespace MUXControlsTestApp
 
         private void GetMenuItem1ChildrenFlyoutCornerRadiusButton_Click(object sender, RoutedEventArgs e)
         {
-            var parent = VisualTreeUtils.FindElementOfTypeInParentTree<FlyoutPresenter>(MI2);
+            var parent = MI2.FindVisualParentByType<FlyoutPresenter>();
             if (parent is FlyoutPresenter flyoutPresenter)
             {
-                var contentPresenter = VisualTreeUtils.FindVisualChildByName(flyoutPresenter, "ContentPresenter") as ContentPresenter;
+                var contentPresenter = flyoutPresenter.FindVisualChildByName("ContentPresenter") as ContentPresenter;
                 MenuItem1ChildrenFlyoutCornerRadiusTextBlock.Text = contentPresenter?.CornerRadius.ToString() ?? "Internal ContentPresenter not found";
             }
         }

@@ -517,10 +517,10 @@ namespace MUXControlsTestApp
         private void GetOverflowMenuCornerRadiusButton_Click(object sender, RoutedEventArgs e)
         {
             var lastMenuItem = NavView.MenuItems[NavView.MenuItems.Count - 1] as NavigationViewItem;
-            var parent = VisualTreeUtils.FindElementOfTypeInParentTree<FlyoutPresenter>(lastMenuItem);
+            var parent = lastMenuItem.FindVisualParentByType<FlyoutPresenter>();
             if (parent is FlyoutPresenter flyoutPresenter)
             {
-                var contentPresenter = VisualTreeUtils.FindVisualChildByName(flyoutPresenter, "ContentPresenter") as ContentPresenter;
+                var contentPresenter = flyoutPresenter.FindVisualChildByName("ContentPresenter") as ContentPresenter;
                 OverflowMenuCornerRadiusTextBlock.Text = contentPresenter?.CornerRadius.ToString() ?? "Internal ContentPresenter not found";
             }
         }
