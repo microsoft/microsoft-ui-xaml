@@ -1761,6 +1761,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
                     TextBlock menuItem1ChildrenFlyoutCornerRadiusTextBlock = new TextBlock(FindElement.ByName("MenuItem1ChildrenFlyoutCornerRadiusTextBlock"));
                     Verify.AreEqual("4,4,4,4", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
+
+                    // Close flyout
+                    InputHelper.LeftClick(item);
+                    Wait.ForIdle();
                 }
             }
         }
