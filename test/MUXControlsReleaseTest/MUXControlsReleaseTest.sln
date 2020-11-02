@@ -41,7 +41,6 @@ Global
 		..\TestAppUtils\TestAppUtils.projitems*{cca3696f-5cac-421d-8528-4d9122b4d240}*SharedItemsImports = 4
 		..\TestAppUtils\TestAppUtils.projitems*{e1f7ab45-fd1a-4220-ac81-874fcbefd294}*SharedItemsImports = 4
 		..\MUXControls.Test\MUXControls.Test.Shared.projitems*{e9fc52cd-519a-41bb-8092-523ffa9d5617}*SharedItemsImports = 13
-		..\..\dev\Pager\InteractionTests\Pager_InteractionTests.projitems*{eaeb5d2c-b447-41bc-9de7-bfcb964b6ca5}*SharedItemsImports = 5
 		..\TestAppUtils\TestAppUtils.projitems*{fb0d3053-3135-403f-b542-977f3b781673}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
