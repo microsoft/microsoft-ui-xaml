@@ -32,10 +32,6 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
 
     Windows.UI.Xaml.Input.ICommand PreviousButtonCommand;
     Windows.UI.Xaml.Input.ICommand NextButtonCommand;
-    Windows.UI.Xaml.Input.ICommand PagerInputCommand;
-
-    Windows.UI.Xaml.Style PreviousButtonStyle;
-    Windows.UI.Xaml.Style NextButtonStyle;
 
     [MUX_DEFAULT_VALUE("0")]
     Int32 SelectedPageIndex;
@@ -43,8 +39,6 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("5")]
     Int32 MaxDisplayedPages;
 
-    String PrefixText;
-    String SuffixText;
 
     event Windows.Foundation.TypedEventHandler<PipsControl, PipsControlSelectedIndexChangedEventArgs> SelectedIndexChanged;
 
@@ -56,16 +50,10 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
 
     static Windows.UI.Xaml.DependencyProperty PreviousButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty NextButtonCommandProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty PagerInputCommandProperty{ get; };
-
+ 
     static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaxDisplayedPagesProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty PreviousButtonStyleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
-
-    static Windows.UI.Xaml.DependencyProperty PrefixTextProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SuffixTextProperty{ get; };
 }
 
 }
