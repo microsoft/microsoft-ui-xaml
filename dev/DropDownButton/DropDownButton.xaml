@@ -114,7 +114,7 @@
                                 FontFamily="Segoe MDL2 Assets"
                                 FontSize="8"
                                 Foreground="{ThemeResource ButtonForegroundPressed}"
-                                Text="&#xE70D;"
+                                Text="&#xE96E;"
                                 VerticalAlignment="Center"
                                 Padding="2,2,2,2"
                                 Margin="8,0,0,0"

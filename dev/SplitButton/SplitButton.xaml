@@ -233,6 +233,9 @@
                         <Grid x:Name="PrimaryBackgroundGrid"
                             Background="{TemplateBinding Background}"/>
 
+                        <Grid x:Name="DividerBackgroundGrid"
+                            Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+
                         <Grid x:Name="SecondaryBackgroundGrid"
                             Background="{TemplateBinding Background}"
                             Grid.Column="2"/>
@@ -282,7 +285,7 @@
                                 <TextBlock
                                     FontFamily="Segoe MDL2 Assets"
                                     FontSize="8"
-                                    Text="&#xE70D;"
+                                    Text="&#xE96E;"
                                     VerticalAlignment="Center"
                                     Padding="2,2,2,2"
                                     HorizontalAlignment="Right"
