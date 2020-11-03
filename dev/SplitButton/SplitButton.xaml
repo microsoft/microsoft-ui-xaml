@@ -87,7 +87,7 @@
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
-                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
+                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondaryPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -97,7 +97,7 @@
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
-                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
+                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondaryPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -124,7 +124,7 @@
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackground}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPointerOver}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPointerOver}"/>
-                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPointerOver}"/>
+                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -133,7 +133,7 @@
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackground}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
-                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
+                                        <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondaryPressed}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -267,7 +267,7 @@
 
                         <Button x:Name="SecondaryButton"
                             Grid.Column="2"
-                            Foreground="{TemplateBinding Foreground}"
+                            Foreground="{ThemeResource SplitButtonForegroundPressed}"
                             Background="{TemplateBinding Background}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             BorderBrush="Transparent"
@@ -281,9 +281,10 @@
                             <Button.Content>
                                 <TextBlock
                                     FontFamily="Segoe MDL2 Assets"
-                                    FontSize="12"
+                                    FontSize="8"
                                     Text="&#xE70D;"
                                     VerticalAlignment="Center"
+                                    Padding="2,2,2,2"
                                     HorizontalAlignment="Right"
                                     IsTextScaleFactorEnabled="False"
                                     AutomationProperties.AccessibilityView="Raw"/>
