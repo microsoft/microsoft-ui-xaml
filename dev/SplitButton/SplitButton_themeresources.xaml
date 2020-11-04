@@ -25,6 +25,7 @@
             <StaticResource x:Key="SplitButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
             <StaticResource x:Key="SplitButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
             <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="SplitButtonForegroundSecondary" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="SplitButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -56,6 +57,7 @@
             <StaticResource x:Key="SplitButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
             <StaticResource x:Key="SplitButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
             <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="SplitButtonForegroundSecondary" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="SplitButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
