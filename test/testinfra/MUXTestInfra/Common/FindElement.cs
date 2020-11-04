@@ -309,11 +309,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle(findElementsIfNull: false); // false because otherwise Wait.ForIdle() might call Refresh(), and then we have an infinite loop.
 
             UIObject window = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
+            int dupeCount = 0;
             UIObject lastItem = null;
             foreach (UIObject obj in window.Descendants)
             {
                 // Check if we encounter the same element twice in a row indicating a loop in the UIObjects.
                 if(lastItem == obj)
+                {
+                    dupeCount++;
+                }
+                // Only break if an item was encountered more then 10 times.
+                if(dupeCount >= 10)
                 {
                     break;
                 }
