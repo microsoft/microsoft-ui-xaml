@@ -260,13 +260,41 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
         CloseMenuFlyout();
         if (location == FlyoutLocation::Left)
         {
-            winrt::get_self<MenuBarItem>(menuBar.Items().GetAt(((index - 1) + menuBar.Items().Size()) % menuBar.Items().Size()))->ShowMenuFlyout();
+            if (const auto item = GetNextItem(index, -1).try_as<MenuBarItem>())
+            {
+                item->ShowMenuFlyout();
+            }
         }
         else
         {
-            winrt::get_self<MenuBarItem>(menuBar.Items().GetAt((index + 1) % menuBar.Items().Size()))->ShowMenuFlyout();
+            if (const auto item = GetNextItem(index, +1).try_as<MenuBarItem>())
+            {
+                item->ShowMenuFlyout();
+            }
         }
     }
+}
+
+winrt::MenuBarItem MenuBarItem::GetNextItem(int index, int direction)
+{
+    if (const auto menuBar = m_menuBar.get())
+    {
+        const int itemsCount = menuBar.Items().Size();
+        // % is remainder, not modulo.
+        int itemIndex = (index + direction + itemsCount) % itemsCount;
+        while (!menuBar.Items().GetAt(itemIndex).IsEnabled())
+        {
+            // % is remainder, not modulo.
+            itemIndex = (itemIndex + direction + itemsCount) % itemsCount;
+            if (itemIndex == index)
+            {
+                // We are where we return no new item.
+                return nullptr;
+            }
+        }
+        return menuBar.Items().GetAt(itemIndex);
+    }
+    return nullptr;
 }
 
 void MenuBarItem::AddPassThroughElement(const winrt::DependencyObject& element)

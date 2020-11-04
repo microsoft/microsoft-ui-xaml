@@ -40,6 +40,8 @@ private:
     void DetachEventHandlers(bool useSafeGet = false);
     void OpenFlyoutFrom(FlyoutLocation location);
 
+    winrt::MenuBarItem GetNextItem(int index, int direction);
+
     void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateVisualStates();
 

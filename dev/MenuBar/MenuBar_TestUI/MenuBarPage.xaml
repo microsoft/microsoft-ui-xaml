@@ -72,26 +72,43 @@
             <muxc:MenuBar x:Name="EmptyMenuBar"></muxc:MenuBar>
 
             <TextBlock Text="Disabled items test"/>
-            <muxc:MenuBar>
-                <muxc:MenuBarItem x:Name="MenuBarPartiallyEnabledOne" AutomationProperties.Name="MenuBarPartiallyEnabledOne" Title="MenuBarPartiallyEnabledOne">
-                    <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutOne" Text="PartiallyEnabledFlyoutOne"/>
-                    <MenuFlyoutItem Text="Open..."/>
-                    <MenuFlyoutItem Text="Save"/>
-                    <MenuFlyoutItem Text="Exit"/>
-                </muxc:MenuBarItem>
+            <StackPanel Orientation="Horizontal">
+                <muxc:MenuBar>
+                    <muxc:MenuBarItem x:Name="MenuBarPartiallyEnabledOne" AutomationProperties.Name="MenuBarPartiallyEnabledOne" Title="MenuBarPartiallyEnabledOne">
+                        <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutOne" Text="PartiallyEnabledFlyoutOne"/>
+                        <MenuFlyoutItem Text="Open..."/>
+                        <MenuFlyoutItem Text="Save"/>
+                        <MenuFlyoutItem Text="Exit"/>
+                    </muxc:MenuBarItem>
 
-                <muxc:MenuBarItem Title="Edit" IsEnabled="false">
-                    <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutTwo" Text="PartiallyEnabledFlyoutTwo"/>
-                    <MenuFlyoutItem Text="Cut"/>
-                    <MenuFlyoutItem Text="Copy"/>
-                    <MenuFlyoutItem Text="Paste"/>
-                </muxc:MenuBarItem>
+                    <muxc:MenuBarItem Title="Edit" IsEnabled="false">
+                        <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutTwo" Text="PartiallyEnabledFlyoutTwo"/>
+                        <MenuFlyoutItem Text="Cut"/>
+                        <MenuFlyoutItem Text="Copy"/>
+                        <MenuFlyoutItem Text="Paste"/>
+                    </muxc:MenuBarItem>
 
-                <muxc:MenuBarItem Title="Help">
-                    <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutThree" Text="PartiallyEnabledFlyoutThree"/>
-                    <MenuFlyoutItem Text="About"/>
-                </muxc:MenuBarItem>
-            </muxc:MenuBar>
+                    <muxc:MenuBarItem Title="Help">
+                        <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutThree" Text="PartiallyEnabledFlyoutThree"/>
+                        <MenuFlyoutItem Text="About"/>
+                    </muxc:MenuBarItem>
+                </muxc:MenuBar>
+                <muxc:MenuBar>
+                    <muxc:MenuBarItem x:Name="LoopTestBarOne" AutomationProperties.Name="LoopTestBarOne" Title="LoopTestBarOne">
+                        <MenuFlyoutItem AutomationProperties.Name="LoopTestItemOne" Text="PartiallyEnabledFlyoutOne"/>
+                        <MenuFlyoutItem Text="Open..."/>
+                        <MenuFlyoutItem Text="Save"/>
+                        <MenuFlyoutItem Text="Exit"/>
+                    </muxc:MenuBarItem>
+
+                    <muxc:MenuBarItem Title="Edit" IsEnabled="false">
+                        <MenuFlyoutItem AutomationProperties.Name="PartiallyEnabledFlyoutTwo" Text="PartiallyEnabledFlyoutTwo"/>
+                        <MenuFlyoutItem Text="Cut"/>
+                        <MenuFlyoutItem Text="Copy"/>
+                        <MenuFlyoutItem Text="Paste"/>
+                    </muxc:MenuBarItem>
+                </muxc:MenuBar>
+            </StackPanel>
         </StackPanel>
         <TextBlock Grid.Row="1" Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
         <StackPanel Margin="0,20,0,20" VerticalAlignment="Top"  Grid.Row="2" Orientation="Horizontal">
