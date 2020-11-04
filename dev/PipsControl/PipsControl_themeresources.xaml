@@ -4,6 +4,37 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 
     <!-- VerticalPips Resources -->
     <x:Double x:Key="PagerControlVerticalPipButtonWidth">30</x:Double>

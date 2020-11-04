@@ -8,7 +8,92 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PipsControl">
-                    <TextBlock Text="I am a PipsControl"/>
+                    <Grid x:Name="RootGrid"
+                        Background="{TemplateBinding Background}">
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="NavigationButtonsVisibilityStates">
+                                <VisualState x:Name="NavigationButtonsHidden"/>
+                                <VisualState x:Name="NavigationButtonsVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PreviousPageButton.Opacity" Value="100"/>
+                                        <Setter Target="NextPageButton.Opacity" Value="100"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
+                                <VisualState x:Name="PreviousPageButtonDisabled"/>
+                                <VisualState x:Name="PreviousPageButtonEnabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PreviousPageButton.IsEnabled" Value="True"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="NextPageButtonIsEnabledStates">
+                                <VisualState x:Name="NextPageButtonDisabled"/>
+                                <VisualState x:Name="NextPageButtonEnabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="NextPageButton.IsEnabled" Value="True"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <StackPanel x:Name="PipControlPanel">
+                            <Button x:Name="PreviousPageButton"
+                                Style="{StaticResource PagerControlVerticalPipButtonStyle}"
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                Content="&#xE76B;"
+                                RenderTransformOrigin="0.5, 0.5"
+                                Opacity="0"
+                                IsEnabled="False"
+                                >
+                            <Button.RenderTransform>
+                                <RotateTransform Angle="90"/>
+                            </Button.RenderTransform>
+                        </Button>
+
+
+                        <ScrollViewer x:Name="VerticalPipsScrollViewer" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+                                      VerticalScrollBarVisibility="Hidden" VerticalScrollMode="Disabled">
+
+                            <muxc:ItemsRepeater x:Name="VerticalPipsItemsRepeater"
+                                ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.VerticalPipsItems}">
+                                <muxc:ItemsRepeater.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource PagerControlVerticalPipButtonStyle}" Tag="{Binding}"/>
+                                    </DataTemplate>
+                                </muxc:ItemsRepeater.ItemTemplate>
+                            </muxc:ItemsRepeater>
+                        </ScrollViewer>
+
+
+
+
+
+                        <Button x:Name="NextPageButton"
+                                Style="{StaticResource PagerControlVerticalPipButtonStyle}"
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                Content="&#xE76C;"
+                                RenderTransformOrigin="0.5, 0.5"
+                                Opacity="0"
+                                IsEnabled="False"
+                             >
+                                <Button.RenderTransform>
+                                    <RotateTransform Angle="90"/>
+                                </Button.RenderTransform>
+
+                           </Button>
+                        </StackPanel>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

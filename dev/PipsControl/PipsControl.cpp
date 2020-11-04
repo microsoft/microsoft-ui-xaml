@@ -11,7 +11,19 @@
 #include "PipsControlSelectedIndexChangedEventArgs.h"
 
 
+
+constexpr auto c_navigationButtonsVisibleVisualState = L"NavigationButtonsVisible"sv;
+constexpr auto c_navigationButtonsHiddenVisualState = L"NavigationButtonsHidden"sv;
+
+constexpr auto c_previousPageButtonEnabledVisualState = L"PreviousPageButtonEnabled"sv;
+constexpr auto c_previousPageButtonDisabledVisualState = L"PreviousPageButtonDisabled"sv;
+
+constexpr auto c_nextPageButtonEnabledVisualState = L"NextPageButtonEnabled"sv;
+constexpr auto c_nextPageButtonDisabledVisualState = L"NextPageButtonDisabled"sv;
+
 constexpr auto c_infiniteItemsModeState = L"InfiniteItems"sv;
+
+
 
 constexpr auto c_previousPageButtonName = L"PreviousPageButton"sv;
 constexpr auto c_nextPageButtonName = L"NextPageButton"sv;
@@ -38,6 +50,8 @@ PipsControl::~PipsControl() {
     m_nextPageButtonClickRevoker.revoke();
     m_previousPageButtonClickRevoker.revoke();
     m_verticalPipsElementPreparedRevoker.revoke();
+    m_panelPointerEnteredRevoker.revoke();
+    m_panelPointerExitedRevoker.revoke();
 }
 
 void PipsControl::OnApplyTemplate()
@@ -55,7 +69,7 @@ void PipsControl::OnApplyTemplate()
         if (button) {
             m_nextPageButtonClickRevoker = button.Click(winrt::auto_revoke, { this, &PipsControl::OnNextButtonClicked });
         }
-    }(GetTemplateChildT<winrt::Button>(c_previousPageButtonName, *this));
+    }(GetTemplateChildT<winrt::Button>(c_nextPageButtonName, *this));
 
     m_verticalPipsElementPreparedRevoker.revoke();
     [this](const winrt::ItemsRepeater repeater) {
@@ -66,7 +80,30 @@ void PipsControl::OnApplyTemplate()
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_PipsControlPipsRepeaterName, *this));
 
 
-    //m_verticalPipsScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_PipsControlScrollViewerName, *this));
+    m_verticalPipsScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_PipsControlScrollViewerName, *this));
+
+    m_panelPointerEnteredRevoker.revoke();
+    m_panelPointerExitedRevoker.revoke();
+    [this](const winrt::StackPanel panel) {
+        if (panel) {
+            m_panelPointerEnteredRevoker = panel.PointerEntered(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerEntered });
+            m_panelPointerExitedRevoker = panel.PointerExited(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerExited });
+        }
+    }(GetTemplateChildT<winrt::StackPanel>(L"PipControlPanel", *this));
+   
+   //this->PointerEntered({ this, &PipsControl::OnPipsControlPointerEntered });
+  //this->PointerExited({ this, &PipsControl::OnPipsControlPointerExited });
+
+    OnNumberOfPagesChanged(0);
+    OnSelectedPageIndexChange(-1);
+}
+
+void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
+    winrt::VisualStateManager::GoToState(*this, c_navigationButtonsVisibleVisualState, false);
+}
+
+void PipsControl::OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
+    winrt::VisualStateManager::GoToState(*this, c_navigationButtonsHiddenVisualState, false);
 }
 
 void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
@@ -97,7 +134,7 @@ void PipsControl::ScrollToCenterOfViewport(winrt::UIElement sender)
 
 void PipsControl::OnMaxDisplayedPagesChanged(const int oldValue) {
     m_lastMaxDisplayedPages = oldValue;
-    //UpdateTemplateSettingElementLists();
+    UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
 }
 
 void PipsControl::OnNumberOfPagesChanged(const int oldValue)
@@ -108,7 +145,7 @@ void PipsControl::OnNumberOfPagesChanged(const int oldValue)
     {
         SelectedPageIndex(numberOfPages - 1);
     }
-    //UpdateTemplateSettingElementLists();
+    UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
 }
 
 void PipsControl::OnSelectedPageIndexChange(const int oldValue)
@@ -127,9 +164,8 @@ void PipsControl::OnSelectedPageIndexChange(const int oldValue)
     // Now handle the value changes
     m_lastSelectedPageIndex = oldValue;
 
-    //UpdateTemplateSettingElementLists();
 
-
+    UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
       // Fire value property change for UIA
     /*if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsControlAutomationPeer>())
     {
@@ -213,20 +249,12 @@ void PipsControl::OnPreviousButtonClicked(const IInspectable& sender, const winr
 {
     // In this method, SelectedPageIndex is always greater than 1.
     SelectedPageIndex(SelectedPageIndex() - 1);
-    if (const auto command = PreviousButtonCommand())
-    {
-        command.Execute(nullptr);
-    }
 }
 
 void PipsControl::OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
 {
     // In this method, SelectedPageIndex is always less than maximum.
     SelectedPageIndex(SelectedPageIndex() + 1);
-    if (const auto command = NextButtonCommand())
-    {
-        command.Execute(nullptr);
-    }
 }
 
 
@@ -235,6 +263,18 @@ void PipsControl::OnNextButtonClicked(const IInspectable& sender, const winrt::R
 void PipsControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
-    
-    // TODO: Implement
+    if (this->Template() != nullptr)
+    {
+        if (property == NumberOfPagesProperty())
+        {
+            OnNumberOfPagesChanged(winrt::unbox_value<int>(args.OldValue()));
+        }
+        else if (property == SelectedPageIndexProperty())
+        {
+            OnSelectedPageIndexChange(winrt::unbox_value<int>(args.OldValue()));
+        }
+        else if (property == MaxDisplayedPagesProperty()) {
+            OnMaxDisplayedPagesChanged(winrt::unbox_value<int>(args.OldValue()));
+        }
+    }
 }

@@ -20,6 +20,8 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
+    void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     /* Property changed handlers */
     void OnNumberOfPagesChanged(const int oldValue);
@@ -56,6 +58,8 @@ private:
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_verticalPipsElementPreparedRevoker{};
+    winrt::StackPanel::PointerEntered_revoker m_panelPointerEnteredRevoker{};
+    winrt::StackPanel::PointerExited_revoker m_panelPointerExitedRevoker{};
 
     // Elements
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};

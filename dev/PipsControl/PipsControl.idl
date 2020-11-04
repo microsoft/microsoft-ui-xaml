@@ -30,9 +30,6 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("0")]
     Int32 NumberOfPages;
 
-    Windows.UI.Xaml.Input.ICommand PreviousButtonCommand;
-    Windows.UI.Xaml.Input.ICommand NextButtonCommand;
-
     [MUX_DEFAULT_VALUE("0")]
     Int32 SelectedPageIndex;
 
@@ -47,10 +44,6 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     PipsControlTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
-
-    static Windows.UI.Xaml.DependencyProperty PreviousButtonCommandProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty NextButtonCommandProperty{ get; };
- 
     static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaxDisplayedPagesProperty{ get; };
 
