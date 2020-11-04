@@ -6,13 +6,26 @@
 
     <Style TargetType="muxc:PipsControl">
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PipsControl">
-                    <StackPanel x:Name="PipControlPanel" HorizontalAlignment="Left"
+                    <Grid x:Name="PipControlPanel"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
                         Background="Transparent"
                         BorderBrush="Black"
                         BorderThickness="5">
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="NavigationButtonsVisibilityStates">
@@ -57,10 +70,13 @@
                             </Button.RenderTransform>
                         </Button>
 
-
                         <ScrollViewer x:Name="VerticalPipsScrollViewer"
-                                      VerticalScrollBarVisibility="Hidden" VerticalScrollMode="Disabled" HorizontalAlignment="Left">
+                                      Grid.Row="1"
+                                      VerticalScrollBarVisibility="Hidden"
+                                      VerticalScrollMode="Disabled"
+                                      HorizontalAlignment="Left">
                             <muxc:ItemsRepeater x:Name="VerticalPipsItemsRepeater"
+                                                HorizontalAlignment="Left"
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.VerticalPipsItems}">
                                 <muxc:ItemsRepeater.ItemTemplate>
                                     <DataTemplate>
@@ -70,11 +86,8 @@
                             </muxc:ItemsRepeater>
                         </ScrollViewer>
 
-
-
-
-
                         <Button x:Name="NextPageButton"
+                                Grid.Row="2"
                                 Style="{StaticResource PagerControlVerticalPipButtonStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 Content="&#xE76C;"
@@ -87,7 +100,7 @@
                             </Button.RenderTransform>
 
                         </Button>
-                    </StackPanel>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
