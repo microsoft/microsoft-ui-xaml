@@ -318,12 +318,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 {
                     dupeCount++;
                 }
+                else
+                {
+                    dupeCount = 0;
+                    lastItem = obj;
+                }
                 // Only break if an item was encountered more then 10 times.
                 if(dupeCount >= 10)
                 {
                     break;
                 }
-                lastItem = obj;
                 if (!string.IsNullOrWhiteSpace(obj.AutomationId) && !objectFromIdCache.ContainsKey(obj.AutomationId))
                 {
                     objectFromIdCache.Add(obj.AutomationId, obj);
