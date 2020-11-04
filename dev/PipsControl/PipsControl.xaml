@@ -5,18 +5,15 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
     <Style TargetType="muxc:PipsControl">
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PipsControl">
-                    <Grid x:Name="RootGrid"
-                        Background="{TemplateBinding Background}">
+                    <StackPanel x:Name="PipControlPanel" HorizontalAlignment="Left"
+                        Background="Transparent"
+                        BorderBrush="Black"
+                        BorderThickness="5">
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="NavigationButtonsVisibilityStates">
                                 <VisualState x:Name="NavigationButtonsHidden"/>
@@ -47,8 +44,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <StackPanel x:Name="PipControlPanel">
-                            <Button x:Name="PreviousPageButton"
+                        <Button x:Name="PreviousPageButton"
                                 Style="{StaticResource PagerControlVerticalPipButtonStyle}"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                                 Content="&#xE76B;"
@@ -62,9 +58,8 @@
                         </Button>
 
 
-                        <ScrollViewer x:Name="VerticalPipsScrollViewer" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
-                                      VerticalScrollBarVisibility="Hidden" VerticalScrollMode="Disabled">
-
+                        <ScrollViewer x:Name="VerticalPipsScrollViewer"
+                                      VerticalScrollBarVisibility="Hidden" VerticalScrollMode="Disabled" HorizontalAlignment="Left">
                             <muxc:ItemsRepeater x:Name="VerticalPipsItemsRepeater"
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.VerticalPipsItems}">
                                 <muxc:ItemsRepeater.ItemTemplate>
@@ -87,13 +82,12 @@
                                 Opacity="0"
                                 IsEnabled="False"
                              >
-                                <Button.RenderTransform>
-                                    <RotateTransform Angle="90"/>
-                                </Button.RenderTransform>
+                            <Button.RenderTransform>
+                                <RotateTransform Angle="90"/>
+                            </Button.RenderTransform>
 
-                           </Button>
-                        </StackPanel>
-                    </Grid>
+                        </Button>
+                    </StackPanel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
