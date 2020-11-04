@@ -107,6 +107,7 @@
                                         <Setter Target="PrimaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPointerOver}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPointerOver}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackground}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -116,6 +117,7 @@
                                         <Setter Target="PrimaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackground}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -125,6 +127,7 @@
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPointerOver}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPointerOver}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -134,6 +137,7 @@
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondaryPressed}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -144,6 +148,7 @@
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -154,6 +159,7 @@
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -164,6 +170,7 @@
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -175,6 +182,7 @@
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPointerOver}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -186,6 +194,7 @@
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -197,6 +206,7 @@
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPointerOver}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedPointerOver}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPointerOver}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -208,6 +218,7 @@
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
                                         <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
+                                        <Setter Target="DividerBackgroundGrid.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -226,7 +237,6 @@
 
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition x:Name="PrimaryButtonColumn" Width="*" MinWidth="{ThemeResource SplitButtonPrimaryButtonSize}"/>
-                            <ColumnDefinition x:Name="Separator" Width="1" />
                             <ColumnDefinition x:Name="SecondaryButtonColumn" Width="{ThemeResource SplitButtonSecondaryButtonSize}"/>
                         </Grid.ColumnDefinitions>
 
@@ -234,14 +244,16 @@
                             Background="{TemplateBinding Background}"/>
 
                         <Grid x:Name="DividerBackgroundGrid"
+                            Width="1"
+                            HorizontalAlignment="Right"
                             Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
 
                         <Grid x:Name="SecondaryBackgroundGrid"
                             Background="{TemplateBinding Background}"
-                            Grid.Column="2"/>
+                            Grid.Column="1"/>
 
                         <Grid x:Name="Border"
-                            Grid.ColumnSpan="3"
+                            Grid.ColumnSpan="2"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
@@ -269,7 +281,7 @@
                             AutomationProperties.AccessibilityView="Raw"/>
 
                         <Button x:Name="SecondaryButton"
-                            Grid.Column="2"
+                            Grid.Column="1"
                             Foreground="{ThemeResource SplitButtonForegroundPressed}"
                             Background="{TemplateBinding Background}"
                             BorderThickness="{TemplateBinding BorderThickness}"

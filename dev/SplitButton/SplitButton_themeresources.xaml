@@ -30,10 +30,12 @@
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="ControlStrokeColorOnAccentBottomBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="ControlStrokeColorOnAccentBottomBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushCheckedDivider" ResourceKey="ControlStrokeColorOnAccentBottomBrush" />
             <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
 
@@ -59,10 +61,12 @@
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="ControlStrokeColorOnAccentBottomBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="ControlStrokeColorOnAccentBottomBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushCheckedDivider" ResourceKey="ControlStrokeColorOnAccentBottomBrush" />
             <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
 
@@ -87,10 +91,12 @@
             <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushDivider" ResourceKey="SystemControlForegroundTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="SystemControlHighlightAltTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="SystemControlHighlightAltTransparentBrush" />
             <StaticResource x:Key="SplitButtonBorderBrushCheckedDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="SplitButtonBorderBrushCheckedDivider" ResourceKey="SystemControlHighlightAltTransparentBrush" />
             <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
