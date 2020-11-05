@@ -61,8 +61,8 @@ private:
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_verticalPipsElementPreparedRevoker{};
-    winrt::StackPanel::PointerEntered_revoker m_panelPointerEnteredRevoker{};
-    winrt::StackPanel::PointerExited_revoker m_panelPointerExitedRevoker{};
+    winrt::Grid::PointerEntered_revoker m_gridPointerEnteredRevoker{};
+    winrt::Grid::PointerExited_revoker m_gridPointerExitedRevoker{};
 
     // Elements
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
