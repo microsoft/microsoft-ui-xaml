@@ -37,15 +37,65 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- VerticalPips Resources -->
+    <SolidColorBrush x:Key="TempBrush" Color="Black"/>
     <x:Double x:Key="PagerControlVerticalPipButtonWidth">30</x:Double>
     <x:Double x:Key="PagerControlVerticalPipButtonHeight">30</x:Double>
 
     <x:String x:Key="PagerControlVerticalPipSelectedGlyph">&#xEA3B;</x:String>
     <x:String x:Key="PagerControlVerticalPipDefaultGlyph">&#xEA3A;</x:String>
+    <x:String x:Key="PipsControlPreviousPageButtonGlyph">&#xE76B;</x:String>
+    <x:String x:Key="PipsControlNextPageButtonGlyph">&#xE76C;</x:String>
 
     <x:String x:Key="PagerControlVerticalPipSelectedGlyphFontSize">12</x:String>
     <x:String x:Key="PagerControlVerticalPipDefaultGlyphFontSize">10</x:String>
 
+
+    <Style x:Key="IconButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                        <FontIcon
+                                x:Name="Icon"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                Glyph="{TemplateBinding Content}"
+                                MirroredWhenRightToLeft="True"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AutomationProperties.AccessibilityView="Raw" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationButtonStyle" BasedOn="{StaticResource IconButtonStyle}" TargetType="Button">
+        <Setter Property="Opacity" Value="0"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <RotateTransform Angle="90"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PreviousPageButtonStyle" BasedOn="{StaticResource NavigationButtonStyle}" TargetType="Button">
+        <Setter Property="Content" Value="{StaticResource PipsControlPreviousPageButtonGlyph}"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+    </Style>
+
+    <Style x:Key="NextPageButtonStyle" BasedOn="{StaticResource NavigationButtonStyle}" TargetType="Button">
+        <Setter Property="Content" Value="{StaticResource PipsControlNextPageButtonGlyph}"/>
+        <Setter Property="Margin" Value="0, 10"/>
+    </Style>
 
     <Style x:Key="PagerControlVerticalPipButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
@@ -68,10 +118,10 @@
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Icon" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

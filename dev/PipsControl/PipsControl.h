@@ -23,6 +23,8 @@ public:
     void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+       
+
     /* Property changed handlers */
     void OnNumberOfPagesChanged(const int oldValue);
     void OnSelectedPageIndexChange(const int oldValue);
@@ -32,7 +34,8 @@ public:
 private:
 
     /* UI updating */
-    //void UpdateTemplateSettingElementLists();
+    void UpdateNavigationButtonVisualStates();
+    void HideNavigationButtons();
 
     /* Eventing */
     void RaiseSelectedIndexChanged();
