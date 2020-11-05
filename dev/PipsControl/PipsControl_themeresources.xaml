@@ -1,68 +1,99 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="PipsControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="PipsControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="PipsControlSelectionIndicatorForeground" ResourceKey="SystemControlForegroundAccentBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="PipsControlPageNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- VerticalPips Resources -->
     <SolidColorBrush x:Key="TempBrush" Color="Black"/>
-    <x:Double x:Key="PagerControlVerticalPipButtonWidth">30</x:Double>
-    <x:Double x:Key="PagerControlVerticalPipButtonHeight">30</x:Double>
+    <x:Double x:Key="PipsControlVerticalPipButtonWidth">30</x:Double>
+    <x:Double x:Key="PipsControlVerticalPipButtonHeight">30</x:Double>
 
-    <x:String x:Key="PagerControlVerticalPipSelectedGlyph">&#xEA3B;</x:String>
-    <x:String x:Key="PagerControlVerticalPipDefaultGlyph">&#xEA3A;</x:String>
+    <x:String x:Key="PipsControlVerticalPipSelectedGlyph">&#xEA3B;</x:String>
+    <x:String x:Key="PipsControlVerticalPipDefaultGlyph">&#xEA3A;</x:String>
     <x:String x:Key="PipsControlPreviousPageButtonGlyph">&#xE76B;</x:String>
     <x:String x:Key="PipsControlNextPageButtonGlyph">&#xE76C;</x:String>
 
-    <x:String x:Key="PagerControlVerticalPipSelectedGlyphFontSize">12</x:String>
-    <x:String x:Key="PagerControlVerticalPipDefaultGlyphFontSize">10</x:String>
+    <x:String x:Key="PipsControlVerticalPipSelectedGlyphFontSize">12</x:String>
+    <x:String x:Key="PipsControlVerticalPipDefaultGlyphFontSize">10</x:String>
 
 
-    <Style x:Key="IconButtonStyle" TargetType="Button">
+    <Style x:Key="NavigatonButtonBaseStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Opacity" Value="0"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <RotateTransform Angle="90"/>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonForegroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonForegroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <FontIcon
-                                x:Name="Icon"
+                                x:Name="Content"
                                 FontSize="{TemplateBinding FontSize}"
                                 FontFamily="{TemplateBinding FontFamily}"
                                 Glyph="{TemplateBinding Content}"
@@ -77,37 +108,27 @@
         </Setter>
     </Style>
 
-    <Style x:Key="NavigationButtonStyle" BasedOn="{StaticResource IconButtonStyle}" TargetType="Button">
-        <Setter Property="Opacity" Value="0"/>
-        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
-        <Setter Property="RenderTransform">
-            <Setter.Value>
-                <RotateTransform Angle="90"/>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="PreviousPageButtonStyle" BasedOn="{StaticResource NavigationButtonStyle}" TargetType="Button">
+    <Style x:Key="PreviousPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
         <Setter Property="Content" Value="{StaticResource PipsControlPreviousPageButtonGlyph}"/>
         <Setter Property="Margin" Value="0,0,0,10"/>
     </Style>
 
-    <Style x:Key="NextPageButtonStyle" BasedOn="{StaticResource NavigationButtonStyle}" TargetType="Button">
+    <Style x:Key="NextPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
         <Setter Property="Content" Value="{StaticResource PipsControlNextPageButtonGlyph}"/>
         <Setter Property="Margin" Value="0, 10"/>
     </Style>
 
-    <Style x:Key="PagerControlVerticalPipButtonStyle" TargetType="Button">
+    <Style x:Key="PipsControlVerticalPipButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="Width" Value="{StaticResource PagerControlVerticalPipButtonWidth}"/>
-        <Setter Property="Height" Value="{StaticResource PagerControlVerticalPipButtonHeight}"/>
-        <Setter Property="Content" Value="{StaticResource PagerControlVerticalPipDefaultGlyph}"/>
-        <Setter Property="FontSize" Value="{StaticResource PagerControlVerticalPipDefaultGlyphFontSize}"/>
+        <Setter Property="Width" Value="{StaticResource PipsControlVerticalPipButtonWidth}"/>
+        <Setter Property="Height" Value="{StaticResource PipsControlVerticalPipButtonHeight}"/>
+        <Setter Property="Content" Value="{StaticResource PipsControlVerticalPipDefaultGlyph}"/>
+        <Setter Property="FontSize" Value="{StaticResource PipsControlVerticalPipDefaultGlyphFontSize}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button" >
@@ -118,20 +139,20 @@
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Icon" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonForegroundPointerOver}" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Icon" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonForegroundPointerOver}" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsControlPageNavigationButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -139,20 +160,20 @@
                             <VisualStateGroup x:Name="PipStates">
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
-                                        <Setter Target="Icon.Glyph" Value="{StaticResource PagerControlVerticalPipSelectedGlyph}"/>
-                                        <Setter Target="Icon.FontSize" Value="{StaticResource PagerControlVerticalPipSelectedGlyphFontSize}"/>
+                                        <Setter Target="Content.Glyph" Value="{StaticResource PipsControlVerticalPipSelectedGlyph}"/>
+                                        <Setter Target="Content.FontSize" Value="{StaticResource PipsControlVerticalPipSelectedGlyphFontSize}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Unselected">
                                     <VisualState.Setters>
-                                        <Setter Target="Icon.Glyph" Value="{StaticResource PagerControlVerticalPipDefaultGlyph}"/>
-                                        <Setter Target="Icon.FontSize" Value="{StaticResource PagerControlVerticalPipDefaultGlyphFontSize}"/>
+                                        <Setter Target="Content.Glyph" Value="{StaticResource PipsControlVerticalPipDefaultGlyph}"/>
+                                        <Setter Target="Content.FontSize" Value="{StaticResource PipsControlVerticalPipDefaultGlyphFontSize}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <FontIcon
-                                x:Name="Icon"
+                                x:Name="Content"
                                 FontSize="{TemplateBinding FontSize}"
                                 FontFamily="{TemplateBinding FontFamily}"
                                 Glyph="{TemplateBinding Content}"

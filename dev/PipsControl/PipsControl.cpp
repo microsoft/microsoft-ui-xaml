@@ -11,7 +11,6 @@
 #include "PipsControlSelectedIndexChangedEventArgs.h"
 
 
-
 constexpr auto c_previousPageButtonVisibleVisualState = L"PreviousPageButtonVisible"sv;
 constexpr auto c_previousPageButtonHiddenVisualState = L"PreviousPageButtonHidden"sv;
 
@@ -26,7 +25,7 @@ constexpr auto c_nextPageButtonDisabledVisualState = L"NextPageButtonDisabled"sv
 
 constexpr auto c_infiniteItemsModeState = L"InfiniteItems"sv;
 
-
+constexpr auto c_rootGridName = L"RootGrid"sv;
 
 constexpr auto c_previousPageButtonName = L"PreviousPageButton"sv;
 constexpr auto c_nextPageButtonName = L"NextPageButton"sv;
@@ -34,7 +33,7 @@ constexpr auto c_nextPageButtonName = L"NextPageButton"sv;
 constexpr auto c_PipsControlPipsRepeaterName = L"VerticalPipsItemsRepeater"sv;
 constexpr auto c_PipsControlScrollViewerName = L"VerticalPipsScrollViewer"sv;
 
-constexpr auto c_PipsControlButtonHeightPropertyName = L"PagerControlVerticalPipButtonHeight"sv;
+constexpr auto c_PipsControlButtonHeightPropertyName = L"PipsControlVerticalPipButtonHeight"sv;
 
 PipsControl::PipsControl()
 {
@@ -53,14 +52,15 @@ PipsControl::~PipsControl() {
     m_nextPageButtonClickRevoker.revoke();
     m_previousPageButtonClickRevoker.revoke();
     m_verticalPipsElementPreparedRevoker.revoke();
-    m_gridPointerEnteredRevoker.revoke();
-    m_gridPointerExitedRevoker.revoke();
+    m_rootGridPointerEnteredRevoker.revoke();
+    m_rootGridPointerExitedRevoker.revoke();
+    m_rootGridKeyDownRevoker.revoke();
 }
 
 void PipsControl::OnApplyTemplate()
 {
-
     m_previousPageButtonClickRevoker.revoke();
+
     [this](const winrt::Button button) {
         if (button) {
             m_previousPageButtonClickRevoker = button.Click(winrt::auto_revoke, { this, &PipsControl::OnPreviousButtonClicked });
@@ -85,26 +85,29 @@ void PipsControl::OnApplyTemplate()
 
     m_verticalPipsScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_PipsControlScrollViewerName, *this));
 
-    m_gridPointerEnteredRevoker.revoke();
-    m_gridPointerExitedRevoker.revoke();
+    m_rootGridPointerEnteredRevoker.revoke();
+    m_rootGridPointerExitedRevoker.revoke();
 
     [this](const winrt::Grid grid) {
         if (grid) {
-            m_gridPointerEnteredRevoker = grid.PointerEntered(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerEntered });
-            m_gridPointerExitedRevoker = grid.PointerExited(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerExited });
+            m_rootGridPointerEnteredRevoker = grid.PointerEntered(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerEntered });
+            m_rootGridPointerExitedRevoker = grid.PointerExited(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerExited });
+            m_rootGridKeyDownRevoker = grid.KeyDown(winrt::auto_revoke, { this, &PipsControl::OnRootGridKeyDown });
 
         }
-    }(GetTemplateChildT<winrt::Grid>(L"RootGrid", *this));
+    }(GetTemplateChildT<winrt::Grid>(c_rootGridName, *this));
 
     OnNumberOfPagesChanged(0);
     OnSelectedPageIndexChange(-1);
 }
 
 void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
+    m_isPointerOver = true;
     UpdateNavigationButtonVisualStates();
 }
 
 void PipsControl::OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
+    m_isPointerOver = false;
     HideNavigationButtons();
 }
 
@@ -113,27 +116,27 @@ void PipsControl::HideNavigationButtons() {
     winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
 }
 void PipsControl::UpdateNavigationButtonVisualStates() {
+    if (m_isPointerOver) {
+        const int selectedPageIndex = SelectedPageIndex();
+        const int numberOfPages = NumberOfPages();
+        const int maxDisplayedPages = MaxDisplayedPages();
 
-    
-    const int selectedPageIndex = SelectedPageIndex();
-    const int numberOfPages = NumberOfPages();
+        if (!numberOfPages == 0 && maxDisplayedPages > 0) {
+            if (selectedPageIndex != numberOfPages - 1) {
+                winrt::VisualStateManager::GoToState(*this, c_nextPageButtonVisibleVisualState, false);
+            }
+            else {
+                winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
+            }
 
-    if (!numberOfPages == 0) {
-        if (selectedPageIndex != numberOfPages - 1) {
-            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonVisibleVisualState, false);
-        }
-        else {
-            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
-        }
-
-        if (selectedPageIndex != 0) {
-            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonVisibleVisualState, false);
-        }
-        else {
-            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonHiddenVisualState, false);
+            if (selectedPageIndex != 0) {
+                winrt::VisualStateManager::GoToState(*this, c_previousPageButtonVisibleVisualState, false);
+            }
+            else {
+                winrt::VisualStateManager::GoToState(*this, c_previousPageButtonHiddenVisualState, false);
+            }
         }
     }
-
 }
 
 void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
@@ -171,7 +174,7 @@ void PipsControl::OnNumberOfPagesChanged(const int oldValue)
 {
     m_lastNumberOfPagesCount = oldValue;
     const int numberOfPages = NumberOfPages();
-    if (SelectedPageIndex() + 1 >= numberOfPages && numberOfPages > -1)
+    if (SelectedPageIndex() >= numberOfPages && numberOfPages > -1)
     {
         SelectedPageIndex(numberOfPages - 1);
     }
@@ -200,12 +203,8 @@ void PipsControl::OnSelectedPageIndexChange(const int oldValue)
     {
         winrt::get_self<PipsControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
     }*/
-    if (oldValue > -1) {
+    UpdateNavigationButtonVisualStates();
 
-        // TODO: this will be called when the number of pages called in certain cases
-        // -> it will update buttons visibility regardless of cursor being over them or not
-        UpdateNavigationButtonVisualStates();
-    }
     RaiseSelectedIndexChanged();
 }
 
@@ -214,7 +213,6 @@ void PipsControl::RaiseSelectedIndexChanged()
     const auto args = winrt::make_self<PipsControlSelectedIndexChangedEventArgs>(m_lastSelectedPageIndex, SelectedPageIndex());
     m_selectedIndexChangedEventSource(*this, *args);
 }
-
 
 void PipsControl::MovePipIdentifierToElement(int index) {
 
@@ -263,11 +261,10 @@ void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDispl
     if (maxDisplayedPages != m_lastMaxDisplayedPages) {
         setVerticalPipsSVMaxSize();
     }
-    if (numberOfPages > 0) {
+    if (numberOfPages != 0) {
         MovePipIdentifierToElement(SelectedPageIndex());
     }
 }
-
 
 void PipsControl::OnRootGridKeyDown(const winrt::IInspectable & sender, const winrt::KeyRoutedEventArgs & args) {
 
@@ -294,9 +291,6 @@ void PipsControl::OnNextButtonClicked(const IInspectable& sender, const winrt::R
     SelectedPageIndex(SelectedPageIndex() + 1);
 }
 
-
-
-
 void PipsControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -313,11 +307,5 @@ void PipsControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         else if (property == MaxDisplayedPagesProperty()) {
             OnMaxDisplayedPagesChanged(winrt::unbox_value<int>(args.OldValue()));
         }
-
-        // TODO: decide if want to update navigation buttons visual states
-        // after num of pages or max display pages change (we'll need to check if pointer is "inside" the control")
-
-        // It will be updated once cursor falls in again, but if the cursor stays inside during the change
-        // the button visuals won't be updated
     }
 }

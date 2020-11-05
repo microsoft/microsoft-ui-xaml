@@ -76,7 +76,7 @@
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.VerticalPipsItems}">
                                 <muxc:ItemsRepeater.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Style="{StaticResource PagerControlVerticalPipButtonStyle}" Tag="{Binding}"/>
+                                        <Button Style="{StaticResource PipsControlVerticalPipButtonStyle}" Tag="{Binding}"/>
                                     </DataTemplate>
                                 </muxc:ItemsRepeater.ItemTemplate>
                             </muxc:ItemsRepeater>

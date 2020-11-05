@@ -58,11 +58,13 @@ private:
     tracker_ref<winrt::FxScrollViewer> m_verticalPipsScrollViewer{ this };
 
     // Revokers
+ 
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_verticalPipsElementPreparedRevoker{};
-    winrt::Grid::PointerEntered_revoker m_gridPointerEnteredRevoker{};
-    winrt::Grid::PointerExited_revoker m_gridPointerExitedRevoker{};
+    winrt::Grid::KeyDown_revoker m_rootGridKeyDownRevoker{};
+    winrt::Grid::PointerEntered_revoker m_rootGridPointerEnteredRevoker{};
+    winrt::Grid::PointerExited_revoker m_rootGridPointerExitedRevoker{};
 
     // Elements
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
@@ -70,4 +72,5 @@ private:
     int m_lastSelectedPageIndex = -1;
     int m_lastNumberOfPagesCount = 0;
     int m_lastMaxDisplayedPages = 0;
+    bool m_isPointerOver = false;
 };
