@@ -99,6 +99,7 @@ void PipsControl::OnApplyTemplate()
 
     OnNumberOfPagesChanged(0);
     OnSelectedPageIndexChange(-1);
+    OnMaxDisplayedPagesChanged(0);
 }
 
 void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
@@ -167,18 +168,21 @@ void PipsControl::ScrollToCenterOfViewport(winrt::UIElement sender)
 
 void PipsControl::OnMaxDisplayedPagesChanged(const int oldValue) {
     m_lastMaxDisplayedPages = oldValue;
-    UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
+    auto numberOfPages = NumberOfPages();
+    if (m_lastMaxDisplayedPages != numberOfPages) {
+        UpdateVerticalPips(numberOfPages, MaxDisplayedPages());
+    }
 }
 
 void PipsControl::OnNumberOfPagesChanged(const int oldValue)
 {
     m_lastNumberOfPagesCount = oldValue;
     const int numberOfPages = NumberOfPages();
-    if (SelectedPageIndex() >= numberOfPages && numberOfPages > -1)
-    {
+    if (SelectedPageIndex() > numberOfPages - 1 && numberOfPages > -1) {
         SelectedPageIndex(numberOfPages - 1);
     }
-    UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
+    UpdateVerticalPips(numberOfPages, MaxDisplayedPages());
+    UpdateNavigationButtonVisualStates();
 }
 
 void PipsControl::OnSelectedPageIndexChange(const int oldValue)
@@ -197,14 +201,14 @@ void PipsControl::OnSelectedPageIndexChange(const int oldValue)
     // Now handle the value changes
     m_lastSelectedPageIndex = oldValue;
 
-    UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
+    //UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
       // Fire value property change for UIA
     /*if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsControlAutomationPeer>())
     {
         winrt::get_self<PipsControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
     }*/
     UpdateNavigationButtonVisualStates();
-
+    UpdateVerticalPips(NumberOfPages(), SelectedPageIndex());
     RaiseSelectedIndexChanged();
 }
 
@@ -216,15 +220,17 @@ void PipsControl::RaiseSelectedIndexChanged()
 
 void PipsControl::MovePipIdentifierToElement(int index) {
 
-    if (const auto repeater = m_verticalPipsRepeater.get())
-    {
-        if (const auto element = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::Button>()) {
-            winrt::VisualStateManager::GoToState(element, L"Unselected", true);
-        }
-        if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>()) {
-            element.UpdateLayout();
-            winrt::VisualStateManager::GoToState(element, L"Selected", true);
-            ScrollToCenterOfViewport(element);
+    if (NumberOfPages() != 0) {
+        if (const auto repeater = m_verticalPipsRepeater.get())
+        {
+            if (const auto element = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::Button>()) {
+                winrt::VisualStateManager::GoToState(element, L"Unselected", true);
+            }
+            if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>()) {
+                element.UpdateLayout();
+                winrt::VisualStateManager::GoToState(element, L"Selected", true);
+                ScrollToCenterOfViewport(element);
+            }
         }
     }
 }
@@ -235,6 +241,7 @@ void PipsControl::setVerticalPipsSVMaxSize() {
     auto scrollViewerHeight = pipHeight * numberOfPages;
     m_verticalPipsScrollViewer.get().MaxHeight(scrollViewerHeight);
 }
+
 
 
 void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages) {
@@ -261,9 +268,8 @@ void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDispl
     if (maxDisplayedPages != m_lastMaxDisplayedPages) {
         setVerticalPipsSVMaxSize();
     }
-    if (numberOfPages != 0) {
-        MovePipIdentifierToElement(SelectedPageIndex());
-    }
+    MovePipIdentifierToElement(SelectedPageIndex());
+
 }
 
 void PipsControl::OnRootGridKeyDown(const winrt::IInspectable & sender, const winrt::KeyRoutedEventArgs & args) {
