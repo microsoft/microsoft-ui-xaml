@@ -212,7 +212,6 @@
             </LinearGradientBrush>
             
             <!-- Other -->
-            
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
@@ -439,7 +438,7 @@
         
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="SystemColorWindowTextColorBrush" />
-            
+            <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemColorHighlightColor}" />
