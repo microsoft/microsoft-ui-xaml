@@ -311,9 +311,7 @@ void ProgressRing::UpdateLottieProgress()
         }
         else
         {
-            player.PlaybackRate(-1);
-            const auto _ = player.PlayAsync(fromProgress, toProgress, false);
-            player.PlaybackRate(1);
+            player.SetProgress(toProgress);
         }
 
         m_oldValue = value;
