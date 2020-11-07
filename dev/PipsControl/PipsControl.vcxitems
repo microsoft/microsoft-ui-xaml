@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)PipsControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PipsControlAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PipsControlSelectedIndexChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PipsControlTemplateSettings.h" />
   </ItemGroup>
@@ -23,6 +24,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PipsControl.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PipsControlTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PipsControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PipsControlAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PipsControlTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -37,5 +39,9 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)PipsControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PipsControlAutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
   </ItemGroup>
 </Project>

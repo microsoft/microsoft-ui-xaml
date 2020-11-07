@@ -42,6 +42,7 @@
 
     <x:String x:Key="PipsControlVerticalPipSelectedGlyph">&#xEA3B;</x:String>
     <x:String x:Key="PipsControlVerticalPipDefaultGlyph">&#xEA3A;</x:String>
+    
     <x:String x:Key="PipsControlPreviousPageButtonGlyph">&#xE76B;</x:String>
     <x:String x:Key="PipsControlNextPageButtonGlyph">&#xE76C;</x:String>
 

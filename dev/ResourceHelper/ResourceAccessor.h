@@ -118,6 +118,8 @@ public:
 #define SR_PagerControlPreviousPageButtonTextName L"PagerControlPreviousPageButtonText"
 #define SR_PagerControlNextPageButtonTextName L"PagerControlNextPageButtonText"
 #define SR_PagerControlLastPageButtonTextName L"PagerControlLastPageButtonText"
+#define SR_PipsControlNextPageButtonTextName L"PipsControlNextPageButtonText"
+#define SR_PipsControlPreviousPageButtonTextName L"PipsControlPreviousPageButtonText"
 #define SR_PlaceAfterString L"PlaceAfterString"
 #define SR_PlaceBeforeString L"PlaceBeforeString"
 #define SR_PlaceBetweenString L"PlaceBetweenString"

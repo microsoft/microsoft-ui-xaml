@@ -23,6 +23,7 @@ public:
     void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    winrt::AutomationPeer OnCreateAutomationPeer();
        
 
     /* Property changed handlers */

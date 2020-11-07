@@ -9,6 +9,7 @@
 #include "ResourceAccessor.h"
 #include "PipsControlTemplateSettings.h"
 #include "PipsControlSelectedIndexChangedEventArgs.h"
+#include "PipsControlAutomationPeer.h"
 
 
 constexpr auto c_previousPageButtonVisibleVisualState = L"PreviousPageButtonVisible"sv;
@@ -63,6 +64,7 @@ void PipsControl::OnApplyTemplate()
 
     [this](const winrt::Button button) {
         if (button) {
+            winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlPreviousPageButtonTextName));
             m_previousPageButtonClickRevoker = button.Click(winrt::auto_revoke, { this, &PipsControl::OnPreviousButtonClicked });
         }
     }(GetTemplateChildT<winrt::Button>(c_previousPageButtonName, *this));
@@ -70,6 +72,7 @@ void PipsControl::OnApplyTemplate()
     m_nextPageButtonClickRevoker.revoke();
     [this](const winrt::Button button) {
         if (button) {
+            winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlNextPageButtonTextName));
             m_nextPageButtonClickRevoker = button.Click(winrt::auto_revoke, { this, &PipsControl::OnNextButtonClicked });
         }
     }(GetTemplateChildT<winrt::Button>(c_nextPageButtonName, *this));
@@ -168,7 +171,7 @@ void PipsControl::ScrollToCenterOfViewport(winrt::UIElement sender)
 
 void PipsControl::OnMaxDisplayedPagesChanged(const int oldValue) {
     m_lastMaxDisplayedPages = oldValue;
-    auto numberOfPages = NumberOfPages();
+    auto const numberOfPages = NumberOfPages();
     if (m_lastMaxDisplayedPages != numberOfPages) {
         UpdateVerticalPips(numberOfPages, MaxDisplayedPages());
     }
@@ -201,12 +204,11 @@ void PipsControl::OnSelectedPageIndexChange(const int oldValue)
     // Now handle the value changes
     m_lastSelectedPageIndex = oldValue;
 
-    //UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
-      // Fire value property change for UIA
-    /*if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsControlAutomationPeer>())
+    // Fire value property change for UIA
+    if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsControlAutomationPeer>())
     {
         winrt::get_self<PipsControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
-    }*/
+    }
     UpdateNavigationButtonVisualStates();
     UpdateVerticalPips(NumberOfPages(), SelectedPageIndex());
     RaiseSelectedIndexChanged();
@@ -314,4 +316,9 @@ void PipsControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
             OnMaxDisplayedPagesChanged(winrt::unbox_value<int>(args.OldValue()));
         }
     }
+}
+
+winrt::AutomationPeer PipsControl::OnCreateAutomationPeer()
+{
+    return winrt::make<PipsControlAutomationPeer>(*this);
 }
