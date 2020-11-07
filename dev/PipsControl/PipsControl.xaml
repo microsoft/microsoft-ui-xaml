@@ -19,15 +19,15 @@
                             BorderThickness="{TemplateBinding BorderThickness}">
 
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
+                    
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PreviousPageButtonVisibilityStates">
                                 <VisualState x:Name="PreviousPageButtonHidden"/>

@@ -58,6 +58,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Opacity" Value="0"/>
+        <Setter Property="IsEnabled" Value="False"/>
         <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
         <Setter Property="RenderTransform">
             <Setter.Value>

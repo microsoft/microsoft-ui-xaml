@@ -120,25 +120,32 @@ void PipsControl::HideNavigationButtons() {
     winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
 }
 void PipsControl::UpdateNavigationButtonVisualStates() {
-    if (m_isPointerOver) {
-        const int selectedPageIndex = SelectedPageIndex();
-        const int numberOfPages = NumberOfPages();
-        const int maxDisplayedPages = MaxDisplayedPages();
 
-        if (!numberOfPages == 0 && maxDisplayedPages > 0) {
-            if (selectedPageIndex != numberOfPages - 1) {
-                winrt::VisualStateManager::GoToState(*this, c_nextPageButtonVisibleVisualState, false);
-            }
-            else {
-                winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
-            }
+    const int selectedPageIndex = SelectedPageIndex();
+    const int numberOfPages = NumberOfPages();
+    const int maxDisplayedPages = MaxDisplayedPages();
 
-            if (selectedPageIndex != 0) {
+    if (!numberOfPages == 0 && maxDisplayedPages > 0) {
+        if (selectedPageIndex != 0) {
+            if (m_isPointerOver) {
                 winrt::VisualStateManager::GoToState(*this, c_previousPageButtonVisibleVisualState, false);
             }
-            else {
-                winrt::VisualStateManager::GoToState(*this, c_previousPageButtonHiddenVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonEnabledVisualState, false);
+        }
+        else {
+            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonHiddenVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_previousPageButtonDisabledVisualState, false);
+        }
+
+        if (selectedPageIndex != numberOfPages - 1) {
+            if (m_isPointerOver) {
+                winrt::VisualStateManager::GoToState(*this, c_nextPageButtonVisibleVisualState, false);
             }
+            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonEnabledVisualState, false);
+        }
+        else {
+            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
+            winrt::VisualStateManager::GoToState(*this, c_nextPageButtonDisabledVisualState, false);
         }
     }
 }
