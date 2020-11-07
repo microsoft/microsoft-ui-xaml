@@ -122,7 +122,7 @@
     <comment>Automation name and tooltip text for the next page button</comment>
   </data>
   <data name="PipsControlPreviousPageButtonText" xml:space="preserve">
-    <value>Last Page</value>
+    <value>PreviousPage</value>
     <comment>Automation name and tooltip text for the previous page button</comment>
   </data>
 </root>
