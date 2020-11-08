@@ -138,9 +138,9 @@
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
     <Import Project="..\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
-    <Import Project="..\Expander\Expander.vcxitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true' Or $(FeatureExpanderEnabled) == 'productOnly'"/>
-    <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared"  Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'"/>
-    <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'"/>
+    <Import Project="..\Expander\Expander.vcxitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true' Or $(FeatureExpanderEnabled) == 'productOnly'" />
+    <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'" />
+    <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -246,10 +246,13 @@
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
       <ConformanceMode>true</ConformanceMode>
       <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
       <MultiProcessorCompilation Condition="'$(TF_BUILD)'=='True' AND $(NUMBER_OF_PROCESSORS) &lt;= 4">false</MultiProcessorCompilation>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Neither</FavorSizeOrSpeed>
+      <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</OmitFramePointers>
+      <EnableFiberSafeOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</EnableFiberSafeOptimizations>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -429,7 +432,7 @@
       <PRIResource Remove="@(PRIResource)" />
     </ItemGroup>
     <!-- Use CreateItem to expand all the ** to individual full paths -->
-    <CreateItem Include="@(PRIResourceExpanded -&gt; '%(Replaced)')">
+    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
       <Output TaskParameter="Include" ItemName="PRIResource" />
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />
@@ -463,7 +466,7 @@
     <ItemGroup>
       <UndefinedPage Include="@(SharedPage)" Condition="'%(Version)' == 'Undefined' Or '%(Type)' == 'Undefined'" />
     </ItemGroup>
-    <Error File="@(UndefinedPage -&gt; '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
+    <Error File="@(UndefinedPage -> '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
     <ItemGroup>
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '1'" />
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '2'" />
@@ -548,7 +551,7 @@
     <!-- The Name of the Local Assembly in Managed and Native -->
     <PropertyGroup>
       <LocalAssembly Condition="'$(LocalAssembly)' == '' and Exists(@(XamlIntermediateAssembly))">
-        @(XamlIntermediateAssembly-&gt;'%(Identity)')
+        @(XamlIntermediateAssembly->'%(Identity)')
       </LocalAssembly>
     </PropertyGroup>
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
@@ -615,7 +618,7 @@
   <!-- Merge all idl files into one -->
   <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
     <PropertyGroup>
-      <MidlLines>@(Midl-&gt;'#include &lt;%(FullPath)&gt;', '
+      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
 ')</MidlLines>
     </PropertyGroup>
     <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
@@ -636,8 +639,8 @@
   <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(IntDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories-&gt;'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
-      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs-&gt;'-i "%(Identity)"', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs->'-i "%(Identity)"', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
     </PropertyGroup>
     <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
   </Target>
