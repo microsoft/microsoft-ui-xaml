@@ -305,8 +305,15 @@ void ProgressRing::UpdateLottieProgress()
         const double range = Maximum() - min;
         const double fromProgress = (m_oldValue - min) / range;
         const double toProgress = (value - min) / range;
+        if (fromProgress < toProgress)
+        {
+            const auto _ = player.PlayAsync(fromProgress, toProgress, false);
+        }
+        else
+        {
+            player.SetProgress(toProgress);
+        }
 
-        const auto _ = player.PlayAsync(fromProgress, toProgress, false);
         m_oldValue = value;
     }
 }
