@@ -110,7 +110,7 @@ We know that for many of our developers, the choice to adopt WinUI 3 is dependen
 For questions or status updates on either features listed here, or features not on this list, you can file an issue on [our repo](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=question&template=question.md&title=Question%3A+%5Byour+question+here%5D) or ask during our [monthly community calls](communitycalls/WinUICommunityCall.ics). 
 
 ### Legend
-&#128994; - &#128994;, or planned to be included
+&#128994; - Included, or planned to be included
 
 &#128311; - Partial capability 
 
@@ -131,12 +131,12 @@ Blank -  Not included, or not planned to be included
 | Title Bar customization for Desktop apps                                    | &#128311;                  | &#128311;                 | &#128994; | &#128994; |
 | Fluent Shadows                                                              | &#128311;                  | &#128311;                 | &#128311;             | &#128994; |
 | Input validation for data fields                                            | &#128311;                  | &#128311;                 | &#129002;     | &#128994; |
-| Multi-window support for Desktop apps                                       | &#128311;                  | &#128994;             | &#128994; | &#128994; |
+| Multi-window support for Desktop apps                                       | &#128311;                  | &#128311;              | &#128994; | &#128994; |
 | ARM64 support                                                               |            | &#128994;             | &#128994; | &#128994; |
 | Drag and drop                                                               |            | &#128994;             | &#128994; | &#128994; |
+| Off-thread input for SwapChainPanels                                        |            |      &#128994;     | &#128994;     | &#128994;|
 | [RenderTargetBitmap](https://docs.microsoft.com/uwp/api/windows.ui.xaml.media.imaging.rendertargetbitmap?view=winrt-19041)                                                          |            |    &#128311;       | &#128311;   | &#128994; |
 | Ready for production apps                                                   |            |           | &#128994; | &#128994; |
-| Off-thread input for SwapChainPanels                                        |            |           | &#129002;     | &#128994; |
 | Supports non-MSIX deployment                                                |            |           |       | &#128994; |
 | .NET 5 Support for UWP apps                                                 |            |           |       | &#128994; |
 | XAML Islands                                                                |            |           |       | &#128994; |
@@ -149,4 +149,5 @@ Blank -  Not included, or not planned to be included
 | Media Controls                                                              |            |           |       | &#128994; |
 | `<InkCanvas>`                                                                 |            |           |       | &#128994; |
 | `<Map Control>`                                                                |            |           |       | &#129002;     |
+
 \* For Preview 2: Single  content tree-only.  Supports C# or C++.  Includes VSIX-based project templates, XAML Win32 app model support, etc.  This will no longer be a restriction in Preview 3.
