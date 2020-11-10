@@ -100,7 +100,7 @@ WinUI 3 will release as a series of preview releases throughout 2020, culminatin
 
 See the image below for a more detailed look at our plans for getting WinUI 3.0 to market:
 
-![Winui roadmap](images/WinUI-Roadmap-Sept2020.jpg)
+![Winui roadmap](images/winui-roadmap.jpg)
 
 ## WinUI 3.0 Feature Roadmap
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
@@ -118,7 +118,7 @@ For questions or status updates on either features listed here, or features not 
 
 Blank -  Not included, or not planned to be included
 
-**Preview 2** is our latest release. 
+**Preview 3** is our latest release. 
 
 | Customer Capability                                                         | Preview 2 (July 2020) | Preview 3 (Nov 2020) | WinUI 3.0 (2021) | Post-3.0 (3.x releases)        |
 |-----------------------------------------------------------------------------|-----------------------|----------------------|------------------|------------------|
@@ -135,7 +135,7 @@ Blank -  Not included, or not planned to be included
 | ARM64 support                                                               |            | &#128994;             | &#128994; | &#128994; |
 | Drag and drop                                                               |            | &#128994;             | &#128994; | &#128994; |
 | Off-thread input for SwapChainPanels                                        |            |      &#128994;     | &#128994;     | &#128994;|
-| [RenderTargetBitmap](https://docs.microsoft.com/uwp/api/windows.ui.xaml.media.imaging.rendertargetbitmap?view=winrt-19041)                                                          |            |    &#128311;       | &#128311;   | &#128994; |
+| RenderTargetBitmap                                                          |            |    &#128311;       | &#128311;   | &#128994; |
 | Ready for production apps                                                   |            |           | &#128994; | &#128994; |
 | Supports non-MSIX deployment                                                |            |           |       | &#128994; |
 | .NET 5 Support for UWP apps                                                 |            |           |       | &#128994; |
@@ -150,4 +150,4 @@ Blank -  Not included, or not planned to be included
 | `<InkCanvas>`                                                                 |            |           |       | &#128994; |
 | `<Map Control>`                                                                |            |           |       | &#129002;     |
 
-\* For Preview 2: Single  content tree-only.  Supports C# or C++.  Includes VSIX-based project templates, XAML Win32 app model support, etc.  This will no longer be a restriction in Preview 3.
+
