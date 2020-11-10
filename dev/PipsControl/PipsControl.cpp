@@ -60,6 +60,7 @@ PipsControl::~PipsControl() {
 
 void PipsControl::OnApplyTemplate()
 {
+    const winrt::IControlProtected controlProtected = *this;
     m_previousPageButtonClickRevoker.revoke();
 
     [this](const winrt::Button button) {
@@ -98,7 +99,7 @@ void PipsControl::OnApplyTemplate()
             m_rootGridKeyDownRevoker = grid.KeyDown(winrt::auto_revoke, { this, &PipsControl::OnRootGridKeyDown });
 
         }
-    }(GetTemplateChildT<winrt::Grid>(c_rootGridName, *this));
+    }(GetTemplateChildT<winrt::Grid>(c_rootGridName, controlProtected));
 
     OnNumberOfPagesChanged(0);
     OnSelectedPageIndexChange(-1);
@@ -109,10 +110,18 @@ void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt:
     m_isPointerOver = true;
     UpdateNavigationButtonVisualStates();
 }
-
 void PipsControl::OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
-    m_isPointerOver = false;
-    HideNavigationButtons();
+    // TODO : Explain WHAT'S UP and mention quarks
+    if (!isWithinBounds(args.GetCurrentPoint(*this).Position())) {
+        m_isPointerOver = false;
+        HideNavigationButtons();
+        args.Handled(true);
+    }
+
+}
+
+bool PipsControl::isWithinBounds(winrt::Point point) {
+    return point.X >= 0 && point.X <= ActualWidth() && point.Y >= 0 && point.Y <= ActualHeight();
 }
 
 void PipsControl::HideNavigationButtons() {
@@ -208,17 +217,19 @@ void PipsControl::OnSelectedPageIndexChange(const int oldValue)
     {
         SelectedPageIndex(0);
     }
-    // Now handle the value changes
-    m_lastSelectedPageIndex = oldValue;
+    else {
+        // Now handle the value changes
+        m_lastSelectedPageIndex = oldValue;
 
-    // Fire value property change for UIA
-    if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsControlAutomationPeer>())
-    {
-        winrt::get_self<PipsControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
+        // Fire value property change for UIA
+        if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsControlAutomationPeer>())
+        {
+            winrt::get_self<PipsControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
+        }
+        UpdateNavigationButtonVisualStates();
+        UpdateVerticalPips(NumberOfPages(), SelectedPageIndex());
+        RaiseSelectedIndexChanged();
     }
-    UpdateNavigationButtonVisualStates();
-    UpdateVerticalPips(NumberOfPages(), SelectedPageIndex());
-    RaiseSelectedIndexChanged();
 }
 
 void PipsControl::RaiseSelectedIndexChanged()
@@ -255,25 +266,19 @@ void PipsControl::setVerticalPipsSVMaxSize() {
 
 void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages) {
 
-    auto const pipsListSize = static_cast<int>(m_verticalPipsElements.Size());
+    auto pipsListSize = static_cast<int>(m_verticalPipsElements.Size());
+    auto const selectedIndex = SelectedPageIndex();
 
-    if (numberOfPages != pipsListSize) {
-        // TODO: find a way to clean the pipsElements when switched to infinite mode from a numberOfPages >= 0
-        // TODO: finalize the infinite behavior: do we start with 1 pin or MaxDisplayedPages
-        if (numberOfPages < 0) {
-            auto const startIndex = pipsListSize;
-            auto const endIndex = pipsListSize < maxDisplayedPages ? maxDisplayedPages : pipsListSize + 1;
-            for (int i = startIndex; i < endIndex; i++) {
-                m_verticalPipsElements.Append(box_value(i + 1));
-            }
-        }
-        else {
-            m_verticalPipsElements.Clear();
-            for (int i = 0; i < numberOfPages; i++) {
-                m_verticalPipsElements.Append(box_value(i + 1));
-            }
-        }
+    if (numberOfPages < pipsListSize) {
+        m_verticalPipsElements.Clear();
+        pipsListSize = 0;
     }
+
+    auto const endIndex = std::min(numberOfPages, selectedIndex + maxDisplayedPages);
+    for (int i = pipsListSize; i < endIndex; i++) {
+        m_verticalPipsElements.Append(box_value(i + 1));
+    }
+ 
     if (maxDisplayedPages != m_lastMaxDisplayedPages) {
         setVerticalPipsSVMaxSize();
     }
@@ -282,14 +287,13 @@ void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDispl
 }
 
 void PipsControl::OnRootGridKeyDown(const winrt::IInspectable & sender, const winrt::KeyRoutedEventArgs & args) {
-
-    if (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::GamepadDPadLeft)
+    if (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Up)
     {
-        winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left);
+        winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Up);
     }
-    else if (args.Key() == winrt::VirtualKey::Right || args.Key() == winrt::VirtualKey::GamepadDPadRight)
+    else if (args.Key() == winrt::VirtualKey::Right || args.Key() == winrt::VirtualKey::Down)
     {
-        winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right);
+        winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Down);
     }
 }
 

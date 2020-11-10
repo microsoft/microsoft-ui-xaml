@@ -37,6 +37,9 @@ private:
     /* UI updating */
     void UpdateNavigationButtonVisualStates();
     void HideNavigationButtons();
+    bool isWithinBounds(winrt::Point point);
+
+
 
     /* Eventing */
     void RaiseSelectedIndexChanged();

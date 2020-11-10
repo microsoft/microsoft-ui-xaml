@@ -43,8 +43,8 @@
     <x:String x:Key="PipsControlVerticalPipSelectedGlyph">&#xEA3B;</x:String>
     <x:String x:Key="PipsControlVerticalPipDefaultGlyph">&#xEA3A;</x:String>
     
-    <x:String x:Key="PipsControlPreviousPageButtonGlyph">&#xE76B;</x:String>
-    <x:String x:Key="PipsControlNextPageButtonGlyph">&#xE76C;</x:String>
+    <x:String x:Key="PipsControlPreviousPageButtonGlyph">&#xE70E;</x:String>
+    <x:String x:Key="PipsControlNextPageButtonGlyph">&#xE70D;</x:String>
 
     <x:String x:Key="PipsControlVerticalPipSelectedGlyphFontSize">12</x:String>
     <x:String x:Key="PipsControlVerticalPipDefaultGlyphFontSize">10</x:String>
@@ -59,12 +59,6 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Opacity" Value="0"/>
         <Setter Property="IsEnabled" Value="False"/>
-        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
-        <Setter Property="RenderTransform">
-            <Setter.Value>
-                <RotateTransform Angle="90"/>
-            </Setter.Value>
-        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
