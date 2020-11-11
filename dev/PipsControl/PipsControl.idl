@@ -3,6 +3,15 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+enum IndicatorPagerButtonVisibility
+{
+    Visible, // arrows ALWAYS visible 
+    VisibleOnHover,
+    Collapsed
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 runtimeclass PipsControlSelectedIndexChangedEventArgs
 {
     Int32 NewPageIndex{get; };
@@ -15,9 +24,8 @@ runtimeclass PipsControlSelectedIndexChangedEventArgs
 unsealed runtimeclass PipsControlTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
     PipsControlTemplateSettings();
-
     Windows.Foundation.Collections.IVector<Object> VerticalPipsItems { get; };
-}
+};
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -36,9 +44,21 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("5")]
     Int32 MaxDisplayedPages;
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
+    Windows.UI.Xaml.Controls.Orientation Orientation;
+
+    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::Collapsed")]
+    IndicatorPagerButtonVisibility PreviousButtonVisibility;
+    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::Collapsed")]
+    IndicatorPagerButtonVisibility NextButtonVisibility;
+
+    Windows.UI.Xaml.Style PreviousButtonStyle;
+    Windows.UI.Xaml.Style NextButtonStyle;
+
+    Windows.UI.Xaml.Style SelectedIndicatorStyle;
+    Windows.UI.Xaml.Style DefaultIndicatorStyle;
 
     event Windows.Foundation.TypedEventHandler<PipsControl, PipsControlSelectedIndexChangedEventArgs> SelectedIndexChanged;
-
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     PipsControlTemplateSettings TemplateSettings{ get; };
@@ -47,6 +67,16 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaxDisplayedPagesProperty{ get; };
 
-}
+    static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonVisibilityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonVisibilityProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty SelectedIndicatorStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DefaultIndicatorStyleProperty{ get; };
+};
 
 }

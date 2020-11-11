@@ -4,19 +4,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
+
     <!-- Explain why background should be set for pointer events -->
     <Style TargetType="muxc:PipsControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsControlPreviousPageButtonStyle}"/>
+        <Setter Property="NextButtonStyle" Value="{StaticResource PipsControlNextPageButtonStyle}"/>
+        <Setter Property="SelectedIndicatorStyle" Value="{StaticResource PipsControlSelectedPipButtonStyle}"/>
+        <Setter Property="DefaultIndicatorStyle" Value="{StaticResource PipsControlDefaultPipButtonStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PipsControl">
                     <Grid x:Name="RootGrid"
                             HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                          Background="{TemplateBinding Background}">
-
+                            Background="{TemplateBinding Background}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
@@ -65,7 +69,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Button x:Name="PreviousPageButton" Style="{StaticResource PreviousPageButtonStyle}"/>
+                        <Button x:Name="PreviousPageButton" Style="{TemplateBinding PreviousButtonStyle}"/>
 
                         <ScrollViewer x:Name="VerticalPipsScrollViewer"
                                       Grid.Row="1"
@@ -75,14 +79,13 @@
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.VerticalPipsItems}">
                                 <muxc:ItemsRepeater.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Style="{StaticResource PipsControlVerticalPipButtonStyle}" Tag="{Binding}" IsTabStop="False"/>
+                                        <Button Tag="{Binding}" IsTabStop="False"/>
                                     </DataTemplate>
                                 </muxc:ItemsRepeater.ItemTemplate>
                             </muxc:ItemsRepeater>
                         </ScrollViewer>
 
-                        <Button x:Name="NextPageButton" Style="{StaticResource NextPageButtonStyle}" Grid.Row="2"/>
-
+                        <Button x:Name="NextPageButton" Style="{TemplateBinding NextButtonStyle}" Grid.Row="2"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

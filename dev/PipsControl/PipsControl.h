@@ -5,7 +5,6 @@
 
 #include "pch.h"
 #include "common.h"
-
 #include "PipsControl.g.h"
 #include "PipsControl.properties.h"
 
@@ -18,14 +17,11 @@ public:
     PipsControl();
     ~PipsControl();
 
-    // IFrameworkElement
+    /* IFrameworkElement */
     void OnApplyTemplate();
-    void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
-    void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
        
-
     /* Property changed handlers */
     void OnNumberOfPagesChanged(const int oldValue);
     void OnSelectedPageIndexChange(const int oldValue);
@@ -33,13 +29,10 @@ public:
 
 
 private:
-
     /* UI updating */
     void UpdateNavigationButtonVisualStates();
     void HideNavigationButtons();
-    bool isWithinBounds(winrt::Point point);
-
-
+    bool IsWithinBounds(winrt::Point point);
 
     /* Eventing */
     void RaiseSelectedIndexChanged();
@@ -48,21 +41,22 @@ private:
     void OnRootGridKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
+    void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
 
 
-    // Pips Logic
+    /* Pips Logic */
     void UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages);
     void MovePipIdentifierToElement(int index);
     void OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
-    void setVerticalPipsSVMaxSize();
+    void SetVerticalPipsSVMaxSize();
     void ScrollToCenterOfViewport(winrt::UIElement sender);
 
-    // Tracker refs
+    /* Refs */
     tracker_ref<winrt::ItemsRepeater> m_verticalPipsRepeater{ this };
     tracker_ref<winrt::FxScrollViewer> m_verticalPipsScrollViewer{ this };
 
-    // Revokers
- 
+    /* Revokers */
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_verticalPipsElementPreparedRevoker{};
@@ -70,7 +64,7 @@ private:
     winrt::Grid::PointerEntered_revoker m_rootGridPointerEnteredRevoker{};
     winrt::Grid::PointerExited_revoker m_rootGridPointerExitedRevoker{};
 
-    // Elements
+    /* Elements */
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
 
     int m_lastSelectedPageIndex = -1;

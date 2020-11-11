@@ -22,18 +22,6 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
         }
-
-        private void MyPointerExited(object sender, PointerRoutedEventArgs args)
-        {
-            var position = args.GetCurrentPoint(pipsControl).Position;
-            if (sender == VisualTreeHelper.GetChild(pipsControl, 0))
-            {
-                var hey = 1;
-                hey++;
-            }
-        }
-
-      
     }
 
 }

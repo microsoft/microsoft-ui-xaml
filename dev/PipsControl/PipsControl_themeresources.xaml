@@ -104,17 +104,18 @@
         </Setter>
     </Style>
 
-    <Style x:Key="PreviousPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
+    <Style x:Key="PipsControlPreviousPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
         <Setter Property="Content" Value="{StaticResource PipsControlPreviousPageButtonGlyph}"/>
         <Setter Property="Margin" Value="0,0,0,10"/>
     </Style>
 
-    <Style x:Key="NextPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
+    <Style x:Key="PipsControlNextPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
         <Setter Property="Content" Value="{StaticResource PipsControlNextPageButtonGlyph}"/>
         <Setter Property="Margin" Value="0, 10"/>
     </Style>
 
-    <Style x:Key="PipsControlVerticalPipButtonStyle" TargetType="Button">
+
+    <Style x:Key="PipsControlButtonBaseStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
         <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -153,20 +154,6 @@
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="PipStates">
-                                <VisualState x:Name="Selected">
-                                    <VisualState.Setters>
-                                        <Setter Target="Content.Glyph" Value="{StaticResource PipsControlVerticalPipSelectedGlyph}"/>
-                                        <Setter Target="Content.FontSize" Value="{StaticResource PipsControlVerticalPipSelectedGlyphFontSize}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Unselected">
-                                    <VisualState.Setters>
-                                        <Setter Target="Content.Glyph" Value="{StaticResource PipsControlVerticalPipDefaultGlyph}"/>
-                                        <Setter Target="Content.FontSize" Value="{StaticResource PipsControlVerticalPipDefaultGlyphFontSize}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <FontIcon
                                 x:Name="Content"
@@ -184,4 +171,13 @@
         </Setter>
     </Style>
 
+    <Style x:Key="PipsControlSelectedPipButtonStyle" BasedOn="{StaticResource PipsControlButtonBaseStyle}" TargetType="Button">
+        <Setter Property="Content" Value="{StaticResource PipsControlVerticalPipSelectedGlyph}"/>
+        <Setter Property="FontSize" Value="{StaticResource PipsControlVerticalPipSelectedGlyphFontSize}"/>
+    </Style>
+
+    <Style x:Key="PipsControlDefaultPipButtonStyle" BasedOn="{StaticResource PipsControlButtonBaseStyle}" TargetType="Button">
+        <Setter Property="Content" Value="{StaticResource PipsControlVerticalPipDefaultGlyph}"/>
+        <Setter Property="FontSize" Value="{StaticResource PipsControlVerticalPipDefaultGlyphFontSize}"/>
+    </Style>
 </ResourceDictionary>

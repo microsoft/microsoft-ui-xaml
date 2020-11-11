@@ -112,7 +112,7 @@ void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt:
 }
 void PipsControl::OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
     // TODO : Explain WHAT'S UP and mention quarks
-    if (!isWithinBounds(args.GetCurrentPoint(*this).Position())) {
+    if (!IsWithinBounds(args.GetCurrentPoint(*this).Position())) {
         m_isPointerOver = false;
         HideNavigationButtons();
         args.Handled(true);
@@ -120,7 +120,7 @@ void PipsControl::OnPipsControlPointerExited(winrt::IInspectable sender, winrt::
 
 }
 
-bool PipsControl::isWithinBounds(winrt::Point point) {
+bool PipsControl::IsWithinBounds(winrt::Point point) {
     return point.X >= 0 && point.X <= ActualWidth() && point.Y >= 0 && point.Y <= ActualHeight();
 }
 
@@ -128,8 +128,10 @@ void PipsControl::HideNavigationButtons() {
     winrt::VisualStateManager::GoToState(*this, c_previousPageButtonHiddenVisualState, false);
     winrt::VisualStateManager::GoToState(*this, c_nextPageButtonHiddenVisualState, false);
 }
-void PipsControl::UpdateNavigationButtonVisualStates() {
 
+
+void PipsControl::UpdateNavigationButtonVisualStates() {
+    
     const int selectedPageIndex = SelectedPageIndex();
     const int numberOfPages = NumberOfPages();
     const int maxDisplayedPages = MaxDisplayedPages();
@@ -163,9 +165,8 @@ void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRep
 {
     if (const auto pip = args.Element().try_as<winrt::Button>()) {
         if (unbox_value<int>(pip.Tag()) - 1 != SelectedPageIndex()) {
-            winrt::VisualStateManager::GoToState(pip, L"Unselected", true);
+            pip.Style(DefaultIndicatorStyle());
         }
-
         const auto buttonClickedFunc = [this](auto const& sender, auto const& args) {
             if (const auto button = sender.try_as<winrt::Button>())
             {
@@ -244,18 +245,18 @@ void PipsControl::MovePipIdentifierToElement(int index) {
         if (const auto repeater = m_verticalPipsRepeater.get())
         {
             if (const auto element = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::Button>()) {
-                winrt::VisualStateManager::GoToState(element, L"Unselected", true);
+                element.Style(DefaultIndicatorStyle());
             }
             if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>()) {
                 element.UpdateLayout();
-                winrt::VisualStateManager::GoToState(element, L"Selected", true);
+                element.Style(SelectedIndicatorStyle());
                 ScrollToCenterOfViewport(element);
             }
         }
     }
 }
 
-void PipsControl::setVerticalPipsSVMaxSize() {
+void PipsControl::SetVerticalPipsSVMaxSize() {
     auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_PipsControlButtonHeightPropertyName)));
     auto numberOfPages = NumberOfPages() < 0 ? MaxDisplayedPages() : std::min(NumberOfPages(), MaxDisplayedPages());
     auto scrollViewerHeight = pipHeight * numberOfPages;
@@ -280,7 +281,7 @@ void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDispl
     }
  
     if (maxDisplayedPages != m_lastMaxDisplayedPages) {
-        setVerticalPipsSVMaxSize();
+        SetVerticalPipsSVMaxSize();
     }
     MovePipIdentifierToElement(SelectedPageIndex());
 
