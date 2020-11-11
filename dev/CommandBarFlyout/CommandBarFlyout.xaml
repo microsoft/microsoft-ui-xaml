@@ -323,7 +323,7 @@
                         <Grid x:Name="OuterContentRoot"
                             VerticalAlignment="Top"
                             Margin="{TemplateBinding Padding}"
-                            Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                            MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
                             Height="{TemplateBinding Height}"
                             Background="{TemplateBinding Background}"
                             contract4Present:XYFocusKeyboardNavigation="Enabled">
