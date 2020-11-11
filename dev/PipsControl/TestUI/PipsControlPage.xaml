@@ -12,7 +12,8 @@
 
     <Grid  Margin="12" Padding="50">
         <StackPanel Orientation="Vertical">
-            <muxc:PipsControl x:Name="pipsControl" NumberOfPages="30" MaxDisplayedPages="10" AutomationProperties.Name="TestPipsControl"/>
+            <muxc:PipsControl x:Name="pipsControl" NumberOfPages="30" MaxDisplayedPages="10" AutomationProperties.Name="TestPipsControl"
+                              NextButtonVisibility="VisibleOnHover" PreviousButtonVisibility="VisibleOnHover"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

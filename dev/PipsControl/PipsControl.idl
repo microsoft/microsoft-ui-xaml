@@ -47,9 +47,9 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
     Windows.UI.Xaml.Controls.Orientation Orientation;
 
-    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::Collapsed")]
+    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::VisibleOnHover")]
     IndicatorPagerButtonVisibility PreviousButtonVisibility;
-    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::Collapsed")]
+    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::VisibleOnHover")]
     IndicatorPagerButtonVisibility NextButtonVisibility;
 
     Windows.UI.Xaml.Style PreviousButtonStyle;

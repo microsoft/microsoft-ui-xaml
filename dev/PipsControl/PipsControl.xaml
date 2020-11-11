@@ -39,6 +39,11 @@
                                         <Setter Target="PreviousPageButton.Opacity" Value="100"/>
                                     </VisualState.Setters>
                                 </VisualState>
+                                <VisualState x:Name="PreviousPageButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PreviousPageButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
@@ -50,11 +55,16 @@
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="NextPageButtonIsVisibilityStates">
+                            <VisualStateGroup x:Name="NextPageButtonVisibilityStates">
                                 <VisualState x:Name="NextPageButtonHidden"/>
                                 <VisualState x:Name="NextPageButtonVisible">
                                     <VisualState.Setters>
                                         <Setter Target="NextPageButton.Opacity" Value="100"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NextPageButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="NextPageButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

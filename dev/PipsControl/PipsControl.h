@@ -26,13 +26,21 @@ public:
     void OnNumberOfPagesChanged(const int oldValue);
     void OnSelectedPageIndexChange(const int oldValue);
     void OnMaxDisplayedPagesChanged(const int oldValue);
+    void OnNavigationButtonVisibilityChanged(winrt::IndicatorPagerButtonVisibility visibility, const wstring_view collapsedStateName);
 
 
 private:
     /* UI updating */
     void UpdateNavigationButtonVisualStates();
-    void HideNavigationButtons();
     bool IsWithinBounds(winrt::Point point);
+    void UpdateIndividualNavigationButtonVisualState(
+        bool hiddenOnEdgeCondition,
+        winrt::IndicatorPagerButtonVisibility visibility,
+        const wstring_view visibleStateName,
+        const wstring_view hiddenStateName,
+        const wstring_view enabledStateName,
+        const wstring_view disabledStateName);
+
 
     /* Eventing */
     void RaiseSelectedIndexChanged();
