@@ -248,6 +248,7 @@ private:
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
+    void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
    
     NavigationViewVisualStateDisplayMode GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode);
@@ -333,6 +334,9 @@ private:
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
+    tracker_ref<winrt::RowDefinition> m_itemsContainerRow{ this };
+    tracker_ref<winrt::FrameworkElement> m_menuItemsScrollViewer{ this };
+    tracker_ref<winrt::FrameworkElement> m_footerItemsScrollViewer{ this };
     tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneToggleButtonIconGridColumn{ this };
     tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };

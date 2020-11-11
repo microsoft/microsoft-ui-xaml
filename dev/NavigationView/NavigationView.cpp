@@ -69,6 +69,10 @@ static constexpr auto c_leftNavFooterContentBorder = L"FooterContentBorder"sv;
 static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBorder"sv;
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
 
+static constexpr auto c_itemsContainerRow = L"ItemsContainerRow"sv;
+static constexpr auto c_menuItemsScrollViewer = L"MenuItemsScrollViewer"sv;
+static constexpr auto c_footerItemsScrollViewer = L"FooterItemsScrollViewer"sv;
+
 static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
 static constexpr auto c_paneTitleOnTopPane = L"PaneTitleOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
@@ -233,6 +237,9 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
 void NavigationView::OnFooterItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     UpdateFooterRepeaterItemsSource(false /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
+
+    // Pane footer items changed. This means we might need to reevaluate the pane layout.
+    UpdatePaneLayout();
 }
 
 void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -635,6 +642,10 @@ void NavigationView::OnApplyTemplate()
         closeButtonToolTip.Content(box_value(navigationCloseButtonToolTip));
     }
 
+    m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
+    m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
+    m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
+
     if (SharedHelpers::IsRS2OrHigher())
     {
         // Get hold of the outermost grid and enable XYKeyboardNavigationMode
@@ -668,6 +679,7 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
+    UpdatePaneLayout();
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -706,6 +718,8 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
 void NavigationView::UpdateLeftRepeaterItemSource(const winrt::IInspectable& items)
 {
     UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), items);
+    // Left pane repeater has a new items source, update pane layout.
+    UpdatePaneLayout();
 }
 
 void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items)
@@ -839,6 +853,8 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
     {
         UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
     }
+    // Footer items changed, so let's update the pane layout.
+    UpdatePaneLayout();
 }
 
 void NavigationView::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)
@@ -1317,6 +1333,7 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
 {
     const auto width = args.NewSize().Width;
     UpdateAdaptiveLayout(width);
+    UpdatePaneLayout();
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
 }
@@ -1395,6 +1412,61 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     {
         m_initialListSizeStateSet = false;
         ClosePane();
+    }
+}
+
+void NavigationView::UpdatePaneLayout()
+{
+    if (!IsTopNavigationView())
+    {
+        auto availableHeight = 0.0;
+        if (const auto &paneContentRow = m_itemsContainerRow.get())
+        {
+            // 8px is the padding between the two item lists
+            availableHeight = paneContentRow.ActualHeight() - 8;
+        }
+        if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
+        {
+            availableHeight -= paneFooter.ActualHeight();
+        }
+
+        // Only continue if we have a positive amount of space to manage.
+        if (availableHeight > 0)
+        {
+            // We need this value more than twice, so cache it.
+            const auto availableHalf = availableHeight / 2;
+
+            // Footer items should have precedence as that usually contains very
+            // important items such as settings or the profile.
+            if (const auto& footerItemsRow = m_footerItemsScrollViewer.get())
+            {
+                if (const auto& footerItemsRepeater = m_leftNavFooterMenuRepeater.get())
+                {
+                    // We know the actual height of footer items, so use that to determine how to split pane.
+                    if (footerItemsRepeater.ActualHeight() > availableHalf)
+                    {
+                        // Requested height is larger than our maximum of 50%, so limit row.
+                        footerItemsRow.MaxHeight(availableHalf);
+                        availableHeight = availableHalf;
+                    }
+                    else
+                    {
+                        // Footer items does not exceed limit, let menu items have the rest.
+                        availableHeight -= footerItemsRow.ActualHeight();
+                    }
+                }
+                else
+                {
+                    // No footer repeater found, do a 50/50 split.
+                    availableHeight = availableHalf;
+                }
+            }
+            if (const auto& itemsRow = m_menuItemsScrollViewer.get())
+            {
+                // Only update if we would actually
+                itemsRow.MaxHeight(availableHeight);
+            }
+        }
     }
 }
 
