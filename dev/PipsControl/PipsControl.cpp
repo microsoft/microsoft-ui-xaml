@@ -282,7 +282,9 @@ void PipsControl::SetVerticalPipsSVMaxSize() {
     auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_PipsControlButtonHeightPropertyName)));
     auto numberOfPages = NumberOfPages() < 0 ? MaxDisplayedPages() : std::min(NumberOfPages(), MaxDisplayedPages());
     auto scrollViewerHeight = pipHeight * numberOfPages;
-    m_verticalPipsScrollViewer.get().MaxHeight(scrollViewerHeight);
+    if (const auto scrollViewer = m_verticalPipsScrollViewer.get()) {
+        m_verticalPipsScrollViewer.get().MaxHeight(scrollViewerHeight);
+    }
 }
 
 

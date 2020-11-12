@@ -11,9 +11,26 @@
     mc:Ignorable="d">
 
     <Grid  Margin="12" Padding="50">
-        <StackPanel Orientation="Vertical">
-            <muxc:PipsControl x:Name="pipsControl" NumberOfPages="30" MaxDisplayedPages="10" AutomationProperties.Name="TestPipsControl"
-                              NextButtonVisibility="VisibleOnHover" PreviousButtonVisibility="VisibleOnHover"/>
-        </StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <FlipView x:Name="Gallery" HorizontalAlignment="Left" VerticalAlignment="Top" Width="500" Height="500">
+            <FlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Image Source="{Binding}" Stretch="UniformToFill" />
+                    </Grid>
+                </DataTemplate>
+            </FlipView.ItemTemplate>
+        </FlipView>
+
+
+
+        <muxc:PipsControl x:Name="pipsControl" NumberOfPages="30" MaxDisplayedPages="10" AutomationProperties.Name="TestPipsControl"
+                              NextButtonVisibility="VisibleOnHover" PreviousButtonVisibility="VisibleOnHover" Grid.Column="1"
+                              SelectedIndexChanged="OnSelectedIndexChanged"/>
     </Grid>
 </local:TestPage>
