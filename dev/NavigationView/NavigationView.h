@@ -156,6 +156,7 @@ private:
     inline NavigationViewTemplateSettings* GetTemplateSettings();
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
+    void OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnFooterItemsSourceCollectionChanged(const winrt::IInspectable &, const winrt::IInspectable &);
     void OnOverflowItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
@@ -428,6 +429,7 @@ private:
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
     winrt::SelectionModel::ChildrenRequested_revoker m_childrenRequestedRevoker{};
 
+    winrt::ItemsSourceView::CollectionChanged_revoker m_menuItemsCollectionChangedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_footerItemsCollectionChangedRevoker{};
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_topNavOverflowItemsCollectionChangedRevoker{};
@@ -444,6 +446,7 @@ private:
     winrt::SelectionModel m_selectionModel{};
     winrt::IVector<winrt::IInspectable> m_selectionModelSource{};
 
+    winrt::ItemsSourceView m_menuItemsSource{ nullptr };
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
 
     bool m_appliedTemplate{ false };

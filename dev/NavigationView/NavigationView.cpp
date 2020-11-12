@@ -156,6 +156,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavFooterMenuRepeater.set(nullptr);
 
     m_footerItemsCollectionChangedRevoker.revoke();
+    m_menuItemsCollectionChangedRevoker.revoke();
 
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
@@ -702,6 +703,10 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
         m_selectionModelSource.SetAt(0, itemsSource);
     }
 
+    m_menuItemsCollectionChangedRevoker.revoke();
+    m_menuItemsSource = winrt::ItemsSourceView(itemsSource);
+    m_menuItemsCollectionChangedRevoker = m_menuItemsSource.CollectionChanged(winrt::auto_revoke, { this, &NavigationView::OnMenuItemsSourceCollectionChanged });
+
     if (IsTopNavigationView())
     {
         UpdateLeftRepeaterItemSource(nullptr);
@@ -862,6 +867,11 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
 
             // Footer items changed, so let's update the pane layout.
             UpdatePaneLayout();
+        }
+
+        if (const auto settings = m_settingsItem.get())
+        {
+            settings.StartBringIntoView();
         }
     }
 }
@@ -1431,8 +1441,8 @@ void NavigationView::UpdatePaneLayout()
         auto availableHeight = 0.0;
         if (const auto &paneContentRow = m_itemsContainerRow.get())
         {
-            // 8px is the padding between the two item lists
-            availableHeight = paneContentRow.ActualHeight() - 8;
+            // 20px is the padding between the two item lists
+            availableHeight = paneContentRow.ActualHeight() - 28;
         }
         if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
         {
@@ -1459,25 +1469,29 @@ void NavigationView::UpdatePaneLayout()
                     {
                         const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                         const auto menuItemsActualHeight = menuItems.ActualHeight();
-                        if (menuItemsActualHeight <= availableHalf)
+                        if (availableHeight > menuItemsActualHeight + footersActualHeight)
                         {
-                            // We would exceed the available space so someone needs to be limited.
-                            // The MenuItemsRepeater does not take up more then half of the available space,
-                            // so let's limit footer items.
-                            footerItemsScrollViewer.MaxHeight(availableHeight - menuItemsActualHeight);
-                            availableHeight -= menuItemsActualHeight;
+                            // We have enough space for two so let everyone get as much as they need.
+                            footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                            availableHeight -= footersActualHeight;
                         }
-                        else if (footersActualHeight > availableHalf)
+                        else if (menuItemsActualHeight <= availableHalf)
                         {
-                            // We exceeded the maximum height and the menu items take up more then half of the height.
-                            // Limit footer items to half, same applies to menu items.
-                            footerItemsScrollViewer.MaxHeight(availableHalf);
-                            availableHeight = availableHalf;
+                            // Footer items exceed over the half, so let's limit them.
+                            footerItemsScrollViewer.MaxHeight(availableHeight - menuItemsActualHeight);
+                            availableHeight = menuItemsActualHeight;
+                        }
+                        else if (footersActualHeight <= availableHalf)
+                        {
+                            // Menu items exceed over the half, so let's limit them.
+                            footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                            availableHeight -= footersActualHeight;
                         }
                         else
                         {
-                            // Footer items does not exceed limit, let menu items have the rest.
-                            availableHeight -= footersActualHeight;
+                            // Both are more than half the height, so split evenly.
+                            footerItemsScrollViewer.MaxHeight(availableHalf);
+                            availableHeight = availableHalf;
                         }
                     }
                     else
@@ -3110,6 +3124,11 @@ bool NavigationView::IsNavigationViewListSingleSelectionFollowsFocus()
 void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 {
     GetTemplateSettings()->SingleSelectionFollowsFocus(IsNavigationViewListSingleSelectionFollowsFocus());
+}
+
+void NavigationView::OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    UpdatePaneLayout();
 }
 
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)

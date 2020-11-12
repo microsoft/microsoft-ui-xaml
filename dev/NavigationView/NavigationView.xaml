@@ -402,7 +402,6 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
                                             <RowDefinition x:Name="ItemsContainerRow" Height="*"/>
-                                            <RowDefinition Height="8"/> <!-- Bottom pane margin -->
                                         </Grid.RowDefinitions>
 
                                         <Grid x:Name="ContentPaneTopPadding"
@@ -455,10 +454,10 @@
                                             Grid.Row="4" />
 
                                         <!-- "Non header" content -->
-                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6">
+                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition x:Name="MenuItemsRow" Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
-                                                <RowDefinition Height="*" /> <!-- Fill spacing -->
+                                                <RowDefinition Height="*" MinHeight="20"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
                                                 <RowDefinition x:Name="FooterItemsRow" Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
@@ -473,7 +472,6 @@
                                                     <!-- Left nav ItemsRepeater -->
                                                     <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
-                                                        Margin="0,0,0,20"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                         AutomationProperties.AccessibilityView = "Content"/>
                                                 </ScrollViewer>
@@ -488,7 +486,8 @@
 
                                             <!-- FooterItems -->
                                             <local:ItemsRepeaterScrollHost Grid.Row="3">
-                                                <ScrollViewer x:Name="FooterItemsScrollViewer">
+                                                <ScrollViewer x:Name="FooterItemsScrollViewer"
+                                                        contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"
                                                         AutomationProperties.AccessibilityView = "Content"/>
