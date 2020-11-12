@@ -280,15 +280,15 @@ winrt::MenuBarItem MenuBarItem::GetNextItem(int index, int direction)
     if (const auto menuBar = m_menuBar.get())
     {
         const int itemsCount = menuBar.Items().Size();
-        // % is remainder, not modulo.
+        // index + direction might be negative so account for that by adding itemsCount.
         int itemIndex = (index + direction + itemsCount) % itemsCount;
         while (!menuBar.Items().GetAt(itemIndex).IsEnabled())
         {
-            // % is remainder, not modulo.
+            // index + direction might be negative so account for that by adding itemsCount.
             itemIndex = (itemIndex + direction + itemsCount) % itemsCount;
             if (itemIndex == index)
             {
-                // We are where we return no new item.
+                // We are where we started, return no new item.
                 return nullptr;
             }
         }
