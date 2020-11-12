@@ -1438,79 +1438,84 @@ void NavigationView::UpdatePaneLayout()
 {
     if (!IsTopNavigationView())
     {
-        auto availableHeight = 0.0;
-        if (const auto &paneContentRow = m_itemsContainerRow.get())
-        {
-            // 20px is the padding between the two item lists
-            availableHeight = paneContentRow.ActualHeight() - 28;
-        }
-        if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
-        {
-            availableHeight -= paneFooter.ActualHeight();
-        }
-
-        // Only continue if we have a positive amount of space to manage.
-        if (availableHeight > 0)
-        {
-            // We need this value more than twice, so cache it.
-            const auto availableHalf = availableHeight / 2;
-
-            // Footer items should have precedence as that usually contains very
-            // important items such as settings or the profile.
-            if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
+        const auto totalAvailableHeight = [this]() {
+            if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
-                if (const auto& footerItemsRepeater = m_leftNavFooterMenuRepeater.get())
+                // 20px is the padding between the two item lists
+                if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
-                    const auto height = footerItemsRepeater.ActualHeight();
-                    const auto desired = footerItemsRepeater.DesiredSize().Height;
-
-                    // We know the actual height of footer items, so use that to determine how to split pane.
-                    if (const auto& menuItems = m_leftNavRepeater.get())
-                    {
-                        const auto footersActualHeight = footerItemsRepeater.ActualHeight();
-                        const auto menuItemsActualHeight = menuItems.ActualHeight();
-                        if (availableHeight > menuItemsActualHeight + footersActualHeight)
-                        {
-                            // We have enough space for two so let everyone get as much as they need.
-                            footerItemsScrollViewer.MaxHeight(footersActualHeight);
-                            availableHeight -= footersActualHeight;
-                        }
-                        else if (menuItemsActualHeight <= availableHalf)
-                        {
-                            // Footer items exceed over the half, so let's limit them.
-                            footerItemsScrollViewer.MaxHeight(availableHeight - menuItemsActualHeight);
-                            availableHeight = menuItemsActualHeight;
-                        }
-                        else if (footersActualHeight <= availableHalf)
-                        {
-                            // Menu items exceed over the half, so let's limit them.
-                            footerItemsScrollViewer.MaxHeight(footersActualHeight);
-                            availableHeight -= footersActualHeight;
-                        }
-                        else
-                        {
-                            // Both are more than half the height, so split evenly.
-                            footerItemsScrollViewer.MaxHeight(availableHalf);
-                            availableHeight = availableHalf;
-                        }
-                    }
-                    else
-                    {
-                        // Couldn't determine the menuItems.
-                        // Let's just take all the height and let the other repeater deal with it.
-                        availableHeight -= footerItemsRepeater.ActualHeight();
-                    }
+                    return paneContentRow.ActualHeight() - 28 - paneFooter.ActualHeight();
                 }
                 else
                 {
-                    // No footer repeater found, do a 50/50 split.
-                    availableHeight = availableHalf;
+                    return paneContentRow.ActualHeight() - 28;
                 }
             }
+            return 0.0;
+        }();
+
+        // Only continue if we have a positive amount of space to manage.
+        if (totalAvailableHeight > 0)
+        {
+            // We need this value more than twice, so cache it.
+            const auto totalAvailableHeightHalf = totalAvailableHeight / 2;
+
+            const auto heightForMenuItems = [this, totalAvailableHeight, totalAvailableHeightHalf]() {
+                if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
+                {
+                    if (const auto& footerItemsRepeater = m_leftNavFooterMenuRepeater.get())
+                    {
+                        // We know the actual height of footer items, so use that to determine how to split pane.
+                        if (const auto& menuItems = m_leftNavRepeater.get())
+                        {
+                            const auto footersActualHeight = footerItemsRepeater.ActualHeight();
+                            const auto menuItemsActualHeight = menuItems.ActualHeight();
+                            if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
+                            {
+                                // We have enough space for two so let everyone get as much as they need.
+                                footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                return totalAvailableHeight - footersActualHeight;
+                            }
+                            else if (menuItemsActualHeight <= totalAvailableHeightHalf)
+                            {
+                                // Footer items exceed over the half, so let's limit them.
+                                footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
+                                return menuItemsActualHeight;
+                            }
+                            else if (footersActualHeight <= totalAvailableHeightHalf)
+                            {
+                                // Menu items exceed over the half, so let's limit them.
+                                footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                return totalAvailableHeight - footersActualHeight;
+                            }
+                            else
+                            {
+                                // Both are more than half the height, so split evenly.
+                                footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
+                                return totalAvailableHeightHalf;
+                            }
+                        }
+                        else
+                        {
+                            // Couldn't determine the menuItems.
+                            // Let's just take all the height and let the other repeater deal with it.
+                            return totalAvailableHeight - footerItemsRepeater.ActualHeight();
+                        }
+                    }
+                    // We have no idea how much space to occupy as we are not able to get the size of the footer repeater.
+                    // Stick with 50% as backup.
+                    footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
+                }
+                // We couldn't find a good strategy, so limit to 50% percent for the menu items.
+                return totalAvailableHeightHalf;
+            }();
+            // Footer items should have precedence as that usually contains very
+            // important items such as settings or the profile.
+            
             if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
             {
-                // Only update if we would actually
-                menuItemsScrollViewer.MaxHeight(availableHeight);
+                // Update max height for menu items.
+                menuItemsScrollViewer.MaxHeight(heightForMenuItems);
             }
         }
     }
