@@ -210,9 +210,9 @@ void PipsControl::ScrollToCenterOfViewport(winrt::UIElement sender)
 
 void PipsControl::OnMaxDisplayedPagesChanged(const int oldValue) {
     m_lastMaxDisplayedPages = oldValue;
-    auto const numberOfPages = NumberOfPages();
-    if (m_lastMaxDisplayedPages != numberOfPages) {
-        UpdateVerticalPips(numberOfPages, MaxDisplayedPages());
+    auto const maxDisplayedPages = MaxDisplayedPages();
+    if (m_lastMaxDisplayedPages != maxDisplayedPages) {
+        UpdateVerticalPips(NumberOfPages(), maxDisplayedPages);
     }
 }
 
