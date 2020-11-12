@@ -851,10 +851,19 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool sourceCollectionReset,
     }
     else
     {
-        UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
+        if (const auto repeater = m_leftNavFooterMenuRepeater.get())
+        {
+            UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), m_selectionModelSource.GetAt(1));
+
+            // Footer items changed and we need to recalculate the layout.
+            // However repeater "lags" behind, so we need to force it to reevaluate itself now.
+            repeater.InvalidateMeasure();
+            repeater.UpdateLayout();
+
+            // Footer items changed, so let's update the pane layout.
+            UpdatePaneLayout();
+        }
     }
-    // Footer items changed, so let's update the pane layout.
-    UpdatePaneLayout();
 }
 
 void NavigationView::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)
@@ -1438,21 +1447,44 @@ void NavigationView::UpdatePaneLayout()
 
             // Footer items should have precedence as that usually contains very
             // important items such as settings or the profile.
-            if (const auto& footerItemsRow = m_footerItemsScrollViewer.get())
+            if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
             {
                 if (const auto& footerItemsRepeater = m_leftNavFooterMenuRepeater.get())
                 {
+                    const auto height = footerItemsRepeater.ActualHeight();
+                    const auto desired = footerItemsRepeater.DesiredSize().Height;
+
                     // We know the actual height of footer items, so use that to determine how to split pane.
-                    if (footerItemsRepeater.ActualHeight() > availableHalf)
+                    if (const auto& menuItems = m_leftNavRepeater.get())
                     {
-                        // Requested height is larger than our maximum of 50%, so limit row.
-                        footerItemsRow.MaxHeight(availableHalf);
-                        availableHeight = availableHalf;
+                        const auto footersActualHeight = footerItemsRepeater.ActualHeight();
+                        const auto menuItemsActualHeight = menuItems.ActualHeight();
+                        if (menuItemsActualHeight <= availableHalf)
+                        {
+                            // We would exceed the available space so someone needs to be limited.
+                            // The MenuItemsRepeater does not take up more then half of the available space,
+                            // so let's limit footer items.
+                            footerItemsScrollViewer.MaxHeight(availableHeight - menuItemsActualHeight);
+                            availableHeight -= menuItemsActualHeight;
+                        }
+                        else if (footersActualHeight > availableHalf)
+                        {
+                            // We exceeded the maximum height and the menu items take up more then half of the height.
+                            // Limit footer items to half, same applies to menu items.
+                            footerItemsScrollViewer.MaxHeight(availableHalf);
+                            availableHeight = availableHalf;
+                        }
+                        else
+                        {
+                            // Footer items does not exceed limit, let menu items have the rest.
+                            availableHeight -= footersActualHeight;
+                        }
                     }
                     else
                     {
-                        // Footer items does not exceed limit, let menu items have the rest.
-                        availableHeight -= footerItemsRow.ActualHeight();
+                        // Couldn't determine the menuItems.
+                        // Let's just take all the height and let the other repeater deal with it.
+                        availableHeight -= footerItemsRepeater.ActualHeight();
                     }
                 }
                 else
@@ -1461,10 +1493,10 @@ void NavigationView::UpdatePaneLayout()
                     availableHeight = availableHalf;
                 }
             }
-            if (const auto& itemsRow = m_menuItemsScrollViewer.get())
+            if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
             {
                 // Only update if we would actually
-                itemsRow.MaxHeight(availableHeight);
+                menuItemsScrollViewer.MaxHeight(availableHeight);
             }
         }
     }

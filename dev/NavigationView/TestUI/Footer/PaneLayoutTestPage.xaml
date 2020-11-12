@@ -14,12 +14,17 @@
 
         <StackPanel>
             <muxc:RadioButtons SelectionChanged="TestCaseSelectionChanged" SelectedIndex="0">
-                <RadioButton>No items</RadioButton>
-                <RadioButton>No footer</RadioButton>
-                <RadioButton>Both</RadioButton>
+                <RadioButton AutomationProperties.Name="NoItems">No items</RadioButton>
+                <RadioButton AutomationProperties.Name="NoFooter">No footer</RadioButton>
+                <RadioButton AutomationProperties.Name="Both">Both</RadioButton>
             </muxc:RadioButtons>
-            <Button Click="AddMenuItemButton_Click">Add menu item</Button>
-            <Button Click="AddFooterItemButton_Click">Add footer item</Button>
+
+            <Button Click="AddMenuItemButton_Click" AutomationProperties.Name="AddMenuItemButton" Margin="0,4,0,0">Add menu item</Button>
+            <Button Click="AddFooterItemButton_Click" AutomationProperties.Name="AddFooterItemButton">Add footer item</Button>
+            <Button Click="ResetCollectionsButton_Click" AutomationProperties.Name="ResetCollectionsButton">Reset collections</Button>
+
+            <Button Click="GetLayoutHeightsButton_Click" Margin="0,4,0,0" AutomationProperties.Name="GetLayoutHeightsButton">Get layout heights</Button>
+            <TextBlock x:Name="LayoutHeightsReport" AutomationProperties.Name="LayoutHeightsReport"/>
         </StackPanel>
     </muxc:NavigationView>
     

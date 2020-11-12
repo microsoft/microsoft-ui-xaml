@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml.Controls;
-using System.Collections;
+using MUXControlsTestApp.Utilities;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 
@@ -73,6 +73,26 @@ namespace MUXControlsTestApp
         private void AddFooterItemButton_Click(object sender, RoutedEventArgs e)
         {
             footerItems.Add(new NavigationViewItem() { Content = "Text" });
+        }
+
+        private void ResetCollectionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = menuItems.Count - 1; i > 3; i--)
+            {
+                menuItems.RemoveAt(i);
+            }
+
+            for (int i = footerItems.Count - 1; i > 3; i--)
+            {
+                footerItems.RemoveAt(i);
+            }
+        }
+
+        private void GetLayoutHeightsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var itemsScroll = VisualTreeUtils.FindVisualChildByName(RootNavigationView, "MenuItemsScrollViewer");
+            var footerScroll = VisualTreeUtils.FindVisualChildByName(RootNavigationView, "FooterItemsScrollViewer");
+            LayoutHeightsReport.Text = itemsScroll.ActualHeight + ";" + footerScroll.ActualHeight;
         }
 
     }

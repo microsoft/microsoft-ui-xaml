@@ -45,7 +45,7 @@
             <Button x:Name="NavigateToTopNavOverflowButtonPage" AutomationProperties.Name="Top NavigationView Overflow Button Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Overflow Button Test</Button>
 
             <TextBlock Text="Footer item tests"/>
-            <Button x:Name="PaneLayoutTestPageButton" AutomationProperties.Name="PaneLayoutTestPageButton" Margin="2" HorizontalAlignment="Stretch">PaneLayoutTestPage</Button>
+            <Button x:Name="PaneLayoutTestPageButton" AutomationProperties.Name="PaneLayoutTestPage" Margin="2" HorizontalAlignment="Stretch">PaneLayoutTestPage</Button>
         </StackPanel>
 
         <StackPanel>
