@@ -63,12 +63,12 @@ PipsControl::~PipsControl() {
 
 void PipsControl::OnApplyTemplate()
 {
-    const winrt::IControlProtected controlProtected = *this;
-    m_previousPageButtonClickRevoker.revoke();
+    winrt::AutomationProperties::SetName(*this, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlNameText));
 
+    m_previousPageButtonClickRevoker.revoke();
     [this](const winrt::Button button) {
         if (button) {
-            winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlPreviousPageButtonTextName));
+            winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlPreviousPageButtonText));
             m_previousPageButtonClickRevoker = button.Click(winrt::auto_revoke, { this, &PipsControl::OnPreviousButtonClicked });
         }
     }(GetTemplateChildT<winrt::Button>(c_previousPageButtonName, *this));
@@ -76,7 +76,7 @@ void PipsControl::OnApplyTemplate()
     m_nextPageButtonClickRevoker.revoke();
     [this](const winrt::Button button) {
         if (button) {
-            winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlNextPageButtonTextName));
+            winrt::AutomationProperties::SetName(button, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlNextPageButtonText));
             m_nextPageButtonClickRevoker = button.Click(winrt::auto_revoke, { this, &PipsControl::OnNextButtonClicked });
         }
     }(GetTemplateChildT<winrt::Button>(c_nextPageButtonName, *this));
@@ -102,7 +102,7 @@ void PipsControl::OnApplyTemplate()
             m_rootGridKeyDownRevoker = grid.KeyDown(winrt::auto_revoke, { this, &PipsControl::OnRootGridKeyDown });
 
         }
-    }(GetTemplateChildT<winrt::Grid>(c_rootGridName, controlProtected));
+    }(GetTemplateChildT<winrt::Grid>(c_rootGridName, *this));
 
     OnNumberOfPagesChanged(0);
     OnSelectedPageIndexChange(-1);
@@ -180,9 +180,14 @@ void PipsControl::UpdateNavigationButtonVisualStates() {
 void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
     if (const auto pip = args.Element().try_as<winrt::Button>()) {
+        auto const pageNumber = unbox_value<int>(pip.Tag());
         if (unbox_value<int>(pip.Tag()) - 1 != SelectedPageIndex()) {
             pip.Style(DefaultIndicatorStyle());
         }
+        // Narrator says: Page 5, Button 5 of 30. Is it expected behavior?
+        winrt::AutomationProperties::SetName(pip, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlPageText) + L" " + winrt::to_hstring(pageNumber));
+        winrt::AutomationProperties::SetPositionInSet(pip, pageNumber);
+        winrt::AutomationProperties::SetSizeOfSet(pip, NumberOfPages());
         const auto buttonClickedFunc = [this](auto const& sender, auto const& args) {
             if (const auto button = sender.try_as<winrt::Button>())
             {
@@ -190,6 +195,7 @@ void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRep
             }
         };
         pip.Click(buttonClickedFunc);
+
     }
 }
 
@@ -318,7 +324,7 @@ void PipsControl::OnRootGridKeyDown(const winrt::IInspectable& sender, const win
 void PipsControl::OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
 {
     // In this method, SelectedPageIndex is always greater than 1.
-    SelectedPageIndex(SelectedPageIndex() - 1);
+       SelectedPageIndex(SelectedPageIndex() - 1);
 }
 
 void PipsControl::OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)

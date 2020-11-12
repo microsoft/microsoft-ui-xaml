@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="PipsControlNameText" xml:space="preserver">
+    <value>Pager</value>
+    <comment>The name of the control itself that will be announced when it receives focus</comment>
+  </data>
   <data name="PipsControlNextPageButtonText" xml:space="preserve">
     <value>Next Page</value>
     <comment>Automation name and tooltip text for the next page button</comment>
@@ -124,5 +128,9 @@
   <data name="PipsControlPreviousPageButtonText" xml:space="preserve">
     <value>PreviousPage</value>
     <comment>Automation name and tooltip text for the previous page button</comment>
+  </data>
+  <data name="PipsControlPageText" xml:space="preserve">
+    <value>Page</value>
+    <comment>Name used for UIA to announce controls, e.g. "Page 5"</comment>
   </data>
 </root>

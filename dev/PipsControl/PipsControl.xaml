@@ -47,10 +47,10 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="PreviousPageButtonIsEnabledStates">
-                                <VisualState x:Name="PreviousPageButtonDisabled"/>
-                                <VisualState x:Name="PreviousPageButtonEnabled">
+                                <VisualState x:Name="PreviousPageButtonEnabled"/>
+                                <VisualState x:Name="PreviousPageButtonDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="PreviousPageButton.IsEnabled" Value="True"/>
+                                        <Setter Target="PreviousPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -70,10 +70,10 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="NextPageButtonIsEnabledStates">
-                                <VisualState x:Name="NextPageButtonDisabled"/>
-                                <VisualState x:Name="NextPageButtonEnabled">
+                                <VisualState x:Name="NextPageButtonEnabled"/>
+                                <VisualState x:Name="NextPageButtonDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="NextPageButton.IsEnabled" Value="True"/>
+                                        <Setter Target="NextPageButton.IsEnabled" Value="False"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -89,7 +89,7 @@
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.VerticalPipsItems}">
                                 <muxc:ItemsRepeater.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Tag="{Binding}" IsTabStop="False"/>
+                                        <Button Tag="{Binding}"/>
                                     </DataTemplate>
                                 </muxc:ItemsRepeater.ItemTemplate>
                             </muxc:ItemsRepeater>
