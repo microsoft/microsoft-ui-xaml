@@ -333,7 +333,8 @@
                                     </RectangleGeometry.Transform>
                                 </RectangleGeometry>
                             </Grid.Clip>
-                            <Grid x:Name="ContentRoot">
+                            <Grid x:Name="ContentRoot"
+                                    Background="{TemplateBinding Background}">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
@@ -351,7 +352,6 @@
                                 <Grid x:Name="PrimaryItemsRoot"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    Background="{TemplateBinding Background}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                     contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     <Grid.ColumnDefinitions>
@@ -391,7 +391,6 @@
                                 <Popup x:Name="OverflowPopup">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
-                                        Background="{TemplateBinding Background}"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
                                         <Grid.Clip>
                                             <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
