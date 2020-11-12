@@ -485,5 +485,7 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
+
+    bool m_firstUpdatePaneLayoutCall{ true };
 };
 

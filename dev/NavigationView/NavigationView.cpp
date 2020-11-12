@@ -1352,9 +1352,14 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
 {
     const auto width = args.NewSize().Width;
     UpdateAdaptiveLayout(width);
-    UpdatePaneLayout();
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
+    if (m_firstUpdatePaneLayoutCall)
+    {
+        InvalidateArrange();
+        UpdateLayout();
+    }
+    UpdatePaneLayout();
 }
 
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
@@ -1515,7 +1520,16 @@ void NavigationView::UpdatePaneLayout()
             if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
             {
                 // Update max height for menu items.
-                menuItemsScrollViewer.MaxHeight(heightForMenuItems);
+                if (m_firstUpdatePaneLayoutCall)
+                {
+                    m_firstUpdatePaneLayoutCall = false;
+                    // The first size changed event will give us a size that is exactly 40px to large. To account for that, remove that once.
+                    menuItemsScrollViewer.MaxHeight(heightForMenuItems - 40);
+                }
+                else
+                {
+                    menuItemsScrollViewer.MaxHeight(heightForMenuItems);
+                }
             }
         }
     }
