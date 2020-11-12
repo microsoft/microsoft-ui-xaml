@@ -583,7 +583,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
     {
         m_tabItemsChangedEventSource(*this, args);
 
-        int numItems = static_cast<int>(TabItems().Size());
+        const int numItems = static_cast<int>(TabItems().Size());
 
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved)
         {
@@ -635,10 +635,14 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         }
         else
         {
-            if (const auto newItem = TabItems().GetAt(args.Index()).try_as<TabViewItem>())
+            const auto index = static_cast<int>(args.Index());
+            if (index >= 0 && index < numItems)
             {
-                newItem->OnTabViewWidthModeChanged(TabWidthMode());
-                newItem->SetParentTabView(*this);
+                if (const auto newItem = TabItems().GetAt(index).try_as<TabViewItem>())
+                {
+                    newItem->OnTabViewWidthModeChanged(TabWidthMode());
+                    newItem->SetParentTabView(*this);
+                }
             }
             UpdateTabWidths();
         }

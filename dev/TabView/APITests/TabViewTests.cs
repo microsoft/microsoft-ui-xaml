@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Provider;
+using System.Collections.ObjectModel;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -167,6 +168,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyTabViewWithoutTabsDoesNotCrash()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TabView tabView = new TabView();
+                Content = tabView;
+
+                // Creating a TabView without tabs should not crash the app.
+                Content.UpdateLayout();
+
+                var tabItemsSource = new ObservableCollection<string>() { "Tab 1", "Tab 2" };
+                tabView.TabItemsSource = tabItemsSource;
+
+                // Clearing the ItemsSource should not crash the app.
+                Log.Comment("Clear the specified tab items source");
+                tabItemsSource.Clear();
+            });
+        }
         private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
         {
             foreach (var item in items)
