@@ -7,17 +7,17 @@
     <SharedGUID>280C91F4-96B5-4BDE-9E02-E573E1DEF583</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>PipsControl_TestUI</Import_RootNamespace>
+    <Import_RootNamespace>PipsPager_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)PipsControlPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)PipsPagerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)PipsControlPage.xaml.cs">
-      <DependentUpon>PipsControlPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)PipsPagerPage.xaml.cs">
+      <DependentUpon>PipsPagerPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

@@ -10,26 +10,26 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 
-using PipsControl = Microsoft.UI.Xaml.Controls.PipsControl;
-using PipsControlSelectedIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.PipsControlSelectedIndexChangedEventArgs;
+using PipsPager = Microsoft.UI.Xaml.Controls.PipsPager;
+using PipsPagerSelectedIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.PipsPagerSelectedIndexChangedEventArgs;
 using Windows.UI.Xaml.Input;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "PipsControl")]
-    public sealed partial class PipsControlPage : TestPage
+    [TopLevelTestPage(Name = "PipsPager")]
+    public sealed partial class PipsPagerPage : TestPage
     {
         private List<string> pictures;
-        public PipsControlPage()
+        public PipsPagerPage()
         {
             this.InitializeComponent();
             populatePictures();
             Gallery.Loaded += flipView_Loaded;
             Gallery.ItemsSource = pictures;
-            pipsControl.NumberOfPages = pictures.Capacity;
-            pipsControl.MaxDisplayedPages = 5;
+            PipsPager.NumberOfPages = pictures.Capacity;
+            PipsPager.MaxDisplayedPages = 5;
         }
 
         private void flipView_Loaded(object sender, RoutedEventArgs e)
@@ -53,11 +53,10 @@ namespace MUXControlsTestApp
             pictures.Add("Assets/ingredient8.png");
         }
 
-        private void OnSelectedIndexChanged(PipsControl sender, PipsControlSelectedIndexChangedEventArgs args)
+        private void OnSelectedIndexChanged(PipsPager sender, PipsPagerSelectedIndexChangedEventArgs args)
         {
             Gallery.SelectedIndex = args.NewPageIndex;
         }
-
     }
 
 }

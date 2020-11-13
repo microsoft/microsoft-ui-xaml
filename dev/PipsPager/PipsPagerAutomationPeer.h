@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "PipsControl.h"
-#include "PipsControlAutomationPeer.g.h"
+#include "PipsPager.h"
+#include "PipsPagerAutomationPeer.g.h"
 
-class PipsControlAutomationPeer :
-    public ReferenceTracker<PipsControlAutomationPeer, winrt::implementation::PipsControlAutomationPeerT, winrt::ISelectionProvider>
+class PipsPagerAutomationPeer :
+    public ReferenceTracker<PipsPagerAutomationPeer, winrt::implementation::PipsPagerAutomationPeerT, winrt::ISelectionProvider>
 {
 
 public:
-    PipsControlAutomationPeer(winrt::PipsControl const& owner);
+    PipsPagerAutomationPeer(winrt::PipsPager const& owner);
 
     /* IAutomationPeerOverrides */
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
@@ -27,6 +27,6 @@ public:
     void RaiseSelectionChanged(double oldIndex, double newIndex);
 
 private:
-    com_ptr<PipsControl> GetImpl();
+    com_ptr<PipsPager> GetImpl();
 };
 

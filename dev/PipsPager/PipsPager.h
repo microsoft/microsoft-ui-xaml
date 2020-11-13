@@ -5,21 +5,21 @@
 
 #include "pch.h"
 #include "common.h"
-#include "PipsControl.g.h"
-#include "PipsControl.properties.h"
+#include "PipsPager.g.h"
+#include "PipsPager.properties.h"
 
-class PipsControlViewItemRevokers : public winrt::implements<PipsControlViewItemRevokers, winrt::IInspectable>
+class PipsPagerViewItemRevokers : public winrt::implements<PipsPagerViewItemRevokers, winrt::IInspectable>
 {
 public:
     winrt::Button::Click_revoker clickRevoker{};
 };
 
-class PipsControl :
-    public ReferenceTracker<PipsControl, winrt::implementation::PipsControlT>,
-    public PipsControlProperties
+class PipsPager :
+    public ReferenceTracker<PipsPager, winrt::implementation::PipsPagerT>,
+    public PipsPagerProperties
 {
 public:
-    PipsControl();
+    PipsPager();
 
     /* IFrameworkElement */
     void OnApplyTemplate();
@@ -30,7 +30,7 @@ public:
     void OnNumberOfPagesChanged();
     void OnSelectedPageIndexChanged(const int oldValue);
     void OnMaxDisplayedPagesChanged(const int oldValue);
-    void OnNavigationButtonVisibilityChanged(winrt::IndicatorPagerButtonVisibility visibility, const wstring_view collapsedStateName);
+    void OnNavigationButtonVisibilityChanged(winrt::PipsPagerButtonVisibility visibility, const wstring_view collapsedStateName);
 
     /* Dependency property for pip buttons revokers */
     GlobalDependencyProperty s_pipButtonHandlersProperty;
@@ -41,7 +41,7 @@ private:
     bool IsWithinBounds(winrt::Point point);
     void UpdateIndividualNavigationButtonVisualState(
         bool hiddenOnEdgeCondition,
-        winrt::IndicatorPagerButtonVisibility visibility,
+        winrt::PipsPagerButtonVisibility visibility,
         const wstring_view visibleStateName,
         const wstring_view hiddenStateName,
         const wstring_view enabledStateName,
@@ -54,8 +54,8 @@ private:
     void OnRootGridKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
-    void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
+    void OnPipsPagerPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
+    void OnPipsPagerPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
 
     /* Pips Logic */
     void UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages);
@@ -80,6 +80,7 @@ private:
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
 
     /* Additional variables class variables*/
+    float m_singlePipDesiredHeight{ 0 };
     int m_lastSelectedPageIndex{ -1 };
     int m_lastMaxDisplayedPages{ 0 };
     bool m_isPointerOver{ false };

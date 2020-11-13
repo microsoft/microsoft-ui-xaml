@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "PipsControlSelectedIndexChangedEventArgs.g.h"
+#include "PipsPagerSelectedIndexChangedEventArgs.g.h"
 
-class PipsControlSelectedIndexChangedEventArgs :
-    public winrt::implementation::PipsControlSelectedIndexChangedEventArgsT<PipsControlSelectedIndexChangedEventArgs>
+class PipsPagerSelectedIndexChangedEventArgs :
+    public winrt::implementation::PipsPagerSelectedIndexChangedEventArgsT<PipsPagerSelectedIndexChangedEventArgs>
 {
 public:
-    PipsControlSelectedIndexChangedEventArgs(const int previousIndex, const int newIndex) :
+    PipsPagerSelectedIndexChangedEventArgs(const int previousIndex, const int newIndex) :
         m_previousPageIndex(previousIndex), m_newPageIndex(newIndex) {};
 
     int NewPageIndex() { return m_newPageIndex; };

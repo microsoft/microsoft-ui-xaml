@@ -20,12 +20,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
 
     [TestClass]
-    public class PipsControlTests : ApiTestBase
+    public class PipsPagerTests : ApiTestBase
     {
         [TestMethod]
         public void BasicTest()
         {
-            Log.Comment("PipsControl Basic Test");
+            Log.Comment("PipsPager Basic Test");
         }
     }
 }

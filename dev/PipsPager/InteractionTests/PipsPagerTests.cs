@@ -25,7 +25,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class PipsControlTests
+    public class PipsPagerTests
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -45,7 +45,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void BasicTest()
         {
-            Log.Comment("PipsControl Basic Test");
+            Log.Comment("PipsPager Basic Test");
         }
     }
 }

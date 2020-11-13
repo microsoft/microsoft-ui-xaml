@@ -210,8 +210,8 @@
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
   </PropertyGroup>
-  <!-- Dependencies for PipsControl -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePipsControlEnabled) == 'true'">
+  <!-- Dependencies for PipsPager -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePipsPagerEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
   </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
@@ -272,7 +272,7 @@
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
-    <FeaturePipsControlEnabled>true</FeaturePipsControlEnabled>
+    <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

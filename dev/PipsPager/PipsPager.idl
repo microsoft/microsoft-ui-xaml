@@ -3,7 +3,7 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum IndicatorPagerButtonVisibility
+enum PipsPagerButtonVisibility
 {
     Visible, // arrows ALWAYS visible 
     VisibleOnHover,
@@ -12,7 +12,7 @@ enum IndicatorPagerButtonVisibility
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass PipsControlSelectedIndexChangedEventArgs
+runtimeclass PipsPagerSelectedIndexChangedEventArgs
 {
     Int32 NewPageIndex{get; };
     Int32 PreviousPageIndex{get; };
@@ -21,9 +21,9 @@ runtimeclass PipsControlSelectedIndexChangedEventArgs
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
-unsealed runtimeclass PipsControlTemplateSettings : Windows.UI.Xaml.DependencyObject
+unsealed runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    PipsControlTemplateSettings();
+    PipsPagerTemplateSettings();
     Windows.Foundation.Collections.IVector<Object> VerticalPipsItems { get; };
 };
 
@@ -31,9 +31,9 @@ unsealed runtimeclass PipsControlTemplateSettings : Windows.UI.Xaml.DependencyOb
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
+unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
 {
-    PipsControl();
+    PipsPager();
 
     [MUX_DEFAULT_VALUE("0")]
     Int32 NumberOfPages;
@@ -47,10 +47,10 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
     Windows.UI.Xaml.Controls.Orientation Orientation;
 
-    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::VisibleOnHover")]
-    IndicatorPagerButtonVisibility PreviousButtonVisibility;
-    [MUX_DEFAULT_VALUE("winrt::IndicatorPagerButtonVisibility::VisibleOnHover")]
-    IndicatorPagerButtonVisibility NextButtonVisibility;
+    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::VisibleOnHover")]
+    PipsPagerButtonVisibility PreviousButtonVisibility;
+    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::VisibleOnHover")]
+    PipsPagerButtonVisibility NextButtonVisibility;
 
     Windows.UI.Xaml.Style PreviousButtonStyle;
     Windows.UI.Xaml.Style NextButtonStyle;
@@ -58,10 +58,10 @@ unsealed runtimeclass PipsControl : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.Style SelectedIndicatorStyle;
     Windows.UI.Xaml.Style DefaultIndicatorStyle;
 
-    event Windows.Foundation.TypedEventHandler<PipsControl, PipsControlSelectedIndexChangedEventArgs> SelectedIndexChanged;
+    event Windows.Foundation.TypedEventHandler<PipsPager, PipsPagerSelectedIndexChangedEventArgs> SelectedIndexChanged;
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
-    PipsControlTemplateSettings TemplateSettings{ get; };
+    PipsPagerTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };

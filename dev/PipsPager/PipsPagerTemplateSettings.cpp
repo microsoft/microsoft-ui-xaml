@@ -3,4 +3,4 @@
 
 #include "pch.h"
 #include "common.h"
-#include "PipsControlTemplateSettings.h"
+#include "PipsPagerTemplateSettings.h"
