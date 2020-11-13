@@ -165,7 +165,6 @@ void PipsControl::UpdateNavigationButtonVisualStates() {
     const int numberOfPages = NumberOfPages();
     const int maxDisplayedPages = MaxDisplayedPages();
 
-   // if (!numberOfPages == 0 && maxDisplayedPages > 0) {
     auto const ifPreviousButtonHiddenOnEdge = selectedPageIndex == 0;
     UpdateIndividualNavigationButtonVisualState(ifPreviousButtonHiddenOnEdge, PreviousButtonVisibility(),
         c_previousPageButtonVisibleVisualState, c_previousPageButtonHiddenVisualState,
@@ -175,7 +174,6 @@ void PipsControl::UpdateNavigationButtonVisualStates() {
     UpdateIndividualNavigationButtonVisualState(ifNextButtonHiddenOnEdge, NextButtonVisibility(),
         c_nextPageButtonVisibleVisualState, c_nextPageButtonHiddenVisualState,
         c_nextPageButtonEnabledVisualState, c_nextPageButtonDisabledVisualState);
-   // }
 }
 
 void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
