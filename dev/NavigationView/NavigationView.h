@@ -247,6 +247,7 @@ private:
     void UpdateFooterRepeaterItemsSource(bool sourceCollectionReseted, bool sourceCollectionChanged);
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
     void UpdatePaneLayout();
@@ -402,6 +403,7 @@ private:
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_itemsContainerSizeChangedRevoker{};
     winrt::AutoSuggestBox::SuggestionChosen_revoker m_autoSuggestBoxSuggestionChosenRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
@@ -486,7 +488,5 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
-
-    bool m_firstUpdatePaneLayoutCall{ true };
 };
 

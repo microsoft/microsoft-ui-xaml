@@ -69,6 +69,7 @@ static constexpr auto c_leftNavFooterContentBorder = L"FooterContentBorder"sv;
 static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBorder"sv;
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
 
+static constexpr auto c_itemsContainer = L"ItemsContainerGrid"sv;
 static constexpr auto c_itemsContainerRow = L"ItemsContainerRow"sv;
 static constexpr auto c_visualItemsSeparator = L"VisualItemsSeparator"sv;
 static constexpr auto c_menuItemsScrollViewer = L"MenuItemsScrollViewer"sv;
@@ -122,6 +123,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneHeaderOnTopPane.set(nullptr);
     m_paneTitleOnTopPane.set(nullptr);
 
+    m_itemsContainerSizeChangedRevoker.revoke();
     m_paneTitleHolderFrameworkElementSizeChangedRevoker.revoke();
     m_paneTitleHolderFrameworkElement.set(nullptr);
 
@@ -648,6 +650,12 @@ void NavigationView::OnApplyTemplate()
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
     m_visualItemsSeparator.set(GetTemplateChildT<winrt::FrameworkElement>(c_visualItemsSeparator, controlProtected));
+
+    m_itemsContainerSizeChangedRevoker.revoke();
+    if (const auto itemsContainerRow = GetTemplateChildT<winrt::FrameworkElement>(c_itemsContainer, controlProtected))
+    {
+        m_itemsContainerSizeChangedRevoker = itemsContainerRow.SizeChanged(winrt::auto_revoke,{ this,&NavigationView::OnItemsContainerSizeChanged });
+    }
 
     if (SharedHelpers::IsRS2OrHigher())
     {
@@ -1356,11 +1364,11 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
     UpdateAdaptiveLayout(width);
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
-    if (m_firstUpdatePaneLayoutCall)
-    {
-        InvalidateArrange();
-        UpdateLayout();
-    }
+    UpdatePaneLayout();
+}
+
+void NavigationView::OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+{
     UpdatePaneLayout();
 }
 
@@ -1538,16 +1546,7 @@ void NavigationView::UpdatePaneLayout()
             if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
             {
                 // Update max height for menu items.
-                if (m_firstUpdatePaneLayoutCall)
-                {
-                    m_firstUpdatePaneLayoutCall = false;
-                    // The first size changed event will give us a size that is exactly 40px to large. To account for that, remove that once.
-                    menuItemsScrollViewer.MaxHeight(heightForMenuItems - 40);
-                }
-                else
-                {
-                    menuItemsScrollViewer.MaxHeight(heightForMenuItems);
-                }
+                menuItemsScrollViewer.MaxHeight(heightForMenuItems);
             }
         }
     }
@@ -3853,7 +3852,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
                 "NavigationView_DisableBackUI",
                 TraceLoggingDescription("Developer explicitly disables the BackUI on NavigationView"));
         }
-        UpdateLayout();
+        // Enabling back button shifts grid instead of resizing, so let's update the layout.
+        if (const auto& backButton = m_backButton.get())
+        {
+            backButton.UpdateLayout();
+        }
         UpdatePaneLayout();
     }
     else if (property == s_MenuItemsSourceProperty)
@@ -3922,7 +3925,6 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         {
             m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
         }
-        UpdatePaneLayout();
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {

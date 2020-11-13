@@ -1062,7 +1062,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddMenuItem(320, 200);
 
                 // Fill footer items
-                AddFooterItem(308, 240);
+                AddFooterItem(307, 240);
                 AddFooterItem(274, 274);
 
                 // Check that we reached equilibrium.
@@ -1114,13 +1114,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddFooterItem(160, 280);
                 AddFooterItem(160, 320);
                 AddFooterItem(160, 360);
-                AddFooterItem(160, 388);
+                AddFooterItem(160, 387);
                 // Reached maximum height
-                AddFooterItem(160, 388);
+                AddFooterItem(160, 387);
 
-                AddMenuItem(160, 388);
-                AddMenuItem(200, 348);
-                AddMenuItem(240, 308);
+                AddMenuItem(160, 387);
+                AddMenuItem(200, 347);
+                AddMenuItem(240, 307);
                 AddMenuItem(274, 274);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
