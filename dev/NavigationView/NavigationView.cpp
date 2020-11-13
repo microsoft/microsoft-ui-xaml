@@ -70,6 +70,7 @@ static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBord
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
 
 static constexpr auto c_itemsContainerRow = L"ItemsContainerRow"sv;
+static constexpr auto c_visualItemsSeparator = L"VisualItemsSeparator"sv;
 static constexpr auto c_menuItemsScrollViewer = L"MenuItemsScrollViewer"sv;
 static constexpr auto c_footerItemsScrollViewer = L"FooterItemsScrollViewer"sv;
 
@@ -646,6 +647,7 @@ void NavigationView::OnApplyTemplate()
     m_itemsContainerRow.set(GetTemplateChildT<winrt::RowDefinition>(c_itemsContainerRow, controlProtected));
     m_menuItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_menuItemsScrollViewer, controlProtected));
     m_footerItemsScrollViewer.set(GetTemplateChildT<winrt::FrameworkElement>(c_footerItemsScrollViewer, controlProtected));
+    m_visualItemsSeparator.set(GetTemplateChildT<winrt::FrameworkElement>(c_visualItemsSeparator, controlProtected));
 
     if (SharedHelpers::IsRS2OrHigher())
     {
@@ -1449,11 +1451,11 @@ void NavigationView::UpdatePaneLayout()
                 // 20px is the padding between the two item lists
                 if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
-                    return paneContentRow.ActualHeight() - 28 - paneFooter.ActualHeight();
+                    return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
                 }
                 else
                 {
-                    return paneContentRow.ActualHeight() - 28;
+                    return paneContentRow.ActualHeight() - 29;
                 }
             }
             return 0.0;
@@ -1479,24 +1481,40 @@ void NavigationView::UpdatePaneLayout()
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                if (const auto &separator = m_visualItemsSeparator.get())
+                                {
+                                    separator.Visibility(winrt::Visibility::Collapsed);
+                                }
                                 return totalAvailableHeight - footersActualHeight;
                             }
                             else if (menuItemsActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
+                                if (const auto& separator = m_visualItemsSeparator.get())
+                                {
+                                    separator.Visibility(winrt::Visibility::Visible);
+                                }
                                 return menuItemsActualHeight;
                             }
                             else if (footersActualHeight <= totalAvailableHeightHalf)
                             {
                                 // Menu items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                if (const auto& separator = m_visualItemsSeparator.get())
+                                {
+                                    separator.Visibility(winrt::Visibility::Visible);
+                                }
                                 return totalAvailableHeight - footersActualHeight;
                             }
                             else
                             {
                                 // Both are more than half the height, so split evenly.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeightHalf);
+                                if (const auto& separator = m_visualItemsSeparator.get())
+                                {
+                                    separator.Visibility(winrt::Visibility::Visible);
+                                }
                                 return totalAvailableHeightHalf;
                             }
                         }
@@ -3828,6 +3846,8 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
                 "NavigationView_DisableBackUI",
                 TraceLoggingDescription("Developer explicitly disables the BackUI on NavigationView"));
         }
+        UpdateLayout();
+        UpdatePaneLayout();
     }
     else if (property == s_MenuItemsSourceProperty)
     {
@@ -3895,6 +3915,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         {
             m_autoSuggestBoxSuggestionChosenRevoker = newAutoSuggestBox.SuggestionChosen(winrt::auto_revoke, {this, &NavigationView::OnAutoSuggestBoxSuggestionChosen });
         }
+        UpdatePaneLayout();
     }
     else if (property == s_SelectionFollowsFocusProperty)
     {
