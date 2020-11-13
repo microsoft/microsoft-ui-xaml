@@ -21,6 +21,7 @@
                             HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalAlignment}"
                             Background="{TemplateBinding Background}">
+
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
@@ -30,7 +31,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                    
+
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PreviousPageButtonVisibilityStates">
                                 <VisualState x:Name="PreviousPageButtonHidden"/>
@@ -78,6 +79,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
 
                         <Button x:Name="PreviousPageButton" Style="{TemplateBinding PreviousButtonStyle}"/>
 

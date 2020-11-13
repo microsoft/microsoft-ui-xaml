@@ -13,6 +13,8 @@
 
 typedef winrt::IndicatorPagerButtonVisibility ButtonVisibility;
 
+static constexpr wstring_view s_pipButtonHandlersPropertyName = L"PipButtonHandlers"sv;
+
 constexpr auto c_previousPageButtonVisibleVisualState = L"PreviousPageButtonVisible"sv;
 constexpr auto c_previousPageButtonHiddenVisualState = L"PreviousPageButtonHidden"sv;
 constexpr auto c_previousPageButtonCollapsedVisualState = L"PreviousPageButtonCollapsed"sv;
@@ -48,17 +50,15 @@ PipsControl::PipsControl()
     templateSettings.SetValue(PipsControlTemplateSettings::s_VerticalPipsItemsProperty, m_verticalPipsElements);
     SetValue(s_TemplateSettingsProperty, templateSettings);
 
+    s_pipButtonHandlersProperty =
+        InitializeDependencyProperty(
+            s_pipButtonHandlersPropertyName,
+            winrt::name_of<PipsControlViewItemRevokers>(),
+            winrt::name_of<winrt::PipsControl>(),
+            true,
+            nullptr,
+            nullptr);
     SetDefaultStyleKey(this);
-
-}
-
-PipsControl::~PipsControl() {
-    m_nextPageButtonClickRevoker.revoke();
-    m_previousPageButtonClickRevoker.revoke();
-    m_verticalPipsElementPreparedRevoker.revoke();
-    m_rootGridPointerEnteredRevoker.revoke();
-    m_rootGridPointerExitedRevoker.revoke();
-    m_rootGridKeyDownRevoker.revoke();
 }
 
 void PipsControl::OnApplyTemplate()
@@ -94,7 +94,7 @@ void PipsControl::OnApplyTemplate()
 
     m_rootGridPointerEnteredRevoker.revoke();
     m_rootGridPointerExitedRevoker.revoke();
-
+    m_rootGridKeyDownRevoker.revoke();
     [this](const winrt::Grid grid) {
         if (grid) {
             m_rootGridPointerEnteredRevoker = grid.PointerEntered(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerEntered });
@@ -104,9 +104,9 @@ void PipsControl::OnApplyTemplate()
         }
     }(GetTemplateChildT<winrt::Grid>(c_rootGridName, *this));
 
-    OnNumberOfPagesChanged(0);
-    OnSelectedPageIndexChange(-1);
-    OnMaxDisplayedPagesChanged(0);
+    OnMaxDisplayedPagesChanged(m_lastMaxDisplayedPages);
+    OnNumberOfPagesChanged();
+    OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
 }
 
 void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
@@ -135,13 +135,14 @@ void PipsControl::UpdateIndividualNavigationButtonVisualState(
     const wstring_view enabledStateName,
     const wstring_view disabledStateName) {
 
+    const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() > 0 && MaxDisplayedPages() > 0;
     if (visibility != ButtonVisibility::Collapsed) {
-        if ((visibility == ButtonVisibility::Visible || m_isPointerOver) && !hiddenOnEdgeCondition) {
+        if ((visibility == ButtonVisibility::Visible || m_isPointerOver) && ifGenerallyVisible) {
             winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
             winrt::VisualStateManager::GoToState(*this, enabledStateName, false);
         }
         else {
-            if (hiddenOnEdgeCondition) {
+            if (!ifGenerallyVisible) {
                 winrt::VisualStateManager::GoToState(*this, disabledStateName, false);
             }
             winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
@@ -163,39 +164,48 @@ void PipsControl::UpdateNavigationButtonVisualStates() {
     const int selectedPageIndex = SelectedPageIndex();
     const int numberOfPages = NumberOfPages();
     const int maxDisplayedPages = MaxDisplayedPages();
-    
-    if (!numberOfPages == 0 && maxDisplayedPages > 0) { 
-        auto const ifPreviousButtonHiddenOnEdge = selectedPageIndex == 0;
-        UpdateIndividualNavigationButtonVisualState(ifPreviousButtonHiddenOnEdge, PreviousButtonVisibility(),
-                c_previousPageButtonVisibleVisualState, c_previousPageButtonHiddenVisualState,
-                c_previousPageButtonEnabledVisualState, c_previousPageButtonDisabledVisualState);
 
-        auto const ifNextButtonHiddenOnEdge = selectedPageIndex == numberOfPages - 1;
-        UpdateIndividualNavigationButtonVisualState(ifNextButtonHiddenOnEdge, NextButtonVisibility(),
-            c_nextPageButtonVisibleVisualState, c_nextPageButtonHiddenVisualState,
-            c_nextPageButtonEnabledVisualState, c_nextPageButtonDisabledVisualState);
-    }
+   // if (!numberOfPages == 0 && maxDisplayedPages > 0) {
+    auto const ifPreviousButtonHiddenOnEdge = selectedPageIndex == 0;
+    UpdateIndividualNavigationButtonVisualState(ifPreviousButtonHiddenOnEdge, PreviousButtonVisibility(),
+        c_previousPageButtonVisibleVisualState, c_previousPageButtonHiddenVisualState,
+        c_previousPageButtonEnabledVisualState, c_previousPageButtonDisabledVisualState);
+
+    auto const ifNextButtonHiddenOnEdge = selectedPageIndex == numberOfPages - 1;
+    UpdateIndividualNavigationButtonVisualState(ifNextButtonHiddenOnEdge, NextButtonVisibility(),
+        c_nextPageButtonVisibleVisualState, c_nextPageButtonHiddenVisualState,
+        c_nextPageButtonEnabledVisualState, c_nextPageButtonDisabledVisualState);
+   // }
 }
 
 void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
-    if (const auto pip = args.Element().try_as<winrt::Button>()) {
-        auto const pageNumber = unbox_value<int>(pip.Tag());
-        if (unbox_value<int>(pip.Tag()) - 1 != SelectedPageIndex()) {
-            pip.Style(DefaultIndicatorStyle());
-        }
-        // Narrator says: Page 5, Button 5 of 30. Is it expected behavior?
-        winrt::AutomationProperties::SetName(pip, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlPageText) + L" " + winrt::to_hstring(pageNumber));
-        winrt::AutomationProperties::SetPositionInSet(pip, pageNumber);
-        winrt::AutomationProperties::SetSizeOfSet(pip, NumberOfPages());
-        const auto buttonClickedFunc = [this](auto const& sender, auto const& args) {
-            if (const auto button = sender.try_as<winrt::Button>())
+    if (auto const element = args.Element())
+    {
+        if (const auto pip = element.try_as<winrt::Button>())
+        {
+            auto const index = args.Index();
+            if (index != SelectedPageIndex())
             {
-                SelectedPageIndex(winrt::unbox_value<int>(button.Tag()) - 1);
+                pip.Style(DefaultIndicatorStyle());
             }
-        };
-        pip.Click(buttonClickedFunc);
 
+            // Narrator says: Page 5, Button 5 of 30. Is it expected behavior?
+            winrt::AutomationProperties::SetName(pip, ResourceAccessor::GetLocalizedStringResource(SR_PipsControlPageText) + L" " + winrt::to_hstring(index + 1));
+            winrt::AutomationProperties::SetPositionInSet(pip, index + 1);
+            winrt::AutomationProperties::SetSizeOfSet(pip, NumberOfPages());
+
+            auto pciRevokers = winrt::make_self<PipsControlViewItemRevokers>();
+            pciRevokers->clickRevoker = pip.Click(winrt::auto_revoke,
+                [this, index](auto const& sender, auto const& args) {
+                    if (const auto button = sender.try_as<winrt::Button>())
+                    {
+                        SelectedPageIndex(index);
+                    }
+                }
+            );
+            pip.SetValue(s_pipButtonHandlersProperty, pciRevokers.as<winrt::IInspectable>());
+        }
     }
 }
 
@@ -208,26 +218,31 @@ void PipsControl::ScrollToCenterOfViewport(winrt::UIElement sender)
 }
 
 
-void PipsControl::OnMaxDisplayedPagesChanged(const int oldValue) {
-    m_lastMaxDisplayedPages = oldValue;
-    auto const maxDisplayedPages = MaxDisplayedPages();
-    if (m_lastMaxDisplayedPages != maxDisplayedPages) {
-        UpdateVerticalPips(NumberOfPages(), maxDisplayedPages);
+void PipsControl::OnMaxDisplayedPagesChanged(const int oldValue)
+{
+    if (MaxDisplayedPages() >= 0) {
+        m_lastMaxDisplayedPages = oldValue;
+        UpdateVerticalPips(NumberOfPages(), MaxDisplayedPages());
+        UpdateNavigationButtonVisualStates();
+    }
+    else {
+        MaxDisplayedPages(0);
     }
 }
 
-void PipsControl::OnNumberOfPagesChanged(const int oldValue)
+void PipsControl::OnNumberOfPagesChanged()
 {
-    m_lastNumberOfPagesCount = oldValue;
     const int numberOfPages = NumberOfPages();
     if (SelectedPageIndex() > numberOfPages - 1 && numberOfPages > -1) {
         SelectedPageIndex(numberOfPages - 1);
     }
-    UpdateVerticalPips(numberOfPages, MaxDisplayedPages());
-    UpdateNavigationButtonVisualStates();
+    else {
+        UpdateVerticalPips(numberOfPages, MaxDisplayedPages());
+        UpdateNavigationButtonVisualStates();
+    }
 }
 
-void PipsControl::OnSelectedPageIndexChange(const int oldValue)
+void PipsControl::OnSelectedPageIndexChanged(const int oldValue)
 {
     // If we don't have any pages, there is nothing we should do.
     // Ensure that SelectedPageIndex will end up in the valid range of values
@@ -249,8 +264,9 @@ void PipsControl::OnSelectedPageIndexChange(const int oldValue)
         {
             winrt::get_self<PipsControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
         }
-        UpdateNavigationButtonVisualStates();
+
         UpdateVerticalPips(NumberOfPages(), SelectedPageIndex());
+        UpdateNavigationButtonVisualStates();
         RaiseSelectedIndexChanged();
     }
 }
@@ -270,7 +286,6 @@ void PipsControl::MovePipIdentifierToElement(int index) {
                 element.Style(DefaultIndicatorStyle());
             }
             if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>()) {
-                element.UpdateLayout();
                 element.Style(SelectedIndicatorStyle());
                 ScrollToCenterOfViewport(element);
             }
@@ -279,19 +294,17 @@ void PipsControl::MovePipIdentifierToElement(int index) {
 }
 
 void PipsControl::SetVerticalPipsSVMaxSize() {
-    auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_PipsControlButtonHeightPropertyName)));
-    auto numberOfPages = NumberOfPages() < 0 ? MaxDisplayedPages() : std::min(NumberOfPages(), MaxDisplayedPages());
-    auto scrollViewerHeight = pipHeight * numberOfPages;
+    const auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_PipsControlButtonHeightPropertyName)));
+    const auto numberOfPages = NumberOfPages() < 0 ? MaxDisplayedPages() : std::min(NumberOfPages(), MaxDisplayedPages());
+    const auto scrollViewerHeight = pipHeight * numberOfPages;
     if (const auto scrollViewer = m_verticalPipsScrollViewer.get()) {
         m_verticalPipsScrollViewer.get().MaxHeight(scrollViewerHeight);
     }
 }
 
-
-
 void PipsControl::UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages) {
 
-    auto pipsListSize = static_cast<int>(m_verticalPipsElements.Size());
+    auto pipsListSize = int(m_verticalPipsElements.Size());
     auto const selectedIndex = SelectedPageIndex();
 
     if (numberOfPages < pipsListSize) {
@@ -325,8 +338,8 @@ void PipsControl::OnRootGridKeyDown(const winrt::IInspectable& sender, const win
 
 void PipsControl::OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
 {
-    // In this method, SelectedPageIndex is always greater than 1.
-       SelectedPageIndex(SelectedPageIndex() - 1);
+    // In this method, SelectedPageIndex is always greater than 0.
+    SelectedPageIndex(SelectedPageIndex() - 1);
 }
 
 void PipsControl::OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
@@ -342,11 +355,11 @@ void PipsControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         if (property == NumberOfPagesProperty())
         {
-            OnNumberOfPagesChanged(winrt::unbox_value<int>(args.OldValue()));
+            OnNumberOfPagesChanged();
         }
         else if (property == SelectedPageIndexProperty())
         {
-            OnSelectedPageIndexChange(winrt::unbox_value<int>(args.OldValue()));
+            OnSelectedPageIndexChanged(winrt::unbox_value<int>(args.OldValue()));
         }
         else if (property == MaxDisplayedPagesProperty()) {
             OnMaxDisplayedPagesChanged(winrt::unbox_value<int>(args.OldValue()));
@@ -359,7 +372,6 @@ void PipsControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         {
             OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState);
         }
-        // TODO: Add button styles listeners
     }
 }
 

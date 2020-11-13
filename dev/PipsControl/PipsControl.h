@@ -8,26 +8,32 @@
 #include "PipsControl.g.h"
 #include "PipsControl.properties.h"
 
+class PipsControlViewItemRevokers : public winrt::implements<PipsControlViewItemRevokers, winrt::IInspectable>
+{
+public:
+    winrt::Button::Click_revoker clickRevoker{};
+};
+
 class PipsControl :
     public ReferenceTracker<PipsControl, winrt::implementation::PipsControlT>,
     public PipsControlProperties
 {
-
 public:
     PipsControl();
-    ~PipsControl();
 
     /* IFrameworkElement */
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
-       
+
     /* Property changed handlers */
-    void OnNumberOfPagesChanged(const int oldValue);
-    void OnSelectedPageIndexChange(const int oldValue);
+    void OnNumberOfPagesChanged();
+    void OnSelectedPageIndexChanged(const int oldValue);
     void OnMaxDisplayedPagesChanged(const int oldValue);
     void OnNavigationButtonVisibilityChanged(winrt::IndicatorPagerButtonVisibility visibility, const wstring_view collapsedStateName);
 
+    /* Dependency property for pip buttons revokers */
+    GlobalDependencyProperty s_pipButtonHandlersProperty;
 
 private:
     /* UI updating */
@@ -41,7 +47,6 @@ private:
         const wstring_view enabledStateName,
         const wstring_view disabledStateName);
 
-
     /* Eventing */
     void RaiseSelectedIndexChanged();
 
@@ -51,7 +56,6 @@ private:
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
     void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
-
 
     /* Pips Logic */
     void UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages);
@@ -75,8 +79,8 @@ private:
     /* Elements */
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
 
-    int m_lastSelectedPageIndex = -1;
-    int m_lastNumberOfPagesCount = 0;
-    int m_lastMaxDisplayedPages = 0;
-    bool m_isPointerOver = false;
+    /* Additional variables class variables*/
+    int m_lastSelectedPageIndex{ -1 };
+    int m_lastMaxDisplayedPages{ 0 };
+    bool m_isPointerOver{ false };
 };
