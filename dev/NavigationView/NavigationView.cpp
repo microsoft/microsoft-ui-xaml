@@ -3165,7 +3165,14 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 
 void NavigationView::OnMenuItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    UpdatePaneLayout();
+    if (!IsTopNavigationView())
+    {
+        if (const auto& repeater = m_leftNavRepeater.get())
+        {
+            repeater.UpdateLayout();
+        }
+        UpdatePaneLayout();
+    }
 }
 
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
