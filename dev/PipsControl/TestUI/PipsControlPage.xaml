@@ -5,32 +5,26 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
-    <Grid  Margin="12" Padding="50">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <FlipView x:Name="Gallery" HorizontalAlignment="Left" VerticalAlignment="Top" Width="500" Height="500">
+    <StackPanel Orientation="Horizontal">
+       <FlipView x:Name="Gallery"
+                  Width="500" Height="500"
+                  ItemsSource="{x:Bind Pictures}">
             <FlipView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Image Source="{Binding}" Stretch="UniformToFill" />
-                    </Grid>
+                    <Image Source="{Binding}" Stretch="UniformToFill" />
                 </DataTemplate>
             </FlipView.ItemTemplate>
         </FlipView>
 
+        <muxc:PipsControl x:Name="pipsControl"
+                          VerticalAlignment="Center"
+                          NumberOfPages="{x:Bind Pictures.Count}"
+                          AutomationProperties.Name="TestPipsControl"
+                          NextButtonVisibility="VisibleOnHover"
+                          PreviousButtonVisibility="VisibleOnHover"
+                          SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}" />
 
-
-        <muxc:PipsControl x:Name="pipsControl" NumberOfPages="30" MaxDisplayedPages="10" AutomationProperties.Name="TestPipsControl"
-                              NextButtonVisibility="VisibleOnHover" PreviousButtonVisibility="VisibleOnHover" Grid.Column="1"
-                              SelectedIndexChanged="OnSelectedIndexChanged"/>
-    </Grid>
+    </StackPanel>
 </local:TestPage>

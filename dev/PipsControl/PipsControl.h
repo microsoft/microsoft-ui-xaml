@@ -26,6 +26,11 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
 
+
+    void OnPointerEntered(const winrt::PointerRoutedEventArgs& args);
+    void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
+    void OnPointerCanceled(const winrt::PointerRoutedEventArgs& args);
+
     /* Property changed handlers */
     void OnNumberOfPagesChanged();
     void OnSelectedPageIndexChanged(const int oldValue);
@@ -38,7 +43,7 @@ public:
 private:
     /* UI updating */
     void UpdateNavigationButtonVisualStates();
-    bool IsWithinBounds(winrt::Point point);
+    bool IsOutOfControlBounds(winrt::Point point);
     void UpdateIndividualNavigationButtonVisualState(
         bool hiddenOnEdgeCondition,
         winrt::IndicatorPagerButtonVisibility visibility,
@@ -54,9 +59,7 @@ private:
     void OnRootGridKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
-    void OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args);
-
+   
     /* Pips Logic */
     void UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages);
     void MovePipIdentifierToElement(int index);
@@ -73,9 +76,7 @@ private:
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_verticalPipsElementPreparedRevoker{};
     winrt::Grid::KeyDown_revoker m_rootGridKeyDownRevoker{};
-    winrt::Grid::PointerEntered_revoker m_rootGridPointerEnteredRevoker{};
-    winrt::Grid::PointerExited_revoker m_rootGridPointerExitedRevoker{};
-
+   
     /* Elements */
     winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
 

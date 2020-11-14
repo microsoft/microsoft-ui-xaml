@@ -92,13 +92,9 @@ void PipsControl::OnApplyTemplate()
 
     m_verticalPipsScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_PipsControlScrollViewerName, *this));
 
-    m_rootGridPointerEnteredRevoker.revoke();
-    m_rootGridPointerExitedRevoker.revoke();
     m_rootGridKeyDownRevoker.revoke();
     [this](const winrt::Grid grid) {
         if (grid) {
-            m_rootGridPointerEnteredRevoker = grid.PointerEntered(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerEntered });
-            m_rootGridPointerExitedRevoker = grid.PointerExited(winrt::auto_revoke, { this, &PipsControl::OnPipsControlPointerExited });
             m_rootGridKeyDownRevoker = grid.KeyDown(winrt::auto_revoke, { this, &PipsControl::OnRootGridKeyDown });
 
         }
@@ -109,22 +105,45 @@ void PipsControl::OnApplyTemplate()
     OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
 }
 
-void PipsControl::OnPipsControlPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
+void PipsControl::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerEntered(args);
     m_isPointerOver = true;
     UpdateNavigationButtonVisualStates();
 }
-void PipsControl::OnPipsControlPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
-    // TODO : Explain WHAT'S UP and mention quarks
-    if (!IsWithinBounds(args.GetCurrentPoint(*this).Position())) {
+
+void PipsControl::OnPointerExited(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerExited(args);
+
+    // We can get a spurious Exited and then Entered if the button
+    // that is being clicked on hides itself. In order to avoid switching
+    // visual states in this case, we check if the pointer is over the
+    // control bounds when we get the exited event.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+    {
         m_isPointerOver = false;
         UpdateNavigationButtonVisualStates();
-        args.Handled(true);
     }
-
 }
 
-bool PipsControl::IsWithinBounds(winrt::Point point) {
-    return point.X >= 0 && point.X <= ActualWidth() && point.Y >= 0 && point.Y <= ActualHeight();
+void PipsControl::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerCanceled(args);
+    m_isPointerOver = false;
+    UpdateNavigationButtonVisualStates();
+}
+
+bool PipsControl::IsOutOfControlBounds(winrt::Point point) {
+    // This is a conservative check. It is okay to say we are within
+    // bounds when close to the edge to account for rounding.
+    const auto tolerance = 1.0;
+    const auto actualWidth = ActualWidth();
+    const auto actualHeight = ActualHeight();
+    return point.X < tolerance ||
+       point.X > actualWidth - tolerance ||
+       point.Y < tolerance ||
+       point.Y  > actualHeight - tolerance;
 }
 
 void PipsControl::UpdateIndividualNavigationButtonVisualState(
@@ -165,7 +184,7 @@ void PipsControl::UpdateNavigationButtonVisualStates() {
     const int numberOfPages = NumberOfPages();
     const int maxDisplayedPages = MaxDisplayedPages();
 
-   // if (!numberOfPages == 0 && maxDisplayedPages > 0) {
+    // if (!numberOfPages == 0 && maxDisplayedPages > 0) {
     auto const ifPreviousButtonHiddenOnEdge = selectedPageIndex == 0;
     UpdateIndividualNavigationButtonVisualState(ifPreviousButtonHiddenOnEdge, PreviousButtonVisibility(),
         c_previousPageButtonVisibleVisualState, c_previousPageButtonHiddenVisualState,
@@ -175,7 +194,7 @@ void PipsControl::UpdateNavigationButtonVisualStates() {
     UpdateIndividualNavigationButtonVisualState(ifNextButtonHiddenOnEdge, NextButtonVisibility(),
         c_nextPageButtonVisibleVisualState, c_nextPageButtonHiddenVisualState,
         c_nextPageButtonEnabledVisualState, c_nextPageButtonDisabledVisualState);
-   // }
+    // }
 }
 
 void PipsControl::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
