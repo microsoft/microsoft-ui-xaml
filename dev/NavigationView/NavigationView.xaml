@@ -285,6 +285,40 @@
                                                         <Setter Property="Padding" Value="{ThemeResource TopNavigationViewOverflowMenuPadding}" />
                                                         <!-- Set negative top margin to make the flyout align exactly with the button -->
                                                         <Setter Property="Margin" Value="0,-4,0,0" />
+                                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+                                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="FlyoutPresenter">
+                                                                    <ScrollViewer
+                                                                        x:Name="ScrollViewer"
+                                                                        ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                                        HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                                        VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                                        AutomationProperties.AccessibilityView="Raw">
+                                                                        <ContentPresenter
+                                                                            x:Name="ContentPresenter"
+                                                                            Background="{TemplateBinding Background}"
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            Content="{TemplateBinding Content}"
+                                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                                            Padding="{TemplateBinding Padding}"
+                                                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
+                                                                    </ScrollViewer>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
                                                     </Style>
                                                 </Flyout.FlyoutPresenterStyle>
                                                 <local:ItemsRepeaterScrollHost>
@@ -606,6 +640,40 @@
                                         <Setter Property="Padding" Value="{ThemeResource NavigationViewItemChildrenMenuFlyoutPadding}" />
                                         <!-- Set negative top margin to make the flyout align exactly with the button -->
                                         <Setter Property="Margin" Value="0,-4,0,0" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                                        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="FlyoutPresenter">
+                                                    <ScrollViewer
+                                                        x:Name="ScrollViewer"
+                                                        ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                        HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                        VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                        AutomationProperties.AccessibilityView="Raw">
+                                                        <ContentPresenter
+                                                            x:Name="ContentPresenter"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            Content="{TemplateBinding Content}"
+                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                            Padding="{TemplateBinding Padding}"
+                                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
+                                                    </ScrollViewer>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
                                     </Style>
                                 </Flyout.FlyoutPresenterStyle>
                                 <Grid x:Name="FlyoutRootGrid">
