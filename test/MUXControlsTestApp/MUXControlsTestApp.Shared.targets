@@ -89,6 +89,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Expander\TestUI\Expander_TestUI.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PagerControl\TestUI\PagerControl_TestUI.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PagerControl\APITests\PagerControl_APITests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PipsControl\TestUI\PipsControl_TestUI.projitems" Label="Shared" Condition="$(FeaturePipsControlEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PipsControl\APITests\PipsControl_APITests.projitems" Label="Shared" Condition="$(FeaturePipsControlEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PipsPager\TestUI\PipsPager_TestUI.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PipsPager\APITests\PipsPager_APITests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
 </Project>

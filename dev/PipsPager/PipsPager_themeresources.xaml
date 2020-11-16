@@ -62,7 +62,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
@@ -111,7 +111,7 @@
 
     <Style x:Key="PipsPagerNextPageButtonStyle" BasedOn="{StaticResource NavigatonButtonBaseStyle}" TargetType="Button">
         <Setter Property="Content" Value="{StaticResource PipsPagerNextPageButtonGlyph}"/>
-        <Setter Property="Margin" Value="0, 10"/>
+        <Setter Property="Margin" Value="0, 10, 0, 0"/>
     </Style>
 
 
@@ -129,7 +129,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button" >
-                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>

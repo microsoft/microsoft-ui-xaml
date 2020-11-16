@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PipsPagerNameText" xml:space="preserver">
+  <data name="PipsPagerNameText" xml:space="preserve">
     <value>Pager</value>
     <comment>The name of the control itself that will be announced when it receives focus</comment>
   </data>

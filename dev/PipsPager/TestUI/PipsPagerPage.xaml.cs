@@ -21,42 +21,21 @@ namespace MUXControlsTestApp
     [TopLevelTestPage(Name = "PipsPager")]
     public sealed partial class PipsPagerPage : TestPage
     {
-        private List<string> pictures;
+        public List<string> Pictures = new List<string>()
+        {
+            "Assets/ingredient1.png",
+            "Assets/ingredient2.png",
+            "Assets/ingredient3.png",
+            "Assets/ingredient4.png",
+            "Assets/ingredient5.png",
+            "Assets/ingredient6.png",
+            "Assets/ingredient7.png",
+            "Assets/ingredient8.png",
+        };
+
         public PipsPagerPage()
         {
             this.InitializeComponent();
-            populatePictures();
-            Gallery.Loaded += flipView_Loaded;
-            Gallery.ItemsSource = pictures;
-            PipsPager.NumberOfPages = pictures.Capacity;
-            PipsPager.MaxDisplayedPages = 5;
-        }
-
-        private void flipView_Loaded(object sender, RoutedEventArgs e)
-        {
-            Grid grid = (Grid)VisualTreeHelper.GetChild(sender as FlipView, 0);
-            for (int i = grid.Children.Count - 1; i >= 0; i--)
-                if (grid.Children[i] is Button)
-                    grid.Children.RemoveAt(i);
-        }
-
-        private void populatePictures()
-        {
-            pictures = new List<string>();
-            pictures.Add("Assets/ingredient1.png");
-            pictures.Add("Assets/ingredient2.png");
-            pictures.Add("Assets/ingredient3.png");
-            pictures.Add("Assets/ingredient4.png");
-            pictures.Add("Assets/ingredient5.png");
-            pictures.Add("Assets/ingredient6.png");
-            pictures.Add("Assets/ingredient7.png");
-            pictures.Add("Assets/ingredient8.png");
-        }
-
-        private void OnSelectedIndexChanged(PipsPager sender, PipsPagerSelectedIndexChangedEventArgs args)
-        {
-            Gallery.SelectedIndex = args.NewPageIndex;
         }
     }
-
 }

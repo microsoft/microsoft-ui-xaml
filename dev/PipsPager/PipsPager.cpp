@@ -89,18 +89,12 @@ void PipsPager::OnApplyTemplate()
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_PipsPagerPipsRepeaterName, *this));
 
-
     m_verticalPipsScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_PipsPagerScrollViewerName, *this));
 
-    m_rootGridPointerEnteredRevoker.revoke();
-    m_rootGridPointerExitedRevoker.revoke();
     m_rootGridKeyDownRevoker.revoke();
     [this](const winrt::Grid grid) {
         if (grid) {
-            m_rootGridPointerEnteredRevoker = grid.PointerEntered(winrt::auto_revoke, { this, &PipsPager::OnPipsPagerPointerEntered });
-            m_rootGridPointerExitedRevoker = grid.PointerExited(winrt::auto_revoke, { this, &PipsPager::OnPipsPagerPointerExited });
             m_rootGridKeyDownRevoker = grid.KeyDown(winrt::auto_revoke, { this, &PipsPager::OnRootGridKeyDown });
-
         }
     }(GetTemplateChildT<winrt::Grid>(c_rootGridName, *this));
 
@@ -109,13 +103,19 @@ void PipsPager::OnApplyTemplate()
     OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
 }
 
-void PipsPager::OnPipsPagerPointerEntered(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
+void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args) {
+    __super::OnPointerEntered(args);
     m_isPointerOver = true;
     UpdateNavigationButtonVisualStates();
 }
-void PipsPager::OnPipsPagerPointerExited(winrt::IInspectable sender, winrt::PointerRoutedEventArgs args) {
-    // TODO : Explain WHAT'S UP and mention quarks
-    if (!IsWithinBounds(args.GetCurrentPoint(*this).Position())) {
+void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
+
+    __super::OnPointerExited(args);
+    // We can get a spurious Exited and then Entered if the button
+    // that is being clicked on hides itself. In order to avoid switching
+    // visual states in this case, we check if the pointer is over the
+    // control bounds when we get the exited event.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position())) {
         m_isPointerOver = false;
         UpdateNavigationButtonVisualStates();
         args.Handled(true);
@@ -123,9 +123,23 @@ void PipsPager::OnPipsPagerPointerExited(winrt::IInspectable sender, winrt::Poin
 
 }
 
-bool PipsPager::IsWithinBounds(winrt::Point point) {
-    auto constexpr epsilon = std::numeric_limits<float>::epsilon();
-    return point.X > epsilon && point.X < ActualWidth() - epsilon && point.Y > epsilon && point.Y < ActualHeight() - epsilon;
+void PipsPager::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+{
+    __super::OnPointerCanceled(args);
+    m_isPointerOver = false;
+    UpdateNavigationButtonVisualStates();
+}
+
+bool PipsPager::IsOutOfControlBounds(winrt::Point point) {
+    // This is a conservative check. It is okay to say we are within
+    // bounds when close to the edge to account for rounding.
+    const auto tolerance = 1.0;
+    const auto actualWidth = ActualWidth();
+    const auto actualHeight = ActualHeight();
+    return point.X < tolerance ||
+        point.X > actualWidth - tolerance ||
+        point.Y < tolerance ||
+        point.Y  > actualHeight - tolerance;
 }
 
 void PipsPager::UpdateIndividualNavigationButtonVisualState(
@@ -188,14 +202,6 @@ void PipsPager::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepea
             {
                 pip.Style(DefaultIndicatorStyle());
             }
-
-          /*  auto constexpr m = std::numeric_limits<float>::infinity();
-            pip.Measure(winrt::Size{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()});
-            if (m_singlePipDesiredHeight != pip.DesiredSize().Height) {
-                m_singlePipDesiredHeight = pip.DesiredSize().Height;
-                SetVerticalPipsSVMaxSize();
-           }
-        */            
 
             // Narrator says: Page 5, Button 5 of 30. Is it expected behavior?
             winrt::AutomationProperties::SetName(pip, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPageText) + L" " + winrt::to_hstring(index + 1));
@@ -305,12 +311,9 @@ void PipsPager::MovePipIdentifierToElement(int index) {
 void PipsPager::SetVerticalPipsSVMaxSize() {
     const auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_PipsPagerButtonHeightPropertyName)));
     const auto numberOfPages = NumberOfPages() < 0 ? MaxDisplayedPages() : std::min(NumberOfPages(), MaxDisplayedPages());
-    const auto scrollViewerHeight = pipHeight * numberOfPages; // 100
+    const auto scrollViewerHeight = pipHeight * numberOfPages;
     if (const auto scrollViewer = m_verticalPipsScrollViewer.get()) {
-      //  scrollViewer.Height(scrollViewerHeight);
         scrollViewer.MaxHeight(scrollViewerHeight);
-       // scrollViewer.InvalidateMeasure();
-       // scrollViewer.UpdateLayout();
     }
 }
 

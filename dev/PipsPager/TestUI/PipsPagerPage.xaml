@@ -10,15 +10,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    
-    <Grid  Margin="12" Padding="50">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <FlipView x:Name="Gallery" HorizontalAlignment="Left" VerticalAlignment="Top" Width="500" Height="500">
+
+
+    <StackPanel Orientation="Horizontal">
+
+        <FlipView x:Name="Gallery" Width="500" Height="500" ItemsSource="{x:Bind Pictures}">
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -28,8 +25,13 @@
             </FlipView.ItemTemplate>
         </FlipView>
 
-        <muxc:PipsPager x:Name="PipsPager" NumberOfPages="10" MaxDisplayedPages="10" AutomationProperties.Name="TestPipsPager"
-                              NextButtonVisibility="VisibleOnHover" PreviousButtonVisibility="VisibleOnHover" Grid.Column="1"
-                              SelectedIndexChanged="OnSelectedIndexChanged"/>
-    </Grid>
+        <muxc:PipsPager x:Name="PipsPager"
+                              VerticalAlignment="Center"
+                              NumberOfPages="{x:Bind Pictures.Count}"
+                              MaxDisplayedPages="10"
+                              AutomationProperties.Name="TestPipsPager"
+                              NextButtonVisibility="VisibleOnHover"
+                              PreviousButtonVisibility="VisibleOnHover"
+                              SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}"/>
+    </StackPanel>
 </local:TestPage>
