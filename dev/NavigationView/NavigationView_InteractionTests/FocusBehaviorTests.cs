@@ -197,52 +197,109 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     SetNavViewWidth(ControlWidth.Wide);
 
-                    // TODO: Update test to include moving focus with selected item.
-
-                    // Clear any item selection
-                    var clearSelectedItemButton = new Button(FindElement.ByName("ClearSelectedItemButton"));
-                    clearSelectedItemButton.Click();
-                    Wait.ForIdle();
-
-                    Verify.AreEqual("null", GetSelectedItem());
-
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
-                    UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");
-                    UIObject firstMenuItem = FindElement.ByName("Home");
-                    UIObject lastMenuItem = FindElement.ByName("HasChildItem");
+                    UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");                   
                     UIObject settingsItem = FindElement.ByName("Settings");
-                    togglePaneButton.SetFocus();
-                    Wait.ForIdle();
 
-                    Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to the search box");
-                    KeyboardHelper.PressKey(Key.Tab);
-                    Wait.ForIdle();
-                    Verify.IsTrue(searchBox.HasKeyboardFocus);
+                    VerifyTabNavigationWithoutMenuItemSelected();
+                    VerifyTabNavigationWithMenuItemSelected();
 
-                    Log.Comment("Verify that pressing tab while the search box has focus moves to the first menu item");
-                    KeyboardHelper.PressKey(Key.Tab);
-                    Wait.ForIdle();
-                    Verify.IsTrue(firstMenuItem.HasKeyboardFocus);
+                    void VerifyTabNavigationWithoutMenuItemSelected()
+                    {
+                        Log.Comment("Verify Tab navigation without a selected menu item");
 
-                    Log.Comment("Verify that pressing tab thrice more will move focus to the settings item");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
-                    Wait.ForIdle();
-                    Verify.IsTrue(settingsItem.HasKeyboardFocus);
+                        // Clear any item selection
+                        var clearSelectedItemButton = new Button(FindElement.ByName("ClearSelectedItemButton"));
+                        clearSelectedItemButton.Click();
+                        Wait.ForIdle();
 
-                    Log.Comment("Verify that pressing SHIFT+tab thrice will move focus to the last menu item");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
-                    Wait.ForIdle();
-                    Verify.IsTrue(lastMenuItem.HasKeyboardFocus);
+                        Verify.AreEqual("null", GetSelectedItem());
 
-                    Log.Comment("Verify that pressing SHIFT+tab will move focus to the search box");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
-                    Wait.ForIdle();
-                    Verify.IsTrue(searchBox.HasKeyboardFocus);
+                        UIObject firstMenuItem = FindElement.ByName("Home");
+                        UIObject lastMenuItem = FindElement.ByName("HasChildItem");
 
-                    Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
-                    Wait.ForIdle();
-                    Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to the search box");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab while the search box has focus moves to the first menu item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(firstMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab thrice more will move focus to the settings item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(settingsItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab thrice will move focus to the last menu item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(lastMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the search box");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                    }
+
+                    void VerifyTabNavigationWithMenuItemSelected()
+                    {
+                        Log.Comment("Verify Tab navigation with a selected menu item");
+
+                        // Select a menu item (preferably not the first or last menu item)
+                        UIObject thirdMenuItem = FindElement.ByName("Games");
+
+                        var selectedItemComboBox = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                        selectedItemComboBox.SelectItemByName("Games");
+                        Wait.ForIdle();
+
+                        Verify.IsTrue(Convert.ToBoolean(thirdMenuItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to the search box");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab while the search box has focus moves to the selected menu item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(thirdMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab thrice more will move focus to the settings item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(settingsItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab thrice will move focus to the selected menu item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(thirdMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the search box");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                    }
                 }
 
                 string GetSelectedItem()
