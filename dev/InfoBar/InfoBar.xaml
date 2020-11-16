@@ -28,7 +28,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarErrorIconGlyph}"/>
-                                        <Setter Target="StandardIcon.Foreground" Value="{StaticResource InfoBarErrorSeverityIconForeground}"/>
+                                        <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -36,7 +36,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarWarningIconGlyph}"/>
-                                        <Setter Target="StandardIcon.Foreground" Value="{StaticResource InfoBarWarningSeverityIconForeground}"/>
+                                        <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -44,7 +44,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}"/>
                                         <Setter Target="StandardIcon.Glyph" Value="{StaticResource InfoBarSuccessIconGlyph}"/>
-                                        <Setter Target="StandardIcon.Foreground" Value="{StaticResource InfoBarSuccessSeverityIconForeground}"/>
+                                        <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -122,7 +122,7 @@
                                 Margin="{StaticResource InfoBarIconMargin}"
                                 FontSize="{StaticResource InfoBarIconFontSize}"
                                 Glyph="{StaticResource InfoBarInformationalIconGlyph}"
-                                Foreground="{StaticResource InfoBarInformationalSeverityIconForeground}"
+                                Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 AutomationProperties.AccessibilityView="Raw" />
 
