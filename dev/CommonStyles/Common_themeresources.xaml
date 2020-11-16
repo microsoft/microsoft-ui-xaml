@@ -8,14 +8,14 @@
     -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            
+
             <!-- Colors -->
 
             <Color x:Key="TextFillColorPrimary">#FFFFFF</Color>
             <Color x:Key="TextFillColorSecondary">#C5FFFFFF</Color>
             <Color x:Key="TextFillColorTertiary">#87FFFFFF</Color>
             <Color x:Key="TextFillColorDisabled">#5DFFFFFF</Color>
-            <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
+            <Color x:Key="TextFillColorInverse">#E4000000</Color>
 
             <Color x:Key="AccentTextFillColorPrimary">#8DEBFF</Color>
             <Color x:Key="AccentTextFillColorSecondary">#49D3FF</Color>
@@ -69,8 +69,9 @@
             <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#33000000</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#1A000000</Color>
-            <Color x:Key="ControlStrokeColorOnAccentBottom">#37000000</Color>
+            <Color x:Key="ControlStrokeColorSecondary">#73000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentDefault">#37000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentSecondary">#6F000000</Color>
 
             <Color x:Key="CardStrokeColorAll">#1A000000</Color>
 
@@ -159,7 +160,8 @@
 
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
             <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
-            <SolidColorBrush x:Key="ControlStrokeColorOnAccentBottomBrush" Color="{StaticResource ControlStrokeColorOnAccentBottom}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentDefaultBrush" Color="{StaticResource ControlStrokeColorOnAccentDefault}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentSecondaryBrush" Color="{StaticResource ControlStrokeColorOnAccentSecondary}" />
 
             <SolidColorBrush x:Key="CardStrokeColorAllBrush" Color="{StaticResource CardStrokeColorAll}" />
 
@@ -207,12 +209,13 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorOnAccentBottom}"/>
-                    <GradientStop Offset="1.0" Color="Transparent"/>
+                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorOnAccentSecondary}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorOnAccentDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            
+
             <!-- Other -->
+
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
@@ -221,7 +224,7 @@
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
-        
+
         <ResourceDictionary x:Key="Light">
 
             <!-- Colors -->
@@ -284,8 +287,9 @@
             <Color x:Key="AccentAAFillColorDisabled">#37000000</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
-            <Color x:Key="ControlStrokeColorSecondary">#1B000000</Color>
-            <Color x:Key="ControlStrokeColorOnAccentBottom">#37000000</Color>
+            <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentDefault">#37000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentSecondary">#6F000000</Color>
 
             <Color x:Key="CardStrokeColorAll">#0F000000</Color>
 
@@ -374,7 +378,8 @@
 
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
             <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
-            <SolidColorBrush x:Key="ControlStrokeColorOnAccentBottomBrush" Color="{StaticResource ControlStrokeColorOnAccentBottom}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentDefaultBrush" Color="{StaticResource ControlStrokeColorOnAccentDefault}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentSecondaryBrush" Color="{StaticResource ControlStrokeColorOnAccentSecondary}" />
 
             <SolidColorBrush x:Key="CardStrokeColorAllBrush" Color="{StaticResource CardStrokeColorAll}" />
 
@@ -406,7 +411,7 @@
             <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
 
             <!-- Elevation border brushes-->
-            
+
             <LinearGradientBrush x:Key="ControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
@@ -416,19 +421,19 @@
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            
+
             <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorOnAccentBottom}"/>
-                    <GradientStop Offset="1.0" Color="Transparent"/>
+                    <GradientStop Offset="0" Color="{StaticResource ControlStrokeColorOnAccentSecondary}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorOnAccentDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
-            
+
             <!-- Other -->
-            
+
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
@@ -437,7 +442,7 @@
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
-        
+
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SystemColorWindowColorBrush" />
@@ -453,7 +458,7 @@
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-   
+
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 </ResourceDictionary>
