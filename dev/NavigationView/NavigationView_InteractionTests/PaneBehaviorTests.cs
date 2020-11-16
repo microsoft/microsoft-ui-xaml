@@ -1034,11 +1034,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
-                    var expectedResult = menuItemsHeight + ";" + footerItemsHeight;
-
                     readResults.Click();
+                    var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.AreEqual(expectedResult, resultTextBlock.GetText());
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
             }
         }
@@ -1075,11 +1075,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
-                    var expectedResult = menuItemsHeight + ";" + footerItemsHeight;
-
                     readResults.Click();
+                    var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.AreEqual(expectedResult, resultTextBlock.GetText());
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
                 void AddMenuItem(int menuItemsHeight, int footerItemsHeight)
@@ -1125,11 +1125,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
-                    var expectedResult = menuItemsHeight + ";" + footerItemsHeight;
-
                     readResults.Click();
+                    var result = resultTextBlock.GetText().Split(";");
 
-                    Verify.AreEqual(expectedResult, resultTextBlock.GetText());
+                    Verify.IsTrue(Math.Abs(menuItemsHeight - int.Parse(result[0])) < 4, "Expected: " + menuItemsHeight + ", Actual: " + result[0]);
+                    Verify.IsTrue(Math.Abs(footerItemsHeight - int.Parse(result[1])) < 4, "Expected: " + footerItemsHeight + ", Actual: " + result[1]);
                 }
 
                 void AddMenuItem(int menuItemsHeight, int footerItemsHeight)
