@@ -60,6 +60,13 @@ jobs:
         sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
         Contents: '**\Microsoft.UI.Xaml*.appx'
 
+    # Copy the CBS packages into the same location in the artifact drop to be republished at the end of the job.
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '${{ parameters.nupkgdir }}'
+        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
+        Contents: '**\CBS*'
+        
   - powershell: |
       $prereleaseTag = "${{ parameters.prereleaseVersionTag }}"
       if ("${{ parameters.useReleaseTag}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
