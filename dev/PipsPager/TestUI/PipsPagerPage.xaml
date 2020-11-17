@@ -10,28 +10,69 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <FlipView x:Name="Gallery" Width="250" Height="250" ItemsSource="{x:Bind Pictures}">
+                <FlipView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Image Source="{Binding}" Stretch="UniformToFill" />
+                        </Grid>
+                    </DataTemplate>
+                </FlipView.ItemTemplate>
+            </FlipView>
 
 
-
-    <StackPanel Orientation="Horizontal">
-
-        <FlipView x:Name="Gallery" Width="500" Height="500" ItemsSource="{x:Bind Pictures}">
-            <FlipView.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Image Source="{Binding}" Stretch="UniformToFill" />
-                    </Grid>
-                </DataTemplate>
-            </FlipView.ItemTemplate>
-        </FlipView>
-
-        <muxc:PipsPager x:Name="PipsPager"
+        <muxc:PipsPager x:Name="FlipViewPipsPager"
+                              Grid.Column="1"
                               VerticalAlignment="Center"
                               NumberOfPages="{x:Bind Pictures.Count}"
                               MaxDisplayedPages="10"
-                              AutomationProperties.Name="TestPipsPager"
+                              AutomationProperties.Name="FlipViewPipsPager"
                               NextButtonVisibility="VisibleOnHover"
                               PreviousButtonVisibility="VisibleOnHover"
                               SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}"/>
-    </StackPanel>
+
+        <muxc:PipsPager x:Name="testPipsPager"
+                              VerticalAlignment="Center"
+                              AutomationProperties.Name="TestPipsPager"
+                              SelectedIndexChanged="OnSelectedIndexChanged"
+                              Grid.Row="1"/>
+
+        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1">
+            <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="1" SelectionChanged="OnPreviousPageButtonVisibilityChanged">
+                <ComboBoxItem x:Name="VisibleOnEdgePreviousButton" AutomationProperties.Name="VisibleOnEdgePreviousButton">Visible</ComboBoxItem>
+                <ComboBoxItem x:Name="VisbileOnHoverPreviousButton" AutomationProperties.Name="VisbileOnHoverPreviousButton">VisibleOnHover</ComboBoxItem>
+                <ComboBoxItem x:Name="CollapsedPreviousButton" AutomationProperties.Name="CollapsedPreviousButton">Collapsed</ComboBoxItem>
+            </ComboBox>
+            <ComboBox x:Name="NextPageButtonVisibilityComboBox" Header="Next Page Button Visibility" SelectedIndex="1" SelectionChanged="OnNextPageButtonVisibilityChanged">
+                <ComboBoxItem x:Name="VisibleOnEdgeNextButton" AutomationProperties.Name="VisibleOnEdgeNextButton">Visible</ComboBoxItem>
+                <ComboBoxItem x:Name="VisbileOnNextButton" AutomationProperties.Name="VisbileOnNextButton">VisibleOnHover</ComboBoxItem>
+                <ComboBoxItem x:Name="CollapsedNextButton" AutomationProperties.Name="CollapsedNextButton">Collapsed</ComboBoxItem>
+            </ComboBox>
+            <ComboBox x:Name="TestPipsPagerNumberOfPagesComboBox" Header="Number of pages" SelectedIndex="1" SelectionChanged="OnNumberOfPagesChanged">
+                <ComboBoxItem x:Name="ZeroNumberOfPages" AutomationProperties.Name="ZeroNumberOfPages">0 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="FiveNumberOfPages" AutomationProperties.Name="FiveNumberOfPages">5 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="TenNumberOfPages" AutomationProperties.Name="TenNumberOfPages">10 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="TwentyNumberOfPages" AutomationProperties.Name="TwentyPage">20 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="InfiniteNumberOfPages" AutomationProperties.Name="InfiniteNumberOfPages">Inifinite NumberOfPages</ComboBoxItem>
+             </ComboBox>
+            <ComboBox x:Name="TestPipsPagerMaxDisplayedPagesComboBox" Header="Maximum displayed number of pages" SelectedIndex="2" SelectionChanged="OnMaxDisplayedPagesChanged">
+                <ComboBoxItem x:Name="ZeroMaxDisplayedPages" AutomationProperties.Name="ZeroMaxDisplayedPages">0 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="OneMaxDisplayedPages" AutomationProperties.Name="OneMaxDisplayedPages">1 Page</ComboBoxItem>
+                <ComboBoxItem x:Name="FiveMaxDisplayedPages" AutomationProperties.Name="FiveMaxDisplayedPages">5 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="TenMaxDisplayedPages" AutomationProperties.Name="TenMaxDisplayedPages">10 Pages</ComboBoxItem>
+            </ComboBox>
+            <TextBlock x:Name="CurrentIndexTextBlock"/>
+            <TextBlock x:Name="PreviousIndexTextBlock"/>
+        </StackPanel>
+    </Grid>
 </local:TestPage>

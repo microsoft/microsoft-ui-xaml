@@ -10,6 +10,8 @@
     <Import_RootNamespace>PipsPager_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PipsPagerElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PipsPagerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PipsPagerTestBase.cs" />
   </ItemGroup>
 </Project>

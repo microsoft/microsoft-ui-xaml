@@ -309,6 +309,10 @@ void PipsPager::MovePipIdentifierToElement(int index) {
 }
 
 void PipsPager::SetVerticalPipsSVMaxSize() {
+    // TODO: Extract the actual height from the first pip in the ItemsRepeater by measuring it
+    // and then getting desiredHeight. While doing it, I encountered a problem that scrollViewer
+    // will not update layout after its MaxHeight or simply Height was changed.
+    // Stephen or Ranjesh - any thoughts?:)
     const auto pipHeight = unbox_value<double>(ResourceAccessor::ResourceLookup(*this, box_value(c_PipsPagerButtonHeightPropertyName)));
     const auto numberOfPages = NumberOfPages() < 0 ? MaxDisplayedPages() : std::min(NumberOfPages(), MaxDisplayedPages());
     const auto scrollViewerHeight = pipHeight * numberOfPages;
@@ -318,20 +322,27 @@ void PipsPager::SetVerticalPipsSVMaxSize() {
 }
 
 void PipsPager::UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages) {
-
     auto pipsListSize = int(m_verticalPipsElements.Size());
     auto const selectedIndex = SelectedPageIndex();
 
+    // If number of pages less than current pips list size, we will clear it
+    // because we do not need so many pips anymore. The better way would be
+    // to only remove the ones we do not need. I will list it as TODO.
+    // Any thoughts?:)
     if (numberOfPages < pipsListSize) {
         m_verticalPipsElements.Clear();
         pipsListSize = 0;
     }
 
+    // As the user progresses in the pip list, we increase its underlying elements
+    // size to accomodate for user selection. We do not populate the entire
+    // elements list at once because some of its element may never be used by the user
+    // I'm not entirely sure if it hurts ItemsRepeater performance by changing
+    // underlying itemsSource all the time. Maybe Ranjesh can clarify?:)
     auto const endIndex = std::min(numberOfPages, selectedIndex + maxDisplayedPages);
     for (int i = pipsListSize; i < endIndex; i++) {
         m_verticalPipsElements.Append(box_value(i + 1));
     }
-
 
     MovePipIdentifierToElement(SelectedPageIndex());
 }
