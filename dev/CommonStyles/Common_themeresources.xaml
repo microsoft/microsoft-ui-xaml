@@ -249,6 +249,10 @@
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
 
+            <!--Acrylic Brushes -->
+            
+            <AcrylicBrush x:Key="ControlAcrylicBackgroundBrush" BackgroundSource="Backdrop" TintColor="#FCFCFC" TintOpacity="0.85" FallbackColor="#FCFCFC" />
+
             <!-- Other -->
 
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
@@ -501,6 +505,10 @@
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorOnAccentDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
+
+            <!-- Acrylic Brushes -->
+
+            <AcrylicBrush x:Key="ControlAcrylicBackgroundBrush" BackgroundSource="Backdrop" TintColor="#FCFCFC" TintOpacity="0.85" FallbackColor="#FCFCFC" />
 
             <!-- Other -->
 

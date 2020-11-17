@@ -8,9 +8,9 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style x:Key="DefaultCommandBarFlyoutCommandBarStyle" TargetType="local:CommandBarFlyoutCommandBar">
-        <Setter Property="Background" Value="{ThemeResource SystemControlTransientAcrylicElementBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlTransientBorderBrush}" />
+        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderThemeThickness}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="VerticalAlignment" Value="Top" />
@@ -24,13 +24,13 @@
         <Setter Property="Height" Value="40" />
         <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:CommandBarFlyoutCommandBar">
                     <Grid x:Name="LayoutRoot"
                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                         contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <Grid.Resources>
                             <Style TargetType="AppBarButton" BasedOn="{StaticResource CommandBarFlyoutAppBarButtonStyle}" />
                             <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource CommandBarFlyoutAppBarToggleButtonStyle}" />

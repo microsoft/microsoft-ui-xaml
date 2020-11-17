@@ -9,18 +9,30 @@
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
+            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="ControlAcrylicBackgroundBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush"/>
+            
             <Thickness x:Key="CommandBarFlyoutBorderThemeThickness">1</Thickness>
             <Thickness x:Key="CommandBarFlyoutBorderUpThemeThickness">1,1,1,0</Thickness>
             <Thickness x:Key="CommandBarFlyoutBorderDownThemeThickness">1,0,1,1</Thickness>
-            <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="ControlAcrylicBackgroundBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush"/>
+            
             <Thickness x:Key="CommandBarFlyoutBorderThemeThickness">1</Thickness>
             <Thickness x:Key="CommandBarFlyoutBorderUpThemeThickness">1,1,1,0</Thickness>
             <Thickness x:Key="CommandBarFlyoutBorderDownThemeThickness">1,0,1,1</Thickness>
-            <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlBackgroundBaseLowBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush"/>
+            
             <Thickness x:Key="CommandBarFlyoutBorderThemeThickness">1</Thickness>
             <Thickness x:Key="CommandBarFlyoutBorderUpThemeThickness">1,1,1,0</Thickness>
             <Thickness x:Key="CommandBarFlyoutBorderDownThemeThickness">1,0,1,1</Thickness>
@@ -528,7 +540,7 @@
                         Background="{TemplateBinding Background}"
                         Padding="{TemplateBinding Padding}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="DisplayModeStates">
                                 <VisualState x:Name="DisplayModeDefault" />
@@ -540,7 +552,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                         <ScrollViewer
                             Margin="{TemplateBinding BorderThickness}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
