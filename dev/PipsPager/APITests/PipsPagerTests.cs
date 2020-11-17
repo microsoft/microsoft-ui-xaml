@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Common;
 using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Automation.Peers;

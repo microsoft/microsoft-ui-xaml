@@ -34,19 +34,19 @@ namespace MUXControlsTestApp
 
         public void OnPreviousPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
-           testPipsPager.PreviousButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, testPipsPager.PreviousButtonVisibility);
+           TestPipsPager.PreviousButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.PreviousButtonVisibility);
         }
         public void OnNextPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
-           testPipsPager.NextButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, testPipsPager.NextButtonVisibility);
+           TestPipsPager.NextButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.NextButtonVisibility);
         }
         public void OnNumberOfPagesChanged(object sender, SelectionChangedEventArgs e)
         {
-            testPipsPager.NumberOfPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);   
+            TestPipsPager.NumberOfPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);   
         }
         public void OnMaxDisplayedPagesChanged(object sender, SelectionChangedEventArgs e)
         {
-            testPipsPager.MaxDisplayedPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
+            TestPipsPager.MaxDisplayedPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
         }
 
         public void OnSelectedIndexChanged(object sender, PipsPagerSelectedIndexChangedEventArgs args)
