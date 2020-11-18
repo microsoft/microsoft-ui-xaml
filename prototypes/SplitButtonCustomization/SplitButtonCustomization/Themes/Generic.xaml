@@ -1,0 +1,72 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SplitButtonCustomization"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <!-- see https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font -->
+    <x:String x:Key="SplitButtonSecondaryButtonContent">&#xE76C;</x:String>
+    <x:String x:Key="SplitButtonSecondaryButtonDefaultContent">&#xE70D;</x:String>
+
+    <Style TargetType="local:FlatBreadCrumbNode" >
+        <Setter Property="SecondaryButtonText" Value="{ThemeResource SplitButtonSecondaryButtonContent}" />
+        <Setter Property="SecondaryButtonTextDefault" Value="{ThemeResource SplitButtonSecondaryButtonDefaultContent}" />
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:FlatBreadCrumbNode">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <SplitButton x:Name="PART_SplitButton" Margin="2">
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                            <SplitButton.Flyout>
+                                <Flyout Placement="Bottom" >
+
+                                    <muxc:ItemsRepeater x:Name="FlyoutRepeater">
+                                        <muxc:ItemsRepeater.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Content="{Binding}" Background="Transparent"/>
+                                            </DataTemplate>
+                                        </muxc:ItemsRepeater.ItemTemplate>
+                                    </muxc:ItemsRepeater>
+
+                                </Flyout>
+                            </SplitButton.Flyout>
+                            
+                        </SplitButton>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    <Style TargetType="local:FlatListBreadCrumb" >
+        <!-- <Setter Property="SecondaryButtonText" Value="{ThemeResource SplitButtonSecondaryButtonContent}" /> -->
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:FlatListBreadCrumb">
+
+                    <muxc:ItemsRepeater x:Name="Repeater" ItemsSource="{TemplateBinding ItemsSource}">
+                        <muxc:ItemsRepeater.Layout>
+                            <muxc:StackLayout Orientation="Horizontal" Spacing="0" />
+                        </muxc:ItemsRepeater.Layout>
+
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate>
+                                <local:FlatBreadCrumbNode Content="{Binding}" /> 
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                        
+                    </muxc:ItemsRepeater>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
