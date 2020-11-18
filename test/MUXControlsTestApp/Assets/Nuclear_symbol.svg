@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="600" viewBox="-300 -300 600 600">
+<circle r="292.3"/>
+<g style="fill:#f1cd43" transform="scale(0.9783764)">
+	<circle r="50"/>
+	<path d="M75,0A75,75 0 0,0 37.5-64.951905L125-216.50635A250,250 0 0,1 250,0Z" id="bld"/>
+	<use xlink:href="#bld" transform="rotate(120)"/>
+	<use xlink:href="#bld" transform="rotate(240)"/>
+</g>
+</svg>
