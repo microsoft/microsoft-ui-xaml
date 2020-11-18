@@ -55,9 +55,9 @@ It focuses on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is currently in development, and the team recently released WinUI 3 Preview 2, which is a pre-release version that works with Win32 and UWP apps. Preview 2 is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 2 here: 
+WinUI 3 is currently in development, and the team recently released WinUI 3 Preview 3, which is a pre-release version that works with Win32 and UWP apps. Preview 3 is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 3 here: 
 
-[WinUI 3.0 Preview 2 (July 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[WinUI 3.0 Preview 3 (November 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
 
