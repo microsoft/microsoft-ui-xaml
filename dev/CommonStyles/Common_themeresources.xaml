@@ -250,8 +250,10 @@
             </LinearGradientBrush>
 
             <!--Acrylic Brushes -->
-            
-            <AcrylicBrush x:Key="ControlAcrylicBackgroundBrush" BackgroundSource="Backdrop" TintColor="#FCFCFC" TintOpacity="0.85" FallbackColor="#FCFCFC" />
+
+            <Color x:Key="AcrylicTintColor">#2C2C2C</Color>
+
+            <AcrylicBrush x:Key="ControlAcrylicBackgroundBrush" BackgroundSource="Backdrop" TintColor="{StaticResource AcrylicTintColor}" TintOpacity="0.85" FallbackColor="{StaticResource AcrylicTintColor}" />
 
             <!-- Other -->
 
@@ -508,7 +510,10 @@
 
             <!-- Acrylic Brushes -->
 
-            <AcrylicBrush x:Key="ControlAcrylicBackgroundBrush" BackgroundSource="Backdrop" TintColor="#FCFCFC" TintOpacity="0.85" FallbackColor="#FCFCFC" />
+            <Color x:Key="AcrylicTintColor">#FCFCFC</Color>
+
+            <AcrylicBrush x:Key="ControlAcrylicBackgroundBrush" BackgroundSource="Backdrop" TintColor="{StaticResource AcrylicTintColor}" TintOpacity="0.85" FallbackColor="{StaticResource AcrylicTintColor}" />
+
 
             <!-- Other -->
 
