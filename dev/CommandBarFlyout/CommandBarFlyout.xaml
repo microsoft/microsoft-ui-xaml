@@ -391,7 +391,8 @@
                                 <Popup x:Name="OverflowPopup">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
-                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
+                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
+                                        Background="{TemplateBinding Background}">
                                         <Grid.Clip>
                                             <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
                                                 <RectangleGeometry.Transform>
@@ -404,7 +405,7 @@
                                                 x:Name="OverflowContentRootTransform"
                                                 Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
                                         </Grid.RenderTransform>
-                                        <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
+                                        <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition />

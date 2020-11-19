@@ -1093,7 +1093,7 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
     {
-        AddShadow();
+        //AddShadow();
     }
     else if (PrimaryCommands().Size() == 0)
     {
