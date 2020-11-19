@@ -38,7 +38,10 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                    </StackPanel>
+
+                    <HyperlinkButton Content="Test"/>
+                    <TextBlock><Hyperlink NavigateUri="http://www.bing.com">Go to Bing</Hyperlink></TextBlock>
+                </StackPanel>
 
                 
                 <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}" Margin="0,16,0,8"/>
