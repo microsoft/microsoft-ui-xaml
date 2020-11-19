@@ -1,11 +1,10 @@
 ﻿namespace MU_XC_NAMESPACE
 {
-
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum PipsPagerButtonVisibility
 {
-    Visible, // arrows ALWAYS visible 
+    Visible,
     VisibleOnHover,
     Collapsed
 };
@@ -35,7 +34,7 @@ unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
 {
     PipsPager();
 
-    [MUX_DEFAULT_VALUE("0")]
+    [MUX_DEFAULT_VALUE("-1")]
     Int32 NumberOfPages;
 
     [MUX_DEFAULT_VALUE("0")]
@@ -44,12 +43,12 @@ unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("5")]
     Int32 MaxVisualIndicators;
 
-    [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation;
 
-    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::VisibleOnHover")]
+    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::Collapsed")]
     PipsPagerButtonVisibility PreviousButtonVisibility;
-    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::VisibleOnHover")]
+    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::Collapsed")]
     PipsPagerButtonVisibility NextButtonVisibility;
 
     Windows.UI.Xaml.Style PreviousButtonStyle;
@@ -66,15 +65,11 @@ unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaxVisualIndicatorsProperty{ get; };
-
     static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
-
     static Windows.UI.Xaml.DependencyProperty PreviousButtonVisibilityProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty NextButtonVisibilityProperty{ get; };
-
     static Windows.UI.Xaml.DependencyProperty PreviousButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
-
     static Windows.UI.Xaml.DependencyProperty SelectedIndicatorButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty DefaultIndicatorButtonStyleProperty{ get; };
 };

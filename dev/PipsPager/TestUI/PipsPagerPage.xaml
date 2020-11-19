@@ -10,6 +10,7 @@
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="100"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -36,13 +37,15 @@
                               PreviousButtonVisibility="VisibleOnHover"
                               SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}"/>
 
-
         <muxc:PipsPager x:Name="TestPipsPager"
-                              AutomationProperties.Name="TestPipsPager"
-                              SelectedIndexChanged="OnSelectedIndexChanged"
-                              Grid.Row="1"/>
+                            AutomationProperties.Name="TestPipsPager"
+                            SelectedIndexChanged="OnSelectedIndexChanged"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"                        
+                            Grid.Row="2"
+                            Margin="0,0,50,0"/>
 
-        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" >
+        <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" >
             <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="1" SelectionChanged="OnPreviousPageButtonVisibilityChanged">
                 <ComboBoxItem x:Name="VisibleOnEdgePreviousButton" AutomationProperties.Name="VisibleOnEdgePreviousButton">Visible</ComboBoxItem>
                 <ComboBoxItem x:Name="VisbileOnHoverPreviousButton" AutomationProperties.Name="VisbileOnHoverPreviousButton">VisibleOnHover</ComboBoxItem>
@@ -53,7 +56,7 @@
                 <ComboBoxItem x:Name="VisbileOnNextButton" AutomationProperties.Name="VisbileOnNextButton">VisibleOnHover</ComboBoxItem>
                 <ComboBoxItem x:Name="CollapsedNextButton" AutomationProperties.Name="CollapsedNextButton">Collapsed</ComboBoxItem>
             </ComboBox>
-            <ComboBox x:Name="TestPipsPagerNumberOfPagesComboBox" Header="Number of pages" SelectedIndex="1" SelectionChanged="OnNumberOfPagesChanged">
+            <ComboBox x:Name="TestPipsPagerNumberOfPagesComboBox" Header="Number of pages" SelectedIndex="4" SelectionChanged="OnNumberOfPagesChanged">
                 <ComboBoxItem x:Name="ZeroNumberOfPages" AutomationProperties.Name="ZeroNumberOfPages">0 Pages</ComboBoxItem>
                 <ComboBoxItem x:Name="FiveNumberOfPages" AutomationProperties.Name="FiveNumberOfPages">5 Pages</ComboBoxItem>
                 <ComboBoxItem x:Name="TenNumberOfPages" AutomationProperties.Name="TenNumberOfPages">10 Pages</ComboBoxItem>

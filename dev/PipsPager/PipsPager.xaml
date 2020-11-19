@@ -3,8 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
-
-    <!-- Explain why background should be set for pointer events -->
+    
     <Style TargetType="muxc:PipsPager">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -19,10 +18,10 @@
                     <StackPanel x:Name="RootPanel" Orientation="{TemplateBinding Orientation}" Background="{TemplateBinding Background}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PreviousPageButtonVisibilityStates">
-                                <VisualState x:Name="PreviousPageButtonHidden"/>
-                                <VisualState x:Name="PreviousPageButtonVisible">
+                                <VisualState x:Name="PreviousPageButtonVisible"/>
+                                <VisualState x:Name="PreviousPageButtonHidden">
                                     <VisualState.Setters>
-                                        <Setter Target="PreviousPageButton.Opacity" Value="100"/>
+                                        <Setter Target="PreviousPageButton.Opacity" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PreviousPageButtonCollapsed">
@@ -42,10 +41,10 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="NextPageButtonVisibilityStates">
-                                <VisualState x:Name="NextPageButtonHidden"/>
-                                <VisualState x:Name="NextPageButtonVisible">
+                                <VisualState x:Name="NextPageButtonVisible"/>
+                                <VisualState x:Name="NextPageButtonHidden">
                                     <VisualState.Setters>
-                                        <Setter Target="NextPageButton.Opacity" Value="100"/>
+                                        <Setter Target="NextPageButton.Opacity" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="NextPageButtonCollapsed">
@@ -81,12 +80,6 @@
                                                 <RotateTransform Angle="-90"/>
                                             </Setter.Value>
                                         </Setter>
-                                        <Setter Target="PreviousPageButton.Margin" Value="0, 0, 10, 0"/>
-                                        <Setter Target="NextPageButton.Margin" Value="10, 0, 0, 0"/>
-                                        <Setter Target="PipsPagerScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
-                                        <Setter Target="PipsPagerScrollViewer.VerticalScrollMode" Value="Disabled"/>
-                                        <Setter Target="PipsPagerScrollViewer.HorizontalScrollBarVisibility" Value="Hidden"/>
-                                        <Setter Target="PipsPagerScrollViewer.HorizontalScrollMode" Value="Disabled"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -97,7 +90,7 @@
                         <ScrollViewer x:Name="PipsPagerScrollViewer"
                                       VerticalScrollBarVisibility="Hidden"
                                       VerticalScrollMode="Disabled"
-                                      HorizontalScrollBarVisibility="Disabled"
+                                      HorizontalScrollBarVisibility="Hidden"
                                       HorizontalScrollMode="Disabled">
                             <muxc:ItemsRepeater x:Name="PipsPagerItemsRepeater"
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PipsPagerItems}">
@@ -118,5 +111,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary>

@@ -29,8 +29,6 @@ namespace MUXControlsTestApp
         public PipsPagerPage()
         {
             this.InitializeComponent();
-            //TestPipsPager.MaxVisualIndicators = 5;
-
         }
 
         public void OnPreviousPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -82,7 +80,10 @@ namespace MUXControlsTestApp
         {
             int numberOfPages = -1;
             string digitsOnlyString = new String((item.Content as string).Where(Char.IsDigit).ToArray());
-            Int32.TryParse(digitsOnlyString, out numberOfPages);
+            if (!string.IsNullOrEmpty(digitsOnlyString))
+            {
+                Int32.TryParse(digitsOnlyString, out numberOfPages);
+            }
             return numberOfPages;
         }
     }
