@@ -34,9 +34,9 @@ public:
     /* Property changed handlers */
     void OnNumberOfPagesChanged();
     void OnSelectedPageIndexChanged(const int oldValue);
-    void OnMaxDisplayedPagesChanged(const int oldValue);
-    void OnNavigationButtonVisibilityChanged(winrt::PipsPagerButtonVisibility visibility, const wstring_view collapsedStateName);
-    void OnPipStyleChanged(winrt::Size& pipSize, const winrt::Style& pipStyle);
+    void OnMaxVisualIndicatorsChanged();
+    void OnNavigationButtonVisibilityChanged(const winrt::PipsPagerButtonVisibility visibility, const wstring_view& collapsedStateName);
+    void OnOrientationChanged();
 
     /* Dependency property for pip buttons revokers */
     GlobalDependencyProperty s_pipButtonHandlersProperty;
@@ -44,15 +44,15 @@ public:
 private:
     /* UI updating */
     void UpdateNavigationButtonVisualStates();
-    bool IsOutOfControlBounds(winrt::Point point);
+    bool IsOutOfControlBounds(const winrt::Point& point);
     void UpdateIndividualNavigationButtonVisualState(
-        bool hiddenOnEdgeCondition,
-        winrt::PipsPagerButtonVisibility visibility,
-        const wstring_view visibleStateName,
-        const wstring_view hiddenStateName,
-        const wstring_view enabledStateName,
-        const wstring_view disabledStateName);
-    void SetDesiredPipSize(winrt::Size& pipSize, const winrt::Style& style);
+        const bool hiddenOnEdgeCondition,
+        const winrt::PipsPagerButtonVisibility visibility,
+        const wstring_view& visibleStateName,
+        const wstring_view& hiddenStateName,
+        const wstring_view& enabledStateName,
+        const wstring_view& disabledStateName);
+    winrt::Size GetDesiredPipSize(const winrt::Style& style);
 
     /* Eventing */
     void RaiseSelectedIndexChanged();
@@ -63,29 +63,29 @@ private:
   
 
     /* Pips Logic */
-    void UpdateVerticalPips(const int numberOfPages, const int maxDisplayedPages);
-    void MovePipIdentifierToElement(int index);
+    void UpdatePipsItems(const int numberOfPages, const int maxDisplayedPages);
+    void UpdateSelectedPip(const int index);
     void OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
-    void SetVerticalPipsSVMaxSize();
-    double CalculateSVSize(double defaultPipSize, double selectedPipSize, int numberOfPages);
-    void ScrollToCenterOfViewport(winrt::UIElement sender);
+    void SetScrollViewerMaxSize();
+    void ScrollToCenterOfViewport(const winrt::UIElement sender);
+    double CalculateScrollViewerSize(const double defaultPipSize, const double selectedPipSize, const int numberOfPages);
 
     /* Refs */
-    tracker_ref<winrt::ItemsRepeater> m_verticalPipsRepeater{ this };
-    tracker_ref<winrt::FxScrollViewer> m_verticalPipsScrollViewer{ this };
+    tracker_ref<winrt::ItemsRepeater> m_pipsPagerRepeater{ this };
+    tracker_ref<winrt::FxScrollViewer> m_pipsPagerScrollViewer{ this };
 
     /* Revokers */
     winrt::Button::Click_revoker m_previousPageButtonClickRevoker{};
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
-    winrt::ItemsRepeater::ElementPrepared_revoker m_verticalPipsElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
 
-    /* Elements */
-    winrt::IObservableVector<IInspectable> m_verticalPipsElements{};
+    /* Items */
+    winrt::IObservableVector<IInspectable> m_pipsPagerItems{};
 
     /* Additional variables class variables*/
     winrt::Size m_defaultPipSize{ 0.0,0.0 };
     winrt::Size m_selectedPipSize{ 0.0, 0.0 };
     int m_lastSelectedPageIndex{ -1 };
-    int m_lastMaxDisplayedPages{ 0 };
+    int m_lastMaxVisualIndicators{ 0 };
     bool m_isPointerOver{ false };
 };

@@ -29,30 +29,42 @@ namespace MUXControlsTestApp
         public PipsPagerPage()
         {
             this.InitializeComponent();
-            
+            //TestPipsPager.MaxVisualIndicators = 5;
+
         }
 
         public void OnPreviousPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
-           TestPipsPager.PreviousButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.PreviousButtonVisibility);
+            TestPipsPager.PreviousButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.PreviousButtonVisibility);
         }
         public void OnNextPageButtonVisibilityChanged(object sender, SelectionChangedEventArgs e)
         {
-           TestPipsPager.NextButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.NextButtonVisibility);
+            TestPipsPager.NextButtonVisibility = ConvertComboBoxItemToVisibilityEnum((sender as ComboBox).SelectedItem as ComboBoxItem, TestPipsPager.NextButtonVisibility);
         }
         public void OnNumberOfPagesChanged(object sender, SelectionChangedEventArgs e)
         {
-            TestPipsPager.NumberOfPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);   
+            TestPipsPager.NumberOfPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
         }
-        public void OnMaxDisplayedPagesChanged(object sender, SelectionChangedEventArgs e)
+        public void OnMaxVisualIndicatorsChanged(object sender, SelectionChangedEventArgs e)
         {
-            TestPipsPager.MaxDisplayedPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
+            TestPipsPager.MaxVisualIndicators = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
         }
 
         public void OnSelectedIndexChanged(object sender, PipsPagerSelectedIndexChangedEventArgs args)
         {
             PreviousIndexTextBlock.Text = $"Current index is: {args.NewPageIndex}";
             CurrentIndexTextBlock.Text = $"Previous index is: {args.PreviousPageIndex}";
+        }
+
+        public void OnOrientationChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Orientation orientation = TestPipsPager.Orientation;
+            string selectedItem = ((sender as ComboBox).SelectedItem as ComboBoxItem).Content as string;
+            if (!Enum.TryParse<Orientation>(selectedItem, out orientation))
+            {
+                System.Diagnostics.Debug.WriteLine("Unable to convert " + selectedItem + " to Orientation Enum");
+            }
+            TestPipsPager.Orientation = orientation;
         }
 
         private PipsPagerButtonVisibility ConvertComboBoxItemToVisibilityEnum(ComboBoxItem item, PipsPagerButtonVisibility defaultValue)
