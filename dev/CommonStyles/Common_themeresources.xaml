@@ -204,6 +204,13 @@
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
 
+            <LinearGradientBrush x:Key="CircleElevationBorderBrush" MappingMode="RelativeToBoundingBox" StartPoint="0,0" EndPoint="0,1">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.50" Color="{StaticResource ControlStrokeColorDefault}"/>
+                    <GradientStop Offset="0.70" Color="{StaticResource ControlStrokeColorSecondary}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+
             <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
@@ -422,6 +429,13 @@
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
 
+            <LinearGradientBrush x:Key="CircleElevationBorderBrush" MappingMode="RelativeToBoundingBox" StartPoint="0,0" EndPoint="0,1">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.50" Color="{StaticResource ControlStrokeColorDefault}"/>
+                    <GradientStop Offset="0.70" Color="{StaticResource ControlStrokeColorSecondary}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+            
             <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
