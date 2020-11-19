@@ -102,9 +102,11 @@ void PipsPager::OnApplyTemplate()
     m_defaultPipSize = GetDesiredPipSize(DefaultIndicatorButtonStyle());
     m_selectedPipSize = GetDesiredPipSize(SelectedIndicatorButtonStyle());
 
-    OnOrientationChanged();
-    OnMaxVisualIndicatorsChanged();
+    OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState);
+    OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState);
     OnNumberOfPagesChanged();
+    OnMaxVisualIndicatorsChanged();
+    OnOrientationChanged();
     OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
 }
 

@@ -46,12 +46,12 @@
                             Margin="0,0,50,0"/>
 
         <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" >
-            <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="1" SelectionChanged="OnPreviousPageButtonVisibilityChanged">
+            <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="2" SelectionChanged="OnPreviousPageButtonVisibilityChanged">
                 <ComboBoxItem x:Name="VisibleOnEdgePreviousButton" AutomationProperties.Name="VisibleOnEdgePreviousButton">Visible</ComboBoxItem>
                 <ComboBoxItem x:Name="VisbileOnHoverPreviousButton" AutomationProperties.Name="VisbileOnHoverPreviousButton">VisibleOnHover</ComboBoxItem>
                 <ComboBoxItem x:Name="CollapsedPreviousButton" AutomationProperties.Name="CollapsedPreviousButton">Collapsed</ComboBoxItem>
             </ComboBox>
-            <ComboBox x:Name="NextPageButtonVisibilityComboBox" Header="Next Page Button Visibility" SelectedIndex="1" SelectionChanged="OnNextPageButtonVisibilityChanged">
+            <ComboBox x:Name="NextPageButtonVisibilityComboBox" Header="Next Page Button Visibility" SelectedIndex="2" SelectionChanged="OnNextPageButtonVisibilityChanged">
                 <ComboBoxItem x:Name="VisibleOnEdgeNextButton" AutomationProperties.Name="VisibleOnEdgeNextButton">Visible</ComboBoxItem>
                 <ComboBoxItem x:Name="VisbileOnNextButton" AutomationProperties.Name="VisbileOnNextButton">VisibleOnHover</ComboBoxItem>
                 <ComboBoxItem x:Name="CollapsedNextButton" AutomationProperties.Name="CollapsedNextButton">Collapsed</ComboBoxItem>
