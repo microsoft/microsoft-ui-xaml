@@ -22,3 +22,5 @@
 #else
 #define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.5"
 #endif
+
+#define MUXCONTROLS_CBS_PACKAGE_NAME L"Microsoft.UI.Xaml.CBS"
