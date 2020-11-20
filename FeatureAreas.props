@@ -266,6 +266,7 @@
     <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
+    <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
   </PropertyGroup>
   <PropertyGroup>

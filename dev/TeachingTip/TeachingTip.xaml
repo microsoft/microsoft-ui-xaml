@@ -30,6 +30,8 @@
                                         <Setter Target="TailPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                         <Setter Target="TopTailPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                         <Setter Target="ContentRootGrid.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="MainContentPresenter.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="HeroContentBorder.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="NormalDismiss"/>
