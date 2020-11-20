@@ -172,7 +172,7 @@
                                             <Style.Setters>
                                                 <Setter Property="MinWidth" Value="{StaticResource InfoBarActionButtonMinWidth}"/>
                                                 <Setter Property="Padding" Value="{StaticResource InfoBarActionButtonPadding}"/>
-                                                <Setter Property="MinHeight" Value="24"/>
+                                                <Setter Property="MinHeight" Value="{StaticResource InfoBarActionButtonMinHeight}"/>
                                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource InfoBarActionButtonCornerRadius}"/>
                                             </Style.Setters>
                                         </Style>
@@ -182,7 +182,7 @@
                                                 <Setter Property="FontSize" Value="{ThemeResource InfoBarHyperlinkButtonFontSize}"/>
                                                 <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
                                                 <Setter Property="Padding" Value="{StaticResource InfoBarHyperlinkButtonPadding}"/>
-                                                <Setter Property="MinHeight" Value="24"/>
+                                                <Setter Property="MinHeight" Value="{ThemeResource InfoBarHyperlinkButtonMinHeight}"/>
                                             </Style.Setters>
                                         </Style>
                                     </ContentPresenter.Resources>
