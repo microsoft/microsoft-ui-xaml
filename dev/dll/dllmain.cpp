@@ -40,7 +40,8 @@ HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::
     uint32_t length{};
     wchar_t const* const buffer = WindowsGetStringRawBuffer(activatableClassId, &length);
     std::wstring_view const name{ buffer, length };
-    if (name == L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv)
+    if (name == L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv ||
+        name == L"Microsoft.UI.Private.Controls.CBSPackageDetector"sv)
     {
         winrt::hstring resources{L"Microsoft.UI.Xaml.Controls.XamlControlsResources"sv};
         // It doesn't matter *what* we return so return a type that everyone uses.
