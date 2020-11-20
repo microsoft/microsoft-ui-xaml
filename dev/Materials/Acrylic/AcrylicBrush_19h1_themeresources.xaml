@@ -9,28 +9,24 @@
                 x:Key="SystemControlTransientBackgroundBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
-                TintLuminosityOpacity="0.96"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="SystemControlTransientAcrylicElementBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
-                TintLuminosityOpacity="0.96"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="SystemControlTransientBackgroundInverseBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
-                TintLuminosityOpacity="0.85"
                 FallbackColor="#FCFCFC"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="SystemControlBaseAcrylicBrush"
                 TintColor="#202020"
                 TintOpacity="0.0"
-                TintLuminosityOpacity="0.96"
                 FallbackColor="#202020"
                 BackgroundSource="HostBackdrop"/>
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
@@ -41,14 +37,12 @@
                 x:Key="SystemControlTransientBackgroundBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
-                TintLuminosityOpacity="0.85"
                 FallbackColor="#FCFCFC"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="SystemControlTransientAcrylicElementBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
-                TintLuminosityOpacity="0.85"
                 FallbackColor="#FCFCFC"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
@@ -56,13 +50,11 @@
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
                 FallbackColor="#2C2C2C"
-                TintLuminosityOpacity="0.96"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="SystemControlBaseAcrylicBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.0"
-                TintLuminosityOpacity="0.9"
                 FallbackColor="#F3F3F3"
                 BackgroundSource="HostBackdrop"/>
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>

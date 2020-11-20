@@ -7,6 +7,11 @@
 #include "RevealBrush.h"
 #include "MUXControlsFactory.h"
 
+static constexpr auto c_SystemControlTransientBackgroundBrush = L"SystemControlTransientBackgroundBrush"sv;
+static constexpr auto c_SystemControlTransientAcrylicElementBrush = L"SystemControlTransientAcrylicElementBrush"sv;
+static constexpr auto c_SystemControlTransientBackgroundInverseBrush = L"SystemControlTransientBackgroundInverseBrush"sv;
+static constexpr auto c_SystemControlBaseAcrylicBrush = L"SystemControlBaseAcrylicBrush"sv;
+
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
@@ -82,6 +87,58 @@ void XamlControlsResources::UpdateSource()
     ThemeDictionaries().Clear();
 
     Source(uri);
+
+    // Hacky workaround for a XAML compiler bug:
+    // Assigning nullable primitive types from XAML fails with disabled XAML metadata reflection on older versions.
+    // The MUXC AcrylicBrush's TintLuminosityOpacity is a nullable double though and needs to be set.
+    // Solution: Load theme resources and edit brushes manually.
+    // Since something must go horribly wrong for those lookups to fail, we just assume they exist.
+    UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
+    UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+}
+
+void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
+{
+    const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>();
+    if (const auto systemControlTransientBackgroundBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        systemControlTransientBackgroundBrush.TintLuminosityOpacity(0.85);
+    }
+    if (const auto systemControlTransientAcrylicElementBrush = dictionary.Lookup(box_value(c_SystemControlTransientAcrylicElementBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        systemControlTransientAcrylicElementBrush.TintLuminosityOpacity(0.85);
+    }
+    if (const auto systemControlTransientBackgroundInverseBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundInverseBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        systemControlTransientBackgroundInverseBrush.TintLuminosityOpacity(0.96);
+    }
+    if (const auto systemControlBaseAcrylicBrush = dictionary.Lookup(box_value(c_SystemControlBaseAcrylicBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        systemControlBaseAcrylicBrush.TintLuminosityOpacity(0.9);
+    }
+}
+
+void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspectable themeDictionary)
+{
+    if (const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>())
+    {
+        if (const auto systemControlTransientBackgroundBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            systemControlTransientBackgroundBrush.TintLuminosityOpacity(0.96);
+        }
+        if (const auto systemControlTransientAcrylicElementBrush = dictionary.Lookup(box_value(c_SystemControlTransientAcrylicElementBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            systemControlTransientAcrylicElementBrush.TintLuminosityOpacity(0.96);
+        }
+        if (const auto systemControlTransientBackgroundInverseBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundInverseBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            systemControlTransientBackgroundInverseBrush.TintLuminosityOpacity(0.85);
+        }
+        if (const auto systemControlBaseAcrylicBrush = dictionary.Lookup(box_value(c_SystemControlBaseAcrylicBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            systemControlBaseAcrylicBrush.TintLuminosityOpacity(0.96);
+        }
+    }
 }
 
 void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className) 
