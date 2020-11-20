@@ -229,10 +229,14 @@ $manifestContents = $manifestContents.Replace('$(ActivatableTypes)', "$Activatab
 $manifestContents = $manifestContents.Replace('$(Version)', "$Version")
 Set-Content -Value $manifestContents $fullOutputPath\PackageContents\AppxManifest.xml
 
+$manifestContents = $manifestContents.Replace("$PackageName", "Microsoft.UI.Xaml.CBS")
+$manifestContents = $manifestContents.Replace('FrameworkPackageDetector', "CBSPackageDetector")
+Set-Content -Value $manifestContents $fullOutputPath\CBSAppxManifest.xml
 
 # Call GetFullPath to clean up the path -- makepri is very picky about double slashes in the path.
 $priConfigPath = [IO.Path]::GetFullPath("$fullOutputPath\priconfig.xml")
 $priOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\resources.pri")
+$priCBSOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\CBSresources.pri")
 $noiseAssetPath = [IO.Path]::GetFullPath("$fullOutputPath\Assets\NoiseAsset_256x256_PNG.png")
 $resourceContents = [IO.Path]::GetFullPath("$fullOutputPath\Resources")
 $pfxPath = [IO.Path]::GetFullPath("..\MSTest.pfx")
@@ -255,6 +259,11 @@ if (($Configuration -ilike "debug") -and (Test-Path $xbfFilesPath))
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
 $makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $fullOutputPath /cf $priConfigPath /of $priOutputPath /in $PackageName /o"
+Write-Host $makepriNew
+cmd /c $makepriNew
+if ($LastExitCode -ne 0) { Exit 1 }
+
+$makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $fullOutputPath /cf $priConfigPath /of $priCBSOutputPath /in Microsoft.UI.Xaml.CBS /o"
 Write-Host $makepriNew
 cmd /c $makepriNew
 if ($LastExitCode -ne 0) { Exit 1 }

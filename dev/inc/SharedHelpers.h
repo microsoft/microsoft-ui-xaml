@@ -68,6 +68,7 @@ public:
     static bool IsAPIContractV3Available(); // RS1
 
     static bool IsInFrameworkPackage();
+    static bool IsInCBSPackage();
 
     // Platform scale helpers
     static winrt::Rect ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect);
