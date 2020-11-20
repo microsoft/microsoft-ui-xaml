@@ -58,5 +58,18 @@ namespace MUXControlsTestApp.Utilities
 
             return null;
         }
+
+        public static T FindVisualParentByType<T>(this DependencyObject element)
+            where T : DependencyObject
+        {
+            if (element is null)
+            {
+                return null;
+            }
+
+            return element is T elementAsT 
+                ? elementAsT 
+                : VisualTreeHelper.GetParent(element).FindVisualParentByType<T>();
+        }
     }
 }

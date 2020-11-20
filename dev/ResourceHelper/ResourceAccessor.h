@@ -170,6 +170,8 @@ public:
 #define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
+#define SR_ExpanderDefaultControlName L"ExpanderDefaultControlName"
+
 #define SR_InfoBarCloseButtonName L"InfoBarCloseButtonName"
 #define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
 #define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
