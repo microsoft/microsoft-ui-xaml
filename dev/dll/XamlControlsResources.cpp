@@ -93,8 +93,11 @@ void XamlControlsResources::UpdateSource()
     // The MUXC AcrylicBrush's TintLuminosityOpacity is a nullable double though and needs to be set.
     // Solution: Load theme resources and edit brushes manually.
     // Since something must go horribly wrong for those lookups to fail, we just assume they exist.
-    UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-    UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+    if (SharedHelpers::Is19H1OrHigher())
+    {
+        UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
+        UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+    }
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
