@@ -3,9 +3,8 @@
 2. Use the NuGet package manager (right-click on the project and select “Manage NuGet Packages…” from the context menu)
 3. Run the following command in your NuGet package manager console:
 
-    `install-package Microsoft.WinUI -Version 3.0.0-preview2.200713.0` 
-    
-    (TODO: update with final Preview 3 package version)
+    `install-package Microsoft.WinUI -Version 3.0.0-preview3.201113.0` 
+
 4. If your project is a C# “Blank App (UWP)”, C# “Class Library (UWP)”, C# “Windows Runtime Component (UWP)”, C++ “Blank App (UWP)”, or C++ “Windows Runtime Component (UWP)” project, then **no further changes are necessary.**
 5.  If your project is a C# “Class Library (WinUI in Desktop)” project:
     - Open the .csproj
