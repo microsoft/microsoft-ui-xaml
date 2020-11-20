@@ -250,7 +250,6 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender)
     options.HorizontalAlignmentRatio(0.5);
     options.AnimationDesired(true);
     sender.StartBringIntoView(options);
-
 }
 
 void PipsPager::UpdateSelectedPip(const int index) {
@@ -436,11 +435,14 @@ void PipsPager::OnSelectedPageIndexChanged(const int oldValue)
     }
 }
 
-void PipsPager::OnOrientationChanged() {
-    if (Orientation() == winrt::Orientation::Horizontal) {
+void PipsPager::OnOrientationChanged()
+{
+    if (Orientation() == winrt::Orientation::Horizontal)
+    {
         winrt::VisualStateManager::GoToState(*this, c_pipsPagerHorizontalOrientationVisualState, false);
     }
-    else {
+    else
+    {
         winrt::VisualStateManager::GoToState(*this, c_pipsPagerVerticalOrientationVisualState, false);
     }
     SetScrollViewerMaxSize();

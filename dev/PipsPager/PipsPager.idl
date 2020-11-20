@@ -1,5 +1,6 @@
 ﻿namespace MU_XC_NAMESPACE
 {
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum PipsPagerButtonVisibility

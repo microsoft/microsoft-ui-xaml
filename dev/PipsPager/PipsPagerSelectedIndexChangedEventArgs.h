@@ -1,5 +1,4 @@
-﻿#pragma once
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -17,8 +16,6 @@ public:
     int PreviousPageIndex() { return m_previousPageIndex; };
 
 private:
-
     int m_newPageIndex = -1;
     int m_previousPageIndex = -1;
-
 };
