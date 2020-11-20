@@ -26,6 +26,7 @@ using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml.Controls;
+using Windows.UI.Xaml.Shapes;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -88,21 +89,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 {
                     var popup = TeachingTipTestHooks.GetPopup(teachingTipLightDismiss);
-                    var child = popup.Child;
-                    var grandChild = VisualTreeHelper.GetChild(child, 0);
-                    var actualBrush = ((Grid)grandChild).Background;
+                    var child = popup.Child as Grid;
+
                     Log.Comment("Checking LightDismiss TeachingTip Background is using resource for first invocation");
-                    if (lightDismissBackgroundBrush != actualBrush)
+
+                    Grid tailEdgeBorder = VisualTreeUtils.FindVisualChildByName(child, "TailEdgeBorder") as Grid;
+                    Polygon tailPolygon = VisualTreeUtils.FindVisualChildByName(child, "TailPolygon") as Polygon;
+                    Polygon topTailPolygonHighlight = VisualTreeUtils.FindVisualChildByName(child, "TopTailPolygonHighlight") as Polygon;
+                    Grid contentRootGrid = VisualTreeUtils.FindVisualChildByName(child, "ContentRootGrid") as Grid;
+                    ContentPresenter mainContentPresenter = VisualTreeUtils.FindVisualChildByName(child, "MainContentPresenter") as ContentPresenter;
+                    Border heroContentBorder = VisualTreeUtils.FindVisualChildByName(child, "HeroContentBorder") as Border;
+
+                    VerifyLightDismissTipBackground(tailEdgeBorder.Background, "TailEdgeBorder");
+                    VerifyLightDismissTipBackground(tailPolygon.Fill, "TailPolygon");
+                    VerifyLightDismissTipBackground(topTailPolygonHighlight.Fill, "TopTailPolygonHighlight");
+                    VerifyLightDismissTipBackground(contentRootGrid.Background, "ContentRootGrid");
+                    VerifyLightDismissTipBackground(mainContentPresenter.Background, "MainContentPresenter");
+                    VerifyLightDismissTipBackground(heroContentBorder.Background, "HeroContentBorder");
+
+                    void VerifyLightDismissTipBackground(Brush brush, string uiPart)
                     {
-                        if (actualBrush is SolidColorBrush actualSolidBrush)
+                        if (lightDismissBackgroundBrush != brush)
                         {
-                            string teachingTipMessage = $"LightDismiss TeachingTip Background is SolidColorBrush with color {actualSolidBrush.Color}";
-                            Log.Comment(teachingTipMessage);
-                            Verify.Fail(teachingTipMessage);
-                        }
-                        else
-                        {
-                            Verify.AreSame(lightDismissBackgroundBrush, actualBrush, "Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                            if (brush is SolidColorBrush actualSolidBrush)
+                            {
+                                string teachingTipMessage = $"LightDismiss TeachingTip's {uiPart} Background is SolidColorBrush with color {actualSolidBrush.Color}";
+                                Log.Comment(teachingTipMessage);
+                                Verify.Fail(teachingTipMessage);
+                            }
+                            else
+                            {
+                                Verify.AreSame(lightDismissBackgroundBrush, brush, $"Checking LightDismiss TeachingTip's {uiPart} Background is using resource for first invocation");
+                            }
                         }
                     }
                 }
@@ -118,13 +136,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var popup = TeachingTipTestHooks.GetPopup(teachingTip);
                 var child = popup.Child as Grid;
-                var grandChild = VisualTreeHelper.GetChild(child, 0);
-                var grandChildBackgroundBrush = ((Grid)grandChild).Background;
-                //If we can no longer cast the background brush to a solid color brush then changing the
-                //IsLightDismissEnabled has changed the background as we expected it to.
-                if (grandChildBackgroundBrush is SolidColorBrush)
+
+                Grid tailEdgeBorder = VisualTreeUtils.FindVisualChildByName(child, "TailEdgeBorder") as Grid;
+                Polygon tailPolygon = VisualTreeUtils.FindVisualChildByName(child, "TailPolygon") as Polygon;
+                Polygon topTailPolygonHighlight = VisualTreeUtils.FindVisualChildByName(child, "TopTailPolygonHighlight") as Polygon;
+                Grid contentRootGrid = VisualTreeUtils.FindVisualChildByName(child, "ContentRootGrid") as Grid;
+                ContentPresenter mainContentPresenter = VisualTreeUtils.FindVisualChildByName(child, "MainContentPresenter") as ContentPresenter;
+                Border heroContentBorder = VisualTreeUtils.FindVisualChildByName(child, "HeroContentBorder") as Border;
+
+                VerifyBackgroundChanged(tailEdgeBorder.Background, "TailEdgeBorder");
+                VerifyBackgroundChanged(tailPolygon.Fill, "TailPolygon");
+                VerifyBackgroundChanged(topTailPolygonHighlight.Fill, "TopTailPolygonHighlight");
+                VerifyBackgroundChanged(contentRootGrid.Background, "ContentRootGrid");
+                VerifyBackgroundChanged(mainContentPresenter.Background, "MainContentPresenter");
+                VerifyBackgroundChanged(heroContentBorder.Background, "HeroContentBorder");
+
+                void VerifyBackgroundChanged(Brush brush, string uiPart)
                 {
-                    Verify.AreNotEqual(blueBrush.Color, ((SolidColorBrush)grandChildBackgroundBrush).Color);
+                    // If we can no longer cast the background brush to a solid color brush then changing the
+                    // IsLightDismissEnabled has changed the background as we expected it to.
+                    if (brush is SolidColorBrush solidColorBrush)
+                    {
+                        Verify.AreNotEqual(blueBrush.Color, solidColorBrush.Color, $"TeachingTip's {uiPart} Background should have changed");
+                    }
                 }
             });
         }
