@@ -25,7 +25,7 @@ namespace MUXControlsTestApp
 
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
-            this.ImageIcon.Source = new SvgImageSource(new Uri("ms-appx:///Assets/Nuclear_symbol.svg"));
+            this.ImageIcon.Source = new SvgImageSource(new Uri("ms-appx:///Assets/libre-camera-panorama.svg"));
         }
         private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
         {

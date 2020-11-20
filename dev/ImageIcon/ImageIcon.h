@@ -18,8 +18,6 @@ public:
     ImageIcon();
     ~ImageIcon() {}
 
-    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
-
     // IFrameworkElement
     void OnApplyTemplate();
 

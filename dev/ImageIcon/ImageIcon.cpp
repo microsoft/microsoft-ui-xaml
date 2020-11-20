@@ -14,11 +14,6 @@ ImageIcon::ImageIcon()
 
 void ImageIcon::OnApplyTemplate()
 {
-    Loaded({ this, &ImageIcon::OnLoaded });
-}
-
-void ImageIcon::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
-{
     winrt::IInspectable diagnostics{};
     if (auto const grid = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Grid>())
     {
