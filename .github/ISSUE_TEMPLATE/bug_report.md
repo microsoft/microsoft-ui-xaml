@@ -33,6 +33,7 @@ Examples
 [Microsoft.UI.Xaml.2.4.0-prerelease.200506001]
 [Microsoft.WinUI 3.0.0-preview1.200515.3] If you seeing your issue in preview1, please try preview2.
 [Microsoft.WinUI 3.0.0-preview2.200713.0]
+[Microsoft.WinUI 3.0.0-preview3.201113.0]
 -->
 
 <!-- If you are using WinUI 3, please specify for which Windows app type you have encountered the issue. Leave blank if you didn't try that app type. -->
