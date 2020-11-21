@@ -3,6 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Media">
 
+    <!--
+        Due to a low level compiler bug, setting nullable bools does not work on all platforms.
+        Because of that, TintLuminosityOpacity will be set through code behind when loading these brushes.
+        This is being done in XAMLControlsResources.cpp .
+    -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <local:AcrylicBrush
