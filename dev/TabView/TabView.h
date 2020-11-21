@@ -137,7 +137,7 @@ private:
     void OnScrollViewerViewChanged(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args);
     void OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
-    void OnComponentSizeChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
+    void OnFooterSizeChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
