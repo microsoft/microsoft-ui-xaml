@@ -4,7 +4,7 @@
     xmlns:local="using:Microsoft.UI.Xaml.Media">
 
     <!--
-        Due to a low level compiler bug, setting nullable bools does not work on all platforms.
+        Due to a low level compiler bug, setting nullable doubles does not work on all platforms.
         Because of that, TintLuminosityOpacity will be set through code behind when loading these brushes.
         This is being done in XAMLControlsResources.cpp .
     -->
