@@ -14,6 +14,7 @@
         <Slider/>
         <Slider Header="Slider with header"/>
         <Slider Header="Slider with preset values" Value="25" Minimum="0" Maximum="50"/>
+        <Slider Orientation="Vertical" Height="100"/>
     </StackPanel>
 
 </local:TestPage>
