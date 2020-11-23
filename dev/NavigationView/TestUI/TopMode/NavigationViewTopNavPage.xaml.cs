@@ -21,6 +21,7 @@ using NavigationViewBackRequestedEventArgs = Microsoft.UI.Xaml.Controls.Navigati
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -511,6 +512,17 @@ namespace MUXControlsTestApp
         private void ClearSelectedItem_Click(object sender, RoutedEventArgs e)
         {
             NavView.SelectedItem = null;
+        }
+
+        private void GetOverflowMenuCornerRadiusButton_Click(object sender, RoutedEventArgs e)
+        {
+            var lastMenuItem = NavView.MenuItems[NavView.MenuItems.Count - 1] as NavigationViewItem;
+            var parent = lastMenuItem.FindVisualParentByType<FlyoutPresenter>();
+            if (parent is FlyoutPresenter flyoutPresenter)
+            {
+                var contentPresenter = flyoutPresenter.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                OverflowMenuCornerRadiusTextBlock.Text = contentPresenter?.CornerRadius.ToString() ?? "Internal ContentPresenter not found";
+            }
         }
     }
 }
