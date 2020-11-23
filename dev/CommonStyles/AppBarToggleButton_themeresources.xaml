@@ -7,47 +7,50 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedDisabled" ResourceKey="SystemControlDisabledAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlay" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundChecked" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedDisabled" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushChecked" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundChecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlay" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayChecked" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentAAFillColorDisabled" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushChecked" ResourceKey="AccentControlElevationBorderBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPressed" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundChecked" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedBackgroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedBorderThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedDisabledBackgroundThemeBrush" Color="#66FFFFFF" />
@@ -60,14 +63,14 @@
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedBorderThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonPointerOverBackgroundThemeBrush" Color="#21FFFFFF" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -133,47 +136,50 @@
             <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedDisabled" ResourceKey="SystemControlDisabledAccentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlay" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundChecked" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedDisabled" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushChecked" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundChecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlay" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayChecked" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentAAFillColorDisabled" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushChecked" ResourceKey="AccentControlElevationBorderBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedPressed" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundChecked" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonCheckGlyphForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedBackgroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedBorderThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedDisabledBackgroundThemeBrush" Color="#66000000" />
@@ -186,14 +192,14 @@
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonPointerOverBackgroundThemeBrush" Color="#3D000000" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -218,17 +224,14 @@
         <Setter Property="Width" Value="68" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarToggleButton">
                     <Grid x:Name="Root"
                         MinWidth="{TemplateBinding MinWidth}"
-                        MaxWidth="{TemplateBinding MaxWidth}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
+                        MaxWidth="{TemplateBinding MaxWidth}">
                         <contract5NotPresent:Grid.Resources>
                             <Style x:Name="LabelOnRightStyle" TargetType="AppBarToggleButton">
                                 <Setter Property="Width" Value="NaN" />
@@ -238,6 +241,9 @@
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize" />
                                 <VisualState x:Name="Compact">
+                                    <VisualState.Setters>
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderCompactMargin}" />
+                                    </VisualState.Setters>
 
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Visibility">
@@ -284,7 +290,6 @@
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="TextLabel.Visibility" Value="Collapsed" />
-                                        <Setter Target="CheckedHighlightBackground.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowCheckGlyph.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
                                     </VisualState.Setters>
@@ -299,7 +304,6 @@
                                         <Setter Target="ContentViewbox.MaxHeight" Value="16" />
                                         <Setter Target="ContentViewbox.Margin" Value="38,0,12,0" />
                                         <Setter Target="TextLabel.Visibility" Value="Collapsed" />
-                                        <Setter Target="CheckedHighlightBackground.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowCheckGlyph.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Margin" Value="76,0,12,0" />
@@ -312,9 +316,8 @@
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayPointerOver}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPointerOver}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushPointerOver}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundPointerOver}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundPointerOver}" />
@@ -325,9 +328,8 @@
 
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayPressed}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPressed}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushPressed}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundPressed}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPressed}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundPressed}" />
@@ -338,9 +340,8 @@
 
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundDisabled}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushDisabled}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushDisabled}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundDisabled}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushDisabled}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundDisabled}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundDisabled}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundDisabled}" />
@@ -351,150 +352,112 @@
 
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundChecked}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPointerOver}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundCheckedPointerOver}" />
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver}" />
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPressed}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundCheckedPressed}" />
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed}" />
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedDisabled}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedDisabled}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedDisabled}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedDisabled}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedDisabled}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundCheckedDisabled}" />
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedDisabled}" />
+                                        <Setter Target="CheckedHighlightBackground.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedDisabled}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedDisabled}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled}" />
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OverflowNormal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="OverflowNormal"/>
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayPointerOver}" />
+                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayPointerOver}" />
                                         <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPointerOver}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushPointerOver}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayPressed}" />
+                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayPressed}" />
                                         <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPressed}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushPressed}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundPressed}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowChecked">
                                     <VisualState.Setters>
+                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayChecked}" />
                                         <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundChecked}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPointerOver">
                                     <VisualState.Setters>
+                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver}" />
                                         <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundCheckedPointerOver}" />
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver}" />
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPressed">
                                     <VisualState.Setters>
+                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed}" />
                                         <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
-                                        <Setter Target="AppBarToggleButtonInnerBorder.Stroke" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
+                                        <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundCheckedPressed}" />
-                                        <Setter Target="AccentOverlayBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlayCheckedPressed}" />
-                                        <Setter Target="CheckedHighlightBackground.Fill" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed}" />
-                                        <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
 
                             </VisualStateGroup>
@@ -525,9 +488,12 @@
                             </contract6Present:VisualStateGroup>
 
                         </VisualStateManager.VisualStateGroups>
-                        <Rectangle x:Name="CheckedHighlightBackground" Fill="{ThemeResource AppBarToggleButtonBackgroundChecked}" Opacity="0" />
-                        <Rectangle x:Name="AccentOverlayBackground" Fill="{ThemeResource AppBarToggleButtonBackgroundHighLightOverlay}" />
-                        <Rectangle x:Name="AppBarToggleButtonInnerBorder" StrokeThickness="1" Stroke="{TemplateBinding BorderBrush}"/>
+                        <Border x:Name="AppBarToggleButtonInnerBorder"                                       
+                                Margin="{StaticResource AppBarButtonInnerBorderMargin}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
                         <Grid x:Name="ContentRoot" MinHeight="{ThemeResource AppBarThemeMinHeight}">
 
                             <Grid.ColumnDefinitions>

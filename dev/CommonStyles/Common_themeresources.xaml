@@ -190,7 +190,7 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
 
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush"/>
 
             <!-- Elevation border brushes-->
 
@@ -288,8 +288,8 @@
 
             <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
             <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
-            <Color x:Key="ControlStrokeColorOnAccentDefault">#37000000</Color>
-            <Color x:Key="ControlStrokeColorOnAccentSecondary">#6F000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentDefault">#0F000000</Color>
+            <Color x:Key="ControlStrokeColorOnAccentSecondary">#29000000</Color>
 
             <Color x:Key="CardStrokeColorAll">#0F000000</Color>
 
@@ -408,7 +408,7 @@
             <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
 
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush"/>
 
             <!-- Elevation border brushes-->
 
