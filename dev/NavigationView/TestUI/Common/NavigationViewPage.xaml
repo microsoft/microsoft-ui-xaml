@@ -315,7 +315,7 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
                     <Button x:Name="PaneFooterButton" AutomationProperties.Name="PaneFooterButton" Content="PaneFooter Button" Margin="5"/>
                     <muxcontrols:NavigationViewItem x:Name="PaneFooterNavigationViewItem"
                                                     AutomationProperties.Name="PaneFooterNavigationViewItem"
-                                                    Content="NavigationViewItem as PaneFooter item" />
+                                                    Content="NVI" /> 
                 </StackPanel>
             </muxcontrols:NavigationView.PaneFooter>
         </muxcontrols:NavigationView>
