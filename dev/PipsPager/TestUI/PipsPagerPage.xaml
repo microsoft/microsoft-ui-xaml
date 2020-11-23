@@ -46,14 +46,14 @@
                             Margin="0,0,50,0"/>
 
         <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" >
-            <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="2" SelectionChanged="OnPreviousPageButtonVisibilityChanged">
-                <ComboBoxItem x:Name="VisibleOnEdgePreviousButton" AutomationProperties.Name="VisibleOnEdgePreviousButton">Visible</ComboBoxItem>
-                <ComboBoxItem x:Name="VisbileOnHoverPreviousButton" AutomationProperties.Name="VisbileOnHoverPreviousButton">VisibleOnHover</ComboBoxItem>
+            <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="0" SelectionChanged="OnPreviousPageButtonVisibilityChanged">
+                <ComboBoxItem x:Name="VisiblePreviousButton" AutomationProperties.Name="VisiblePreviousButton">Visible</ComboBoxItem>
+                <ComboBoxItem x:Name="VisibleOnHoverPreviousButton" AutomationProperties.Name="VisibleOnHoverPreviousButton">VisibleOnHover</ComboBoxItem>
                 <ComboBoxItem x:Name="CollapsedPreviousButton" AutomationProperties.Name="CollapsedPreviousButton">Collapsed</ComboBoxItem>
             </ComboBox>
-            <ComboBox x:Name="NextPageButtonVisibilityComboBox" Header="Next Page Button Visibility" SelectedIndex="2" SelectionChanged="OnNextPageButtonVisibilityChanged">
-                <ComboBoxItem x:Name="VisibleOnEdgeNextButton" AutomationProperties.Name="VisibleOnEdgeNextButton">Visible</ComboBoxItem>
-                <ComboBoxItem x:Name="VisbileOnNextButton" AutomationProperties.Name="VisbileOnNextButton">VisibleOnHover</ComboBoxItem>
+            <ComboBox x:Name="NextPageButtonVisibilityComboBox" Header="Next Page Button Visibility" SelectedIndex="0" SelectionChanged="OnNextPageButtonVisibilityChanged">
+                <ComboBoxItem x:Name="VisibleNextButton" AutomationProperties.Name="VisibleNextButton">Visible</ComboBoxItem>
+                <ComboBoxItem x:Name="VisibleOnHoverNextButton" AutomationProperties.Name="VisibleOnHoverNextButton">VisibleOnHover</ComboBoxItem>
                 <ComboBoxItem x:Name="CollapsedNextButton" AutomationProperties.Name="CollapsedNextButton">Collapsed</ComboBoxItem>
             </ComboBox>
             <ComboBox x:Name="TestPipsPagerNumberOfPagesComboBox" Header="Number of pages" SelectedIndex="4" SelectionChanged="OnNumberOfPagesChanged">

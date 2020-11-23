@@ -68,6 +68,7 @@ private:
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
     void OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
+    void OnElementIndexChanged(const winrt::ItemsRepeater& repeater, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
 
     /* Refs */
     tracker_ref<winrt::ItemsRepeater> m_pipsPagerRepeater{ this };

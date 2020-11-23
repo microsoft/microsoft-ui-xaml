@@ -36,7 +36,6 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- PipsPager Resources -->
-    <SolidColorBrush x:Key="TempBrush" Color="Black"/>
     <x:Double x:Key="PipsPagerButtonWidth">20</x:Double>
     <x:Double x:Key="PipsPagerButtonHeight">12</x:Double>
 

@@ -8,6 +8,7 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
         <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousPageButtonStyle}"/>
         <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextPageButtonStyle}"/>
         <Setter Property="SelectedIndicatorButtonStyle" Value="{StaticResource PipsPagerSelectedPipButtonStyle}"/>
@@ -85,7 +86,9 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Button x:Name="PreviousPageButton" Style="{TemplateBinding PreviousButtonStyle}"/>
+                        <Button x:Name="PreviousPageButton"
+                                ToolTipService.ToolTip="{Binding ElementName=PreviousPageButton, Path=(AutomationProperties.Name)}"
+                                Style="{TemplateBinding PreviousButtonStyle}"/>
 
                         <ScrollViewer x:Name="PipsPagerScrollViewer"
                                       VerticalScrollBarVisibility="Hidden"
@@ -105,7 +108,9 @@
                             </muxc:ItemsRepeater>
                         </ScrollViewer>
 
-                        <Button x:Name="NextPageButton" Style="{TemplateBinding NextButtonStyle}"/>
+                        <Button x:Name="NextPageButton"
+                                ToolTipService.ToolTip="{Binding ElementName=NextPageButton, Path=(AutomationProperties.Name)}"
+                                Style="{TemplateBinding NextButtonStyle}"/>
                     </StackPanel>
                 </ControlTemplate>
             </Setter.Value>

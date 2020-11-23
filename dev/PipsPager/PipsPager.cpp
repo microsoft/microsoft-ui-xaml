@@ -104,8 +104,7 @@ void PipsPager::OnApplyTemplate()
 
     OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState);
     OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState);
-    OnNumberOfPagesChanged();
-    OnMaxVisualIndicatorsChanged();
+    UpdatePipsItems(NumberOfPages(), MaxVisualIndicators());
     OnOrientationChanged();
     OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
 }
@@ -366,14 +365,26 @@ void PipsPager::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepea
             pciRevokers->clickRevoker = pip.Click(winrt::auto_revoke,
                 [this, index](auto const& sender, auto const& args)
                 {
-                    if (const auto button = sender.try_as<winrt::Button>())
-                    {
-                        SelectedPageIndex(index);
+                    if (const auto repeater = m_pipsPagerRepeater.get()) {
+                        if (const auto button = sender.try_as<winrt::Button>())
+                        {
+                            SelectedPageIndex(repeater.GetElementIndex(button));
+                        }
                     }
                 }
             );
             pip.SetValue(s_pipButtonHandlersProperty, pciRevokers.as<winrt::IInspectable>());
         }
+    }
+}
+
+void PipsPager::OnElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
+{
+    if (auto const pip = args.Element())
+    {
+        auto const newIndex = args.NewIndex();
+        winrt::AutomationProperties::SetName(pip, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerPageText) + L" " + winrt::to_hstring(newIndex + 1));
+        winrt::AutomationProperties::SetPositionInSet(pip, newIndex + 1);
     }
 }
 

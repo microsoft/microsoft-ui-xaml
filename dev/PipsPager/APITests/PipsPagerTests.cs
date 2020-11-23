@@ -38,11 +38,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(false, selectionPeer.CanSelectMultiple);
                 Verify.AreEqual(true, selectionPeer.IsSelectionRequired);
                 Verify.AreEqual(AutomationLandmarkType.Navigation, peer.GetLandmarkType());
-            });
+            });   
         }
 
         [TestMethod]
-        public void VerifyNumberPanelButtonUIABehavior()
+        public void VerifyPipsPagerButtonUIABehavior()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -55,10 +55,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var rootGrid = VisualTreeHelper.GetChild(Content, 0) as Grid;
-                var scrollViewer = VisualTreeHelper.GetChild(rootGrid, 1) as ScrollViewer;
-                var repeater = VisualTreeHelper.GetChild(scrollViewer, 0) as ItemsRepeater;
-
+                var rootPanel = VisualTreeHelper.GetChild(Content, 0) as StackPanel;
+                var repeaterRootParent = VisualTreeHelper.GetChild(rootPanel, 1);
+                ItemsRepeater repeater = null;
+                while(repeater == null)
+                {
+                    var nextChild = VisualTreeHelper.GetChild(repeaterRootParent, 0);
+                    repeater = nextChild as ItemsRepeater;
+                    repeaterRootParent = nextChild;
+                }
                 for (int i = 0; i < 5; i++)
                 {
                     var button = repeater.TryGetElement(i);
@@ -126,14 +131,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(expectedPreviousIndex, previousIndex, "Expected PreviousPageIndex:" + expectedPreviousIndex + ", actual: " + previousIndex);
                 Verify.AreEqual(expectedNewIndex, newIndex, "Expected PreviousPageIndex:" + expectedNewIndex + ", actual: " + newIndex);
             }
-        }
-
-        // TODO: Verify infinite behaviour once it's ready
-
-        [TestMethod]
-        public void BasicTest()
-        {
-            Log.Comment("PipsPager Basic Test");
         }
     }
 }
