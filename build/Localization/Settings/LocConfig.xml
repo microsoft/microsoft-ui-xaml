@@ -4,28 +4,46 @@
     name="dep.controls"
     tdbuildteamid="104">
     <File
-      location="PersonPicture"
-      path="%LocRoot%\..\..\dev\PersonPicture\Strings\en-us\Resources.resw"/>
-    <File
-      location="RatingControl"
-      path="%LocRoot%\..\..\dev\RatingControl\Strings\en-us\Resources.resw"/>
-    <File
       location="ColorPicker"
       path="%LocRoot%\..\..\dev\ColorPicker\Strings\en-us\Resources.resw"/>
+    <File
+      location="CommandBarFlyout"
+      path="%LocRoot%\..\..\dev\CommandBarFlyout\Strings\en-us\Resources.resw"/>
+    <File
+      location="InfoBar"
+      path="%LocRoot%\..\..\dev\InfoBar\Strings\en-us\Resources.resw"/>
     <File
       location="NavigationView"
       path="%LocRoot%\..\..\dev\NavigationView\Strings\en-us\Resources.resw"/>
     <File
-      location="TreeView"
-      path="%LocRoot%\..\..\dev\TreeView\Strings\en-us\Resources.resw"/>
+      location="NumberBox"
+      path="%LocRoot%\..\..\dev\NumberBox\Strings\en-us\Resources.resw"/>
+    <File
+      location="PagerControl"
+      path="%LocRoot%\..\..\dev\PagerControl\Strings\en-us\Resources.resw"/>
+    <File
+      location="PersonPicture"
+      path="%LocRoot%\..\..\dev\PersonPicture\Strings\en-us\Resources.resw"/>
+    <File
+      location="ProgressBar"
+      path="%LocRoot%\..\..\dev\ProgressBar\Strings\en-us\Resources.resw"/>
+      <File
+      location="ProgressRing"
+      path="%LocRoot%\..\..\dev\ProgressRing\Strings\en-us\Resources.resw"/>
+    <File
+      location="RatingControl"
+      path="%LocRoot%\..\..\dev\RatingControl\Strings\en-us\Resources.resw"/>
     <File
       location="SplitButton"
       path="%LocRoot%\..\..\dev\SplitButton\Strings\en-us\Resources.resw"/>
     <File
+      location="TabView"
+      path="%LocRoot%\..\..\dev\TabView\Strings\en-us\Resources.resw"/>
+    <File
       location="TeachingTip"
       path="%LocRoot%\..\..\dev\TeachingTip\Strings\en-us\Resources.resw"/>
     <File
-      location="TabView"
-      path="%LocRoot%\..\..\dev\TabView\Strings\en-us\Resources.resw"/>
+      location="TreeView"
+      path="%LocRoot%\..\..\dev\TreeView\Strings\en-us\Resources.resw"/>
   </Module>
 </Modules>
