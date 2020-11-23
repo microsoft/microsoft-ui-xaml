@@ -84,6 +84,10 @@
   <!-- Dependencies for IconSource -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureIconSourceEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for InfoBar -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInfoBarEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
   <!-- Dependencies for Interactions -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureInteractionsEnabled) == 'true'">
   </PropertyGroup>
@@ -107,9 +111,9 @@
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>  
-  <!-- Dependencies for Pager -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerEnabled) == 'true'">
+  </PropertyGroup>
+  <!-- Dependencies for PagerControl -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerControlEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
     <FeatureNumberBoxEnabled>productOnly</FeatureNumberBoxEnabled>
     <FeatureComboBoxEnabled>productOnly</FeatureComboBoxEnabled>
@@ -232,7 +236,6 @@
     <FeatureMenuFlyoutEnabled>true</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
     <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
-    <FeaturePagerEnabled>true</FeaturePagerEnabled>
     <FeatureParallaxViewEnabled>true</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>true</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>true</FeaturePivotEnabled>
@@ -263,12 +266,12 @@
     <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
+    <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
+    <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
-    <DefineConstants Condition="$(FeatureInfoBarEnabled) =='true'">$(DefineConstants);FEATURE_INFOBAR_ENABLED</DefineConstants>
     <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
-    <DefineConstants Condition="$(FeaturePagerEnabled) =='true'">$(DefineConstants);FEATURE_PAGER_ENABLED</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>
 </Project>

@@ -49,6 +49,8 @@ void RadioButtons::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected{ *this };
 
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &RadioButtons::OnIsEnabledChanged });
+
     m_repeater.set([this, controlProtected]() {
         if (auto const repeater = GetTemplateChildT<winrt::ItemsRepeater>(s_repeaterName, controlProtected))
         {
@@ -64,6 +66,7 @@ void RadioButtons::OnApplyTemplate()
     }());
 
     UpdateItemsSource();
+    UpdateVisualStateForIsEnabledChange();
 }
 
 // When focus comes from outside the RadioButtons control we will put focus on the selected radio button.
@@ -489,6 +492,11 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     }
 }
 
+void RadioButtons::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateVisualStateForIsEnabledChange();
+}
+
 winrt::UIElement RadioButtons::ContainerFromIndex(int index)
 {
     if (auto const repeater = m_repeater.get())
@@ -550,6 +558,11 @@ void RadioButtons::UpdateSelectedItem()
 void RadioButtons::UpdateItemTemplate()
 {
     m_radioButtonsElementFactory->UserElementFactory(ItemTemplate());
+}
+
+void RadioButtons::UpdateVisualStateForIsEnabledChange()
+{
+    winrt::VisualStateManager::GoToState(*this, IsEnabled() ? L"Normal" : L"Disabled", false);
 }
 
 // Test Hooks helpers, only function when m_testHooksEnabled == true

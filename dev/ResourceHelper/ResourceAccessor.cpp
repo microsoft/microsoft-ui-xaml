@@ -15,6 +15,11 @@ winrt::ResourceMap ResourceAccessor::GetResourceMap()
             winrt::hstring packageName{ MUXCONTROLS_PACKAGE_NAME };
             return winrt::ResourceManager::Current().AllResourceMaps().Lookup(packageName);
         }
+        else if (SharedHelpers::IsInCBSPackage())
+        {
+            winrt::hstring packageName{ MUXCONTROLS_CBS_PACKAGE_NAME };
+            return winrt::ResourceManager::Current().AllResourceMaps().Lookup(packageName);
+        }
         else
         {
             return winrt::ResourceManager::Current().MainResourceMap();
@@ -38,6 +43,10 @@ winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &
         if (SharedHelpers::IsInFrameworkPackage())
         {
             return winrt::Uri{ std::wstring(L"ms-resource://" MUXCONTROLS_PACKAGE_NAME "/Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) + std::wstring(L".png")  };
+        }
+        else if (SharedHelpers::IsInCBSPackage())
+        {
+            return winrt::Uri{ std::wstring(L"ms-resource://" MUXCONTROLS_CBS_PACKAGE_NAME "/Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) + std::wstring(L".png")  };
         }
         else
         {
