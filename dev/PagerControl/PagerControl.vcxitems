@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{AB3261A7-9A8D-4A27-AEA2-3AAC0419C889}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);PAGERCONTROL_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)PagerControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PagerControlSelectedIndexChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PagerControlTemplateSettings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PagerControl.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PagerControlTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PagerControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PagerControlTemplateSettings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)PagerControl.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PagerControl_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)PagerControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

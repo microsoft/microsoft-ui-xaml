@@ -55,9 +55,9 @@ It focuses on enabling three main use cases:
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
 
-WinUI 3 is currently in development, and the team recently released WinUI 3 Preview 2, which is a pre-release version that works with Win32 and UWP apps. Preview 2 is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 2 here: 
+WinUI 3 is currently in development, and the team recently released WinUI 3 Preview 3, which is a pre-release version that works with Win32 and UWP apps. Preview 3 is available for anyone to try, but note that it has limitations and known issues, so it is not equipped for production apps. Get started or read more about Preview 3 here: 
 
-[WinUI 3.0 Preview 2 (July 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
+[WinUI 3.0 Preview 3 (November 2020)](https://docs.microsoft.com/windows/apps/winui/winui3/)
 
 The 3rd generation of WinUI has some key benefits over the 2nd generation, including:
 
@@ -100,7 +100,7 @@ WinUI 3 will release as a series of preview releases throughout 2020, culminatin
 
 See the image below for a more detailed look at our plans for getting WinUI 3.0 to market:
 
-![Winui roadmap](images/WinUI-Roadmap-Sept2020.jpg)
+![Winui roadmap](images/winui-roadmap.jpg)
 
 ## WinUI 3.0 Feature Roadmap
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
@@ -116,37 +116,38 @@ For questions or status updates on either features listed here, or features not 
 
 &#129002; - Stretch goal 
 
-Blank - Not included, or not planned to be included
+Blank -  Not included, or not planned to be included
 
-**Preview 2** is our latest release. 
+**Preview 3** is our latest release. 
 
-| Customer Capability                                                         | Preview 2 (July 2020) | Preview 3 (Nov 2020) | WinUI 3.0 (2021) | Post-3.0  (3.x releases)       |
+| Customer Capability                                                         | Preview 2 (July 2020) | Preview 3 (Nov 2020) | WinUI 3.0 (2021) | Post-3.0 (3.x releases)        |
 |-----------------------------------------------------------------------------|-----------------------|----------------------|------------------|------------------|
-| Ready for production apps                                                   |            |           | &#128994; | &#128994; |
-| WinUI in Desktop (Win32) apps*                                               | &#128994;              | &#128994;             | &#128994; | &#128994; |
+| WinUI in Desktop (Win32) apps                                               | &#128994;              | &#128994;             | &#128994; | &#128994; |
 | Supports MSIX Deployment                                                    | &#128994;              | &#128994;             | &#128994; | &#128994; |
-| Supports non-MSIX deployment                                                |            |           |       | &#128994; |
 | WinUI works downlevel to Windows 10 version 1803 and above                  | &#128994;              | &#128994;             | &#128994; | &#128994; |
-| ARM64 support                                                               |            | &#128994;             | &#128994; | &#128994; |
-| .NET 5 Support for UWP apps                                                 |            |           |       | &#128994; |
 | .NET 5 Support for Desktop apps                                             | &#128994;              | &#128994;             | &#128994; | &#128994; |
+| `<SwapChainPanel>`                                                              | &#128994;              | &#128994;             | &#128994; | &#128994; |
+|  Chromium-based WebView2                                                    | &#128994;              | &#128994;             | &#128994; | &#128994; |
+| Title Bar customization for Desktop apps                                    | &#128311;                  | &#128311;                 | &#128994; | &#128994; |
+| Fluent Shadows                                                              | &#128311;                  | &#128311;                 | &#128311;             | &#128994; |
+| Input validation for data fields                                            | &#128311;                  | &#128311;                 | &#129002;     | &#128994; |
+| Multi-window support for Desktop apps                                       | &#128311;                  | &#128311;              | &#128994; | &#128994; |
+| ARM64 support                                                               |            | &#128994;             | &#128994; | &#128994; |
+| Drag and drop                                                               |            | &#128994;             | &#128994; | &#128994; |
+| Off-thread input for SwapChainPanels                                        |            |      &#128994;     | &#128994;     | &#128994;|
+| RenderTargetBitmap                                                          |            |    &#128311;       | &#128311;   | &#128994; |
+| Ready for production apps                                                   |            |           | &#128994; | &#128994; |
+| Supports non-MSIX deployment                                                |            |           |       | &#128994; |
+| .NET 5 Support for UWP apps                                                 |            |           |       | &#128994; |
+| XAML Islands                                                                |            |           |       | &#128994; |
 | Works on Windows 10X                                                        |            |           |       | &#128994; |
 | Works on additional Windows form factors (Xbox, HoloLens, IoT, Surface Hub) |            |           |       | &#128994; |
-| [`<SwapChainPanel>`](https://docs.microsoft.com/uwp/api/windows.ui.xaml.controls.swapchainpanel?view=winrt-19041)                                                              | &#128994;              | &#128994;             | &#128994; | &#128994; |
-| Off-thread input for SwapChainPanels                                        |            |           | &#129002;     | &#128994; |
-|  Chromium-based WebView2                                                    | &#128994;              | &#128994;             | &#128994; | &#128994; |
 | Title Bar customization for UWP apps                                        |            |           |       | &#128994; |
-| Title Bar customization for Desktop apps                                    |  &#128311;                  |  &#128311;                 | &#128994; | &#128994; |
-| XAML Islands                                                                |            |           |       | &#128994; |
-| Multi-window support for Desktop apps                      |      &#128311;      | &#128994;             | &#128994; | &#128994; |
-| Drag and drop                                                               |            | &#128994;             | &#128994; | &#128994; |
 | Acrylic material                                                            |            |           |       | &#128994; |
 | Reveal Highlight                                                            |            |           |       | &#128994; |
-| Fluent Shadows                                                              |  &#128311;                  |  &#128311;                 |  &#128311;             | &#128994; |
-| Rounded corners for top-level windows and popups                            |            |           |       | &#128994; |
+| Rounded corners for top level windows and popups                                                          |            |           |       | &#128994; |
 | Media Controls                                                              |            |           |       | &#128994; |
-| Input validation for data fields                                            |  &#128311;                  |  &#128311;                 | &#129002;     | &#128994; |
-| [`<MapControl>`](https://docs.microsoft.com/uwp/api/windows.ui.xaml.controls.maps.mapcontrol?view=winrt-19041)                                                                 |            |           |       | &#129002;     |
-| [`<InkCanvas>`](https://docs.microsoft.com/uwp/api/windows.ui.xaml.controls.inkcanvas?view=winrt-19041)                                                                 |            |           |       | &#128994; |
-| [RenderTargetBitmap](https://docs.microsoft.com/uwp/api/windows.ui.xaml.media.imaging.rendertargetbitmap?view=winrt-19041)                                                          |            |           | &#129002;     | &#128994; |
-\* For Preview 2: Single  content tree-only.  Supports C# or C++.  Includes VSIX-based project templates, XAML Win32 app model support, etc.  This will no longer be a restriction in Preview 3.
+| `<InkCanvas>`                                                                 |            |           |       | &#128994; |
+| `<Map Control>`                                                                |            |           |       | &#129002;     |
+
+
