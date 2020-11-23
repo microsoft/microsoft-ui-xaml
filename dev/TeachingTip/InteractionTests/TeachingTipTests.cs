@@ -939,7 +939,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // A light-dismissable teaching tip has no close button.
                 EnableLightDismiss(true);
 
-                //Configure the teaching tip so that it only has one focusable child element - a content button.
+                // Configure the teaching tip so that it only has one focusable child element - a content button.
                 SetContent(ContentOptions.Button);
                 SetHeroContent(HeroContentOptions.NoContent);
 

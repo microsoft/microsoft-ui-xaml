@@ -1131,15 +1131,16 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
             {
                 if (const auto focusableElement = winrt::FocusManager::FindFirstFocusableElement(mainContentPresenter))
                 {
-                    // A focusable element can be a Hyperlink which does not expose a GettingFocus event. As such, we use the FocusManager API here. 
-                    auto const scopedRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke, [this, focusableElement](auto const&, const winrt::GettingFocusEventArgs& args) {
-                        if (args.NewFocusedElement() == focusableElement)
-                        {
-                            m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
-                        }
-                    });
+                    const auto previouslyFocusedElement = winrt::FocusManager::GetFocusedElement();
 
                     const bool setFocus = SetFocus(focusableElement, winrt::FocusState::Keyboard);
+                    if (setFocus)
+                    {
+                        if (const auto previouslyFocusedElementAsDO = previouslyFocusedElement.try_as<winrt::DependencyObject>())
+                        {
+                            m_previouslyFocusedElement = winrt::make_weak(previouslyFocusedElementAsDO);
+                        }
+                    }
                     args.Handled(setFocus);
                 }
             }
