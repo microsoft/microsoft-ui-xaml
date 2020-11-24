@@ -1717,6 +1717,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Log.Comment("Expand item with children");
                 UIObject hasChildItem = FindElement.ByName("HasChildItem");
                 InputHelper.LeftClick(hasChildItem);
+                Wait.ForMilliseconds(100); // Give a little bit of time for the flyout to open, then wait for idle.
                 Wait.ForIdle();
 
                 getChildContentPresenterMarginButton.InvokeAndWait();
