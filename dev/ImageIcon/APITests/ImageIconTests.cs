@@ -34,7 +34,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 imageIcon = new ImageIcon();
-                Verify.AreEqual(((SolidColorBrush)imageIcon.Foreground).Color, Colors.White) ;
+                var theme = Application.Current.RequestedTheme;
+                if (theme == ApplicationTheme.Dark)
+                {
+                    Verify.AreEqual(((SolidColorBrush)imageIcon.Foreground).Color, Colors.White);
+                }
+                else
+                {
+                    Verify.AreEqual(((SolidColorBrush)imageIcon.Foreground).Color, Colors.Black);
+                }
 
                 Log.Comment("Validate that you can change the properties.");
 
