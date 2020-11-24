@@ -174,6 +174,7 @@
     <x:Double x:Key="SliderPreContentMargin">15</x:Double>
     <x:Double x:Key="SliderPostContentMargin">15</x:Double>
     <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
+    <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>
     <x:Double x:Key="SliderTrackCornerRadius">2</x:Double>
     <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
