@@ -1723,6 +1723,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 getChildContentPresenterMarginButton.InvokeAndWait();
                 Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
 
+                // Close opened flyout
+                InputHelper.LeftClick(hasChildItem);
+                Wait.ForIdle();
+
                 // Switch the NavigationView to expanded mode
                 Log.Comment("Switch NavigationView to expanded mode");
                 SetNavViewWidth(ControlWidth.Wide);
