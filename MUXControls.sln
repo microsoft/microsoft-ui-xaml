@@ -690,6 +690,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PipsPager_TestUI", "dev\PipsPager\TestUI\PipsPager_TestUI.shproj", "{44F0E6BC-6222-4F16-8050-BB31DD804C4A}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PipsPager_InteractionTests", "dev\PipsPager\InteractionTests\PipsPager_InteractionTests.shproj", "{B1D8E6A2-3FE6-4D80-9685-26DF2C9F4331}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImageIcon", "ImageIcon", "{BB791907-485F-4A16-9612-7FE07FCD1D21}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageIcon", "dev\ImageIcon\ImageIcon.vcxitems", "{9FB38577-696E-47BA-8AE2-F48A3C84A7CA}"
@@ -921,6 +922,7 @@ Global
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{cddf46ef-aa2d-4bb3-b33e-98b3dbb3c41b}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\SliderInteraction.vcxitems*{d097a4d5-6b61-424d-99f0-f335eff41665}*SharedItemsImports = 9
 		dev\TabView\InteractionTests\TabView_InteractionTests.projitems*{d1e297b4-5e5b-4807-8624-4141c817a98a}*SharedItemsImports = 13
+		dev\PipsPager\PipsPager.vcxitems*{d1eb61d8-c689-4ad1-bd61-fdaa50362563}*SharedItemsImports = 9
 		dev\MenuFlyout\MenuFlyout.vcxitems*{d5c2b2a0-50af-4ace-939d-17d1ed79fd6f}*SharedItemsImports = 9
 		dev\Expander\InteractionTests\Expander_InteractionTests.projitems*{d6df4ab9-facc-4e51-8c57-6b1f96919365}*SharedItemsImports = 13
 		dev\IconSource\APITests\IconSource_APITests.projitems*{d73627e9-564c-4a72-a12d-f6c82f17ad0d}*SharedItemsImports = 13
