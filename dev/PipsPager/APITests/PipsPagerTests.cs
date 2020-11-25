@@ -38,7 +38,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(false, selectionPeer.CanSelectMultiple);
                 Verify.AreEqual(true, selectionPeer.IsSelectionRequired);
                 Verify.AreEqual(AutomationLandmarkType.Navigation, peer.GetLandmarkType());
-            });   
+            });
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var rootPanel = VisualTreeHelper.GetChild(Content, 0) as StackPanel;
                 var repeaterRootParent = VisualTreeHelper.GetChild(rootPanel, 1);
                 ItemsRepeater repeater = null;
-                while(repeater == null)
+                while (repeater == null)
                 {
                     var nextChild = VisualTreeHelper.GetChild(repeaterRootParent, 0);
                     repeater = nextChild as ItemsRepeater;
