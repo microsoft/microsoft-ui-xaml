@@ -36,8 +36,9 @@ void Breadcrumb::OnApplyTemplate()
 
     if (auto breadcrumbItemsRepeater = m_breadcrumbItemRepeater.get())
     {
-        breadcrumbItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
-        breadcrumbItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });}
+        m_itemRepeaterElementPreparedRevoker = breadcrumbItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
+        m_itemRepeaterElementClearingRevoker = breadcrumbItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
+    }
 
 }
 
@@ -74,9 +75,10 @@ void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::Item
 
 void Breadcrumb::OnElementClearingEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementClearingEventArgs args)
 {
-    winrt::BreadcrumbItem item = args.Element().as<winrt::BreadcrumbItem>();
-
-    com_ptr<BreadcrumbItem> itemImpl;
-    itemImpl.attach(winrt::get_self<BreadcrumbItem>(item));
-    itemImpl->ResetVisualProperties();
+    if (auto item = args.Element().try_as<winrt::BreadcrumbItem>())
+    {
+        auto const itemImpl = winrt::get_self<BreadcrumbItem>(item);
+        itemImpl->ResetVisualProperties();
+        itemImpl->RevokeListeners();
+    }
 }

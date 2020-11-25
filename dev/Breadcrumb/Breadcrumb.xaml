@@ -50,7 +50,6 @@
 
                     <local:ItemsRepeater x:Name="BreadcrumbItemRepeater"
                                          ItemsSource="{TemplateBinding ItemsSource}"
-                                         Grid.Column="1"
                                          HorizontalAlignment="Left">
                         <local:ItemsRepeater.Layout>
                             <local:StackLayout Orientation="Horizontal" />

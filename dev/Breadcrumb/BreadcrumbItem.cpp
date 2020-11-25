@@ -21,6 +21,16 @@ BreadcrumbItem::BreadcrumbItem()
     SetDefaultStyleKey(this);
 }
 
+BreadcrumbItem::~BreadcrumbItem()
+{
+    RevokeListeners();
+}
+
+void BreadcrumbItem::RevokeListeners()
+{
+    m_splitButtonLoadedRevoker.revoke();
+}
+
 void BreadcrumbItem::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
@@ -30,7 +40,7 @@ void BreadcrumbItem::OnApplyTemplate()
 
     if (auto splitButton = m_splitButton.get())
     {
-        splitButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+        m_splitButtonLoadedRevoker = splitButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
     }
 }
 
