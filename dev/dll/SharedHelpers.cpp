@@ -565,6 +565,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return bitmapIcon;
     }
+#ifdef IMAGEICON_INCLUDED
     else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
     {
         winrt::ImageIcon imageIcon;
@@ -578,6 +579,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return imageIcon;
     }
+#endif
     else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
     {
         winrt::PathIcon pathIcon;
