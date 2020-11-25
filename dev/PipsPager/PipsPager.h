@@ -24,7 +24,10 @@ public:
     /* IFrameworkElement */
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    /* Accessibility */
     winrt::AutomationPeer OnCreateAutomationPeer();
+    void UpdateSizeOfSetForElements(const int numberOfPages);
 
     void OnPointerEntered(const winrt::PointerRoutedEventArgs& args);
     void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
@@ -35,7 +38,10 @@ public:
     void OnNumberOfPagesChanged();
     void OnSelectedPageIndexChanged(const int oldValue);
     void OnMaxVisualIndicatorsChanged();
-    void OnNavigationButtonVisibilityChanged(const winrt::PipsPagerButtonVisibility visibility, const wstring_view& collapsedStateName);
+    void OnNavigationButtonVisibilityChanged(
+        const winrt::PipsPagerButtonVisibility visibility,
+        const wstring_view& collapsedStateName,
+        const wstring_view& disabledStateName);
     void OnOrientationChanged();
 
     /* Dependency property for pip buttons revokers */

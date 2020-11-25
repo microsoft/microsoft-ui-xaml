@@ -101,9 +101,8 @@ void PipsPager::OnApplyTemplate()
 
     m_defaultPipSize = GetDesiredPipSize(DefaultIndicatorButtonStyle());
     m_selectedPipSize = GetDesiredPipSize(SelectedIndicatorButtonStyle());
-
-    OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState);
-    OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState);
+    OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState, c_previousPageButtonDisabledVisualState);
+    OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState, c_nextPageButtonDisabledVisualState);
     UpdatePipsItems(NumberOfPages(), MaxVisualIndicators());
     OnOrientationChanged();
     OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
@@ -168,7 +167,6 @@ void PipsPager::OnPointerEntered(const winrt::PointerRoutedEventArgs& args) {
     UpdateNavigationButtonVisualStates();
 }
 void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
-    __super::OnPointerExited(args);
     // We can get a spurious Exited and then Entered if the button
     // that is being clicked on hides itself. In order to avoid switching
     // visual states in this case, we check if the pointer is over the
@@ -177,8 +175,12 @@ void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
     {
         m_isPointerOver = false;
         UpdateNavigationButtonVisualStates();
+    }
+    else
+    {
         args.Handled(true);
     }
+    __super::OnPointerExited(args);
 }
 
 void PipsPager::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
@@ -208,7 +210,7 @@ void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const wstring_view& enabledStateName,
     const wstring_view& disabledStateName) {
 
-    const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && std::max(0, MaxVisualIndicators()) > 0;
+    const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && MaxVisualIndicators() > 0;
     if (visibility != ButtonVisibility::Collapsed)
     {
         if ((visibility == ButtonVisibility::Visible || m_isPointerOver) && ifGenerallyVisible)
@@ -221,6 +223,10 @@ void PipsPager::UpdateIndividualNavigationButtonVisualState(
             if (!ifGenerallyVisible)
             {
                 winrt::VisualStateManager::GoToState(*this, disabledStateName, false);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, enabledStateName, false);
             }
             winrt::VisualStateManager::GoToState(*this, hiddenStateName, false);
         }
@@ -252,7 +258,7 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender)
 }
 
 void PipsPager::UpdateSelectedPip(const int index) {
-    if (NumberOfPages() != 0)
+    if (NumberOfPages() != 0 && MaxVisualIndicators() > 0)
     {
         if (const auto repeater = m_pipsPagerRepeater.get())
         {
@@ -316,11 +322,11 @@ void PipsPager::UpdatePipsItems(const int numberOfPages, int maxVisualIndicators
     /* Inifinite number of pages case */
     else if (numberOfPages < 0)
     {
-        /* Treat negative max visual indicators as 0 */
-        maxVisualIndicators = std::max(0, maxVisualIndicators);
-        if (maxVisualIndicators > pipsListSize)
+        /* Treat negative max visual indicators as 0*/
+        auto const minNumberOfElements = std::max(SelectedPageIndex() + 1, std::max(0, maxVisualIndicators));
+        if (minNumberOfElements > pipsListSize)
         {
-            for (int i = pipsListSize; i < maxVisualIndicators; i++)
+            for (int i = pipsListSize; i < minNumberOfElements; i++)
             {
                 m_pipsPagerItems.Append(winrt::box_value(i + 1));
             }
@@ -390,8 +396,9 @@ void PipsPager::OnElementIndexChanged(const winrt::ItemsRepeater&, const winrt::
 
 void PipsPager::OnMaxVisualIndicatorsChanged()
 {
-    if (NumberOfPages() < 0) {
-        UpdatePipsItems(NumberOfPages(), MaxVisualIndicators());
+    const auto numberOfPages = NumberOfPages();
+    if (numberOfPages < 0) {
+        UpdatePipsItems(numberOfPages, MaxVisualIndicators());
     }
     SetScrollViewerMaxSize();
     UpdateSelectedPip(SelectedPageIndex());
@@ -402,6 +409,7 @@ void PipsPager::OnNumberOfPagesChanged()
 {
     const int numberOfPages = NumberOfPages();
     const int selectedPageIndex = SelectedPageIndex();
+    UpdateSizeOfSetForElements(numberOfPages);
     UpdatePipsItems(numberOfPages, MaxVisualIndicators());
     SetScrollViewerMaxSize();
     if (SelectedPageIndex() > numberOfPages - 1 && numberOfPages > -1)
@@ -461,17 +469,17 @@ void PipsPager::OnOrientationChanged()
 
 }
 
-void PipsPager::OnNavigationButtonVisibilityChanged(const ButtonVisibility visibility, const wstring_view& collapsedStateName) {
+void PipsPager::OnNavigationButtonVisibilityChanged(const ButtonVisibility visibility, const wstring_view& collapsedStateName, const wstring_view& disabledStateName) {
     if (visibility == ButtonVisibility::Collapsed)
     {
         winrt::VisualStateManager::GoToState(*this, collapsedStateName, false);
+        winrt::VisualStateManager::GoToState(*this, disabledStateName, false);
     }
     else
     {
         UpdateNavigationButtonVisualStates();
     }
 }
-
 
 void PipsPager::OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
 {
@@ -503,11 +511,11 @@ void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
         }
         else if (property == PreviousButtonVisibilityProperty())
         {
-            OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState);
+            OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState, c_previousPageButtonDisabledVisualState);
         }
         else if (property == NextButtonVisibilityProperty())
         {
-            OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState);
+            OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState, c_nextPageButtonDisabledVisualState);
         }
         else if (property == DefaultIndicatorButtonStyleProperty())
         {
@@ -531,4 +539,17 @@ void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
 winrt::AutomationPeer PipsPager::OnCreateAutomationPeer()
 {
     return winrt::make<PipsPagerAutomationPeer>(*this);
+}
+
+void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages) {
+    if(auto const repeater = m_pipsPagerRepeater.get())
+    {
+        for (int i = 0; i < numberOfPages; i++)
+        {
+            if (auto const pip = repeater.TryGetElement(i))
+            {
+                winrt::AutomationProperties::SetSizeOfSet(pip, numberOfPages);
+            }
+        }
+    }
 }
