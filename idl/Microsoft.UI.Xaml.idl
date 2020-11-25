@@ -171,6 +171,11 @@ namespace MU_XC_NAMESPACE
             Boolean UseCompactResources{ get; set; };
 
             static Windows.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
+
+            [MUX_DEFAULT_VALUE("true")]
+            Boolean UseNewVisual{ get; set; };
+
+            static Windows.UI.Xaml.DependencyProperty UseNewVisualProperty{ get; };
         }
     }
 }

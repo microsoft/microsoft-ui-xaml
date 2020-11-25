@@ -12,14 +12,23 @@ public:
     void UseCompactResources(bool value);
     bool UseCompactResources();
 
+    void UseNewVisual(bool value);
+    bool UseNewVisual();
+
     static winrt::DependencyProperty UseCompactResourcesProperty() { return s_UseCompactResourcesProperty; }
+    static winrt::DependencyProperty UseNewVisualProperty() { return s_UseNewVisualProperty; }
 
     static GlobalDependencyProperty s_UseCompactResourcesProperty;
+    static GlobalDependencyProperty s_UseNewVisualProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
     static void OnUseCompactResourcesPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnUseNewVisualPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

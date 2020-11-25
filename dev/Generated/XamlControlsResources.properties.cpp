@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "XamlControlsResources.g.cpp"
 
 GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactResourcesProperty{ nullptr };
+GlobalDependencyProperty XamlControlsResourcesProperties::s_UseNewVisualProperty{ nullptr };
 
 XamlControlsResourcesProperties::XamlControlsResourcesProperties()
 {
@@ -33,14 +34,34 @@ void XamlControlsResourcesProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnUseCompactResourcesPropertyChanged));
     }
+    if (!s_UseNewVisualProperty)
+    {
+        s_UseNewVisualProperty =
+            InitializeDependencyProperty(
+                L"UseNewVisual",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::XamlControlsResources>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnUseNewVisualPropertyChanged));
+    }
 }
 
 void XamlControlsResourcesProperties::ClearProperties()
 {
     s_UseCompactResourcesProperty = nullptr;
+    s_UseNewVisualProperty = nullptr;
 }
 
 void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::XamlControlsResources>();
+    winrt::get_self<XamlControlsResources>(owner)->OnPropertyChanged(args);
+}
+
+void XamlControlsResourcesProperties::OnUseNewVisualPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -59,4 +80,17 @@ void XamlControlsResourcesProperties::UseCompactResources(bool value)
 bool XamlControlsResourcesProperties::UseCompactResources()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseCompactResourcesProperty));
+}
+
+void XamlControlsResourcesProperties::UseNewVisual(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<XamlControlsResources*>(this)->SetValue(s_UseNewVisualProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool XamlControlsResourcesProperties::UseNewVisual()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseNewVisualProperty));
 }
