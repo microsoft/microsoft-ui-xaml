@@ -210,6 +210,9 @@
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for Breadcrumb -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureBreadcrumbEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -268,6 +271,7 @@
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeatureBreadcrumbEnabled>true</FeatureBreadcrumbEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

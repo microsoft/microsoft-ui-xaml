@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
@@ -138,9 +138,10 @@
     <Import Project="..\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
     <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
     <Import Project="..\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
-    <Import Project="..\Expander\Expander.vcxitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true' Or $(FeatureExpanderEnabled) == 'productOnly'"/>
-    <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared"  Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'"/>
-    <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'"/>
+    <Import Project="..\Expander\Expander.vcxitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true' Or $(FeatureExpanderEnabled) == 'productOnly'" />
+    <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'" />
+    <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'" />
+    <Import Project="..\Breadcrumb\Breadcrumb.vcxitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true' Or $(FeatureBreadcrumbEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -594,7 +595,7 @@
       <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
     </CompileXaml>
     <ItemGroup>
-      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -&gt; '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
       <FileWrites Include="$(XamlSavedStateFilePath)" />
       <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
     </ItemGroup>

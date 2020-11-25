@@ -1,0 +1,71 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.UI.Xaml.Controls">
+
+    <!-- see https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font -->
+    <x:String x:Key="SplitButtonSecondaryButtonContent">&#xE76C;</x:String>
+    <x:String x:Key="SplitButtonSecondaryButtonDefaultContent">&#xE70D;</x:String>
+
+    <Style TargetType="local:BreadcrumbItem">
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:BreadcrumbItem">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <local:SplitButton x:Name="SplitButton" Margin="2">
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                            <local:SplitButton.Flyout>
+                                <Flyout Placement="Bottom" >
+
+                                    <local:ItemsRepeater x:Name="FlyoutRepeater">
+                                        <local:ItemsRepeater.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Content="{Binding}" Background="Transparent"/>
+                                            </DataTemplate>
+                                        </local:ItemsRepeater.ItemTemplate>
+                                    </local:ItemsRepeater>
+
+                                </Flyout>
+                            </local:SplitButton.Flyout>
+
+                        </local:SplitButton>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="local:Breadcrumb">
+        <!-- <Setter Property="SecondaryButtonText" Value="{ThemeResource SplitButtonSecondaryButtonContent}" /> -->
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:Breadcrumb">
+
+                    <local:ItemsRepeater x:Name="BreadcrumbItemRepeater"
+                                         ItemsSource="{TemplateBinding ItemsSource}"
+                                         Grid.Column="1"
+                                         HorizontalAlignment="Left">
+                        <local:ItemsRepeater.Layout>
+                            <local:StackLayout Orientation="Horizontal" />
+                        </local:ItemsRepeater.Layout>
+
+                        <local:ItemsRepeater.ItemTemplate>
+                            <DataTemplate>
+                                <local:BreadcrumbItem Content="{Binding}" />
+                            </DataTemplate>
+                        </local:ItemsRepeater.ItemTemplate>
+                    </local:ItemsRepeater>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,139 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
+#include "common.h"
+#include "BreadcrumbItem.h"
+#include "RuntimeProfiler.h"
+#include "ResourceAccessor.h"
+
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(BreadcrumbItem)
+}
+
+#include "BreadcrumbItem.g.cpp"
+
+BreadcrumbItem::BreadcrumbItem()
+{
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_BreadcrumbItem);
+
+    SetDefaultStyleKey(this);
+}
+
+void BreadcrumbItem::OnApplyTemplate()
+{
+    winrt::IControlProtected controlProtected{ *this };
+
+    // TODO: Implement
+    m_splitButton.set(GetTemplateChildT<winrt::SplitButton>(L"SplitButton", controlProtected));
+
+    if (auto splitButton = m_splitButton.get())
+    {
+        splitButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+    }
+}
+
+void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+{
+    m_rootGrid.set(winrt::VisualTreeHelper::GetChild(m_splitButton.get(), 0).as<winrt::Grid>());
+
+    if (auto rootGrid = m_rootGrid.get())
+    {
+        m_secondaryButtonGrid.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 1).as<winrt::Grid>());
+        m_splitButtonBorder.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 2).as<winrt::Grid>());
+        m_primaryButton.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 3).as<winrt::Button>());
+        m_secondaryButton.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 4).as<winrt::Button>());
+        
+        if (auto secondaryButton = m_secondaryButton.get())
+        {
+            secondaryButton.IsEnabled(false);
+            SetSecondaryButtonText(true);
+            SetSecondaryButtonVisibility(m_isChevronVisible);
+        }
+    }
+
+    if (m_isLastNode)
+    {
+        SetPropertiesForLastNode();
+    }
+}
+
+void BreadcrumbItem::SetPropertiesForLastNode()
+{
+    m_isLastNode = true;
+
+    SetPrimaryButtonFontWeight(true);
+    SetSecondaryButtonVisibility(false);
+}
+
+void BreadcrumbItem::SetPrimaryButtonFontWeight(bool mustBeBold)
+{
+    if (auto primaryButton = m_primaryButton.get())
+    {
+        primaryButton.FontWeight(mustBeBold ? winrt::FontWeights::Bold() : winrt::FontWeights::Normal());
+    }
+}
+
+void BreadcrumbItem::SetSecondaryButtonVisibility(bool isVisible)
+{
+    m_isChevronVisible = isVisible;
+
+    if (auto secondaryButton = m_secondaryButton.get())
+    {
+        secondaryButton.Visibility(m_isChevronVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    }
+
+    if (auto secondaryButtonGrid = m_secondaryButtonGrid.get())
+    {
+        secondaryButtonGrid.Visibility(m_isChevronVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    }
+
+    if (auto rootGrid = m_rootGrid.get())
+    {
+        int columnDefinitionCount = rootGrid.ColumnDefinitions().Size();
+
+        auto lastColumnDefinition = rootGrid.ColumnDefinitions().GetAt(columnDefinitionCount - 1);
+
+        if (lastColumnDefinition.Width().Value != 0.0)
+        {
+            m_chevronOriginalWidth = lastColumnDefinition.Width();
+        }
+
+        winrt::GridLength hiddenGridLength;
+        hiddenGridLength.GridUnitType = winrt::GridUnitType::Pixel;
+        hiddenGridLength.Value = 0.0;
+
+        lastColumnDefinition.Width(isVisible ? m_chevronOriginalWidth : hiddenGridLength);
+
+        if (auto splitButtonBorder = m_splitButtonBorder.get())
+        {
+            winrt::Grid::SetColumnSpan(splitButtonBorder, columnDefinitionCount - 1);
+        }
+    }
+}
+
+void BreadcrumbItem::SetSecondaryButtonText(bool isCollapsed)
+{
+    if (auto secondaryButton = m_secondaryButton.get())
+    {
+        winrt::TextBlock secondaryButtonContent = secondaryButton.Content().as<winrt::TextBlock>();
+
+        if (secondaryButtonContent)
+        {
+            secondaryButtonContent.Text(isCollapsed ? L"&#xE76C;" : L"&#xE70D;");
+        }
+    }
+}
+
+void BreadcrumbItem::ResetVisualProperties()
+{
+    m_isLastNode = false;
+
+    if (auto secondaryButton = m_secondaryButton.get())
+    {
+        SetPrimaryButtonFontWeight(false);
+        SetSecondaryButtonVisibility(true);
+        SetSecondaryButtonText(true);
+    }
+}
