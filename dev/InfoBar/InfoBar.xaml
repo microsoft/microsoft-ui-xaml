@@ -140,7 +140,6 @@
                                 PaddingInVerticalOrientation="{StaticResource InfoBarPanelPaddingInVerticalOrientation}">
 
                                 <TextBlock x:Name="Title"
-                                    Grid.Column="0"
                                     Text="{TemplateBinding Title}"
                                     Foreground="{ThemeResource InfoBarTitleForeground}"
                                     primitives:InfoBarPanel.SpacingInHorizontalOrientation="{StaticResource InfoBarTitleSpacingInHorizontalOrientation}"
@@ -151,7 +150,6 @@
                                     FontSize="{StaticResource InfoBarTitleFontSize}"/>
 
                                 <TextBlock x:Name="Message" 
-                                    Grid.Column="1"
                                     Text="{TemplateBinding Message}"
                                     Foreground="{ThemeResource InfoBarMessageForeground}"
                                     primitives:InfoBarPanel.SpacingInHorizontalOrientation="{StaticResource InfoBarMessageSpacingInHorizontalOrientation}"
@@ -161,7 +159,6 @@
                                     FontSize="{StaticResource InfoBarMessageFontSize}"/>
 
                                 <ContentPresenter
-                                    Grid.Column="2"
                                     primitives:InfoBarPanel.SpacingInHorizontalOrientation="{StaticResource InfoBarActionSpacingInHorizontalOrientation}"
                                     primitives:InfoBarPanel.SpacingInVerticalOrientation="{StaticResource InfoBarActionSpacingInVerticalOrientation}"
                                     VerticalAlignment="Top"
