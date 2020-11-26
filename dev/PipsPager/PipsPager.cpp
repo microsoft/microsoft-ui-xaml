@@ -29,8 +29,6 @@ constexpr auto c_nextPageButtonCollapsedVisualState = L"NextPageButtonCollapsed"
 constexpr auto c_nextPageButtonEnabledVisualState = L"NextPageButtonEnabled"sv;
 constexpr auto c_nextPageButtonDisabledVisualState = L"NextPageButtonDisabled"sv;
 
-constexpr auto c_infiniteItemsModeState = L"InfiniteItems"sv;
-
 constexpr auto c_previousPageButtonName = L"PreviousPageButton"sv;
 constexpr auto c_nextPageButtonName = L"NextPageButton"sv;
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
-using Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 #if USING_TAEF
@@ -11,7 +10,6 @@ using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -33,7 +31,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             TestCleanupHelper.Cleanup();
         }
-
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
