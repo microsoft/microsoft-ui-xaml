@@ -9,17 +9,27 @@ class InfoBarPanelProperties
 public:
     InfoBarPanelProperties();
 
-    static void SetHorizontalMargin(winrt::DependencyObject const& target, winrt::Thickness const& value);
-    static winrt::Thickness GetHorizontalMargin(winrt::DependencyObject const& target);
+    void PaddingInHorizontalOrientation(winrt::Thickness const& value);
+    winrt::Thickness PaddingInHorizontalOrientation();
 
-    static void SetVerticalMargin(winrt::DependencyObject const& target, winrt::Thickness const& value);
-    static winrt::Thickness GetVerticalMargin(winrt::DependencyObject const& target);
+    void PaddingInVerticalOrientation(winrt::Thickness const& value);
+    winrt::Thickness PaddingInVerticalOrientation();
 
-    static winrt::DependencyProperty HorizontalMarginProperty() { return s_HorizontalMarginProperty; }
-    static winrt::DependencyProperty VerticalMarginProperty() { return s_VerticalMarginProperty; }
+    static void SetSpacingInHorizontalOrientation(winrt::DependencyObject const& target, winrt::Thickness const& value);
+    static winrt::Thickness GetSpacingInHorizontalOrientation(winrt::DependencyObject const& target);
 
-    static GlobalDependencyProperty s_HorizontalMarginProperty;
-    static GlobalDependencyProperty s_VerticalMarginProperty;
+    static void SetSpacingInVerticalOrientation(winrt::DependencyObject const& target, winrt::Thickness const& value);
+    static winrt::Thickness GetSpacingInVerticalOrientation(winrt::DependencyObject const& target);
+
+    static winrt::DependencyProperty PaddingInHorizontalOrientationProperty() { return s_PaddingInHorizontalOrientationProperty; }
+    static winrt::DependencyProperty PaddingInVerticalOrientationProperty() { return s_PaddingInVerticalOrientationProperty; }
+    static winrt::DependencyProperty SpacingInHorizontalOrientationProperty() { return s_SpacingInHorizontalOrientationProperty; }
+    static winrt::DependencyProperty SpacingInVerticalOrientationProperty() { return s_SpacingInVerticalOrientationProperty; }
+
+    static GlobalDependencyProperty s_PaddingInHorizontalOrientationProperty;
+    static GlobalDependencyProperty s_PaddingInVerticalOrientationProperty;
+    static GlobalDependencyProperty s_SpacingInHorizontalOrientationProperty;
+    static GlobalDependencyProperty s_SpacingInVerticalOrientationProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
