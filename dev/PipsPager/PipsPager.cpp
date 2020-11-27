@@ -176,7 +176,7 @@ void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
     }
     else
     {
-        args.Handled(true);
+    args.Handled(true);
     }
     __super::OnPointerExited(args);
 }
@@ -248,28 +248,35 @@ void PipsPager::UpdateNavigationButtonVisualStates() {
 
 void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const int index)
 {
-    if (const auto scrollViewer = m_pipsPagerScrollViewer.get())
+    /* Vertical and Horizontal AligmentsRatio are not available until Win Version 1803 (sdk version 17134) */
+    if (!winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.BringIntoViewOptions", L"VerticalAlignmentRatio"))
     {
-        /* Vertical and Horizontal AligmentsRatio are not available until Win Version 1803 (sdk version 17134) */
-        /*
         winrt::BringIntoViewOptions options;
         options.VerticalAlignmentRatio(0.5);
         options.HorizontalAlignmentRatio(0.5);
         options.AnimationDesired(true);
-        */
-    
-        const double viewportSize = Orientation() == winrt::Orientation::Horizontal ? scrollViewer.ViewportWidth() : scrollViewer.ViewportHeight();
-        const double pipSize = Orientation() == winrt::Orientation::Horizontal ? m_defaultPipSize.Width : m_defaultPipSize.Height;
-        const int offSetNumOfElements = index - MaxVisualIndicators() / 2;
-        const double offSet = std::max(0.0, offSetNumOfElements * pipSize);
+        sender.StartBringIntoView(options);
+    }
+    else if (const auto scrollViewer = m_pipsPagerScrollViewer.get())
+    {
+        double pipSize;
+        std::function<void (const double&)> changeViewFunc;
         if (Orientation() == winrt::Orientation::Horizontal)
         {
-            scrollViewer.ChangeView(offSet, nullptr, nullptr);
+            pipSize = m_defaultPipSize.Width;
+            changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(offset, nullptr, nullptr);};
         }
         else
         {
-            scrollViewer.ChangeView(nullptr, offSet, nullptr);
+            pipSize = m_defaultPipSize.Height;
+            changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(nullptr, offset, nullptr);};
         }
+        const int maxVisualIndicators = MaxVisualIndicators();
+        /* This line makes sure that while having even # of indicators the scrolling will be done correctly */
+        const int offSetChangeForEvenSizeWindow = maxVisualIndicators % 2 == 0 && index > m_lastSelectedPageIndex ? 1 : 0;
+        const int offSetNumOfElements = index + offSetChangeForEvenSizeWindow - maxVisualIndicators / 2;
+        const double offset = std::max(0.0, offSetNumOfElements * pipSize);
+        changeViewFunc(offset);
     }
 }
 
