@@ -246,13 +246,31 @@ void PipsPager::UpdateNavigationButtonVisualStates() {
         c_nextPageButtonEnabledVisualState, c_nextPageButtonDisabledVisualState);
 }
 
-void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender)
+void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const int index)
 {
-    winrt::BringIntoViewOptions options;
-    options.VerticalAlignmentRatio(0.5);
-    options.HorizontalAlignmentRatio(0.5);
-    options.AnimationDesired(true);
-    sender.StartBringIntoView(options);
+    if (const auto scrollViewer = m_pipsPagerScrollViewer.get())
+    {
+        /* Vertical and Horizontal AligmentsRatio are not available until Win Version 1803 (sdk version 17134) */
+        /*
+        winrt::BringIntoViewOptions options;
+        options.VerticalAlignmentRatio(0.5);
+        options.HorizontalAlignmentRatio(0.5);
+        options.AnimationDesired(true);
+        */
+    
+        const double viewportSize = Orientation() == winrt::Orientation::Horizontal ? scrollViewer.ViewportWidth() : scrollViewer.ViewportHeight();
+        const double pipSize = Orientation() == winrt::Orientation::Horizontal ? m_defaultPipSize.Width : m_defaultPipSize.Height;
+        const int offSetNumOfElements = index - MaxVisualIndicators() / 2;
+        const double offSet = std::max(0.0, offSetNumOfElements * pipSize);
+        if (Orientation() == winrt::Orientation::Horizontal)
+        {
+            scrollViewer.ChangeView(offSet, nullptr, nullptr);
+        }
+        else
+        {
+            scrollViewer.ChangeView(nullptr, offSet, nullptr);
+        }
+    }
 }
 
 void PipsPager::UpdateSelectedPip(const int index) {
@@ -268,7 +286,7 @@ void PipsPager::UpdateSelectedPip(const int index) {
             if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>())
             {
                 element.Style(SelectedIndicatorButtonStyle());
-                ScrollToCenterOfViewport(element);
+                ScrollToCenterOfViewport(element, index);
             }
         }
     }

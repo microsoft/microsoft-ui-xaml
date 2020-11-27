@@ -60,7 +60,7 @@ private:
         const wstring_view& enabledStateName,
         const wstring_view& disabledStateName);
     winrt::Size GetDesiredPipSize(const winrt::Style& style);
-    void ScrollToCenterOfViewport(const winrt::UIElement sender);
+    void ScrollToCenterOfViewport(const winrt::UIElement sender, const int index);
     double CalculateScrollViewerSize(const double defaultPipSize, const double selectedPipSize, const int numberOfPages, int maxVisualIndicators);
     void UpdateSelectedPip(const int index);
 
