@@ -249,7 +249,7 @@ void PipsPager::UpdateNavigationButtonVisualStates() {
 void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const int index)
 {
     /* Vertical and Horizontal AligmentsRatio are not available until Win Version 1803 (sdk version 17134) */
-    if (!winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.BringIntoViewOptions", L"VerticalAlignmentRatio"))
+    if (SharedHelpers::IsBringIntoViewOptionsVerticalAlignmentAvailable())
     {
         winrt::BringIntoViewOptions options;
         options.VerticalAlignmentRatio(0.5);
