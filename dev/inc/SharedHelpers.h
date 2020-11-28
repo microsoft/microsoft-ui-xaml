@@ -40,7 +40,7 @@ public:
 
     static bool IsScrollContentPresenterSizesContentToTemplatedParentAvailable();
 
-    static bool IsBringIntoViewOptionsVerticalAlignmentAvailable();
+    static bool IsBringIntoViewOptionsVerticalAlignmentRatioAvailable();
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
