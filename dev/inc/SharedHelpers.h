@@ -40,6 +40,8 @@ public:
 
     static bool IsScrollContentPresenterSizesContentToTemplatedParentAvailable();
 
+    static bool IsBringIntoViewOptionsVerticalAlignmentRatioAvailable();
+
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
     static bool IsControlCornerRadiusAvailable();

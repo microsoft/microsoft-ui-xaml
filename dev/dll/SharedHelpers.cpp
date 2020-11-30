@@ -138,6 +138,14 @@ bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailab
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
 }
 
+bool SharedHelpers::IsBringIntoViewOptionsVerticalAlignmentRatioAvailable()
+{
+    static bool s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable =
+        IsRS4OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.BringIntoViewOptions", L"VerticalAlignmentRatio");
+    return s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable;
+}
+
 bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
 {
     static bool s_isFrameworkElementInvalidateViewportAvailable = IsRS5OrHigher();
