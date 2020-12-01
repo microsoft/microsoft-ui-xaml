@@ -122,7 +122,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.TryWait();
         }
 
-        [TestMethod]
+        // TO DO [Task 30818605]: Disabling to replace with reflection-based tests in release test app
+        // [TestMethod]
         public void VerifyRS2DefaultStyleDictionariesWereMergedCorrectly()
         {
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone1))

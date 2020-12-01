@@ -11,6 +11,9 @@
             <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
             <Color x:Key="SystemControlErrorBackgroundColor">#33FFFFFF</Color>
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
+            <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlFillColorTertiaryBrush" />
+            <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#59FFFFFF" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF5B2EC5" />
@@ -24,6 +27,9 @@
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <StaticResource x:Key="ProgressBarForeground" ResourceKey="SystemControlHighlightAccentBrush" />
+            <StaticResource x:Key="ProgressBarBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+            <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="ProgressBarIndicatorPauseOpacity">0.6</x:Double>
@@ -32,6 +38,9 @@
             <Color x:Key="SystemControlErrorBackgroundColor">#29C50500</Color>
             <!-- Hex value for SystemErrorText at 0.16 opacity -->
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#C50500</contract7NotPresent:Color>
+            <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlFillColorTertiaryBrush" />
+            <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#30000000" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF4617B4" />
@@ -42,10 +51,10 @@
     <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}" />
     
     <Style x:Key="DefaultProgressBarStyle" TargetType="ProgressBar">
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
-        <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource ProgressBarForeground}" />
+        <Setter Property="Background" Value="{ThemeResource ProgressBarBackground}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlHighlightTransparentBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ProgressBarBorderBrush}" />
         <Setter Property="Maximum" Value="100" />
         <Setter Property="MinHeight" Value="{ThemeResource ProgressBarThemeMinHeight}" />
         <Setter Property="IsTabStop" Value="False" />
@@ -188,7 +197,7 @@
                                 <VisualState x:Name="Paused">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ProgressBarIndicator" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlForegroundAccentBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ProgressBarForeground}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimation Storyboard.TargetName="ProgressBarIndicator" Storyboard.TargetProperty="Opacity" To="{ThemeResource ProgressBarIndicatorPauseOpacity}" Duration="0:0:0.25" />
                                     </Storyboard>
