@@ -155,6 +155,15 @@ namespace MU_X_XTI_NAMESPACE
 
 namespace MU_XC_NAMESPACE
 {
+    [WUXC_VERSION_PREVIEW]
+    [webhosthidden]
+    enum StylesVersion
+    {
+        Latest = 0,
+        WinUI_2dot5 = 1,
+        WinUI_2dot6 = 2,
+    };
+
     [WUXC_VERSION_MUXONLY]
     [webhosthidden]
     [default_interface]
@@ -171,11 +180,14 @@ namespace MU_XC_NAMESPACE
             Boolean UseCompactResources{ get; set; };
 
             static Windows.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
+        }
 
-            [MUX_DEFAULT_VALUE("true")]
-            Boolean UseNewVisual{ get; set; };
+        [WUXC_VERSION_PREVIEW]
+        {
+            [MUX_DEFAULT_VALUE("winrt::StylesVersion::Latest")]
+            StylesVersion Version{ get; set; };
 
-            static Windows.UI.Xaml.DependencyProperty UseNewVisualProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty VersionProperty{ get; };
         }
     }
 }

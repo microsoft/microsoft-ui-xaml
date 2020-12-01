@@ -14,7 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "XamlControlsResources.g.cpp"
 
 GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactResourcesProperty{ nullptr };
-GlobalDependencyProperty XamlControlsResourcesProperties::s_UseNewVisualProperty{ nullptr };
+GlobalDependencyProperty XamlControlsResourcesProperties::s_VersionProperty{ nullptr };
 
 XamlControlsResourcesProperties::XamlControlsResourcesProperties()
 {
@@ -34,23 +34,23 @@ void XamlControlsResourcesProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnUseCompactResourcesPropertyChanged));
     }
-    if (!s_UseNewVisualProperty)
+    if (!s_VersionProperty)
     {
-        s_UseNewVisualProperty =
+        s_VersionProperty =
             InitializeDependencyProperty(
-                L"UseNewVisual",
-                winrt::name_of<bool>(),
+                L"Version",
+                winrt::name_of<winrt::StylesVersion>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnUseNewVisualPropertyChanged));
+                ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(winrt::StylesVersion::Latest),
+                winrt::PropertyChangedCallback(&OnVersionPropertyChanged));
     }
 }
 
 void XamlControlsResourcesProperties::ClearProperties()
 {
     s_UseCompactResourcesProperty = nullptr;
-    s_UseNewVisualProperty = nullptr;
+    s_VersionProperty = nullptr;
 }
 
 void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
@@ -61,7 +61,7 @@ void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
     winrt::get_self<XamlControlsResources>(owner)->OnPropertyChanged(args);
 }
 
-void XamlControlsResourcesProperties::OnUseNewVisualPropertyChanged(
+void XamlControlsResourcesProperties::OnVersionPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -82,15 +82,15 @@ bool XamlControlsResourcesProperties::UseCompactResources()
     return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseCompactResourcesProperty));
 }
 
-void XamlControlsResourcesProperties::UseNewVisual(bool value)
+void XamlControlsResourcesProperties::Version(winrt::StylesVersion const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<XamlControlsResources*>(this)->SetValue(s_UseNewVisualProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<XamlControlsResources*>(this)->SetValue(s_VersionProperty, ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(value));
     }
 }
 
-bool XamlControlsResourcesProperties::UseNewVisual()
+winrt::StylesVersion XamlControlsResourcesProperties::Version()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseNewVisualProperty));
+    return ValueHelper<winrt::StylesVersion>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_VersionProperty));
 }

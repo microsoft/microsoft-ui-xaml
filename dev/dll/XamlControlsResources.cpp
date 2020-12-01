@@ -27,6 +27,11 @@ XamlControlsResources::XamlControlsResources()
     s_tlsUseNewVisual = UseNewVisual();
 }
 
+bool XamlControlsResources::UseNewVisual()
+{
+    return Version() != winrt::StylesVersion::WinUI_2dot5;
+}
+
 void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -35,7 +40,7 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
     {
         UpdateSource();
     }
-    else if (property == s_UseNewVisualProperty)
+    else if (property == s_VersionProperty)
     {
         s_tlsUseNewVisual = UseNewVisual();
     }
