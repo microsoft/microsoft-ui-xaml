@@ -792,7 +792,6 @@ namespace MUXControlsTestApp
                 case "HasChildItem":
                     HasChildItem.StartBringIntoView();
                     break;
-
             }
         }
     }
