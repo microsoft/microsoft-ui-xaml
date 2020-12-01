@@ -10,12 +10,12 @@
     mc:Ignorable="d"
     Loaded="TestPage_Loaded">
 
-    <Page.Resources>
+    <local:TestPage.Resources>
         <Style x:Name="AlternateToggleButtonStyle" TargetType="Button">
             <Setter Property="Content" Value="yo"/>
             <Setter Property="Background" Value="Chartreuse"/>
         </Style>
-    </Page.Resources>
+    </local:TestPage.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -201,6 +201,13 @@
                         </Button>
                         <TextBlock x:Name="ClosingEventCountTextBlock" AutomationProperties.Name="ClosingEventCountTextBlock" Text="X X"/>
                         <TextBlock x:Name="PaneOpenedOrClosedEvent" AutomationProperties.Name="PaneOpenedOrClosedEvent" Text="Unknown" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="GetOverflowMenuCornerRadiusButton" AutomationProperties.Name="GetOverflowMenuCornerRadiusButton" Content="GetOverflowMenuCornerRadius"
+                                Margin="0,0,2,0" Click="GetOverflowMenuCornerRadiusButton_Click"/>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">CornerRadius:</TextBlock>
+                        <TextBlock x:Name="OverflowMenuCornerRadiusTextBlock" AutomationProperties.Name="OverflowMenuCornerRadiusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center">-</TextBlock>
                     </StackPanel>
 
                     <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="5">

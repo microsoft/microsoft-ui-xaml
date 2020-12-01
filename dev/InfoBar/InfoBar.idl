@@ -117,13 +117,19 @@ unsealed runtimeclass InfoBarPanel : Windows.UI.Xaml.Controls.Panel
 {
     InfoBarPanel();
 
-    static Windows.UI.Xaml.DependencyProperty HorizontalMarginProperty{ get; };
-    static void SetHorizontalMargin(Windows.UI.Xaml.DependencyObject object, Windows.UI.Xaml.Thickness value);
-    static Windows.UI.Xaml.Thickness GetHorizontalMargin(Windows.UI.Xaml.DependencyObject object);
+    Windows.UI.Xaml.Thickness PaddingInHorizontalOrientation;
+    static Windows.UI.Xaml.DependencyProperty PaddingInHorizontalOrientationProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty VerticalMarginProperty{ get; };
-    static void SetVerticalMargin(Windows.UI.Xaml.DependencyObject object, Windows.UI.Xaml.Thickness value);
-    static Windows.UI.Xaml.Thickness GetVerticalMargin(Windows.UI.Xaml.DependencyObject object);
+    Windows.UI.Xaml.Thickness PaddingInVerticalOrientation;
+    static Windows.UI.Xaml.DependencyProperty PaddingInVerticalOrientationProperty{ get; };
+
+    static void SetSpacingInHorizontalOrientation(Windows.UI.Xaml.DependencyObject object, Windows.UI.Xaml.Thickness value);
+    static Windows.UI.Xaml.Thickness GetSpacingInHorizontalOrientation(Windows.UI.Xaml.DependencyObject object);
+    static Windows.UI.Xaml.DependencyProperty SpacingInHorizontalOrientationProperty{ get; };
+
+    static void SetSpacingInVerticalOrientation(Windows.UI.Xaml.DependencyObject object, Windows.UI.Xaml.Thickness value);
+    static Windows.UI.Xaml.Thickness GetSpacingInVerticalOrientation(Windows.UI.Xaml.DependencyObject object);
+    static Windows.UI.Xaml.DependencyProperty SpacingInVerticalOrientationProperty{ get; };
 }
 
 }
