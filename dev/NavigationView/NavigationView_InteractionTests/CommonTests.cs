@@ -1690,10 +1690,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var getChildContentPresenterMarginButton = FindElement.ById<Button>("GetChildNavViewItemContentPresenterMarginButton");
                 var contentPresenterMarginTextBlock = new TextBlock(FindElement.ByName("NavViewItemContentPresenterMarginTextBlock"));
 
+                var scrollItemIntoViewComboBox = new ComboBox(FindElement.ByName("ScrollItemIntoViewComboBox"));
+                var scrollItemIntoViewButton = FindElement.ById<Button>("ScrollItemIntoViewButton");
+
                 // Switch the NavigationView to closed compact mode
                 Log.Comment("Switch NavigationView to closed compact mode");
                 SetNavViewWidth(ControlWidth.Medium);
                 Wait.ForIdle();
+
+                Log.Comment("Ensure test menu item is in view");
+                scrollItemIntoViewComboBox.SelectItemByName("HasChildItem");
+                Wait.ForIdle();
+                scrollItemIntoViewButton.InvokeAndWait();
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
@@ -1717,6 +1725,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Log.Comment("Switch NavigationView to expanded mode");
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
+
+                Log.Comment("Ensure test menu item is in view");
+                scrollItemIntoViewComboBox.SelectItemByName("HasChildItem");
+                Wait.ForIdle();
+                scrollItemIntoViewButton.InvokeAndWait();
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
