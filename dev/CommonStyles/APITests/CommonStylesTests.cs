@@ -197,7 +197,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CommonStylesVisualTreeTestSamples
     {
-        [TestMethod]
+        //Task 30789390: Re-enable disabled tests
+        //[TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeForAppBarAndAppBarToggleButton()
         {

@@ -7,10 +7,10 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="local:ProgressBar">
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
-        <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource ProgressBarForeground}" />
+        <Setter Property="Background" Value="{ThemeResource ProgressBarBackground}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlHighlightTransparentBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ProgressBarBorderBrush}" />
         <Setter Property="MinHeight" Value="{ThemeResource ProgressBarThemeMinHeight}" />
         <Setter Property="Maximum" Value="100" />
         <Setter Property="IsTabStop" Value="False" />
