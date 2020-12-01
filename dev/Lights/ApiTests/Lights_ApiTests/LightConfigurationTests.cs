@@ -77,8 +77,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         UIElement _popupRoot;
         UIElement _fullWindowMediaRoot;
         AutoResetEvent _validationCompleted;
-        
-        [TestMethod]
+
+        // Tracked by Task 30789390: Re-enable disabled tests
+        //[TestMethod]
         public void VerifyLightsOnMainWindow()
         {
             using (var config = new MainWindowLightConfiguration())

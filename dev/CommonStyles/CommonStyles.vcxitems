@@ -19,9 +19,15 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)HyperlinkButton_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)AppBarButton_themeresources.xaml">
       <Version>RS1</Version>

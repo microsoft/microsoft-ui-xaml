@@ -8,17 +8,17 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
-            <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemControlPageBackgroundListLowBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPressed" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPressed" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="FlipViewBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="ControlAltFillColorQuarternaryBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="ControlAAStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
             <SolidColorBrush x:Key="FlipViewButtonBackgroundThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonBorderThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonForegroundThemeBrush" Color="#99000000" />
@@ -54,17 +54,17 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
-            <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemControlPageBackgroundListLowBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPressed" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPressed" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="FlipViewBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="ControlAltFillColorQuarternaryBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPressed" ResourceKey="ControlAAStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousArrowForeground" ResourceKey="ControlAAFillColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
             <SolidColorBrush x:Key="FlipViewButtonBackgroundThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonBorderThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonForegroundThemeBrush" Color="#99000000" />
