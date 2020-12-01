@@ -138,6 +138,14 @@ bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailab
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
 }
 
+bool SharedHelpers::IsBringIntoViewOptionsVerticalAlignmentRatioAvailable()
+{
+    static bool s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable =
+        IsRS4OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.BringIntoViewOptions", L"VerticalAlignmentRatio");
+    return s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable;
+}
+
 bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
 {
     static bool s_isFrameworkElementInvalidateViewportAvailable = IsRS5OrHigher();
@@ -565,6 +573,21 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return bitmapIcon;
     }
+#ifdef IMAGEICON_INCLUDED
+    else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
+    {
+        winrt::ImageIcon imageIcon;
+        if (const auto imageSource = imageIconSource.ImageSource())
+        {
+            imageIcon.Source(imageSource);
+        }
+        if (const auto newForeground = imageIconSource.Foreground())
+        {
+            imageIcon.Foreground(newForeground);
+        }
+        return imageIcon;
+    }
+#endif
     else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
     {
         winrt::PathIcon pathIcon;
