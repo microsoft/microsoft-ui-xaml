@@ -69,18 +69,18 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
     if (nItems == 1 || totalWidth > availableSize.Width || (minHeight > 0 && heightOfTallestInHorizontal > minHeight))
     {
         m_isVertical = true;
-        const auto verticalMargin = VerticalOrientationPadding();
+        const auto verticalPadding = VerticalOrientationPadding();
 
-        desiredSize.Width = widthOfWidest + (float)verticalMargin.Left + (float)verticalMargin.Right;
-        desiredSize.Height = totalHeight + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
+        desiredSize.Width = widthOfWidest + (float)verticalPadding.Left + (float)verticalPadding.Right;
+        desiredSize.Height = totalHeight + (float)verticalPadding.Top + (float)verticalPadding.Bottom;
     }
     else
     {
         m_isVertical = false;
-        const auto horizontalMargin = HorizontalOrientationPadding();
+        const auto horizontalPadding = HorizontalOrientationPadding();
 
-        desiredSize.Width = totalWidth + (float)horizontalMargin.Left + (float)horizontalMargin.Right;
-        desiredSize.Height = heightOfTallest + (float)horizontalMargin.Top + (float)horizontalMargin.Bottom ;
+        desiredSize.Width = totalWidth + (float)horizontalPadding.Left + (float)horizontalPadding.Right;
+        desiredSize.Height = heightOfTallest + (float)horizontalPadding.Top + (float)horizontalPadding.Bottom ;
     }
 
     return desiredSize;
@@ -131,7 +131,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                     auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalOrientationMargin(child);
 
                     horizontalOffset += hasPreviousElement ? (float)horizontalMargin.Left : 0;
-                    child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalOrientationPadding.Top + (float)horizontalMargin.Top, desiredSize.Width, finalSize.Height });
+                    child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalOrientationPadding.Top + (float)horizontalMargin.Top, desiredSize.Width, desiredSize.Height });
                     horizontalOffset += desiredSize.Width + (float)horizontalMargin.Right;
 
                     hasPreviousElement = true;
