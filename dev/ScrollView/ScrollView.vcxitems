@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -34,24 +34,56 @@
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)ScrollView.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS3</Version>
+      <Type>ThemeResources</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS3</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS4</Version>
+      <Type>ThemeResources</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>

@@ -10,8 +10,8 @@
     <Midl Include="$(MSBuildThisFileDirectory)NumberBox.idl" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources_v2.5.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)NumberBox.h" />

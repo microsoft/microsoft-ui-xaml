@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -26,16 +26,37 @@
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources.xaml">
       <IsPublic>false</IsPublic>
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS2</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources_v2.5.xaml">
+      <IsPublic>false</IsPublic>
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>

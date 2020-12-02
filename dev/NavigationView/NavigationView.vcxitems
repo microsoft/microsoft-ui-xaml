@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -70,25 +70,58 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView.xaml">
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_v2.5.xaml">
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources.xaml">
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources_v2.5.xaml">
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources.xaml">
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS2</Version>
+      <SubType>Designer</SubType>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources_v2.5.xaml">
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_v2.5.xaml">
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources.xaml">
+      <UseVisualStyle>New</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources_v2.5.xaml">
+      <UseVisualStyle>Previous</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
