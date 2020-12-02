@@ -101,4 +101,15 @@ unsealed runtimeclass ImageIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
 }
 
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass AnimatedIconSource : IconSource
+{
+    AnimatedIconSource();
+
+    IRichAnimatedVisualSource Source{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty SourceProperty { get; };
+}
+
 }

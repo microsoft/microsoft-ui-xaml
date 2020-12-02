@@ -602,6 +602,19 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return pathIcon;
     }
+    else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
+    {
+        winrt::AnimatedIcon animatedIcon;
+        if (auto const source = animatedIconSource.Source())
+        {
+            animatedIcon.Source(source);
+        }
+        if (const auto newForeground = animatedIconSource.Foreground())
+        {
+            animatedIcon.Foreground(newForeground);
+        }
+        return animatedIcon;
+    }
 
     return nullptr;
 }

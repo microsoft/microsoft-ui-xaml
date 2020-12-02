@@ -35,6 +35,8 @@
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="Padding" Value="8"/>
             </Style>
+
+            <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 
