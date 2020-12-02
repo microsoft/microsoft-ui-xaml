@@ -1,40 +1,68 @@
-# Instructions for upgrading a WinUI 3 Preview 1 app to use WinUI 3 Preview 2
-
-While it's possible to upgrade your Preview 1 application to use the new Preview 2 bits, please be careful and follow all steps in order below when doing so. The steps below outline the process that the team had to take while updating their own Preview 1 apps. 
-
-If these steps don't work for you, feel free to [file an issue](https://github.com/microsoft/microsoft-ui-xaml/issues/new/choose). The easiest way to work around this is to just create a new Preview 2 project and copy your content over. 
-
 ## Upgrading steps
-1. Make sure all Preview 2 prerequisites are installed. See [installation instructions here](https://aka.ms/winui3/preview2#install-winui-30-preview-2).
-2. Use the NuGet package manager (right-click on the project and select “Manage NuGet Packages…” from the context menu) 
-3. Select the “Microsoft.WinUI” package, ensure that “Include prerelease” is checked, select the latest version of the package, and then click “Upgrade”, accepting prompts that appear  
-    - If you don't see the latest version of the WinUI 3 Preview 2 NuGet package, run the following command in your NuGet package manager console:
-    `install-package Microsoft.WinUI -Version 3.0.0-preview2.200713.0`
+1. Make sure all Preview 3 prerequisites are installed. See [installation instructions here](https://aka.ms/winui3/preview3#install-winui-30-preview-3).
+2. Use the NuGet package manager (right-click on the project and select “Manage NuGet Packages…” from the context menu)
+3. Run the following command in your NuGet package manager console:
+
+    `install-package Microsoft.WinUI -Version 3.0.0-preview3.201113.0` 
+
 4. If your project is a C# “Blank App (UWP)”, C# “Class Library (UWP)”, C# “Windows Runtime Component (UWP)”, C++ “Blank App (UWP)”, or C++ “Windows Runtime Component (UWP)” project, then **no further changes are necessary.**
 5.  If your project is a C# “Class Library (WinUI in Desktop)” project:
-    - Open the .csproj and change <TargetFramework>netcoreapp5.0</TargetFramework> to <TargetFramework>net5.0</TargetFramework> 
+    - Open the .csproj
+        - Change `<TargetFramework>net5.0</TargetFramework>` to `<TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>`
+        - Delete `<TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>`
+        - Delete `<Platforms>AnyCPU;x86;x64</Platforms>`
+        - Change `<RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>` to `<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>`
+        - Delete `<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />`
+
 6. If your project is a C# “Blank App, Packaged (WinUI in Desktop)” project :
-    - Open the .csproj in the main app project and change <TargetFramework>netcoreapp5.0</TargetFramework> to <TargetFramework>net5.0</TargetFramework>  
-    - Open the .wapproj in the associated Windows Application Packaging Project and make the following edits: 
-        - Add the following line to the first `<PropertyGroup>` element after `<Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />`:  
+    - Open the .csproj in the main app project
+        - Change `<TargetFramework>net5.0</TargetFramework>` to `<TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>`
+        - Delete `<TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>`
+        - Change `<Platforms>AnyCPU;x86;x64</Platforms>` to `<Platforms>x86;x64;arm64</Platforms>`
+        - Delete `<SelfContained>true</SelfContained>` and `<RuntimeIdentifier>win-$(Platform)</RuntimeIdentifier>`
+        - Change `<RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>` to `<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>`
+        - Open App.xaml.cs and delete the line `"using Microsoft.UI.Threading;"`
+        - Create a new C# “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated main app project, and copy the contents of the `“Properties\”` subdirectory (`"PublishProfiles\"`) into the corresponding `“Properties\”` subdirectory of your main app project, creating the `"Properties\"` subdirectory if necessary.
 
-        ```xml
-         <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation> 
-         ```
+    - Open the .wapproj in the associated Windows Application Packaging Project and make the following edits:
+        - Add the following XML to the `<ItemGroup Label="ProjectConfigurations">` section:
+            ```xml
+            <ProjectConfiguration Include="Debug|arm64">
+                <Configuration>Debug</Configuration>
+                <Platform>arm64</Platform>
+            </ProjectConfiguration>
+            <ProjectConfiguration Include="Release|arm64">
+                <Configuration>Release</Configuration>
+                <Platform>arm64</Platform>
+            </ProjectConfiguration>
+            ```
+        - Locate the following code in your .wapproj file:
 
-        - Change `<Import Project="build\Microsoft.WinUI.AppX.targets" />` to `<Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" /> `
+            ```xml
+            <ItemGroup>
+                <ProjectReference Include="..\<<APP_NAME>>\<<APP_NAME>>.csproj">
+                    <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+                </ProjectReference>`
+            </ItemGroup>
+            ```
+            And add the following line right above the `</ProjectReference>` tag:
+            ```xml
+            <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+            ```
 
-        - Create a new C# “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated Windows Application Packaging Project, and copy the contents of the `“build\”` subdirectory (`LiftedWinRTClassRegistrations.xml` and `Microsoft.WinUI.AppX.targets`) into the corresponding `“build\”` subdirectory of your app’s associated Windows Application Packaging Project, overwriting any existing files when prompted.
+        - Create a new C# “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated Windows Application Packaging Project, and copy the contents of the `“build\”` subdirectory (`Microsoft.WinUI.AppX.targets`) into the corresponding `“build\”` subdirectory of your app’s associated Windows Application Packaging Project, overwriting any existing files when prompted. Delete the existing `LiftedWinRTClassRegistrations.xml` file in the `"build\"` subdirectory.
 7. If your project is a C++ “Blank App, Packaged (WinUI in Desktop)” project:
-    - Open the .wapproj in the associated Windows Application Packaging Project and make the following edits: 
+    - Open the .wapproj in the associated Windows Application Packaging Project and make the following edits:
+        - Add the following XML to the `<ItemGroup Label="ProjectConfigurations">` section:
+            ```xml
+            <ProjectConfiguration Include="Debug|arm64">
+                <Configuration>Debug</Configuration>
+                <Platform>arm64</Platform>
+            </ProjectConfiguration>
+            <ProjectConfiguration Include="Release|arm64">
+                <Configuration>Release</Configuration>
+                <Platform>arm64</Platform>
+            </ProjectConfiguration>
+            ```
 
-        - Add the following line to the first `<PropertyGroup>` element after `<Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />`:  
-
-        ```xml
-        <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation> 
-        ```
-        - Change `<Import Project="build\Microsoft.WinUI.AppX.targets" />` to `<Import Project="$(AppxTargetsLocation)Microsoft.WinUI.AppX.targets" />`
-
-        - Create a new C++ “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated Windows Application Packaging Project, and copy the contents of the `“build\”` subdirectory (`LiftedWinRTClassRegistrations.xml` and `Microsoft.WinUI.AppX.targets`) into the corresponding `“build\”` subdirectory of your actual project’s associated Windows Application Packaging Project, overwriting any existing files when prompted 
-
-
+        - Create a new C++ “Blank App, Packaged (WinUI in Desktop)” project, locate the folder containing the associated Windows Application Packaging Project, and copy the contents of the `“build\”` subdirectory (`Microsoft.WinUI.AppX.targets`) into the corresponding `“build\”` subdirectory of your app’s associated Windows Application Packaging Project, overwriting any existing files when prompted. Delete the existing `LiftedWinRTClassRegistrations.xml` file in the `"build\"` subdirectory.

@@ -26,20 +26,26 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsIndeterminate{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    IAnimatedVisualSource DeterminateSource{ get; set; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource DeterminateSource{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    IAnimatedVisualSource IndeterminateSource{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource IndeterminateSource{ get; set; };
+    }
 
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     ProgressRingTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
 
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
+    }
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("0.0")]
