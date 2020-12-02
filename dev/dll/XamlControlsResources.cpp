@@ -15,7 +15,7 @@ static constexpr auto c_SystemControlBaseAcrylicBrush = L"SystemControlBaseAcryl
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
-thread_local bool s_tlsUseNewVisual = true;
+thread_local bool s_tlsUseLatestStyle = true;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -24,10 +24,10 @@ XamlControlsResources::XamlControlsResources()
     MUXControlsFactory::EnsureInitialized();
     UpdateSource();
 
-    s_tlsUseNewVisual = UseNewVisual();
+    s_tlsUseLatestStyle = UseLatestStyle();
 }
 
-bool XamlControlsResources::UseNewVisual()
+bool XamlControlsResources::UseLatestStyle()
 {
     return Version() != winrt::StylesVersion::WinUI_2dot5;
 }
@@ -42,14 +42,14 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
     }
     else if (property == s_VersionProperty)
     {
-        s_tlsUseNewVisual = UseNewVisual();
+        s_tlsUseLatestStyle = UseLatestStyle();
     }
 }
 
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
-    const bool useNewVisual = UseNewVisual();
+    const bool useNewVisual = UseLatestStyle();
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
@@ -66,7 +66,7 @@ void XamlControlsResources::UpdateSource()
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = useNewVisual ? L"themeresources.xaml" : L"themeresources_previous.xaml";
+            hstring postfix = useNewVisual ? L"themeresources.xaml" : L"themeresources_2dot5.xaml";
 
             if (isInFrameworkPackage)
             {
@@ -184,7 +184,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
             
-            hstring postfix = s_tlsUseNewVisual ? L"generic.xaml" : L"generic_previous.xaml";
+            hstring postfix = s_tlsUseLatestStyle ? L"generic.xaml" : L"generic_2dot5.xaml";
             hstring releasePrefix = L"";
             
             if (isInFrameworkPackage)

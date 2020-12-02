@@ -34,32 +34,32 @@
   </ItemGroup>
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)SplitButton.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SplitButton_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SplitButton_rs1.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SplitButton_rs1_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SplitButton_themeresources.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SplitButton_themeresources_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

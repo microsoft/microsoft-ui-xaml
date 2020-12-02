@@ -15,13 +15,13 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>

@@ -39,35 +39,35 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>

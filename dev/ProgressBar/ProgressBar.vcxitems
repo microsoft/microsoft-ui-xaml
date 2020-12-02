@@ -30,12 +30,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ProgressBar.xaml">
-      <UseVisualStyle>New</UseVisualStyle>
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ProgressBar_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
