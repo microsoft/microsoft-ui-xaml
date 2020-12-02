@@ -47,11 +47,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)DropDownButton_themeresources_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)DropDownButton.idl" />

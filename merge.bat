@@ -10,7 +10,7 @@ copy C:\repo\microsoft-ui-xaml\dev\ComboBox\ComboBox_themeresources.xaml D:\repo
 copy C:\repo\microsoft-ui-xaml\dev\CommandBarFlyout\CommandBarFlyout.xaml D:\repo\microsoft-ui-xaml\dev\CommandBarFlyout\CommandBarFlyout_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\CommandBarFlyout\CommandBarFlyout_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommandBarFlyout\CommandBarFlyout_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\CommonStyles\Common_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommonStyles\Common_themeresources_v2.5.xaml
-copy C:\repo\microsoft-ui-xaml\dev\CommonStyles\HyperlinkButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommonStyles\HyperlinkButton_themeresources_v2.5.xaml
+echo copy C:\repo\microsoft-ui-xaml\dev\CommonStyles\HyperlinkButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommonStyles\HyperlinkButton_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\CommonStyles\RadioButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommonStyles\RadioButton_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\CommonStyles\AppBarButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommonStyles\AppBarButton_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\CommonStyles\AppBarToggleButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CommonStyles\AppBarToggleButton_themeresources_v2.5.xaml
@@ -33,7 +33,7 @@ copy C:\repo\microsoft-ui-xaml\dev\DatePicker\DatePicker_themeresources.xaml D:\
 copy C:\repo\microsoft-ui-xaml\dev\DatePicker\DateTimePickerFlyout_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\DatePicker\DateTimePickerFlyout_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_rs1.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_rs1_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_v2.5.xaml
-copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources_v2.5.xaml
+echo copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\FlipView\FlipView_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\FlipView\FlipView_themeresources_v2.5.xaml

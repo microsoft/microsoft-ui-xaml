@@ -32,12 +32,6 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)HyperlinkButton_themeresources_v2.5.xaml">
-      <UseVisualStyle>Previous</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <UseVisualStyle>New</UseVisualStyle>
       <Version>RS1</Version>
