@@ -27,11 +27,11 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
         if (childDesiredSize.Width != 0 && childDesiredSize.Height != 0)
         {
             // Add up the width of all items if they were laid out horizontally
-            const auto horizontalMargin = winrt::InfoBarPanel::GetSpacingInHorizontalOrientation(child);
+            const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalOrientationMargin(child);
             totalWidth += childDesiredSize.Width + (nItems > 0 ? (float)horizontalMargin.Left : 0) + (float)horizontalMargin.Right;
 
             // Add up the height of all items if they were laid out vertically
-            const auto verticalMargin = winrt::InfoBarPanel::GetSpacingInVerticalOrientation(child);
+            const auto verticalMargin = winrt::InfoBarPanel::GetVerticalOrientationMargin(child);
             totalHeight += childDesiredSize.Height + (nItems > 0 ? (float)verticalMargin.Top : 0) + (float)verticalMargin.Bottom;
 
             if (childDesiredSize.Width > widthOfWidest)
@@ -61,7 +61,7 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
     if (nItems == 1 || totalWidth > availableSize.Width || (minHeight > 0 && heightOfTallestInHorizontal > minHeight))
     {
         m_isVertical = true;
-        const auto verticalMargin = PaddingInVerticalOrientation();
+        const auto verticalMargin = VerticalOrientationPadding();
 
         desiredSize.Width = widthOfWidest;
         desiredSize.Height = totalHeight + (float)verticalMargin.Top + (float)verticalMargin.Bottom;
@@ -69,7 +69,7 @@ winrt::Size InfoBarPanel::MeasureOverride(winrt::Size const& availableSize)
     else
     {
         m_isVertical = false;
-        const auto horizontalMargin = PaddingInHorizontalOrientation();
+        const auto horizontalMargin = HorizontalOrientationPadding();
 
         desiredSize.Width = totalWidth + (float)horizontalMargin.Left + (float)horizontalMargin.Right;
         desiredSize.Height = heightOfTallest;
@@ -85,7 +85,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
     if (m_isVertical)
     {
         // Layout elements vertically
-        float verticalOffset = (float)PaddingInVerticalOrientation().Top;
+        float verticalOffset = (float)VerticalOrientationPadding().Top;
         bool hasPreviousElement = false;
         for (winrt::UIElement const& child : Children())
         {
@@ -94,7 +94,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                 auto const desiredSize = child.DesiredSize();
                 if (desiredSize.Width != 0 && desiredSize.Height != 0)
                 {
-                    const auto verticalMargin = winrt::InfoBarPanel::GetSpacingInVerticalOrientation(child);
+                    const auto verticalMargin = winrt::InfoBarPanel::GetVerticalOrientationMargin(child);
 
                     verticalOffset += hasPreviousElement ? (float)verticalMargin.Top : 0;
                     child.Arrange(winrt::Rect{ (float)verticalMargin.Left, verticalOffset, desiredSize.Width, desiredSize.Height });
@@ -108,7 +108,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
     else
     {
         // Layout elements horizontally
-        float horizontalOffset = (float)PaddingInHorizontalOrientation().Left;
+        float horizontalOffset = (float)HorizontalOrientationPadding().Left;
         bool hasPreviousElement = false;
         for (winrt::UIElement const& child : Children())
         {
@@ -117,7 +117,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                 auto const desiredSize = child.DesiredSize();
                 if (desiredSize.Width != 0 && desiredSize.Height != 0)
                 {
-                    auto horizontalMargin = winrt::InfoBarPanel::GetSpacingInHorizontalOrientation(child);
+                    auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalOrientationMargin(child);
 
                     horizontalOffset += hasPreviousElement ? (float)horizontalMargin.Left : 0;
                     child.Arrange(winrt::Rect{ horizontalOffset, (float)horizontalMargin.Top, desiredSize.Width, finalSize.Height });
