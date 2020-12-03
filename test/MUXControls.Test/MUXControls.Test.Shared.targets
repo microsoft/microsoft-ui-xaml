@@ -39,8 +39,9 @@
   <Import Project="..\..\dev\NumberBox\InteractionTests\NumberBox_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Expander\InteractionTests\Expander_InteractionTests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
+  <Import Project="..\..\dev\Expander\InteractionTests\Expander_InteractionTests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
   <Import Project="..\..\dev\ImageIcon\InteractionTests\ImageIcon_InteractionTests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
+  <Import Project="..\..\dev\AnimatedIcon\InteractionTests\AnimatedIcon_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
 </Project>

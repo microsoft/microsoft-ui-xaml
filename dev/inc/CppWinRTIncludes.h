@@ -127,6 +127,8 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
     namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals {}
+    using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals;
     namespace Microsoft::UI::Xaml::Media {}
     using namespace ::winrt::Microsoft::UI::Xaml::Media;
     namespace Microsoft::UI::Xaml::Automation::Peers {}
@@ -141,6 +143,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::Primitives::implementation {}
     namespace Microsoft::UI::Xaml::Media::implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation {}
     namespace implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::implementation;
@@ -148,8 +151,10 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::implementation;
+
     }
 
     namespace Microsoft::UI::Private::Controls::factory_implementation {}
@@ -157,6 +162,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::factory_implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::factory_implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
     namespace Microsoft::UI::Xaml::Media::factory_implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::factory_implementation {}
     namespace factory_implementation
@@ -166,6 +172,7 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::factory_implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
     }
@@ -339,6 +346,9 @@ namespace winrt
     using SelectorItem = winrt::Windows::UI::Xaml::Controls::Primitives::SelectorItem;
     using ToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::ToggleButton;
     using IToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::IToggleButton;
+
+    // using namespace ::winrt::Windows::UI::Xaml::Controls::AnimatedVisuals;
+    //using Controls_09_Hamburger = winrt::Windows::UI::Xaml::Controls::AnimatedVisuals::Controls_09_Hamburger;
 
     // using namespace winrt::Windows::UI::Xaml::Automation::Peers;
     using AccessibilityView = winrt::Windows::UI::Xaml::Automation::Peers::AccessibilityView;
