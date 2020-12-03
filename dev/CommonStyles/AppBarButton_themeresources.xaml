@@ -120,6 +120,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
                     <Grid x:Name="Root"
+                        Background="Transparent"
                         MinWidth="{TemplateBinding MinWidth}"
                         MaxWidth="{TemplateBinding MaxWidth}">
                         <contract5NotPresent:Grid.Resources>
