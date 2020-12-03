@@ -161,7 +161,6 @@ namespace MU_XC_NAMESPACE
     {
         Latest = 0,
         WinUI_2dot5 = 1,
-        WinUI_2dot6 = 2,
     };
 
     [WUXC_VERSION_MUXONLY]

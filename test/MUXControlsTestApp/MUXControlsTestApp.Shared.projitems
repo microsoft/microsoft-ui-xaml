@@ -143,7 +143,7 @@
        everything else is ignored, since this is a C# project. -->
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\**\*.vcxitems" />
   <ItemGroup>
-    <PageToTest Include="@(Page)" />
+    <PageToTest Include="@(Page)"/>
   </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
@@ -379,6 +379,7 @@
   </Target>
   <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
     <ItemGroup>
+      <PageToTest Remove="@PageToTest" Condition="'%(PageToTest.UseVisualStyle)' == 'V2dot5'" />
       <RS1StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'DefaultStyle'" />
       <RS2StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'DefaultStyle'" />
       <RS3StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'DefaultStyle'" />

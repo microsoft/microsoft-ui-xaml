@@ -35,7 +35,7 @@ copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_rs1.xaml D:\rep
 copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_v2.5.xaml
 echo copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_v2.5.xaml
-copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources_v2.5.xaml
+echo copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\FlipView\FlipView_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\FlipView\FlipView_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\FlipView\FlipViewItem_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\FlipView\FlipViewItem_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\ImageIcon\ImageIcon.xaml D:\repo\microsoft-ui-xaml\dev\ImageIcon\ImageIcon_v2.5.xaml
