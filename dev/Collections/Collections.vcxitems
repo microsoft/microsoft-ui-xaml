@@ -21,5 +21,3 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)VectorIterator.h" />
   </ItemGroup>
 </Project>
-
-

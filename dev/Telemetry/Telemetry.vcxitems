@@ -24,5 +24,3 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RuntimeProfiler.cpp" />
   </ItemGroup>
 </Project>
-
-

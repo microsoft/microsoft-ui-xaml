@@ -28,5 +28,3 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollInputHelper.cpp" />
   </ItemGroup>
 </Project>
-
-

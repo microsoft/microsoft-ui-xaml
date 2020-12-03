@@ -57,5 +57,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)DisplayRegionHelperTestApi.idl" />
   </ItemGroup>
 </Project>
-
-

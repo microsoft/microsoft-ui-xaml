@@ -27,5 +27,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
   </ItemGroup>
 </Project>
-
-

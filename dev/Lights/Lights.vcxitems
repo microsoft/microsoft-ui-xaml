@@ -48,5 +48,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)RevealTestApi.idl" />
   </ItemGroup>
 </Project>
-
-

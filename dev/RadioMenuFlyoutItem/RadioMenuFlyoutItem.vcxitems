@@ -74,5 +74,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.idl" />
   </ItemGroup>
 </Project>
-
-

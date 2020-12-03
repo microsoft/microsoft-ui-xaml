@@ -38,5 +38,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)ComboBoxHelper.idl" />
   </ItemGroup>
 </Project>
-
-

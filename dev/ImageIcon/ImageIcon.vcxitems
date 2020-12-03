@@ -47,5 +47,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)ImageIcon.idl" />
   </ItemGroup>
 </Project>
-
-

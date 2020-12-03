@@ -53,5 +53,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.idl" />
   </ItemGroup>
 </Project>
-
-

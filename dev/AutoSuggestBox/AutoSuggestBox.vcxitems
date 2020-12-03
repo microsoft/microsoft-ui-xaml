@@ -38,5 +38,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)AutoSuggestBoxHelper.idl" />
   </ItemGroup>
 </Project>
-
-

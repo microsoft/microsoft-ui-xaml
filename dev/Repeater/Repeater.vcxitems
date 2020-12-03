@@ -151,5 +151,3 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.cpp" />
   </ItemGroup>
 </Project>
-
-

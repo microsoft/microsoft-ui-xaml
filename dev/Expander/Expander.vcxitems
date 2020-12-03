@@ -45,5 +45,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.idl" />
   </ItemGroup>
 </Project>
-
-

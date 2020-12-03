@@ -22,5 +22,3 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Utils.h" />
   </ItemGroup>
 </Project>
-
-

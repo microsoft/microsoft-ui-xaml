@@ -89,5 +89,3 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.cpp" />
   </ItemGroup>
 </Project>
-
-

@@ -94,5 +94,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.idl" />
   </ItemGroup>
 </Project>
-
-

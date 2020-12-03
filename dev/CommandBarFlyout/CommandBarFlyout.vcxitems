@@ -61,5 +61,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.idl" />
   </ItemGroup>
 </Project>
-
-

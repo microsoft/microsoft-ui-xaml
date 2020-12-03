@@ -66,5 +66,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.idl" />
   </ItemGroup>
 </Project>
-
-

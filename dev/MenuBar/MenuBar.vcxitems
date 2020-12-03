@@ -69,5 +69,3 @@
     <Midl Include="$(MSBuildThisFileDirectory)MenuBarAutomationPeer.idl" />
   </ItemGroup>
 </Project>
-
-
