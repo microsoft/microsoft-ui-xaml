@@ -128,7 +128,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+    <Thickness x:Key="ButtonPadding">11,5,11,6</Thickness>
 
     <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}" />
 
@@ -138,7 +138,7 @@
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
-        <contract7NotPresent:Setter Property="Padding" Value="8,5,8,5" />
+        <contract7NotPresent:Setter Property="Padding" Value="11,5,11,5" />
         <contract7Present:Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
