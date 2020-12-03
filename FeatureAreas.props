@@ -111,6 +111,8 @@
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+    <!-- The RadioButtons control is used in the test UI. -->
+    <FeatureRadioButtonsEnabled>productOnly</FeatureRadioButtonsEnabled>
   </PropertyGroup>
   <!-- Dependencies for PagerControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerControlEnabled) == 'true'">
