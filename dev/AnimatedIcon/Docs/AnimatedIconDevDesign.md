@@ -3,36 +3,38 @@ This doc details the technical challenges and specifications of the animated ico
 
 ## IDL Definition
 ```
-Interface IRichAnimatedVisualSource : IAnimatedVisualSource
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+interface IRichAnimatedVisualSource
 {
-    IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Compositor compositor);
+    IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Composition.Compositor compositor);
     Windows.Foundation.Collections.IMapView<String, Double> Markers { get; };
     void SetColorProperty(String propertyName, Windows.UI.Color value);
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
+{
+    AnimatedIcon();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IRichAnimatedVisualSource Source{ get; set; };
+
+    [MUX_DEFAULT_VALUE("Normal")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnAnimatedIconStatePropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty StateProperty{ get; };
+    static void SetState(Windows.UI.Xaml.DependencyObject object, String value);
+    static String GetState(Windows.UI.Xaml.DependencyObject object);
+
+    static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
 }
-
-public class StatefulIcon : IconElement  
-{ 
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnStatePropertyChanged")]
-    String StateGroup1{get; set;} //CommonStates
-    
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnStatePropertyChanged")]
-    String StateGroup2{get; set;} //DisabledStates
-    
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnStatePropertyChanged")]
-    String StateGroup3{get; set;} //SelectedStates
-  
-    IRichAnimatedVisualSource Source{get;set;} //IAnimatedVisualSource Source {get;set;}
-     
-    ~~bool IsPlaying {get;} //Needed? If so, do we need events for when the animation has finished?~~
-    
-    // Colors 
-    Brush Foreground {get;set;} // only accepts solidcolorbrush, no-op otherwise Inherited from IconElement. 
-
-    Windows.Foundation.Collections.IMapView<String, Double> AdditionalMarkers { get; };
-} 
 ```
+
 #### Inherited Animated Icon API
+```
 Brush Foreground {get;set;} // only accepts solidcolorbrush, no-op otherwise Inherited from IconElement. 
+```
 
 ### Details
 Control templates will not (normally) have animated icons in them. Instead they generally have a content presenter or grid who's content is template bound to the controls Icon property, which is of type IconElement. For this reason, in order to set the animated icon properties via the visual states, the animated icon properties need to be attached properties.  In addition to that, the template wont generally be setting the property on the animated icon itself, instead it will usually be setting it on the parent. So in the properties setter we will want to also set the property on the targets child (the animated icon) if it exists. Additionally, in animated Icon's loaded event we will want to make sure to grab the properties off the parent in case it was set before we loaded.
