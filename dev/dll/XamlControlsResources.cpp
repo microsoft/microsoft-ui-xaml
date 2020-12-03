@@ -173,7 +173,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
     if (auto control5 = controlProtected.try_as<winrt::IControl5>())
     {
         winrt::Uri uri{
-            []() -> std::wstring {
+            []() {
             
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
