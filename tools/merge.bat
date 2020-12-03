@@ -1,3 +1,4 @@
+echo Please remove this file after merging branch feature/token-experiment with master
 
 copy C:\repo\microsoft-ui-xaml\dev\AutoSuggestBox\AutoSuggestBox_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\AutoSuggestBox\AutoSuggestBox_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\CalendarDatePicker\CalendarDatePicker_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\CalendarDatePicker\CalendarDatePicker_themeresources_v2.5.xaml
@@ -34,7 +35,7 @@ copy C:\repo\microsoft-ui-xaml\dev\DatePicker\DateTimePickerFlyout_themeresource
 copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_rs1.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_rs1_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_v2.5.xaml
 echo copy C:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\DropDownButton\DropDownButton_themeresources_v2.5.xaml
-copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_v2.5.xaml
+echo copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_v2.5.xaml
 echo copy C:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\Expander\Expander_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\FlipView\FlipView_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\FlipView\FlipView_themeresources_v2.5.xaml
 copy C:\repo\microsoft-ui-xaml\dev\FlipView\FlipViewItem_themeresources.xaml D:\repo\microsoft-ui-xaml\dev\FlipView\FlipViewItem_themeresources_v2.5.xaml

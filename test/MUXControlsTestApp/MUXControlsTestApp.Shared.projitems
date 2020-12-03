@@ -379,14 +379,15 @@
   </Target>
   <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
     <ItemGroup>
-      <PageToTest Remove="@PageToTest" Condition="'%(PageToTest.UseVisualStyle)' == 'V2dot5'" />
+      <!-- Filter all 2.5 styles and pages marked with UseNonstandardCondtionalXAML-->
+      <PageToTest Remove="@PageToTest" Condition="'%(PageToTest.UseVisualStyle)' == 'V2dot5' Or '%(PageToTest.UseNonstandardCondtionalXAML)' != ''" />
       <RS1StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'DefaultStyle'" />
       <RS2StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'DefaultStyle'" />
       <RS3StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'DefaultStyle'" />
       <RS4StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
       <RS5StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
       <NineteenH1StylePage Include="@(PageToTest)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
-      <RS1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources' And '%(PageToTest.UseNonstandardCondtionalXAML)' == ''" />
+      <RS1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
       <RS2ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
       <RS3ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
       <RS4ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />
