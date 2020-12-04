@@ -190,11 +190,16 @@ There are two types of tests you can use to validate your scenarios:
 APIs. 
 * **Interaction Tests**: Drive the UI on an external app and validate the 
 results using UI Automation.
-
 Keep in mind that your test will be run on many different versions of 
 Windows, not just the most recent version. Your tests may need version or 
 [IsApiPresent](https://docs.microsoft.com/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
 checks in order to pass on all versions.
+
+#### Axe testing
+Axe tests are part of the interaction tests. [Axe.Windows](https://github.com/microsoft/axe-windows) is a library to run automated app scans and allows to detect accessibility issues.
+To add a new test page to use for Axe scanning, you can use the AxeTestPageAttribute which will add the test page to the list of test pages for Axe scanning. That way, other tests are not affected by the new test page.
+
+Running the Axe.Windows can be done using the `AxeTestHelper.TestForAxeIssues` method. If accessibility issues have been found, the method will throw an exception.
 
 #### Visual tree verification tests
 

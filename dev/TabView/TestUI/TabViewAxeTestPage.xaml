@@ -1,0 +1,24 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.TabViewAxeTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <muxc:TabView>
+        <muxc:TabView.TabItems>
+            <muxc:TabViewItem Header="Item 1"/>
+            <muxc:TabViewItem Header="Item 2" IsEnabled="False"/>
+            <muxc:TabViewItem Header="Item 3">
+                <muxc:TabViewItem.IconSource>
+                    <muxc:SymbolIconSource Symbol="AddFriend"/>
+                </muxc:TabViewItem.IconSource>
+            </muxc:TabViewItem>
+            <muxc:TabViewItem Header="Item 4"/>
+        </muxc:TabView.TabItems>
+    </muxc:TabView>
+    
+</local:TestPage>
