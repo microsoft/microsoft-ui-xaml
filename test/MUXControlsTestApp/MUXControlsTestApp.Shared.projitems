@@ -380,7 +380,7 @@
   <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
     <ItemGroup>
       <!-- Filter all 2.5 styles and pages marked with UseNonstandardCondtionalXAML-->
-      <PageToTest Remove="@PageToTest" Condition="'%(PageToTest.UseVisualStyle)' == 'V2dot5' Or '%(PageToTest.UseNonstandardCondtionalXAML)' != ''" />
+      <PageToTest Remove="@(PageToTest)" Condition="'%(PageToTest.UseVisualStyle)' == 'V2dot5' Or '%(PageToTest.UseNonstandardCondtionalXAML)' != ''" />
       <RS1StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'DefaultStyle'" />
       <RS2StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'DefaultStyle'" />
       <RS3StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'DefaultStyle'" />
