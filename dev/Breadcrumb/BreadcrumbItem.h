@@ -21,9 +21,11 @@ public:
     void RevokeListeners();
     void ResetVisualProperties();
     void SetPropertiesForLastNode();
+    void SetPropertiesForEllipsisNode();
 
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnClickEventotherName(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
 
     void SetPrimaryButtonFontWeight(bool mustBeBold);
     void SetSecondaryButtonVisibility(bool isVisible);
@@ -38,6 +40,7 @@ private:
     tracker_ref<winrt::Button> m_secondaryButton{ this };
 
     winrt::SplitButton::Loaded_revoker m_splitButtonLoadedRevoker{};
+    winrt::SplitButton::Click_revoker m_splitButtonClickRevoker{};
 
     bool m_isLastNode{};
     bool m_isChevronVisible{};

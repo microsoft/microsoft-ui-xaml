@@ -51,25 +51,23 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
 void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
-    winrt::BreadcrumbItem item = args.Element().as<winrt::BreadcrumbItem>();
-    com_ptr<BreadcrumbItem> itemImpl;
-    itemImpl.attach(winrt::get_self<BreadcrumbItem>(item));
-    
-    // item.m_parentContainer = this;
-
-    item.ContentTemplate(this->ItemTemplate().as<winrt::DataTemplate>());
-
-    //node.GotFocus += Node_GotFocus;
-
-    winrt::Collections::IVector<winrt::IInspectable> itemsSourceAsList = sender.ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
-    if ((uint32_t)args.Index() == itemsSourceAsList.Size() - 1)
+    if (auto item = args.Element().try_as<winrt::BreadcrumbItem>())
     {
-        // LastItem = node; // do I need this
-        itemImpl->SetPropertiesForLastNode();
-    }
-    else
-    {
-        itemImpl->ResetVisualProperties();
+        auto itemImpl = winrt::get_self<BreadcrumbItem>(item);
+        // item.m_parentContainer = this;
+        item.ContentTemplate(this->ItemTemplate().as<winrt::DataTemplate>());
+
+        //node.GotFocus += Node_GotFocus;
+        auto itemsSourceAsList = sender.ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
+        if ((uint32_t)args.Index() == itemsSourceAsList.Size() - 1)
+        {
+            // LastItem = node; // do I need this
+            itemImpl->SetPropertiesForLastNode();
+        }
+        else
+        {
+            itemImpl->ResetVisualProperties();
+        }
     }
 }
 

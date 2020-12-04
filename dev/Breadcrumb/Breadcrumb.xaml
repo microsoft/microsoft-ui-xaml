@@ -52,7 +52,7 @@
                                          ItemsSource="{TemplateBinding ItemsSource}"
                                          HorizontalAlignment="Left">
                         <local:ItemsRepeater.Layout>
-                            <local:StackLayout Orientation="Horizontal" />
+                            <local:BreadcrumbLayout />
                         </local:ItemsRepeater.Layout>
 
                         <local:ItemsRepeater.ItemTemplate>

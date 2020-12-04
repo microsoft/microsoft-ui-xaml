@@ -41,6 +41,7 @@ void BreadcrumbItem::OnApplyTemplate()
     if (auto splitButton = m_splitButton.get())
     {
         m_splitButtonLoadedRevoker = splitButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+        m_splitButtonClickRevoker = splitButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnClickEventotherName });
     }
 }
 
@@ -69,12 +70,36 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winr
     }
 }
 
+void BreadcrumbItem::OnClickEventotherName(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args)
+{
+
+}
+
 void BreadcrumbItem::SetPropertiesForLastNode()
 {
     m_isLastNode = true;
 
     SetPrimaryButtonFontWeight(true);
     SetSecondaryButtonVisibility(false);
+}
+
+void BreadcrumbItem::SetPropertiesForEllipsisNode()
+{
+    m_isLastNode = false;
+
+    if (auto primaryButton = m_primaryButton.get())
+    {
+        winrt::TextBlock primaryButtonContent = primaryButton.Content().as<winrt::TextBlock>();
+
+        primaryButton.IsEnabled(true);
+        if (primaryButtonContent)
+        {
+            primaryButtonContent.Text(L"...");
+        }
+    }
+
+    SetPrimaryButtonFontWeight(false);
+    SetSecondaryButtonVisibility(true);
 }
 
 void BreadcrumbItem::SetPrimaryButtonFontWeight(bool mustBeBold)
@@ -129,9 +154,10 @@ void BreadcrumbItem::SetSecondaryButtonText(bool isCollapsed)
     {
         winrt::TextBlock secondaryButtonContent = secondaryButton.Content().as<winrt::TextBlock>();
 
+        secondaryButton.IsEnabled(false);
         if (secondaryButtonContent)
         {
-            secondaryButtonContent.Text(isCollapsed ? L"&#xE76C;" : L"&#xE70D;");
+            secondaryButtonContent.Text(isCollapsed ? L"\xE76C" : L"\xE70D");
         }
     }
 }
