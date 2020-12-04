@@ -597,3 +597,57 @@ a:hover {
  outline: none;
 }
 
+/* Extra CSS for Microsoft header/footer */
+
+a.c-call-to-action:hover, button.c-call-to-action:hover
+{
+  box-shadow:none!important
+}
+
+a.c-call-to-action:hover span, button.c-call-to-action:hover span
+{
+  left:0!important
+}
+
+.c-call-to-action:not(.glyph-play):after 
+{
+   right: 0!important;
+  }
+
+a.c-call-to-action:focus,button.c-call-to-action:focus
+{
+  box-shadow:none!important
+}
+
+a.c-call-to-action:focus span,button.c-call-to-action:focus span
+{
+  left:0!important;box-shadow:none!important
+}
+
+.theme-dark .c-me .msame_Header_name 
+{
+  color: #f2f2f2;
+}
+
+.pmg-page-wrapper .uhf div, .pmg-page-wrapper .uhf button, .pmg-page-wrapper .uhf a, .pmg-page-wrapper .uhf span, .pmg-page-wrapper .uhf p, .pmg-page-wrapper .uhf input 
+{
+  font-family: Segoe UI,SegoeUI,Helvetica Neue,Helvetica,Arial,sans-serif !important;
+}
+
+@media (min-width: 540px) 
+{
+  .pmg-page-wrapper .uhf .c-uhfh-alert span, .pmg-page-wrapper .uhf #uhf-g-nav span, .pmg-page-wrapper .uhf .c-uhfh-actions span, .pmg-page-wrapper .uhf li, .pmg-page-wrapper .uhf button, .pmg-page-wrapper .uhf a, .pmg-page-wrapper .uhf #meControl .msame_Header_name  
+  {
+    font-size: 13px !important;
+  }
+}
+
+.pmg-page-wrapper .uhf #uhf-c-nav .c-uhf-menu .all-ms-nav:hover span, .pmg-page-wrapper .uhf .c-uhfh-actions #search:hover span, .pmg-page-wrapper .uhf .c-uhfh-actions #search:hover, .pmg-page-wrapper .uhf .c-uhfh-actions #search:active, .pmg-page-wrapper .uhf .c-uhfh-actions #uhf-shopping-cart:hover span 
+{
+  text-decoration: none !important;
+}
+
+.c-uhfh>.f-transparent.theme-dark .c-me .mectrl_signin, .c-uhfh>.f-transparent.theme-dark .c-me .mectrl_name 
+{
+  color: #f2f2f2;
+}
