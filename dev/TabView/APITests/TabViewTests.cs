@@ -5,6 +5,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Threading;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Common;
@@ -226,6 +227,108 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Clear the specified tab items source");
                 tabItemsSource.Clear();
             });       
+        }
+
+        [TestMethod]
+        public void TabViewItemBackgroundTest()
+        {
+            TabView tabView = null;
+            TabViewItem tvi1 = null;
+            TabViewItem tvi2 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tabView = new TabView();
+
+                tvi1 = CreateTabViewItem("Tab1", Symbol.Home);
+                tvi2 = CreateTabViewItem("Tab2", Symbol.Document);
+
+                tabView.TabItems.Add(tvi1);
+                tabView.TabItems.Add(tvi2);
+
+                Content = tabView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headerBackground = Application.Current.Resources["TabViewItemHeaderBackground"] as Brush;
+                var tabContainer = tvi2.FindVisualChildByName("TabContainer") as Grid;
+
+                // Verify that the TabViewItem we use for Background API testing is unselected.
+                Verify.IsFalse(tvi2.IsSelected, "TabViewItem should have been unselected");
+
+                Log.Comment("Verify that the default background brush is set by the [TabViewItemHeaderBackground] theme resource.");
+                Verify.IsTrue(ReferenceEquals(tvi2.Background, headerBackground), "TabViewItem's default header background brush should have been [TabViewItemHeaderBackground]");
+                Verify.IsTrue(ReferenceEquals(tabContainer.Background, headerBackground), "TabViewItem's [TabContainer] background brush should have been [TabViewItemHeaderBackground]");
+
+                var testBrush = new SolidColorBrush(Colors.Blue);
+                Verify.IsFalse(ReferenceEquals(testBrush, headerBackground), "Our test brush should have not been [TabViewItemHeaderBackground]");
+
+                Log.Comment("Set the TabViewItem's background using the Background API.");
+                tvi2.Background = testBrush;
+
+                // Verify that the background brushes have been updated correctly.
+                Verify.IsTrue(ReferenceEquals(tvi2.Background, testBrush), "TabViewItem's Background brush should have been [testBrush]");
+                Verify.IsTrue(ReferenceEquals(tabContainer.Background, testBrush), "TabViewItem's [TabContainer] background brush should have been [testBrush]");
+            });
+        }
+
+        [TestMethod]
+        public void TabViewItemForegroundTest()
+        {
+            TabView tabView = null;
+            TabViewItem tvi1 = null;
+            TabViewItem tvi2 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tabView = new TabView();
+
+                tvi1 = CreateTabViewItem("Tab1", Symbol.Home);
+                tvi2 = CreateTabViewItem("Tab2", Symbol.Document);
+
+                tabView.TabItems.Add(tvi1);
+                tabView.TabItems.Add(tvi2);
+
+                Content = tabView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var iconForeground = Application.Current.Resources["TabViewItemIconForeground"] as Brush;
+                var headerForeground = Application.Current.Resources["TabViewItemHeaderForeground"] as Brush;
+
+                var iconControl = tvi2.FindVisualChildByName("IconControl") as ContentControl;
+                var headerPresenter = tvi2.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+
+                // Verify that the TabViewItem we use for Foreground API testing is unselected.
+                Verify.IsFalse(tvi2.IsSelected, "TabViewItem should have been unselected");
+
+                Log.Comment("Verify that theme resource brushes are used when no foreground was set using the Foreground API.");
+                Verify.IsTrue(ReferenceEquals(iconControl.Foreground, iconForeground), "TabViewItem's icon foreground brush should have been [TabViewItemIconForeground]");
+                Verify.IsTrue(ReferenceEquals(headerPresenter.Foreground, headerForeground), "TabViewItem's header foreground brush should have been [TabViewItemHeaderForeground]");
+
+                var testBrush = new SolidColorBrush(Colors.Blue);
+                Verify.IsFalse(ReferenceEquals(testBrush, iconForeground), "Our test brush should have not been [TabViewItemIconForeground]");
+                Verify.IsFalse(ReferenceEquals(testBrush, headerForeground), "Our test brush should have not been [TabViewItemHeaderForeground]");
+
+                Log.Comment("Set the TabViewItem's foreground (icon + header) using the Foreground API.");
+                tvi2.Foreground = testBrush;
+
+                Verify.IsTrue(ReferenceEquals(tvi2.Foreground, testBrush), "TabViewItem's Foreground brush should have been [testBrush]");
+
+                // Verify that the icon and header foreground brushes have been updated correctly.
+                Verify.IsTrue(ReferenceEquals(iconControl.Foreground, testBrush), "TabViewItem's icon foreground brush should have been [testBrush]");
+                Verify.IsTrue(ReferenceEquals(headerPresenter.Foreground, testBrush), "TabViewItem's header foreground brush should have been [testBrush]");
+
+                Log.Comment("Unset TabViewItem.Foreground to apply the theme resource brushes again.");
+                tvi2.ClearValue(Control.ForegroundProperty);
+
+                Verify.IsTrue(ReferenceEquals(iconControl.Foreground, iconForeground), "TabViewItem's icon foreground brush should have been [TabViewItemIconForeground]");
+                Verify.IsTrue(ReferenceEquals(headerPresenter.Foreground, headerForeground), "TabViewItem's header foreground brush should have been [TabViewItemHeaderForeground]");
+            });
         }
 
         private static void VerifyTabWidthVisualStates(TabView tabView, IList<object> items, bool isCompact)
