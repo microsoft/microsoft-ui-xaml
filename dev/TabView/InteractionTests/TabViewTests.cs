@@ -690,20 +690,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void VerifyTabViewItemHeaderForegroundResource()
-        {
-            using (var setup = new TestSetupHelper("TabView Tests"))
-            {
-                Button getSecondTabHeaderForegroundButton = FindElement.ByName<Button>("GetSecondTabHeaderForegroundButton");
-                getSecondTabHeaderForegroundButton.InvokeAndWait();
-
-                TextBlock secondTabHeaderForegroundTextBlock = FindElement.ByName<TextBlock>("SecondTabHeaderForegroundTextBlock");
-
-                Verify.AreEqual("#FF008000", secondTabHeaderForegroundTextBlock.DocumentText);
-            }
-        }
-
-        [TestMethod]
         public void VerifySizingBehaviorOnTabCloseComingFromScroll()
         {
             int pixelTolerance = 10;

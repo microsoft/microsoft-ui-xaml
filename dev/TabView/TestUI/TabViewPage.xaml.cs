@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -423,15 +423,6 @@ namespace MUXControlsTestApp
             if (VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") is RepeatButton scrollIncreaseButton)
             {
                 GetToolTipStringForUIElement(scrollIncreaseButton, ScrollIncreaseButtonToolTipTextBlock);
-            }
-        }
-
-        private void GetSecondTabHeaderForegroundButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (FindVisualChildByName(SecondTab, "ContentPresenter") is ContentPresenter presenter
-                && presenter.Foreground is SolidColorBrush brush)
-            {
-                SecondTabHeaderForegroundTextBlock.Text = brush.Color.ToString();
             }
         }
     }
