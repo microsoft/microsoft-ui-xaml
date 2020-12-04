@@ -210,6 +210,10 @@
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for PipsPager -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePipsPagerEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
   <!-- Dependencies for ImageIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
   </PropertyGroup>
@@ -271,6 +275,7 @@
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
   </PropertyGroup>
   <PropertyGroup>
