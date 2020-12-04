@@ -597,6 +597,7 @@ a:hover {
  outline: none;
 }
 
+
 /* Extra CSS for Microsoft header/footer */
 
 a.c-call-to-action:hover, button.c-call-to-action:hover
@@ -651,3 +652,4 @@ a.c-call-to-action:focus span,button.c-call-to-action:focus span
 {
   color: #f2f2f2;
 }
+
