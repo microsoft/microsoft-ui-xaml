@@ -1,8 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
 using Common;
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using System.Collections.Generic;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -12,12 +10,6 @@ using WEX.Logging.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
-using Microsoft.Windows.Apps.Test.Automation;
-using Microsoft.Windows.Apps.Test.Foundation;
-using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-using MUXTestInfra.Shared.Infra;
 using Axe.Windows.Automation;
 using System.Diagnostics;
 
@@ -30,7 +22,7 @@ namespace MUXTestInfra.Shared.Infra
         {
             get
             {
-                if(scanner == null)
+                if (scanner == null)
                 {
                     LoadScanner();
                 }

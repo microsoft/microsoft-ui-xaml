@@ -11,7 +11,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <!-- These ALL fail our axe scanning so we comment them out. -->
+        <!-- ALL of these fail our axe scanning so we comment them out. -->
         <!--
             <muxc:NumberBox Header="Sample NumberBox"/>
             <muxc:NumberBox AutomationProperties.Name="Sample NumberBox"/>
