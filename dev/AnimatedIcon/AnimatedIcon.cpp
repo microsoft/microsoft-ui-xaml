@@ -307,7 +307,9 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
     }();
 
     m_previousSegmentLength = segmentLength;
-    auto const duration = std::chrono::duration_cast<winrt::TimeSpan>(m_animatedVisual.get().Duration() * segmentLength * (1.0 / playbackMultiplier) * m_durationMultiplier);
+    auto const duration = m_animatedVisual ?
+        std::chrono::duration_cast<winrt::TimeSpan>(m_animatedVisual.get().Duration() * segmentLength * (1.0 / playbackMultiplier) * m_durationMultiplier) :
+        winrt::TimeSpan::zero();
     // If the duration is really short (< 20ms) don't bother trying to animate.
     if (duration < winrt::TimeSpan{ 20ms })
     {
@@ -358,9 +360,17 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
             {
                 source.SetColorProperty(L"Foreground", ForegroundSolidColorBrush.Color());
             }
-            auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor());
-            m_animatedVisual.set(visual);
-            return visual.RootVisual();
+
+            if (auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor()))
+            {
+                m_animatedVisual.set(visual);
+                return visual.RootVisual();
+            }
+            else
+            {
+                m_animatedVisual.set(nullptr);
+                return static_cast<winrt::Visual>(nullptr);
+            }
         }
         else
         {
