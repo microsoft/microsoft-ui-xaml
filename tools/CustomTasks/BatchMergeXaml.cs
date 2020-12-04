@@ -9,6 +9,8 @@ namespace CustomTasks
 {
     public class BatchMergeXaml : Task
     {
+        public string PagesFilteredBy { get; set; }
+
         [Required]
         public ITaskItem[] RS1Pages { get; set; }
 
@@ -67,6 +69,12 @@ namespace CustomTasks
             {
                 foreach (ITaskItem item in items)
                 {
+                    if (!string.IsNullOrEmpty(PagesFilteredBy) && !item.GetMetadata(PagesFilteredBy).Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log.LogMessage(MessageImportance.Low, "Filtered item " + item.ItemSpec);
+                        continue;
+                    }
+
                     string file = item.ItemSpec;
                     if (File.Exists(file))
                     {
