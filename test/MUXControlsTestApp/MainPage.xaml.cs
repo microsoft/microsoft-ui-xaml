@@ -157,7 +157,7 @@ namespace MUXControlsTestApp
             LongAnimationsDisabled.IsChecked = MUXControlsTestApp.App.DisableLongAnimations;
             FlowDirectionChooser.SelectedIndex = FlowDirections.IndexOf(GetRootFlowDirection());
             AppHighContrastAdjustmentChooser.SelectedIndex = AppHighContrastAdjustments.FindIndex(a => a.Item1 == ApplicationHighContrastAdjustment.Auto); // default to unaware
-
+            AxeTestCaseSelection.ItemsSource = TestInventory.AxeTests;
             // App remembers ExtendViewIntoTitleBar and the value persists true if test case aborted and didn't change it back
             // Always set it to false when app restarted
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;

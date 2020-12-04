@@ -22,6 +22,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 {
@@ -36,6 +37,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
+        }
+
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("NavigationView-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]

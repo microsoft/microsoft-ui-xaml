@@ -10,12 +10,19 @@
     <Import_RootNamespace>NumberBox_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)NumberBoxAxeTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NumberBoxPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)NumberBoxAxeTestPage.xaml.cs">
+      <DependentUpon>NumberBoxAxeTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NumberBoxPage.xaml.cs">
       <DependentUpon>NumberBoxPage.xaml</DependentUpon>
     </Compile>

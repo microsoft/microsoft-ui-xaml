@@ -6,6 +6,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.AutomationId="MainPage">
 
@@ -80,6 +81,17 @@
                 Header="ApplicationHighContrastAdjustment"
                 SelectionChanged="AppHighContrastAdjustmentChooser_SelectionChanged" />
 
+            <ScrollViewer MaxHeight="100">
+                <muxc:ItemsRepeater x:Name="AxeTestCaseSelection">
+                    <muxc:ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Name}" AutomationProperties.Name="{Binding Name}"
+                                CommandParameter="{Binding}"
+                                Command="{StaticResource NavigateToTestCommand}"/>
+                        </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                </muxc:ItemsRepeater>
+            </ScrollViewer>
         </StackPanel>
     </Grid>
 </Page>

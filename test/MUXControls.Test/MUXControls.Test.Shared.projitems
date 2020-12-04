@@ -141,6 +141,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AxeTestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\TestAssembly.cs" />
   </ItemGroup>
 </Project>

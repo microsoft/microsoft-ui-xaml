@@ -12,16 +12,27 @@ namespace MUXControlsTestApp
         static TestInventory()
         {
             Tests = new List<TestDeclaration>();
-            foreach(Type type in typeof(TestInventory).GetTypeInfo().Assembly.GetTypes())
+            AxeTests = new List<TestDeclaration>();
+            foreach (Type type in typeof(TestInventory).GetTypeInfo().Assembly.GetTypes())
             {
-                var attribute = type.GetTypeInfo().GetCustomAttribute<TopLevelTestPageAttribute>();
-                if(attribute != null)
+                var attributeTest = type.GetTypeInfo().GetCustomAttribute<TopLevelTestPageAttribute>();
+                if(attributeTest != null)
                 {
                     Tests.Add(new TestDeclaration() 
                     {
                         PageType = type,
-                        Name = attribute.Name,
-                        Icon = "ms-appx:///Assets/" + attribute.Icon,
+                        Name = attributeTest.Name,
+                        Icon = "ms-appx:///Assets/" + attributeTest.Icon,
+                    });
+                }
+
+                var attributeAxe = type.GetTypeInfo().GetCustomAttribute<AxeScanTestPageAttribute>();
+                if (attributeAxe != null)
+                {
+                    AxeTests.Add(new TestDeclaration() {
+                        PageType = type,
+                        Name = attributeAxe.Name,
+                        Icon = ""
                     });
                 }
             }
@@ -30,8 +41,14 @@ namespace MUXControlsTestApp
             {
                 return a.Name.CompareTo(b.Name);
             });
+            AxeTests.Sort((a, b) =>
+            {
+                return a.Name.CompareTo(b.Name);
+            });
         }
 
         public static List<TestDeclaration> Tests { get; private set; }
+
+        public static List<TestDeclaration> AxeTests { get; private set; }
     }
 }

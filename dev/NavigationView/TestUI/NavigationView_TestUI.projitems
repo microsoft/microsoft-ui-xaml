@@ -74,6 +74,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationViewAxeTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewCustomThemeResourcesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -154,7 +158,10 @@
       <DependentUpon>NavigationViewItemTemplatePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPage.xaml.cs">
-      <DependentUpon>NavigationViewPage.xaml</DependentUpon>
+      <DependentUpon>NavigationViewPage.xaml</DependentUpon> 
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewAxeTestPage.xaml.cs">
+      <DependentUpon>NavigationViewAxeTestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewCustomThemeResourcesPage.xaml.cs">
       <DependentUpon>NavigationViewCustomThemeResourcesPage.xaml</DependentUpon>

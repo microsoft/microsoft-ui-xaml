@@ -39,7 +39,8 @@
                                 <StackPanel Orientation="Horizontal">
                                     <Button x:Name="BackButton" Margin="0,0,4,0"
                                         Style="{ThemeResource AccentButtonStyle}"
-                                        AutomationProperties.AutomationId="__BackButton" 
+                                        AutomationProperties.AutomationId="__BackButton"
+                                        AutomationProperties.Name="Back"
                                         Width="48"
                                         Visibility="Collapsed">
                                         <SymbolIcon Symbol="Back"/>

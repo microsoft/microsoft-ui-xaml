@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -56,6 +57,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 Verify.AreEqual("dolor", autoSuggestBoxTextBox.Value);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("AutoSuggestBox-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
             }
         }
     }

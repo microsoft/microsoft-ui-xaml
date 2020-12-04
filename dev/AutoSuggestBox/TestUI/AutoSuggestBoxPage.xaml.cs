@@ -4,6 +4,7 @@
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "AutoSuggestBox", Icon = "AutoSuggestBox.png")]
+    [AxeScanTestPage(Name = "AutoSuggestBox-Axe")]
     public sealed partial class AutoSuggestBoxPage : TestPage
     {
         string[] suggestions =
