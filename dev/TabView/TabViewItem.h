@@ -51,6 +51,7 @@ public:
     winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
 
     void UpdateCloseButton();
+    void UpdateForeground();
     void RequestClose();
     void OnIconSourceChanged();
     void UpdateWidthModeVisualState();
@@ -64,6 +65,7 @@ public:
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
     void OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args);
     void OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args);

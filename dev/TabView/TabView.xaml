@@ -376,6 +376,7 @@
     </Style>
 
     <Style TargetType="local:TabViewItem">
+        <Setter Property="Background" Value="{ThemeResource TabViewItemHeaderBackground}" />
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Template">
@@ -617,6 +618,16 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup>
+                                <VisualState x:Name="ForegroundNotSet"/>
+                                <VisualState x:Name="ForegroundSet">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconControl.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Path 
@@ -654,7 +665,7 @@
 
                         <Grid x:Name="TabContainer"
                             Grid.Column="1"
-                            Background="{ThemeResource TabViewItemHeaderBackground}"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Control.IsTemplateFocusTarget="True"
@@ -685,7 +696,7 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Content="{TemplateBinding Header}"
                                 ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"                              
                                 FontWeight="{TemplateBinding FontWeight}"
                                 FontSize="{ThemeResource TabViewItemHeaderFontSize}"
                                 Foreground="{ThemeResource TabViewItemHeaderForeground}"
