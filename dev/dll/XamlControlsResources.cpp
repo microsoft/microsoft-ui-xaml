@@ -17,12 +17,24 @@ static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroun
 // so it's OK to assume one instance of XamlControlsResources per thread.
 thread_local bool s_tlsUseLatestStyle = true;
 
+// Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
+// Assume XamlControlsResources is one per Application resource, and application is per thread, 
+// so it's OK to assume one instance of XamlControlsResources per thread.
+thread_local bool s_tlsUseLatestStyle = true;
+
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
     // what it does, though.
     MUXControlsFactory::EnsureInitialized();
     UpdateSource();
+
+    s_tlsUseLatestStyle = UseLatestStyle();
+}
+
+bool XamlControlsResources::UseLatestStyle()
+{
+    return Version() != winrt::StylesVersion::WinUI_2dot5;
 }
 
 bool XamlControlsResources::UseLatestStyle()
@@ -38,6 +50,10 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
     {
         // Source link depends on Version and Compact flag, We need update source when this property changed
         UpdateSource();
+    }
+    else if (property == s_VersionProperty)
+    {
+        s_tlsUseLatestStyle = UseLatestStyle();
     }
 }
 
@@ -223,12 +239,12 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             {
                 if (is19H1OrHigher)
                 {
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
                 else
                 {
                     MUX_FAIL_FAST_MSG("CBS package doesn't apply to old platforms");
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
             else
