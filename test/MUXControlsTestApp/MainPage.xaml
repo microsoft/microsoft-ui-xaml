@@ -82,15 +82,15 @@
                 SelectionChanged="AppHighContrastAdjustmentChooser_SelectionChanged" />
 
             <ScrollViewer MaxHeight="100">
-                <muxc:ItemsRepeater x:Name="AxeTestCaseSelection">
-                    <muxc:ItemsRepeater.ItemTemplate>
+                <ItemsControl x:Name="AxeTestCaseSelection">
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Content="{Binding Name}" AutomationProperties.Name="{Binding Name}"
                                 CommandParameter="{Binding}"
                                 Command="{StaticResource NavigateToTestCommand}"/>
                         </DataTemplate>
-                    </muxc:ItemsRepeater.ItemTemplate>
-                </muxc:ItemsRepeater>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
         </StackPanel>
     </Grid>

@@ -11,13 +11,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <!-- ALL of these fail our axe scanning so we comment them out. -->
-        <!--
-            <muxc:NumberBox Header="Sample NumberBox"/>
-            <muxc:NumberBox AutomationProperties.Name="Sample NumberBox"/>
-            <muxc:NumberBox Header="Sample NumberBox" SpinButtonPlacementMode="Inline"/>
-            <muxc:NumberBox Header="Sample NumberBox" SpinButtonPlacementMode="Compact"/>
-        -->
         <muxc:NumberBox PlaceholderText="Sample NumberBox"/>
     </StackPanel>
 </local:TestPage>
