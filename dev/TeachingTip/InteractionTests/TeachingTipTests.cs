@@ -1,4 +1,7 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -50,7 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CloseReasonIsAccurate()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -90,7 +93,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message6.ToString().Contains("Programmatic"));
 
                     OpenTeachingTip();
-                    CloseTeachingTipByLightDismiss();
+                    CloseTeachingTipByLightDismiss(useEscKey: false);
                     var message7 = GetTeachingTipDebugMessage(7);
                     var message8 = GetTeachingTipDebugMessage(8);
                     Verify.IsTrue(message7.ToString().Contains("Closing"));
@@ -98,17 +101,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message8.ToString().Contains("Closed"));
                     Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
 
+                    OpenTeachingTip();
+                    CloseTeachingTipByLightDismiss(useEscKey: true);
+                    var message9 = GetTeachingTipDebugMessage(9);
+                    var message10 = GetTeachingTipDebugMessage(10);
+                    Verify.IsTrue(message9.ToString().Contains("Closing"));
+                    Verify.IsTrue(message9.ToString().Contains("LightDismiss"));
+                    Verify.IsTrue(message10.ToString().Contains("Closed"));
+                    Verify.IsTrue(message10.ToString().Contains("LightDismiss"));
+
                     SetCloseButtonContent(CloseButtonContentOptions.ShortText);
                     OpenTeachingTip();
                     PressTipCloseButton();
-                    var message9 = GetTeachingTipDebugMessage(9);
-                    var message10 = GetTeachingTipDebugMessage(10);
                     var message11 = GetTeachingTipDebugMessage(11);
-                    Verify.IsTrue(message9.ToString().Contains("Close Button Clicked"));
-                    Verify.IsTrue(message10.ToString().Contains("Closing"));
-                    Verify.IsTrue(message10.ToString().Contains("CloseButton"));
-                    Verify.IsTrue(message11.ToString().Contains("Closed"));
-                    Verify.IsTrue(message11.ToString().Contains("CloseButton"));
+                    var message12 = GetTeachingTipDebugMessage(12);
+                    var message13 = GetTeachingTipDebugMessage(13);
+                    Verify.IsTrue(message11.ToString().Contains("Close Button Clicked"));
+                    Verify.IsTrue(message12.ToString().Contains("Closing"));
+                    Verify.IsTrue(message12.ToString().Contains("CloseButton"));
+                    Verify.IsTrue(message13.ToString().Contains("Closed"));
+                    Verify.IsTrue(message13.ToString().Contains("CloseButton"));
 
                     ClearTeachingTipDebugMessages();
                 }
@@ -118,7 +130,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TargetUnloadingClosesTeachingTip()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 elements.GetSetTargetButton().InvokeAndWait();
@@ -139,7 +151,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void PreviousTargetUnloadingLeavesTeachingTipOpen()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 elements.GetSetTargetButton().InvokeAndWait();
@@ -162,7 +174,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TeachingTipRemovalClosesPopup()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 ScrollTargetIntoView();
@@ -185,7 +197,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TipCanFollowTarget()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -248,7 +260,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -307,7 +319,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void AutoPlacement()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -333,7 +345,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void SpecifiedPlacement()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -506,7 +518,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void SpecifiedPlacementRTL()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -683,7 +695,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void NoIconDoesNotCrash()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -707,7 +719,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanSwitchShouldConstrainToRootBounds()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -740,7 +752,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TipsWhichDoNotFitDoNotOpen()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -779,7 +791,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -816,7 +828,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")]
         public void SettingTitleOrSubtitleToEmptyStringCollapsesTextBox()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -888,7 +900,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void AutomationNameIsForwardedToPopup()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach(TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -910,7 +922,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void F6PutsFocusOnCloseButton()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 ScrollTargetIntoView();
@@ -923,6 +935,72 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 OpenTeachingTip();
                 UseF6ToReturnToTestPageToCloseTip();
                 SetCloseButtonContent(CloseButtonContentOptions.NoText);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTeachingTipNotIncludedInTabOrder()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTipFocus Test" }))
+            {
+                var elements = new TeachingTipFocusTestPageElements();
+                var openTeachingTipButton = elements.GetOpenButton();
+
+                Log.Comment("Verify open button has keyboard focus.");
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Verify that a closed teaching tip does not appear in tab order.");
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Verify that an opened teaching tip does not appear in tab order.");
+                OpenTeachingTip();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Switch to light-dismissable teaching tip.");
+                CloseTeachingTipProgrammatically();
+                EnableLightDismiss();
+
+                Log.Comment("Verify that a closed light-dismissable teaching tip does not appear in tab order.");
+
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                void OpenTeachingTip()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
+                    {
+                        openTeachingTipButton.InvokeAndWait();
+                        WaitForChecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+
+                void CloseTeachingTipProgrammatically()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
+                    {
+                        elements.GetCloseButton().InvokeAndWait();
+                        WaitForUnchecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+
+                void EnableLightDismiss()
+                {
+                    var isLightDismissEnabledCheckBox = elements.GetIsLightDismissEnabledCheckBox();
+                    if (isLightDismissEnabledCheckBox.ToggleState != ToggleState.On)
+                    {
+                        isLightDismissEnabledCheckBox.Check();
+                        WaitForChecked(isLightDismissEnabledCheckBox);
+                    }
+                }
             }
         }
 
@@ -1013,11 +1091,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void CloseTeachingTipByLightDismiss()
+        private void CloseTeachingTipByLightDismiss(bool useEscKey)
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                InputHelper.LeftClick(elements.GetActionButtonContentComboBox());
+                if (useEscKey)
+                {
+                    KeyboardHelper.PressKey(Key.Escape);
+                }
+                else
+                {
+                    InputHelper.LeftClick(elements.GetActionButtonContentComboBox());
+                }
+
                 WaitForTipClosed();
             }
         }

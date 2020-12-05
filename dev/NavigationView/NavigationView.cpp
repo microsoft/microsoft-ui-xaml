@@ -1063,6 +1063,11 @@ winrt::ItemsRepeater NavigationView::GetParentRootItemsRepeaterForContainer(cons
     while (!IsRootItemsRepeater(parentIR))
     {
         currentNvib = GetParentNavigationViewItemForContainer(currentNvib);
+        if (!currentNvib)
+        {
+            return nullptr;
+        }
+
         parentIR = GetParentItemsRepeaterForContainer(currentNvib);
     }
     return parentIR;

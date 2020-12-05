@@ -1,0 +1,32 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.TeachingTipFocusPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    AutomationProperties.Name="TeachingTipFocusPage"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Margin="10">
+        <muxc:TeachingTip x:Name="TestTeachingTip" Title="Title" IsLightDismissEnabled="{x:Bind (x:Boolean)IsLightDismissEnabledCheckBox.IsChecked, Mode=OneWay}" />
+
+        <StackPanel>
+            <TextBlock Text="TeachingTip special focus test page" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,15"/>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="OpenButton" AutomationProperties.Name="OpenButton" Content="Open tip" Click="OpenTeachingTipButton_Click"/>
+                <Button x:Name="CloseButton" AutomationProperties.Name="CloseButton" Content="Close tip" Margin="10,0,0,0" IsTabStop="False" Click="CloseTeachingTipButton_Click"/>
+            </StackPanel>
+
+            <TextBlock Text="TeachingTip status:" Margin="0,10,0,0"/>
+            <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="False" IsEnabled="False"/>
+            <CheckBox x:Name="IsIdleCheckBox" AutomationProperties.Name="IsIdleCheckBox" Content="IsIdle" IsChecked="True" IsEnabled="False"/>
+
+            <TextBlock Text="TeachingTip configuration:" Margin="0,10,0,0"/>
+            <CheckBox x:Name="IsLightDismissEnabledCheckBox" AutomationProperties.Name="IsLightDismissEnabledCheckBox" Content="IsLightDismissEnabled" IsChecked="False" IsTabStop="False"/>
+        </StackPanel>
+    </Grid>
+</local:TestPage>
