@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 
+using TwoPaneView = Microsoft.UI.Xaml.Controls.TwoPaneView;
 using Breadcrumb = Microsoft.UI.Xaml.Controls.Breadcrumb;
 using Breadcrumb_TestUI;
 using System.Collections.Generic;
@@ -110,6 +111,17 @@ namespace MUXControlsTestApp
 
             ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
             UpdateChildrenList(treeNode);
+        }
+
+        private void WidthSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (TwoPaneView == null)
+            {
+                return;
+            }
+
+            TwoPaneView.Pane1Length = new GridLength(e.NewValue, GridUnitType.Pixel);
+            TwoPaneView.Pane2Length = new GridLength(1, GridUnitType.Star);
         }
 
         private void ReplaceList(ObservableCollection<object> oldItemsList, List<object> newItemsList)

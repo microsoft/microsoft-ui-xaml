@@ -15,25 +15,65 @@
         <StackPanel Orientation="Vertical">
             <controls:BreadcrumbItem />
 
-            <!-- ItemClicked="flatBreadCrumb_ItemClicked"
-                                  ItemExpanding="flatBreadCrumb_ItemExpanding" -->
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}" x:Name="flatBreadCrumb" >
-                <controls:Breadcrumb.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </controls:Breadcrumb.ItemTemplate>
+                <StackPanel Orientation="Vertical" Padding="12"
+                            Background="{ThemeResource SystemChromeLowColor}"
+                            MinWidth="250" Grid.Column="0">
+                    <TextBlock Text="Breadcrumb control width" Style="{ThemeResource StandardGroupHeader}"/>
+                    <Slider x:Name="WidthSlider" Minimum="100" Maximum="700" Value="700" AutomationProperties.Name="WidthSlider" ValueChanged="WidthSlider_ValueChanged"/>
+                </StackPanel>
 
-                <!--
-                <controls:Breadcrumb.DropDownItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </controls:Breadcrumb.DropDownItemTemplate>
-                -->
+                <controls:TwoPaneView x:Name="TwoPaneView"
+                                      AutomationProperties.Name="TwoPaneViewLarge"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      Grid.Column="1">
+                    <controls:TwoPaneView.Pane1>
+                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="{ThemeResource SystemChromeDisabledHighColor}">
 
-            </controls:Breadcrumb>
+                            <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderThickness="5" Padding="7">
+                                <Grid>
+
+                                    <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}" x:Name="flatBreadCrumb" Grid.Column="0">
+                                        <controls:Breadcrumb.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}" />
+                                            </DataTemplate>
+                                        </controls:Breadcrumb.ItemTemplate>
+
+                                        <!--
+                                            <controls:Breadcrumb.DropDownItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </DataTemplate>
+                                            </controls:Breadcrumb.DropDownItemTemplate>
+                                        -->
+
+                                        <!-- ItemClicked="flatBreadCrumb_ItemClicked"
+                                        ItemExpanding="flatBreadCrumb_ItemExpanding" -->
+
+                                    </controls:Breadcrumb>
+                                </Grid>
+                            </Border>
+
+                        </Grid>
+                    </controls:TwoPaneView.Pane1>
+
+                    <controls:TwoPaneView.Pane2>
+                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="{ThemeResource SystemListAccentHighColor}">
+                            <Border x:Name="Content2Border" AutomationProperties.Name="Content2Border" BorderThickness="5" Padding="7">
+                                <Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </controls:TwoPaneView.Pane2>
+                </controls:TwoPaneView>
+            </Grid>
 
             <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1" >
                 <controls:ItemsRepeater x:Name="ChildrenView" ItemsSource="{x:Bind currentNodeChildrenList}">

@@ -49,10 +49,12 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext c
         if (justCreatedEllipsisButton)
         {
             justCreatedEllipsisButton = false;
+            /*
             if (auto ellipsisButton = m_ellipsisButton.get())
             {
                 ellipsisButton.Measure(availableSize);
             }
+            */
         }
         else
         {
@@ -63,21 +65,27 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext c
     else
     {
         // remove button?
+        justCreatedEllipsisButton = false;
         m_ellipsisButton.set(nullptr);
     }
 
     return acumulatedCrumbsSize;
 }
 
-void BreadcrumbLayout::ArrangeItem(winrt::VirtualizingLayoutContext const& context, int index, float& accumulatedWidths, float& maxElementHeight)
+void BreadcrumbLayout::ArrangeBreadcrumbItem(winrt::UIElement breadcrumbItem, float& accumulatedWidths, float& maxElementHeight)
 {
-    auto element = context.GetOrCreateElementAt(index);
-    const winrt::Size elementSize = element.DesiredSize();
+    const winrt::Size elementSize = breadcrumbItem.DesiredSize();
     const winrt::Rect arrangeRect(accumulatedWidths, 0, elementSize.Width, elementSize.Height);
-    element.Arrange(arrangeRect);
+    breadcrumbItem.Arrange(arrangeRect);
 
     maxElementHeight = std::max(maxElementHeight, elementSize.Height);
     accumulatedWidths += elementSize.Width;
+}
+
+void BreadcrumbLayout::ArrangeItem(winrt::VirtualizingLayoutContext const& context, int index, float& accumulatedWidths, float& maxElementHeight)
+{
+    auto element = context.GetOrCreateElementAt(index);
+    ArrangeBreadcrumbItem(element, accumulatedWidths, maxElementHeight);
 }
 
 void BreadcrumbLayout::HideItem(winrt::VirtualizingLayoutContext const& context, int index)
@@ -92,7 +100,7 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutC
 {
     const int itemCount = context.ItemCount();
     float acumLength = context.GetOrCreateElementAt(itemCount - 1).DesiredSize().Width +
-                       context.GetOrCreateElementAt(itemCount).DesiredSize().Width;
+        m_ellipsisButton.get().DesiredSize().Width;
 
     for (int i = itemCount - 2; i >= 0; --i)
     {
@@ -101,6 +109,7 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutC
         {
             return i + 1;
         }
+        acumLength = newAcumLength;
     }
 
     return 0;
@@ -128,12 +137,15 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
     float accumulatedWidths = 0;
     float maxElementHeight = 0;
 
-    if (mustDrawEllipsisButton)
+    /*
+    if (mustDrawEllipsisButton)   
     {
-        ArrangeItem(context, itemCount, accumulatedWidths, maxElementHeight);
+        ArrangeBreadcrumbItem(m_ellipsisButton.get(), accumulatedWidths, maxElementHeight);
     }
+    */
 
-    for (int i = 0; i < itemCount; ++i)
+    ArrangeItem(context, 0, accumulatedWidths, maxElementHeight);
+    for (int i = 1; i < itemCount; ++i)
     {
         if (i < firstElementToRender)
         {
@@ -148,18 +160,16 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
     return finalSize;
 }
 
-
-
 void BreadcrumbLayout::InstantiateEllipsisButton(winrt::VirtualizingLayoutContext const& context)
 {
-    const int items = context.ItemCount();
-
-    auto ellipsisButton = context.GetOrCreateElementAt(items).as<winrt::BreadcrumbItem>();
+    auto newItem = context.GetOrCreateElementAt(0);
+    auto ellipsisButton = newItem.as<winrt::BreadcrumbItem>();
 
     auto ellipsisButtonImpl = winrt::get_self<BreadcrumbItem>(ellipsisButton);
+
+    auto content = ellipsisButton.Content();
+
     ellipsisButtonImpl->SetPropertiesForEllipsisNode();
 
     m_ellipsisButton.set(ellipsisButton);
-
-    // set properties for ellipsis
 }

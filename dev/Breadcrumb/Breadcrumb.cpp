@@ -53,12 +53,23 @@ void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::Item
 {
     if (auto item = args.Element().try_as<winrt::BreadcrumbItem>())
     {
+        int itemIndex = args.Index();
+
         auto itemImpl = winrt::get_self<BreadcrumbItem>(item);
         // item.m_parentContainer = this;
+
+        auto itemsSourceAsList = this->ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
+        if (itemIndex == 0)
+        {
+            auto content = item.Content();
+            auto firstElement = itemsSourceAsList.GetAt(0);
+            item.Content(firstElement);
+        }
+
         item.ContentTemplate(this->ItemTemplate().as<winrt::DataTemplate>());
 
         //node.GotFocus += Node_GotFocus;
-        auto itemsSourceAsList = sender.ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
+        
         if ((uint32_t)args.Index() == itemsSourceAsList.Size() - 1)
         {
             // LastItem = node; // do I need this
