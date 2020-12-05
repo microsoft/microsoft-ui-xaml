@@ -84,7 +84,7 @@
               StrokeThickness=1
               Width=0
               Name=HorizontalDecreaseRect
-              Margin=0,0,0,0
+              Margin=0,0,-5,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -180,7 +180,7 @@
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
               Name=VerticalDecreaseRect
-              Margin=0,0,0,0
+              Margin=0,-5,0,0
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
