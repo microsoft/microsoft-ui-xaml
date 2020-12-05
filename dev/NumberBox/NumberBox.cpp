@@ -50,7 +50,6 @@ NumberBox::NumberBox()
     this->RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this , &NumberBox::OnAutomationPropertiesNamePropertyChanged });
 }
 
-
 void NumberBox::SetDefaultInputScope()
 {
     // Sets the default value of the InputScope property.
