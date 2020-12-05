@@ -1007,7 +1007,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void F6PutsFocusOnContentIfNoCloseButton()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 ScrollTargetIntoView();
