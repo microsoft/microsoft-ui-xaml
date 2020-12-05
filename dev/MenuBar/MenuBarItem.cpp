@@ -282,7 +282,7 @@ winrt::MenuBarItem MenuBarItem::GetNextItem(int index, int direction)
         const int itemsCount = menuBar.Items().Size();
         // index + direction might be negative so account for that by adding itemsCount.
         int itemIndex = (index + direction + itemsCount) % itemsCount;
-        while (!menuBar.Items().GetAt(itemIndex).IsEnabled())
+        while (!(menuBar.Items().GetAt(itemIndex).IsEnabled() && menuBar.Items().GetAt(itemIndex).IsTabStop()))
         {
             // index + direction might be negative so account for that by adding itemsCount.
             itemIndex = (itemIndex + direction + itemsCount) % itemsCount;
