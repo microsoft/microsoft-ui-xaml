@@ -1101,7 +1101,7 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
         }
         else
         {
-            const winrt::Button f6Button = [this]() -> winrt::Button
+            const winrt::DependencyObject f6FocusableElement = [this]() -> winrt::DependencyObject
             {
                 auto firstButton = m_closeButton.get();
                 auto secondButton = m_alternateCloseButton.get();
@@ -1118,34 +1118,26 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
                 {
                     return secondButton;
                 }
+                // If there is no close button, try setting focus on the tip's custom content.
+                else if (const auto mainContentPresenter = m_mainContentPresenter.get())
+                {
+                    return winrt::FocusManager::FindFirstFocusableElement(mainContentPresenter);
+                }
                 return nullptr;
             }();
 
-            if (f6Button)
+            if (f6FocusableElement)
             {
-                auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, const winrt::GettingFocusEventArgs& args) {
-                    m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
-                });
-                const bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
-                args.Handled(setFocus);
-            }
-            // If there is no close button, try setting focus on the tip's custom content.
-            else if (const auto mainContentPresenter = m_mainContentPresenter.get())
-            {
-                if (const auto focusableElement = winrt::FocusManager::FindFirstFocusableElement(mainContentPresenter))
+                const auto previouslyFocusedElement = winrt::FocusManager::GetFocusedElement();
+                const bool setFocus = SetFocus(f6FocusableElement, winrt::FocusState::Keyboard);
+                if (setFocus)
                 {
-                    const auto previouslyFocusedElement = winrt::FocusManager::GetFocusedElement();
-
-                    const bool setFocus = SetFocus(focusableElement, winrt::FocusState::Keyboard);
-                    if (setFocus)
+                    if (const auto previouslyFocusedElementAsDO = previouslyFocusedElement.try_as<winrt::DependencyObject>())
                     {
-                        if (const auto previouslyFocusedElementAsDO = previouslyFocusedElement.try_as<winrt::DependencyObject>())
-                        {
-                            m_previouslyFocusedElement = winrt::make_weak(previouslyFocusedElementAsDO);
-                        }
+                        m_previouslyFocusedElement = winrt::make_weak(previouslyFocusedElementAsDO);
                     }
-                    args.Handled(setFocus);
                 }
+                args.Handled(setFocus);
             }
         }
     }
