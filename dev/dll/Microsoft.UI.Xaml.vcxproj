@@ -142,6 +142,8 @@
     <Import Project="..\PagerControl\PagerControl.vcxitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'" />
     <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'" />
     <Import Project="..\Breadcrumb\Breadcrumb.vcxitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true' Or $(FeatureBreadcrumbEnabled) == 'productOnly'" />
+    <Import Project="..\PipsPager\PipsPager.vcxitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true' Or $(FeaturePipsPagerEnabled) == 'productOnly'" />
+    <Import Project="..\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
