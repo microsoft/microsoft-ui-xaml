@@ -590,17 +590,21 @@
                                                     </Grid.ColumnDefinitions>
                                                     <Button x:Name="ActionButton"
                                                             HorizontalAlignment="Stretch"
-                                                            Content="{TemplateBinding ActionButtonContent}"
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
-                                                            CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
+                                                            CommandParameter="{TemplateBinding ActionButtonCommandParameter}">
+                                                        <ContentPresenter TextWrapping="WrapWholeWords"
+                                                            Content="{TemplateBinding ActionButtonContent}"/>
+                                                    </Button>
                                                     <Button x:Name="CloseButton"
                                                             HorizontalAlignment="Stretch"
-                                                            Content="{TemplateBinding CloseButtonContent}"
                                                             Style="{TemplateBinding CloseButtonStyle}"
                                                             Command="{TemplateBinding CloseButtonCommand}"
                                                             CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
-                                                            Grid.Column="1"/>
+                                                            Grid.Column="1">
+                                                        <ContentPresenter TextWrapping="WrapWholeWords"
+                                                            Content="{TemplateBinding CloseButtonContent}"/>
+                                                    </Button>
                                                 </Grid>
                                             </StackPanel>
                                         </ScrollViewer>
