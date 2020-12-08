@@ -10,6 +10,8 @@
 
 #include "CommandBarFlyout.properties.cpp"
 
+static constexpr auto s_acrylicBackgroundPopupName = L"AcrylicBackgroundPopup"sv;
+
 // Change to 'true' to turn on debugging outputs in Output window
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
@@ -128,8 +130,8 @@ CommandBarFlyout::CommandBarFlyout()
             // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
             if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
             {
-                m_commandBar.get().IsOpen(true);
-            }
+                m_commandBar.get().IsOpen(true);            
+            }              
         }
     });
 
@@ -185,7 +187,7 @@ CommandBarFlyout::CommandBarFlyout()
                 {
                     commandBar.IsOpen(false);
                 }
-            }
+            }           
         }
     });
 }
@@ -255,7 +257,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     commandBar->SetOwningFlyout(*this);
 
     m_commandBar.set(*commandBar);
-    return presenter;
+    return presenter; 
 }
 
 void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()

@@ -8,6 +8,7 @@
 
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_CloseAnimationEndPositionProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_ContentClipRectProperty{ nullptr };
+GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_CurrentHeightProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_CurrentWidthProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_ExpandDownAnimationEndPositionProperty{ nullptr };
@@ -55,6 +56,17 @@ void CommandBarFlyoutCommandBarTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::CommandBarFlyoutCommandBarTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Rect>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_CurrentHeightProperty)
+    {
+        s_CurrentHeightProperty =
+            InitializeDependencyProperty(
+                L"CurrentHeight",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::CommandBarFlyoutCommandBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_CurrentWidthProperty)
@@ -272,6 +284,7 @@ void CommandBarFlyoutCommandBarTemplateSettingsProperties::ClearProperties()
 {
     s_CloseAnimationEndPositionProperty = nullptr;
     s_ContentClipRectProperty = nullptr;
+    s_CurrentHeightProperty = nullptr;
     s_CurrentWidthProperty = nullptr;
     s_DispatcherProperty = nullptr;
     s_ExpandDownAnimationEndPositionProperty = nullptr;
@@ -317,6 +330,19 @@ void CommandBarFlyoutCommandBarTemplateSettingsProperties::ContentClipRect(winrt
 winrt::Rect CommandBarFlyoutCommandBarTemplateSettingsProperties::ContentClipRect()
 {
     return ValueHelper<winrt::Rect>::CastOrUnbox(static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->GetValue(s_ContentClipRectProperty));
+}
+
+void CommandBarFlyoutCommandBarTemplateSettingsProperties::CurrentHeight(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_CurrentHeightProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double CommandBarFlyoutCommandBarTemplateSettingsProperties::CurrentHeight()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->GetValue(s_CurrentHeightProperty));
 }
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::CurrentWidth(double value)

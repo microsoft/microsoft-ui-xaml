@@ -15,6 +15,9 @@ public:
     void ContentClipRect(winrt::Rect const& value);
     winrt::Rect ContentClipRect();
 
+    void CurrentHeight(double value);
+    double CurrentHeight();
+
     void CurrentWidth(double value);
     double CurrentWidth();
 
@@ -74,6 +77,7 @@ public:
 
     static winrt::DependencyProperty CloseAnimationEndPositionProperty() { return s_CloseAnimationEndPositionProperty; }
     static winrt::DependencyProperty ContentClipRectProperty() { return s_ContentClipRectProperty; }
+    static winrt::DependencyProperty CurrentHeightProperty() { return s_CurrentHeightProperty; }
     static winrt::DependencyProperty CurrentWidthProperty() { return s_CurrentWidthProperty; }
     static winrt::DependencyProperty DispatcherProperty() { return s_DispatcherProperty; }
     static winrt::DependencyProperty ExpandDownAnimationEndPositionProperty() { return s_ExpandDownAnimationEndPositionProperty; }
@@ -96,6 +100,7 @@ public:
 
     static GlobalDependencyProperty s_CloseAnimationEndPositionProperty;
     static GlobalDependencyProperty s_ContentClipRectProperty;
+    static GlobalDependencyProperty s_CurrentHeightProperty;
     static GlobalDependencyProperty s_CurrentWidthProperty;
     static GlobalDependencyProperty s_DispatcherProperty;
     static GlobalDependencyProperty s_ExpandDownAnimationEndPositionProperty;

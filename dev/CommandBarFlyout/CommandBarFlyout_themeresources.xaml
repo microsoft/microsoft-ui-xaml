@@ -9,7 +9,7 @@
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="ControlAcrylicBackgroundBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="GhostFillColorTransparentBrush"/>
@@ -36,7 +36,7 @@
             <StaticResource x:Key="CommandBarFlyoutButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="ControlAcrylicBackgroundBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
             <StaticResource x:Key="CommandBarFlyoutForeground" ResourceKey="TextFillColorPrimaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackground" ResourceKey="GhostFillColorTransparentBrush"/>
@@ -572,7 +572,6 @@
     </contract6Present:Style>
 
     <Style x:Key="CommandBarFlyoutCommandBarOverflowPresenterStyle" TargetType="CommandBarOverflowPresenter">
-        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutBackground}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="MinWidth" Value="136" />
         <Setter Property="MaxWidth" Value="440" />
@@ -588,7 +587,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBarOverflowPresenter">
                     <Grid x:Name="LayoutRoot"
-                        Background="{TemplateBinding Background}"
                         Padding="{TemplateBinding Padding}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">

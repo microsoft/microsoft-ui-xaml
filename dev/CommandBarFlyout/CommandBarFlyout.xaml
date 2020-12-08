@@ -333,8 +333,7 @@
                                     </RectangleGeometry.Transform>
                                 </RectangleGeometry>
                             </Grid.Clip>
-                            <Grid x:Name="ContentRoot"
-                                    Background="{TemplateBinding Background}">
+                            <Grid x:Name="ContentRoot">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
@@ -391,8 +390,7 @@
                                 <Popup x:Name="OverflowPopup">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
-                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"
-                                        Background="{TemplateBinding Background}">
+                                        Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}">
                                         <Grid.Clip>
                                             <RectangleGeometry x:Name="OuterOverflowContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OverflowContentClipRect}">
                                                 <RectangleGeometry.Transform>
@@ -444,6 +442,14 @@
                                 </Popup>
                             </Grid>
                         </Grid>
+                        <Popup x:Name="AcrylicBackgroundPopup" IsHitTestVisible="false">
+                            <Grid x:Name="AcrylicBackgroundBase"
+                                  Background="{TemplateBinding Background}"
+                                  Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentHeight}"
+                                  Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                                  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                  contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                        </Popup>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

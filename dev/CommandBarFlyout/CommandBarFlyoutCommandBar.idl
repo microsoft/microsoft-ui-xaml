@@ -1,4 +1,4 @@
-namespace MU_XCP_NAMESPACE
+﻿namespace MU_XCP_NAMESPACE
 {
 
 [WUXC_VERSION_RS5]
@@ -11,7 +11,8 @@ runtimeclass CommandBarFlyoutCommandBarTemplateSettings
     Double OpenAnimationEndPosition { get; };
     Double CloseAnimationEndPosition { get; };
     Double CurrentWidth { get; };
-    Double ExpandedWidth { get; };
+    Double CurrentHeight{ get; };
+    Double ExpandedWidth { get; };    
     Double WidthExpansionDelta { get; };
     Double WidthExpansionAnimationStartPosition { get; };
     Double WidthExpansionAnimationEndPosition{ get; };

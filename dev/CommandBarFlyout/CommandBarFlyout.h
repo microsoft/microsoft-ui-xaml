@@ -13,6 +13,8 @@ public:
     CommandBarFlyout();
     ~CommandBarFlyout();
 
+    void OnApplyTemplate();
+
     winrt::IObservableVector<winrt::ICommandBarElement> PrimaryCommands();
     winrt::IObservableVector<winrt::ICommandBarElement> SecondaryCommands();
 
@@ -21,6 +23,7 @@ public:
 
 protected:
     tracker_ref<winrt::CommandBarFlyoutCommandBar> m_commandBar{ this };
+    tracker_ref<winrt::Popup> m_acrylicBackgroundPopup{ this };
 
 private:
     void SetSecondaryCommandsToCloseWhenExecuted();

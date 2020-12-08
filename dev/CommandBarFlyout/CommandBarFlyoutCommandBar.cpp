@@ -7,6 +7,8 @@
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "TypeLogging.h"
 
+static constexpr auto s_acrylicBackgroundPopupName = L"AcrylicBackgroundPopup"sv;
+
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
     SetDefaultStyleKey(this);
@@ -57,6 +59,11 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                         });
                     }
                 }
+            }
+
+            if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
+            {
+                acrylicBackgroundPopup.IsOpen(true);
             }
         }
     });
@@ -135,6 +142,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
     m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
     m_closingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected));
+    m_acrylicBackgroundPopup.set(GetTemplateChildT<winrt::Popup>(s_acrylicBackgroundPopupName, thisAsControlProtected));
 
     if (auto moreButton = m_moreButton.get())
     {
@@ -627,10 +635,12 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         if (IsOpen())
         {
             flyoutTemplateSettings->CurrentWidth(expandedWidth);
+            flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height + m_secondaryItemsRoot.get().DesiredSize().Height);
         }
         else
         {
             flyoutTemplateSettings->CurrentWidth(collapsedWidth);
+            flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height);
         }
 
         // If we're currently playing the close animation, don't update these properties -
@@ -1093,7 +1103,7 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
     {
-        //AddShadow();
+        AddShadow();
     }
     else if (PrimaryCommands().Size() == 0)
     {

@@ -66,6 +66,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
+    tracker_ref<winrt::Popup> m_acrylicBackgroundPopup{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
     RoutedEventHandler_revoker m_keyDownRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
