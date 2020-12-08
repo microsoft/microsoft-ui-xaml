@@ -61,6 +61,12 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                 }
             }
 
+            // Disabling overflow popup shadow to apply themeshadow on AcrylicBackgroundPopup
+            if (auto overflowPopup = m_overflowPopup.get())
+            {
+                overflowPopup.Shadow(nullptr);
+            }
+
             if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
             {
                 acrylicBackgroundPopup.IsOpen(true);
@@ -143,6 +149,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
     m_closingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected));
     m_acrylicBackgroundPopup.set(GetTemplateChildT<winrt::Popup>(s_acrylicBackgroundPopupName, thisAsControlProtected));
+    m_overflowPopup.set(GetTemplateChildT<winrt::UIElement>(L"SecondaryItemsControl", thisAsControlProtected));
 
     if (auto moreButton = m_moreButton.get())
     {
@@ -635,12 +642,12 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         if (IsOpen())
         {
             flyoutTemplateSettings->CurrentWidth(expandedWidth);
-            flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height + m_secondaryItemsRoot.get().DesiredSize().Height);
+            flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height + m_secondaryItemsRoot.get().DesiredSize().Height - 2);
         }
         else
         {
             flyoutTemplateSettings->CurrentWidth(collapsedWidth);
-            flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height);
+            flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height - 2);
         }
 
         // If we're currently playing the close animation, don't update these properties -
@@ -1119,7 +1126,7 @@ void CommandBarFlyoutCommandBar::AddShadow()
         //the clip animation of the commandBar. This guarantees that shadow respects the 
         //animation
         winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+        auto grid = GetTemplateChildT<winrt::Grid>(L"AcrylicBackgroundBase", thisAsControlProtected);
 
         if (winrt::IUIElement10 grid_uiElement10 = grid)
         {
@@ -1140,7 +1147,7 @@ void CommandBarFlyoutCommandBar::ClearShadow()
     if (SharedHelpers::IsThemeShadowAvailable())
     {
         winrt::IControlProtected thisAsControlProtected = *this;
-        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+        auto grid = GetTemplateChildT<winrt::Grid>(L"AcrylicBackgroundBase", thisAsControlProtected);
         if (winrt::IUIElement10 grid_uiElement10 = grid)
         {
             if (grid_uiElement10.Shadow())
