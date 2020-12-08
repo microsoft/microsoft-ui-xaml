@@ -52,6 +52,8 @@
 
                                         <Setter Target="ActionButton.Visibility" Value="Visible"/>
                                         <Setter Target="ActionButton.(Grid.Column)" Value="1"/>
+                                        <Setter Target="ActionButton.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="ActionButtonColumn.Width" Value="0"/>
                                         <Setter Target="ActionButton.Margin" Value="{StaticResource TeachingTipRightButtonMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -59,7 +61,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="CloseButton.Visibility" Value="Visible"/>
                                         <Setter Target="CloseButton.Margin" Value="{StaticResource TeachingTipRightButtonMargin}"/>
+                                        <Setter Target="CloseButton.HorizontalAlignment" Value="Right"/>
 
+                                        <Setter Target="ActionButtonColumn.Width" Value="0"/>
                                         <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -581,7 +585,7 @@
                                                         FontStretch="{TemplateBinding FontStretch}"/>
                                                 <Grid Grid.Row="2">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition x:Name="ActionButtonColumn" Width="*"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Button x:Name="ActionButton"
