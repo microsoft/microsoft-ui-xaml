@@ -428,7 +428,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 Log.Comment("Verify that button in PaneFooterContent exists");
-                VerifyElement.Found("FooterButton", FindBy.Id);
+                VerifyElement.Found("PaneFooterButton", FindBy.Id);
             }
         }
 
