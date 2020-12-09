@@ -13,35 +13,35 @@
     <Page.Resources>
         <ResourceDictionary>
             <Style x:Key="NavButtonBaseStyle" TargetType="Button" BasedOn="{StaticResource NavigatonButtonBaseStyle}">
-                <Setter Property="Width" Value="30"/>
-                <Setter Property="Height" Value="30"/>
-                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Width" Value="30" />
+                <Setter Property="Height" Value="30" />
+                <Setter Property="FontSize" Value="12" />
             </Style>
 
             <Style x:Key="PreviousButtonStyle" BasedOn="{StaticResource NavButtonBaseStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerPreviousPageButtonGlyph}"/>
+                <Setter Property="Content" Value="{StaticResource PipsPagerPreviousPageButtonGlyph}" />
             </Style>
 
             <Style x:Key="NextButtonStyle" BasedOn="{StaticResource NavButtonBaseStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerNextPageButtonGlyph}"/>
+                <Setter Property="Content" Value="{StaticResource PipsPagerNextPageButtonGlyph}" />
             </Style>
 
             <Style x:Key="BasePipStyle" TargetType="Button" BasedOn="{StaticResource PipsPagerButtonBaseStyle}">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-                <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                <Setter Property="Width" Value="30"/>
-                <Setter Property="Height" Value="30"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Width" Value="30" />
+                <Setter Property="Height" Value="30" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button" >
                             <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal"/>
+                                        <VisualState x:Name="Normal" />
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
@@ -78,102 +78,116 @@
             </Style>
 
             <Style x:Key="SelectedPipStyle" BasedOn="{StaticResource BasePipStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerSelectedGlyph}"/>
-                <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Foreground" Value="#545454"/>
+                <Setter Property="Content" Value="{StaticResource PipsPagerSelectedGlyph}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="#545454" />
             </Style>
 
             <Style x:Key="DefaultPipStyle" BasedOn="{StaticResource BasePipStyle}" TargetType="Button">
-                <Setter Property="Content" Value="{StaticResource PipsPagerDefaultGlyph}"/>
-                <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Foreground" Value="#CDCDCD"/>
+                <Setter Property="Content" Value="{StaticResource PipsPagerDefaultGlyph}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="#CDCDCD" />
             </Style>
         </ResourceDictionary>
     </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="100" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        
-        <ListView x:Name="PersonInfoList" MaxHeight="210">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:PersonInfo">
-                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 10" Windows10FallCreatorsUpdate:Spacing="10">
-                        <controls:PersonPicture
-                            MaxHeight="50"
-                            MaxWidth="100"
-                            DisplayName="{x:Bind FullName}"
-                            Initials="{x:Bind Initials}"/>
-                        <TextBlock Text="{x:Bind FullName}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
 
+        <StackPanel Windows10FallCreatorsUpdate:Spacing="20">
+            <TextBlock Text="ListView Example" FontSize="20"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top" />
+
+            <ListView x:Name="PersonInfoList" MaxHeight="210">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:PersonInfo">
+                        <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 10" Windows10FallCreatorsUpdate:Spacing="10">
+                            <controls:PersonPicture
+                                MaxHeight="50"
+                                MaxWidth="100"
+                                DisplayName="{x:Bind FullName}"
+                                Initials="{x:Bind Initials}" />
+                            <TextBlock Text="{x:Bind FullName}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
 
         <controls:PipsPager x:Name="PersonInfoListPager"
                             Margin="50, 0, 0, 0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="ListViewPager"
                             Orientation="Vertical" PreviousButtonVisibility="Visible" NextButtonVisibility="Visible" Grid.Column="1"
                             PreviousButtonStyle="{StaticResource PreviousButtonStyle}"
                             NextButtonStyle="{StaticResource NextButtonStyle}"
                             DefaultIndicatorButtonStyle="{StaticResource DefaultPipStyle}"
                             SelectedIndicatorButtonStyle="{StaticResource SelectedPipStyle}"
-                            SelectedIndexChanged="PersonInfoListPager_SelectedIndexChanged"
-                            />
+                            SelectedIndexChanged="PersonInfoListPager_SelectedIndexChanged" />
 
-        <ScrollViewer x:Name="ButtonListScrollViewer" Width="250" Height="224" Margin="20,0,0,0"
-                      Grid.Row="2"
+        <StackPanel Windows10FallCreatorsUpdate:Spacing="20" Grid.Row="2">
+            <TextBlock Text="ItemsRepeater Example" FontSize="20"
+                   HorizontalAlignment="Center" VerticalAlignment="Top" />
+
+            <ScrollViewer x:Name="ButtonListScrollViewer" Width="250" Height="224"
                       ViewChanged="ButtonListScrollViewer_ViewChanged">
-            <controls:ItemsRepeater x:Name="ButtonListRepeater" VerticalCacheLength="4">
-                <controls:ItemsRepeater.Layout>
-                    <controls:UniformGridLayout 
-                        MinRowSpacing="{x:Bind MinRowSpacing}"
-                        MinColumnSpacing="8"
-                        Orientation="Horizontal"
-                        ItemsJustification="Start"
-                        ItemsStretch="None"/>
-                </controls:ItemsRepeater.Layout>
-                <controls:ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <Image Source="{Binding}" Width="50" Height="50"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </controls:ItemsRepeater.ItemTemplate>
-            </controls:ItemsRepeater>
-        </ScrollViewer>
+                <controls:ItemsRepeater x:Name="ButtonListRepeater" VerticalCacheLength="4">
+                    <controls:ItemsRepeater.Layout>
+                        <controls:UniformGridLayout 
+                            MinRowSpacing="{x:Bind MinRowSpacing}"
+                            MinColumnSpacing="8"
+                            Orientation="Horizontal"
+                            ItemsJustification="Start"
+                            ItemsStretch="None" />
+                    </controls:ItemsRepeater.Layout>
+                    <controls:ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <Image Source="{Binding}" Width="50" Height="50" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </controls:ItemsRepeater.ItemTemplate>
+                </controls:ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
 
         <controls:PipsPager x:Name="ButtonListPager" Grid.Row="2" Grid.Column="1"
                             Margin="50, 0, 0, 0"
                             VerticalAlignment="Center"
+                            AutomationProperties.Name="ItemsRepeaterPager"
                             Orientation="Vertical" PreviousButtonVisibility="VisibleOnHover" NextButtonVisibility="VisibleOnHover"
                             PreviousButtonStyle="{StaticResource PreviousButtonStyle}"
                             NextButtonStyle="{StaticResource NextButtonStyle}"
                             DefaultIndicatorButtonStyle="{StaticResource DefaultPipStyle}"
                             SelectedIndicatorButtonStyle="{StaticResource SelectedPipStyle}"
-                            SelectedIndexChanged="ButtonListPager_SelectedIndexChanged"
-                            />
+                            SelectedIndexChanged="ButtonListPager_SelectedIndexChanged" />
 
+        <StackPanel Windows10FallCreatorsUpdate:Spacing="20" Grid.Column="3">
+            <TextBlock Text="FlipView Example" FontSize="20"
+                   HorizontalAlignment="Center" VerticalAlignment="Top" />
 
-        <FlipView x:Name="Gallery" Width="250" Height="250" Grid.Column="3" ItemsSource="{x:Bind Pictures}">
-            <FlipView.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Image Source="{Binding}" Stretch="UniformToFill" />
-                    </Grid>
-                </DataTemplate>
-            </FlipView.ItemTemplate>
-        </FlipView>
+            <FlipView x:Name="Gallery" Width="250" Height="250" ItemsSource="{x:Bind Pictures}">
+                <FlipView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Image Source="{Binding}" Stretch="UniformToFill" />
+                        </Grid>
+                    </DataTemplate>
+                </FlipView.ItemTemplate>
+            </FlipView>
+        </StackPanel>
 
         <controls:PipsPager x:Name="FlipViewPipsPager"
                               Margin="50, 0, 0, 0"
@@ -187,6 +201,6 @@
                               NextButtonStyle="{StaticResource NextButtonStyle}"
                               DefaultIndicatorButtonStyle="{StaticResource DefaultPipStyle}"
                               SelectedIndicatorButtonStyle="{StaticResource SelectedPipStyle}"
-                              SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}"/>
+                              SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}" />
     </Grid>
 </Page>
