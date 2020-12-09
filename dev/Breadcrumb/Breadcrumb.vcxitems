@@ -17,12 +17,14 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Breadcrumb.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Breadcrumb.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Breadcrumb.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
   </ItemGroup>
   <ItemGroup>

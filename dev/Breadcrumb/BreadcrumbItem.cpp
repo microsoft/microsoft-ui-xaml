@@ -90,7 +90,8 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
     if (auto primaryButton = m_primaryButton.get())
     {
         primaryButton.IsEnabled(true);
-        primaryButton.Content(winrt::box_value(L"..."));
+        this->Content(winrt::box_value(L"..."));
+        // primaryButton.Content(winrt::box_value(L"..."));
     }
 
     SetPrimaryButtonFontWeight(false);

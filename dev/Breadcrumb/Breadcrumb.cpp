@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "Vector.h"
 #include "Breadcrumb.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
@@ -14,6 +15,7 @@ Breadcrumb::Breadcrumb()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Breadcrumb);
 
     SetDefaultStyleKey(this);
+    m_breadcrumbElementFactory = winrt::make_self<BreadcrumbElementFactory>();
 }
 
 void Breadcrumb::OnApplyTemplate()
@@ -36,10 +38,13 @@ void Breadcrumb::OnApplyTemplate()
 
     if (auto breadcrumbItemsRepeater = m_breadcrumbItemRepeater.get())
     {
+        breadcrumbItemsRepeater.ItemTemplate(*m_breadcrumbElementFactory);
+
         m_itemRepeaterElementPreparedRevoker = breadcrumbItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
         m_itemRepeaterElementClearingRevoker = breadcrumbItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
     }
 
+    UpdateItemsSource();
 }
 
 void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -47,6 +52,23 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     winrt::IDependencyProperty property = args.Property();
 
     // TODO: Implement
+    if (property == s_ItemsSourceProperty)
+    {
+        UpdateItemsSource();
+    }
+    /*
+    else if (property == s_SelectedIndexProperty)
+    {
+        UpdateSelectedIndex();
+    }
+    else if (property == s_SelectedItemProperty)
+    {
+        UpdateSelectedItem();
+    }*/
+    else if (property == s_ItemTemplateProperty)
+    {
+        UpdateItemTemplate();
+    }
 }
 
 void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
@@ -90,4 +112,101 @@ void Breadcrumb::OnElementClearingEvent(winrt::ItemsRepeater sender, winrt::Item
         itemImpl->ResetVisualProperties();
         itemImpl->RevokeListeners();
     }
+}
+
+void Breadcrumb::UpdateItemTemplate()
+{
+    m_breadcrumbElementFactory->UserElementFactory(ItemTemplate());
+}
+
+void Breadcrumb::UpdateItemsSource()
+{
+    m_itemsSourceChanged.revoke();
+    m_itemsSourceChanged2.revoke();
+
+    if (auto const breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    {
+        breadcrumbItemRepeater.ItemsSource(GenerateInternalItemsSource());
+
+        if (auto const itemsSource = this->ItemsSource())
+        {
+
+            const auto incc = [this]() {
+                if (this->ItemsSource())
+                {
+                    return this->ItemsSource().try_as<winrt::INotifyCollectionChanged>();
+                }
+                else
+                {
+                    return this->ItemsSource().try_as<winrt::INotifyCollectionChanged>();
+                }
+            }();
+
+            if (incc)
+            {
+                m_eventToken = incc.CollectionChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
+                m_notifyCollectionChanged.set(incc);
+            }
+            
+            /*
+            if (auto collection = itemsSource.as<winrt::ObservableCollection<IInspectable>>())
+            {
+                m_itemsSourceChanged2 = collection.VectorChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+            }
+            */
+        }
+
+        if (auto const itemsSourceView = breadcrumbItemRepeater.ItemsSourceView())
+        {
+            m_itemsSourceChanged = itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+        }
+    }
+}
+
+void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable& args)
+{
+    if (auto evento = args.try_as<winrt::NotifyCollectionChangedEventArgs>())
+    {
+        UpdateItemsSource();
+    }
+
+    return;
+    /*
+    if (auto const breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    {
+        if (auto const itemSourceView = breadcrumbItemRepeater.ItemsSourceView())
+        {
+            auto const count = itemSourceView.Count();
+            for (auto index = 0; index < count; index++)
+            {
+                if (auto const element = breadcrumbItemRepeater.TryGetElement(index))
+                {
+                    element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
+                }
+            }
+        }
+    }
+    */
+}
+
+winrt::IInspectable Breadcrumb::GenerateInternalItemsSource()
+{
+    auto itemsSource = this->ItemsSource();
+
+    auto newItemsSource = winrt::make<Vector<IInspectable>>();
+
+    auto ellipsisItem = winrt::make<BreadcrumbItem>();
+    ellipsisItem.Content(winrt::box_value(L"..."));
+
+    newItemsSource.Append(ellipsisItem);
+
+    if (auto itemsSourceAsList = itemsSource.try_as<winrt::Collections::IVector<winrt::IInspectable>>())
+    {
+        for (const auto item : itemsSourceAsList)
+        {
+            newItemsSource.Append(item);
+        }
+    }
+
+    return newItemsSource;
 }
