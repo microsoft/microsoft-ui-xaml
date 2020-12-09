@@ -218,7 +218,7 @@
             <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
 
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
 
             <!-- Elevation border brushes-->
 
@@ -256,7 +256,7 @@
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
 
@@ -471,7 +471,7 @@
             <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
 
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
 
             <!-- Elevation border brushes-->
 
@@ -509,13 +509,13 @@
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="DefaultApplicationBackgroundThemeBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SystemColorWindowColorBrush" />
             
             <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
