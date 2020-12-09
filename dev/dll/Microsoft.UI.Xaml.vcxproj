@@ -597,6 +597,7 @@
     </CompileXaml>
     <ItemGroup>
       <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
       <FileWrites Include="$(XamlSavedStateFilePath)" />
       <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
     </ItemGroup>
