@@ -85,6 +85,6 @@
                 Content="Open PipsPager Examples"
                 Grid.Row="1" Grid.Column="1"
                 Margin="0, 150, 0, 0"
-                Click="GoToExamplesPage"
+                Click="GoToExamplesPage"/>
     </Grid>
 </local:TestPage>
