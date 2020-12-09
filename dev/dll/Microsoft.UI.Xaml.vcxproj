@@ -596,6 +596,7 @@
       <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
     </CompileXaml>
     <ItemGroup>
+      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
       <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
       <FileWrites Include="$(XamlSavedStateFilePath)" />
       <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
