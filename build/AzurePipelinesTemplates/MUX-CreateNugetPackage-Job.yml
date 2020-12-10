@@ -81,6 +81,7 @@ jobs:
         FolderPath: '${{ parameters.nupkgdir }}'
         Pattern: |
           **/Microsoft.UI.Xaml*.nupkg
+        UseMinimatch: true
         signConfigType: inlineSignParams
         inlineOperation: | 
           [
