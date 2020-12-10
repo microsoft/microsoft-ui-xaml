@@ -128,42 +128,26 @@ jobs:
       signConfigType: inlineSignParams
       inlineOperation: | 
         [
-            {
-                "KeyCode" : "CP-230865",
-                "OperationCode" : "SigntoolSign",
-                "Parameters" : {
-                    "OpusName" : "Microsoft",
-                    "OpusInfo" : "http://www.microsoft.com",
-                    "FileDigest" : "/fd \"SHA256\"",
-                    "PageHash" : "/PH",
-                    "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                },
-                "ToolName" : "sign",
-                "ToolVersion" : "1.0"
-            },
-            {
-                "KeyCode" : "CP-230217",
-                "OperationCode" : "SigntoolSign",
-                "Parameters" : {
-                    "OpusName" : "Microsoft",
-                    "OpusInfo" : "http://www.microsoft.com",
-                    "Append" : "/as",
-                    "FileDigest" : "/fd \"SHA256\"",
-                    "PageHash" : "/PH",
-                    "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                },
-                "ToolName" : "sign",
-                "ToolVersion" : "1.0"
-            },
-            {
-                "KeyCode" : "CP-230217",
-                "OperationCode" : "SigntoolVerify",
-                "Parameters" : {
-                    "VerifyAll" : "/all"
-                },
-                "ToolName" : "sign",
-                "ToolVersion" : "1.0"
-            }
+          {
+              "KeyCode" : "CP-230217",
+              "OperationCode" : "SigntoolSign",
+              "Parameters" : {
+                  "OpusName" : "Microsoft",
+                  "OpusInfo" : "http://www.microsoft.com",
+                  "FileDigest" : "/fd \"SHA256\"",
+                  "PageHash" : "/NPH",
+                  "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+              },
+              "ToolName" : "sign",
+              "ToolVersion" : "1.0"
+          },
+          {
+              "KeyCode" : "CP-230217",
+              "OperationCode" : "SigntoolVerify",
+              "Parameters" : {},
+              "ToolName" : "sign",
+              "ToolVersion" : "1.0"
+          }
         ]
 
   # Re-publish signed artifacts to the drop.
@@ -178,48 +162,48 @@ jobs:
   parameters:
     jobName: CreateNugetPackage
     dependsOn: SignBinariesAndPublishSymbols
-    signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
+    signOutput: true
     useReleaseTag: '$(MUXFinalRelease)'
     prereleaseVersionTag: prerelease
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: CreateNugetPackage
+#     pkgArtifactPath: '$(artifactDownloadPath)\drop'
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: CreateNugetPackage
+#     pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: 5
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
-# NuGet package WACK tests
-- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-  parameters:
-    name: 'NugetPkgWACKTests'
-    dependsOn: BuildNugetPkgTests
-    artifactName: 'NugetPkgTestsDrop'
+# # NuGet package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'NugetPkgWACKTests'
+#     dependsOn: BuildNugetPkgTests
+#     artifactName: 'NugetPkgTestsDrop'
 
-# Framework package WACK tests
-- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-  parameters:
-    name: 'FrameworkPkgWACKTests'
-    dependsOn: BuildFrameworkPkgTests
-    artifactName: 'FrameworkPkgTestsDrop'
+# # Framework package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'FrameworkPkgWACKTests'
+#     dependsOn: BuildFrameworkPkgTests
+#     artifactName: 'FrameworkPkgTestsDrop'

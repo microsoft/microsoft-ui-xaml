@@ -7,7 +7,7 @@ parameters:
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
   primaryBuildArch: x86
   buildFlavor: Release
-  signConfig: ''
+  signOutput: false
   useReleaseTag: 'false'
   prereleaseVersionTag: 'prerelease'
 
@@ -73,7 +73,7 @@ jobs:
 
     displayName: 'build-nupkg.ps1'
 
-  - ${{if parameters.signConfig }}:
+  - ${{ if eq( parameters.signOutput, true) }}:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       displayName: 'CodeSign (nupkg)'
       inputs:
