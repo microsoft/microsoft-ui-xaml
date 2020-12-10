@@ -69,9 +69,16 @@ jobs:
   condition:
     in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
   pool:
-    vmImage: 'windows-2019'
+    name: Package ES Lab E
 
   steps:
+  - task: PkgESSetupBuild@10
+    displayName: 'XESSetupBuild'
+    inputs:
+      productName: dep.controls
+      branchVersion: false
+      nugetVer: true
+
   - task: DownloadBuildArtifacts@0
     condition:
       eq(variables['useBuildOutputFromBuildId'],'')
