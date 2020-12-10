@@ -41,6 +41,7 @@
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
@@ -49,7 +50,9 @@
                         MaxWidth="{TemplateBinding MaxWidth}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize" />
@@ -558,13 +561,77 @@
     </Style>
 
     <Style x:Key="CommandBarFlyoutEllipsisButtonStyle" TargetType="Button" BasedOn="{StaticResource EllipsisButton}">
-        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutButtonBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlTransparentBrush}" />
+        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
         <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0, 3, 3, 3"/>
         <Setter Property="Width" Value="40" />
         <Setter Property="Height" Value="40" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="0" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter x:Name="ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>
