@@ -109,7 +109,13 @@ namespace MUXControlsTestApp
             Button btn = sender as Button;
             TreeNode treeNode = btn.Content as TreeNode;
 
-            ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
+            List<object> asdf = new List<object>();
+            for (int i = 0; i < 3; ++i)
+            {
+                asdf.Add(new TreeNode { Name = "Test" + i });
+            }
+
+            ReplaceList(breadCrumbList, asdf);
             UpdateChildrenList(treeNode);
         }
 
@@ -127,6 +133,7 @@ namespace MUXControlsTestApp
         private void ReplaceList(ObservableCollection<object> oldItemsList, List<object> newItemsList)
         {
             oldItemsList.Clear();
+
             foreach (object child in newItemsList)
             {
                 oldItemsList.Add(child);

@@ -40,10 +40,14 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext c
         auto breadcrumbItem = context.GetOrCreateElementAt(i).as<BreadcrumbItem>();
         breadcrumbItem->Measure(availableSize);
 
-        acumulatedCrumbsSize.Width += breadcrumbItem->DesiredSize().Width;
-        acumulatedCrumbsSize.Height = std::max(acumulatedCrumbsSize.Height, breadcrumbItem->DesiredSize().Height);
+        if (i != 0)
+        {
+            acumulatedCrumbsSize.Width += breadcrumbItem->DesiredSize().Width;
+            acumulatedCrumbsSize.Height = std::max(acumulatedCrumbsSize.Height, breadcrumbItem->DesiredSize().Height);
+        }
     }
 
+    // there's a bug here
     if (acumulatedCrumbsSize.Width > availableSize.Width)
     {
         if (justCreatedEllipsisButton)
@@ -127,24 +131,25 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
 
     const int itemCount = context.ItemCount();
     bool mustDrawEllipsisButton = (m_ellipsisButton.get() != nullptr);
-    int firstElementToRender = 0;
+    int firstElementToRender{};
 
     if (mustDrawEllipsisButton)
     {
         firstElementToRender = GetFirstBreadcrumbItemToArrange(context);
     }
 
-    float accumulatedWidths = 0;
-    float maxElementHeight = 0;
+    float accumulatedWidths{};
+    float maxElementHeight{};
 
-    /*
-    if (mustDrawEllipsisButton)   
+    if (mustDrawEllipsisButton)
     {
-        ArrangeBreadcrumbItem(m_ellipsisButton.get(), accumulatedWidths, maxElementHeight);
+        ArrangeItem(context, 0, accumulatedWidths, maxElementHeight);
     }
-    */
+    else
+    {
+        HideItem(context, 0);
+    }
 
-    ArrangeItem(context, 0, accumulatedWidths, maxElementHeight);
     for (int i = 1; i < itemCount; ++i)
     {
         if (i < firstElementToRender)

@@ -4,9 +4,12 @@
 #include "pch.h"
 #include "common.h"
 #include "ItemTemplateWrapper.h"
+#include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include "BreadcrumbElementFactory.h"
+#include "BreadcrumbItem.h"
+#include "ElementFactoryRecycleArgs.h"
 
 BreadcrumbElementFactory::BreadcrumbElementFactory()
 {
@@ -28,6 +31,12 @@ void BreadcrumbElementFactory::UserElementFactory(const winrt::IInspectable& new
 winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
     auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
+
+        if (args.Data().try_as<winrt::BreadcrumbItem>())
+        {
+            return args.Data();
+        }
+
         if (itemTemplateWrapper)
         {
             return itemTemplateWrapper.GetElement(args).as<winrt::IInspectable>();
@@ -41,7 +50,6 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
         return breadcrumbItem;
     }
 
-    // Element is not a BreadcrumbItem. We'll wrap it in a BreadcrumbItem now.
     auto const newBreadcrumbItem = winrt::BreadcrumbItem{};
     newBreadcrumbItem.Content(args.Data());
 
@@ -50,37 +58,20 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     {
         newBreadcrumbItem.ContentTemplate(itemTemplateWrapper->Template());
     }
-
+    
     return newBreadcrumbItem;
-
-    /*
-    if (auto sentinel = args.Data().try_as<winrt::hstring>())
-    {
-        if (winrt::to_string(*sentinel) == "Sentinel")
-        {
-            auto ellipsisButton = winrt::make<BreadcrumbItem>();
-            ellipsisButton.Content(winrt::box_value(L"..."));
-
-            return ellipsisButton;
-        }
-    }
-
-    if (auto innerTemplate = m_innerTemplate.get())
-    {
-        if (auto elementFactory = innerTemplate.try_as<winrt::IElementFactoryShim>())
-        {
-            auto getArgs = winrt::make<winrt::ElementFactoryGetArgs>();
-            getArgs->Data(args.Data());
-
-            elementFactory.GetElement(getArgs);
-        }
-    }
-
-    return nullptr;
-    */
 }
 
 void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)
 {
+    if (auto element = args.Element())
+    {
+        if (auto breadcrumbItem = element.try_as<winrt::BreadcrumbItem>())
+        {
+            auto breadcrumbItemImpl = winrt::get_self<BreadcrumbItem>(breadcrumbItem);
+            breadcrumbItemImpl->ResetVisualProperties();
+        }
+    }
 
+    m_itemTemplateWrapper.RecycleElement(args);
 }

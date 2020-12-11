@@ -42,7 +42,6 @@
     </Style>
 
     <Style TargetType="local:Breadcrumb">
-        <!-- <Setter Property="SecondaryButtonText" Value="{ThemeResource SplitButtonSecondaryButtonContent}" /> -->
 
         <Setter Property="Template">
             <Setter.Value>
@@ -54,12 +53,6 @@
                         <local:ItemsRepeater.Layout>
                             <local:BreadcrumbLayout />
                         </local:ItemsRepeater.Layout>
-
-                        <local:ItemsRepeater.ItemTemplate>
-                            <DataTemplate>
-                                <local:BreadcrumbItem Content="{Binding}" />
-                            </DataTemplate>
-                        </local:ItemsRepeater.ItemTemplate>
                     </local:ItemsRepeater>
 
                 </ControlTemplate>

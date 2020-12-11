@@ -39,10 +39,10 @@
                             <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderThickness="5" Padding="7">
                                 <Grid>
 
-                                    <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}" x:Name="flatBreadCrumb" Grid.Column="0">
+                                    <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}" x:Name="BreadCrumbControl" Grid.Column="0">
                                         <controls:Breadcrumb.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}" />
+                                            <DataTemplate x:DataType="local2:TreeNode">
+                                                <controls:BreadcrumbItem Content="{x:Bind Name}" />
                                             </DataTemplate>
                                         </controls:Breadcrumb.ItemTemplate>
 

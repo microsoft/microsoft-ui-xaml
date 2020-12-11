@@ -44,6 +44,7 @@ private:
 
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
     winrt::event_token m_eventToken{ };
+
     tracker_ref<winrt::ItemsRepeater> m_breadcrumbItemRepeater { this };
     com_ptr<BreadcrumbElementFactory> m_breadcrumbElementFactory{ nullptr };
 };
