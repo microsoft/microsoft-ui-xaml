@@ -10,7 +10,7 @@
 #include "AnimatedIcon.properties.h"
 
 class AnimatedIcon :
-    public ReferenceTracker<AnimatedIcon, DeriveFromBitmapIconHelper_base, winrt::AnimatedIcon>,
+    public ReferenceTracker<AnimatedIcon, DeriveFromPathIconHelper_base, winrt::AnimatedIcon>,
     public AnimatedIconProperties
 {
 
@@ -27,6 +27,7 @@ public:
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
     void OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     static void OnAnimatedIconStatePropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
@@ -58,6 +59,7 @@ private:
     winrt::hstring m_lastAnimationSegmentStart{ L"" };
     winrt::hstring m_lastAnimationSegmentEnd{ L"" };
     bool m_isPlaying{ false };
+    bool m_canDisplayPrimaryContent{ true };
     float m_previousSegmentLength{ 1.0f };
     float m_durationMultiplier{ 1.0 };
     float m_speedUpMultiplier{ 7.0f };

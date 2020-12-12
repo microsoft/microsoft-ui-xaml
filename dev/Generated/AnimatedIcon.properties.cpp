@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "AnimatedIcon.g.cpp"
 
+GlobalDependencyProperty AnimatedIconProperties::s_FallbackIconSourceProperty{ nullptr };
 GlobalDependencyProperty AnimatedIconProperties::s_SourceProperty{ nullptr };
 GlobalDependencyProperty AnimatedIconProperties::s_StateProperty{ nullptr };
 
@@ -23,6 +24,17 @@ AnimatedIconProperties::AnimatedIconProperties()
 
 void AnimatedIconProperties::EnsureProperties()
 {
+    if (!s_FallbackIconSourceProperty)
+    {
+        s_FallbackIconSourceProperty =
+            InitializeDependencyProperty(
+                L"FallbackIconSource",
+                winrt::name_of<winrt::IconSource>(),
+                winrt::name_of<winrt::AnimatedIcon>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFallbackIconSourcePropertyChanged));
+    }
     if (!s_SourceProperty)
     {
         s_SourceProperty =
@@ -49,8 +61,17 @@ void AnimatedIconProperties::EnsureProperties()
 
 void AnimatedIconProperties::ClearProperties()
 {
+    s_FallbackIconSourceProperty = nullptr;
     s_SourceProperty = nullptr;
     s_StateProperty = nullptr;
+}
+
+void AnimatedIconProperties::OnFallbackIconSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedIcon>();
+    winrt::get_self<AnimatedIcon>(owner)->OnFallbackIconSourcePropertyChanged(args);
 }
 
 void AnimatedIconProperties::OnSourcePropertyChanged(
@@ -59,6 +80,19 @@ void AnimatedIconProperties::OnSourcePropertyChanged(
 {
     auto owner = sender.as<winrt::AnimatedIcon>();
     winrt::get_self<AnimatedIcon>(owner)->OnSourcePropertyChanged(args);
+}
+
+void AnimatedIconProperties::FallbackIconSource(winrt::IconSource const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<AnimatedIcon*>(this)->SetValue(s_FallbackIconSourceProperty, ValueHelper<winrt::IconSource>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IconSource AnimatedIconProperties::FallbackIconSource()
+{
+    return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<AnimatedIcon*>(this)->GetValue(s_FallbackIconSourceProperty));
 }
 
 void AnimatedIconProperties::Source(winrt::IRichAnimatedVisualSource const& value)

@@ -25,9 +25,16 @@ void AnimatedIcon::OnApplyTemplate()
     m_rootGrid.set(grid);
     m_currentState = GetState(*this);
 
-    if (auto const visual = m_animatedVisual.get())
+    if (grid)
     {
-        winrt::ElementCompositionPreview::SetElementChildVisual(grid, visual.RootVisual());
+        // Animated icon implements IconElement through FontIcon. we don't need the TextBlock that
+        // FontIcon creates, so get rid of it.
+        grid.Children().Clear();
+        OnFallbackIconSourcePropertyChanged(nullptr);
+        if (auto const visual = m_animatedVisual.get())
+        {
+            winrt::ElementCompositionPreview::SetElementChildVisual(grid, visual.RootVisual());
+        }
     }
 }
 
@@ -59,8 +66,12 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
                 : winrt::Size{ visualSize.x * heightScale, availableSize.Height };
             }
         }
+        return visualSize;
     }
-    return { 0, 0 };
+    else
+    {
+        return __super::MeasureOverride(availableSize);
+    }
 }
 
 winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
@@ -91,9 +102,12 @@ winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
         rootVisual.Offset({ offset, z });
         rootVisual.Size(arrangedSize);
         rootVisual.Scale({ scale, z });
+        return finalSize;
     }
-
-    return finalSize;
+    else
+    {
+        return __super::ArrangeOverride(finalSize);
+    }
 }
 
 void AnimatedIcon::OnAnimatedIconStatePropertyChanged(
@@ -350,7 +364,7 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
     }
 }
 
-void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     auto const visual = [this]()
     {
@@ -386,6 +400,11 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
 
     if (visual)
     {
+        m_canDisplayPrimaryContent = true;
+        if (auto const rootGrid = m_rootGrid.get())
+        {
+            rootGrid.Children().Clear();
+        }
         visual.Properties().InsertScalar(L"Progress", 0.0F);
 
         // Tie the animated visual's Progress property to the player Progress with an ExpressionAnimation.
@@ -393,6 +412,35 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         auto progressAnimation = compositor.CreateExpressionAnimation(L"_.Progress");
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(L"Progress", progressAnimation);
+    }
+    else
+    {
+        m_canDisplayPrimaryContent = false;
+        if (auto const iconSource = FallbackIconSource())
+        {
+            auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
+            if (auto const rootGrid = m_rootGrid.get())
+            {
+                rootGrid.Children().Clear();
+                rootGrid.Children().InsertAt(0, iconElement);
+            }
+        }
+    }
+}
+
+void AnimatedIcon::OnFallbackIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    if (!m_canDisplayPrimaryContent)
+    {
+        if (auto const iconSource = FallbackIconSource())
+        {
+            auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
+            if (auto const rootGrid = m_rootGrid.get())
+            {
+                rootGrid.Children().Clear();
+                rootGrid.Children().InsertAt(0, iconElement);
+            }
+        }
     }
 }
 

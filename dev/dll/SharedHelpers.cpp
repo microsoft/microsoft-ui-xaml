@@ -609,6 +609,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             animatedIcon.Source(source);
         }
+        if (auto const fallbackIconSource = animatedIconSource.FallbackIconSource())
+        {
+            animatedIcon.FallbackIconSource(fallbackIconSource);
+        }
         if (const auto newForeground = animatedIconSource.Foreground())
         {
             animatedIcon.Foreground(newForeground);

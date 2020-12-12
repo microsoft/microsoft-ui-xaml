@@ -707,8 +707,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnimatedIcon", "dev\Animate
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_TestUI", "dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.shproj", "{83FD36C0-189F-4E95-8002-9B73905CA301}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_InteractionTests", "dev\AnimatedIcon\InteractionTests\AnimatedIcon_InteractionTests.shproj", "{8AFF7072-9957-475B-83B7-D0B786228232}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_APITests", "dev\AnimatedIcon\APITests\AnimatedIcon_APITests.shproj", "{DB15FF28-AB3A-4FED-A1D5-004A095A3FD5}"
 EndProject
 Global
@@ -813,7 +811,6 @@ Global
 		dev\PullToRefresh\PTRTracing\PTRTracing.vcxitems*{890a5548-0515-4099-b526-0539fe9a0376}*SharedItemsImports = 9
 		dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems*{89ec8d06-ca59-49a9-aefe-32dcc9dd8020}*SharedItemsImports = 13
 		dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems*{8a1690fb-aa8c-461a-840c-89cdbb44bdba}*SharedItemsImports = 13
-		dev\AnimatedIcon\InteractionTests\AnimatedIcon_InteractionTests.projitems*{8aff7072-9957-475b-83b7-d0b786228232}*SharedItemsImports = 13
 		dev\RadialGradientBrush\RadialGradientBrush.vcxitems*{8b056b8f-c1ab-4a80-bd17-deace9897e6a}*SharedItemsImports = 9
 		dev\MenuBar\MenuBar.vcxitems*{8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942}*SharedItemsImports = 9
 		dev\ProgressRing\InteractionTests\ProgressRing_InteractionTests.projitems*{8c2d60af-44bc-47da-8e44-d62e639bfc0a}*SharedItemsImports = 13
@@ -1784,7 +1781,6 @@ Global
 		{221D9F75-FFF3-49C1-A88B-7F3898A5756E} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{F1C8A5A1-B1B0-4095-8849-E550FCF2EBF6} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
 		{83FD36C0-189F-4E95-8002-9B73905CA301} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
-		{8AFF7072-9957-475B-83B7-D0B786228232} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
 		{DB15FF28-AB3A-4FED-A1D5-004A095A3FD5} = {221D9F75-FFF3-49C1-A88B-7F3898A5756E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

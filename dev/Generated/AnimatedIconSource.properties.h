@@ -9,11 +9,16 @@ class AnimatedIconSourceProperties
 public:
     AnimatedIconSourceProperties();
 
+    void FallbackIconSource(winrt::IconSource const& value);
+    winrt::IconSource FallbackIconSource();
+
     void Source(winrt::IRichAnimatedVisualSource const& value);
     winrt::IRichAnimatedVisualSource Source();
 
+    static winrt::DependencyProperty FallbackIconSourceProperty() { return s_FallbackIconSourceProperty; }
     static winrt::DependencyProperty SourceProperty() { return s_SourceProperty; }
 
+    static GlobalDependencyProperty s_FallbackIconSourceProperty;
     static GlobalDependencyProperty s_SourceProperty;
 
     static void EnsureProperties();

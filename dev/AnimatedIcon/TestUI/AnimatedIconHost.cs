@@ -76,6 +76,10 @@ namespace MUXControlsTestApp
                 {
                     animatedIcon.Source = source.Source;
                 }
+                if (source.FallbackIconSource != null)
+                {
+                    animatedIcon.FallbackIconSource = source.FallbackIconSource;
+                }
                 if (source.Foreground != null)
                 {
                     animatedIcon.Foreground = source.Foreground;

@@ -435,6 +435,12 @@
                                     <controls:AnimatedIcon.Source>
                                         <controls:Controls_01_Checkmark/>
                                     </controls:AnimatedIcon.Source>
+                                    <controls:AnimatedIcon.FallbackIconSource>
+                                        <controls:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"    
+                                                                 FontSize="16"
+                                                                 Glyph="&#xE001;"
+                                                                 IsTextScaleFactorEnabled="False"/>
+                                    </controls:AnimatedIcon.FallbackIconSource>
                                 </controls:AnimatedIcon>
 
                             </Grid>
@@ -482,6 +488,12 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_02_UpDown_Dropdown/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -494,6 +506,12 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_02_UpDown_Dropdown/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -506,6 +524,12 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_02_UpDown_Dropdown/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -521,6 +545,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_09_Hamburger/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -533,6 +560,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_09_Hamburger/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -545,6 +575,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_09_Hamburger/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -560,6 +593,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_07_Settings/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -572,6 +608,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_07_Settings/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -584,6 +623,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_07_Settings/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -599,6 +641,11 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_08_Back/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE72B;"
+                                                                     FontSize="16"
+                                                                     MirroredWhenRightToLeft="True"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -611,6 +658,11 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_08_Back/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE72B;"
+                                                                     FontSize="16"
+                                                                     MirroredWhenRightToLeft="True"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -623,6 +675,11 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_08_Back/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE72B;"
+                                                                     FontSize="16"
+                                                                     MirroredWhenRightToLeft="True"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -638,6 +695,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_10_Search/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Find"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -650,6 +710,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_10_Search/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Find"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
@@ -662,6 +725,9 @@
                                         <controls:AnimatedIconSource.Source>
                                             <controls:Controls_10_Search/>
                                         </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Find"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
                             </local:AnimatedIconHost>
