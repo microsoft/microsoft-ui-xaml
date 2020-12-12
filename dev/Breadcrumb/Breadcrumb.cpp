@@ -42,6 +42,8 @@ void Breadcrumb::OnApplyTemplate()
         
         m_itemRepeaterElementPreparedRevoker = breadcrumbItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
         m_itemRepeaterElementClearingRevoker = breadcrumbItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
+
+        m_breadcrumbItemRepeaterLoadedRevoker = breadcrumbItemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
     }
 
     UpdateItemsSource();
@@ -71,6 +73,14 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     }
 }
 
+void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    if (auto const breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    {
+        OnRepeaterCollectionChanged(nullptr, nullptr);
+    }
+}
+
 void Breadcrumb::UpdateItemTemplate()
 {
     winrt::IInspectable newItemTemplate = ItemTemplate();
@@ -82,20 +92,14 @@ void Breadcrumb::UpdateItemsSource()
     m_itemsSourceChanged.revoke();
     m_itemsSourceChanged2.revoke();
 
+    auto const itemsSource = this->ItemsSource();
+    m_breadcrumbItemsRepeaterItemsSource = winrt::ItemsSourceView(itemsSource);
+    m_itemsSourceChanged = m_breadcrumbItemsRepeaterItemsSource.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+
     if (auto const breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
     {
-        auto const itemsSource = this->ItemsSource();
-
-        breadcrumbItemRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
-            
-        auto newItemsSource = GenerateInternalItemsSource();
-        breadcrumbItemRepeater.ItemsSource(newItemsSource);
-        // auto itemsSourceView = winrt::ItemsSourceView(newItemsSource);
-        // breadcrumbItemRepeater.ItemsSourceView(itemsSourceView);
-
         if (auto const itemsSource = this->ItemsSource())
         {
-
             const auto incc = [this]() {
                 if (this->ItemsSource())
                 {
@@ -118,42 +122,27 @@ void Breadcrumb::UpdateItemsSource()
                 m_itemsSourceChanged2 = collection.VectorChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
             }
         }
-
-        if (auto const itemsSourceView = breadcrumbItemRepeater.ItemsSourceView())
-        {
-            m_itemsSourceChanged = itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
-        }
-
-        breadcrumbItemRepeater.UpdateLayout();
     }
 }
 
 void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable& args)
 {
+    if (const auto& breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    {
+        // breadcrumbItemRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
+
+        auto newItemsSource = GenerateInternalItemsSource();
+        breadcrumbItemRepeater.ItemsSource(newItemsSource);
+
+        breadcrumbItemRepeater.UpdateLayout();
+    }
+
     if (auto evento = args.try_as<winrt::NotifyCollectionChangedEventArgs>())
     {
         auto action = evento.Action();
-
-        UpdateItemsSource();
     }
 
     return;
-    /*
-    if (auto const breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
-    {
-        if (auto const itemSourceView = breadcrumbItemRepeater.ItemsSourceView())
-        {
-            auto const count = itemSourceView.Count();
-            for (auto index = 0; index < count; index++)
-            {
-                if (auto const element = breadcrumbItemRepeater.TryGetElement(index))
-                {
-                    element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
-                }
-            }
-        }
-    }
-    */
 }
 
 void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
@@ -161,12 +150,21 @@ void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::Item
     if (auto item = args.Element().try_as<winrt::BreadcrumbItem>())
     {
         const uint32_t itemIndex = args.Index();
+
         auto itemsSourceAsList = m_breadcrumbItemRepeater.get().ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
+        const uint32_t itemCount = itemsSourceAsList.Size();
 
         auto itemImpl = winrt::get_self<BreadcrumbItem>(item);
-        if (itemIndex == itemsSourceAsList.Size() - 1)
+        if (itemIndex == (itemCount - 1))
         {
+            if (const auto& lastItem = m_lastBreadcrumbItem.get())
+            {
+                auto lastItemImpl = winrt::get_self<BreadcrumbItem>(lastItem);
+                lastItemImpl->ResetVisualProperties();
+            }
+
             itemImpl->SetPropertiesForLastNode();
+            m_lastBreadcrumbItem.set(item);
         }
         else
         {
