@@ -30,6 +30,11 @@
                                             <RepositionThemeAnimation TargetName="DeterminateProgressBarIndicator" FromHorizontalOffset="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IndicatorLengthDelta}" />
                                         </Storyboard>
                                     </VisualTransition>
+                                    <VisualTransition From="UpdatingError" To="Error">
+                                        <Storyboard>
+                                            <RepositionThemeAnimation TargetName="DeterminateProgressBarIndicator" FromHorizontalOffset="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IndicatorLengthDelta}" />
+                                        </Storyboard>
+                                    </VisualTransition>
                                     <VisualTransition From="Paused" To="Determinate">
                                         <Storyboard>
                                             <DoubleAnimation
@@ -65,6 +70,20 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Updating" />
+                                <VisualState x:Name="UpdatingError">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                        Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                        Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                        To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
+                                        Duration="0:0:0.0"/>
+                                        <ColorAnimation
+                                        Storyboard.TargetName="ProgressBarRoot"
+                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                        To="{StaticResource SystemControlErrorBackgroundColor}"
+                                        Duration="0:0:0.0"/>
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="Indeterminate">
                                     <Storyboard RepeatBehavior="Forever">
                                         <DoubleAnimationUsingKeyFrames
@@ -119,7 +138,7 @@
                                             Storyboard.TargetName="IndeterminateProgressBarIndicator2"
                                             Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame Value="{ThemeResource SystemAccentColor}" KeyTime="0:0:2.75" />
-                                            <LinearColorKeyFrame Value="{ThemeResource SystemErrorTextColor}" KeyTime="0:0:3" />
+                                            <LinearColorKeyFrame Value="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}" KeyTime="0:0:3" />
                                         </ColorAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames
                                             Storyboard.TargetName="ProgressBarRoot"
@@ -135,7 +154,7 @@
                                         <ColorAnimation
                                             Storyboard.TargetName="DeterminateProgressBarIndicator"
                                             Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                            To="{ThemeResource SystemErrorTextColor}"
+                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
                                             Duration="0:0:0.25"/>
                                         <ColorAnimation
                                             Storyboard.TargetName="ProgressBarRoot"
