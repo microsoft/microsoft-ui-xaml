@@ -28,6 +28,7 @@ runtimeclass CommandBarFlyoutCommandBarTemplateSettings
     Double ExpandDownAnimationHoldPosition{ get; };
     Windows.Foundation.Rect ContentClipRect { get; };
     Windows.Foundation.Rect OverflowContentClipRect{ get; };
+    Windows.Foundation.Rect AcrylicBackgroundBaseClipRect{ get; };
 };
 
 [WUXC_VERSION_RS5]

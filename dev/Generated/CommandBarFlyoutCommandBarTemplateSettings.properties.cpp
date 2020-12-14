@@ -6,6 +6,7 @@
 #include "common.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 
+GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_AcrylicBackgroundBaseClipRectProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_CloseAnimationEndPositionProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_ContentClipRectProperty{ nullptr };
 GlobalDependencyProperty CommandBarFlyoutCommandBarTemplateSettingsProperties::s_CurrentHeightProperty{ nullptr };
@@ -36,6 +37,17 @@ CommandBarFlyoutCommandBarTemplateSettingsProperties::CommandBarFlyoutCommandBar
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::EnsureProperties()
 {
+    if (!s_AcrylicBackgroundBaseClipRectProperty)
+    {
+        s_AcrylicBackgroundBaseClipRectProperty =
+            InitializeDependencyProperty(
+                L"AcrylicBackgroundBaseClipRect",
+                winrt::name_of<winrt::Rect>(),
+                winrt::name_of<winrt::CommandBarFlyoutCommandBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Rect>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_CloseAnimationEndPositionProperty)
     {
         s_CloseAnimationEndPositionProperty =
@@ -282,6 +294,7 @@ void CommandBarFlyoutCommandBarTemplateSettingsProperties::EnsureProperties()
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ClearProperties()
 {
+    s_AcrylicBackgroundBaseClipRectProperty = nullptr;
     s_CloseAnimationEndPositionProperty = nullptr;
     s_ContentClipRectProperty = nullptr;
     s_CurrentHeightProperty = nullptr;
@@ -304,6 +317,19 @@ void CommandBarFlyoutCommandBarTemplateSettingsProperties::ClearProperties()
     s_WidthExpansionDeltaProperty = nullptr;
     s_WidthExpansionMoreButtonAnimationEndPositionProperty = nullptr;
     s_WidthExpansionMoreButtonAnimationStartPositionProperty = nullptr;
+}
+
+void CommandBarFlyoutCommandBarTemplateSettingsProperties::AcrylicBackgroundBaseClipRect(winrt::Rect const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_AcrylicBackgroundBaseClipRectProperty, ValueHelper<winrt::Rect>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Rect CommandBarFlyoutCommandBarTemplateSettingsProperties::AcrylicBackgroundBaseClipRect()
+{
+    return ValueHelper<winrt::Rect>::CastOrUnbox(static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->GetValue(s_AcrylicBackgroundBaseClipRectProperty));
 }
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::CloseAnimationEndPosition(double value)

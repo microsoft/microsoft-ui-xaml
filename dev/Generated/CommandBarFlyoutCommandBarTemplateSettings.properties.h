@@ -9,6 +9,9 @@ class CommandBarFlyoutCommandBarTemplateSettingsProperties
 public:
     CommandBarFlyoutCommandBarTemplateSettingsProperties();
 
+    void AcrylicBackgroundBaseClipRect(winrt::Rect const& value);
+    winrt::Rect AcrylicBackgroundBaseClipRect();
+
     void CloseAnimationEndPosition(double value);
     double CloseAnimationEndPosition();
 
@@ -75,6 +78,7 @@ public:
     void WidthExpansionMoreButtonAnimationStartPosition(double value);
     double WidthExpansionMoreButtonAnimationStartPosition();
 
+    static winrt::DependencyProperty AcrylicBackgroundBaseClipRectProperty() { return s_AcrylicBackgroundBaseClipRectProperty; }
     static winrt::DependencyProperty CloseAnimationEndPositionProperty() { return s_CloseAnimationEndPositionProperty; }
     static winrt::DependencyProperty ContentClipRectProperty() { return s_ContentClipRectProperty; }
     static winrt::DependencyProperty CurrentHeightProperty() { return s_CurrentHeightProperty; }
@@ -98,6 +102,7 @@ public:
     static winrt::DependencyProperty WidthExpansionMoreButtonAnimationEndPositionProperty() { return s_WidthExpansionMoreButtonAnimationEndPositionProperty; }
     static winrt::DependencyProperty WidthExpansionMoreButtonAnimationStartPositionProperty() { return s_WidthExpansionMoreButtonAnimationStartPositionProperty; }
 
+    static GlobalDependencyProperty s_AcrylicBackgroundBaseClipRectProperty;
     static GlobalDependencyProperty s_CloseAnimationEndPositionProperty;
     static GlobalDependencyProperty s_ContentClipRectProperty;
     static GlobalDependencyProperty s_CurrentHeightProperty;

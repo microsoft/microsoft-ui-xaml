@@ -643,11 +643,13 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         {
             flyoutTemplateSettings->CurrentWidth(expandedWidth);
             flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height + m_secondaryItemsRoot.get().DesiredSize().Height - 2);
+            flyoutTemplateSettings->AcrylicBackgroundBaseClipRect({ 0, 0, static_cast<float>(expandedWidth), static_cast<float>(flyoutTemplateSettings->CurrentHeight())});
         }
         else
         {
             flyoutTemplateSettings->CurrentWidth(collapsedWidth);
             flyoutTemplateSettings->CurrentHeight(primaryItemsRootDesiredSize.Height - 2);
+            flyoutTemplateSettings->AcrylicBackgroundBaseClipRect({0, 0, static_cast<float>(collapsedWidth), static_cast<float>(flyoutTemplateSettings->CurrentHeight())});
         }
 
         // If we're currently playing the close animation, don't update these properties -

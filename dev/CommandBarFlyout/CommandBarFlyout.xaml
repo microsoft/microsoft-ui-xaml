@@ -48,6 +48,10 @@
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
                                     <SplineDoubleKeyFrame KeyTime="0:0:0.300" KeySpline="0.1,0.9 0.2,1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="AcrylicBackgroundBaseClipTransform" Storyboard.TargetProperty="X">
+                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
+                                    <SplineDoubleKeyFrame KeyTime="0:0:0.300" KeySpline="0.1,0.9 0.2,1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
+                                </DoubleAnimationUsingKeyFrames>
                             </contract7Present:Storyboard>
                             <!-- The closing animation plays the opening animation in reverse and then snaps to a position where
                                  the clip will fully hide the flyout, in preparation for closing the flyout.
@@ -60,6 +64,11 @@
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0.151" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OuterOverflowContentRootClipTransform" Storyboard.TargetProperty="X">
+                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
+                                    <SplineDoubleKeyFrame KeyTime="0:0:0.150" KeySpline="0.7,0 1,0.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
+                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.151" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="AcrylicBackgroundBaseClipTransform" Storyboard.TargetProperty="X">
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationEndPosition}" />
                                     <SplineDoubleKeyFrame KeyTime="0:0:0.150" KeySpline="0.7,0 1,0.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.OpenAnimationStartPosition}" />
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0.151" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CloseAnimationEndPosition}" />
@@ -447,11 +456,19 @@
                         </Grid>
                         <Popup x:Name="AcrylicBackgroundPopup" IsHitTestVisible="false">
                             <Grid x:Name="AcrylicBackgroundBase"
-                                  Background="{TemplateBinding Background}"
-                                  Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentHeight}"
-                                  Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
-                                  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                  contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
+                                Background="{TemplateBinding Background}"
+                                Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentHeight}"
+                                Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                                <Grid.Clip>
+                                    <RectangleGeometry x:Name="AcrylicBackgroundBaseClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.AcrylicBackgroundBaseClipRect}">
+                                        <RectangleGeometry.Transform>
+                                            <TranslateTransform x:Name="AcrylicBackgroundBaseClipTransform" />
+                                        </RectangleGeometry.Transform>
+                                    </RectangleGeometry>
+                                </Grid.Clip>
+                            </Grid>
                         </Popup>
                     </Grid>
                 </ControlTemplate>
