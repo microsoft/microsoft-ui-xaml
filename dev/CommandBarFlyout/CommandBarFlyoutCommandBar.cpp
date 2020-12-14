@@ -96,6 +96,8 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                 // the secondary commands are closed.
                 EnsureFocusedPrimaryCommand();
             }
+
+            CloseAcrylicBackgroundPopup();
         }
     });
 
@@ -1112,7 +1114,7 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
     {
-        AddShadow();
+        //AddShadow();
     }
     else if (PrimaryCommands().Size() == 0)
     {
@@ -1161,5 +1163,13 @@ void CommandBarFlyoutCommandBar::ClearShadow()
                 grid.Translation(translation);
             }
         }
+    }
+}
+
+void CommandBarFlyoutCommandBar::CloseAcrylicBackgroundPopup()
+{
+    if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
+    {
+        acrylicBackgroundPopup.IsOpen(false);
     }
 }

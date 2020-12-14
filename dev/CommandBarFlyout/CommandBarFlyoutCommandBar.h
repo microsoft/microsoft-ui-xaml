@@ -25,6 +25,7 @@ public:
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
     void ClearShadow();
+    void CloseAcrylicBackgroundPopup();
 
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);

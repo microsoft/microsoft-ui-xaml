@@ -172,6 +172,8 @@ CommandBarFlyout::CommandBarFlyout()
                 //clicking the more (...) button, we clear the translations
                 //here
                 commandBar->ClearShadow();
+
+                //commandBar->CloseAcrylicBackgroundPopup();
             }
         }
     });

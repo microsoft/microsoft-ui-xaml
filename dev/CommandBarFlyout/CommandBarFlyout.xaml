@@ -7,7 +7,8 @@
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 8)">
 
     <Style x:Key="DefaultCommandBarFlyoutCommandBarStyle" TargetType="local:CommandBarFlyoutCommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutBackground}" />
@@ -452,24 +453,24 @@
                                         </Grid>
                                     </Grid>
                                 </Popup>
-                            </Grid>
-                        </Grid>
-                        <Popup x:Name="AcrylicBackgroundPopup" IsHitTestVisible="false">
-                            <Grid x:Name="AcrylicBackgroundBase"
+                                <Popup x:Name="AcrylicBackgroundPopup" IsHitTestVisible="false" contract8Present:ShouldConstrainToRootBounds="False">
+                                    <Grid x:Name="AcrylicBackgroundBase"
                                 Background="{TemplateBinding Background}"
                                 Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentHeight}"
                                 Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                 contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
-                                <Grid.Clip>
-                                    <RectangleGeometry x:Name="AcrylicBackgroundBaseClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.AcrylicBackgroundBaseClipRect}">
-                                        <RectangleGeometry.Transform>
-                                            <TranslateTransform x:Name="AcrylicBackgroundBaseClipTransform" />
-                                        </RectangleGeometry.Transform>
-                                    </RectangleGeometry>
-                                </Grid.Clip>
+                                        <Grid.Clip>
+                                            <RectangleGeometry x:Name="AcrylicBackgroundBaseClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.AcrylicBackgroundBaseClipRect}">
+                                                <RectangleGeometry.Transform>
+                                                    <TranslateTransform x:Name="AcrylicBackgroundBaseClipTransform" />
+                                                </RectangleGeometry.Transform>
+                                            </RectangleGeometry>
+                                        </Grid.Clip>
+                                    </Grid>
+                                </Popup>
                             </Grid>
-                        </Popup>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
