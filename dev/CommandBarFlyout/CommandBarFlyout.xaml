@@ -361,7 +361,7 @@
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
-                                        Margin="3, 3, 0,3"
+                                        Margin="3,3,0,3"
                                         Grid.Column="0"
                                         IsTabStop="False"
                                         HorizontalAlignment="Left">
@@ -408,6 +408,10 @@
                                                 x:Name="OverflowContentRootTransform"
                                                 Y="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandDownOverflowVerticalPosition}" />
                                         </Grid.RenderTransform>
+                                        <Grid.Resources>
+                                            <Style TargetType="AppBarButton" BasedOn="{StaticResource CommandBarFlyoutAppBarButtonStyle}" />
+                                            <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource CommandBarFlyoutAppBarToggleButtonStyle}" />
+                                        </Grid.Resources>
                                         <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
@@ -435,14 +439,6 @@
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
                                                 IsTabStop="False">
-                                                <CommandBarOverflowPresenter.ItemContainerStyle>
-
-                                                    <Style TargetType="AppBarButton" BasedOn="{StaticResource CommandBarOverflowPresenterAppBarButtonStyle}">
-                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                                        <Setter Property="Width" Value="NaN" />
-                                                        <Setter Property="Height" Value="40"/>
-                                                    </Style>
-                                                </CommandBarOverflowPresenter.ItemContainerStyle>
                                             </CommandBarOverflowPresenter>
                                         </Grid>
                                     </Grid>
