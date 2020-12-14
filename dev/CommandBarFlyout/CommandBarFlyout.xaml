@@ -362,7 +362,7 @@
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
-                                        Margin="3, 3, 0,3"
+                                        Margin="3,3,0,3"
                                         Grid.Column="0"
                                         IsTabStop="False"
                                         HorizontalAlignment="Left">
@@ -436,14 +436,6 @@
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
                                                 IsTabStop="False">
-                                                <CommandBarOverflowPresenter.ItemContainerStyle>
-
-                                                    <Style TargetType="AppBarButton" BasedOn="{StaticResource CommandBarOverflowPresenterAppBarButtonStyle}">
-                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                                        <Setter Property="Width" Value="NaN" />
-                                                        <Setter Property="Height" Value="40"/>
-                                                    </Style>
-                                                </CommandBarOverflowPresenter.ItemContainerStyle>
                                             </CommandBarOverflowPresenter>
                                         </Grid>
                                     </Grid>

@@ -21,6 +21,7 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
@@ -49,6 +50,7 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="AccentAAFillColorDefaultBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
@@ -77,6 +79,7 @@
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="CommandBarFlyoutAppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundChecked" ResourceKey="SystemControlHighlightAccentBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPointerOver" ResourceKey="SystemControlHighlightAccentBrush"/>
             <StaticResource x:Key="CommandBarFlyoutAppBarButtonBackgroundCheckedPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush"/>
@@ -96,14 +99,14 @@
 
     <Style x:Key="CommandBarFlyoutAppBarButtonStyleBase" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
-        <Setter Property="Foreground" Value="red" />
+        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="Width" Value="40" />
+        <Setter Property="Width" Value="NaN" />
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
@@ -128,13 +131,16 @@
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
+                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithToggleButtons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Margin" Value="38,0,12,0" />
@@ -143,6 +149,7 @@
                                 <VisualState x:Name="OverflowWithMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
@@ -155,13 +162,14 @@
                                 <VisualState x:Name="OverflowWithToggleButtonsAndMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
                                         <Setter Target="ContentViewbox.Height" Value="16" />
-                                        <Setter Target="ContentViewbox.Margin" Value="38,0,12,0" />
+                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="76,0,12,0" />
+                                        <Setter Target="OverflowTextLabel.Margin" Value="53,0,12,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -254,7 +262,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="ContentRoot">
+                        <Grid x:Name="ContentRoot" Width="40">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -288,7 +296,7 @@
                                 Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
                                 MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
                                 Margin="24,0,12,0"
-                                Foreground="{ThemeResource SystemControlBackgroundBaseMediumBrush}"
+                                Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed"
@@ -299,7 +307,7 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 AutomationProperties.AccessibilityView="Raw"
-                                Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+                                Foreground="{ThemeResource CommandBarFlyoutAppBarButtonSubItemChevronForeground}"
                                 Margin="12,0,12,0"
                                 MirroredWhenRightToLeft="True"
                                 VerticalAlignment="Center"
@@ -318,17 +326,18 @@
     </contract6Present:Style>
 
     <Style x:Key="CommandBarFlyoutAppBarToggleButtonStyleBase" TargetType="AppBarToggleButton">
-        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutButtonBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundTransparentBrush}" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="Width" Value="40" />
+        <Setter Property="Width" Value="NaN" />
         <Setter Property="Height" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarToggleButton">
@@ -337,7 +346,9 @@
                         MaxWidth="{TemplateBinding MaxWidth}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize" />
@@ -347,6 +358,7 @@
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="CheckedHighlightBackground.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowCheckGlyph.Visibility" Value="Visible" />
@@ -356,16 +368,17 @@
                                 <VisualState x:Name="OverflowWithMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Visible" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.MaxWidth" Value="16" />
                                         <Setter Target="ContentViewbox.MaxHeight" Value="16" />
-                                        <Setter Target="ContentViewbox.Margin" Value="38,0,12,0" />
+                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
                                         <Setter Target="CheckedHighlightBackground.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowCheckGlyph.Visibility" Value="Visible" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="76,0,12,0" />
+                                        <Setter Target="OverflowTextLabel.Margin" Value="53,0,12,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -514,8 +527,8 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Rectangle x:Name="CheckedHighlightBackground" Fill="{ThemeResource SystemControlHighlightListAccentLowBrush}" Opacity="0" />
-                        <Grid x:Name="ContentRoot">
+                        <Rectangle x:Name="CheckedHighlightBackground" Fill="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundChecked}" Opacity="0" />
+                        <Grid x:Name="ContentRoot" Width="40">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -527,7 +540,7 @@
                                 FontSize="16"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Margin="12,4,12,4"
+                                Margin="15,4,12,4"
                                 Opacity="0"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
@@ -559,7 +572,7 @@
                                 Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
                                 MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
                                 Margin="24,0,12,0"
-                                Foreground="{ThemeResource SystemControlBackgroundBaseMediumBrush}"
+                                Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed"
@@ -577,228 +590,6 @@
         <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
     </contract6Present:Style>
 
-    <Style x:Key="CommandBarOverflowPresenterAppBarButtonStyleBase" TargetType="AppBarButton">
-        <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="Height" Value="40" />
-        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="AllowFocusOnInteraction" Value="False" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="AppBarButton">
-                    <Grid x:Name="Root"
-                        MinWidth="{TemplateBinding MinWidth}"
-                        MaxWidth="{TemplateBinding MaxWidth}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="ApplicationViewStates">
-                                <VisualState x:Name="FullSize" />
-                                <VisualState x:Name="Compact" />
-                                <VisualState x:Name="LabelOnRight" />
-                                <VisualState x:Name="LabelCollapsed" />
-                                <VisualState x:Name="Overflow">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentRoot.MinHeight" Value="0" />
-                                        <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
-                                        <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OverflowWithToggleButtons">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentRoot.MinHeight" Value="0" />
-                                        <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
-                                        <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="38,0,12,0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OverflowWithMenuIcons">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentRoot.MinHeight" Value="0" />
-                                        <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
-                                        <Setter Target="ContentViewbox.Width" Value="16" />
-                                        <Setter Target="ContentViewbox.Height" Value="16" />
-                                        <Setter Target="ContentViewbox.Margin" Value="12,0,12,0" />
-                                        <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="38,0,12,0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OverflowWithToggleButtonsAndMenuIcons">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentRoot.MinHeight" Value="0" />
-                                        <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
-                                        <Setter Target="ContentViewbox.Width" Value="16" />
-                                        <Setter Target="ContentViewbox.Height" Value="16" />
-                                        <Setter Target="ContentViewbox.Margin" Value="15,0,12,0" />
-                                        <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
-                                        <Setter Target="OverflowTextLabel.Margin" Value="53,0,12,0" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="PointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
-                                    </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
-                                    </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="Content.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
-                                        <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
-                                        <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForegroundDisabled}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OverflowNormal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="OverflowPointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
-                                    </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="OverflowPressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPressed}" />
-                                    </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="OverflowSubMenuOpened">
-                                    <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackgroundPointerOver}" />
-                                    </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="InputModeStates">
-                                <VisualState x:Name="InputModeDefault" />
-                                <VisualState x:Name="TouchInputMode">
-                                    <VisualState.Setters>
-                                        <Setter Target="OverflowTextLabel.Padding" Value="0,9,0,11" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="GameControllerInputMode">
-                                    <VisualState.Setters>
-                                        <Setter Target="OverflowTextLabel.Padding" Value="0,9,0,11" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="KeyboardAcceleratorTextVisibility">
-                                <VisualState x:Name="KeyboardAcceleratorTextCollapsed" />
-                                <VisualState x:Name="KeyboardAcceleratorTextVisible">
-                                    <VisualState.Setters>
-                                        <Setter Target="KeyboardAcceleratorTextLabel.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FlyoutStates">
-                                <VisualState x:Name="NoFlyout" />
-                                <VisualState x:Name="HasFlyout">
-                                    <VisualState.Setters>
-                                        <Setter Target="SubItemChevron.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="ContentRoot">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Viewbox x:Name="ContentViewbox"
-                                Height="16"
-                                HorizontalAlignment="Stretch"
-                                AutomationProperties.AccessibilityView="Raw" >
-                                <ContentPresenter x:Name="Content"
-                                    Content="{TemplateBinding Icon}"
-                                    Foreground="{TemplateBinding Foreground}" />
-                            </Viewbox>
-                            <TextBlock x:Name="OverflowTextLabel"
-                                Text="{TemplateBinding Label}"
-                                Style="{ThemeResource BodyTextBlockStyle}"
-                                Foreground="{TemplateBinding Foreground}"
-                                FontFamily="{TemplateBinding FontFamily}"
-                                TextAlignment="Left"
-                                TextTrimming="Clip"
-                                TextWrapping="NoWrap"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                Margin="12,0,12,0"
-                                Padding="0,5,0,7"
-                                Visibility="Collapsed"
-                                AutomationProperties.AccessibilityView="Raw" />
-                            <contract6Present:TextBlock x:Name="KeyboardAcceleratorTextLabel"
-                                Grid.Column="1"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
-                                MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
-                                Margin="24,0,12,0"
-                                Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed"
-                                AutomationProperties.AccessibilityView="Raw" />
-                            <FontIcon x:Name="SubItemChevron"
-                                Grid.Column="2"
-                                Glyph="&#xE76C;"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="12"
-                                AutomationProperties.AccessibilityView="Raw"
-                                Foreground="{ThemeResource CommandBarFlyoutAppBarButtonForeground}"
-                                Margin="12,0,12,0"
-                                MirroredWhenRightToLeft="True"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed" />
-                        </Grid>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <contract6NotPresent:Style x:Key="CommandBarOverflowPresenterAppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource CommandBarOverflowPresenterAppBarButtonStyleBase}" />
-
-    <contract6Present:Style x:Key="CommandBarOverflowPresenterAppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource CommandBarOverflowPresenterAppBarButtonStyleBase}">
-        <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
-    </contract6Present:Style>
-    
     <Style x:Key="CommandBarFlyoutCommandBarOverflowPresenterStyle" TargetType="CommandBarOverflowPresenter">
         <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutButtonBackground}" />
         <Setter Property="BorderThickness" Value="0" />
@@ -841,7 +632,7 @@
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             AutomationProperties.AccessibilityView="Raw">
                             <ItemsPresenter x:Name="ItemsPresenter"
-                                Margin="0,1,0,1"/>
+                                Margin="3"/>
                         </ScrollViewer>
                     </Grid>
                 </ControlTemplate>
