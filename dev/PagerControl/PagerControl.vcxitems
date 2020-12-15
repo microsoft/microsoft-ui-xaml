@@ -42,6 +42,6 @@
     <Midl Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

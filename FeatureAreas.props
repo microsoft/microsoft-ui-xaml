@@ -111,6 +111,8 @@
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+    <!-- The RadioButtons control is used in the test UI. -->
+    <FeatureRadioButtonsEnabled>productOnly</FeatureRadioButtonsEnabled>
   </PropertyGroup>
   <!-- Dependencies for PagerControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerControlEnabled) == 'true'">
@@ -210,6 +212,13 @@
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for PipsPager -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePipsPagerEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
+  <!-- Dependencies for ImageIcon -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -266,7 +275,10 @@
     <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
     <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
+    <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
+    <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
