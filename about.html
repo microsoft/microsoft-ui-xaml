@@ -8,7 +8,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>WinUI</title>
+  <title>About WinUI</title>
 
   <!-- Bootstrap core CSS -->
   <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -27,18 +27,16 @@
   <!-- CSS files for Microsoft UHF header & footer-->
   <link rel="stylesheet" href="https://www.microsoft.com/onerfstatics/marketingsites-wcus-ppe/west-european/shell/_scrf/css/themes=default.device=uplevel_web_pc_webkit_chrome/a4-d79dea/49-300017/c3-ad84aa/ef-3482ca/9a-49bbef/f3-b326fa/79-88f619/e6-0516d2?ver=2.0" type="text/css" media="all" />
   <link rel='stylesheet' href='https://statics-marketingsites-ppe-ms-com.akamaized.net/statics/override.css?c=7' type='text/css' />
+
+  <link rel="stylesheet" href="https://c.s-microsoft.com/mscc/statics/mscc-0.4.2.min.css" type="text/css"/>
   
 </head>
 
 <body>
 
   <!-- Navigation -->
-  <!-- HTML for UHF header provided by Microsoft. -->
-  <div class="container-fluid">
-    <div class="row">
-      <div id="UHF-header"></div>
-    </div>
-  </div>
+   <!-- HTML for UHF header provided by Microsoft. -->
+   <div id="UHF-header"></div>
   
 
   <div class="container-fluid">
@@ -85,7 +83,7 @@
                   <h1 class="subject-header">About WinUI</h1>
                   <div id="what-is-it">
                       <h2 class="content-subhead">What is WinUI?</h2>
-                      <p><span style="font-weight: 600;">WinUI is a user interface layer that contains modern controls and styles for building Windows apps. </span> As the native UI layer in Windows it embodies <a href="https://www.microsoft.com/design/fluent/#/">Fluent Design</a>, giving each Windows app the polished feel that customers expect.
+                      <p><span style="font-weight: 600;">WinUI is a user interface layer that contains modern controls and styles for building Windows apps. </span> As the native UI layer in Windows it embodies <a href="https://www.microsoft.com/design/fluent/#/" class="inline-link" >Fluent Design</a>, giving each Windows app the polished feel that customers expect.
                       
                       <br/><br/>WinUI 2 is a library of controls and styles currently available for use in any UWP app. It offers exciting, flexible, modern controls such as NavigationView and TeachingTip. 
                       
@@ -97,23 +95,28 @@
                       <h2 class="content-subhead">Who can use WinUI?</h2>
                       <p>While WinUI 2 is only compatible with UWP XAML,  WinUI 3 will work with every kind of Windows app! 
                       
-                        WinUI 3 can be used <i>directly</i> as the UI layer for Win32 and UWP apps, or it can be used to modernize a Win32 app's UI <i>gradually</i>, using <a href="https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands">XAML Islands</a> to mix and match with the following technologies:</p>
+                        WinUI 3 can be used <i>directly</i> as the UI layer for Win32 and UWP apps, or it can be used to modernize a Win32 app's UI <i>gradually</i>, using <a href="https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands" class="inline-link" >XAML Islands</a> to mix and match with the following technologies:</p>
                       <ul>
                           <li>WPF</li>
                           <li>WinForms</li>
                           <li>MFC</li>
                           <li>ComCtl32</li>
                       </ul>
-                      <p>WinUI also serves as the basis for cross-platform technologies that provide great native Windows experiences. <a href="https://microsoft.github.io/react-native-windows/" target="_blank">React Native for Windows</a>, <a href="https://dotnet.microsoft.com/apps/xamarin/xamarin-forms" target="_blank">Xamarin.Forms</a>, and the <a href="https://platform.uno/" target="_blank">Uno platform</a> harness the power of WinUI today - if you're currently using those platforms you're already using WinUI!</p>
+                      <p>WinUI also serves as the basis for cross-platform technologies that provide great native Windows experiences. <a href="https://microsoft.github.io/react-native-windows/"  class="inline-link" target="_blank">React Native for Windows</a>, <a href="https://dotnet.microsoft.com/apps/xamarin/xamarin-forms" class="inline-link" target="_blank">Xamarin.Forms</a>, and the <a href="https://platform.uno/" class="inline-link" target="_blank">Uno platform</a> harness the power of WinUI today - if you're currently using those platforms you're already using WinUI!</p>
                   </div>
 
                   <div id="controls">
                       <h2 class="content-subhead">Controls and features</h2>
                       <p>Use the table below to see how WinUI compares to your favorite technology.</p>
+                      <p>The <i class="icon-check m-auto text-icon"></i> symbol marks that the capability/feature is included. </p>
+                      <p>
+                        * Coming to a future version of WinUI 3. <br/>
+                        ** Work in progress.
+                      </p>
                       <table class="table table-bordered table-striped" id="compare-table" style="overflow-x:auto;">
                           <thead>
                             <tr>
-                              <th scope="col"> </th>
+                              <th scope="col">Capability/feature </th>
                               <th scope="col">WinUI 3</th>
                               <th scope="col">UWP XAML & WinUI 2</th>
                               <th scope="col">WPF</th>
@@ -212,10 +215,6 @@
                             </tr>
                           </tbody>
                         </table>
-                        <p>
-                          * Coming to a future version of WinUI 3. <br/>
-                          ** Work in progress.
-                        </p>
                   </div>
               </div>
           </section>
@@ -230,13 +229,13 @@
                       <h2 class="content-subhead">Path for UWP apps</h2>
                       <p>UWP apps are modern, flexible, and integrate easily with WinUI. WinUI 3 provides even more modernizations and improvements, including the following:</p>
                       <ul>
-                        <li><span style="font-weight: bold;">New controls and capabilities:</span> WinUI builds on what's available in UWP and gives you even more- including input validation, a modern Chromium-based WebView, and a full set of Fluent design based controls. <a href="https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt" target="_blank">You can browse WinUI controls in the Xaml Controls Gallery app.</a> </li>  
+                        <li><span style="font-weight: bold;">New controls and capabilities:</span> WinUI builds on what's available in UWP and gives you even more- including input validation, a modern Chromium-based WebView, and a full set of Fluent design based controls. <a href="https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt" class="inline-link" target="_blank">You can browse WinUI controls in the Xaml Controls Gallery app.</a> </li>  
                         <li><span style="font-weight: bold;">Greater agility:</span> Decoupled from the OS and frequently updated, WinUI offers backwards compatibility and gives you access to cutting edge updates.</li>
                       </ul>
                       <p>For detailed instructions on how to use WinUI in your UWP app, see:</p>
                       <ul>
-                          <li> <a href="http://aka.ms/winui3/uwpguide" target="_blank">Walkthrough of using WinUI 3 Preview 3 in your UWP app</a> </li>
-                          <li> <a href="https://docs.microsoft.com/en-us/uwp/toolkits/winui/getting-started" target="_blank">Docs on using WinUI 2 in your UWP app</a> </li>
+                          <li> <a href="http://aka.ms/winui3/uwpguide" class="inline-link"  target="_blank">Walkthrough of using WinUI 3 Preview 3 in your UWP app</a> </li>
+                          <li> <a href="https://docs.microsoft.com/en-us/uwp/toolkits/winui/getting-started" class="inline-link"  target="_blank">Docs on using WinUI 2 in your UWP app</a> </li>
                       </ul>
                   </div>
 
@@ -247,9 +246,9 @@
                         <span style="font-weight:bold;">Complete use:</span> You can use WinUI 3 as the entire UI layer for your desktop app, replacing your current main UI framework. This method ensures that your entire app is modern and consistent in that each component of the app has the same rich functionality and capability.
                         <p>WinUI 3 Preview 3 is now available, which lets you use WinUI to build a Win32 app. For instructions and details, see: </p>
                         <ul>
-                          <li><a href="http://aka.ms/winui3/desktopguide" target="_blank">How-to: Creating a desktop app with WinUI 3 Preview 3</a> </li>
+                          <li><a href="http://aka.ms/winui3/desktopguide" class="inline-link" target="_blank">How-to: Creating a desktop app with WinUI 3 Preview 3</a> </li>
                         </ul>
-                        <span style="font-weight:bold;">Hybrid use:</span> With Xaml Islands, you can modernize certain parts of your app with WinUI, allowing you to adopt WinUI at your own pace. You can host any built-in UWP control or custom-created control inside of your desktop app, along with UWP functionality such as WebView or modern input support. Xaml Islands allows you to upgrade your interface where it would be most impactful in your application.<br/> <br/> To learn more about getting started with Xaml Islands, you can refer to the <a href="https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands" target="_blank">modernization docs.</a> </p>
+                        <span style="font-weight:bold;">Hybrid use:</span> With Xaml Islands, you can modernize certain parts of your app with WinUI, allowing you to adopt WinUI at your own pace. You can host any built-in UWP control or custom-created control inside of your desktop app, along with UWP functionality such as WebView or modern input support. Xaml Islands allows you to upgrade your interface where it would be most impactful in your application.<br/> <br/> To learn more about getting started with Xaml Islands, you can refer to the <a href="https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands" class="inline-link"  target="_blank">modernization docs.</a> </p>
                   </div>
           
               </div> 
@@ -261,7 +260,7 @@
 
 
   <!-- UHF Footer from Microsoft -->
-  <footer class="footer bg-light" id="UHF-footer"></footer>
+  <div class="footer bg-light" id="UHF-footer"></div>
 
   <!-- Javascript: Bootstrap, UHF header/footer, and custom file -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>

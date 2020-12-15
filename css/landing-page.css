@@ -49,6 +49,15 @@ header.masthead h1 {
  color: #FFFFFF;
 }
 
+.btn-custom:focus {
+  /* The following is to create a white border & blue shadow around the button to make 
+  sure that the button is accessible and visible in its focus state in HC and normal mode. */
+
+  box-shadow: 0 0 0 2px #ffffff, 0 0 3px 5px #3a97f9;
+  outline: 2px dotted transparent;
+  outline-offset: 2px;
+}
+
 #sidebar-btn, #sidebar-btn:active {
  background-color: transparent;
  border: none;
@@ -68,10 +77,10 @@ header.masthead h1 {
  font-size: 1.25em;
 }
 #learn-more, #download {
- padding: 12px;
- font-size: 1.25rem;
- font-weight: 500;
- display: inline-block;
+  padding: 12px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  display: inline-block;
 }
 
 #download {
@@ -293,7 +302,7 @@ header.masthead h1 {
  color: black;
 }
 
-.paths .path-item h5 {
+.paths .path-item p{
  color: black;
  font-size: 2em;
  font-weight: 500;
@@ -306,16 +315,16 @@ header.masthead h1 {
 .path-subtext {
  color:#c3cad6; 
 }
-
-.call-to-action {
+/* 
+.logo-blur {
  position: relative;
  background-size: cover;
 
  justify-content: center;
  background-image: url('../img/winui-big.png');
- background-position: center center;
+ background-position: left;
  background-repeat: no-repeat;
- background-size: auto;
+ background-size: contain;
 }
 
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
@@ -324,6 +333,12 @@ header.masthead h1 {
    backdrop-filter: blur(10px) saturate(125%);
    background-color: rgba(255, 255, 255, 0.5); 
  }
+} */
+
+#logo-med {
+  max-width: 50%;
+  width: 8%;
+  height: auto;
 }
 
 .specific-call {
@@ -396,10 +411,12 @@ footer.footer a{
  font-weight: 700;
 }
 
-.partner-summary h4, .paths h4, .video-spotlight h4 {
+.partner-summary .subtext, .paths .subtext, .video-spotlight .subtext {
  text-align: left;
  color: black;
  font-weight: 300;
+ font-size: 1.5em;
+ line-height: 120%;
 }
 
 .partners-container {
@@ -436,7 +453,11 @@ a {
 
 a:hover {
  color: #003966;
- text-decoration: none;
+ text-decoration: underline;
+}
+
+.inline-link{
+  text-decoration: underline;
 }
 
 #uhf-footer{
@@ -595,4 +616,8 @@ a:hover {
 
 .control-option:hover, v.control-option:active, .control-option:focus {
  outline: none;
+}
+
+#questions {
+  margin-top: 25px;
 }
