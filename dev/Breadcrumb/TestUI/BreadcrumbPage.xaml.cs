@@ -15,6 +15,7 @@ using Breadcrumb = Microsoft.UI.Xaml.Controls.Breadcrumb;
 using Breadcrumb_TestUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Windows.Security.Authentication.OnlineId;
 
 namespace MUXControlsTestApp
 {
@@ -26,6 +27,8 @@ namespace MUXControlsTestApp
 
         public ObservableCollection<object> currentNodeChildrenList { get; } = new ObservableCollection<object>();
 
+        private const int maxDepth = 7;
+
         public BreadcrumbPage()
         {
             this.InitializeComponent();
@@ -33,6 +36,16 @@ namespace MUXControlsTestApp
         }
 
         private void InitializeBreadcrumbAndChildren()
+        {
+            // GenerateTree();
+            GenerateTreeDynamic();
+            
+
+            breadCrumbList.Add(Tree.Root);
+            UpdateChildrenList(Tree.Root);
+        }
+
+        private void GenerateTree()
         {
             Tree.Root = new TreeNode() {
                 Name = "Root",
@@ -99,23 +112,49 @@ namespace MUXControlsTestApp
             };
 
             Tree.UpdateParents();
+        }
 
-            breadCrumbList.Add(Tree.Root);
-            UpdateChildrenList(Tree.Root);
+        private void GenerateTreeDynamic()
+        {
+            Tree.Root = new TreeNode() { Name = "Root" };
+            CreateChildrenForNode(Tree.Root, 1);
+
+            Tree.UpdateParents();
+        }
+
+        private void CreateChildrenForNode(TreeNode node, int depth)
+        {
+            if (depth > maxDepth)
+            {
+                return;
+            }
+
+            node.Children = new List<object>();
+
+            for (int i = 0; i < 3; ++i)
+            {
+                string nodeName = "";
+                if (depth == 1)
+                {
+                    // This will yield stuff as 'Node A' or 'Node B'
+                    nodeName = "Node " + (char)('A' + i);
+                }
+                else
+                {
+                    nodeName = node.Name + "_" + (i + 1);
+                }
+
+                TreeNode child = new TreeNode() { Name = nodeName };
+                node.Children.Add(child);
+                CreateChildrenForNode(child, depth + 1);
+            }
         }
 
         private void ItemRepeater_ButtonClick(object sender, RoutedEventArgs e)
         {
             Button btn = sender as Button;
             TreeNode treeNode = btn.Content as TreeNode;
-
-            List<object> asdf = new List<object>();
-            for (int i = 0; i < 3; ++i)
-            {
-                asdf.Add(new TreeNode { Name = "Test" + i });
-            }
-
-            ReplaceList(breadCrumbList, asdf);
+            ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
             UpdateChildrenList(treeNode);
         }
 
@@ -144,6 +183,12 @@ namespace MUXControlsTestApp
         {
             ReplaceList(currentNodeChildrenList, node.Children);
         }
-        
+
+        private void BreadCrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
+        {
+            TreeNode treeNode = (TreeNode)args.Item;
+            ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
+            UpdateChildrenList(treeNode);
+        }
     }
 }

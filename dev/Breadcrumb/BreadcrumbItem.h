@@ -22,16 +22,16 @@ public:
     void ResetVisualProperties();
     void SetPropertiesForLastNode();
     void SetPropertiesForEllipsisNode();
+    void SetItemsRepeater(const winrt::Breadcrumb& parent);
 
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnClickEventotherName(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
+    void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
 
     void SetPrimaryButtonFontWeight(bool mustBeBold);
     void SetSecondaryButtonVisibility(bool isVisible);
     void SetSecondaryButtonText(bool isCollapsed);
     
-
     tracker_ref<winrt::SplitButton> m_splitButton{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
     tracker_ref<winrt::Grid> m_secondaryButtonGrid{ this };
@@ -42,7 +42,12 @@ private:
     winrt::SplitButton::Loaded_revoker m_splitButtonLoadedRevoker{};
     winrt::SplitButton::Click_revoker m_splitButtonClickRevoker{};
 
+    bool m_isEllipsisNode{};
     bool m_isLastNode{};
     bool m_isChevronVisible{};
     winrt::GridLength m_chevronOriginalWidth;
+
+    tracker_ref<winrt::Breadcrumb> m_parent { this };
+
+    
 };

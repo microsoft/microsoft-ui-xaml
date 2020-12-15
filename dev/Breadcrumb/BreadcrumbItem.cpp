@@ -7,6 +7,8 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+#include "Breadcrumb.h"
+
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
     CppWinRTActivatableClassWithBasicFactory(BreadcrumbItem)
@@ -41,7 +43,7 @@ void BreadcrumbItem::OnApplyTemplate()
     if (auto splitButton = m_splitButton.get())
     {
         m_splitButtonLoadedRevoker = splitButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
-        m_splitButtonClickRevoker = splitButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnClickEventotherName });
+        m_splitButtonClickRevoker = splitButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnBreadcrumbItemClick });
     }
 }
 
@@ -55,7 +57,7 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winr
         m_splitButtonBorder.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 2).as<winrt::Grid>());
         m_primaryButton.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 3).as<winrt::Button>());
         m_secondaryButton.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 4).as<winrt::Button>());
-        
+
         if (auto secondaryButton = m_secondaryButton.get())
         {
             secondaryButton.IsEnabled(false);
@@ -64,27 +66,61 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winr
         }
     }
 
-    if (m_isLastNode)
+    if (m_isEllipsisNode)
+    {
+        SetPropertiesForEllipsisNode();
+    }
+    else if (m_isLastNode)
     {
         SetPropertiesForLastNode();
     }
+    else
+    {
+        ResetVisualProperties();
+    }
 }
 
-void BreadcrumbItem::OnClickEventotherName(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args)
+void BreadcrumbItem::SetItemsRepeater(const winrt::Breadcrumb& parent)
 {
+    m_parent.set(parent);
+}
 
+void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args)
+{
+    if (const auto& breadcrumb = m_parent.get())
+    {
+        auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
+
+        
+        breadcrumbImpl->RaiseItemClickedEvent(Content());
+    }
 }
 
 void BreadcrumbItem::SetPropertiesForLastNode()
 {
+    m_isEllipsisNode = false;
     m_isLastNode = true;
 
     SetPrimaryButtonFontWeight(true);
     SetSecondaryButtonVisibility(false);
 }
 
+void BreadcrumbItem::ResetVisualProperties()
+{
+    m_isEllipsisNode = false;
+    m_isLastNode = false;
+
+    if (auto secondaryButton = m_secondaryButton.get())
+    {
+        SetPrimaryButtonFontWeight(false);
+        SetSecondaryButtonVisibility(true);
+        SetSecondaryButtonText(true);
+    }
+}
+
 void BreadcrumbItem::SetPropertiesForEllipsisNode()
 {
+    m_isEllipsisNode = true;
     m_isLastNode = false;
 
     if (auto primaryButton = m_primaryButton.get())
@@ -94,8 +130,11 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
         // primaryButton.Content(winrt::box_value(L"..."));
     }
 
-    SetPrimaryButtonFontWeight(false);
-    SetSecondaryButtonVisibility(true);
+    if (auto secondaryButton = m_secondaryButton.get())
+    {
+        SetPrimaryButtonFontWeight(false);
+        SetSecondaryButtonVisibility(true);
+    }
 }
 
 void BreadcrumbItem::SetPrimaryButtonFontWeight(bool mustBeBold)
@@ -155,17 +194,5 @@ void BreadcrumbItem::SetSecondaryButtonText(bool isCollapsed)
         {
             secondaryButtonContent.Text(isCollapsed ? L"\xE76C" : L"\xE70D");
         }
-    }
-}
-
-void BreadcrumbItem::ResetVisualProperties()
-{
-    m_isLastNode = false;
-
-    if (auto secondaryButton = m_secondaryButton.get())
-    {
-        SetPrimaryButtonFontWeight(false);
-        SetSecondaryButtonVisibility(true);
-        SetSecondaryButtonText(true);
     }
 }

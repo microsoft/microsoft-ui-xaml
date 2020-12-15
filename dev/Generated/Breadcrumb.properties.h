@@ -21,10 +21,10 @@ public:
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;
 
-    winrt::event_token Click(winrt::TypedEventHandler<winrt::Breadcrumb, winrt::BreadcrumbItemClickedEventArgs> const& value);
-    void Click(winrt::event_token const& token);
+    winrt::event_token ItemClicked(winrt::TypedEventHandler<winrt::Breadcrumb, winrt::BreadcrumbItemClickedEventArgs> const& value);
+    void ItemClicked(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::Breadcrumb, winrt::BreadcrumbItemClickedEventArgs>> m_clickEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Breadcrumb, winrt::BreadcrumbItemClickedEventArgs>> m_itemClickedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

@@ -17,7 +17,7 @@ GlobalDependencyProperty BreadcrumbProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty BreadcrumbProperties::s_ItemTemplateProperty{ nullptr };
 
 BreadcrumbProperties::BreadcrumbProperties()
-    : m_clickEventSource{static_cast<Breadcrumb*>(this)}
+    : m_itemClickedEventSource{static_cast<Breadcrumb*>(this)}
 {
     EnsureProperties();
 }
@@ -96,12 +96,12 @@ winrt::IInspectable BreadcrumbProperties::ItemTemplate()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<Breadcrumb*>(this)->GetValue(s_ItemTemplateProperty));
 }
 
-winrt::event_token BreadcrumbProperties::Click(winrt::TypedEventHandler<winrt::Breadcrumb, winrt::BreadcrumbItemClickedEventArgs> const& value)
+winrt::event_token BreadcrumbProperties::ItemClicked(winrt::TypedEventHandler<winrt::Breadcrumb, winrt::BreadcrumbItemClickedEventArgs> const& value)
 {
-    return m_clickEventSource.add(value);
+    return m_itemClickedEventSource.add(value);
 }
 
-void BreadcrumbProperties::Click(winrt::event_token const& token)
+void BreadcrumbProperties::ItemClicked(winrt::event_token const& token)
 {
-    m_clickEventSource.remove(token);
+    m_itemClickedEventSource.remove(token);
 }
