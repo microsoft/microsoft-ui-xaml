@@ -5,28 +5,28 @@
   </assembly>
   <members>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.AnimatedVisualPlayerAutomationPeer">
-      <summary>Exposes AnimatedVisualPlayer types to Microsoft UI Automation..</summary>
+      <summary>Exposes AnimatedVisualPlayer types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.AnimatedVisualPlayerAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)">
       <summary>Initializes a new instance of the AnimatedVisualPlayerAutomationPeer class.</summary>
       <param name="owner">The AnimatedVisualPlayer control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ColorPickerSliderAutomationPeer">
-      <summary>Exposes ColorPickerSlider types to Microsoft UI Automation..</summary>
+      <summary>Exposes ColorPickerSlider types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.ColorPickerSliderAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.ColorPickerSlider)">
       <summary>Initializes a new instance of the ColorPickerSliderAutomationPeer class.</summary>
       <param name="owner">The ColorPickerSlider control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ColorSpectrumAutomationPeer">
-      <summary>Exposes ColorSpectrum types to Microsoft UI Automation..</summary>
+      <summary>Exposes ColorSpectrum types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.ColorSpectrumAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum)">
       <summary>Initializes a new instance of the ColorSpectrumAutomationPeer class.</summary>
       <param name="owner">The ColorSpectrum control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer">
-      <summary>Exposes DropDownButton types to Microsoft UI Automation..</summary>
+      <summary>Exposes DropDownButton types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.DropDownButton)">
       <summary>Initializes a new instance of the DropDownButtonAutomationPeer class.</summary>
@@ -42,15 +42,19 @@
       <summary>Gets the state, expanded or collapsed, of the DropDownButton.</summary>
       <returns>A value of the enumeration.</returns>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.InfoBarAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.InfoBarAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.InfoBar)">
+      <param name="owner"></param>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.MenuBarAutomationPeer">
-      <summary>Exposes MenuBar types to Microsoft UI Automation..</summary>
+      <summary>Exposes MenuBar types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.MenuBarAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.MenuBar)">
       <summary>Initializes a new instance of the MenuBarAutomationPeer class.</summary>
       <param name="owner">The MenuBar control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.MenuBarItemAutomationPeer">
-      <summary>Exposes MenuBarItem types to Microsoft UI Automation..</summary>
+      <summary>Exposes MenuBarItem types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.MenuBarItemAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.MenuBarItem)">
       <summary>Initializes a new instance of the MenuBarItemAutomationPeer class.</summary>
@@ -74,7 +78,7 @@
       <param name="owner"></param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.NavigationViewItemAutomationPeer">
-      <summary>Exposes NavigationViewItem types to Microsoft UI Automation..</summary>
+      <summary>Exposes NavigationViewItem types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.NavigationViewItemAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.NavigationViewItem)">
       <summary>Initializes a new instance of the NavigationViewItemAutomationPeer class.</summary>
@@ -91,42 +95,55 @@
       <returns>Expanded if the NavigationViewItem is currently expanded, Collapsed otherwise.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.NumberBoxAutomationPeer">
-      <summary>Exposes NumberBox types to Microsoft UI Automation..</summary>
+      <summary>Exposes NumberBox types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.NumberBoxAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.NumberBox)">
       <summary>Initializes a new instance of the NumberBoxAutomationPeer class.</summary>
       <param name="owner">The NumberBox control instance to create the peer for.</param>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.PagerControlAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.PagerControlAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.PagerControl)">
+      <param name="owner"></param>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.PersonPictureAutomationPeer">
-      <summary>Exposes PersonPicture types to Microsoft UI Automation..</summary>
+      <summary>Exposes PersonPicture types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.PersonPictureAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.PersonPicture)">
       <summary>Initializes a new instance of the PersonPictureAutomationPeer class.</summary>
       <param name="owner">The PersonPicture control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ProgressBarAutomationPeer">
-      <summary>Exposes ProgressBar types to Microsoft UI Automation..</summary>
+      <summary>Exposes ProgressBar types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.ProgressBarAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ProgressBar)">
       <summary>Initializes a new instance of the ProgressBarAutomationPeer class.</summary>
       <param name="owner">The ProgressBar control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer">
-      <summary>Exposes ProgressRing types to Microsoft UI Automation..</summary>
+      <summary>Exposes ProgressRing types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ProgressRing)">
       <summary>Initializes a new instance of the ProgressRingAutomationPeer class.</summary>
       <param name="owner">The ProgressRing control instance to create the peer for.</param>
     </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.SetValue(System.Double)">
+      <param name="value"></param>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.IsReadOnly" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.LargeChange" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.Maximum" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.Minimum" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.SmallChange" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ProgressRingAutomationPeer.Value" />
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.RatingControlAutomationPeer">
-      <summary>Exposes RatingControl types to Microsoft UI Automation..</summary>
+      <summary>Exposes RatingControl types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.RatingControlAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.RatingControl)">
       <summary>Initializes a new instance of the RatingControlAutomationPeer class.</summary>
       <param name="owner">The RatingControl control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer">
-      <summary>Exposes ItemsRepeater types to Microsoft UI Automation..</summary>
+      <summary>Exposes ItemsRepeater types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ItemsRepeater)">
       <summary>Initializes a new instance of the RepeaterAutomationPeer class.</summary>
@@ -137,7 +154,7 @@
       <param name="owner"></param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer">
-      <summary>Exposes SplitButton types to Microsoft UI Automation..</summary>
+      <summary>Exposes SplitButton types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.SplitButton)">
       <summary>Initializes a new instance of the SplitButtonAutomationPeer class.</summary>
@@ -155,27 +172,27 @@
       <returns>A value of the enumeration.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TabViewAutomationPeer">
-      <summary>Exposes TabView types to Microsoft UI Automation..</summary>
+      <summary>Exposes TabView types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TabViewAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.TabView)">
       <summary>Initializes a new instance of the TabViewAutomationPeer class.</summary>
       <param name="owner">The TabView control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TabViewItemAutomationPeer">
-      <summary>Exposes TabViewItem types to Microsoft UI Automation..</summary>
+      <summary>Exposes TabViewItem types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TabViewItemAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.TabViewItem)">
       <param name="owner">The TabViewItem control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TeachingTipAutomationPeer">
-      <summary>Exposes TeachingTip types to Microsoft UI Automation..</summary>
+      <summary>Exposes TeachingTip types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TeachingTipAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.TeachingTip)">
       <summary>Initializes a new instance of the TeachingTipAutomationPeer class.</summary>
       <param name="owner">The TeachingTip control instance to create the peer for.</param>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer">
-      <summary>Exposes ToggleSplitButton types to Microsoft UI Automation..</summary>
+      <summary>Exposes ToggleSplitButton types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ToggleSplitButton)">
       <summary>Initializes a new instance of the ToggleSplitButtonAutomationPeer class.</summary>
@@ -199,7 +216,7 @@
       <returns>The toggle state of the ToggleSplitButton. The default value is Indeterminate.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TreeViewItemAutomationPeer">
-      <summary>Exposes TreeViewItem types to Microsoft UI Automation..</summary>
+      <summary>Exposes TreeViewItem types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TreeViewItemAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.TreeViewItem)">
       <summary>Initializes a new instance of the TreeViewItemAutomationPeer class.</summary>
@@ -216,7 +233,7 @@
       <returns>The expanded or collapsed state of the associated TreeViewItem. The default value is Expanded.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TreeViewItemDataAutomationPeer">
-      <summary>Exposes TreeViewItem data types to Microsoft UI Automation..</summary>
+      <summary>Exposes TreeViewItem data types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TreeViewItemDataAutomationPeer.#ctor(System.Object,Microsoft.UI.Xaml.Automation.Peers.TreeViewListAutomationPeer)">
       <summary>Initializes a new instance of the TreeViewItemDataAutomationPeer class.</summary>
@@ -234,7 +251,7 @@
       <returns>The expanded or collapsed state of the associated TreeViewItemDataAutomationPeer. The default value is Expanded.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TreeViewListAutomationPeer">
-      <summary>Exposes TreeViewList types to Microsoft UI Automation..</summary>
+      <summary>Exposes TreeViewList types to Microsoft UI Automation.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TreeViewListAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.TreeViewList)">
       <summary>Initializes a new instance of the TreeViewListAutomationPeer class.</summary>
@@ -955,6 +972,56 @@
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.GetSize" />
     <member name="M:Microsoft.UI.Xaml.Controls.IndexPath.ToString" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBar" />
+    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonClick" />
+    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.Closed" />
+    <member name="E:Microsoft.UI.Xaml.Controls.InfoBar.Closing" />
+    <member name="M:Microsoft.UI.Xaml.Controls.InfoBar.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ActionButton" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ActionButtonProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommand" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandParameter" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandParameterProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.CloseButtonStyleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Content" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentTemplate" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.ContentTemplateProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IconSource" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IconSourceProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsClosable" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsClosableProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsIconVisible" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsIconVisibleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsOpen" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.IsOpenProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Message" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.MessageProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Severity" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.SeverityProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TemplateSettings" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TemplateSettingsProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.Title" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBar.TitleProperty" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs.Reason" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarCloseReason" />
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarCloseReason.CloseButton" />
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarCloseReason.Programmatic" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs.Cancel" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarClosingEventArgs.Reason" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarSeverity" />
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error" />
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational" />
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success" />
+    <member name="F:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning" />
+    <member name="T:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings" />
+    <member name="M:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.IconElement" />
+    <member name="P:Microsoft.UI.Xaml.Controls.InfoBarTemplateSettings.IconElementProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual" />
     <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Dispose">
       <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
@@ -1981,6 +2048,8 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
       <summary>Identifies the HeaderTemplate dependency property.</summary>
       <returns>The identifier for the HeaderTemplate dependency property.</returns>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.InputScope" />
+    <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.InputScopeProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.NumberBox.IsWrapEnabled">
       <summary>Toggles whether line breaking occurs if a line of text extends beyond the available width of the control.</summary>
     </member>
@@ -2120,6 +2189,64 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     <member name="P:Microsoft.UI.Xaml.Controls.NumberBoxValueChangedEventArgs.OldValue">
       <summary>Contains the old Value being replaced in a NumberBox.</summary>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.PagerControl" />
+    <member name="E:Microsoft.UI.Xaml.Controls.PagerControl.SelectedIndexChanged" />
+    <member name="M:Microsoft.UI.Xaml.Controls.PagerControl.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.ButtonPanelAlwaysShowFirstLastPageIndex" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.ButtonPanelAlwaysShowFirstLastPageIndexProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.DisplayMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.DisplayModeProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonCommand" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonStyleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonVisibility" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.FirstButtonVisibilityProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonCommand" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonStyleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonVisibility" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.LastButtonVisibilityProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonCommand" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonStyleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonVisibility" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NextButtonVisibilityProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NumberOfPages" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.NumberOfPagesProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PagerInputCommand" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PagerInputCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PrefixText" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PrefixTextProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonCommand" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonStyleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonVisibility" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.PreviousButtonVisibilityProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SelectedPageIndex" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SelectedPageIndexProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SuffixText" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.SuffixTextProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControl.TemplateSettings" />
+    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility.Hidden" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility.HiddenOnEdge" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlButtonVisibility.Visible" />
+    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.Auto" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.ButtonPanel" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.ComboBox" />
+    <member name="F:Microsoft.UI.Xaml.Controls.PagerControlDisplayMode.NumberBox" />
+    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlSelectedIndexChangedEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlSelectedIndexChangedEventArgs.NewPageIndex" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlSelectedIndexChangedEventArgs.PreviousPageIndex" />
+    <member name="T:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings" />
+    <member name="M:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings.NumberPanelItems" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PagerControlTemplateSettings.Pages" />
     <member name="T:Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind">
       <summary>Defines constants that specify how the source offset values of a ParallaxView are interpreted.</summary>
     </member>
@@ -2728,6 +2855,26 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     </member>
     <member name="F:Microsoft.UI.Xaml.Controls.Primitives.CornerRadiusToThicknessConverterKind.FilterTopFromTopLeft" />
     <member name="F:Microsoft.UI.Xaml.Controls.Primitives.CornerRadiusToThicknessConverterKind.FilterTopFromTopRight" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.#ctor" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.GetHorizontalMargin(Windows.UI.Xaml.DependencyObject)">
+      <param name="object"></param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.GetVerticalMargin(Windows.UI.Xaml.DependencyObject)">
+      <param name="object"></param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.SetHorizontalMargin(Windows.UI.Xaml.DependencyObject,Windows.UI.Xaml.Thickness)">
+      <param name="object"></param>
+      <param name="value"></param>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.SetVerticalMargin(Windows.UI.Xaml.DependencyObject,Windows.UI.Xaml.Thickness)">
+      <param name="object"></param>
+      <param name="value"></param>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalMargin" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.HorizontalMarginProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalMargin" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel.VerticalMarginProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.IScrollController" />
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AddScrollVelocityRequested" />
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.InteractionInfoChanged" />
@@ -3064,10 +3211,16 @@ This property is analogous to the TreeViewItem.HasUnrealizedChildren property.</
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsIndeterminate" />
     <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.IsIndeterminateProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Maximum" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.MaximumProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Minimum" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.MinimumProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.TemplateSettings">
       <summary>Gets an object that provides calculated values that can be referenced as TemplateBinding sources when defining templates for a ProgressRing control.</summary>
       <returns>An object that provides calculated values for templates.</returns>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.Value" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ProgressRing.ValueProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.ProgressRingTemplateSettings">
       <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a ProgressRing control. Not intended for general use.</summary>
     </member>

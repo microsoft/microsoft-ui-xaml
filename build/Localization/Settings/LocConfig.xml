@@ -45,5 +45,8 @@
     <File
       location="TreeView"
       path="%LocRoot%\..\..\dev\TreeView\Strings\en-us\Resources.resw"/>
+    <File
+      location="PipsPager"
+      path="%LocRoot%\..\..\dev\PipsPager\Strings\en-us\Resources.resw"/>
   </Module>
 </Modules>

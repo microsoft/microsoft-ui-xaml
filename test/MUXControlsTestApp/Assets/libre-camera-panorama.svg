@@ -1,0 +1,9 @@
+<svg role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14">
+  <g transform="matrix(.3 0 0 .3 -.2 -.5)">
+    <path fill="#f57c00" d="M4 9v32s8.4-3 20-3 20 3 20 3V9s-6.7 3-20 3S4 9 4 9z"/>
+    <path fill="#942a09" d="M24 34h.4L15 19 6.9 36.2c3.4-.9 9.6-2.2 17.1-2.2z"/>
+    <path fill="#bf360c" d="M24 34c3.3 0 6.3.2 9 .6l-8-11.8-7.8 11.5c2.1-.2 4.4-.3 6.8-.3z"/>
+    <path fill="#e65100" d="M40.7 36L35 26.5l-5 7.8c4.5.4 8.2 1.1 10.7 1.7z"/>
+    <ellipse cx="36" cy="19.5" fill="#fff9c4" rx="2" ry="2.5"/>
+  </g>
+</svg>

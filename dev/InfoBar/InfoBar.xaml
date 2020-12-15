@@ -136,34 +136,31 @@
                             <primitives:InfoBarPanel
                                 Grid.Column="1"
                                 Margin="{StaticResource InfoBarPanelMargin}"
-                                primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarPanelHorizontalLayoutMargin}"
-                                primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarPanelVerticalLayoutMargin}">
+                                HorizontalOrientationPadding="{StaticResource InfoBarPanelHorizontalOrientationPadding}"
+                                VerticalOrientationPadding="{StaticResource InfoBarPanelVerticalOrientationPadding}">
 
                                 <TextBlock x:Name="Title"
-                                    Grid.Column="0"
                                     Text="{TemplateBinding Title}"
                                     Foreground="{ThemeResource InfoBarTitleForeground}"
-                                    primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarTitleHorizontalLayoutMargin}"
-                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarTitleVerticalLayoutMargin}"
+                                    primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarTitleHorizontalOrientationMargin}"
+                                    primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarTitleVerticalOrientationMargin}"
                                     TextWrapping="WrapWholeWords"
                                     AutomationProperties.LandmarkType="Navigation"
                                     FontWeight="{StaticResource InfoBarTitleFontWeight}"
                                     FontSize="{StaticResource InfoBarTitleFontSize}"/>
 
                                 <TextBlock x:Name="Message" 
-                                    Grid.Column="1"
                                     Text="{TemplateBinding Message}"
                                     Foreground="{ThemeResource InfoBarMessageForeground}"
-                                    primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarMessageHorizontalLayoutMargin}"
-                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarMessageVerticalLayoutMargin}"
+                                    primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarMessageHorizontalOrientationMargin}"
+                                    primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarMessageVerticalOrientationMargin}"
                                     TextWrapping="WrapWholeWords"
                                     FontWeight="{StaticResource InfoBarMessageFontWeight}"
                                     FontSize="{StaticResource InfoBarMessageFontSize}"/>
 
                                 <ContentPresenter
-                                    Grid.Column="2"
-                                    primitives:InfoBarPanel.HorizontalMargin="{StaticResource InfoBarActionHorizontalLayoutMargin}"
-                                    primitives:InfoBarPanel.VerticalMargin="{StaticResource InfoBarActionVerticalLayoutMargin}"
+                                    primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarActionHorizontalOrientationMargin}"
+                                    primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarActionVerticalOrientationMargin}"
                                     VerticalAlignment="Top"
                                     Content="{TemplateBinding ActionButton}">
                                     
@@ -171,8 +168,8 @@
                                         <Style TargetType="Button">
                                             <Style.Setters>
                                                 <Setter Property="MinWidth" Value="{StaticResource InfoBarActionButtonMinWidth}"/>
-                                                <Setter Property="Height" Value="{StaticResource InfoBarActionButtonHeight}"/>
                                                 <Setter Property="Padding" Value="{StaticResource InfoBarActionButtonPadding}"/>
+                                                <Setter Property="MinHeight" Value="{StaticResource InfoBarActionButtonMinHeight}"/>
                                                 <contract7Present:Setter Property="CornerRadius" Value="{StaticResource InfoBarActionButtonCornerRadius}"/>
                                             </Style.Setters>
                                         </Style>
@@ -181,8 +178,8 @@
                                             <Style.Setters>
                                                 <Setter Property="FontSize" Value="{ThemeResource InfoBarHyperlinkButtonFontSize}"/>
                                                 <Setter Property="Foreground" Value="{ThemeResource InfoBarHyperlinkButtonForeground}"/>
-                                                <Setter Property="Height" Value="{StaticResource InfoBarHyperlinkButtonHeight}"/>
                                                 <Setter Property="Padding" Value="{StaticResource InfoBarHyperlinkButtonPadding}"/>
+                                                <Setter Property="MinHeight" Value="{ThemeResource InfoBarHyperlinkButtonMinHeight}"/>
                                             </Style.Setters>
                                         </Style>
                                     </ContentPresenter.Resources>
