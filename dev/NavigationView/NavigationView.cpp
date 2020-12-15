@@ -542,7 +542,6 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavFooterMenuRepeaterGettingFocusRevoker = leftFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
-        leftFooterMenuNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -565,7 +564,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavFooterMenuRepeaterGettingFocusRevoker = topFooterMenuNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
-        topFooterMenuNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
     m_topNavContentOverlayAreaGrid.set(GetTemplateChildT<winrt::Border>(c_topNavContentOverlayAreaGrid, controlProtected));
