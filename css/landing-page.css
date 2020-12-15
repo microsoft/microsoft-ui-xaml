@@ -315,25 +315,6 @@ header.masthead h1 {
 .path-subtext {
  color:#c3cad6; 
 }
-/* 
-.logo-blur {
- position: relative;
- background-size: cover;
-
- justify-content: center;
- background-image: url('../img/winui-big.png');
- background-position: left;
- background-repeat: no-repeat;
- background-size: contain;
-}
-
-@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
- .specific-call {
-   -webkit-backdrop-filter: blur(10px);
-   backdrop-filter: blur(10px) saturate(125%);
-   background-color: rgba(255, 255, 255, 0.5); 
- }
-} */
 
 #logo-med {
   max-width: 50%;
