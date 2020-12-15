@@ -46,6 +46,7 @@
 
             <TextBlock Text="Footer item tests"/>
             <Button x:Name="PaneLayoutTestPageButton" AutomationProperties.Name="PaneLayoutTestPage" Margin="2" HorizontalAlignment="Stretch">PaneLayoutTestPage</Button>
+            <Button x:Name="FooterItemsSelectionTestPageButton" AutomationProperties.Name="FooterItemsSelectionTestPage" Margin="2" HorizontalAlignment="Stretch">FooterItemsSelectionTestPage</Button>
         </StackPanel>
 
         <StackPanel>
