@@ -522,8 +522,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnimatedIcon", "dev\Animate
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_TestUI", "dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.shproj", "{83FD36C0-189F-4E95-8002-9B73905CA301}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedIcon_InteractionTests", "dev\AnimatedIcon\InteractionTests\AnimatedIcon_InteractionTests.shproj", "{8AFF7072-9957-475B-83B7-D0B786228232}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
