@@ -121,8 +121,18 @@
             <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="ControlAltFillColorTertiaryBrush" />
+            <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorDefaultBrush" />
 
-            <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+            <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparent" />
+            <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparent" />
+            <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparent" />
+            <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+
+            <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
@@ -132,7 +142,7 @@
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
 
-            <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" MappingMode="Absolute" StartPoint="0,2" EndPoint="0,3">
+            <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" MappingMode="Absolute" StartPoint="0,1.5" EndPoint="0,2.5">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
@@ -145,6 +155,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="TextBoxInnerButtonMargin">0,4,4,4</Thickness>
 
     <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}" />
 
@@ -178,6 +189,7 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Grid x:Name="ButtonLayoutGrid"
+                                                Margin="{ThemeResource TextBoxInnerButtonMargin}"
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
@@ -397,13 +409,13 @@
                             Grid.Column="1"
                             Style="{StaticResource DeleteButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw"
                             FontSize="{TemplateBinding FontSize}"
-                            MinWidth="34"
+                            Width="30"
                             VerticalAlignment="Stretch" />
                         <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
                             Grid.Row="2"
