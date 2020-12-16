@@ -14,13 +14,53 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:muxContract7Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Grid Margin="12">
-        <StackPanel Orientation="Vertical" contract5Present:Spacing="8" Width="120">
-            <TextBox Header="Normal" />
-            <TextBox PlaceholderText="Placeholder" Header="With Placeholder Text"/>
-            <TextBox Text="Text" Header="With Default Text"/>
-            <TextBox Text="Disabled" IsEnabled="False" Header="Disabled"/>
-        </StackPanel>
-    </Grid>
+    <StackPanel Margin="12">
+        <CheckBox x:Name="EnabledCheckBox" Content="Boxen Enabled" IsChecked="True"/>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Margin="0,0,12,0">
+                <TextBlock Text="TextBox"/>
+
+                <TextBox Header="Normal" Text="Text" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <TextBox PlaceholderText="Placeholder" Header="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="RichEditBox"/>
+
+                <RichEditBox Header="Normal" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <RichEditBox Header="Placeholder" PlaceholderText="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Grid.Column="2" Margin="0,0,12,0">
+                <TextBlock Text="PasswordBox"/>
+
+                <PasswordBox Header="Normal" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <PasswordBox PlaceholderText="Placeholder" Header="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Grid.Column="3" Margin="0,0,12,0">
+                <TextBlock Text="AutoSuggest"/>
+
+                <AutoSuggestBox Header="Normal" Text="Text" QueryIcon="Find" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <AutoSuggestBox Header="Placeholder" PlaceholderText="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Grid.Column="4" Margin="0,0,12,0">
+                <TextBlock Text="NumberBox"/>
+
+                <controls:NumberBox Header="Normal" Text="123" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <controls:NumberBox Header="Placeholder" PlaceholderText="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
 
 </local:TestPage>
