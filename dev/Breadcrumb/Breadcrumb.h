@@ -28,6 +28,7 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void RaiseItemClickedEvent(const winrt::IInspectable& content);
+    winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
 
 private:
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -52,5 +53,7 @@ private:
 
     tracker_ref<winrt::ItemsRepeater> m_breadcrumbItemRepeater { this };
     com_ptr<BreadcrumbElementFactory> m_breadcrumbElementFactory{ nullptr };
+
+    tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };
     tracker_ref<winrt::BreadcrumbItem> m_lastBreadcrumbItem { this };
 };

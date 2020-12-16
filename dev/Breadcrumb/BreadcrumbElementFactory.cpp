@@ -47,10 +47,6 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     // Element is already a BreadcrumbItem, so we just return it.
     if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbItem>())
     {
-        const auto data = args.Data();
-
-        breadcrumbItem.Content(args.Data());
-
         return breadcrumbItem;
     }
 

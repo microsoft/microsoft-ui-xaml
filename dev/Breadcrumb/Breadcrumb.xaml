@@ -21,7 +21,7 @@
                             <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
 
                             <local:SplitButton.Flyout>
-                                <Flyout Placement="Bottom" >
+                                <Flyout Placement="Bottom" x:Name="SplitButtonFlyout">
 
                                     <local:ItemsRepeater x:Name="FlyoutRepeater">
                                         <local:ItemsRepeater.ItemTemplate>
@@ -48,7 +48,6 @@
                 <ControlTemplate TargetType="local:Breadcrumb">
 
                     <local:ItemsRepeater x:Name="BreadcrumbItemRepeater"
-                                         ItemsSource="{TemplateBinding ItemsSource}"
                                          HorizontalAlignment="Left">
                         <local:ItemsRepeater.Layout>
                             <local:BreadcrumbLayout />

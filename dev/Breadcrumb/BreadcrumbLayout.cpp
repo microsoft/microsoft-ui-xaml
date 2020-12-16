@@ -18,6 +18,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 BreadcrumbLayout::BreadcrumbLayout()
 {
     Orientation(winrt::Orientation::Horizontal);
+    m_hiddenElements = winrt::make<Vector<winrt::IInspectable>>();
 }
 
 BreadcrumbLayout::~BreadcrumbLayout()
@@ -47,29 +48,22 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext c
         }
     }
 
-    // there's a bug here
     if (acumulatedCrumbsSize.Width > availableSize.Width)
     {
-        if (justCreatedEllipsisButton)
+        if (m_justCreatedEllipsisButton)
         {
-            justCreatedEllipsisButton = false;
-            /*
-            if (auto ellipsisButton = m_ellipsisButton.get())
-            {
-                ellipsisButton.Measure(availableSize);
-            }
-            */
+            m_justCreatedEllipsisButton = false;
         }
         else
         {
-            justCreatedEllipsisButton = true;
+            m_justCreatedEllipsisButton = true;
             InstantiateEllipsisButton(context);
         }
     }
     else
     {
         // remove button?
-        justCreatedEllipsisButton = false;
+        m_justCreatedEllipsisButton = false;
         m_ellipsisButton.set(nullptr);
     }
 
@@ -95,9 +89,13 @@ void BreadcrumbLayout::ArrangeItem(winrt::VirtualizingLayoutContext const& conte
 void BreadcrumbLayout::HideItem(winrt::VirtualizingLayoutContext const& context, int index)
 {
     auto element = context.GetOrCreateElementAt(index);
-    // HiddenItems.Add(context.GetItemAt(i));
     const winrt::Rect arrangeRect(0, 0, 0, 0);
     element.Arrange(arrangeRect);
+
+    if (m_hiddenElements && index != 0)
+    {
+        m_hiddenElements.Append(context.GetItemAt(index));
+    }
 }
 
 int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutContext const& context)
@@ -124,9 +122,14 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutC
 // Step 2: The only arranging is done here
 winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
-    if (justCreatedEllipsisButton)
+    if (m_justCreatedEllipsisButton)
     {
         return finalSize;
+    }
+
+    if (m_hiddenElements)
+    {
+        m_hiddenElements.Clear();
     }
 
     const int itemCount = context.ItemCount();
@@ -141,13 +144,16 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
     float accumulatedWidths{};
     float maxElementHeight{};
 
-    if (mustDrawEllipsisButton)
+    if (itemCount > 0)
     {
-        ArrangeItem(context, 0, accumulatedWidths, maxElementHeight);
-    }
-    else
-    {
-        HideItem(context, 0);
+        if (mustDrawEllipsisButton)
+        {
+            ArrangeItem(context, 0, accumulatedWidths, maxElementHeight);
+        }
+        else
+        {
+            HideItem(context, 0);
+        }
     }
 
     for (int i = 1; i < itemCount; ++i)
@@ -165,16 +171,19 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
     return finalSize;
 }
 
+winrt::Collections::IVector<winrt::IInspectable> BreadcrumbLayout::HiddenElements()
+{
+    return m_hiddenElements;
+}
+
 void BreadcrumbLayout::InstantiateEllipsisButton(winrt::VirtualizingLayoutContext const& context)
 {
-    auto newItem = context.GetOrCreateElementAt(0);
-    auto ellipsisButton = newItem.as<winrt::BreadcrumbItem>();
-
-    auto ellipsisButtonImpl = winrt::get_self<BreadcrumbItem>(ellipsisButton);
-
-    auto content = ellipsisButton.Content();
-
-    ellipsisButtonImpl->SetPropertiesForEllipsisNode();
-
-    m_ellipsisButton.set(ellipsisButton);
+    if (const auto& ellipsisButton = context.GetOrCreateElementAt(0).try_as<winrt::BreadcrumbItem>())
+    {
+        if (const auto& ellipsisButtonImpl = winrt::get_self<BreadcrumbItem>(ellipsisButton))
+        {
+            ellipsisButtonImpl->SetPropertiesForEllipsisNode();
+            m_ellipsisButton.set(ellipsisButton);
+        }
+    }
 }

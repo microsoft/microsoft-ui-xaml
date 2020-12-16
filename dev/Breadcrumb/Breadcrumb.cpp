@@ -9,6 +9,7 @@
 #include "ResourceAccessor.h"
 
 #include "BreadcrumbItem.h"
+#include "BreadcrumbLayout.h"
 #include "BreadcrumbItemClickedEventArgs.h"
 
 Breadcrumb::Breadcrumb()
@@ -39,6 +40,7 @@ void Breadcrumb::OnApplyTemplate()
 
     if (auto breadcrumbItemsRepeater = m_breadcrumbItemRepeater.get())
     {
+        breadcrumbItemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
         breadcrumbItemsRepeater.ItemTemplate(*m_breadcrumbElementFactory);
         
         m_itemRepeaterElementPreparedRevoker = breadcrumbItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
@@ -75,8 +77,17 @@ void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, cons
 
 void Breadcrumb::UpdateItemTemplate()
 {
-    winrt::IInspectable newItemTemplate = ItemTemplate();
+    const winrt::IInspectable& newItemTemplate = ItemTemplate();
     m_breadcrumbElementFactory->UserElementFactory(newItemTemplate);
+
+    // Copy the item template to the ellipsis button too
+    if (const auto& ellipsisBreadcrumbItem = m_ellipsisBreadcrumbItem.get())
+    {
+        if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(ellipsisBreadcrumbItem))
+        {
+            itemImpl->SetFlyoutDataTemplate(newItemTemplate);
+        }
+    }
 }
 
 void Breadcrumb::UpdateItemsSource()
@@ -143,14 +154,17 @@ void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::Item
         const uint32_t itemCount = itemsSourceAsList.Size();
 
         auto itemImpl = winrt::get_self<BreadcrumbItem>(item);
+        itemImpl->SetItemsRepeater(*this);
+
         if (itemIndex == 0)
         {
             itemImpl->SetPropertiesForEllipsisNode();
+            itemImpl->SetFlyoutDataTemplate(ItemTemplate());
+
+            m_ellipsisBreadcrumbItem.set(item);
         }
         else
         {
-            itemImpl->SetItemsRepeater(*this);
-
             if (itemIndex == (itemCount - 1))
             {
                 if (const auto& lastItem = m_lastBreadcrumbItem.get())
@@ -208,4 +222,17 @@ void Breadcrumb::RaiseItemClickedEvent(const winrt::IInspectable& content)
     auto eventArgs = winrt::make_self<BreadcrumbItemClickedEventArgs>();
     eventArgs->Item(content);
     m_itemClickedEventSource(*this, *eventArgs);
+}
+
+winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements()
+{
+    if (const auto& breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    {
+        if (const auto& breadcrumbLayout = breadcrumbItemRepeater.Layout().try_as<BreadcrumbLayout>())
+        {
+            return breadcrumbLayout->HiddenElements();
+        }
+    }
+
+    return winrt::make<Vector<winrt::IInspectable>>();
 }

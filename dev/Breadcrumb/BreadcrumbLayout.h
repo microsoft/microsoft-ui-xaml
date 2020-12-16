@@ -5,6 +5,7 @@
 #include "pch.h"
 #include "common.h"
 
+#include "Vector.h"
 #include "StackLayout.h"
 #include "VirtualizingLayout.h"
 
@@ -20,6 +21,8 @@ public:
     winrt::Size MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 
+    winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
+
 private:
     void InstantiateEllipsisButton(winrt::VirtualizingLayoutContext const& context);
 
@@ -28,7 +31,9 @@ private:
     void HideItem(winrt::VirtualizingLayoutContext const& context, int index);
     int GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutContext const& context);
 
-    bool justCreatedEllipsisButton{};
+    bool m_justCreatedEllipsisButton{};
     winrt::Size m_availableSize;
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisButton{ this };
+
+    winrt::Collections::IVector<winrt::IInspectable> m_hiddenElements;
 };
