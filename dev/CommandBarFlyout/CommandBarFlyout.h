@@ -27,6 +27,8 @@ protected:
 
 private:
     void SetSecondaryCommandsToCloseWhenExecuted();
+    void CreateAcrylicBackgroundPopup();
+    void ToggleAcrylicBackgroundPopup();
 
     winrt::IObservableVector<winrt::ICommandBarElement> m_primaryCommands{ nullptr };
     winrt::IObservableVector<winrt::ICommandBarElement> m_secondaryCommands{ nullptr };

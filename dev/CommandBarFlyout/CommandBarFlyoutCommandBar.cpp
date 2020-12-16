@@ -66,11 +66,6 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             {
                 overflowPopup.Shadow(nullptr);
             }
-
-            if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
-            {
-                acrylicBackgroundPopup.IsOpen(true);
-            }
         }
     });
     
@@ -96,8 +91,6 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                 // the secondary commands are closed.
                 EnsureFocusedPrimaryCommand();
             }
-
-            CloseAcrylicBackgroundPopup();
         }
     });
 
@@ -150,8 +143,8 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
     m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
     m_closingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected));
-    m_acrylicBackgroundPopup.set(GetTemplateChildT<winrt::Popup>(s_acrylicBackgroundPopupName, thisAsControlProtected));
     m_overflowPopup.set(GetTemplateChildT<winrt::UIElement>(L"SecondaryItemsControl", thisAsControlProtected));
+    m_acrylicBackgroundBase.set(GetTemplateChildT<winrt::DataTemplate>(L"AcrylicBackgroundBaseDataTemplate", thisAsControlProtected));
 
     if (auto moreButton = m_moreButton.get())
     {
@@ -1114,7 +1107,7 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
     {
-        //AddShadow();
+        AddShadow();
     }
     else if (PrimaryCommands().Size() == 0)
     {
@@ -1166,10 +1159,12 @@ void CommandBarFlyoutCommandBar::ClearShadow()
     }
 }
 
-void CommandBarFlyoutCommandBar::CloseAcrylicBackgroundPopup()
+
+winrt::Grid CommandBarFlyoutCommandBar::GetChild()
 {
-    if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
-    {
-        acrylicBackgroundPopup.IsOpen(false);
-    }
+    
+    auto const grid = m_acrylicBackgroundBase.get().LoadContent().try_as<winrt::Grid>();
+    grid.DataContext(*this);
+
+    return grid;
 }

@@ -25,7 +25,8 @@ public:
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
     void ClearShadow();
-    void CloseAcrylicBackgroundPopup();
+
+    winrt::Grid GetChild();
 
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
@@ -67,8 +68,8 @@ private:
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
-    tracker_ref<winrt::Popup> m_acrylicBackgroundPopup{ this };
     tracker_ref<winrt::UIElement> m_overflowPopup{ this };
+    tracker_ref<winrt::DataTemplate> m_acrylicBackgroundBase{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
     RoutedEventHandler_revoker m_keyDownRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};

@@ -10,8 +10,6 @@
 
 #include "CommandBarFlyout.properties.cpp"
 
-static constexpr auto s_acrylicBackgroundPopupName = L"AcrylicBackgroundPopup"sv;
-
 // Change to 'true' to turn on debugging outputs in Output window
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
@@ -119,6 +117,8 @@ CommandBarFlyout::CommandBarFlyout()
         }
     });
 
+    CreateAcrylicBackgroundPopup();
+
     Opening({
         [this](auto const&, auto const&)
         {
@@ -130,8 +130,10 @@ CommandBarFlyout::CommandBarFlyout()
             // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
             if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
             {
-                m_commandBar.get().IsOpen(true);            
-            }              
+                m_commandBar.get().IsOpen(true);
+            }
+
+            ToggleAcrylicBackgroundPopup();
         }
     });
 
@@ -140,6 +142,17 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
+                auto grid = commandBar->GetChild();
+
+                if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
+                {
+                    auto const popupCoordinates = commandBar->TransformToVisual(nullptr).TransformPoint({ 0, 0 });
+
+                    acrylicBackgroundPopup.Child(grid);
+                    acrylicBackgroundPopup.HorizontalOffset(popupCoordinates.X);
+                    acrylicBackgroundPopup.VerticalOffset(popupCoordinates.Y);
+                }
+
                 if (commandBar->HasOpenAnimation())
                 {
                     commandBar->PlayOpenAnimation();
@@ -173,7 +186,7 @@ CommandBarFlyout::CommandBarFlyout()
                 //here
                 commandBar->ClearShadow();
 
-                //commandBar->CloseAcrylicBackgroundPopup();
+                ToggleAcrylicBackgroundPopup();
             }
         }
     });
@@ -287,3 +300,30 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
         }
     }
 }
+
+void CommandBarFlyout::CreateAcrylicBackgroundPopup()
+{
+    auto const popup = winrt::Popup();
+
+    popup.ShouldConstrainToRootBounds(false);
+    popup.IsHitTestVisible(false);
+
+    m_acrylicBackgroundPopup.set(popup);
+}
+
+void CommandBarFlyout::ToggleAcrylicBackgroundPopup()
+{
+    if (auto acrylicBackgroundPopup = m_acrylicBackgroundPopup.get())
+    {
+        if (acrylicBackgroundPopup.IsOpen())
+        {
+            acrylicBackgroundPopup.IsOpen(false);
+        }
+        else
+        {
+            acrylicBackgroundPopup.IsOpen(true);
+        }
+    }
+}
+
+
