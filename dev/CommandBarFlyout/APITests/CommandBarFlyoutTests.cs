@@ -416,7 +416,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     flyout.Hide();
                 });
 
-                if(flyout.IsOpen)
+                IdleSynchronizer.Wait();
+
+                bool wasOpen = false;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase5"))
+                    {
+                        wasOpen = flyout.IsOpen;
+                    }
+                });
+
+                if(wasOpen)
                 {
                     TestUtilities.WaitForEvent(closedEvent);
                     IdleSynchronizer.Wait();
