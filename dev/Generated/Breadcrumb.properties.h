@@ -9,15 +9,20 @@ class BreadcrumbProperties
 public:
     BreadcrumbProperties();
 
+    void DropdownItemTemplate(winrt::IInspectable const& value);
+    winrt::IInspectable DropdownItemTemplate();
+
     void ItemsSource(winrt::IInspectable const& value);
     winrt::IInspectable ItemsSource();
 
     void ItemTemplate(winrt::IInspectable const& value);
     winrt::IInspectable ItemTemplate();
 
+    static winrt::DependencyProperty DropdownItemTemplateProperty() { return s_DropdownItemTemplateProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
 
+    static GlobalDependencyProperty s_DropdownItemTemplateProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;
 
@@ -28,6 +33,10 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnDropdownItemTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnItemsSourcePropertyChanged(
         winrt::DependencyObject const& sender,

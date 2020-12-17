@@ -65,6 +65,10 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     {
         UpdateItemTemplate();
     }
+    else if (property == s_DropdownItemTemplateProperty)
+    {
+        UpdateDropdownItemTemplate();
+    }
 }
 
 void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -79,6 +83,11 @@ void Breadcrumb::UpdateItemTemplate()
 {
     const winrt::IInspectable& newItemTemplate = ItemTemplate();
     m_breadcrumbElementFactory->UserElementFactory(newItemTemplate);
+}
+
+void Breadcrumb::UpdateDropdownItemTemplate()
+{
+    const winrt::IInspectable& newItemTemplate = DropdownItemTemplate();
 
     // Copy the item template to the ellipsis button too
     if (const auto& ellipsisBreadcrumbItem = m_ellipsisBreadcrumbItem.get())
@@ -159,7 +168,7 @@ void Breadcrumb::OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::Item
         if (itemIndex == 0)
         {
             itemImpl->SetPropertiesForEllipsisNode();
-            itemImpl->SetFlyoutDataTemplate(ItemTemplate());
+            itemImpl->SetFlyoutDataTemplate(DropdownItemTemplate());
 
             m_ellipsisBreadcrumbItem.set(item);
         }

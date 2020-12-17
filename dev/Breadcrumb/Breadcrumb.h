@@ -38,6 +38,7 @@ private:
 
     void UpdateItemsSource();
     void UpdateItemTemplate();
+    void UpdateDropdownItemTemplate();
 
     winrt::IInspectable GenerateInternalItemsSource();
 

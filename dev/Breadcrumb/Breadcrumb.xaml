@@ -23,7 +23,7 @@
                             <local:SplitButton.Flyout>
                                 <Flyout Placement="Bottom" x:Name="SplitButtonFlyout">
 
-                                    <local:ItemsRepeater x:Name="FlyoutRepeater">
+                                    <local:ItemsRepeater x:Name="FlyoutRepeater" HorizontalAlignment="Stretch">
                                         <local:ItemsRepeater.ItemTemplate>
                                             <DataTemplate>
                                                 <Button Content="{Binding}" Background="Transparent"/>

@@ -55,6 +55,19 @@
                                             </DataTemplate>
                                         </controls:Breadcrumb.ItemTemplate>
 
+                                        <controls:Breadcrumb.DropdownItemTemplate>
+                                            <DataTemplate x:DataType="local2:TreeNode">
+                                                <Button Content="{Binding}" Background="Transparent"
+                                                        HorizontalAlignment="Stretch" >
+                                                    <Button.ContentTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Name}" />
+                                                        </DataTemplate>
+                                                    </Button.ContentTemplate>
+                                                </Button>
+                                            </DataTemplate>
+                                        </controls:Breadcrumb.DropdownItemTemplate>
+
                                     </controls:Breadcrumb>
                                 </Grid>
                             </Border>

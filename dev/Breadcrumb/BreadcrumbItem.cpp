@@ -119,10 +119,15 @@ void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, co
 
 winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource)
 {
+    // A copy of the hidden elements array in BreadcrumbLayout is created
+    // to avoid getting a Layout cycle exception
     auto newItemsSource = winrt::make<Vector<winrt::IInspectable>>();
 
-    for (const auto item : ellipsisItemsSource)
+    // The new list contains all the elements in reverse order
+    const int itemsSourceSize = ellipsisItemsSource.Size();
+    for (int i = itemsSourceSize - 1; i >= 0; --i)
     {
+        const auto& item = ellipsisItemsSource.GetAt(i);
         newItemsSource.Append(item);
     }
 
