@@ -35,6 +35,7 @@ unsealed runtimeclass Breadcrumb : Windows.UI.Xaml.Controls.Control
 
     Object ItemsSource { get; set; };
     Object ItemTemplate { get; set; };
+    Object DropdownItemTemplate { get; set; };
 
     event Windows.Foundation.TypedEventHandler<Breadcrumb, BreadcrumbItemClickedEventArgs> ItemClicked;
 
