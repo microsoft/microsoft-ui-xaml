@@ -81,6 +81,11 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winr
         }
     }
 
+    if (const auto& flyoutRepeater = m_flyoutRepeater.get())
+    {
+        m_flyoutRepeaterElementPreparedRevoker = flyoutRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
+    }
+
     if (m_isEllipsisNode)
     {
         SetPropertiesForEllipsisNode();
@@ -114,6 +119,29 @@ void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, co
     {
         auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
         breadcrumbImpl->RaiseItemClickedEvent(Content());
+    }
+}
+
+void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
+{
+    const auto& element = args.Element();
+
+    // m_pointerPressedRevoker = element.PointerPressed(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementClickEvent });
+    
+    if (const auto& button = element.try_as<winrt::ButtonBase>())
+    {
+        button.Click({ this, &BreadcrumbItem::OnFlyoutElementClickEvent });
+    }
+    
+}
+
+void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+{
+    if (const auto& breadcrumb = m_parentBreadcrumb.get())
+    {
+        const auto& breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
+        const auto& senderAsContentControl = sender.try_as<winrt::ContentControl>();
+        breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
     }
 }
 

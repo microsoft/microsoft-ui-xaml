@@ -30,6 +30,8 @@ private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
     void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
+    void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
+    void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
     void SetPrimaryButtonBoldFontWeight(bool mustBeBold);
@@ -54,4 +56,8 @@ private:
 
     winrt::SplitButton::Loaded_revoker m_splitButtonLoadedRevoker{};
     winrt::SplitButton::Click_revoker m_splitButtonClickRevoker{};
+    winrt::ItemsRepeater::ElementPrepared_revoker m_flyoutRepeaterElementPreparedRevoker{};
+    winrt::Button::Click_revoker m_clickRevoker{};
+
+    winrt::UIElement::PointerPressed_revoker m_pointerPressedRevoker{};
 };
