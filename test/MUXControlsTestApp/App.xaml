@@ -36,6 +36,50 @@
                 <Setter Property="Padding" Value="8"/>
             </Style>
 
+            <Style TargetType="local:AnimatedIconHost">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="local:AnimatedIconHost">
+                            <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal">
+                                            <VisualState.Setters>
+                                                <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="Normal"/>
+                                                <Setter Target="StateTextBlock.Text" Value="Normal"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="Hover"/>
+                                                <Setter Target="StateTextBlock.Text" Value="Hover"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="Pressed"/>
+                                                <Setter Target="StateTextBlock.Text" Value="Pressed"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="Disabled"/>
+                                                <Setter Target="StateTextBlock.Text" Value="Disabled"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
+                                    <Border x:Name="Icon" controls:AnimatedIcon.State="Normal"/>
+                                </ContentPresenter>
+                                <TextBlock x:Name="StateTextBlock" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TransitionTextBlock" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
         </ResourceDictionary>
     </Application.Resources>
