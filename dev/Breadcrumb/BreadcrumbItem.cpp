@@ -126,24 +126,37 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
 {
     const auto& element = args.Element();
 
-    // m_pointerPressedRevoker = element.PointerPressed(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementClickEvent });
+    element.AddHandler(winrt::UIElement::PointerPressedEvent(),
+        winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
+        true);
+    element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
     
+  
     if (const auto& button = element.try_as<winrt::ButtonBase>())
     {
-        button.Click({ this, &BreadcrumbItem::OnFlyoutElementClickEvent });
+        // button.Click({ this, &BreadcrumbItem::OnFlyoutElementClickEvent });
     }
     
 }
 
-void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Key() == winrt::VirtualKey::Enter)
+    {
+        this->OnFlyoutElementClickEvent(sender, nullptr);
+        args.Handled(true);
+    }
+    args.Handled(false);
+}
+
+void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
         const auto& breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
         const auto& senderAsContentControl = sender.try_as<winrt::ContentControl>();
-        breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
 
-        // this should also update the hidden elements
+        // Once an element has been clicked, close the flyout
         if (const auto& splitButton = m_splitButton.get())
         {
             if (const auto& splitButtonImpl = winrt::get_self<SplitButton>(splitButton))
@@ -151,6 +164,8 @@ void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender
                 splitButtonImpl->CloseFlyout();
             }
         }
+
+        breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
     }
 }
 
@@ -235,7 +250,7 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
     }
 }
 
-void BreadcrumbItem::SetPrimaryButtonBoldFontWeight(bool mustBeBold)
+void BreadcrumbItem::SetPrimaryButtonBoldFontWeight(const bool mustBeBold)
 {
     if (auto primaryButton = m_primaryButton.get())
     {
@@ -243,7 +258,7 @@ void BreadcrumbItem::SetPrimaryButtonBoldFontWeight(bool mustBeBold)
     }
 }
 
-void BreadcrumbItem::SetSecondaryButtonVisibility(bool isVisible)
+void BreadcrumbItem::SetSecondaryButtonVisibility(const bool isVisible)
 {
     m_isChevronVisible = isVisible;
 
@@ -281,7 +296,7 @@ void BreadcrumbItem::SetSecondaryButtonVisibility(bool isVisible)
     }
 }
 
-void BreadcrumbItem::SetSecondaryButtonText(bool isCollapsed)
+void BreadcrumbItem::SetSecondaryButtonText(const bool isCollapsed)
 {
     if (auto secondaryButton = m_secondaryButton.get())
     {

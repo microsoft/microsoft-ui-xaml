@@ -31,7 +31,6 @@ public:
     winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
 
 private:
-    
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs&);
     void OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
@@ -64,7 +63,7 @@ private:
     winrt::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_itemsSourceChanged2{};
 
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
-    winrt::event_token m_eventToken{ };
+    winrt::event_token m_collectionChanged{ };
     winrt::ItemsSourceView m_breadcrumbItemsRepeaterItemsSource{ nullptr };
 
     tracker_ref<winrt::ItemsRepeater> m_breadcrumbItemRepeater { this };
@@ -73,12 +72,6 @@ private:
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };
     tracker_ref<winrt::BreadcrumbItem> m_lastBreadcrumbItem { this };
 
-
+    // Index of the last focused item when breadcrumb lost focus
     int m_selectedIndex{ 1 };
-    // This is used to guard against reentrency when calling select, since select changes
-    // the Selected Index/Item which in turn calls select.
-    bool m_currentlySelecting{ false };
-    // We block selection before the control has loaded.
-    // This is to ensure that we do not overwrite a provided Selected Index/Item value.
-    bool m_blockSelecting{ true };
 };

@@ -122,7 +122,7 @@ void Breadcrumb::UpdateItemsSource()
 
             if (incc)
             {
-                m_eventToken = incc.CollectionChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
+                m_collectionChanged = incc.CollectionChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
                 m_notifyCollectionChanged.set(incc);
             }
 
@@ -140,7 +140,6 @@ void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const w
     {
         auto newItemsSource = GenerateInternalItemsSource();
         breadcrumbItemRepeater.ItemsSource(newItemsSource);
-
         breadcrumbItemRepeater.UpdateLayout();
     }
 
@@ -267,7 +266,7 @@ winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements()
     return winrt::make<Vector<winrt::IInspectable>>();
 }
 
-// When focus comes from outside the RadioButtons control we will put focus on the selected radio button.
+// When focus comes from outside the Breadcrumb control we will put focus on the selected item.
 void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
     if (auto const& repeater = m_breadcrumbItemRepeater.get())
@@ -321,21 +320,7 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
 
 void Breadcrumb::Select(int index)
 {
-    if (!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
-    {
-        // Calling Select updates the checked state on the radio button being selected
-        // and the radio button being unselected, as well as updates the SelectedIndex
-        // and SelectedItem DP. All of these things would cause Select to be called so
-        // we'll prevent reentrency with this m_currentlySelecting boolean.
-        auto clearSelecting = gsl::finally([this]()
-            {
-                m_currentlySelecting = false;
-            });
-        m_currentlySelecting = true;
-
-        auto const previousSelectedIndex = m_selectedIndex;
-        m_selectedIndex = index;
-    }
+    m_selectedIndex = index;
 }
 
 bool Breadcrumb::MoveFocus(int indexIncrement)

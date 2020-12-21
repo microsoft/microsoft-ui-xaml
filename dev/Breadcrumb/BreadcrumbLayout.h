@@ -26,11 +26,10 @@ public:
     uint32_t FirstRenderedItemIndexAfterEllipsis();
 
 private:
-    void InstantiateEllipsisButton(winrt::VirtualizingLayoutContext const& context);
-
-    void ArrangeBreadcrumbItem(winrt::UIElement breadcrumbItem, float& accumulatedWidths, float& maxElementHeight);
-    void ArrangeItem(winrt::VirtualizingLayoutContext const& context, int index, float& accumulatedWidths, float& maxElementHeight);
-    void HideItem(winrt::VirtualizingLayoutContext const& context, int index);
+    void ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight);
+    void ArrangeItem(const winrt::VirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight);
+    void HideItem(const winrt::UIElement& breadcrumbItem);
+    void HideItem(const winrt::VirtualizingLayoutContext& context, int index);
     int GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutContext const& context);
 
     winrt::Size m_availableSize;

@@ -31,12 +31,13 @@ private:
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
     void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
     void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
+    void OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs&);
     void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
-    void SetPrimaryButtonBoldFontWeight(bool mustBeBold);
-    void SetSecondaryButtonVisibility(bool isVisible);
-    void SetSecondaryButtonText(bool isCollapsed);
+    void SetPrimaryButtonBoldFontWeight(const bool mustBeBold);
+    void SetSecondaryButtonVisibility(const bool isVisible);
+    void SetSecondaryButtonText(const bool isCollapsed);
 
     bool m_isEllipsisNode{};
     bool m_isLastNode{};
