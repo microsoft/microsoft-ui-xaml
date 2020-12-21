@@ -31,10 +31,24 @@ public:
     winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
 
 private:
+    
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
-    void OnElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
-    void OnElementClearingEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementClearingEventArgs args);
+    void OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs&);
+    void OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
+    void OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs&);
     void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+
+    // Keyboard navigation
+    void OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
+    void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
+
+    winrt::FindNextElementOptions GetFindNextElementOptions();
+    void Select(int index);
+    bool MoveFocus(int initialIndexIncrement);
+    bool MoveFocusPrevious();
+    bool MoveFocusNext();
+    bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
+    void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     void UpdateItemsSource();
     void UpdateItemTemplate();
@@ -44,6 +58,7 @@ private:
 
     winrt::Control::Loaded_revoker m_breadcrumbItemRepeaterLoadedRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_itemRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_itemRepeaterElementClearingRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
     winrt::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_itemsSourceChanged2{};
@@ -57,4 +72,13 @@ private:
 
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };
     tracker_ref<winrt::BreadcrumbItem> m_lastBreadcrumbItem { this };
+
+
+    int m_selectedIndex{ 1 };
+    // This is used to guard against reentrency when calling select, since select changes
+    // the Selected Index/Item which in turn calls select.
+    bool m_currentlySelecting{ false };
+    // We block selection before the control has loaded.
+    // This is to ensure that we do not overwrite a provided Selected Index/Item value.
+    bool m_blockSelecting{ true };
 };

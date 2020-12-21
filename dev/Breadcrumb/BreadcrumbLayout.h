@@ -22,6 +22,8 @@ public:
     winrt::Size ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 
     winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
+    bool EllipsisIsRendered();
+    uint32_t FirstRenderedItemIndexAfterEllipsis();
 
 private:
     void InstantiateEllipsisButton(winrt::VirtualizingLayoutContext const& context);
@@ -31,9 +33,10 @@ private:
     void HideItem(winrt::VirtualizingLayoutContext const& context, int index);
     int GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutContext const& context);
 
-    bool m_justCreatedEllipsisButton{};
     winrt::Size m_availableSize;
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisButton{ this };
 
     winrt::Collections::IVector<winrt::IInspectable> m_hiddenElements;
+    bool m_ellipsisIsRendered{};
+    uint32_t m_firstRenderedItemIndexAfterEllipsis{};
 };

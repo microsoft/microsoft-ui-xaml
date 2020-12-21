@@ -25,11 +25,8 @@ BreadcrumbLayout::~BreadcrumbLayout()
 {
 }
 
-// Measuring is performed in a two step basis
-// Step 1: During this step the sizes (width) of all BreadcrumbItems are added, if the accumulated width is bigger than
-// the available size then an Ellipsis button is created. As the button is created, a flag is raised.
-// Step 2: During this step, the BreadcrumbItems are measured again, we could avoid this step, and the ellipsis button is measured.
-// The previously raised flag is reset.
+// Measuring is performed in a single step, every element is measured, including the ellipsis
+// item, but the total amount of space needed is only composed of the non-ellipsis breadcrumbs
 winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
     m_availableSize = availableSize;
@@ -50,20 +47,10 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext c
 
     if (acumulatedCrumbsSize.Width > availableSize.Width)
     {
-        if (m_justCreatedEllipsisButton)
-        {
-            m_justCreatedEllipsisButton = false;
-        }
-        else
-        {
-            m_justCreatedEllipsisButton = true;
-            InstantiateEllipsisButton(context);
-        }
+        InstantiateEllipsisButton(context);
     }
     else
     {
-        // remove button?
-        m_justCreatedEllipsisButton = false;
         m_ellipsisButton.set(nullptr);
     }
 
@@ -122,11 +109,6 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutC
 // Step 2: The only arranging is done here
 winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
-    if (m_justCreatedEllipsisButton)
-    {
-        return finalSize;
-    }
-
     if (m_hiddenElements)
     {
         m_hiddenElements.Clear();
@@ -135,10 +117,12 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
     const int itemCount = context.ItemCount();
     bool mustDrawEllipsisButton = (m_ellipsisButton.get() != nullptr);
     int firstElementToRender{};
+    m_firstRenderedItemIndexAfterEllipsis = itemCount - 1;
 
     if (mustDrawEllipsisButton)
     {
         firstElementToRender = GetFirstBreadcrumbItemToArrange(context);
+        m_firstRenderedItemIndexAfterEllipsis = firstElementToRender;
     }
 
     float accumulatedWidths{};
@@ -149,10 +133,12 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
         if (mustDrawEllipsisButton)
         {
             ArrangeItem(context, 0, accumulatedWidths, maxElementHeight);
+            m_ellipsisIsRendered = true;
         }
         else
         {
             HideItem(context, 0);
+            m_ellipsisIsRendered = false;
         }
     }
 
@@ -174,6 +160,16 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
 winrt::Collections::IVector<winrt::IInspectable> BreadcrumbLayout::HiddenElements()
 {
     return m_hiddenElements;
+}
+
+bool BreadcrumbLayout::EllipsisIsRendered()
+{
+    return m_ellipsisIsRendered;
+}
+
+uint32_t BreadcrumbLayout::FirstRenderedItemIndexAfterEllipsis()
+{
+    return m_firstRenderedItemIndexAfterEllipsis;
 }
 
 void BreadcrumbLayout::InstantiateEllipsisButton(winrt::VirtualizingLayoutContext const& context)

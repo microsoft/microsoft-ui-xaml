@@ -142,6 +142,15 @@ void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender
         const auto& breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
         const auto& senderAsContentControl = sender.try_as<winrt::ContentControl>();
         breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
+
+        // this should also update the hidden elements
+        if (const auto& splitButton = m_splitButton.get())
+        {
+            if (const auto& splitButtonImpl = winrt::get_self<SplitButton>(splitButton))
+            {
+                splitButtonImpl->CloseFlyout();
+            }
+        }
     }
 }
 

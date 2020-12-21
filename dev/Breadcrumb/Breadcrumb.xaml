@@ -8,8 +8,11 @@
     <x:String x:Key="SplitButtonSecondaryButtonContent">&#xE76C;</x:String>
     <x:String x:Key="SplitButtonSecondaryButtonDefaultContent">&#xE70D;</x:String>
 
-    <Style TargetType="local:BreadcrumbItem">
+    <Style x:Key="BreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
 
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbItem">
@@ -58,5 +61,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource BreadcrumbItemStyle}"/>
 
 </ResourceDictionary>
