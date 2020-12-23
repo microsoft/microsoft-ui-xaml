@@ -25,10 +25,7 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <!-- FullSize is used when we are in landscape or filled mode -->
-                                <VisualState x:Name="FullSize">
-                                    <VisualState.Setters>
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="FullSize"/>
                                 <!-- Compact is used when we are in portrait or snapped mode -->
                                 <VisualState x:Name="Compact">
                                     <VisualState.Setters>
@@ -37,25 +34,16 @@
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Overflow">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SeparatorRectangle" Storyboard.TargetProperty="Width">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="NaN" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SeparatorRectangle" Storyboard.TargetProperty="HorizontalAlignment">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Stretch" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SeparatorRectangle" Storyboard.TargetProperty="Height">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="1" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SeparatorRectangle" Storyboard.TargetProperty="Margin">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="12,4,12,4" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="SeparatorRectangle.Width" Value="NaN"/>
+                                        <Setter Target="SeparatorRectangle.HorizontalAlignment" Value="NaN"/>
+                                        <Setter Target="SeparatorRectangle.Height" Value="1"/>
+                                        <Setter Target="SeparatorRectangle.Margin" Value="12,4,12,4"/>
+                                    </VisualState.Setters>
                                 </VisualState>
-
                             </VisualStateGroup>
-
                         </VisualStateManager.VisualStateGroups>
+
                         <Rectangle x:Name="SeparatorRectangle"
                             Width="1"
                             VerticalAlignment="Stretch"
