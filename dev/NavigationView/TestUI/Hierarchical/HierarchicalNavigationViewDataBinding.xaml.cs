@@ -69,9 +69,11 @@ namespace MUXControlsTestApp
             var categories8 = new ObservableCollection<Category>();
             categories8.Add(new Category("Menu Item 16 (Selectable)", "MI16", "Icon", categories9, true));
 
+            var categories10 = new ObservableCollection<Category>();
+
             categories.Add(new Category("Menu Item 1", "MI1", "Icon", categories2, false));
             categories.Add(new Category("Menu Item 6 (Selectable)", "MI6", "Icon", categories4, true));
-            categories.Add(new Category("Menu Item 10", "MI10", "Icon", new ObservableCollection<Category>(), true));
+            categories.Add(new Category("Menu Item 10", "MI10", "Icon", categories10, true));
             categories.Add(new Category("Menu Item 11", "MI11", "Icon", categories6, false));
             categories.Add(new Category("Menu Item 15", "MI15", "Icon", categories8, false));
 
