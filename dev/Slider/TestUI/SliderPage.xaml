@@ -10,8 +10,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel Margin="12">
-        <ToggleSwitch Header="Toggle work" OffContent="Do work" OnContent="Working" IsOn="True" Foreground="Red" Background="Green"/>
-        
         <TextBlock Text="Sample Slider" Style="{ThemeResource StandardGroupHeader}"/>
         <Slider/>
         <Slider Header="Slider with header"/>
