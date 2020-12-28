@@ -463,7 +463,7 @@
                                         GeneratedDuration="0">
 
                                         <Storyboard>
-                                            <RepositionThemeAnimation TargetName="SwitchKnob" FromHorizontalOffset="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KnobOffToOnOffset}" Duration="0:0:0.083" />
+                                            <RepositionThemeAnimation TargetName="SwitchKnob" FromHorizontalOffset="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KnobOffToOnOffset}"/>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="Opacity">
                                                 <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
                                             </DoubleAnimationUsingKeyFrames>
@@ -482,7 +482,6 @@
                                 <VisualState x:Name="Dragging" />
                                 <VisualState x:Name="Off" />
                                 <VisualState x:Name="On">
-
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="KnobTranslateTransform"
                                             Storyboard.TargetProperty="X"
