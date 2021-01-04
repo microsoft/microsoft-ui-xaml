@@ -136,14 +136,14 @@
                             <primitives:InfoBarPanel
                                 Grid.Column="1"
                                 Margin="{StaticResource InfoBarPanelMargin}"
-                                PaddingInHorizontalOrientation="{StaticResource InfoBarPanelPaddingInHorizontalOrientation}"
-                                PaddingInVerticalOrientation="{StaticResource InfoBarPanelPaddingInVerticalOrientation}">
+                                HorizontalOrientationPadding="{StaticResource InfoBarPanelHorizontalOrientationPadding}"
+                                VerticalOrientationPadding="{StaticResource InfoBarPanelVerticalOrientationPadding}">
 
                                 <TextBlock x:Name="Title"
                                     Text="{TemplateBinding Title}"
                                     Foreground="{ThemeResource InfoBarTitleForeground}"
-                                    primitives:InfoBarPanel.SpacingInHorizontalOrientation="{StaticResource InfoBarTitleSpacingInHorizontalOrientation}"
-                                    primitives:InfoBarPanel.SpacingInVerticalOrientation="{StaticResource InfoBarTitleSpacingInVerticalOrientation}"
+                                    primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarTitleHorizontalOrientationMargin}"
+                                    primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarTitleVerticalOrientationMargin}"
                                     TextWrapping="WrapWholeWords"
                                     AutomationProperties.LandmarkType="Navigation"
                                     FontWeight="{StaticResource InfoBarTitleFontWeight}"
@@ -152,15 +152,15 @@
                                 <TextBlock x:Name="Message" 
                                     Text="{TemplateBinding Message}"
                                     Foreground="{ThemeResource InfoBarMessageForeground}"
-                                    primitives:InfoBarPanel.SpacingInHorizontalOrientation="{StaticResource InfoBarMessageSpacingInHorizontalOrientation}"
-                                    primitives:InfoBarPanel.SpacingInVerticalOrientation="{StaticResource InfoBarMessageSpacingInVerticalOrientation}"
+                                    primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarMessageHorizontalOrientationMargin}"
+                                    primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarMessageVerticalOrientationMargin}"
                                     TextWrapping="WrapWholeWords"
                                     FontWeight="{StaticResource InfoBarMessageFontWeight}"
                                     FontSize="{StaticResource InfoBarMessageFontSize}"/>
 
                                 <ContentPresenter
-                                    primitives:InfoBarPanel.SpacingInHorizontalOrientation="{StaticResource InfoBarActionSpacingInHorizontalOrientation}"
-                                    primitives:InfoBarPanel.SpacingInVerticalOrientation="{StaticResource InfoBarActionSpacingInVerticalOrientation}"
+                                    primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarActionHorizontalOrientationMargin}"
+                                    primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarActionVerticalOrientationMargin}"
                                     VerticalAlignment="Top"
                                     Content="{TemplateBinding ActionButton}">
                                     
