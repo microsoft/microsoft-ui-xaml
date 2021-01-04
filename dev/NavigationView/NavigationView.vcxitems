@@ -98,12 +98,14 @@
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>

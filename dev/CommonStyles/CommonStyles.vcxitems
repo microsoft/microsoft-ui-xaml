@@ -198,13 +198,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-      <UseVisualStyle>Latest</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
     <Page Include="$(MSBuildThisFileDirectory)MediaTransportControls_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>

@@ -13,8 +13,10 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
 
 #include "InfoBarPanel.g.cpp"
 
-GlobalDependencyProperty InfoBarPanelProperties::s_HorizontalMarginProperty{ nullptr };
-GlobalDependencyProperty InfoBarPanelProperties::s_VerticalMarginProperty{ nullptr };
+GlobalDependencyProperty InfoBarPanelProperties::s_HorizontalOrientationMarginProperty{ nullptr };
+GlobalDependencyProperty InfoBarPanelProperties::s_HorizontalOrientationPaddingProperty{ nullptr };
+GlobalDependencyProperty InfoBarPanelProperties::s_VerticalOrientationMarginProperty{ nullptr };
+GlobalDependencyProperty InfoBarPanelProperties::s_VerticalOrientationPaddingProperty{ nullptr };
 
 InfoBarPanelProperties::InfoBarPanelProperties()
 {
@@ -23,44 +25,22 @@ InfoBarPanelProperties::InfoBarPanelProperties()
 
 void InfoBarPanelProperties::EnsureProperties()
 {
-    if (!s_HorizontalMarginProperty)
+    if (!s_HorizontalOrientationMarginProperty)
     {
-        s_HorizontalMarginProperty =
+        s_HorizontalOrientationMarginProperty =
             InitializeDependencyProperty(
-                L"HorizontalMargin",
-                winrt::name_of<winrt::Thickness>(),
-                winrt::name_of<winrt::InfoBarPanel>(),
-                false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_PaddingInVerticalOrientationProperty)
-    {
-        s_PaddingInVerticalOrientationProperty =
-            InitializeDependencyProperty(
-                L"PaddingInVerticalOrientation",
-                winrt::name_of<winrt::Thickness>(),
-                winrt::name_of<winrt::InfoBarPanel>(),
-                false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_SpacingInHorizontalOrientationProperty)
-    {
-        s_SpacingInHorizontalOrientationProperty =
-            InitializeDependencyProperty(
-                L"SpacingInHorizontalOrientation",
+                L"HorizontalOrientationMargin",
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::InfoBarPanel>(),
                 true /* isAttached */,
                 ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_VerticalMarginProperty)
+    if (!s_HorizontalOrientationPaddingProperty)
     {
-        s_VerticalMarginProperty =
+        s_HorizontalOrientationPaddingProperty =
             InitializeDependencyProperty(
-                L"VerticalMargin",
+                L"HorizontalOrientationPadding",
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::InfoBarPanel>(),
                 false /* isAttached */,
@@ -93,34 +73,21 @@ void InfoBarPanelProperties::EnsureProperties()
 
 void InfoBarPanelProperties::ClearProperties()
 {
-    s_HorizontalMarginProperty = nullptr;
-    s_VerticalMarginProperty = nullptr;
+    s_HorizontalOrientationMarginProperty = nullptr;
+    s_HorizontalOrientationPaddingProperty = nullptr;
+    s_VerticalOrientationMarginProperty = nullptr;
+    s_VerticalOrientationPaddingProperty = nullptr;
 }
 
-void InfoBarPanelProperties::PaddingInHorizontalOrientation(winrt::Thickness const& value)
+
+void InfoBarPanelProperties::SetHorizontalOrientationMargin(winrt::DependencyObject const& target, winrt::Thickness const& value)
 {
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InfoBarPanel*>(this)->SetValue(s_PaddingInHorizontalOrientationProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-    }
+    target.SetValue(s_HorizontalOrientationMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
 }
 
-void InfoBarPanelProperties::SetHorizontalMargin(winrt::DependencyObject const& target, winrt::Thickness const& value)
+winrt::Thickness InfoBarPanelProperties::GetHorizontalOrientationMargin(winrt::DependencyObject const& target)
 {
-    target.SetValue(s_HorizontalMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-}
-
-winrt::Thickness InfoBarPanelProperties::GetHorizontalMargin(winrt::DependencyObject const& target)
-{
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(target.GetValue(s_HorizontalMarginProperty));
-    {
-    static_cast<InfoBarPanel*>(this)->SetValue(s_PaddingInVerticalOrientationProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::Thickness InfoBarPanelProperties::PaddingInVerticalOrientation()
-{
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<InfoBarPanel*>(this)->GetValue(s_PaddingInVerticalOrientationProperty));
+    return ValueHelper<winrt::Thickness>::CastOrUnbox(target.GetValue(s_HorizontalOrientationMarginProperty));
 }
 
 void InfoBarPanelProperties::HorizontalOrientationPadding(winrt::Thickness const& value)
@@ -131,17 +98,26 @@ void InfoBarPanelProperties::HorizontalOrientationPadding(winrt::Thickness const
     }
 }
 
-void InfoBarPanelProperties::SetVerticalMargin(winrt::DependencyObject const& target, winrt::Thickness const& value)
+winrt::Thickness InfoBarPanelProperties::HorizontalOrientationPadding()
 {
-    target.SetValue(s_VerticalMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
+    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<InfoBarPanel*>(this)->GetValue(s_HorizontalOrientationPaddingProperty));
 }
 
-winrt::Thickness InfoBarPanelProperties::GetVerticalMargin(winrt::DependencyObject const& target)
+
 void InfoBarPanelProperties::SetVerticalOrientationMargin(winrt::DependencyObject const& target, winrt::Thickness const& value)
 {
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(target.GetValue(s_VerticalMarginProperty));
+    target.SetValue(s_VerticalOrientationMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
 }
 
+winrt::Thickness InfoBarPanelProperties::GetVerticalOrientationMargin(winrt::DependencyObject const& target)
+{
+    return ValueHelper<winrt::Thickness>::CastOrUnbox(target.GetValue(s_VerticalOrientationMarginProperty));
+}
+
+void InfoBarPanelProperties::VerticalOrientationPadding(winrt::Thickness const& value)
+{
+    [[gsl::suppress(con)]]
+    {
     static_cast<InfoBarPanel*>(this)->SetValue(s_VerticalOrientationPaddingProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
     }
 }
