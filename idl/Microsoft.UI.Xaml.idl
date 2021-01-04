@@ -183,7 +183,7 @@ namespace MU_XC_NAMESPACE
 
         [WUXC_VERSION_PREVIEW]
         {
-            [MUX_DEFAULT_VALUE("winrt::StylesVersion::Latest")]
+            [MUX_DEFAULT_VALUE("winrt::StylesVersion::WinUI_2dot5")]
             StylesVersion Version{ get; set; };
 
             static Windows.UI.Xaml.DependencyProperty VersionProperty{ get; };

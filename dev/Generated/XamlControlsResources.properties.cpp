@@ -42,7 +42,7 @@ void XamlControlsResourcesProperties::EnsureProperties()
                 winrt::name_of<winrt::StylesVersion>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
-                ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(winrt::StylesVersion::Latest),
+                ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(winrt::StylesVersion::WinUI_2dot5),
                 winrt::PropertyChangedCallback(&OnVersionPropertyChanged));
     }
 }
