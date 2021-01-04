@@ -378,7 +378,6 @@
                                         IsAccessKeyScope="True"
                                         IsTabStop="False"
                                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>
                                             <TranslateTransform x:Name="MoreButtonTransform" />
