@@ -422,7 +422,7 @@ void ElementManager::OnItemsAdded(int index, int count)
     // to insert items.
     const int lastRealizedDataIndex = m_firstRealizedDataIndex + GetRealizedElementCount() - 1;
     const int newStartingIndex = index;
-    if (newStartingIndex > m_firstRealizedDataIndex &&
+    if (newStartingIndex >= m_firstRealizedDataIndex &&
         newStartingIndex <= lastRealizedDataIndex)
     {
         // Inserted within the realized range

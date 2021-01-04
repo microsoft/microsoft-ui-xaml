@@ -1690,10 +1690,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var getChildContentPresenterMarginButton = FindElement.ById<Button>("GetChildNavViewItemContentPresenterMarginButton");
                 var contentPresenterMarginTextBlock = new TextBlock(FindElement.ByName("NavViewItemContentPresenterMarginTextBlock"));
 
+                var scrollItemIntoViewComboBox = new ComboBox(FindElement.ByName("ScrollItemIntoViewComboBox"));
+                var scrollItemIntoViewButton = FindElement.ById<Button>("ScrollItemIntoViewButton");
+
                 // Switch the NavigationView to closed compact mode
                 Log.Comment("Switch NavigationView to closed compact mode");
                 SetNavViewWidth(ControlWidth.Medium);
                 Wait.ForIdle();
+
+                Log.Comment("Ensure test menu item is in view");
+                scrollItemIntoViewComboBox.SelectItemByName("HasChildItem");
+                Wait.ForIdle();
+                scrollItemIntoViewButton.InvokeAndWait();
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
@@ -1703,15 +1711,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Log.Comment("Expand item with children");
                 UIObject hasChildItem = FindElement.ByName("HasChildItem");
                 InputHelper.LeftClick(hasChildItem);
+                Wait.ForMilliseconds(100); // Give a little bit of time for the flyout to open, then wait for idle.
                 Wait.ForIdle();
 
                 getChildContentPresenterMarginButton.InvokeAndWait();
                 Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
 
+                // Close opened flyout
+                InputHelper.LeftClick(hasChildItem);
+                Wait.ForIdle();
+
                 // Switch the NavigationView to expanded mode
                 Log.Comment("Switch NavigationView to expanded mode");
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
+
+                Log.Comment("Ensure test menu item is in view");
+                scrollItemIntoViewComboBox.SelectItemByName("HasChildItem");
+                Wait.ForIdle();
+                scrollItemIntoViewButton.InvokeAndWait();
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
@@ -1758,9 +1776,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Get CornerRadius of Menu Item 1's children menu flyout.");
                     FindElement.ByName<Button>("GetMenuItem1ChildrenFlyoutCornerRadiusButton").Invoke();
 
-                    // A CornerRadius of (8,8,8,8) is the current default value for flyouts.
+                    // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
                     TextBlock menuItem1ChildrenFlyoutCornerRadiusTextBlock = new TextBlock(FindElement.ByName("MenuItem1ChildrenFlyoutCornerRadiusTextBlock"));
-                    Verify.AreEqual("8,8,8,8", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
+                    Verify.AreEqual("4,4,4,4", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
 
                     // Close flyout
                     InputHelper.LeftClick(item);

@@ -12,6 +12,7 @@
             <Color x:Key="SystemControlErrorBackgroundColor">#33FFFFFF</Color>
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
             <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
             <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#59FFFFFF" />
@@ -23,6 +24,8 @@
             <x:Double x:Key="ProgressBarIndicatorPauseOpacity">1</x:Double>
             <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
             <Thickness x:Key="ProgressBarBorderThemeThickness">1</Thickness>
+            <contract7NotPresent:Color x:Key="SystemErrorTextColor">#FFF000</contract7NotPresent:Color>
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
             <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -38,6 +41,7 @@
             <Color x:Key="SystemControlErrorBackgroundColor">#29C50500</Color>
             <!-- Hex value for SystemErrorText at 0.16 opacity -->
             <contract7NotPresent:Color x:Key="SystemErrorTextColor">#C50500</contract7NotPresent:Color>
+            <contract7NotPresent:SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{ThemeResource SystemErrorTextColor}"/>
             <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
