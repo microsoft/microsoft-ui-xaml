@@ -45,7 +45,6 @@
     </Style>
 
     <Style TargetType="local:Breadcrumb">
-
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Breadcrumb">
