@@ -279,6 +279,23 @@ struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::
     }
 };
 
+template <typename D, typename T, typename ... I>
+struct __declspec(empty_bases)DeriveFromBitmapIconHelper_base : winrt::Windows::UI::Xaml::Controls::BitmapIconT<D, winrt::default_interface<T>, winrt::composable, I...>
+{
+    using composable = T;
+    using class_type = typename T;
+
+    operator class_type() const noexcept
+    {
+        return static_cast<winrt::IInspectable>(*this).as<class_type>();
+    }
+
+    hstring GetRuntimeClassName() const
+    {
+        return hstring{ winrt::name_of<T>() };
+    }
+};
+
 //
 // An awaitable object. Completes when the CompleteAwaits() method is called.
 // cf. .NET's TaskCompletionSource.
