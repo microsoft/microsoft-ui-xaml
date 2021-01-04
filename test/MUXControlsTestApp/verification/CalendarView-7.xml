@@ -5828,6 +5828,32 @@
                         FocusVisualPrimaryBrush=#FF000000
                         Visibility=Visible
                         RenderSize=22,27
+                  [Windows.UI.Xaml.Controls.CalendarViewDayItem]
+                      Padding=0,0,0,4
+                      Foreground=#CC000000
+                      BorderThickness=0,0,0,0
+                      BorderBrush=[NULL]
+                      Background=[NULL]
+                      CornerRadius=0,0,0,0
+                      MinWidth=40
+                      MinHeight=40
+                      Margin=1,1,1,1
+                      FocusVisualSecondaryThickness=1,1,1,1
+                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualPrimaryThickness=2,2,2,2
+                      FocusVisualPrimaryBrush=#FF000000
+                      Visibility=Visible
+                      RenderSize=55,51
+                    [Windows.UI.Xaml.Controls.TextBlock]
+                        Padding=0,0,0,0
+                        Foreground=#FF000000
+                        Margin=0,0,0,0
+                        FocusVisualSecondaryThickness=1,1,1,1
+                        FocusVisualSecondaryBrush=#99FFFFFF
+                        FocusVisualPrimaryThickness=2,2,2,2
+                        FocusVisualPrimaryBrush=#FF000000
+                        Visibility=Visible
+                        RenderSize=22,27
         [Windows.UI.Xaml.Controls.ScrollViewer]
             Padding=0,0,0,0
             Foreground=#CC000000
