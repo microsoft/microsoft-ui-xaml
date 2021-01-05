@@ -87,11 +87,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)MediaTransportControls_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

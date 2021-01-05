@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -42,6 +42,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void ChangeValueTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -67,6 +68,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void UpdateIndicatorWidthTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -128,6 +130,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void UpdateMinMaxTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -191,6 +194,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void ChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -253,6 +257,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void PaddingOffsetTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -297,6 +302,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void RetemplateUpdateIndicatorWidthTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
@@ -362,6 +368,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void ReTemplateChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressBar Tests"))
