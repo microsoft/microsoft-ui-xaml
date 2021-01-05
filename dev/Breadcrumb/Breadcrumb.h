@@ -42,7 +42,7 @@ private:
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
 
     winrt::FindNextElementOptions GetFindNextElementOptions();
-    void Select(int index);
+    void FocusElement(int index);
     bool MoveFocus(int initialIndexIncrement);
     bool MoveFocusPrevious();
     bool MoveFocusNext();
@@ -54,7 +54,8 @@ private:
     void UpdateDropdownItemTemplate();
 
     winrt::IInspectable GenerateInternalItemsSource();
-
+    void ForceUpdateLastElement();
+    
     winrt::Control::Loaded_revoker m_breadcrumbItemRepeaterLoadedRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_itemRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemRepeaterElementIndexChangedRevoker{};
@@ -73,5 +74,5 @@ private:
     tracker_ref<winrt::BreadcrumbItem> m_lastBreadcrumbItem { this };
 
     // Index of the last focused item when breadcrumb lost focus
-    int m_selectedIndex{ 1 };
+    int m_focusedIndex{ 1 };
 };

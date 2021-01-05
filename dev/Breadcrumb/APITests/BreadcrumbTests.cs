@@ -34,25 +34,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 breadcrumb = new Breadcrumb();
-                breadcrumb.ItemsSource = new List<string>() { "Option 1", "Option 2" };
+                breadcrumb.ItemsSource = new List<string>() { "Node 1", "Node 2" };
 
                 // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                            <TextBlock Text = '{Binding}'/>
+                            <TextBlock Text='{Binding}'/>
                         </DataTemplate>");
 
                 breadcrumb.ItemTemplate = itemTemplate;
 
                 breadcrumb2 = new Breadcrumb();
-                breadcrumb2.ItemsSource = new List<string>() { "Option 1", "Option 2" };
+                breadcrumb2.ItemsSource = new List<string>() { "Node 1", "Node 2" };
 
                 // Set a custom ItemTemplate which is already a BreadcrumbItem. No wrapping should be performed.
                 var itemTemplate2 = (DataTemplate)XamlReader.Load(
-                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                            <BreadcrumbItem Foreground='Blue'>
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                            <controls:BreadcrumbItem Foreground='Blue'>
                               <TextBlock Text = '{Binding}'/>
-                            </BreadcrumbItem>
+                            </controls:BreadcrumbItem>
                         </DataTemplate>");       
 
                 breadcrumb2.ItemTemplate = itemTemplate2;
@@ -75,7 +76,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(breadcrumbItemRepeater2, "The underlying items repeater could not be retrieved");
 
                 var breadcrumbNode1 = breadcrumbItemRepeater.TryGetElement(1) as BreadcrumbItem;
-                var breadcrumbNode2 = breadcrumbItemRepeater.TryGetElement(1) as BreadcrumbItem;
+                var breadcrumbNode2 = breadcrumbItemRepeater2.TryGetElement(1) as BreadcrumbItem;
                 Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
                 Verify.IsNotNull(breadcrumbNode2, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
 

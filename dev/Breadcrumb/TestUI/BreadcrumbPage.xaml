@@ -45,7 +45,7 @@
                                                          Grid.Column="0">
                                         <controls:Breadcrumb.ItemTemplate>
                                             <DataTemplate x:DataType="local2:TreeNode">
-                                                <controls:BreadcrumbItem Content="{Binding}" >
+                                                <controls:BreadcrumbItem Content="{Binding}">
                                                     <controls:BreadcrumbItem.ContentTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding Name}" />

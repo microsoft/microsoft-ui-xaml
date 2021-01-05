@@ -129,14 +129,8 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     element.AddHandler(winrt::UIElement::PointerPressedEvent(),
         winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
         true);
-    element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
     
-  
-    if (const auto& button = element.try_as<winrt::ButtonBase>())
-    {
-        // button.Click({ this, &BreadcrumbItem::OnFlyoutElementClickEvent });
-    }
-    
+    element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });    
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -146,7 +140,10 @@ void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& send
         this->OnFlyoutElementClickEvent(sender, nullptr);
         args.Handled(true);
     }
-    args.Handled(false);
+    else
+    {
+        args.Handled(false);
+    }
 }
 
 void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
