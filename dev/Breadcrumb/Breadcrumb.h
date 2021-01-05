@@ -55,6 +55,7 @@ private:
 
     winrt::IInspectable GenerateInternalItemsSource();
     void ForceUpdateLastElement();
+    void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);
     
     winrt::Control::Loaded_revoker m_breadcrumbItemRepeaterLoadedRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_itemRepeaterElementPreparedRevoker{};
