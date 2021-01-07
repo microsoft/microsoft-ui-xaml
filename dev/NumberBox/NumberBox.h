@@ -70,7 +70,7 @@ private:
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
-    void OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject& /* sender */, const winrt::DependencyProperty& prop);
+    void OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
     void ValidateInput();
     void CoerceMinimum();

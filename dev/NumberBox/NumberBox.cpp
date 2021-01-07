@@ -47,6 +47,8 @@ NumberBox::NumberBox()
     SetDefaultStyleKey(this);
     SetDefaultInputScope();
 
+    // We are not revoking this since the event and the listener reside on the same object and as such have the same lifecycle.
+    // That means that as soon as the NumberBox gets removed so will the event and the listener.
     this->RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this , &NumberBox::OnAutomationPropertiesNamePropertyChanged });
 }
 
@@ -365,22 +367,19 @@ void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::Depe
 
 void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject& /* sender */, const winrt::DependencyProperty& prop)
 {
-    const auto name = winrt::AutomationProperties::GetName(*this);
-    if (!name.empty())
+    if (const auto textBox = m_textBox.get())
     {
-        // Header is a string, we can use that as our UIA name.
-        if (const auto textBox = m_textBox.get())
+        const auto name = winrt::AutomationProperties::GetName(*this);
+        if (!name.empty())
         {
+            // AutomationProperties.Name is a non empty string, we will use that value.
             winrt::AutomationProperties::SetName(textBox, name);
         }
-    }
-    else
-    {
-        if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
+        else
         {
-            // Header is a string, we can use that as our UIA name.
-            if (const auto textBox = m_textBox.get())
+            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
             {
+                // Header is a string, we can use that as our UIA name.
                 winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
             }
         }
@@ -706,7 +705,7 @@ void NumberBox::UpdateHeaderPresenterState()
             {
                 // Header is not empty string
                 shouldShowHeader = true;
-                // Header is a string, we can use that as our UIA name.
+                // Header is a non-empty string, use that as the UIA name of the inner text box.
                 if (const auto textBox = m_textBox.get())
                 {
                     winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
@@ -714,7 +713,7 @@ void NumberBox::UpdateHeaderPresenterState()
             }
             else
             {
-                // Header empty string, try our UIA name.
+                // Header is an empty string, so we'll use the Numberbox's UIA name instead.
                 if (const auto textBox = m_textBox.get())
                 {
                     winrt::AutomationProperties::SetName(textBox, winrt::AutomationProperties::GetName(*this));
@@ -725,7 +724,7 @@ void NumberBox::UpdateHeaderPresenterState()
         {
             // Header is not a string, so let's show header presenter
             shouldShowHeader = true;
-            // Header won't resolve into a string, user our UIA name for the edit.
+            // When our header isn't a string, we use the NumberBox's UIA name for the textbox's UIA name.
             if (const auto textBox = m_textBox.get())
             {
                 winrt::AutomationProperties::SetName(textBox, winrt::AutomationProperties::GetName(*this));
