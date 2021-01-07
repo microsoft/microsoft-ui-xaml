@@ -9,7 +9,7 @@
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
-            <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
@@ -19,7 +19,7 @@
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
-            <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
