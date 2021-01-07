@@ -13,6 +13,7 @@
         <Setter Property="PaneToggleButtonStyle" Value="{StaticResource PaneToggleButtonStyle}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="CompactPaneLength" Value="{ThemeResource NavigationViewCompactPaneLength}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationView">
