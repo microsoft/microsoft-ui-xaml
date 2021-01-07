@@ -130,7 +130,7 @@
     <comment>This text is used to show the number of stars none are selected.</comment>
   </data>
   <data name="RatingLocalizedControlType" xml:space="preserve">
-    <value>Glyer vir gradering</value>
+    <value>Graderingsglyer</value>
     <comment>A simple description of the control for UIA</comment>
   </data>
 </root>
