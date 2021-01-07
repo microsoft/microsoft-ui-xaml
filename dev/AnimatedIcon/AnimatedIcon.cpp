@@ -43,7 +43,7 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
     if (auto const visual = m_animatedVisual.get())
     {
         // Animated Icon scales using the Uniform startegy, meaning that it scales the horizonal and vertical
-        // dementions equally by the maximum ammount that doesn't exceed the available size in either dimention.
+        // dimensions equally by the maximum amount that doesn't exceed the available size in either dimension.
         // If the available size is infinite in both dimentions then we don't scale the visual. Otherwise, we
         // calculate the scale factor by comparing the default visual size to the available size. This produces 2
         // scale factors, one for each dimention. We choose the smaller of the scale factors to not exceed the
