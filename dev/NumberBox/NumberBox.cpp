@@ -365,7 +365,7 @@ void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::Depe
     UpdateVisualStateForIsEnabledChange();
 }
 
-void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject& /* sender */, const winrt::DependencyProperty& prop)
+void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     if (const auto textBox = m_textBox.get())
     {
