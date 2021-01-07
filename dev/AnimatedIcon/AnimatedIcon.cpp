@@ -47,7 +47,7 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
         // If the available size is infinite in both dimensions then we don't scale the visual. Otherwise, we
         // calculate the scale factor by comparing the default visual size to the available size. This produces 2
         // scale factors, one for each dimension. We choose the smaller of the scale factors to not exceed the
-        // available size in that dimention.
+        // available size in that dimension.
         auto const visualSize = visual.Size();
         if (visualSize != winrt::float2::zero())
         {
