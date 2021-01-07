@@ -488,7 +488,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void VerifyVisualTree()
         {
             TreeView treeView = null;

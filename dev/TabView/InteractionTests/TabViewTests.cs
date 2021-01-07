@@ -534,7 +534,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         } 
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void GamePadTest()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))

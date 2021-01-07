@@ -152,7 +152,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return navView;
         }
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void VerifyVisualTree()
         {
             using(VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
@@ -799,13 +799,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void VerifyHeaderContentMarginOnTopNav()
         {
             VerifyHeaderContentMargin(NavigationViewPaneDisplayMode.Top, "VerifyVerifyHeaderContentMarginOnTopNav");
         }
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void VerifyHeaderContentMarginOnMinimalNav()
         {
             VerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");

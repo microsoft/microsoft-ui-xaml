@@ -103,7 +103,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void VerifyVisualTreeForControlsInCommonStyles()
         {
             var controlsToVerify = new List<string> {
@@ -285,7 +285,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 filter: new CustomizedFilter());
         }
 
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerPropertyValueTranslator()
         {

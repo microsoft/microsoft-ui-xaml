@@ -23,7 +23,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CalendarViewTests : ApiTestBase
     {
-        // TODO: fix failing tests after color updates [TestMethod]
+        [TestMethod]
         public void VerifyVisualTree()
         {
             CalendarView calendarView = null;
