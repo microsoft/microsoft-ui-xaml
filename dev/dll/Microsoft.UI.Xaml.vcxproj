@@ -402,7 +402,7 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-        <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic_2dot5.xaml">
+      <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic_2dot5.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
