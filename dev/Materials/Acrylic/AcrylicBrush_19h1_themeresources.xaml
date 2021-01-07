@@ -11,25 +11,25 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundBrush"
+                x:Key="AcrylicBackgroundFillColorDefaultBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientAcrylicElementBrush"
+                x:Key="AcrylicInAppFillColorDefaultBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundInverseBrush"
+                x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
                 FallbackColor="#FCFCFC"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlBaseAcrylicBrush"
+                x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#202020"
                 TintOpacity="0.0"
                 FallbackColor="#202020"
@@ -39,25 +39,25 @@
 
         <ResourceDictionary x:Key="Light">
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundBrush"
+                x:Key="AcrylicBackgroundFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
                 FallbackColor="#FCFCFC"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientAcrylicElementBrush"
+                x:Key="AcrylicInAppFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
                 FallbackColor="#FCFCFC"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundInverseBrush"
+                x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
                 TintColor="#2C2C2C"
                 TintOpacity="0.15"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlBaseAcrylicBrush"
+                x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.0"
                 FallbackColor="#F3F3F3"
@@ -66,10 +66,10 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlTransientAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemControlBaseAcrylicBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
 

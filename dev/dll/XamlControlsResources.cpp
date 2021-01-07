@@ -7,10 +7,10 @@
 #include "RevealBrush.h"
 #include "MUXControlsFactory.h"
 
-static constexpr auto c_SystemControlTransientBackgroundBrush = L"SystemControlTransientBackgroundBrush"sv;
-static constexpr auto c_SystemControlTransientAcrylicElementBrush = L"SystemControlTransientAcrylicElementBrush"sv;
-static constexpr auto c_SystemControlTransientBackgroundInverseBrush = L"SystemControlTransientBackgroundInverseBrush"sv;
-static constexpr auto c_SystemControlBaseAcrylicBrush = L"SystemControlBaseAcrylicBrush"sv;
+static constexpr auto c_AcrylicBackgroundFillColorDefaultBrush = L"AcrylicBackgroundFillColorDefaultBrush"sv;
+static constexpr auto c_AcrylicInAppFillColorDefaultBrush = L"AcrylicInAppFillColorDefaultBrush"sv;
+static constexpr auto c_AcrylicBackgroundFillColorDefaultInverseBrush = L"AcrylicBackgroundFillColorDefaultInverseBrush"sv;
+static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroundFillColorBaseBrush"sv;
 
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
@@ -125,21 +125,21 @@ void XamlControlsResources::UpdateSource()
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
 {
     const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>();
-    if (const auto systemControlTransientBackgroundBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlTransientBackgroundBrush.TintLuminosityOpacity(0.85);
+        acrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.85);
     }
-    if (const auto systemControlTransientAcrylicElementBrush = dictionary.Lookup(box_value(c_SystemControlTransientAcrylicElementBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlTransientAcrylicElementBrush.TintLuminosityOpacity(0.85);
+        acrylicInAppFillColorDefaultBrush.TintLuminosityOpacity(0.85);
     }
-    if (const auto systemControlTransientBackgroundInverseBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundInverseBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlTransientBackgroundInverseBrush.TintLuminosityOpacity(0.96);
+        acrylicBackgroundFillColorDefaultInverseBrush.TintLuminosityOpacity(0.96);
     }
-    if (const auto systemControlBaseAcrylicBrush = dictionary.Lookup(box_value(c_SystemControlBaseAcrylicBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlBaseAcrylicBrush.TintLuminosityOpacity(0.9);
+        acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.9);
     }
 }
 
@@ -147,21 +147,21 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
 {
     if (const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>())
     {
-        if (const auto systemControlTransientBackgroundBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlTransientBackgroundBrush.TintLuminosityOpacity(0.96);
+            acrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.96);
         }
-        if (const auto systemControlTransientAcrylicElementBrush = dictionary.Lookup(box_value(c_SystemControlTransientAcrylicElementBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlTransientAcrylicElementBrush.TintLuminosityOpacity(0.96);
+            acrylicInAppFillColorDefaultBrush.TintLuminosityOpacity(0.96);
         }
-        if (const auto systemControlTransientBackgroundInverseBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundInverseBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlTransientBackgroundInverseBrush.TintLuminosityOpacity(0.85);
+            acrylicBackgroundFillColorDefaultInverseBrush.TintLuminosityOpacity(0.85);
         }
-        if (const auto systemControlBaseAcrylicBrush = dictionary.Lookup(box_value(c_SystemControlBaseAcrylicBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlBaseAcrylicBrush.TintLuminosityOpacity(0.96);
+            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.96);
         }
     }
 }

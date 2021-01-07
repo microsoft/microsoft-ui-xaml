@@ -33,7 +33,7 @@
             <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="GhostFillColorTertiaryBrush" />
@@ -105,7 +105,7 @@
             <StaticResource x:Key="DatePickerButtonForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="GhostFillColorTertiaryBrush" />

@@ -11,7 +11,7 @@
             <contract7NotPresent:StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
             
             <!-- The following NumberBoxPopup* theme resources resource must be defined at the app level in order to take effect. -->
-            <contract7Present:StaticResource x:Key="NumberBoxPopupBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="NumberBoxPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="NumberBoxPopupBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7Present:StaticResource x:Key="NumberBoxPopupBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="NumberBoxPopupBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
@@ -26,7 +26,7 @@
             <contract7NotPresent:StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
 
             <!-- The following NumberBoxPopup* theme resources resource must be defined at the app level in order to take effect. -->
-            <contract7Present:StaticResource x:Key="NumberBoxPopupBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="NumberBoxPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="NumberBoxPopupBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7Present:StaticResource x:Key="NumberBoxPopupBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="NumberBoxPopupBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />

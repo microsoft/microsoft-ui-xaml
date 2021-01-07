@@ -84,7 +84,7 @@
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
 
             <StaticResource x:Key="ComboBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
@@ -330,7 +330,7 @@
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
 
             <StaticResource x:Key="ComboBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
