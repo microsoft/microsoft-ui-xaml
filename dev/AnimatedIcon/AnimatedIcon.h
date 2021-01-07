@@ -67,8 +67,8 @@ private:
 
     winrt::Composition::CompositionPropertySet m_progressPropertySet{ nullptr };
     winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
-    winrt::event_token m_batchCompletedToken{ 0 };
 
+    ScopedBatchCompleted_revoker m_batchCompletedRevoker{ };
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
 
     winrt::AnimatedIconAnimationQueueBehavior m_queueBehavior{ winrt::AnimatedIconAnimationQueueBehavior::SpeedUpQueueOne };

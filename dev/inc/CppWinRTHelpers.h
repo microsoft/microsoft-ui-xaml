@@ -145,6 +145,73 @@ WinRTReturn GetTemplateChildT(std::wstring_view const& childName, const winrt::I
     return nullptr;
 }
 
+struct ScopedBatchCompleted_revoker
+{
+    ScopedBatchCompleted_revoker() noexcept = default;
+    ScopedBatchCompleted_revoker(ScopedBatchCompleted_revoker const&) = delete;
+    ScopedBatchCompleted_revoker& operator=(ScopedBatchCompleted_revoker const&) = delete;
+    ScopedBatchCompleted_revoker(ScopedBatchCompleted_revoker&& other) noexcept
+    {
+        move_from(other);
+    }
+
+    ScopedBatchCompleted_revoker& operator=(ScopedBatchCompleted_revoker&& other) noexcept
+    {
+        move_from(other);
+        return *this;
+    }
+
+    ScopedBatchCompleted_revoker(winrt::CompositionScopedBatch const& batch, winrt::event_token token) :
+        m_batch(batch),
+        m_token(token)
+    {}
+
+    ~ScopedBatchCompleted_revoker() noexcept
+    {
+        revoke();
+    }
+
+    void revoke() noexcept
+    {
+        if (!m_batch)
+        {
+            return;
+        }
+        else
+        {
+            m_batch.Completed(m_token);
+        }
+
+        m_batch = nullptr;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return static_cast<bool>(m_batch);
+    }
+private:
+    void move_from(ScopedBatchCompleted_revoker& other)
+    {
+        if (this != &other)
+        {
+            revoke();
+            m_batch = other.m_batch;
+            m_token = other.m_token;
+            other.m_batch = nullptr;
+            other.m_token.value = 0;
+        }
+    }
+
+    winrt::CompositionScopedBatch m_batch{nullptr};
+    winrt::event_token m_token{};
+};
+
+inline ScopedBatchCompleted_revoker RegisterScopedBatchCompleted(winrt::CompositionScopedBatch const& object, winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs> const& handler)
+{
+    const auto value = object.Completed(handler);
+    return { object, value };
+}
+
 struct PropertyChanged_revoker
 {
    PropertyChanged_revoker() noexcept = default;

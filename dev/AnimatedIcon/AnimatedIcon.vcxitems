@@ -36,16 +36,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)AnimatedIcon.xaml">
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)AnimatedIcon_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.idl" />

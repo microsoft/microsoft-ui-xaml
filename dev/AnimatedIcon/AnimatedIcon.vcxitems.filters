@@ -68,10 +68,6 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)AnimatedIcon.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)AnimatedIcon_themeresources.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Docs">
       <UniqueIdentifier>{ab333f5f-ead0-4ff7-ac54-6fe103e3002b}</UniqueIdentifier>
     </Filter>

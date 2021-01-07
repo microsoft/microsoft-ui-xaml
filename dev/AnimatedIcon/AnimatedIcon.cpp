@@ -27,8 +27,8 @@ void AnimatedIcon::OnApplyTemplate()
 
     if (grid)
     {
-        // Animated icon implements IconElement through FontIcon. we don't need the TextBlock that
-        // FontIcon creates, so get rid of it.
+        // Animated icon implements IconElement through PathIcon. We don't need the Path that
+        // PathIcon creates, so get rid of it.
         grid.Children().Clear();
         OnFallbackIconSourcePropertyChanged(nullptr);
         if (auto const visual = m_animatedVisual.get())
@@ -42,6 +42,12 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
 {
     if (auto const visual = m_animatedVisual.get())
     {
+        // Animated Icon scales using the Uniform startegy, meaning that it scales the horizonal and vertical
+        // dementions equally by the maximum ammount that doesn't exceed the available size in either dimention.
+        // If the available size is infinite in both dimentions then we don't scale the visual. Otherwise, we
+        // calculate the scale factor by comparing the default visual size to the available size. This produces 2
+        // scale factors, one for each dimention. We choose the smaller of the scale factors to not exceed the
+        // available size in that dimention.
         auto const visualSize = visual.Size();
         if (visualSize != winrt::float2::zero())
         {
@@ -68,6 +74,7 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
         }
         return visualSize;
     }
+    // If we don't have a visual, we will show the fallback icon, so we need to do a traditional measure.
     else
     {
         return __super::MeasureOverride(availableSize);
@@ -76,23 +83,24 @@ winrt::Size AnimatedIcon::MeasureOverride(winrt::Size const& availableSize)
 
 winrt::Size AnimatedIcon::ArrangeOverride(winrt::Size const& finalSize)
 {
-    winrt::float2 scale;
-    winrt::float2 arrangedSize;
-
     if (auto const visual = m_animatedVisual.get())
     {
         auto const visualSize = visual.Size();
-        scale = static_cast<winrt::float2>(finalSize) / visual.Size();
-        if (scale.x < scale.y)
+        auto const scale = [finalSize, visual]()
         {
-            scale.y = scale.x;
-        }
-        else
-        {
-            scale.x = scale.y;
-        }
+            auto scale = static_cast<winrt::float2>(finalSize) / visual.Size();
+            if (scale.x < scale.y)
+            {
+                scale.y = scale.x;
+            }
+            else
+            {
+                scale.x = scale.y;
+            }
+            return scale;
+        }();
 
-        arrangedSize = {
+        winrt::float2 const arrangedSize = {
             std::min(finalSize.Width / scale.x, visualSize.x),
             std::min(finalSize.Height / scale.y, visualSize.y)
         };
@@ -170,8 +178,7 @@ void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& s
             // Cancel the previous animation completed handler, before we cancel that animation by starting a new one.
             if (m_batch)
             {
-                m_batch.Completed(m_batchCompletedToken);
-                m_batchCompletedToken = { 0 };
+                m_batchCompletedRevoker.revoke();
             }
 
             // If we already have a queued state, cancel the current animation with the previously queued transtion
@@ -286,14 +293,14 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
                 {
                     // We also support setting the state proprety to a float value, which instructs the animated icon
                     // to animated the Progress property to the provided value.
-                    try
+                    auto const stateAsFloat = std::wcstof(toState.data(), nullptr);
+                    if(!isnan(stateAsFloat))
                     {
-                        auto const stateAsFloat = std::stof(toState.data());
                         PlaySegment(NAN, stateAsFloat, playbackMultiplier);
                         m_lastAnimationSegmentStart = L"";
                         m_lastAnimationSegmentEnd = toState;
                     }
-                    catch (...)
+                    else
                     {
                         // None of our attempt to find an animation to play or frame to show have worked, so just cut
                         // to frame 0.
@@ -324,8 +331,8 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
     auto const duration = m_animatedVisual ?
         std::chrono::duration_cast<winrt::TimeSpan>(m_animatedVisual.get().Duration() * segmentLength * (1.0 / playbackMultiplier) * m_durationMultiplier) :
         winrt::TimeSpan::zero();
-    // If the duration is really short (< 20ms) don't bother trying to animate.
-    if (duration < winrt::TimeSpan{ 20ms })
+    // If the duration is really short (< 20ms) don't bother trying to animate, or if animations are disabled.
+    if (duration < winrt::TimeSpan{ 20ms } || !SharedHelpers::IsAnimationsEnabled())
     {
         m_progressPropertySet.InsertScalar(L"Progress", to);
         OnAnimationCompleted(nullptr, nullptr);
@@ -352,11 +359,10 @@ void AnimatedIcon::PlaySegment(float from, float to, float playbackMultiplier)
 
         if (m_batch)
         {
-            m_batch.Completed(m_batchCompletedToken);
-            m_batchCompletedToken = { 0 };
+            m_batchCompletedRevoker.revoke();
         }
         m_batch = compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
-        m_batchCompletedToken = m_batch.Completed({ this, &AnimatedIcon::OnAnimationCompleted });
+        m_batchCompletedRevoker = RegisterScopedBatchCompleted(m_batch, { this, &AnimatedIcon::OnAnimationCompleted });
 
         m_isPlaying = true;
         m_progressPropertySet.StartAnimation(L"Progress", animation);
@@ -459,8 +465,7 @@ void AnimatedIcon::OnAnimationCompleted(winrt::IInspectable const&, winrt::Compo
 {
     if (m_batch)
     {
-        m_batch.Completed(m_batchCompletedToken);
-        m_batchCompletedToken = { 0 };
+        m_batchCompletedRevoker.revoke();
     }
     m_isPlaying = false;
     //m_currentSegmentLength = 1.0f;
