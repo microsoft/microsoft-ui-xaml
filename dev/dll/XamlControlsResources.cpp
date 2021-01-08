@@ -23,8 +23,6 @@ XamlControlsResources::XamlControlsResources()
     // what it does, though.
     MUXControlsFactory::EnsureInitialized();
     UpdateSource();
-
-    s_tlsUseLatestStyle = UseLatestStyle();
 }
 
 bool XamlControlsResources::UseLatestStyle()
@@ -36,13 +34,10 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_UseCompactResourcesProperty)
+    if (property == s_UseCompactResourcesProperty || property == s_VersionProperty)
     {
+        // Source link depends on Version and Compact flag, We need update source when this property changed
         UpdateSource();
-    }
-    else if (property == s_VersionProperty)
-    {
-        s_tlsUseLatestStyle = UseLatestStyle();
     }
 }
 
@@ -120,6 +115,8 @@ void XamlControlsResources::UpdateSource()
         UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
         UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
     }
+
+    s_tlsUseLatestStyle = UseLatestStyle();
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
