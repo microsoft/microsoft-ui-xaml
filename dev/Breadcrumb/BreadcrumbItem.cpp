@@ -31,7 +31,7 @@ BreadcrumbItem::~BreadcrumbItem()
 
 void BreadcrumbItem::RevokeListeners()
 {
-    m_splitButtonLoadedRevoker.revoke();
+    m_breadcrumbItemButtonLoadedRevoker.revoke();
 }
 
 void BreadcrumbItem::OnApplyTemplate()
@@ -39,19 +39,19 @@ void BreadcrumbItem::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     // TODO: Implement
-    m_splitButton.set(GetTemplateChildT<winrt::SplitButton>(L"SplitButton", controlProtected));
-    m_flyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"SplitButtonFlyout", controlProtected));
+    m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"BreadcrumbItemButton", controlProtected));
+    m_flyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"EllipsisButtonFlyout", controlProtected));
     m_flyoutRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"FlyoutRepeater", controlProtected));
 
-    if (auto splitButton = m_splitButton.get())
+    if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
-        m_splitButtonLoadedRevoker = splitButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+        m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
     }
 }
 
 void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
-    m_rootGrid.set(winrt::VisualTreeHelper::GetChild(m_splitButton.get(), 0).as<winrt::Grid>());
+    // m_rootGrid.set(winrt::VisualTreeHelper::GetChild(m_breadcrumbItemButton.get(), 0).as<winrt::Grid>());
 
     if (auto rootGrid = m_rootGrid.get())
     {
@@ -63,21 +63,19 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winr
         if (auto secondaryButton = m_secondaryButton.get())
         {
             secondaryButton.IsEnabled(false);
-            SetSecondaryButtonText(true);
-            SetSecondaryButtonVisibility(m_isChevronVisible);
         }
     }
 
-    if (auto splitButton = m_splitButton.get())
+    if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
-        m_splitButtonClickRevoker.revoke();
+        m_breadcrumbItemButtonClickRevoker.revoke();
         if (m_isEllipsisNode)
         {
-            m_splitButtonClickRevoker = splitButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnEllipsisItemClick });
+            m_breadcrumbItemButtonClickRevoker = breadcrumbItemButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnEllipsisItemClick });
         }
         else
         {
-            m_splitButtonClickRevoker = splitButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnBreadcrumbItemClick });
+            m_breadcrumbItemButtonClickRevoker = breadcrumbItemButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnBreadcrumbItemClick });
         }
     }
 
@@ -113,7 +111,7 @@ void BreadcrumbItem::SetFlyoutDataTemplate(const winrt::IInspectable& newDataTem
     }
 }
 
-void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args)
+void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
@@ -154,13 +152,7 @@ void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender
         const auto& senderAsContentControl = sender.try_as<winrt::ContentControl>();
 
         // Once an element has been clicked, close the flyout
-        if (const auto& splitButton = m_splitButton.get())
-        {
-            if (const auto& splitButtonImpl = winrt::get_self<SplitButton>(splitButton))
-            {
-                splitButtonImpl->CloseFlyout();
-            }
-        }
+        CloseFlyout();
 
         breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
     }
@@ -183,7 +175,31 @@ winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collect
     return newItemsSource;
 }
 
-void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args)
+void BreadcrumbItem::OpenFlyout()
+{
+    if (auto flyout = m_flyout.get())
+    {
+        if (SharedHelpers::IsFlyoutShowOptionsAvailable())
+        {
+            winrt::FlyoutShowOptions options{};
+            flyout.ShowAt(*this, options);
+        }
+        else
+        {
+            flyout.ShowAt(*this);
+        }
+    }
+}
+
+void BreadcrumbItem::CloseFlyout()
+{
+    if (auto flyout = m_flyout.get())
+    {
+        flyout.Hide();
+    }
+}
+
+void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
@@ -197,13 +213,7 @@ void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, cons
                 flyoutRepeater.ItemsSource(hiddenElements);
             }
 
-            if (const auto& splitButton = m_splitButton.get())
-            {
-                if (const auto& splitButtonImpl = winrt::get_self<SplitButton>(splitButton))
-                {
-                    splitButtonImpl->OpenFlyout();
-                }
-            }
+            OpenFlyout();
         }
     }
 }
@@ -213,8 +223,7 @@ void BreadcrumbItem::SetPropertiesForLastNode()
     m_isEllipsisNode = false;
     m_isLastNode = true;
 
-    SetPrimaryButtonBoldFontWeight(true);
-    SetSecondaryButtonVisibility(false);
+    winrt::VisualStateManager::GoToState(*this, L"LastNode", false);
 }
 
 void BreadcrumbItem::ResetVisualProperties()
@@ -222,12 +231,36 @@ void BreadcrumbItem::ResetVisualProperties()
     m_isEllipsisNode = false;
     m_isLastNode = false;
 
-    if (auto secondaryButton = m_secondaryButton.get())
-    {
-        SetPrimaryButtonBoldFontWeight(false);
-        SetSecondaryButtonVisibility(true);
-        SetSecondaryButtonText(true);
-    }
+    m_breadcrumbItemButton.get().Flyout(nullptr);
+
+    winrt::VisualStateManager::GoToState(*this, L"Normal", false);
+}
+
+void BreadcrumbItem::InstantiateFlyout()
+{
+    /*
+    const auto& ellipsisFlyout = winrt::make<Flyout>();
+
+    const auto& loadedFlyout = winrt::XamlReader::Load(
+        L"<Flyout Placement='Bottom' x:Name='EllipsisButtonFlyout'                      \
+           xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'            \
+           xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'                       \
+           xmlns:local='using:Microsoft.UI.Xaml.Controls'>                              \
+                                                                  \
+        </Flyout>");
+
+    const auto& loadedItemsRepeater = winrt::XamlReader::Load(
+        L"<local:ItemsRepeater x:Name='FlyoutRepeater' HorizontalAlignment='Stretch' \
+           xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'         \
+           xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'                    \
+           xmlns:local='using:Microsoft.UI.Xaml.Controls'>                           \
+            <local:ItemsRepeater.ItemTemplate>                                       \
+                <DataTemplate>                                                       \
+                    <Button Content='{Binding}' Background='Transparent' / >         \
+                </DataTemplate>                                                     \
+            </local:ItemsRepeater.ItemTemplate>                                     \
+          </local:ItemsRepeater>");
+          */
 }
 
 void BreadcrumbItem::SetPropertiesForEllipsisNode()
@@ -235,74 +268,9 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
     m_isEllipsisNode = true;
     m_isLastNode = false;
 
-    if (auto primaryButton = m_primaryButton.get())
-    {
-        primaryButton.IsEnabled(true);
-    }
+    
 
-    if (auto secondaryButton = m_secondaryButton.get())
-    {
-        SetPrimaryButtonBoldFontWeight(false);
-        SetSecondaryButtonVisibility(true);
-    }
-}
+    // m_breadcrumbItemButton.get().Flyout(loadedFlyout.as<winrt::FlyoutBase>());
 
-void BreadcrumbItem::SetPrimaryButtonBoldFontWeight(const bool mustBeBold)
-{
-    if (auto primaryButton = m_primaryButton.get())
-    {
-        primaryButton.FontWeight(mustBeBold ? winrt::FontWeights::Bold() : winrt::FontWeights::Normal());
-    }
-}
-
-void BreadcrumbItem::SetSecondaryButtonVisibility(const bool isVisible)
-{
-    m_isChevronVisible = isVisible;
-
-    if (auto secondaryButton = m_secondaryButton.get())
-    {
-        secondaryButton.Visibility(m_isChevronVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-    }
-
-    if (auto secondaryButtonGrid = m_secondaryButtonGrid.get())
-    {
-        secondaryButtonGrid.Visibility(m_isChevronVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-    }
-
-    if (auto rootGrid = m_rootGrid.get())
-    {
-        int columnDefinitionCount = rootGrid.ColumnDefinitions().Size();
-
-        auto lastColumnDefinition = rootGrid.ColumnDefinitions().GetAt(columnDefinitionCount - 1);
-
-        if (lastColumnDefinition.Width().Value != 0.0)
-        {
-            m_chevronOriginalWidth = lastColumnDefinition.Width();
-        }
-
-        winrt::GridLength hiddenGridLength;
-        hiddenGridLength.GridUnitType = winrt::GridUnitType::Pixel;
-        hiddenGridLength.Value = 0.0;
-
-        lastColumnDefinition.Width(isVisible ? m_chevronOriginalWidth : hiddenGridLength);
-
-        if (auto splitButtonBorder = m_splitButtonBorder.get())
-        {
-            winrt::Grid::SetColumnSpan(splitButtonBorder, columnDefinitionCount - 1);
-        }
-    }
-}
-
-void BreadcrumbItem::SetSecondaryButtonText(const bool isCollapsed)
-{
-    if (auto secondaryButton = m_secondaryButton.get())
-    {
-        winrt::TextBlock secondaryButtonContent = secondaryButton.Content().as<winrt::TextBlock>();
-
-        secondaryButton.IsEnabled(false);
-        if (secondaryButtonContent)
-        {
-            secondaryButtonContent.Text(isCollapsed ? L"\xE76C" : L"\xE70D");
-        }
-    }
+    winrt::VisualStateManager::GoToState(*this, L"Ellipsis", false);
 }

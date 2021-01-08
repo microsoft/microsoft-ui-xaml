@@ -17,7 +17,6 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 BreadcrumbLayout::BreadcrumbLayout()
 {
-    Orientation(winrt::Orientation::Horizontal);
     m_hiddenElements = winrt::make<Vector<winrt::IInspectable>>();
 }
 
@@ -25,36 +24,46 @@ BreadcrumbLayout::~BreadcrumbLayout()
 {
 }
 
+uint32_t BreadcrumbLayout::GetItemCount(winrt::NonVirtualizingLayoutContext const& context)
+{
+    return static_cast<uint32_t>(context.Children().Size());
+}
+
+winrt::UIElement BreadcrumbLayout::GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index)
+{
+    return context.Children().GetAt(index);
+}
+
 // Measuring is performed in a single step, every element is measured, including the ellipsis
 // item, but the total amount of space needed is only composed of the non-ellipsis breadcrumbs
-winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize)
+winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
     m_availableSize = availableSize;
 
-    winrt::Size acumulatedCrumbsSize(0, 0);
+    winrt::Size accumulatedCrumbsSize(0, 0);
 
-    for (int i = 0; i < context.ItemCount(); ++i)
+    for (uint32_t i = 0; i < GetItemCount(context); ++i)
     {
-        auto breadcrumbItem = context.GetOrCreateElementAt(i).as<BreadcrumbItem>();
+        auto breadcrumbItem = GetElementAt(context, i).as<BreadcrumbItem>();
         breadcrumbItem->Measure(availableSize);
 
         if (i != 0)
         {
-            acumulatedCrumbsSize.Width += breadcrumbItem->DesiredSize().Width;
-            acumulatedCrumbsSize.Height = std::max(acumulatedCrumbsSize.Height, breadcrumbItem->DesiredSize().Height);
+            accumulatedCrumbsSize.Width += breadcrumbItem->DesiredSize().Width;
+            accumulatedCrumbsSize.Height = std::max(accumulatedCrumbsSize.Height, breadcrumbItem->DesiredSize().Height);
         }
     }
 
     // Save a reference to the ellipsis button to avoid querying for it multiple times
-    if (context.ItemCount() > 0)
+    if (GetItemCount(context) > 0)
     {
-        if (const auto& ellipsisButton = context.GetOrCreateElementAt(0).try_as<winrt::BreadcrumbItem>())
+        if (const auto& ellipsisButton = GetElementAt(context, 0).try_as<winrt::BreadcrumbItem>())
         {
             m_ellipsisButton.set(ellipsisButton);
         }
     }
 
-    if (acumulatedCrumbsSize.Width > availableSize.Width)
+    if (accumulatedCrumbsSize.Width > availableSize.Width)
     {
         m_ellipsisIsRendered = true;   
     }
@@ -63,7 +72,7 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::VirtualizingLayoutContext c
         m_ellipsisIsRendered = false;
     }
 
-    return acumulatedCrumbsSize;
+    return accumulatedCrumbsSize;
 }
 
 void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight)
@@ -76,9 +85,9 @@ void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float
     accumulatedWidths += elementSize.Width;
 }
 
-void BreadcrumbLayout::ArrangeItem(const winrt::VirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight)
+void BreadcrumbLayout::ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight)
 {
-    const auto& element = context.GetOrCreateElementAt(index);
+    const auto& element = GetElementAt(context, index);
     ArrangeItem(element, accumulatedWidths, maxElementHeight);
 }
 
@@ -88,31 +97,31 @@ void BreadcrumbLayout::HideItem(const winrt::UIElement& breadcrumbItem)
     breadcrumbItem.Arrange(arrangeRect);
 }
 
-void BreadcrumbLayout::HideItem(const winrt::VirtualizingLayoutContext& context, int index)
+void BreadcrumbLayout::HideItem(const winrt::NonVirtualizingLayoutContext& context, int index)
 {
-    const auto& element = context.GetOrCreateElementAt(index);
+    const auto& element = GetElementAt(context, index);
     HideItem(element);
 
     if (m_hiddenElements)
     {
-        m_hiddenElements.Append(context.GetItemAt(index));
+        // m_hiddenElements.Append(context.GetItemAt(index));
     }
 }
 
-int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutContext const& context)
+int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayoutContext const& context)
 {
-    const int itemCount = context.ItemCount();
-    float acumLength = context.GetOrCreateElementAt(itemCount - 1).DesiredSize().Width +
+    const int itemCount = GetItemCount(context);
+    float accumLength = GetElementAt(context, itemCount - 1).DesiredSize().Width +
         m_ellipsisButton.get().DesiredSize().Width;
 
     for (int i = itemCount - 2; i >= 0; --i)
     {
-        float newAcumLength = acumLength + context.GetOrCreateElementAt(i).DesiredSize().Width;
-        if (newAcumLength > m_availableSize.Width)
+        float newAccumLength = accumLength + GetElementAt(context, i).DesiredSize().Width;
+        if (newAccumLength > m_availableSize.Width)
         {
             return i + 1;
         }
-        acumLength = newAcumLength;
+        accumLength = newAccumLength;
     }
 
     return 0;
@@ -120,7 +129,7 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutC
 
 // Arranging is performed in a single step, as many elements are tried to be drawn going from the last element
 // towards the first one, if there's not enough space, then the ellipsis button is drawn
-winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize)
+winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
     // Hidden element list is cleared so it can be populated later
     if (m_hiddenElements)
@@ -128,7 +137,7 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::VirtualizingLayoutContext c
         m_hiddenElements.Clear();
     }
 
-    const int itemCount = context.ItemCount();
+    const int itemCount = GetItemCount(context);
     int firstElementToRender{};
     m_firstRenderedItemIndexAfterEllipsis = itemCount - 1;
 

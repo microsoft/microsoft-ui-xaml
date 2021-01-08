@@ -28,23 +28,24 @@ public:
 
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
-    void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::SplitButtonClickEventArgs& args);
+    void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
     void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
     void OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs&);
     void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void OpenFlyout();
+    void CloseFlyout();
+
+    void InstantiateFlyout();
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
-    void SetPrimaryButtonBoldFontWeight(const bool mustBeBold);
-    void SetSecondaryButtonVisibility(const bool isVisible);
-    void SetSecondaryButtonText(const bool isCollapsed);
 
     bool m_isEllipsisNode{};
     bool m_isLastNode{};
     bool m_isChevronVisible{};
     winrt::GridLength m_chevronOriginalWidth;
 
-    tracker_ref<winrt::SplitButton> m_splitButton{ this };
+    tracker_ref<winrt::Button> m_breadcrumbItemButton{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
     tracker_ref<winrt::Grid> m_secondaryButtonGrid{ this };
     tracker_ref<winrt::Grid> m_splitButtonBorder{ this };
@@ -55,8 +56,8 @@ private:
     tracker_ref<winrt::Breadcrumb> m_parentBreadcrumb{ this };
     tracker_ref<winrt::DataTemplate> m_flyoutDataTemplate{ this };
 
-    winrt::SplitButton::Loaded_revoker m_splitButtonLoadedRevoker{};
-    winrt::SplitButton::Click_revoker m_splitButtonClickRevoker{};
+    winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
+    winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_flyoutRepeaterElementPreparedRevoker{};
     winrt::Button::Click_revoker m_clickRevoker{};
 

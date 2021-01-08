@@ -20,6 +20,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Breadcrumb.properties.cpp" />
@@ -28,6 +30,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Breadcrumb.xaml">

@@ -34,7 +34,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 breadcrumb = new Breadcrumb();
-                breadcrumb.ItemsSource = new List<string>() { "Node 1", "Node 2" };
+                breadcrumb.ItemsSource = new List<int>() { 1, 2 };
 
                 // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
@@ -45,7 +45,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 breadcrumb.ItemTemplate = itemTemplate;
 
                 breadcrumb2 = new Breadcrumb();
-                breadcrumb2.ItemsSource = new List<string>() { "Node 1", "Node 2" };
+                breadcrumb2.ItemsSource = new List<int>() { 1, 2 };
 
                 // Set a custom ItemTemplate which is already a BreadcrumbItem. No wrapping should be performed.
                 var itemTemplate2 = (DataTemplate)XamlReader.Load(

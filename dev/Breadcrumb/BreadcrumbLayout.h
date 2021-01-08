@@ -6,20 +6,24 @@
 #include "common.h"
 
 #include "Vector.h"
-#include "StackLayout.h"
+#include "NonVirtualizingLayout.h"
 #include "VirtualizingLayout.h"
 
 #include "BreadcrumbLayout.g.h"
 
 struct BreadcrumbLayout :
-    winrt::implementation::BreadcrumbLayoutT<BreadcrumbLayout, StackLayout>
+    public ReferenceTracker<BreadcrumbLayout, winrt::implementation::BreadcrumbLayoutT, NonVirtualizingLayout>
 {
 public:
     BreadcrumbLayout();
     ~BreadcrumbLayout();
 
-    winrt::Size MeasureOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& availableSize);
-    winrt::Size ArrangeOverride(winrt::VirtualizingLayoutContext const& context, winrt::Size const& finalSize);
+    winrt::Size MeasureOverride(
+        winrt::NonVirtualizingLayoutContext const& context,
+        winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(
+        winrt::NonVirtualizingLayoutContext const& context,
+        winrt::Size const& finalSize);
 
     winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
     bool EllipsisIsRendered();
@@ -27,10 +31,13 @@ public:
 
 private:
     void ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight);
-    void ArrangeItem(const winrt::VirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight);
+    void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight);
     void HideItem(const winrt::UIElement& breadcrumbItem);
-    void HideItem(const winrt::VirtualizingLayoutContext& context, int index);
-    int GetFirstBreadcrumbItemToArrange(winrt::VirtualizingLayoutContext const& context);
+    void HideItem(const winrt::NonVirtualizingLayoutContext& context, int index);
+    int GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
+
+    uint32_t GetItemCount(winrt::NonVirtualizingLayoutContext const& context);
+    winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
 
     winrt::Size m_availableSize;
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisButton{ this };

@@ -20,7 +20,7 @@ unsealed runtimeclass BreadcrumbItem : Windows.UI.Xaml.Controls.ContentControl
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass BreadcrumbLayout : StackLayout
+unsealed runtimeclass BreadcrumbLayout : NonVirtualizingLayout
 {
     BreadcrumbLayout();
 }

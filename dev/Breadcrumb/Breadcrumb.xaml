@@ -16,6 +16,73 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbItem">
+
+                    <Button x:Name="PART_BreadcrumbItemButton">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="LastNode">
+                                    <VisualState.Setters>
+                                        <Setter Target="ChevronTextBlock.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BreadcrumbItemContentPresenter.FontWeight" Value="Bold" />
+                                        <Setter Target="ChevronColumnDefinition.Width" Value="0px" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                
+                                <VisualState x:Name="Ellipsis">
+                                    <VisualState.Setters>
+                                        <Setter Target="BreadcrumbItemContentPresenter.Content" Value="..."/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <Button.Content>
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="40px" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <ContentPresenter x:Name="PART_BreadcrumbItemContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  FontSize="36"
+                                                  Grid.Column="0"/>
+
+                                <TextBlock x:Name="PART_ChevronTextBlock"
+                                           FontFamily="Segoe MDL2 Assets"
+                                           FontSize="16"
+                                           Text="&#xE76C;"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           IsTextScaleFactorEnabled="False"
+                                           Grid.Column="1"/>
+                            </Grid>
+
+                        </Button.Content>
+
+                        <Button.Flyout>
+                            <Flyout Placement="Bottom" x:Name="PART_EllipsisButtonFlyout">
+                                <local:ItemsRepeater x:Name="PART_FlyoutRepeater" HorizontalAlignment="Stretch">
+                                    <local:ItemsRepeater.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding}" Background="Transparent"/>
+                                        </DataTemplate>
+                                    </local:ItemsRepeater.ItemTemplate>
+                                </local:ItemsRepeater>
+                            </Flyout>
+                        </Button.Flyout>
+
+                    </Button>
+
+                    
+
+                    <!--
                     <Border
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -39,6 +106,8 @@
 
                         </local:SplitButton>
                     </Border>
+-->
+                    
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -49,7 +118,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:Breadcrumb">
 
-                    <local:ItemsRepeater x:Name="BreadcrumbItemRepeater"
+                    <local:ItemsRepeater x:Name="PART_BreadcrumbItemsRepeater"
                                          HorizontalAlignment="Left">
                         <local:ItemsRepeater.Layout>
                             <local:BreadcrumbLayout />
