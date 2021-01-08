@@ -5,18 +5,22 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPointerOver" ResourceKey="SystemControlHighlightChromeAltLowBrush" />
-            <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SystemControlForegroundChromeHighBrush" />
-            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPointerOver" ResourceKey="SystemControlHighlightChromeAltLowBrush" />
-            <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SystemControlForegroundChromeHighBrush" />
-            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ColorPickerSliderThumbBackground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -24,10 +28,12 @@
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundPressed" ResourceKey="SystemControlForegroundChromeHighBrush" />
             <StaticResource x:Key="ColorPickerSliderThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
             <StaticResource x:Key="ColorPickerSliderTrackFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+            <StaticResource x:Key="ColorPickerHeaderContentDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="ColorPickerBorderBrush" ResourceKey="SystemControlForegroundListLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <Style x:Key="ColorPickerBorderStyle" TargetType="Shape">
-        <Setter Property="Stroke" Value="{ThemeResource SystemControlForegroundListLowBrush}" />
+        <Setter Property="Stroke" Value="{ThemeResource ColorPickerBorderBrush}" />
         <Setter Property="StrokeThickness" Value="2" />
     </Style>
 </ResourceDictionary>

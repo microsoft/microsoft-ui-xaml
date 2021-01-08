@@ -9,8 +9,8 @@
         <ResourceDictionary x:Key="Default">
             <contract7Present:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlTransientBorderBrush" />
-            <contract7NotPresent:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+            <contract7Present:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <contract7NotPresent:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
             <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
         </ResourceDictionary>
@@ -23,8 +23,8 @@
         <ResourceDictionary x:Key="Light">
             <contract7Present:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7NotPresent:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlTransientBorderBrush" />
-            <contract7NotPresent:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+            <contract7Present:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <contract7NotPresent:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
             <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
         </ResourceDictionary>

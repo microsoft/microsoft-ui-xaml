@@ -9,35 +9,35 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="MenuBarBackground" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="MenuBarBackground" ResourceKey="GhostFillColorTransparentBrush" />
 
-            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListMediumBrush" />
+            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">0</Thickness>
 
-            <StaticResource x:Key="MenuBarItemBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-            <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="ControlStrokeColorDefaultBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="MenuBarBackground" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="MenuBarBackground" ResourceKey="GhostFillColorTransparentBrush" />
 
-            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListMediumBrush" />
+            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">0</Thickness>
 
-            <StaticResource x:Key="MenuBarItemBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-            <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="MenuBarItemBorderBrushSelected" ResourceKey="ControlStrokeColorDefaultBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
