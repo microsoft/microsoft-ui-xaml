@@ -11,24 +11,24 @@
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="MediaTransportControlsTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="MediaTransportControlsMediaText" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
-            <StaticResource x:Key="MediaTransportControlsTimeElapsedText" ResourceKey="SystemControlPageTextBaseMediumBrush" />
-            <StaticResource x:Key="MediaTransportControlsMediaText" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+            <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="SystemControlForegroundBaseHighBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
             <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
-            <StaticResource x:Key="MediaTransportControlsTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="MediaTransportControlsMediaText" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="MediaTransportControlsFillMediaText" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -65,7 +65,7 @@
                             <!-- Style for Error Message text -->
                             <Style x:Key="MediaTextBlockStyle" TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="Foreground" Value="{ThemeResource MediaTransportControlsMediaText}" />
+                                <Setter Property="Foreground" Value="{ThemeResource MediaTransportControlsFillMediaText}" />
                                 <Setter Property="FontSize" Value="{ThemeResource MTCMediaFontSize}" />
                                 <Setter Property="FontFamily" Value="{ThemeResource MTCMediaFontFamily}" />
                                 <Setter Property="Style" Value="{ThemeResource CaptionTextBlockStyle }" />
@@ -277,7 +277,7 @@
                                                                 <Grid Height="112" Width="192">
                                                                     <Image x:Name="ThumbnailImage" />
                                                                     <Border Background="{ThemeResource MediaTransportControlsThumbBorderBackground}" VerticalAlignment="Bottom" HorizontalAlignment="Left">
-                                                                        <TextBlock x:Name="TimeElapsedPreview" Margin="6,1,6,3" Style="{StaticResource BodyTextBlockStyle}" IsTextScaleFactorEnabled="False" Foreground="{ThemeResource MediaTransportControlsTimeElapsedText}" />
+                                                                        <TextBlock x:Name="TimeElapsedPreview" Margin="6,1,6,3" Style="{StaticResource BodyTextBlockStyle}" IsTextScaleFactorEnabled="False" Foreground="{ThemeResource MediaTransportControlsFillTimeElapsedText}" />
                                                                     </Border>
                                                                 </Grid>
                                                             </Thumb.DataContext>
