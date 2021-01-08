@@ -17,9 +17,6 @@
             <Color x:Key="TextFillColorDisabled">#5DFFFFFF</Color>
             <Color x:Key="TextFillColorInverse">#E4000000</Color>
 
-            <!--<Color x:Key="AccentTextFillColorPrimary">#A8E6FF</Color>
-            <Color x:Key="AccentTextFillColorSecondary">#A8E6FF</Color>
-            <Color x:Key="AccentTextFillColorTertiary">#70C2F1</Color>-->
             <Color x:Key="AccentTextFillColorDisabled">#5DFFFFFF</Color>
 
             <Color x:Key="TextOnAccentFillColorPrimary">#FFFFFF</Color>
@@ -63,9 +60,6 @@
             <Color x:Key="AccentFillColorTertiary">#0084D9</Color>
             <Color x:Key="AccentFillColorDisabled">#0B000000</Color>
 
-            <!--<Color x:Key="AccentAAFillColorDefault">#70C2F1</Color>
-            <Color x:Key="AccentAAFillColorSecondary">#A8E6FF</Color>
-            <Color x:Key="AccentAAFillColorTertiary">#389DE2</Color>-->
             <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#33000000</Color>
@@ -272,9 +266,6 @@
             <Color x:Key="TextFillColorDisabled">#5C000000</Color>
             <Color x:Key="TextFillColorInverse">#FFFFFF</Color>
 
-            <!--<Color x:Key="AccentTextFillColorPrimary">#003C8B</Color>
-            <Color x:Key="AccentTextFillColorSecondary">#001E66</Color>
-            <Color x:Key="AccentTextFillColorTertiary">#005AAF</Color>-->
             <Color x:Key="AccentTextFillColorDisabled">#5C000000</Color>
 
             <Color x:Key="TextOnAccentFillColorPrimary">#FFFFFF</Color>
@@ -318,9 +309,6 @@
             <Color x:Key="AccentFillColorTertiary">#0084D9</Color>
             <Color x:Key="AccentFillColorDisabled">#11000000</Color>
 
-            <!--<Color x:Key="AccentAAFillColorDefault">#005AAF</Color>
-            <Color x:Key="AccentAAFillColorSecondary">#003C8B</Color>
-            <Color x:Key="AccentAAFillColorTertiary">#0078D4</Color>-->
             <Color x:Key="AccentAAFillColorDisabled">#37000000</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
