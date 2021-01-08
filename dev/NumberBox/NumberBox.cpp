@@ -367,6 +367,11 @@ void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::Depe
 
 void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
+    ReevaluateForwardedUIAName();
+}
+
+void NumberBox::ReevaluateForwardedUIAName()
+{
     if (const auto textBox = m_textBox.get())
     {
         const auto name = winrt::AutomationProperties::GetName(*this);
@@ -705,19 +710,6 @@ void NumberBox::UpdateHeaderPresenterState()
             {
                 // Header is not empty string
                 shouldShowHeader = true;
-                // Header is a non-empty string, use that as the UIA name of the inner text box.
-                if (const auto textBox = m_textBox.get())
-                {
-                    winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
-                }
-            }
-            else
-            {
-                // Header is an empty string, so we'll use the Numberbox's UIA name instead.
-                if (const auto textBox = m_textBox.get())
-                {
-                    winrt::AutomationProperties::SetName(textBox, winrt::AutomationProperties::GetName(*this));
-                }
             }
         }
         else
@@ -749,6 +741,8 @@ void NumberBox::UpdateHeaderPresenterState()
     {
         headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
+
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::MoveCaretToTextEnd()

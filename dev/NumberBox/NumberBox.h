@@ -72,6 +72,8 @@ private:
     void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
     void OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
+    void ReevaluateForwardedUIAName();
+
     void ValidateInput();
     void CoerceMinimum();
     void CoerceMaximum();
