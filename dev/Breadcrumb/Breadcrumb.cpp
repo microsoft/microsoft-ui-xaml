@@ -18,14 +18,17 @@ Breadcrumb::Breadcrumb()
 
     SetDefaultStyleKey(this);
     m_breadcrumbElementFactory = winrt::make_self<BreadcrumbElementFactory>();
+    m_itemsIterable = winrt::make_self<BreadcrumbIterable>();
 }
 
 void Breadcrumb::OnApplyTemplate()
 {
+    __super::OnApplyTemplate();
+
     winrt::IControlProtected controlProtected{ *this };
 
     // TODO: Implement
-    m_breadcrumbItemRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"BreadcrumbItemRepeater", controlProtected));
+    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"PART_BreadcrumbItemsRepeater", controlProtected));
 
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
@@ -35,7 +38,7 @@ void Breadcrumb::OnApplyTemplate()
     AccessKeyInvoked({ this, &Breadcrumb::OnAccessKeyInvoked });
     GettingFocus({ this, &Breadcrumb::OnGettingFocus });
 
-    if (const auto& breadcrumbItemsRepeater = m_breadcrumbItemRepeater.get())
+    if (const auto& breadcrumbItemsRepeater = m_itemsRepeater.get())
     {
         breadcrumbItemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
         breadcrumbItemsRepeater.ItemTemplate(*m_breadcrumbElementFactory);
@@ -71,7 +74,7 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
 void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
-    if (const auto& breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    if (const auto& breadcrumbItemRepeater = m_itemsRepeater.get())
     {
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
@@ -102,22 +105,15 @@ void Breadcrumb::UpdateItemsSource()
     m_itemsSourceChanged.revoke();
     m_itemsSourceChanged2.revoke();
 
-    m_breadcrumbItemsRepeaterItemsSource = winrt::ItemsSourceView(ItemsSource());
-    m_itemsSourceChanged = m_breadcrumbItemsRepeaterItemsSource.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+    m_itemsRepeaterItemsSource = winrt::ItemsSourceView(ItemsSource());
+    m_itemsSourceChanged = m_itemsRepeaterItemsSource.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
 
-    if (const auto& breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    if (const auto& breadcrumbItemRepeater = m_itemsRepeater.get())
     {
         if (const auto& itemsSource = this->ItemsSource())
         {
-            const auto& incc = [this]() {
-                if (this->ItemsSource())
-                {
-                    return this->ItemsSource().try_as<winrt::INotifyCollectionChanged>();
-                }
-                else
-                {
-                    return this->ItemsSource().try_as<winrt::INotifyCollectionChanged>();
-                }
+            const auto& incc = [this, itemsSource]() {
+                return itemsSource.try_as<winrt::INotifyCollectionChanged>();
             }();
 
             if (incc)
@@ -136,27 +132,24 @@ void Breadcrumb::UpdateItemsSource()
 
 void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable& args)
 {
-    if (const auto& breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        auto newItemsSource = GenerateInternalItemsSource();
-        breadcrumbItemRepeater.ItemsSource(newItemsSource);
-        breadcrumbItemRepeater.UpdateLayout();
+        m_itemsIterable->ItemsSource(ItemsSource());
+        itemsRepeater.ItemsSource(*m_itemsIterable);
+        itemsRepeater.UpdateLayout();
 
         // For some reason, when interacting with keyboard, the last element doesn't raise the OnPrepared event
         ForceUpdateLastElement();
     }
-
-    return;
 }
 
 void Breadcrumb::ForceUpdateLastElement()
 {
-    const auto& itemsSourceAsList = this->ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
-    const uint32_t itemCount = itemsSourceAsList.Size();
+    const uint32_t itemCount = m_itemsRepeaterItemsSource.Count();
 
-    if (const auto& breadcrumbRepeater = m_breadcrumbItemRepeater.get())
+    if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        const auto& newLastItem = breadcrumbRepeater.TryGetElement(itemCount).try_as<winrt::BreadcrumbItem>();
+        const auto& newLastItem = itemsRepeater.TryGetElement(itemCount).try_as<winrt::BreadcrumbItem>();
         UpdateLastElement(newLastItem);
     }
 }
@@ -198,8 +191,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
             }
             else
             {
-                const auto& itemsSourceAsList = this->ItemsSource().as<winrt::Collections::IVector<winrt::IInspectable>>();
-                const uint32_t itemCount = itemsSourceAsList.Size();
+                const uint32_t itemCount = m_itemsRepeaterItemsSource.Count();
 
                 if (itemIndex == itemCount)
                 {
@@ -242,7 +234,7 @@ void Breadcrumb::OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt
     }
 }
 
-winrt::IInspectable Breadcrumb::GenerateInternalItemsSource()
+winrt::IInspectable Breadcrumb::GenerateInternalItemsSource() const
 {
     // An internal ItemsSource is generated internally to add the
     // ellipsis button
@@ -251,16 +243,15 @@ winrt::IInspectable Breadcrumb::GenerateInternalItemsSource()
     // The ellipsis button is created as a BreadcrumbItem, the element
     // factory verifies that this element is already a BreadcrumbItem
     // so no extra processing is needed
+    // newItemsSource.Append(nullptr);
+
     const auto& ellipsisItem = winrt::make<BreadcrumbItem>();
-    ellipsisItem.Content(winrt::box_value(L"..."));
+    ellipsisItem.Content(winrt::box_value(L"\xE76C"));
     newItemsSource.Append(ellipsisItem);
 
-    if (const auto& itemsList = ItemsSource().try_as<winrt::Foundation::Collections::IIterable<winrt::IInspectable>>())
+    for (int i = 0; i < m_itemsRepeaterItemsSource.Count(); ++i)
     {
-        for (const auto& item : itemsList)
-        {
-            newItemsSource.Append(item);
-        }
+        newItemsSource.Append(m_itemsRepeaterItemsSource.GetAt(i));
     }
 
     return newItemsSource;
@@ -270,16 +261,20 @@ void Breadcrumb::RaiseItemClickedEvent(const winrt::IInspectable& content)
 {
     const auto& eventArgs = winrt::make_self<BreadcrumbItemClickedEventArgs>();
     eventArgs->Item(content);
-    m_itemClickedEventSource(*this, *eventArgs);
+
+    if (m_itemClickedEventSource)
+    {
+        m_itemClickedEventSource(*this, *eventArgs);
+    }
 }
 
-winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements()
+winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements() const
 {
     // The hidden element list is generated in the BreadcrumbLayout during
     // the arrange method, so we retrieve the list from it
-    if (const auto& breadcrumbItemRepeater = m_breadcrumbItemRepeater.get())
+    if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        if (const auto& breadcrumbLayout = breadcrumbItemRepeater.Layout().try_as<BreadcrumbLayout>())
+        if (const auto& breadcrumbLayout = itemsRepeater.Layout().try_as<BreadcrumbLayout>())
         {
             return breadcrumbLayout->HiddenElements();
         }
@@ -292,29 +287,28 @@ winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements()
 // When focus comes from outside the Breadcrumb control we will put focus on the selected item.
 void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
-    if (auto const& repeater = m_breadcrumbItemRepeater.get())
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         auto const& inputDevice = args.InputDevice();
         if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
         {
             // If focus is coming from outside the repeater, put focus on the selected item.
             auto const& oldFocusedElement = args.OldFocusedElement();
-            if (!oldFocusedElement || repeater != winrt::VisualTreeHelper::GetParent(oldFocusedElement))
+            if (!oldFocusedElement || itemsRepeater != winrt::VisualTreeHelper::GetParent(oldFocusedElement))
             {
                 // If the last focused element is now hidden, then focus the ellipsis button
-                if (auto const& repeaterLayout = repeater.Layout())
+                if (auto const& repeaterLayout = itemsRepeater.Layout())
                 {
-                    if (auto const& breadcrumbLayout = repeaterLayout.try_as<BreadcrumbLayout>())
+                    auto const& breadcrumbLayout = repeaterLayout.try_as<BreadcrumbLayout>();
+
+                    if (breadcrumbLayout->EllipsisIsRendered() &&
+                        m_focusedIndex < (int)breadcrumbLayout->FirstRenderedItemIndexAfterEllipsis())
                     {
-                        if (breadcrumbLayout->EllipsisIsRendered() &&
-                            m_focusedIndex < (int)breadcrumbLayout->FirstRenderedItemIndexAfterEllipsis())
-                        {
-                            FocusElement(0);
-                        }
+                        FocusElement(0);
                     }
                 }
 
-                if (auto const& selectedItem = repeater.TryGetElement(m_focusedIndex))
+                if (auto const& selectedItem = itemsRepeater.TryGetElement(m_focusedIndex))
                 {
                     if (auto const& argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                     {
@@ -333,7 +327,7 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
             {
                 if (auto const& newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
-                    FocusElement(repeater.GetElementIndex(newFocusedElementAsUIE));
+                    FocusElement(itemsRepeater.GetElementIndex(newFocusedElementAsUIE));
                     args.Handled(true);
                 }
             }
@@ -351,21 +345,21 @@ void Breadcrumb::FocusElement(int index)
 
 bool Breadcrumb::MoveFocus(int indexIncrement)
 {
-    if (auto const& repeater = m_breadcrumbItemRepeater.get())
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         const auto& focusedElem = winrt::FocusManager::GetFocusedElement();
 
         if (auto const& focusedElement = focusedElem.try_as<winrt::UIElement>())
         {
-            auto focusedIndex = repeater.GetElementIndex(focusedElement);
+            auto focusedIndex = itemsRepeater.GetElementIndex(focusedElement);
 
             if (focusedIndex >= 0)
             {
                 focusedIndex += indexIncrement;
-                auto const itemCount = repeater.ItemsSourceView().Count();
+                auto const itemCount = itemsRepeater.ItemsSourceView().Count();
                 while (focusedIndex >= 0 && focusedIndex < itemCount)
                 {
-                    if (auto const item = repeater.TryGetElement(focusedIndex))
+                    if (auto const item = itemsRepeater.TryGetElement(focusedIndex))
                     {
                         if (auto const itemAsControl = item.try_as<winrt::IControl>())
                         {
@@ -389,9 +383,9 @@ bool Breadcrumb::MoveFocusPrevious()
     int movementPrevious{ -1 };
 
     // If the focus is in the first visible item, then move to the ellipsis
-    if (const auto& repeater = m_breadcrumbItemRepeater.get())
+    if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        const auto& repeaterLayout = repeater.Layout();
+        const auto& repeaterLayout = itemsRepeater.Layout();
         if (const auto& breadcrumbLayout = repeaterLayout.try_as<BreadcrumbLayout>())
         {
             if (breadcrumbLayout->EllipsisIsRendered() &&
@@ -412,9 +406,9 @@ bool Breadcrumb::MoveFocusNext()
     // If the focus is in the ellipsis, then move to the first visible item 
     if (m_focusedIndex == 0)
     {
-        if (const auto& repeater = m_breadcrumbItemRepeater.get())
+        if (const auto& itemsRepeater = m_itemsRepeater.get())
         {
-            const auto& repeaterLayout = repeater.Layout();
+            const auto& repeaterLayout = itemsRepeater.Layout();
             if (const auto& breadcrumbLayout = repeaterLayout.try_as<BreadcrumbLayout>())
             {
                 movementNext = breadcrumbLayout->FirstRenderedItemIndexAfterEllipsis();
@@ -427,27 +421,27 @@ bool Breadcrumb::MoveFocusNext()
 
 // If we haven't handled the key yet and the original source was the first(for up and left)
 // or last(for down and right) element in the repeater we need to handle the key so
-// RadioButton doesn't, which would result in the behavior.
+// BreadcrumbItem doesn't, which would result in the behavior.
 bool Breadcrumb::HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source)
 {
-    if (auto const& repeater = m_breadcrumbItemRepeater.get())
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         if (auto const& sourceAsUIElement = source.try_as<winrt::UIElement>())
         {
-            auto const index = [first, repeater]()
+            auto const index = [first, itemsRepeater]()
             {
                 if (first)
                 {
                     return 0;
                 }
-                if (auto const& itemsSourceView = repeater.ItemsSourceView())
+                if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
                 {
                     return itemsSourceView.Count() - 1;
                 }
                 return -1;
             }();
 
-            if (repeater.GetElementIndex(sourceAsUIElement) == index)
+            if (itemsRepeater.GetElementIndex(sourceAsUIElement) == index)
             {
                 return true;
             }
@@ -470,13 +464,15 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
     case winrt::VirtualKey::Right:
         if (MoveFocusNext())
         {
-            return args.Handled(true);
+            args.Handled(true);
+            return;
         }
         else if (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next))
             {
-                return args.Handled(true);
+                args.Handled(true);
+                return;
             }
         }
         args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
@@ -484,13 +480,15 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
     case winrt::VirtualKey::Left:
         if (MoveFocusPrevious())
         {
-            return args.Handled(true);
+            args.Handled(true);
+            return;
         }
         else if (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous))
             {
-                return args.Handled(true);
+                args.Handled(true);
+                return;
             }
         }
         args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
@@ -500,14 +498,16 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()))
             {
-                return args.Handled(true);
+                args.Handled(true);
+                return;
             }
         }
         else
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right))
             {
-                return args.Handled(true);
+                args.Handled(true);
+                return;
             }
         }
         args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
@@ -518,14 +518,16 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()))
             {
-                return args.Handled(true);
+                args.Handled(true);
+                return;
             }
         }
         else
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left))
             {
-                return args.Handled(true);
+                args.Handled(true);
+                return;
             }
         }
         args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
@@ -535,20 +537,21 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
 
 void Breadcrumb::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args)
 {
-    // If RadioButtons is an AccessKeyScope then we do not want to handle the access
+    // If Breadcrumb is an AccessKeyScope then we do not want to handle the access
     // key invoked event because the user has (probably) set up access keys for the
-    // RadioButton elements.
+    // BreadcrumbItem elements.
     if (!IsAccessKeyScope())
     {
         if (m_focusedIndex)
         {
-            if (auto const repeater = m_breadcrumbItemRepeater.get())
+            if (auto const itemsRepeater = m_itemsRepeater.get())
             {
-                if (auto const selectedItem = repeater.TryGetElement(m_focusedIndex))
+                if (auto const selectedItem = itemsRepeater.TryGetElement(m_focusedIndex))
                 {
                     if (auto const selectedItemAsControl = selectedItem.try_as<winrt::Control>())
                     {
-                        return args.Handled(selectedItemAsControl.Focus(winrt::FocusState::Programmatic));
+                        args.Handled(selectedItemAsControl.Focus(winrt::FocusState::Programmatic));
+                        return;
                     }
                 }
             }

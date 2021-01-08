@@ -13,6 +13,7 @@
 #include "BreadcrumbElementFactory.h"
 
 #include "Vector.h"
+#include "BreadcrumbIterable.h"
 
 class Breadcrumb :
     public ReferenceTracker<Breadcrumb, winrt::implementation::BreadcrumbT>,
@@ -28,7 +29,7 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void RaiseItemClickedEvent(const winrt::IInspectable& content);
-    winrt::Collections::IVector<winrt::IInspectable> HiddenElements();
+    winrt::Collections::IVector<winrt::IInspectable> HiddenElements() const;
 
 private:
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -53,7 +54,7 @@ private:
     void UpdateItemTemplate();
     void UpdateDropdownItemTemplate();
 
-    winrt::IInspectable GenerateInternalItemsSource();
+    winrt::IInspectable GenerateInternalItemsSource() const;
     void ForceUpdateLastElement();
     void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);
     
@@ -66,9 +67,13 @@ private:
 
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
     winrt::event_token m_collectionChanged{ };
-    winrt::ItemsSourceView m_breadcrumbItemsRepeaterItemsSource{ nullptr };
+    // This collection is only composed of the consumer defined objects, it doesn't
+    // include the extra ellipsis/nullptr element
+    winrt::ItemsSourceView m_itemsRepeaterItemsSource{ nullptr };
 
-    tracker_ref<winrt::ItemsRepeater> m_breadcrumbItemRepeater { this };
+    com_ptr<BreadcrumbIterable> m_itemsIterable{ nullptr };
+
+    tracker_ref<winrt::ItemsRepeater> m_itemsRepeater { this };
     com_ptr<BreadcrumbElementFactory> m_breadcrumbElementFactory{ nullptr };
 
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };
