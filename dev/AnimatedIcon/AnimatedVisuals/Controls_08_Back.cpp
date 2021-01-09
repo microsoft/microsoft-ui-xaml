@@ -648,7 +648,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_08_Back::TryCreat
     return nullptr;
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_08_Back::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_08_Back::TryCreateAnimatedIconVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics;

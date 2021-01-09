@@ -1477,7 +1477,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::Try
     return nullptr;
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::TryCreateAnimatedIconVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics;

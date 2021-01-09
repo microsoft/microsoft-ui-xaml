@@ -409,7 +409,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_09_Hamburger::Try
     return nullptr;
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_09_Hamburger::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_09_Hamburger::TryCreateAnimatedIconVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics;

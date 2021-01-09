@@ -5,7 +5,7 @@
 [webhosthidden]
 interface IRichAnimatedVisualSource
 {
-    IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Composition.Compositor compositor);
+    IAnimatedVisual TryCreateAnimatedIconVisual(Windows.UI.Composition.Compositor compositor);
     Windows.Foundation.Collections.IMapView<String, Double> Markers { get; };
     void SetColorProperty(String propertyName, Windows.UI.Color value);
 };

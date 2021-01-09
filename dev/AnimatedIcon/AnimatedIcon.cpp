@@ -381,7 +381,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
                 source.SetColorProperty(L"Foreground", ForegroundSolidColorBrush.Color());
             }
 
-            if (auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor()))
+            if (auto const visual = source.TryCreateAnimatedIconVisual(winrt::Window::Current().Compositor()))
             {
                 m_animatedVisual.set(visual);
                 return visual.RootVisual();

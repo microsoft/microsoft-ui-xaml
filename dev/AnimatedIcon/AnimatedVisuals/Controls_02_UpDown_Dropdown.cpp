@@ -389,7 +389,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_02_UpDown_Dropdow
     return nullptr;
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_02_UpDown_Dropdown::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_02_UpDown_Dropdown::TryCreateAnimatedIconVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics;

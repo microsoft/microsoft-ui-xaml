@@ -26,5 +26,12 @@ namespace MU_XC_NAMESPACE
         : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IRichAnimatedVisualSource
     {
         Controls_07_Settings();
+    
+        IAnimatedVisual TryCreateAnimatedVisual(
+            Windows.UI.Composition.Compositor compositor,
+            out Object diagnostics);
+        IAnimatedVisual TryCreateAnimatedIconVisual(Windows.UI.Composition.Compositor compositor);
+        Windows.Foundation.Collections.IMapView<String, Double> Markers{ get; };
+        void SetColorProperty(String propertyName, Windows.UI.Color value);
     };
 }

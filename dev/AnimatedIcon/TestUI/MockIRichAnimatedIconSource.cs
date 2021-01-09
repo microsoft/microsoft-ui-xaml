@@ -24,9 +24,9 @@ namespace MUXControlsTestApp
             markers.Add("dToe", 0.12345);
             markers.Add("f", 0.12345);
         }
-        public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor)
+        public IAnimatedVisual TryCreateAnimatedIconVisual(Compositor compositor)
         {
-            return visual.TryCreateAnimatedVisual(Window.Current.Compositor);
+            return visual.TryCreateAnimatedIconVisual(Window.Current.Compositor);
         }
 
         public void SetColorProperty(string propertyName, Color value)

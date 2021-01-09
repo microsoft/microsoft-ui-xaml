@@ -202,7 +202,7 @@ public:
         winrt::Windows::UI::Composition::Compositor const& compositor,
         winrt::Windows::Foundation::IInspectable& diagnostics);
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
+    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedIconVisual(
         winrt::Windows::UI::Composition::Compositor const& compositor);
 
     // Converts a frame number to the corresponding progress value.
