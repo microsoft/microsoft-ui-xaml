@@ -29,7 +29,7 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void RaiseItemClickedEvent(const winrt::IInspectable& content);
-    winrt::Collections::IVector<winrt::IInspectable> HiddenElements() const;
+    winrt::IVector<winrt::IInspectable> HiddenElements() const;
 
 private:
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -54,11 +54,11 @@ private:
     void UpdateItemTemplate();
     void UpdateDropdownItemTemplate();
 
-    winrt::IInspectable GenerateInternalItemsSource() const;
     void ForceUpdateLastElement();
     void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);
+    winrt::IVector<winrt::IInspectable> GetHiddenElementsList(uint32_t firstShownElement) const;
     
-    winrt::Control::Loaded_revoker m_breadcrumbItemRepeaterLoadedRevoker{};
+    winrt::Control::Loaded_revoker m_itemsRepeaterLoadedRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_itemRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_itemRepeaterElementClearingRevoker{};
@@ -67,10 +67,10 @@ private:
 
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
     winrt::event_token m_collectionChanged{ };
+
     // This collection is only composed of the consumer defined objects, it doesn't
     // include the extra ellipsis/nullptr element
     winrt::ItemsSourceView m_itemsRepeaterItemsSource{ nullptr };
-
     com_ptr<BreadcrumbIterable> m_itemsIterable{ nullptr };
 
     tracker_ref<winrt::ItemsRepeater> m_itemsRepeater { this };

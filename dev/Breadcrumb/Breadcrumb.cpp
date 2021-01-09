@@ -47,7 +47,7 @@ void Breadcrumb::OnApplyTemplate()
         m_itemRepeaterElementIndexChangedRevoker = breadcrumbItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &Breadcrumb::OnElementIndexChangedEvent });
         m_itemRepeaterElementClearingRevoker = breadcrumbItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
 
-        m_breadcrumbItemRepeaterLoadedRevoker = breadcrumbItemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
+        m_itemsRepeaterLoadedRevoker = breadcrumbItemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
     }
 
     UpdateItemsSource();
@@ -134,7 +134,9 @@ void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const w
 {
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        m_itemsIterable->ItemsSource(ItemsSource());
+        // A new BreadcrumbIterable must be created as ItemsRepeater compares if the previous
+        // itemsSource is equals to the new one
+        m_itemsIterable = winrt::make_self<BreadcrumbIterable>(ItemsSource());
         itemsRepeater.ItemsSource(*m_itemsIterable);
         itemsRepeater.UpdateLayout();
 
@@ -234,29 +236,6 @@ void Breadcrumb::OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt
     }
 }
 
-winrt::IInspectable Breadcrumb::GenerateInternalItemsSource() const
-{
-    // An internal ItemsSource is generated internally to add the
-    // ellipsis button
-    const auto& newItemsSource = winrt::make<Vector<IInspectable>>();
-
-    // The ellipsis button is created as a BreadcrumbItem, the element
-    // factory verifies that this element is already a BreadcrumbItem
-    // so no extra processing is needed
-    // newItemsSource.Append(nullptr);
-
-    const auto& ellipsisItem = winrt::make<BreadcrumbItem>();
-    ellipsisItem.Content(winrt::box_value(L"\xE76C"));
-    newItemsSource.Append(ellipsisItem);
-
-    for (int i = 0; i < m_itemsRepeaterItemsSource.Count(); ++i)
-    {
-        newItemsSource.Append(m_itemsRepeaterItemsSource.GetAt(i));
-    }
-
-    return newItemsSource;
-}
-
 void Breadcrumb::RaiseItemClickedEvent(const winrt::IInspectable& content)
 {
     const auto& eventArgs = winrt::make_self<BreadcrumbItemClickedEventArgs>();
@@ -268,7 +247,18 @@ void Breadcrumb::RaiseItemClickedEvent(const winrt::IInspectable& content)
     }
 }
 
-winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements() const
+winrt::IVector<winrt::IInspectable> Breadcrumb::GetHiddenElementsList(uint32_t firstShownElement) const
+{
+    auto hiddenElements = winrt::make<Vector<winrt::IInspectable>>();
+    for (uint32_t i = 0; i < firstShownElement - 1; ++i)
+    {
+        hiddenElements.Append(m_itemsRepeaterItemsSource.GetAt(i));
+    }
+
+    return hiddenElements;
+}
+
+winrt::IVector<winrt::IInspectable> Breadcrumb::HiddenElements() const
 {
     // The hidden element list is generated in the BreadcrumbLayout during
     // the arrange method, so we retrieve the list from it
@@ -276,7 +266,10 @@ winrt::Collections::IVector<winrt::IInspectable> Breadcrumb::HiddenElements() co
     {
         if (const auto& breadcrumbLayout = itemsRepeater.Layout().try_as<BreadcrumbLayout>())
         {
-            return breadcrumbLayout->HiddenElements();
+            if (breadcrumbLayout->EllipsisIsRendered())
+            {
+                return GetHiddenElementsList(breadcrumbLayout->FirstRenderedItemIndexAfterEllipsis());
+            }
         }
     }
 

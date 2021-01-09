@@ -39,9 +39,9 @@ void BreadcrumbItem::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     // TODO: Implement
-    m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"BreadcrumbItemButton", controlProtected));
-    m_flyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"EllipsisButtonFlyout", controlProtected));
-    m_flyoutRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"FlyoutRepeater", controlProtected));
+    m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"PART_BreadcrumbItemButton", controlProtected));
+    m_flyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"PART_EllipsisButtonFlyout", controlProtected));
+    m_flyoutRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"PART_FlyoutRepeater", controlProtected));
 
     if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
@@ -231,7 +231,7 @@ void BreadcrumbItem::ResetVisualProperties()
     m_isEllipsisNode = false;
     m_isLastNode = false;
 
-    m_breadcrumbItemButton.get().Flyout(nullptr);
+    // m_breadcrumbItemButton.get().Flyout(nullptr);
 
     winrt::VisualStateManager::GoToState(*this, L"Normal", false);
 }

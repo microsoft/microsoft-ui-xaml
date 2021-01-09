@@ -17,7 +17,6 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 BreadcrumbLayout::BreadcrumbLayout()
 {
-    m_hiddenElements = winrt::make<Vector<winrt::IInspectable>>();
 }
 
 BreadcrumbLayout::~BreadcrumbLayout()
@@ -101,11 +100,6 @@ void BreadcrumbLayout::HideItem(const winrt::NonVirtualizingLayoutContext& conte
 {
     const auto& element = GetElementAt(context, index);
     HideItem(element);
-
-    if (m_hiddenElements)
-    {
-        // m_hiddenElements.Append(context.GetItemAt(index));
-    }
 }
 
 int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayoutContext const& context)
@@ -131,12 +125,6 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayo
 // towards the first one, if there's not enough space, then the ellipsis button is drawn
 winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
-    // Hidden element list is cleared so it can be populated later
-    if (m_hiddenElements)
-    {
-        m_hiddenElements.Clear();
-    }
-
     const int itemCount = GetItemCount(context);
     int firstElementToRender{};
     m_firstRenderedItemIndexAfterEllipsis = itemCount - 1;
@@ -183,11 +171,6 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     }
 
     return finalSize;
-}
-
-winrt::Collections::IVector<winrt::IInspectable> BreadcrumbLayout::HiddenElements()
-{
-    return m_hiddenElements;
 }
 
 bool BreadcrumbLayout::EllipsisIsRendered()

@@ -23,16 +23,16 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="LastNode">
                                     <VisualState.Setters>
-                                        <Setter Target="ChevronTextBlock.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BreadcrumbItemContentPresenter.FontWeight" Value="Bold" />
-                                        <Setter Target="ChevronColumnDefinition.Width" Value="0px" />
+                                        <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.FontWeight" Value="Bold" />
+                                        <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 
                                 <VisualState x:Name="Ellipsis">
                                     <VisualState.Setters>
-                                        <Setter Target="BreadcrumbItemContentPresenter.Content" Value="..."/>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Content" Value="&#xE712;"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 
