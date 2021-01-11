@@ -45,11 +45,16 @@ private:
     bool m_isChevronVisible{};
     winrt::GridLength m_chevronOriginalWidth;
 
+    // BreadcrumbItem visual representation
     tracker_ref<winrt::Button> m_breadcrumbItemButton{ this };
+
+    // Flyout content for ellipsis item
     tracker_ref<winrt::FlyoutBase> m_ellipsisFlyout{ this };
-    tracker_ref<winrt::ItemsRepeater> m_flyoutRepeater{ this };
+    tracker_ref<winrt::ItemsRepeater> m_ellipsisItemsRepeater{ this };
+    tracker_ref<winrt::DataTemplate> m_ellipsisDataTemplate{ this };
+
+    // Parent BreadcrumbItem to ask for hidden elements
     tracker_ref<winrt::Breadcrumb> m_parentBreadcrumb{ this };
-    tracker_ref<winrt::DataTemplate> m_flyoutDataTemplate{ this };
 
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};

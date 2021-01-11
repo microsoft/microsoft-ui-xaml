@@ -36,20 +36,20 @@ void BreadcrumbItem::RevokeListeners()
 
 void BreadcrumbItem::OnApplyTemplate()
 {
+    __super::OnApplyTemplate();
+
     winrt::IControlProtected controlProtected{ *this };
 
     // TODO: Implement
     m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"PART_BreadcrumbItemButton", controlProtected));
-    m_ellipsisFlyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"PART_EllipsisButtonFlyout", controlProtected));
-    m_flyoutRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"PART_FlyoutRepeater", controlProtected));
 
-    if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
+    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
         m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
     }
 }
 
-void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
@@ -64,9 +64,9 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winr
         }
     }
 
-    if (const auto& flyoutRepeater = m_flyoutRepeater.get())
+    if (const auto& itemsRepeater = m_ellipsisItemsRepeater.get())
     {
-        m_flyoutRepeaterElementPreparedRevoker = flyoutRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
+        m_flyoutRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
     }
 
     if (m_isEllipsisNode)
@@ -92,7 +92,7 @@ void BreadcrumbItem::SetFlyoutDataTemplate(const winrt::IInspectable& newDataTem
 {
     if (auto const& dataTemplate = newDataTemplate.try_as<winrt::DataTemplate>())
     {
-        m_flyoutDataTemplate.set(dataTemplate);
+        m_ellipsisDataTemplate.set(dataTemplate);
     }
 }
 
@@ -192,9 +192,9 @@ void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, cons
         {
             const auto& hiddenElements = CloneEllipsisItemSource(breadcrumbImpl->HiddenElements());
 
-            if (const auto& flyoutRepeater = m_flyoutRepeater.get())
+            if (const auto& flyoutRepeater = m_ellipsisItemsRepeater.get())
             {
-                flyoutRepeater.ItemTemplate(m_flyoutDataTemplate.get());
+                flyoutRepeater.ItemTemplate(m_ellipsisDataTemplate.get());
                 flyoutRepeater.ItemsSource(hiddenElements);
             }
 
@@ -216,36 +216,42 @@ void BreadcrumbItem::ResetVisualProperties()
     m_isEllipsisNode = false;
     m_isLastNode = false;
 
-    // m_breadcrumbItemButton.get().Flyout(nullptr);
+    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
+    {
+        breadcrumbItemButton.Flyout(nullptr);
+    }
+    m_ellipsisFlyout.set(nullptr);
+    m_ellipsisItemsRepeater.set(nullptr);
 
     winrt::VisualStateManager::GoToState(*this, L"Normal", false);
 }
 
 void BreadcrumbItem::InstantiateFlyout()
 {
-    /*
-    const auto& ellipsisFlyout = winrt::make<Flyout>();
+    // Only if the element has been created visually, instantiate the flyout
+    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
+    {
+        // Load the DataTemplate for the ItemsRepeater
+        const auto& loadedDataTemplate = winrt::XamlReader::Load(
+            L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> \
+                <Button Content='{Binding}' Background='Transparent' />                        \
+              </DataTemplate>");
 
-    const auto& loadedFlyout = winrt::XamlReader::Load(
-        L"<Flyout Placement='Bottom' x:Name='EllipsisButtonFlyout'                      \
-           xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'            \
-           xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'                       \
-           xmlns:local='using:Microsoft.UI.Xaml.Controls'>                              \
-                                                                  \
-        </Flyout>");
+        // Create ItemsRepeater and set the DataTemplate 
+        const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
+        ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
+        ellipsisItemsRepeater.ItemTemplate(loadedDataTemplate);
+        m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
-    const auto& loadedItemsRepeater = winrt::XamlReader::Load(
-        L"<local:ItemsRepeater x:Name='FlyoutRepeater' HorizontalAlignment='Stretch' \
-           xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'         \
-           xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'                    \
-           xmlns:local='using:Microsoft.UI.Xaml.Controls'>                           \
-            <local:ItemsRepeater.ItemTemplate>                                       \
-                <DataTemplate>                                                       \
-                    <Button Content='{Binding}' Background='Transparent' / >         \
-                </DataTemplate>                                                     \
-            </local:ItemsRepeater.ItemTemplate>                                     \
-          </local:ItemsRepeater>");
-          */
+        // Create the Flyout and add the ItemsRepeater as content
+        const auto& ellipsisFlyout = winrt::Flyout();
+        ellipsisFlyout.Content(ellipsisItemsRepeater);
+        ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
+        m_ellipsisFlyout.set(ellipsisFlyout);
+
+        // Set the Flyout to the ellipsis button
+        breadcrumbItemButton.Flyout(ellipsisFlyout);
+    }
 }
 
 void BreadcrumbItem::SetPropertiesForEllipsisNode()
@@ -253,9 +259,7 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
     m_isEllipsisNode = true;
     m_isLastNode = false;
 
-    
-
-    // m_breadcrumbItemButton.get().Flyout(loadedFlyout.as<winrt::FlyoutBase>());
+    InstantiateFlyout();
 
     winrt::VisualStateManager::GoToState(*this, L"Ellipsis", false);
 }

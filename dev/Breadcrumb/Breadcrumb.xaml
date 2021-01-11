@@ -32,7 +32,8 @@
                                 
                                 <VisualState x:Name="Ellipsis">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Content" Value="&#xE712;"/>
+                                        <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 
@@ -45,18 +46,23 @@
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="40px" />
+                                    <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="30px" />
                                 </Grid.ColumnDefinitions>
                                 
                                 <ContentPresenter x:Name="PART_BreadcrumbItemContentPresenter"
                                                   Content="{TemplateBinding Content}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                  FontSize="36"
                                                   Grid.Column="0"/>
+
+                                <TextBlock x:Name="PART_BreadcrumbEllipsisTextBlock"
+                                           FontFamily="Segoe MDL2 Assets"
+                                           Text="&#xE712;"
+                                           Visibility="Collapsed"
+                                           VerticalAlignment="Stretch"
+                                           Grid.Column="0"/>
 
                                 <TextBlock x:Name="PART_ChevronTextBlock"
                                            FontFamily="Segoe MDL2 Assets"
-                                           FontSize="16"
                                            Text="&#xE76C;"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Center"
@@ -65,20 +71,7 @@
                             </Grid>
 
                         </Button.Content>
-
-                        <Button.Flyout>
-                            
-                            <Flyout Placement="Bottom" x:Name="PART_EllipsisButtonFlyout">
-                                <local:ItemsRepeater x:Name="PART_FlyoutRepeater" HorizontalAlignment="Stretch">
-                                    <local:ItemsRepeater.ItemTemplate>
-                                        <DataTemplate>
-                                            <Button Content="{Binding}" Background="Transparent"/>
-                                        </DataTemplate>
-                                    </local:ItemsRepeater.ItemTemplate>
-                                </local:ItemsRepeater>
-                            </Flyout>
-                        </Button.Flyout>
-
+                        
                     </Button>
 
                     

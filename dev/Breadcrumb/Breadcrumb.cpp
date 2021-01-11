@@ -232,7 +232,6 @@ void Breadcrumb::OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt
     {
         const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item);
         itemImpl->ResetVisualProperties();
-        itemImpl->RevokeListeners();
     }
 }
 
