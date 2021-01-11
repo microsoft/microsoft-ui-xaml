@@ -46,12 +46,7 @@ private:
     winrt::GridLength m_chevronOriginalWidth;
 
     tracker_ref<winrt::Button> m_breadcrumbItemButton{ this };
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
-    tracker_ref<winrt::Grid> m_secondaryButtonGrid{ this };
-    tracker_ref<winrt::Grid> m_splitButtonBorder{ this };
-    tracker_ref<winrt::Button> m_primaryButton{ this };
-    tracker_ref<winrt::Button> m_secondaryButton{ this };
-    tracker_ref<winrt::FlyoutBase> m_flyout{ this };
+    tracker_ref<winrt::FlyoutBase> m_ellipsisFlyout{ this };
     tracker_ref<winrt::ItemsRepeater> m_flyoutRepeater{ this };
     tracker_ref<winrt::Breadcrumb> m_parentBreadcrumb{ this };
     tracker_ref<winrt::DataTemplate> m_flyoutDataTemplate{ this };

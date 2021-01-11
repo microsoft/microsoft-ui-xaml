@@ -67,6 +67,7 @@
                         </Button.Content>
 
                         <Button.Flyout>
+                            
                             <Flyout Placement="Bottom" x:Name="PART_EllipsisButtonFlyout">
                                 <local:ItemsRepeater x:Name="PART_FlyoutRepeater" HorizontalAlignment="Stretch">
                                     <local:ItemsRepeater.ItemTemplate>

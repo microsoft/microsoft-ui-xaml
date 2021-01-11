@@ -11,6 +11,7 @@ class BreadcrumbIterable :
     public ReferenceTracker<BreadcrumbIterable, reference_tracker_implements_t<winrt::IIterable<winrt::IInspectable>>::type>
 {
 public:
+    BreadcrumbIterable();
     BreadcrumbIterable(const winrt::IInspectable& itemsSource);
     void ItemsSource(const winrt::IInspectable& itemsSource);
     winrt::IIterator<winrt::IInspectable> First();

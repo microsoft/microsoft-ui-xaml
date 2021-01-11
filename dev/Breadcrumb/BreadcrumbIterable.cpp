@@ -9,6 +9,10 @@
 #include "BreadcrumbIterable.h"
 #include "BreadcrumbIterator.h"
 
+BreadcrumbIterable::BreadcrumbIterable()
+{
+}
+
 BreadcrumbIterable::BreadcrumbIterable(const winrt::IInspectable& itemsSource)
 {
     ItemsSource(itemsSource);

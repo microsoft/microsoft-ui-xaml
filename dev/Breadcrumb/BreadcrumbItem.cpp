@@ -40,7 +40,7 @@ void BreadcrumbItem::OnApplyTemplate()
 
     // TODO: Implement
     m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"PART_BreadcrumbItemButton", controlProtected));
-    m_flyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"PART_EllipsisButtonFlyout", controlProtected));
+    m_ellipsisFlyout.set(GetTemplateChildT<winrt::FlyoutBase>(L"PART_EllipsisButtonFlyout", controlProtected));
     m_flyoutRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"PART_FlyoutRepeater", controlProtected));
 
     if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
@@ -51,21 +51,6 @@ void BreadcrumbItem::OnApplyTemplate()
 
 void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
-    // m_rootGrid.set(winrt::VisualTreeHelper::GetChild(m_breadcrumbItemButton.get(), 0).as<winrt::Grid>());
-
-    if (auto rootGrid = m_rootGrid.get())
-    {
-        m_secondaryButtonGrid.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 1).as<winrt::Grid>());
-        m_splitButtonBorder.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 2).as<winrt::Grid>());
-        m_primaryButton.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 3).as<winrt::Button>());
-        m_secondaryButton.set(winrt::VisualTreeHelper::GetChild(m_rootGrid.get(), 4).as<winrt::Button>());
-
-        if (auto secondaryButton = m_secondaryButton.get())
-        {
-            secondaryButton.IsEnabled(false);
-        }
-    }
-
     if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
         m_breadcrumbItemButtonClickRevoker.revoke();
@@ -177,7 +162,7 @@ winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collect
 
 void BreadcrumbItem::OpenFlyout()
 {
-    if (auto flyout = m_flyout.get())
+    if (auto flyout = m_ellipsisFlyout.get())
     {
         if (SharedHelpers::IsFlyoutShowOptionsAvailable())
         {
@@ -193,7 +178,7 @@ void BreadcrumbItem::OpenFlyout()
 
 void BreadcrumbItem::CloseFlyout()
 {
-    if (auto flyout = m_flyout.get())
+    if (auto flyout = m_ellipsisFlyout.get())
     {
         flyout.Hide();
     }
