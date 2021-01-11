@@ -50,9 +50,9 @@ private:
     bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
-    void UpdateItemsSource();
+    void UpdateItemsRepeaterItemsSource();
     void UpdateItemTemplate();
-    void UpdateDropdownItemTemplate();
+    void UpdateEllipsisBreadcrumbItemDropdownItemTemplate();
 
     void ForceUpdateLastElement();
     void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);

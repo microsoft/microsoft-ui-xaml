@@ -50,7 +50,7 @@ void Breadcrumb::OnApplyTemplate()
         m_itemsRepeaterLoadedRevoker = breadcrumbItemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
     }
 
-    UpdateItemsSource();
+    UpdateItemsRepeaterItemsSource();
 }
 
 void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -60,7 +60,7 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     // TODO: Implement
     if (property == s_ItemsSourceProperty)
     {
-        UpdateItemsSource();
+        UpdateItemsRepeaterItemsSource();
     }
     else if (property == s_ItemTemplateProperty)
     {
@@ -68,7 +68,7 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     }
     else if (property == s_DropdownItemTemplateProperty)
     {
-        UpdateDropdownItemTemplate();
+        UpdateEllipsisBreadcrumbItemDropdownItemTemplate();
     }
 }
 
@@ -86,7 +86,7 @@ void Breadcrumb::UpdateItemTemplate()
     m_breadcrumbElementFactory->UserElementFactory(newItemTemplate);
 }
 
-void Breadcrumb::UpdateDropdownItemTemplate()
+void Breadcrumb::UpdateEllipsisBreadcrumbItemDropdownItemTemplate()
 {
     const winrt::IInspectable& newItemTemplate = DropdownItemTemplate();
 
@@ -100,7 +100,7 @@ void Breadcrumb::UpdateDropdownItemTemplate()
     }
 }
 
-void Breadcrumb::UpdateItemsSource()
+void Breadcrumb::UpdateItemsRepeaterItemsSource()
 {
     m_itemsSourceChanged.revoke();
     m_itemsSourceChanged2.revoke();
@@ -187,9 +187,8 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
             if (itemIndex == 0)
             {
                 itemImpl->SetPropertiesForEllipsisNode();
-                itemImpl->SetFlyoutDataTemplate(DropdownItemTemplate());
-
                 m_ellipsisBreadcrumbItem.set(item);
+                UpdateEllipsisBreadcrumbItemDropdownItemTemplate();
             }
             else
             {
