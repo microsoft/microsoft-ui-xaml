@@ -20,7 +20,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "Controls_08_Back.g.h"
+#include "AnimatedVisuals\Controls_08_Back.g.h"
 
 // Name:        Controls_08_Back
 // Frame rate:  60 fps

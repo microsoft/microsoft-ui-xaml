@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
-//using Controls_09_Hamburger = AnimatedVisuals.Controls_09_Hamburger;
-using Controls_09_Hamburger = Microsoft.UI.Xaml.Controls.Controls_09_Hamburger;
+using Controls_09_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Controls_09_Hamburger;
 
 namespace MUXControlsTestApp
 {

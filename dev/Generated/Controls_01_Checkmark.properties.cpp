@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Controls_01_Checkmark.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_01_Checkmark)
 }

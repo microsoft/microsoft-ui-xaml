@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------------
 
 #include "common.h"
-#include "Controls_02_UpDown_Dropdown.g.h"
+#include "AnimatedVisuals\Controls_02_UpDown_Dropdown.g.h"
 
 // Name:        Controls_02_UpDown_Dropdown
 // Frame rate:  60 fps

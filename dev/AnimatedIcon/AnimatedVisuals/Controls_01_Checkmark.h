@@ -20,7 +20,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "Controls_01_Checkmark.g.h"
+#include "AnimatedVisuals\Controls_01_Checkmark.g.h"
 
     // Name:        Controls_01_Checkmark
     // Frame rate:  60 fps

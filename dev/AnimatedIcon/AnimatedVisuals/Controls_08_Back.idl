@@ -18,7 +18,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace MU_XC_NAMESPACE
+namespace MU_XCAV_NAMESPACE
 {
     [WUXC_VERSION_PREVIEW]
     [webhosthidden]
@@ -26,12 +26,5 @@ namespace MU_XC_NAMESPACE
         : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IRichAnimatedVisualSource
     {
         Controls_08_Back();
-    
-        IAnimatedVisual TryCreateAnimatedVisual(
-            Windows.UI.Composition.Compositor compositor,
-            out Object diagnostics);
-        IAnimatedVisual TryCreateAnimatedIconVisual(Windows.UI.Composition.Compositor compositor);
-        Windows.Foundation.Collections.IMapView<String, Double> Markers{ get; };
-        void SetColorProperty(String propertyName, Windows.UI.Color value);
     };
 }

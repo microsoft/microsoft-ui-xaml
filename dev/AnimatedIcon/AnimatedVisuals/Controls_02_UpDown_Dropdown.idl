@@ -18,19 +18,12 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace MU_XC_NAMESPACE
+namespace MU_XCAV_NAMESPACE
 {
     [WUXC_VERSION_PREVIEW]
     [webhosthidden]
     runtimeclass Controls_02_UpDown_Dropdown : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IRichAnimatedVisualSource
     {
         Controls_02_UpDown_Dropdown();
-    
-        IAnimatedVisual TryCreateAnimatedVisual(
-            Windows.UI.Composition.Compositor compositor,
-            out Object diagnostics);
-        IAnimatedVisual TryCreateAnimatedIconVisual(Windows.UI.Composition.Compositor compositor);
-        Windows.Foundation.Collections.IMapView<String, Double> Markers{ get; };
-        void SetColorProperty(String propertyName, Windows.UI.Color value);
     };
 }

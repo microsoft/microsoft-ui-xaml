@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Controls_08_Back.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_08_Back)
 }

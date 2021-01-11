@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Controls_07_Settings.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_07_Settings)
 }

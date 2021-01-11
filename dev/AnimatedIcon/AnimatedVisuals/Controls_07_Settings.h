@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------------
 
 #include "common.h"
-#include "Controls_07_Settings.g.h"
+#include "AnimatedVisuals\Controls_07_Settings.g.h"
 
 // Name:        Controls_07_Settings
 // Frame rate:  60 fps

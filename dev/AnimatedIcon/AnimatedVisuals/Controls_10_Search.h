@@ -20,7 +20,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "Controls_10_Search.g.h"
+#include "AnimatedVisuals\Controls_10_Search.g.h"
 
 // Name:        XAMLControl - 03 - Navigation - D - Search
 // Frame rate:  60 fps

@@ -60,6 +60,10 @@
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
 #endif
 
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h")
+#include <winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h>
+#endif
+
 #if __has_include("winrt\Microsoft.UI.Xaml.Media.h")
 #include <winrt\Microsoft.UI.Xaml.Media.h>
 #endif
@@ -346,9 +350,6 @@ namespace winrt
     using SelectorItem = winrt::Windows::UI::Xaml::Controls::Primitives::SelectorItem;
     using ToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::ToggleButton;
     using IToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::IToggleButton;
-
-    // using namespace ::winrt::Windows::UI::Xaml::Controls::AnimatedVisuals;
-    //using Controls_09_Hamburger = winrt::Windows::UI::Xaml::Controls::AnimatedVisuals::Controls_09_Hamburger;
 
     // using namespace winrt::Windows::UI::Xaml::Automation::Peers;
     using AccessibilityView = winrt::Windows::UI::Xaml::Automation::Peers::AccessibilityView;

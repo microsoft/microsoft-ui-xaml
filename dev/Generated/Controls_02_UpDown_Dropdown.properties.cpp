@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Controls_02_UpDown_Dropdown.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_02_UpDown_Dropdown)
 }

@@ -61,12 +61,12 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_02_UpDown_Dropdown)
 }
 
-#include "Controls_02_UpDown_Dropdown.g.cpp"
+#include "AnimatedVisuals\Controls_02_UpDown_Dropdown.g.cpp"
 
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,

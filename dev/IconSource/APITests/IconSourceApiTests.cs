@@ -28,6 +28,7 @@ using PathIconSource = Microsoft.UI.Xaml.Controls.PathIconSource;
 using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

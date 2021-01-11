@@ -60,11 +60,11 @@ using namespace winrt::Windows::UI;
 using namespace winrt::Windows::UI::Composition;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_09_Hamburger)
 }
-#include "Controls_09_Hamburger.g.cpp"
+#include "AnimatedVisuals\Controls_09_Hamburger.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,

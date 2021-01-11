@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Controls_09_Hamburger.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
     CppWinRTActivatableClassWithBasicFactory(Controls_09_Hamburger)
 }

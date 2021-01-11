@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------------
 
 #include "common.h"
-#include "Controls_09_Hamburger.g.h"
+#include "AnimatedVisuals\Controls_09_Hamburger.g.h"
 
 // Name:        Controls_09_Hamburger
 // Frame rate:  60 fps

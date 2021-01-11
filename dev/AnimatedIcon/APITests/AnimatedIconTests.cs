@@ -15,6 +15,7 @@ using System.Diagnostics;
 using MUXControlsTestApp;
 using Microsoft.UI.Private.Controls;
 using System.Threading;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 
 #if USING_TAEF
 using WEX.TestExecution;
