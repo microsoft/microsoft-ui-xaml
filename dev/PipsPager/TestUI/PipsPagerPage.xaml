@@ -9,49 +9,26 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
-
+    
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="100"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-
-        <FlipView x:Name="Gallery" Width="250" Height="250" ItemsSource="{x:Bind Pictures}">
-            <FlipView.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Image Source="{Binding}" Stretch="UniformToFill" />
-                    </Grid>
-                </DataTemplate>
-            </FlipView.ItemTemplate>
-        </FlipView>
-
-        <muxc:PipsPager x:Name="FlipViewPipsPager"
-                              Grid.Column="1"
-                              VerticalAlignment="Center"
-                              NumberOfPages="{x:Bind Pictures.Count}"
-                              AutomationProperties.Name="FlipViewPipsPager"
-                              NextButtonVisibility="VisibleOnHover"
-                              PreviousButtonVisibility="VisibleOnHover"
-                              SelectedPageIndex="{Binding ElementName=Gallery, Path=SelectedIndex, Mode=TwoWay}"/>
 
         <muxc:PipsPager x:Name="TestPipsPager"
                             AutomationProperties.Name="TestPipsPager"
                             SelectedIndexChanged="OnSelectedIndexChanged"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"                        
-                            Grid.Row="2"
-                            Margin="0,0,50,0"/>
+                            Margin="0,0,100,0"/>
 
-        <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" >
+        <StackPanel Orientation="Vertical" Grid.Column="1" >
             <ComboBox x:Name="PreviousPageButtonVisibilityComboBox" Header="Previous Page Button Visibility" SelectedIndex="2">
                 <ComboBoxItem x:Name="VisiblePreviousButton" AutomationProperties.Name="VisiblePreviousButton">Visible</ComboBoxItem>
                 <ComboBoxItem x:Name="VisibleOnHoverPreviousButton" AutomationProperties.Name="VisibleOnHoverPreviousButton">VisibleOnHover</ComboBoxItem>
@@ -80,7 +57,7 @@
                 <ComboBoxItem x:Name="HorizontalOrientation" AutomationProperties.Name="HorizontalOrientation">Horizontal</ComboBoxItem>
             </ComboBox>
         </StackPanel>
-        <StackPanel Orientation="Vertical" Grid.Column="4" Grid.Row="2">
+        <StackPanel Orientation="Vertical" Grid.Column="2" Margin="100, 0, 0, 0">
             <TextBlock Text="Previous Page Button"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="IsVisible" VerticalAlignment="Center"/>
@@ -104,5 +81,10 @@
             <TextBlock x:Name="CurrentMaxVisualIndicatorsTextBlock"/>
             <TextBlock x:Name="CurrentOrientationTextBlock"/>
         </StackPanel>
+        <Button x:Name="GoToExamplesPageButton"
+                Content="Open PipsPager Examples"
+                Grid.Row="1" Grid.Column="1"
+                Margin="0, 150, 0, 0"
+                Click="GoToExamplesPage"/>
     </Grid>
 </local:TestPage>
