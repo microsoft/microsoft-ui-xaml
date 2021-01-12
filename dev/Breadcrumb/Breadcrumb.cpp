@@ -145,6 +145,15 @@ void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const w
     }
 }
 
+void Breadcrumb::ResetLastBreadcrumbItem()
+{
+    if (const auto& lastItem = m_lastBreadcrumbItem.get())
+    {
+        auto lastItemImpl = winrt::get_self<BreadcrumbItem>(lastItem);
+        lastItemImpl->ResetVisualProperties();
+    }
+}
+
 void Breadcrumb::ForceUpdateLastElement()
 {
     const uint32_t itemCount = m_itemsRepeaterItemsSource.Count();
@@ -154,6 +163,12 @@ void Breadcrumb::ForceUpdateLastElement()
         const auto& newLastItem = itemsRepeater.TryGetElement(itemCount).try_as<winrt::BreadcrumbItem>();
         UpdateLastElement(newLastItem);
     }
+
+    // If the given collection is empty, then reset the last element visual properties
+    if (itemCount == 0)
+    {
+        ResetLastBreadcrumbItem();
+    }
 }
 
 void Breadcrumb::UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem)
@@ -161,11 +176,7 @@ void Breadcrumb::UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrum
     // If the element is the last element in the array,
     // then we reset the visual properties for the previous
     // last element
-    if (const auto& lastItem = m_lastBreadcrumbItem.get())
-    {
-        auto lastItemImpl = winrt::get_self<BreadcrumbItem>(lastItem);
-        lastItemImpl->ResetVisualProperties();
-    }
+    ResetLastBreadcrumbItem();
 
     if (const auto& newLastItemImpl = winrt::get_self<BreadcrumbItem>(newLastBreadcrumbItem))
     {

@@ -54,6 +54,7 @@ private:
     void UpdateItemTemplate();
     void UpdateEllipsisBreadcrumbItemDropdownItemTemplate();
 
+    void ResetLastBreadcrumbItem();
     void ForceUpdateLastElement();
     void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);
     winrt::IVector<winrt::IInspectable> GetHiddenElementsList(uint32_t firstShownElement) const;
