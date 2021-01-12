@@ -12,7 +12,7 @@
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SmokeFillColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SolidBackgroundFillColorQuarternaryBrush" />
-            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
@@ -28,7 +28,7 @@
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SmokeFillColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SolidBackgroundFillColorQuarternaryBrush" />
-            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
@@ -52,7 +52,6 @@
         <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContentDialog">
