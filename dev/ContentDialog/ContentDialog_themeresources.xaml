@@ -12,7 +12,7 @@
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SmokeFillColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SolidBackgroundFillColorQuarternaryBrush" />
-            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
@@ -28,7 +28,7 @@
             <StaticResource x:Key="ContentDialogBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
             <StaticResource x:Key="ContentDialogSmokeFill" ResourceKey="SmokeFillColorDefaultBrush" />
             <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="SolidBackgroundFillColorQuarternaryBrush" />
-            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ContentDialogBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
@@ -52,6 +52,7 @@
         <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContentDialog">
@@ -126,8 +127,8 @@
                             <VisualStateGroup x:Name="ButtonsVisibilityStates">
                                 <VisualState x:Name="AllVisible" >
                                     <VisualState.Setters>
-                                        <Setter Target="FirstSpacer.Width" Value="{StaticResource ContentDialogButtonSpacing}"/>
-                                        <Setter Target="SecondaryColumn.Width" Value="*"/>
+                                        <Setter Target="FirstSpacer.Width" Value="{StaticResource ContentDialogButtonSpacing}" />
+                                        <Setter Target="SecondaryColumn.Width" Value="*" />
                                         <Setter Target="SecondaryButton.(Grid.Column)" Value="2" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -208,7 +209,7 @@
                                 FlowDirection="{TemplateBinding FlowDirection}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                CornerRadius="{ThemeResource OverlayCornerRadius}"
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                 MinWidth="{StaticResource ContentDialogMinWidth}"
                                 MaxWidth="{StaticResource ContentDialogMaxWidth}"
                                 MinHeight="{StaticResource ContentDialogMinHeight}"
