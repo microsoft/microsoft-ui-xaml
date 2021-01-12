@@ -73,34 +73,6 @@
                         </Button.Content>
                         
                     </Button>
-
-                    
-
-                    <!--
-                    <Border
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
-                        <local:SplitButton x:Name="SplitButton" Margin="2">
-                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
-
-                            <local:SplitButton.Flyout>
-                                <Flyout Placement="Bottom" x:Name="SplitButtonFlyout">
-
-                                    <local:ItemsRepeater x:Name="FlyoutRepeater" HorizontalAlignment="Stretch">
-                                        <local:ItemsRepeater.ItemTemplate>
-                                            <DataTemplate>
-                                                <Button Content="{Binding}" Background="Transparent"/>
-                                            </DataTemplate>
-                                        </local:ItemsRepeater.ItemTemplate>
-                                    </local:ItemsRepeater>
-
-                                </Flyout>
-                            </local:SplitButton.Flyout>
-
-                        </local:SplitButton>
-                    </Border>
--->
                     
                 </ControlTemplate>
             </Setter.Value>

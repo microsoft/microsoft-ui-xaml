@@ -239,6 +239,7 @@ void BreadcrumbItem::InstantiateFlyout()
 
         // Create ItemsRepeater and set the DataTemplate 
         const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
+        ellipsisItemsRepeater.Name(L"PART_EllipsisItemsRepeater");
         ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
         ellipsisItemsRepeater.ItemTemplate(loadedDataTemplate);
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
