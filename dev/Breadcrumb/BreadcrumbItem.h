@@ -58,7 +58,7 @@ private:
 
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
-    winrt::ItemsRepeater::ElementPrepared_revoker m_flyoutRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
     winrt::Button::Click_revoker m_clickRevoker{};
 
     winrt::UIElement::PointerPressed_revoker m_pointerPressedRevoker{};

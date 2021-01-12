@@ -64,11 +64,6 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::Rout
         }
     }
 
-    if (const auto& itemsRepeater = m_ellipsisItemsRepeater.get())
-    {
-        m_flyoutRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
-    }
-
     if (m_isEllipsisNode)
     {
         SetPropertiesForEllipsisNode();
@@ -231,23 +226,25 @@ void BreadcrumbItem::InstantiateFlyout()
     // Only if the element has been created visually, instantiate the flyout
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
-        // Load the DataTemplate for the ItemsRepeater
-        const auto& loadedDataTemplate = winrt::XamlReader::Load(
-            L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> \
-                <Button Content='{Binding}' Background='Transparent' />                        \
-              </DataTemplate>");
-
         // Create ItemsRepeater and set the DataTemplate 
         const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
         ellipsisItemsRepeater.Name(L"PART_EllipsisItemsRepeater");
         ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
-        ellipsisItemsRepeater.ItemTemplate(loadedDataTemplate);
+
+        if (const auto& dataTemplate = m_ellipsisDataTemplate.get())
+        {
+            ellipsisItemsRepeater.ItemTemplate(dataTemplate);
+        }
+
+        m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
+        
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
         // Create the Flyout and add the ItemsRepeater as content
         const auto& ellipsisFlyout = winrt::Flyout();
         ellipsisFlyout.Content(ellipsisItemsRepeater);
         ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
+
         m_ellipsisFlyout.set(ellipsisFlyout);
 
         // Set the Flyout to the ellipsis button
