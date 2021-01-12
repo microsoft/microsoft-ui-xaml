@@ -102,7 +102,7 @@
                         <TextBlock
                             x:Name="ChevronTextBlock"
                             Grid.Column="1"
-                            FontFamily="Segoe MDL2 Assets"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
                             Foreground="{ThemeResource ButtonForegroundPressed}"
                             Text="&#xE96E;"

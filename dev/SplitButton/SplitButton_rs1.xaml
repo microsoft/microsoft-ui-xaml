@@ -298,7 +298,7 @@
                             <Button.Content>
                                 <TextBlock
                                     x:Name="ChevronTextBlock"
-                                    FontFamily="Segoe MDL2 Assets"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="12"
                                     Text="&#xE70D;"
                                     VerticalAlignment="Center"

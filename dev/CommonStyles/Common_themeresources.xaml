@@ -506,8 +506,118 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <SolidColorBrush x:Key="TextFillColorInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccentTextFillColorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentAAFillColorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+
+            <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="ControlFillColorInputActiveBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+
+            <SolidColorBrush x:Key="ControlAAFillColorDefaultBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlAAFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+
+            <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+
+            <SolidColorBrush x:Key="GhostFillColorTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="GhostFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GhostFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GhostFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+
+            <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlAltFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlAltFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+
+            <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="AccentAAFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentAAFillColorDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentDefaultBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentSecondaryBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentTertiaryBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorOnAccentDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+
+            <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CardStrokeColorDefaultSolidBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+
+            <SolidColorBrush x:Key="ControlAAStrokeColorDefaultBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ControlAAStrokeColorDisabledBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+
+            <SolidColorBrush x:Key="SurfaceStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SurfaceStrokeColorFlyoutBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SurfaceStrokeColorInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+
+            <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+
+            <SolidColorBrush x:Key="FocusStrokeColorOuterBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="FocusStrokeColorInnerBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SystemFillColorAttentionBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SystemFillColorSuccessBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SystemFillColorCautionBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+
+            <StaticResource x:Key="DefaultTextForegroundThemeBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ApplicationPageBackgroundThemeBrush" ResourceKey="SolidBackgroundFillColorTertiaryBrush" />
+
+            <!-- Elevation border brushes-->
+
+            <SolidColorBrush x:Key="ControlElevationBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CircleElevationBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccentControlElevationBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+
+            <!-- Other -->
             
             <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
