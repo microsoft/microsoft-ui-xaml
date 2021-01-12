@@ -297,7 +297,7 @@
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
                                 <TextBlock
-                                    FontFamily="Segoe MDL2 Assets"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="8"
                                     Text="&#xE96E;"
                                     VerticalAlignment="Center"
