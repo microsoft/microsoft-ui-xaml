@@ -23,5 +23,5 @@ private:
 
     uint32_t m_currentIndex{};
     uint32_t m_size{};
-    winrt::ItemsSourceView m_itemsRepeaterItemsSource{nullptr};
+    winrt::ItemsSourceView m_breadcrumbItemsSourceView{nullptr};
 };

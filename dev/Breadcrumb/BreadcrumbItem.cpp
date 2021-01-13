@@ -32,11 +32,15 @@ BreadcrumbItem::~BreadcrumbItem()
 void BreadcrumbItem::RevokeListeners()
 {
     m_breadcrumbItemButtonLoadedRevoker.revoke();
+    m_breadcrumbItemButtonClickRevoker.revoke();
+    m_ellipsisRepeaterElementPreparedRevoker.revoke();
 }
 
 void BreadcrumbItem::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
+
+    RevokeListeners();
 
     winrt::IControlProtected controlProtected{ *this };
 
@@ -78,7 +82,7 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::Rout
     }
 }
 
-void BreadcrumbItem::SetItemsRepeater(const winrt::Breadcrumb& parent)
+void BreadcrumbItem::SetParentBreadcrumb(const winrt::Breadcrumb& parent)
 {
     m_parentBreadcrumb.set(parent);
 }
@@ -146,6 +150,10 @@ winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collect
 
     // The new list contains all the elements in reverse order
     const int itemsSourceSize = ellipsisItemsSource.Size();
+
+    // The itemsSourceSize should always be at least 1 as it must always contain the ellipsis item
+    assert(itemsSourceSize > 0);
+
     for (int i = itemsSourceSize - 1; i >= 0; --i)
     {
         const auto& item = ellipsisItemsSource.GetAt(i);
@@ -228,7 +236,6 @@ void BreadcrumbItem::InstantiateFlyout()
     {
         // Create ItemsRepeater and set the DataTemplate 
         const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
-        ellipsisItemsRepeater.Name(L"PART_EllipsisItemsRepeater");
         ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
 
         if (const auto& dataTemplate = m_ellipsisDataTemplate.get())

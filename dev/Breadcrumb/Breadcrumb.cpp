@@ -17,17 +17,28 @@ Breadcrumb::Breadcrumb()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Breadcrumb);
 
     SetDefaultStyleKey(this);
-    m_breadcrumbElementFactory = winrt::make_self<BreadcrumbElementFactory>();
+    m_itemsRepeaterElementFactory = winrt::make_self<BreadcrumbElementFactory>();
     m_itemsIterable = winrt::make_self<BreadcrumbIterable>();
+}
+
+void Breadcrumb::RevokeListeners()
+{
+    m_itemsRepeaterLoadedRevoker.revoke();
+    m_itemRepeaterElementPreparedRevoker.revoke();
+    m_itemRepeaterElementIndexChangedRevoker.revoke();
+    m_itemRepeaterElementClearingRevoker.revoke();
+    m_itemsSourceChanged.revoke();
+    m_itemsSourceAsObservableVectorChanged.revoke();
 }
 
 void Breadcrumb::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
 
+    RevokeListeners();
+
     winrt::IControlProtected controlProtected{ *this };
 
-    // TODO: Implement
     m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"PART_BreadcrumbItemsRepeater", controlProtected));
 
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
@@ -38,16 +49,16 @@ void Breadcrumb::OnApplyTemplate()
     AccessKeyInvoked({ this, &Breadcrumb::OnAccessKeyInvoked });
     GettingFocus({ this, &Breadcrumb::OnGettingFocus });
 
-    if (const auto& breadcrumbItemsRepeater = m_itemsRepeater.get())
+    if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        breadcrumbItemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
-        breadcrumbItemsRepeater.ItemTemplate(*m_breadcrumbElementFactory);
+        itemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
+        itemsRepeater.ItemTemplate(*m_itemsRepeaterElementFactory);
         
-        m_itemRepeaterElementPreparedRevoker = breadcrumbItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
-        m_itemRepeaterElementIndexChangedRevoker = breadcrumbItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &Breadcrumb::OnElementIndexChangedEvent });
-        m_itemRepeaterElementClearingRevoker = breadcrumbItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
+        m_itemRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
+        m_itemRepeaterElementIndexChangedRevoker = itemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &Breadcrumb::OnElementIndexChangedEvent });
+        m_itemRepeaterElementClearingRevoker = itemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
 
-        m_itemsRepeaterLoadedRevoker = breadcrumbItemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
+        m_itemsRepeaterLoadedRevoker = itemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
     }
 
     UpdateItemsRepeaterItemsSource();
@@ -83,7 +94,7 @@ void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, cons
 void Breadcrumb::UpdateItemTemplate()
 {
     const winrt::IInspectable& newItemTemplate = ItemTemplate();
-    m_breadcrumbElementFactory->UserElementFactory(newItemTemplate);
+    m_itemsRepeaterElementFactory->UserElementFactory(newItemTemplate);
 }
 
 void Breadcrumb::UpdateEllipsisBreadcrumbItemDropdownItemTemplate()
@@ -103,28 +114,38 @@ void Breadcrumb::UpdateEllipsisBreadcrumbItemDropdownItemTemplate()
 void Breadcrumb::UpdateItemsRepeaterItemsSource()
 {
     m_itemsSourceChanged.revoke();
-    m_itemsSourceChanged2.revoke();
+    m_itemsSourceAsObservableVectorChanged.revoke();
 
-    m_itemsRepeaterItemsSource = winrt::ItemsSourceView(ItemsSource());
-    m_itemsSourceChanged = m_itemsRepeaterItemsSource.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+    m_itemsSourceView = winrt::ItemsSourceView(ItemsSource());
+    m_itemsSourceChanged = m_itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
 
-    if (const auto& breadcrumbItemRepeater = m_itemsRepeater.get())
+    if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        if (const auto& itemsSource = this->ItemsSource())
+        if (const auto& itemsSource = ItemsSource())
         {
             const auto& incc = [this, itemsSource]() {
-                return itemsSource.try_as<winrt::INotifyCollectionChanged>();
+                if (m_itemsSourceView)
+                {
+                    return m_itemsSourceView.try_as<winrt::INotifyCollectionChanged>();
+                }
+                else
+                {
+                    return itemsSource.try_as<winrt::INotifyCollectionChanged>();
+                }
             }();
 
             if (incc)
             {
-                m_collectionChanged = incc.CollectionChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
+                m_itemsSourceAsCollectionChanged = incc.CollectionChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
                 m_notifyCollectionChanged.set(incc);
             }
-
-            if (const auto& collection = itemsSource.try_as<winrt::IObservableVector<IInspectable>>())
+            else if (const auto bindableObservableVector = itemsSource.try_as<winrt::IBindableObservableVector>())
             {
-                m_itemsSourceChanged2 = collection.VectorChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+                m_itemsSourceAsBindableVectorChanged = bindableObservableVector.VectorChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
+            }
+            else if (const auto& observableVector = itemsSource.try_as<winrt::IObservableVector<IInspectable>>())
+            {
+                m_itemsSourceAsObservableVectorChanged = observableVector.VectorChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
             }
         }
     }
@@ -156,7 +177,7 @@ void Breadcrumb::ResetLastBreadcrumbItem()
 
 void Breadcrumb::ForceUpdateLastElement()
 {
-    const uint32_t itemCount = m_itemsRepeaterItemsSource.Count();
+    const uint32_t itemCount = m_itemsSourceView.Count();
 
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
@@ -192,7 +213,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item))
         {
             // The first element is always the ellipsis item
-            itemImpl->SetItemsRepeater(*this);
+            itemImpl->SetParentBreadcrumb(*this);
 
             const uint32_t itemIndex = args.Index();
             if (itemIndex == 0)
@@ -203,7 +224,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
             }
             else
             {
-                const uint32_t itemCount = m_itemsRepeaterItemsSource.Count();
+                const uint32_t itemCount = m_itemsSourceView.Count();
 
                 if (itemIndex == itemCount)
                 {
@@ -221,18 +242,9 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
 
 void Breadcrumb::OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
-    if (auto const element = args.Element())
+    if (m_focusedIndex == args.OldIndex())
     {
-        element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.NewIndex() + 1));
-
-        // When the selected item's index changes, update selection to match
-        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
-        {
-            if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
-            {
-                FocusElement(args.NewIndex());
-            }
-        }
+        FocusElementAt(args.NewIndex());
     }
 }
 
@@ -261,7 +273,7 @@ winrt::IVector<winrt::IInspectable> Breadcrumb::GetHiddenElementsList(uint32_t f
     auto hiddenElements = winrt::make<Vector<winrt::IInspectable>>();
     for (uint32_t i = 0; i < firstShownElement - 1; ++i)
     {
-        hiddenElements.Append(m_itemsRepeaterItemsSource.GetAt(i));
+        hiddenElements.Append(m_itemsSourceView.GetAt(i));
     }
 
     return hiddenElements;
@@ -306,7 +318,7 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
                     if (breadcrumbLayout->EllipsisIsRendered() &&
                         m_focusedIndex < (int)breadcrumbLayout->FirstRenderedItemIndexAfterEllipsis())
                     {
-                        FocusElement(0);
+                        FocusElementAt(0);
                     }
                 }
 
@@ -322,14 +334,14 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
                 }
             }
 
-            // Focus was already in the repeater: in On RS3+ Selection follows focus unless control is held down.
+            // Focus was already in the repeater: in RS3+ Selection follows focus unless control is held down.
             else if (SharedHelpers::IsRS3OrHigher() &&
                 (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
                     winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
             {
                 if (auto const& newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
-                    FocusElement(itemsRepeater.GetElementIndex(newFocusedElementAsUIE));
+                    FocusElementAt(itemsRepeater.GetElementIndex(newFocusedElementAsUIE));
                     args.Handled(true);
                 }
             }
@@ -337,7 +349,7 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
     }
 }
 
-void Breadcrumb::FocusElement(int index)
+void Breadcrumb::FocusElementAt(int index)
 {
     if (index >= 0)
     {
@@ -367,7 +379,7 @@ bool Breadcrumb::MoveFocus(int indexIncrement)
                         {
                             if (itemAsControl.Focus(winrt::FocusState::Programmatic))
                             {
-                                FocusElement(focusedIndex);
+                                FocusElementAt(focusedIndex);
                                 return true;
                             }
                         }

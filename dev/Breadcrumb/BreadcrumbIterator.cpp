@@ -10,11 +10,11 @@
 
 BreadcrumbIterator::BreadcrumbIterator(const winrt::IInspectable& itemsSource)
 {
-    m_itemsRepeaterItemsSource = winrt::ItemsSourceView(itemsSource);
+    m_breadcrumbItemsSourceView = winrt::ItemsSourceView(itemsSource);
     m_currentIndex = 0;
 
     // Add 1 to account for the leading null/ellipsis element
-    m_size = static_cast<uint32_t>(m_itemsRepeaterItemsSource.Count() + 1);
+    m_size = static_cast<uint32_t>(m_breadcrumbItemsSourceView.Count() + 1);
 }
 
 winrt::IInspectable BreadcrumbIterator::Current()
@@ -25,7 +25,7 @@ winrt::IInspectable BreadcrumbIterator::Current()
     }
     else if (HasCurrent())
     {
-        return m_itemsRepeaterItemsSource.GetAt(m_currentIndex - 1);
+        return m_breadcrumbItemsSourceView.GetAt(m_currentIndex - 1);
     }
     else
     {

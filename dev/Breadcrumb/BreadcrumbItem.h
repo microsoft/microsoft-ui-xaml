@@ -23,7 +23,7 @@ public:
     void ResetVisualProperties();
     void SetPropertiesForLastNode();
     void SetPropertiesForEllipsisNode();
-    void SetItemsRepeater(const winrt::Breadcrumb& parent);
+    void SetParentBreadcrumb(const winrt::Breadcrumb& parent);
     void SetFlyoutDataTemplate(const winrt::IInspectable& newDataTemplate);
 
 private:
@@ -34,16 +34,14 @@ private:
     void OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs&);
     void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void InstantiateFlyout();
     void OpenFlyout();
     void CloseFlyout();
 
-    void InstantiateFlyout();
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
 
     bool m_isEllipsisNode{};
     bool m_isLastNode{};
-    bool m_isChevronVisible{};
-    winrt::GridLength m_chevronOriginalWidth;
 
     // BreadcrumbItem visual representation
     tracker_ref<winrt::Button> m_breadcrumbItemButton{ this };
@@ -59,7 +57,4 @@ private:
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
-    winrt::Button::Click_revoker m_clickRevoker{};
-
-    winrt::UIElement::PointerPressed_revoker m_pointerPressedRevoker{};
 };

@@ -53,7 +53,8 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     auto const newBreadcrumbItem = winrt::BreadcrumbItem{};
     newBreadcrumbItem.Content(args.Data());
 
-    // If a user provided item template exists, we pass the template down to the ContentPresenter of the RadioButton.
+    // If a user provided item template exists, we pass the template down
+    // to the ContentPresenter of the BreadcrumbItem.
     if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
     {
         newBreadcrumbItem.ContentTemplate(itemTemplateWrapper->Template());

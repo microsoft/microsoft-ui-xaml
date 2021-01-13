@@ -10,7 +10,7 @@ class BreadcrumbItemClickedEventArgs :
 {
 public:
     winrt::IInspectable Item();
-    void Item(const winrt::IInspectable& reason);
+    void Item(const winrt::IInspectable& item);
 
 private:
     winrt::IInspectable m_item{ };

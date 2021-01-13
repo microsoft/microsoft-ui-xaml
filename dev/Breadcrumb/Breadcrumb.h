@@ -27,6 +27,7 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void RevokeListeners();
 
     void RaiseItemClickedEvent(const winrt::IInspectable& content);
     winrt::IVector<winrt::IInspectable> HiddenElements() const;
@@ -43,7 +44,7 @@ private:
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
 
     winrt::FindNextElementOptions GetFindNextElementOptions();
-    void FocusElement(int index);
+    void FocusElementAt(int index);
     bool MoveFocus(int initialIndexIncrement);
     bool MoveFocusPrevious();
     bool MoveFocusNext();
@@ -57,6 +58,7 @@ private:
     void ResetLastBreadcrumbItem();
     void ForceUpdateLastElement();
     void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);
+
     winrt::IVector<winrt::IInspectable> GetHiddenElementsList(uint32_t firstShownElement) const;
     
     winrt::Control::Loaded_revoker m_itemsRepeaterLoadedRevoker{};
@@ -64,19 +66,25 @@ private:
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_itemRepeaterElementClearingRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
-    winrt::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_itemsSourceChanged2{};
-
+    
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
-    winrt::event_token m_collectionChanged{ };
+    winrt::event_token m_itemsSourceAsCollectionChanged{};
+    winrt::event_token m_itemsSourceAsBindableVectorChanged{};
+    winrt::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_itemsSourceAsObservableVectorChanged{};
 
     // This collection is only composed of the consumer defined objects, it doesn't
-    // include the extra ellipsis/nullptr element
-    winrt::ItemsSourceView m_itemsRepeaterItemsSource{ nullptr };
+    // include the extra ellipsis/nullptr element. This variable is only used to capture
+    // changes in the ItemsSource
+    winrt::ItemsSourceView m_itemsSourceView{ nullptr };
+
+    // This is the "element collection" provided to the underlying ItemsRepeater, so it
+    // includes the extra ellipsis/nullptr element in the position 0.
     com_ptr<BreadcrumbIterable> m_itemsIterable{ nullptr };
 
     tracker_ref<winrt::ItemsRepeater> m_itemsRepeater { this };
-    com_ptr<BreadcrumbElementFactory> m_breadcrumbElementFactory{ nullptr };
+    com_ptr<BreadcrumbElementFactory> m_itemsRepeaterElementFactory{ nullptr };
 
+    // Pointers to first and last items to update visual states
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };
     tracker_ref<winrt::BreadcrumbItem> m_lastBreadcrumbItem { this };
 
