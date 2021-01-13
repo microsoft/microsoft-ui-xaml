@@ -28,7 +28,7 @@ AnimatedIcon::AnimatedIcon()
 
 void AnimatedIcon::OnApplyTemplate()
 {
-    //__super::OnApplyTemplate();
+    __super::OnApplyTemplate();
     auto const panel = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Panel>();
     m_rootPanel.set(panel);
     m_currentState = GetState(*this);
@@ -392,7 +392,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
 
             auto const visual = source.TryCreateAnimatedIconVisual(winrt::Window::Current().Compositor());
             m_animatedVisual.set(visual);
-            return visual.RootVisual();
+            return visual ? visual.RootVisual() : nullptr;
         }
         else
         {
@@ -416,9 +416,9 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         visual.Properties().InsertScalar(s_progressPropertyName, 0.0F);
 
         // Tie the animated visual's Progress property to the player Progress with an ExpressionAnimation.
-        auto compositor = visual.Compositor();
-        auto expression = StringUtil::FormatString(L"_.%1!s!", s_progressPropertyName.data());
-        auto progressAnimation = compositor.CreateExpressionAnimation(expression);
+        auto const compositor = visual.Compositor();
+        auto const expression = StringUtil::FormatString(L"_.%1!s!", s_progressPropertyName.data());
+        auto const progressAnimation = compositor.CreateExpressionAnimation(expression);
         progressAnimation.SetReferenceParameter(L"_", m_progressPropertySet);
         visual.Properties().StartAnimation(s_progressPropertyName, progressAnimation);
     }
