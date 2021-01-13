@@ -274,12 +274,13 @@
                                                 TextWrapping="Wrap" />
                                         </Grid>
                                     </ScrollViewer>
-                                    <Grid x:Name="CommandSpace"
-                                          Grid.Row="1"
-                                          HorizontalAlignment="Stretch"
-                                          VerticalAlignment="Bottom"
-                                          XYFocusKeyboardNavigation="Enabled"
-                                          Padding="{StaticResource ContentDialogPadding}">
+                                    <Grid
+                                        x:Name="CommandSpace"
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Bottom"
+                                        XYFocusKeyboardNavigation="Enabled"
+                                        Padding="{StaticResource ContentDialogPadding}">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition x:Name="PrimaryColumn" Width="*" />
                                             <ColumnDefinition x:Name="FirstSpacer" Width="0" />
