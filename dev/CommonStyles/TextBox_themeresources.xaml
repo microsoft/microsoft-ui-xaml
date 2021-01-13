@@ -31,6 +31,27 @@
             <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="ControlAltFillColorTertiaryBrush" />
+            <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
+
+            <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource ControlAAFillColorDefault}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+
+            <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" MappingMode="Absolute" StartPoint="0,1.5" EndPoint="0,2.5">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource AccentFillColorDefault}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
@@ -81,7 +102,28 @@
             <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="ControlAltFillColorTertiaryBrush" />
-        </ResourceDictionary>
+            <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
+
+            <LinearGradientBrush x:Key="TextControlElevationBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource ControlAAFillColorDefault}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+
+            <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" MappingMode="Absolute" StartPoint="0,1.5" EndPoint="0,2.5">
+                <LinearGradientBrush.RelativeTransform>
+                    <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+                </LinearGradientBrush.RelativeTransform>
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="{StaticResource AccentFillColorDefault}"/>
+                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+        </ResourceDictionary> 
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
