@@ -75,7 +75,7 @@ private:
     // This collection is only composed of the consumer defined objects, it doesn't
     // include the extra ellipsis/nullptr element. This variable is only used to capture
     // changes in the ItemsSource
-    winrt::ItemsSourceView m_itemsSourceView{ nullptr };
+    winrt::ItemsSourceView m_breadcrumbItemsSourceView{ nullptr };
 
     // This is the "element collection" provided to the underlying ItemsRepeater, so it
     // includes the extra ellipsis/nullptr element in the position 0.

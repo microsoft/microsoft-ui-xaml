@@ -116,17 +116,17 @@ void Breadcrumb::UpdateItemsRepeaterItemsSource()
     m_itemsSourceChanged.revoke();
     m_itemsSourceAsObservableVectorChanged.revoke();
 
-    m_itemsSourceView = winrt::ItemsSourceView(ItemsSource());
-    m_itemsSourceChanged = m_itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
+    m_breadcrumbItemsSourceView = winrt::ItemsSourceView(ItemsSource());
+    m_itemsSourceChanged = m_breadcrumbItemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
 
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
         if (const auto& itemsSource = ItemsSource())
         {
             const auto& incc = [this, itemsSource]() {
-                if (m_itemsSourceView)
+                if (m_breadcrumbItemsSourceView)
                 {
-                    return m_itemsSourceView.try_as<winrt::INotifyCollectionChanged>();
+                    return m_breadcrumbItemsSourceView.try_as<winrt::INotifyCollectionChanged>();
                 }
                 else
                 {
@@ -177,7 +177,7 @@ void Breadcrumb::ResetLastBreadcrumbItem()
 
 void Breadcrumb::ForceUpdateLastElement()
 {
-    const uint32_t itemCount = m_itemsSourceView.Count();
+    const uint32_t itemCount = m_breadcrumbItemsSourceView.Count();
 
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
@@ -224,7 +224,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
             }
             else
             {
-                const uint32_t itemCount = m_itemsSourceView.Count();
+                const uint32_t itemCount = m_breadcrumbItemsSourceView.Count();
 
                 if (itemIndex == itemCount)
                 {
@@ -273,7 +273,7 @@ winrt::IVector<winrt::IInspectable> Breadcrumb::GetHiddenElementsList(uint32_t f
     auto hiddenElements = winrt::make<Vector<winrt::IInspectable>>();
     for (uint32_t i = 0; i < firstShownElement - 1; ++i)
     {
-        hiddenElements.Append(m_itemsSourceView.GetAt(i));
+        hiddenElements.Append(m_breadcrumbItemsSourceView.GetAt(i));
     }
 
     return hiddenElements;
