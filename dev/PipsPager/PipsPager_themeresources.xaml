@@ -63,6 +63,8 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Width" Value="{StaticResource PipsPagerNavigationButtonWidth}"/>
         <Setter Property="Height" Value="{StaticResource PipsPagerNavigationButtonHeight}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlTransparentBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -127,6 +129,8 @@
         <Setter Property="Height" Value="{StaticResource PipsPagerButtonHeight}"/>
         <Setter Property="Content" Value="{StaticResource PipsPagerDefaultGlyph}"/>
         <Setter Property="FontSize" Value="{StaticResource PipsPagerDefaultGlyphFontSize}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlTransparentBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button" >
