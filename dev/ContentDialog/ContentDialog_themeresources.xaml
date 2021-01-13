@@ -202,7 +202,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid x:Name="LayoutRoot">
-                            <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}"/>
+                            <Rectangle x:Name="SmokeLayerBackground" Fill="{ThemeResource ContentDialogSmokeFill}" />
                             <Border
                                 x:Name="BackgroundElement"
                                 Background="{TemplateBinding Background}"
@@ -281,11 +281,11 @@
                                           XYFocusKeyboardNavigation="Enabled"
                                           Padding="{StaticResource ContentDialogPadding}">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition x:Name="PrimaryColumn" Width="*"/>
-                                            <ColumnDefinition x:Name="FirstSpacer" Width="0"/>
-                                            <ColumnDefinition x:Name="SecondaryColumn" Width="0"/>
-                                            <ColumnDefinition x:Name="SecondSpacer" Width="{StaticResource ContentDialogButtonSpacing}"/>
-                                            <ColumnDefinition x:Name="CloseColumn" Width="*"/>
+                                            <ColumnDefinition x:Name="PrimaryColumn" Width="*" />
+                                            <ColumnDefinition x:Name="FirstSpacer" Width="0" />
+                                            <ColumnDefinition x:Name="SecondaryColumn" Width="0" />
+                                            <ColumnDefinition x:Name="SecondSpacer" Width="{StaticResource ContentDialogButtonSpacing}" />
+                                            <ColumnDefinition x:Name="CloseColumn" Width="*" />
                                         </Grid.ColumnDefinitions>
                                         <Button
                                             x:Name="PrimaryButton"
@@ -293,21 +293,21 @@
                                             IsEnabled="{TemplateBinding IsPrimaryButtonEnabled}"
                                             Style="{TemplateBinding PrimaryButtonStyle}"
                                             ElementSoundMode="FocusOnly"
-                                            HorizontalAlignment="Stretch"/>
+                                            HorizontalAlignment="Stretch" />
                                         <Button
                                             x:Name="SecondaryButton"
                                             Content="{TemplateBinding SecondaryButtonText}"
                                             IsEnabled="{TemplateBinding IsSecondaryButtonEnabled}"
                                             Style="{TemplateBinding SecondaryButtonStyle}"
                                             ElementSoundMode="FocusOnly"
-                                            HorizontalAlignment="Stretch"/>
+                                            HorizontalAlignment="Stretch" />
                                         <Button
                                             x:Name="CloseButton"
                                             Grid.Column="4" 
                                             Content="{TemplateBinding CloseButtonText}"
                                             Style="{TemplateBinding CloseButtonStyle}"
                                             ElementSoundMode="FocusOnly"
-                                            HorizontalAlignment="Stretch"/>
+                                            HorizontalAlignment="Stretch" />
                                     </Grid>
                                 </Grid>
                             </Border>
