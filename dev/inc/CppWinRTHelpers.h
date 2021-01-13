@@ -177,11 +177,8 @@ struct ScopedBatchCompleted_revoker
         {
             return;
         }
-        else
-        {
-            m_batch.Completed(m_token);
-        }
 
+        m_batch.Completed(m_token);
         m_batch = nullptr;
     }
 

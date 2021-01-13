@@ -46,8 +46,10 @@ private:
     void TransitionAndUpdateStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playbackMultiplier = 1.0f);
     void TransitionStates(const winrt::hstring& fromState, const winrt::hstring& toState, float playtbackMultiplier = 1.0f);
     void PlaySegment(float from, float to, float playbackMultiplier = 1.0f);
+    void TrySetForegroundProperty(const winrt::IRichAnimatedVisualSource source);
     void OnAnimationCompleted(winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&);
     void OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void SetRootPanelChildToFallbackIcon();
 
     tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{ this };
     tracker_ref<winrt::Panel> m_rootPanel{ this };

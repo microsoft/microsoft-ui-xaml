@@ -388,10 +388,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
     {
         if (auto const source = Source())
         {
-            if (auto const foregroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
-            {
-                source.SetColorProperty(s_foregroundPropertyName, foregroundSolidColorBrush.Color());
-            }
+            TrySetForegroundProperty(source);
 
             auto const visual = source.TryCreateAnimatedIconVisual(winrt::Window::Current().Compositor());
             m_animatedVisual.set(visual);
@@ -428,15 +425,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
     else
     {
         m_canDisplayPrimaryContent = false;
-        if (auto const iconSource = FallbackIconSource())
-        {
-            auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
-            if (auto const rootPanel = m_rootPanel.get())
-            {
-                rootPanel.Children().Clear();
-                rootPanel.Children().InsertAt(0, iconElement);
-            }
-        }
+        SetRootPanelChildToFallbackIcon();
     }
 }
 
@@ -444,23 +433,33 @@ void AnimatedIcon::OnFallbackIconSourcePropertyChanged(const winrt::DependencyPr
 {
     if (!m_canDisplayPrimaryContent)
     {
-        if (auto const iconSource = FallbackIconSource())
+        SetRootPanelChildToFallbackIcon();
+    }
+}
+
+void AnimatedIcon::SetRootPanelChildToFallbackIcon()
+{
+    if (auto const iconSource = FallbackIconSource())
+    {
+        auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
+        if (auto const rootPanel = m_rootPanel.get())
         {
-            auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
-            if (auto const rootPanel = m_rootPanel.get())
-            {
-                rootPanel.Children().Clear();
-                rootPanel.Children().Append(iconElement);
-            }
+            rootPanel.Children().Clear();
+            rootPanel.Children().Append(iconElement);
         }
     }
 }
 
 void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    if (auto const ForegroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
+    TrySetForegroundProperty(Source());
+}
+
+void AnimatedIcon::TrySetForegroundProperty(const winrt::IRichAnimatedVisualSource source)
+{
+    if (source)
     {
-        if (auto const source = Source())
+        if (auto const ForegroundSolidColorBrush = Foreground().try_as<winrt::SolidColorBrush>())
         {
             source.SetColorProperty(s_foregroundPropertyName, ForegroundSolidColorBrush.Color());
         }
@@ -487,13 +486,6 @@ void AnimatedIcon::OnAnimationCompleted(winrt::IInspectable const&, winrt::Compo
         }
         break;
     }
-}
-
-bool TryParseFloat(winrt::hstring const& str, _Out_ float* f)
-{
-    wchar_t* strEnd = nullptr;
-    *f = wcstof(str.c_str(), &strEnd);
-    return strEnd == str.c_str() + str.size();
 }
 
 // Test hooks
