@@ -147,10 +147,11 @@
                             <Grid x:Name="TogglePaneTopPadding"
                                   Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
-                            <Grid x:Name="ButtonHolderGrid" Grid.Row="1">
+                            <Grid x:Name="ButtonHolderGrid" Margin="0,4" Grid.Row="1">
                                 <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                    Width="{ThemeResource NavigationViewCompactPaneLength}"
                                     VerticalAlignment="Top"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}"
                                     IsEnabled="{TemplateBinding IsBackEnabled}">
@@ -169,7 +170,8 @@
                                 <Button
                                     x:Name="TogglePaneButton"
                                     Style="{TemplateBinding PaneToggleButtonStyle}"
-                                    AutomationProperties.LandmarkType="Navigation" HorizontalAlignment="Center"
+                                    AutomationProperties.LandmarkType="Navigation"
+                                    HorizontalAlignment="Center"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonVisibility}"
                                     VerticalAlignment="Top">
                                     <TextBlock
