@@ -48,8 +48,9 @@ private:
     void PlaySegment(float from, float to, float playbackMultiplier = 1.0f);
     void OnAnimationCompleted(winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&);
     void OnForegroundPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+
     tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{ this };
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
+    tracker_ref<winrt::Panel> m_rootPanel{ this };
 
     winrt::hstring m_currentState{ L"" };
     winrt::hstring m_previousState{ L"" };

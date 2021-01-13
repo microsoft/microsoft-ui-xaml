@@ -1,4 +1,4 @@
-Animated Icon is initially being published With a single state proprety, which has the benefit of being very simple for state lookups. However it is possible that there is a control that wants to use animated icon across multiple orthogonal visual state groups. This is an issue because it isn't possible to tell what state StateGroup1 is in while StateGroup2 is changing.  If this ends up being required we would likely need to add a second (or even third) state property to animated icon to accomodate these state groups.  This doc describes what that multi state API would look like. To make the discussion more concrete we will focus on an example using ToggleSwitch. However this is of course extensible to other controls and states.
+Animated Icon is initially being published With a single state property, which has the benefit of being very simple for state lookups. However it is possible that there is a control that wants to use animated icon across multiple orthogonal visual state groups. This is an issue because it isn't possible to tell what state StateGroup1 is in while StateGroup2 is changing.  If this ends up being required we would likely need to add a second (or even third) state property to animated icon to accommodate these state groups.  This doc describes what that multi state API would look like. To make the discussion more concrete we will focus on an example using ToggleSwitch. However this is of course extensible to other controls and states.
 
 ## ToggleSwitch Example
 ```xml
@@ -86,18 +86,18 @@ This requires that if at the end of the lookup algorithm we have not found a seg
 ##### 3) Allow the designer to specify multiple transitions with the same marker if they have the same animation 
 There are three use cases I see here. First the designer doesn't care about one of the orthogonal state groups. In the proposed states maybe they only have animations for the ToggleSates, not the CommonStates.The designer should not have to specify NormalOn -> NormalOff, On -> Off should be sufficient. On->Off would also cover HoverOn->HoverOff PressedOn->PressedOff and DisabledOn->DisabledOff if those weren't seperately specified.
 
-Second, the designer wants state transitons to play in reverse to undo a transition. For example if the designer only specifies NormalOn->NormalOff then in the NormalOff->NormalOn transition we would play the NormalOn->NormalOff in reverse.
+Second, the designer wants state transitions to play in reverse to undo a transition. For example if the designer only specifies NormalOn->NormalOff then in the NormalOff->NormalOn transition we would play the NormalOn->NormalOff in reverse.
 
-Third, the designer wants to associate a single frame (not an animation) with a state. For example position 1.0 could be the disabled state.  In this case the marker "Disabled" would specifiy that.  When transitioning from Disabled specified in this manor you would either need something like DisabledToNormalStart and/or DisabedToNormalEnd OR a "Normal" marker. 
+Third, the designer wants to associate a single frame (not an animation) with a state. For example position 1.0 could be the disabled state.  In this case the marker "Disabled" would specifiy that.  When transitioning from Disabled specified in this manner you would either need something like DisabledToNormalStart and/or DisabledToNormalEnd OR a "Normal" marker. 
 
 ##### 4) Don't depend on the order the state groups are specified in.
  When there are multiple orthoginal state groups we don't want to fail if the designer or developer applies them in the wrong order. For instance if the designer specifies OnNormalToOffNormalStart and OnNormalToOffNormalEnd but the developer expects NormalOnToNormalOffStart and NormalOnToNormalOffEnd we should still function.
 
 ##### 5) If only the start of the end marker is found, we should not fail.
-If the designer forgets (or purposefully omits) one of the start or end markers, we should do something that makes sense.  I purpose that we cut to the position of the maker we did find. For example if NormalOnToNormalOffStart is 0.1 and NormalOnToNormalOffEnd is undefined we would cut to 0.1
+If the designer forgets (or purposefully omits) one of the start or end markers, we should do something that makes sense.  I propose that we cut to the position of the marker we did find. For example if NormalOnToNormalOffStart is 0.1 and NormalOnToNormalOffEnd is undefined we would cut to 0.1
 
 ## Algorithm 
-Given the above requirements I purpose the following algorithm. We will use the example of StateGroup1 being changed from Normal to Hover while StateGroup2 is set to Off to make the more concrete
+Given the above requirements I propose the following algorithm. We will use the example of StateGroup1 being changed from Normal to Hover while StateGroup2 is set to Off to make the more concrete
 ### Example:
 OnStateGroup1PropertyChanged
 1. Check for `NormalOffToHoverOffStart` and `NormalOffToHoverOffEnd`. If either is found return<sup>1</sup>.
