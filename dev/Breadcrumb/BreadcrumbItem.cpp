@@ -93,6 +93,10 @@ void BreadcrumbItem::SetFlyoutDataTemplate(const winrt::IInspectable& newDataTem
     {
         m_ellipsisDataTemplate.set(dataTemplate);
     }
+    else if (!newDataTemplate)
+    {
+        m_ellipsisDataTemplate.set(nullptr);
+    }
 }
 
 void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
