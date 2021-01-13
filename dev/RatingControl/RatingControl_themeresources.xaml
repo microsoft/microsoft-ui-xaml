@@ -14,7 +14,7 @@
             <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentAAFillColorDefaultBrush"/>
             <StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="TextFillColorDisabledBrush"/>
             <!-- If this Foreground property is removed/renamed, please update ThemeResourcesTests::VerifyOverrides: -->
-            <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
+            <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush"/>
             <local:RatingItemFontInfo x:Key="MUX_RatingControlDefaultFontInfo" Glyph="&#xE735;" UnsetGlyph="&#xE734;"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
@@ -25,7 +25,7 @@
             <StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
             <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="AccentAAFillColorDefaultBrush"/>
             <StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="TextFillColorDisabledBrush"/>
-            <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="ControlAltFillColorTertiaryBrush"/>
+            <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush"/>
             <local:RatingItemFontInfo x:Key="MUX_RatingControlDefaultFontInfo" Glyph="&#xE735;" UnsetGlyph="&#xE734;"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
@@ -36,7 +36,7 @@
             <StaticResource x:Key="RatingControlPointerOverUnselectedForeground" ResourceKey="SystemControlForegroundBaseMediumBrush"/>
             <StaticResource x:Key="RatingControlPointerOverSelectedForeground" ResourceKey="SystemControlHighlightAccentBrush"/>
             <StaticResource x:Key="RatingControlDisabledSelectedForeground" ResourceKey="SystemColorGrayTextColor"/>
-            <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="SystemControlForegroundBaseMediumBrush"/>
+            <StaticResource x:Key="RatingControlCaptionForeground" ResourceKey="TextFillColorSecondaryBrush"/>
             <local:RatingItemFontInfo x:Key="MUX_RatingControlDefaultFontInfo" Glyph="&#xE735;" UnsetGlyph="&#xE734;"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
