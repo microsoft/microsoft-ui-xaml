@@ -57,7 +57,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void SettingStateOnParentDoesNotPropagatesToChildNonAnimatedIcon()
+        public void SettingStateOnParentDoesNotPropagateToChildNonAnimatedIcon()
         {
             AnimatedIcon animatedIcon = null;
             Grid parentGrid = null;
