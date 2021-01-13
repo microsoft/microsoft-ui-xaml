@@ -12,7 +12,14 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel Orientation="Vertical">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <StackPanel Orientation="Vertical" Grid.Row="0">
             <controls:BreadcrumbItem />
 
             <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -85,7 +92,9 @@
                     </controls:TwoPaneView.Pane2>
                 </controls:TwoPaneView>
             </Grid>
+        </StackPanel>
 
+        <StackPanel Grid.Row="1">
             <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1" >
                 <controls:ItemsRepeater x:Name="ChildrenView" ItemsSource="{x:Bind currentNodeChildrenList}">
                     <controls:ItemsRepeater.ItemTemplate>
@@ -101,7 +110,45 @@
                     </controls:ItemsRepeater.ItemTemplate>
                 </controls:ItemsRepeater>
             </ScrollViewer>
+        </StackPanel>
 
+        <StackPanel Orientation="Vertical" Grid.Row="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="500px"/>
+                </Grid.ColumnDefinitions>
+
+                <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
+                                                         x:Name="BreadCrumbControl2"
+                                                         ItemClicked="BreadCrumbControl_ItemClicked"
+                                                         Grid.Column="0">
+                    <controls:Breadcrumb.ItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <controls:BreadcrumbItem Content="{Binding}">
+                                <controls:BreadcrumbItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
+                        </DataTemplate>
+                    </controls:Breadcrumb.ItemTemplate>
+
+                    <controls:Breadcrumb.DropdownItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <Button Content="{Binding}" Background="Transparent"
+                                                        HorizontalAlignment="Stretch" >
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
+                        </DataTemplate>
+                    </controls:Breadcrumb.DropdownItemTemplate>
+                </controls:Breadcrumb>
+            </Grid>
         </StackPanel>
     </Grid>
 </local:TestPage>

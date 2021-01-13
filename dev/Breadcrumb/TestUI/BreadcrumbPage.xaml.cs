@@ -39,7 +39,6 @@ namespace MUXControlsTestApp
         {
             // GenerateTree();
             GenerateTreeDynamic();
-            
 
             breadCrumbList.Add(Tree.Root);
             UpdateChildrenList(Tree.Root);
