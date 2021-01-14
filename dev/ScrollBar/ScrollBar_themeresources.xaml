@@ -769,7 +769,7 @@
                                    Width="{ThemeResource ScrollBarVerticalThumbMinWidth}"
                                    MinHeight="{ThemeResource ScrollBarVerticalThumbMinHeight}"
                                    AutomationProperties.AccessibilityView="Raw"
-                                   RenderTransformOrigin="0.5,1"
+                                   RenderTransformOrigin="1,0.5"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                                 <Thumb.RenderTransform>
                                     <TranslateTransform x:Name="VerticalThumbTransform" X="{ThemeResource ScrollBarThumbOffset}" />
