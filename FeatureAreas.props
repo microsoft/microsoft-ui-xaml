@@ -279,6 +279,7 @@
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
     <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
+    <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
