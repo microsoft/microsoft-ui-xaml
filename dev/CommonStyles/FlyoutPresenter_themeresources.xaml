@@ -23,7 +23,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+    <Thickness x:Key="FlyoutContentPadding">0</Thickness>
 
     <Style TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" />
     
@@ -34,7 +34,7 @@
         <Setter Property="Background" Value="{ThemeResource FlyoutPresenterBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource FlyoutBorderThemeBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource FlyoutBorderThemeThickness}" />
-        <Setter Property="Padding" Value="{ThemeResource FlyoutContentThemePadding}" />
+        <Setter Property="Padding" Value="{ThemeResource FlyoutContentPadding}" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource FlyoutThemeMinHeight}" />
@@ -54,7 +54,7 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7Present:BackgroundSizing="OuterBorderEdge"
-                        Padding="{TemplateBinding Padding}">
+                        Padding="{StaticResource FlyoutContentPadding}">
                         <ScrollViewer x:Name="ScrollViewer"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
@@ -65,6 +65,7 @@
                             <ContentPresenter Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
+                                Margin="{TemplateBinding Padding}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </ScrollViewer>
