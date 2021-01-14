@@ -282,6 +282,7 @@
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
     <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
+    <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
     <FeatureColorFilterOverlayControlEnabled>true</FeatureColorFilterOverlayControlEnabled>
   </PropertyGroup>
   <PropertyGroup>

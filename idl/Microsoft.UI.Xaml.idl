@@ -5,6 +5,7 @@
 
 #define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Primitives
+#define MU_XCAV_NAMESPACE Microsoft.UI.Xaml.Controls.AnimatedVisuals
 #define MU_XM_NAMESPACE Microsoft.UI.Xaml.Media
 #define MU_XAP_NAMESPACE Microsoft.UI.Xaml.Automation.Peers
 #define MU_PRIVATE_CONTROLS_NAMESPACE Microsoft.UI.Private.Controls

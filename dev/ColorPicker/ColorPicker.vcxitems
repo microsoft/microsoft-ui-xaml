@@ -42,13 +42,11 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
@@ -64,13 +62,11 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
   <ItemGroup>
