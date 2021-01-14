@@ -1977,7 +1977,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemRevealStyle}" />
+    <!--<Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemRevealStyle}" />-->
 
     <Style TargetType="GridViewItem" x:Key="GridViewItemRevealStyle">
         <Setter Property="Background" Value="{ThemeResource GridViewItemRevealBackground}" />
