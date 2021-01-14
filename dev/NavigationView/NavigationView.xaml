@@ -151,7 +151,7 @@
                                 <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
-                                    Width="{ThemeResource NavigationViewCompactPaneLength}"
+                                    Width="{ThemeResource PaneToggleButtonWidth}"
                                     VerticalAlignment="Top"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}"
                                     IsEnabled="{TemplateBinding IsBackEnabled}">
