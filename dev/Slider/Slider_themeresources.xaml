@@ -20,9 +20,9 @@
             <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent" />
             <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent" />
             <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondary" />
-            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiary" />
-            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabled" />
+            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabledBrush" />
             <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
             <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlAAFillColorDefaultBrush" />
@@ -129,9 +129,9 @@
             <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent"/>
             <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent"/>
             <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondary"/>
-            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiary"/>
-            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabled"/>
+            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
+            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
+            <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabledBrush"/>
             <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
             <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlAAFillColorDefaultBrush" />
@@ -313,12 +313,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderTrackFillPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderThumbBackgroundPointerOver}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderThumbBackgroundPointerOver}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderThumbBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderThumbBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderContainerBackgroundPointerOver}" />
                                         </ColorAnimationUsingKeyFrames>
@@ -338,12 +338,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderTrackFillPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderThumbBackgroundPressed}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderThumbBackgroundPressed}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderThumbBackgroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderThumbBackgroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderContainerBackgroundPressed}" />
                                         </ColorAnimationUsingKeyFrames>
@@ -372,12 +372,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderTrackFillDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderThumbBackgroundDisabled}" />
-                                        </ColorAnimationUsingKeyFrames>
-                                        <ColorAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderThumbBackgroundDisabled}" />
-                                        </ColorAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderThumbBackgroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SliderThumbBackgroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="TopTickBar" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource SliderTickBarFillDisabled}" />
                                         </ColorAnimationUsingKeyFrames>

@@ -224,7 +224,7 @@
             <StaticResource x:Key="NavigationViewButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    
+
     <Thickness x:Key="NavigationViewAutoSuggestBoxMargin">10,0,16,0</Thickness>
     <Thickness x:Key="TopNavigationViewAutoSuggestBoxMargin">12,0,12,0</Thickness>
     <x:Double x:Key="PaneToggleButtonSize">40</x:Double>
@@ -373,7 +373,7 @@
                                 AutomationProperties.AccessibilityView="Raw"/>
 
                         </Viewbox>
-                        
+
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             VerticalContentAlignment="Center"
@@ -395,7 +395,7 @@
     <Style x:Key="NavigationViewPaneSearchButtonStyle" TargetType="Button">
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="Content" Value="&#xE11A;"/>
-        <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="BorderThickness" Value="{ThemeResource NavigationViewToggleBorderThickness}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
@@ -567,7 +567,7 @@
                                     From="180.0" To="0.0" Duration="0:0:0.1"/>
                             </Storyboard>
                         </Grid.Resources>
-                        
+
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PointerStates">
                                 <VisualState x:Name="Normal" />
@@ -831,7 +831,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        
+
                         <Border		
                             x:Name="RevealBorder"		
                             BorderBrush="{TemplateBinding BorderBrush}"		
@@ -1026,7 +1026,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPane">
         <Setter Property="Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
         <Setter Property="Template">
@@ -1408,7 +1408,7 @@
                                     From="180.0" To="0.0" Duration="0:0:0.1"/>
                             </Storyboard>
                         </Grid.Resources>
-                        
+
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PointerStates">
                                 <VisualState x:Name="Normal" />
@@ -1567,7 +1567,7 @@
     <Style x:Key="NavigationViewItemHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
-        <Setter Property="TextWrapping" Value="NoWrap"/>        
+        <Setter Property="TextWrapping" Value="NoWrap"/>
     </Style>
 
     <!-- based on TitleTextBlockStyle -->

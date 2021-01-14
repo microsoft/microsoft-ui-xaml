@@ -28,6 +28,7 @@ using PathIconSource = Microsoft.UI.Xaml.Controls.PathIconSource;
 using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -190,6 +191,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(iconSource.Foreground is SolidColorBrush);
                 Verify.AreEqual(Windows.UI.Colors.Red, (iconSource.Foreground as SolidColorBrush).Color);
                 Verify.AreEqual(uri, ((SvgImageSource)iconSource.ImageSource).UriSource);
+            });
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceTest()
+        {
+            AnimatedIconSource iconSource = null;
+            IRichAnimatedVisualSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                iconSource = new AnimatedIconSource();
+                source = new Controls_02_UpDown_Dropdown();
+
+                // IconSource.Foreground should be null to allow foreground inheritance from
+                // the parent to work.
+                Verify.AreEqual(iconSource.Foreground, null);
+
+                Log.Comment("Validate the defaults match BitmapIcon.");
+
+                var icon = new AnimatedIcon();
+                Verify.AreEqual(icon.Source, iconSource.Source);
+
+                Log.Comment("Validate that you can change the properties.");
+
+                iconSource.Foreground = new SolidColorBrush(Windows.UI.Colors.Red);
+                iconSource.Source = source;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(iconSource.Foreground is SolidColorBrush);
+                Verify.AreEqual(Windows.UI.Colors.Red, (iconSource.Foreground as SolidColorBrush).Color);
+                Verify.AreEqual(source, iconSource.Source);
             });
         }
 
