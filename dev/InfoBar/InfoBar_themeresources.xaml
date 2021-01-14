@@ -7,10 +7,10 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="InfoBarErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush"/>
-            <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush"/>
-            <StaticResource x:Key="InfoBarSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush"/>
-            <StaticResource x:Key="InfoBarInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush"/>
+            <StaticResource x:Key="InfoBarErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+            <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+            <StaticResource x:Key="InfoBarSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+            <StaticResource x:Key="InfoBarInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
 
             <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -26,10 +26,10 @@
         </ResourceDictionary>
         
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="InfoBarErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush"/>
-            <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush"/>
-            <StaticResource x:Key="InfoBarSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush"/>
-            <StaticResource x:Key="InfoBarInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush"/>
+            <StaticResource x:Key="InfoBarErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+            <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+            <StaticResource x:Key="InfoBarSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+            <StaticResource x:Key="InfoBarInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
 
             <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -45,10 +45,10 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="InfoBarErrorSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="InfoBarSuccessSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="InfoBarErrorSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InfoBarSuccessSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
 
             <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
