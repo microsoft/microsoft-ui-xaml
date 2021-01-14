@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "dependencies": {
+    "native,Version=v0.0": {
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Direct",
+        "requested": "[1.0.0-beta2-18618-05, 1.0.0-beta2-18618-05]",
+        "resolved": "1.0.0-beta2-18618-05",
+        "contentHash": "GcxvC20U34k0LNBHxpvO1Nl3YjAbgU3oBn7BxyI6+woB4I0lryHu8bvp4SSRYXF6V2p6QueLw0hPtvaBSa6+5w=="
+      },
+      "Microsoft.CodeAnalysis.BinSkim": {
+        "type": "Direct",
+        "requested": "[1.3.9, 1.3.9]",
+        "resolved": "1.3.9",
+        "contentHash": "0b64S3Z0yaXE7HFo4AcsH1ThWvsdZ9Pt33W+HNBJVv6HHT02mFcJp7WFGMsLZxKyvSy3Jy6sYF0BejfkMJW8CQ=="
+      },
+      "Microsoft.Gsl": {
+        "type": "Direct",
+        "requested": "[0.1.2.1, 0.1.2.1]",
+        "resolved": "0.1.2.1",
+        "contentHash": "nNTtiNzs2FszGilsQWOxoZoVkJJOi+hj3CNltav7eDE4+l5kk5l8gfScAXkr3LKNBbDrMx65eiO1OzJ9Qv0GWw=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Direct",
+        "requested": "[1.0.0-beta2-18618-05, 1.0.0-beta2-18618-05]",
+        "resolved": "1.0.0-beta2-18618-05",
+        "contentHash": "obLbR9apXZwID0woyykZzhUuU+K4xyLKwyZ8HKSW/SKd7wfywQ19ei6i4MM+ieVF0S7QJQFxGvuTWPlEBsFF6A=="
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[1.0.0-beta2-18618-05, 1.0.0-beta2-18618-05]",
+        "resolved": "1.0.0-beta2-18618-05",
+        "contentHash": "MTBBSI7ggTcnULTFLmud9Qp/SLjyrOlFijJXjMXHSe+3JGMCZeYF4tUNKQwQ989+7gR0nlQMhin63mJB0Tmb6g=="
+      },
+      "Microsoft.Windows.CppWinRT": {
+        "type": "Direct",
+        "requested": "[2.0.200615.7, 2.0.200615.7]",
+        "resolved": "2.0.200615.7",
+        "contentHash": "v0eqkeeZkokrx3EsTe44wM8ZD+8yDJQDItGeA0WX2PpQrp2GYLGgiYlqc3f+XJqs/3DAGrKbxpRFFlcMivWJeQ=="
+      },
+      "MUXCustomBuildTasks": {
+        "type": "Direct",
+        "requested": "[1.0.70, 1.0.70]",
+        "resolved": "1.0.70",
+        "contentHash": "8u5HqnSWFBAO461/u0RjRE8hD7xhRRlFymD3P5JnFH3Je8MTzclJ1L/1HilM/JmhutMMBJOUyv66HF/ke+z3fQ=="
+      }
+    }
+  }
+}

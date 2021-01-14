@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "dependencies": {
+    "native,Version=v0.0": {
+      "Microsoft.NETCore.UniversalWindowsPlatform": {
+        "type": "Direct",
+        "requested": "[6.2.8, 6.2.8]",
+        "resolved": "6.2.8",
+        "contentHash": "xnpp1xvvIg9ggb2ZeMqA6WdS4iMrm+THrFa5dhVYRfFmjDeVAUVFoxEyYd4LYkJqEcdXADdm5tdfFLZvCGa/Qw=="
+      },
+      "Microsoft.UI.Xaml": {
+        "type": "Direct",
+        "requested": "[2.6.0-prerelease.210113001, 2.6.0-prerelease.210113001]",
+        "resolved": "2.6.0-prerelease.210113001",
+        "contentHash": "3IwXpsdtjEDRMHVOp0hww+8ZUs5mJnHxbnZAi1vzmCcCew8F/nVrrumThPO+fnIELTEqeappX8xF6qfN8nGHrQ=="
+      },
+      "MUXCustomBuildTasks": {
+        "type": "Direct",
+        "requested": "[1.0.70, 1.0.70]",
+        "resolved": "1.0.70",
+        "contentHash": "8u5HqnSWFBAO461/u0RjRE8hD7xhRRlFymD3P5JnFH3Je8MTzclJ1L/1HilM/JmhutMMBJOUyv66HF/ke+z3fQ=="
+      }
+    }
+  }
+}

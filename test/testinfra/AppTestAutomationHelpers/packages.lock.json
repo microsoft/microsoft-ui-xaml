@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    "native,Version=v0.0": {
+      "Microsoft.Windows.CppWinRT": {
+        "type": "Direct",
+        "requested": "[2.0.200615.7, 2.0.200615.7]",
+        "resolved": "2.0.200615.7",
+        "contentHash": "v0eqkeeZkokrx3EsTe44wM8ZD+8yDJQDItGeA0WX2PpQrp2GYLGgiYlqc3f+XJqs/3DAGrKbxpRFFlcMivWJeQ=="
+      }
+    }
+  }
+}
