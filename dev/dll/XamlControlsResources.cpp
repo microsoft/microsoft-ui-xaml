@@ -17,6 +17,7 @@ static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroun
 // so it's OK to assume one instance of XamlControlsResources per thread.
 thread_local bool s_tlsUseLatestStyle = true;
 
+
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
@@ -36,7 +37,7 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 
     if (property == s_UseCompactResourcesProperty || property == s_VersionProperty)
     {
-        // Source link depends on Version and Compact flag, We need update source when this property changed
+        // Source link depends on Version and UseCompactResources flag, we need to update it when either property changed
         UpdateSource();
     }
 }
@@ -58,10 +59,11 @@ void XamlControlsResources::UpdateSource()
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
+            const bool isVisualUpdateAvailable = SharedHelpers::IsVisualUpdateAvailable();
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = useNewVisual ? L"themeresources.xaml" : L"themeresources_2dot5.xaml";
+            hstring postfix = useNewVisual ? (isVisualUpdateAvailable ? L"themeresources_vu.xaml" : L"themeresources.xaml") : L"themeresources_2dot5.xaml";
 
             if (isInFrameworkPackage)
             {
@@ -116,7 +118,7 @@ void XamlControlsResources::UpdateSource()
         UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
     }
 
-    s_tlsUseLatestStyle = UseLatestStyle();
+    s_tlsUseLatestStyle = useNewVisual;
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
@@ -180,8 +182,9 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
+            const bool isVisualUpdateAvailable = SharedHelpers::IsVisualUpdateAvailable();
             
-            std::wstring postfix = s_tlsUseLatestStyle ? L"generic.xaml" : L"generic_2dot5.xaml";
+            std::wstring postfix = s_tlsUseLatestStyle ? (isVisualUpdateAvailable ? L"generic_vu.xaml" : L"generic.xaml") : L"generic_2dot5.xaml";
             std::wstring releasePrefix = L"";
             
             if (isInFrameworkPackage)

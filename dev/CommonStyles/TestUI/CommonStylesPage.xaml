@@ -242,7 +242,7 @@
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
                     <TextBlock  Text="ListViewItem/GridViewItem testing area" Style="{ThemeResource StandardGroupHeader}"/>
-                    <StackPanel Orientation='Horizontal' Background="White">
+                    <StackPanel Orientation='Horizontal' Background="{ThemeResource SystemColorWindowColor}">
                         <StackPanel>
                             <StackPanel Orientation='Horizontal'>
                                 <TextBlock Text='ListView - SelectionMode=' VerticalAlignment='Center' Margin='2'/>
@@ -278,7 +278,7 @@
                             </GridView>
                         </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation='Horizontal' Background="White">
+                    <StackPanel Orientation='Horizontal' Background="{ThemeResource TextOnAccentAAFillColorPrimaryBrush}">
                         <StackPanel>
                             <TextBlock Text='ListView - SelectionMode=Extended:' Margin='2'/>
                             <ListView x:Name='listView2' CanReorderItems='True' AllowDrop='True' SelectionMode='Extended' Width='300' HorizontalAlignment='Left' Margin='2'>
@@ -296,7 +296,7 @@
                             </GridView>
                         </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation='Horizontal' Background="White">
+                    <StackPanel Orientation='Horizontal' Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                         <StackPanel>
                             <TextBlock Text='ListView - SelectionMode=Single:' Margin='2'/>
                             <ListView x:Name='listView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>

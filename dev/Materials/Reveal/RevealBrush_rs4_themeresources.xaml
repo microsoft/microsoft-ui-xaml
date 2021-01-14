@@ -1476,6 +1476,17 @@
         </Setter>
     </Style>
 
+    <!--
+    REGISB: I suppose I need to create a \dev\Materials\Reveal\RevealBrush_rs4_themeresources2.xaml with this line alone, and use
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs4_themeresources2.xaml">
+      <UseVisualStyle>LatestWithoutVisualUpdate</UseVisualStyle>
+      <Version>RS4</Version>
+      <Type>ThemeResources</Type>
+      <Priority>4</Priority>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    ?
+    -->
     <!--<Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemRevealStyle}" />-->
 
     <Style TargetType="GridViewItem" x:Key="GridViewItemRevealStyle">
@@ -1586,7 +1597,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="GridViewItem" BasedOn="{StaticResource GridViewItemRevealStyle}" />
+    <!--<Style TargetType="GridViewItem" BasedOn="{StaticResource GridViewItemRevealStyle}" />-->
 
     <!-- Style for Windows.UI.Xaml.Controls.ListViewItem -->
     <!-- This style is identifical to ListViewItemRevealStyle, except that the reveal effects is above the content-->

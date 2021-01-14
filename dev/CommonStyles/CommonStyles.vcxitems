@@ -128,14 +128,26 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources.xaml">
+      <UseVisualStyle>LatestWithoutVisualUpdate</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_vu.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseVisualStyle>LatestWithVisualUpdate</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
+      <UseVisualStyle>LatestWithoutVisualUpdate</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_vu.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseVisualStyle>LatestWithVisualUpdate</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
