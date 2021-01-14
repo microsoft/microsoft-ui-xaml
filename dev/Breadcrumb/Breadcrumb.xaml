@@ -36,7 +36,6 @@
                                     </VisualState.Setters>
                                 </VisualState>
 
-                                
                                 <VisualState x:Name="Ellipsis">
                                     <VisualState.Setters>
                                         <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>

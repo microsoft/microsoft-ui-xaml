@@ -34,6 +34,7 @@ private:
     void OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs&);
     void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
+    void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     void InstantiateFlyout();
     void OpenFlyout();

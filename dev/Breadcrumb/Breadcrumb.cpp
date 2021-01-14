@@ -498,9 +498,9 @@ winrt::FindNextElementOptions Breadcrumb::GetFindNextElementOptions()
 
 void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
 {
-    bool flowDirectionIsLTR = (FlowDirection() == winrt::FlowDirection::LeftToRight);
-    bool keyIsLeft = (args.Key() == winrt::VirtualKey::Left);
-    bool keyIsRight = (args.Key() == winrt::VirtualKey::Right);
+    const bool flowDirectionIsLTR = (FlowDirection() == winrt::FlowDirection::LeftToRight);
+    const bool keyIsLeft = (args.Key() == winrt::VirtualKey::Left);
+    const bool keyIsRight = (args.Key() == winrt::VirtualKey::Right);
 
     // Moving to the next element
     if ((flowDirectionIsLTR && keyIsRight) || (!flowDirectionIsLTR && keyIsLeft))

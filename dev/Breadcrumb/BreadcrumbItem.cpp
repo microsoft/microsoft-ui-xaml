@@ -49,6 +49,11 @@ void BreadcrumbItem::OnApplyTemplate()
 
     RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbItem::OnFlowDirectionChanged });
 
+    if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
+    {
+        thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbItem::OnChildPreviewKeyDown });
+    }
+
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
         m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
@@ -101,7 +106,7 @@ void BreadcrumbItem::SetFlyoutDataTemplate(const winrt::IInspectable& newDataTem
     }
 }
 
-void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
@@ -153,6 +158,15 @@ void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winr
     UpdateVisualState();
 }
 
+void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Key() == winrt::VirtualKey::Enter)
+    {
+        OnBreadcrumbItemClick(nullptr, nullptr);
+        args.Handled(true);
+    }
+}
+
 winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource)
 {
     // A copy of the hidden elements array in BreadcrumbLayout is created
@@ -200,7 +214,7 @@ void BreadcrumbItem::CloseFlyout()
 
 void BreadcrumbItem::UpdateVisualState()
 {
-    bool isLeftToRight = FlowDirection() == winrt::FlowDirection::LeftToRight;
+    const bool isLeftToRight = (FlowDirection() == winrt::FlowDirection::LeftToRight);
     hstring visualStateName;
 
     if (m_isEllipsisNode)
