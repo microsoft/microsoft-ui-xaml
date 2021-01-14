@@ -21,7 +21,7 @@
             <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="CardStrokeColorDefault" />
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <Thickness x:Key="InfoBarBorderThickness">1</Thickness>
         </ResourceDictionary>
         
@@ -40,7 +40,7 @@
             <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="CardStrokeColorDefault" />
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <Thickness x:Key="InfoBarBorderThickness">1</Thickness>
         </ResourceDictionary>
 
