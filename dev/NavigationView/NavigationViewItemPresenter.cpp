@@ -132,7 +132,7 @@ void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLeng
         if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
         {
             auto gridLength = iconGridColumn.Width();
-            gridLength.Value = compactPaneLength;
+            gridLength.Value = compactPaneLength - 8;
             iconGridColumn.Width(gridLength);
         }
     }
