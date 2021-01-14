@@ -1,0 +1,32 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ColorFilterOverlayControlPage"
+    x:Name="ColorFilterOverlayControlTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <StackPanel x:Name="Panel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <DatePicker/>
+            <TimePicker Margin="0,10,0,0"/>
+
+            <Grid Margin="2,10,0,0">
+                <TextBlock x:Name="Target" Text="This string will be partially highlighted"/>
+                <primitives:ColorFilterOverlayControl
+                    ReplacementColor="Black"
+                    TargetElement="{Binding ElementName=Target}"
+                    Width="50"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Center"
+                    Background="LightBlue"/>
+
+            </Grid>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

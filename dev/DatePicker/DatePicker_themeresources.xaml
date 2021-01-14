@@ -4,6 +4,7 @@
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
+  xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -36,7 +37,8 @@
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
             <StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="DatePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="#FF000000" />
@@ -67,6 +69,7 @@
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <Color x:Key="DatePickerFlyoutPresenterHighlightForegroundColor">Transparent</Color>
             <StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="DatePickerSelectorThemeMinWidth">80</x:Double>
             <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
@@ -108,7 +111,8 @@
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
             <StaticResource x:Key="DatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="DatePickerHeaderForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="#FF000000" />
@@ -384,31 +388,35 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Grid x:Name="PickerHostGrid">
+                            <Grid>
+                                <Grid x:Name="PickerHostGrid">
 
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="78*" x:Name="DayColumn" />
-                                    <ColumnDefinition Width="Auto" x:Name="FirstSpacerColumn" />
-                                    <ColumnDefinition Width="132*" x:Name="MonthColumn" />
-                                    <ColumnDefinition Width="Auto" x:Name="SecondSpacerColumn" />
-                                    <ColumnDefinition Width="78*" x:Name="YearColumn" />
-                                </Grid.ColumnDefinitions>
-                                <Rectangle x:Name="HighlightRect"
-                                    Fill="{ThemeResource DatePickerFlyoutPresenterHighlightFill}"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="5"
-                                    VerticalAlignment="Center"
-                                    Height="{ThemeResource DatePickerFlyoutPresenterHighlightHeight}" />
-                                <Rectangle x:Name="FirstPickerSpacing"
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="78*" x:Name="DayColumn" />
+                                        <ColumnDefinition Width="Auto" x:Name="FirstSpacerColumn" />
+                                        <ColumnDefinition Width="132*" x:Name="MonthColumn" />
+                                        <ColumnDefinition Width="Auto" x:Name="SecondSpacerColumn" />
+                                        <ColumnDefinition Width="78*" x:Name="YearColumn" />
+                                    </Grid.ColumnDefinitions>
+                                    <Rectangle x:Name="FirstPickerSpacing"
                                     Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource DatePickerSpacerThemeWidth}"
                                     Grid.Column="1" />
-                                <Rectangle x:Name="SecondPickerSpacing"
+                                    <Rectangle x:Name="SecondPickerSpacing"
                                     Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource DatePickerSpacerThemeWidth}"
                                     Grid.Column="3" />
+                                </Grid>
+                                <primitives:ColorFilterOverlayControl
+                                    x:Name="HighlightRect"
+                                    TargetElement="{Binding ElementName=PickerHostGrid}"
+                                    ReplacementColor="{ThemeResource DatePickerFlyoutPresenterHighlightForegroundColor}"
+                                    Background="{ThemeResource DatePickerFlyoutPresenterHighlightFill}"
+                                    Height="{ThemeResource DatePickerFlyoutPresenterHighlightHeight}"
+                                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                                    VerticalAlignment="Center" IsHitTestVisible="false"/>
                             </Grid>
                             <Grid Grid.Row="1" Height="{ThemeResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}" x:Name="AcceptDismissHostGrid">
 

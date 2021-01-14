@@ -1,0 +1,19 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ColorFilterOverlayControl : Windows.UI.Xaml.Controls.Grid
+{
+    ColorFilterOverlayControl();
+
+    Windows.UI.Xaml.UIElement TargetElement { get; set; };
+    Windows.UI.Color ReplacementColor { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty TargetElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ReplacementColorProperty{ get; };
+}
+
+}

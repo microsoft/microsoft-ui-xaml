@@ -155,6 +155,7 @@
     <Import Project="..\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'" />
     <Import Project="..\PipsPager\PipsPager.vcxitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true' Or $(FeaturePipsPagerEnabled) == 'productOnly'" />
     <Import Project="..\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
+    <Import Project="..\ColorFilterOverlayControl\ColorFilterOverlayControl.vcxitems" Label="Shared" Condition="$(FeatureColorFilterOverlayControlEnabled) == 'true' Or $(FeatureColorFilterOverlayControlEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -402,7 +403,7 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-      <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic_2dot5.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic_2dot5.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -573,7 +574,6 @@
   <PropertyGroup>
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
-
   <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multilple times. 
         https://docs.microsoft.com/en-us/visualstudio/msbuild/item-metadata-in-task-batching?view=vs-2019 -->
   <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)rs1_generic_2dot5.xaml;$(OutDir)rs2_generic_2dot5.xaml;$(OutDir)rs3_generic_2dot5.xaml;$(OutDir)rs4_generic_2dot5.xaml;$(OutDir)rs5_generic_2dot5.xaml;$(OutDir)19h1_generic_2dot5.xaml;">
@@ -694,8 +694,8 @@
       <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
     </CompileXaml>
     <ItemGroup>
-      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
-      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -&gt; '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -&gt; '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
       <FileWrites Include="$(XamlSavedStateFilePath)" />
       <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
     </ItemGroup>

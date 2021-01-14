@@ -4,6 +4,7 @@
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
+  xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -37,7 +38,8 @@
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="#FF000000" />
@@ -67,6 +69,7 @@
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
             <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
             <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <Color x:Key="TimePickerFlyoutPresenterHighlightForegroundColor">Transparent</Color>
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
             <Thickness x:Key="TimePickerHeaderThemeMargin">0,0,0,4</Thickness>
@@ -109,7 +112,8 @@
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentAAFillColorDefaultBrush" />
+            <StaticResource x:Key="TimePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FF000000" />
@@ -379,34 +383,40 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid>
+                                <Grid x:Name="PickerHostGrid">
 
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" x:Name="FirstPickerHostColumn" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" x:Name="SecondPickerHostColumn" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" x:Name="ThirdPickerHostColumn" />
-                                </Grid.ColumnDefinitions>
-                                <Rectangle x:Name="HighlightRect"
-                                    Fill="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="5"
-                                    VerticalAlignment="Center"
-                                    Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}" />
-                                <Border x:Name="FirstPickerHost" Grid.Column="0" />
-                                <Rectangle x:Name="FirstPickerSpacing"
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" x:Name="FirstPickerHostColumn" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" x:Name="SecondPickerHostColumn" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" x:Name="ThirdPickerHostColumn" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="FirstPickerHost" Grid.Column="0" />
+                                    <Rectangle x:Name="FirstPickerSpacing"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="1" />
-                                <Border x:Name="SecondPickerHost" Grid.Column="2" />
-                                <Rectangle x:Name="SecondPickerSpacing"
+                                    <Border x:Name="SecondPickerHost" Grid.Column="2" />
+                                    <Rectangle x:Name="SecondPickerSpacing"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="3" />
-                                <Border x:Name="ThirdPickerHost" Grid.Column="4" />
+                                    <Border x:Name="ThirdPickerHost" Grid.Column="4" />
+                                </Grid>
+                                <primitives:ColorFilterOverlayControl
+                                    x:Name="HighlightRect"
+                                    TargetElement="{Binding ElementName=PickerHostGrid}"
+                                    ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
+                                    Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
+                                    Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
+                                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                                    VerticalAlignment="Center"
+                                    IsHitTestVisible="false"/>
                             </Grid>
+
                             <Grid Grid.Row="1" Height="{ThemeResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}" x:Name="AcceptDismissHostGrid">
 
                                 <Grid.ColumnDefinitions>

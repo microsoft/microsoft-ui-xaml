@@ -219,6 +219,9 @@
   <!-- Dependencies for ImageIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for ColorFilterOverlayControl -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureColorFilterOverlayControlEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -279,6 +282,7 @@
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
     <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
+    <FeatureColorFilterOverlayControlEnabled>true</FeatureColorFilterOverlayControlEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

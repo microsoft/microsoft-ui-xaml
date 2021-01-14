@@ -93,4 +93,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PipsPager\APITests\PipsPager_APITests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ImageIcon\TestUI\ImageIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ImageIcon\APITests\ImageIcon_APITests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorFilterOverlayControl\TestUI\ColorFilterOverlayControl_TestUI.projitems" Label="Shared" Condition="$(FeatureColorFilterOverlayControlEnabled) == 'true'" />
 </Project>
