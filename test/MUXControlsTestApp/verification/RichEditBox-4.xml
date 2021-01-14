@@ -17,7 +17,7 @@
       Padding=10,6,6,5
       Foreground=#FF000000
       BorderThickness=1,1,1,1
-      BorderBrush=#99000000
+      BorderBrush=#0F000000
       Background=#66FFFFFF
       MinWidth=64
       MinHeight=32
@@ -43,9 +43,9 @@
         RenderSize=400,400
       [Windows.UI.Xaml.Controls.Border]
           Padding=0,0,0,0
-          CornerRadius=2,2,2,2
+          CornerRadius=4,4,4,4
           BorderThickness=1,1,1,1
-          BorderBrush=#99000000
+          BorderBrush=#0F000000
           Background=#66FFFFFF
           Name=BorderElement
           MinWidth=64
