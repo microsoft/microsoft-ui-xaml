@@ -33,6 +33,8 @@
                             MinWidth="250" Grid.Column="0">
                     <TextBlock Text="Breadcrumb control width" Style="{ThemeResource StandardGroupHeader}"/>
                     <Slider x:Name="WidthSlider" Minimum="100" Maximum="700" Value="700" AutomationProperties.Name="WidthSlider" ValueChanged="WidthSlider_ValueChanged"/>
+
+                    <CheckBox x:Name="RTLCheckbox" AutomationProperties.Name="RightToLeftCheckbox" Content="Breadcrumb is RTL" Checked="RTL_Checked" Unchecked="RTL_Unchecked" />
                 </StackPanel>
 
                 <controls:TwoPaneView x:Name="TwoPaneView"

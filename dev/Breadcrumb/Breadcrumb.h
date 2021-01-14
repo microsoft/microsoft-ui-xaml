@@ -38,6 +38,7 @@ private:
     void OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
     void OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs&);
     void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
 
     // Keyboard navigation
     void OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
@@ -54,6 +55,7 @@ private:
     void UpdateItemsRepeaterItemsSource();
     void UpdateItemTemplate();
     void UpdateEllipsisBreadcrumbItemDropdownItemTemplate();
+    void UpdateBreadcrumbItemsFlowDirection();
 
     void ResetLastBreadcrumbItem();
     void ForceUpdateLastElement();

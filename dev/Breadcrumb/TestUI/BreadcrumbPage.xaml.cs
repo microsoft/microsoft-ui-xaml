@@ -168,6 +168,16 @@ namespace MUXControlsTestApp
             TwoPaneView.Pane2Length = new GridLength(1, GridUnitType.Star);
         }
 
+        private void RTL_Checked(object sender, RoutedEventArgs e)
+        {
+            BreadCrumbControl.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        private void RTL_Unchecked(object sender, RoutedEventArgs e)
+        {
+            BreadCrumbControl.FlowDirection = FlowDirection.LeftToRight;
+        }
+
         private void ReplaceList(ObservableCollection<object> oldItemsList, List<object> newItemsList)
         {
             oldItemsList.Clear();

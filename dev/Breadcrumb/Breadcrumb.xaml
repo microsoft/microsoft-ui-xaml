@@ -21,6 +21,13 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="NormalRTL">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+
                                 <VisualState x:Name="LastNode">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
@@ -34,6 +41,14 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_BreadcrumbItemContentPresenter.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="EllipsisRTL">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 

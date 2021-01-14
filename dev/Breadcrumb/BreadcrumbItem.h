@@ -33,10 +33,13 @@ private:
     void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
     void OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs&);
     void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
 
     void InstantiateFlyout();
     void OpenFlyout();
     void CloseFlyout();
+
+    void UpdateVisualState();
 
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
 

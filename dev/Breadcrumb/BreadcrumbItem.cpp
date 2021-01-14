@@ -47,6 +47,8 @@ void BreadcrumbItem::OnApplyTemplate()
     // TODO: Implement
     m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"PART_BreadcrumbItemButton", controlProtected));
 
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbItem::OnFlowDirectionChanged });
+
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
         m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
@@ -146,6 +148,11 @@ void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender
     }
 }
 
+void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
+{
+    UpdateVisualState();
+}
+
 winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource)
 {
     // A copy of the hidden elements array in BreadcrumbLayout is created
@@ -191,6 +198,41 @@ void BreadcrumbItem::CloseFlyout()
     }
 }
 
+void BreadcrumbItem::UpdateVisualState()
+{
+    bool isLeftToRight = FlowDirection() == winrt::FlowDirection::LeftToRight;
+    hstring visualStateName;
+
+    if (m_isEllipsisNode)
+    {
+        if (isLeftToRight)
+        {
+            visualStateName = L"Ellipsis";
+        }
+        else
+        {
+            visualStateName = L"EllipsisRTL";
+        }
+    }
+    else if (m_isLastNode)
+    {
+        visualStateName = L"LastNode";
+    }
+    else
+    {
+        if (isLeftToRight)
+        {
+            visualStateName = L"Normal";
+        }
+        else
+        {
+            visualStateName = L"NormalRTL";
+        }
+    }
+
+    winrt::VisualStateManager::GoToState(*this, visualStateName, false);
+}
+
 void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
@@ -215,7 +257,7 @@ void BreadcrumbItem::SetPropertiesForLastNode()
     m_isEllipsisNode = false;
     m_isLastNode = true;
 
-    winrt::VisualStateManager::GoToState(*this, L"LastNode", false);
+    UpdateVisualState();
 }
 
 void BreadcrumbItem::ResetVisualProperties()
@@ -230,7 +272,7 @@ void BreadcrumbItem::ResetVisualProperties()
     m_ellipsisFlyout.set(nullptr);
     m_ellipsisItemsRepeater.set(nullptr);
 
-    winrt::VisualStateManager::GoToState(*this, L"Normal", false);
+    UpdateVisualState();
 }
 
 void BreadcrumbItem::InstantiateFlyout()
@@ -270,5 +312,5 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
 
     InstantiateFlyout();
 
-    winrt::VisualStateManager::GoToState(*this, L"Ellipsis", false);
+    UpdateVisualState();
 }

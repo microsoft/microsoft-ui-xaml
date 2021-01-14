@@ -49,6 +49,8 @@ void Breadcrumb::OnApplyTemplate()
     AccessKeyInvoked({ this, &Breadcrumb::OnAccessKeyInvoked });
     GettingFocus({ this, &Breadcrumb::OnGettingFocus });
 
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &Breadcrumb::OnFlowDirectionChanged });
+
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
         itemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
@@ -83,6 +85,11 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     }
 }
 
+void Breadcrumb::OnFlowDirectionChanged(winrt::DependencyObject const& o, winrt::DependencyProperty const& p)
+{
+    UpdateBreadcrumbItemsFlowDirection();
+}
+
 void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (const auto& breadcrumbItemRepeater = m_itemsRepeater.get())
@@ -107,6 +114,24 @@ void Breadcrumb::UpdateEllipsisBreadcrumbItemDropdownItemTemplate()
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(ellipsisBreadcrumbItem))
         {
             itemImpl->SetFlyoutDataTemplate(newItemTemplate);
+        }
+    }
+}
+
+void Breadcrumb::UpdateBreadcrumbItemsFlowDirection()
+{
+    // Only if some ItemsSource has been defined then we change the BreadcrumbItems flow direction
+    if (ItemsSource())
+    {
+        if (const auto& itemsRepeater = m_itemsRepeater.get())
+        {
+            // Add 1 to account for the leading null
+            int32_t elementCount = m_breadcrumbItemsSourceView.Count() + 1;
+            for (int32_t i{}; i < elementCount; ++i)
+            {
+                const auto& element = itemsRepeater.TryGetElement(i).try_as<winrt::BreadcrumbItem>();
+                element.FlowDirection(FlowDirection());
+            }
         }
     }
 }
