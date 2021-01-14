@@ -34,19 +34,19 @@
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="GhostFillColorTransparent" />
+            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondary" />
-            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="GhostFillColorDisabled" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="GhostFillColorSecondary" />
+            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="GhostFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="GhostFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="GhostFillColorTransparent" />
+            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="GhostFillColorSecondary" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="GhostFillColorDisabled" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushSelectedUnfocused" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
@@ -58,7 +58,7 @@
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="FocusStrokeColorOuter" />
+            <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="FocusStrokeColorOuterBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="ComboBoxForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -86,8 +86,8 @@
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
 
             <StaticResource x:Key="ComboBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="ComboBoxArrowDisabledForegroundThemeBrush" Color="#66FFFFFF" />
@@ -137,6 +137,7 @@
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
             <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7,7,7,7</CornerRadius>
             <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="ComboBoxBackgroundBorderThicknessFocused">2</Thickness>
@@ -266,6 +267,7 @@
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
             <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7,7,7,7</CornerRadius>
             <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
@@ -292,19 +294,19 @@
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="GhostFillColorTransparent" />
+            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondary" />
-            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="GhostFillColorDisabled" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="GhostFillColorSecondary" />
+            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="GhostFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="GhostFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="GhostFillColorTransparent" />
+            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="GhostFillColorSecondary" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="GhostFillColorDisabled" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="GhostFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushSelectedUnfocused" ResourceKey="GhostFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
@@ -316,7 +318,7 @@
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="FocusStrokeColorOuter" />
+            <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="FocusStrokeColorOuterBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="ComboBoxForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
@@ -344,8 +346,8 @@
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+            <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <contract7Present:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
 
             <StaticResource x:Key="ComboBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <SolidColorBrush x:Key="ComboBoxArrowDisabledForegroundThemeBrush" Color="#66000000" />
@@ -395,6 +397,7 @@
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
             <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7,7,7,7</CornerRadius>
             <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -503,7 +506,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Figure out what to do with placeholder -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextBlock" Storyboard.TargetProperty="Foreground">
                                             <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxPlaceHolderForegroundPressed}" />
                                             <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxPlaceHolderForegroundPressed}}" />
@@ -518,7 +520,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxBorderBrushDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Figure out what to do with the header -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxHeaderForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -807,6 +808,7 @@
         <Setter Property="Padding" Value="{ThemeResource ComboBoxItemThemePadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ComboBoxItemCornerRadius}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">
@@ -814,8 +816,9 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                                  Margin="5,2,5,2"
-                                  CornerRadius="3"
+                        Margin="5,2,5,2"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         Control.IsTemplateFocusTarget="True">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
