@@ -498,15 +498,20 @@ winrt::FindNextElementOptions Breadcrumb::GetFindNextElementOptions()
 
 void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
 {
-    switch (args.Key())
+    bool flowDirectionIsLTR = (FlowDirection() == winrt::FlowDirection::LeftToRight);
+    bool keyIsLeft = (args.Key() == winrt::VirtualKey::Left);
+    bool keyIsRight = (args.Key() == winrt::VirtualKey::Right);
+
+    // Moving to the next element
+    if ((flowDirectionIsLTR && keyIsRight) || (!flowDirectionIsLTR && keyIsLeft))
     {
-    case winrt::VirtualKey::Right:
         if (MoveFocusNext())
         {
             args.Handled(true);
             return;
         }
-        else if (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)
+        else if ( (flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)) ||
+                    (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)) )
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next))
             {
@@ -515,14 +520,17 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
             }
         }
         args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
-        break;
-    case winrt::VirtualKey::Left:
+    }
+    // Moving to previous element
+    else if ((flowDirectionIsLTR && keyIsLeft) || (!flowDirectionIsLTR && keyIsRight))
+    {
         if (MoveFocusPrevious())
         {
             args.Handled(true);
             return;
         }
-        else if (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)
+        else if ((flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)) ||
+                    (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)))
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous))
             {
@@ -531,8 +539,9 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
             }
         }
         args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
-        break;
-    case winrt::VirtualKey::Down:
+    }
+    else if (args.Key() == winrt::VirtualKey::Down)
+    {
         if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadDown)
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()))
@@ -550,9 +559,9 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
             }
         }
         args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
-        break;
-
-    case winrt::VirtualKey::Up:
+    }
+    else if (args.Key() == winrt::VirtualKey::Up)
+    {
         if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadUp)
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()))
@@ -570,7 +579,6 @@ void Breadcrumb::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::
             }
         }
         args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
-        break;
     }
 }
 
