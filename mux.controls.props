@@ -26,8 +26,9 @@
     <MinSDKVersionRequiredForRS2ThemeResource>$(SDKVersionRS2)</MinSDKVersionRequiredForRS2ThemeResource>
     <MinSDKVersionRequiredForRS3ThemeResource>$(SDKVersionRS3)</MinSDKVersionRequiredForRS3ThemeResource>
     <MinSDKVersionRequiredForRS4ThemeResource>$(SDKVersionRS4)</MinSDKVersionRequiredForRS4ThemeResource>
-    <MinSDKVersionRequiredForRS5ThemeResource>$(MuxSdkVersion)</MinSDKVersionRequiredForRS5ThemeResource>
-    <MinSDKVersionRequiredFor19H1ThemeResource>$(MuxSdkVersion)</MinSDKVersionRequiredFor19H1ThemeResource>
+    <MinSDKVersionRequiredForRS5ThemeResource>$(SDKVersion19H1)</MinSDKVersionRequiredForRS5ThemeResource>
+    <MinSDKVersionRequiredFor19H1ThemeResource>$(SDKVersion19H1)</MinSDKVersionRequiredFor19H1ThemeResource>
+    <MinSDKVersionRequiredFor21H1ThemeResource>$(SDKVersion21H1)</MinSDKVersionRequiredFor21H1ThemeResource>
   </PropertyGroup>
 
   <PropertyGroup>

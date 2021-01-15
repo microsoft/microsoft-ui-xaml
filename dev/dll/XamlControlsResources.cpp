@@ -76,7 +76,11 @@ void XamlControlsResources::UpdateSource()
 
             hstring releasePrefix;
 
-            if (is19H1OrHigher)
+            if (isVisualUpdateAvailable)
+            {
+                releasePrefix = L"21h1_";
+            }
+            else if (is19H1OrHigher)
             {
                 releasePrefix = L"19h1_";
             }
@@ -189,7 +193,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             
             if (isInFrameworkPackage)
             {
-                if (is19H1OrHigher)
+                if (isVisualUpdateAvailable)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
@@ -212,7 +220,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else if (isInCBSPackage)
             {
-                if (is19H1OrHigher)
+                if (isVisualUpdateAvailable)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
                 {
                     releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
@@ -224,7 +236,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else
             {
-                if (is19H1OrHigher)
+                if (isVisualUpdateAvailable)
+                {
+                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
                 {
                     releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }

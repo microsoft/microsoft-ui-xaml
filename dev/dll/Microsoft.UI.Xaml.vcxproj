@@ -80,7 +80,7 @@
     </PRIResource>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <MergeXamlConfig Include="LatestWithVisualUpdateVisualPages">
+    <MergeXamlConfig Include="LatestWithVisualUpdateVisualPages" Condition="'$(MuxSdkVersion)' == '10.0.21290.0'">
       <FilterAttribute>UseLatestWithVisualUpdateStyle</FilterAttribute>
       <Postfix>_vu</Postfix>
     </MergeXamlConfig>
@@ -350,7 +350,7 @@
     <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
     <!-- REGISB: Do we need to introduce a new MinSDKVersionRequiredFor21H1ThemeResource value? -->
     <!-- REGISB: Do we need 21h1_generic_vu.xaml? -->
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic_vu.xaml">
+    <!--<PageRequiringCustomCompilation Include="$(OutDir)rs2_generic_vu.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -379,8 +379,14 @@
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>-->
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_generic_vu.xaml" Condition="'$(MuxSdkVersion)' == '10.0.21290.0'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources_vu.xaml;$(OutDir)rs2_compact_themeresources_vu.xaml">
+    <!--<PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources_vu.xaml;$(OutDir)rs2_compact_themeresources_vu.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -409,6 +415,12 @@
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>-->
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_vu.xaml;$(OutDir)21h1_compact_themeresources_vu.xaml" Condition="'$(MuxSdkVersion)' == '10.0.21290.0'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
     <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic.xaml">
       <SubType>Designer</SubType>
@@ -532,7 +544,7 @@
     </PageRequiringCustomCompilation>
     <Page Include="@(PageRequiringCustomCompilation)" />
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
-      <UseLatestWithVisualUpdateStyle>true</UseLatestWithVisualUpdateStyle> <!-- REGISB: is this addition correct? -->
+      <!--<UseLatestWithVisualUpdateStyle>true</UseLatestWithVisualUpdateStyle> --><!-- REGISB: is this addition correct? -->
       <UseLatestStyle>true</UseLatestStyle>
       <UseV2dot5Style>true</UseV2dot5Style>
     </CompactPage>
@@ -631,12 +643,14 @@
       <RS4StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
       <RS5StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
       <NineteenH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
+      <TwentyOneH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'DefaultStyle'" />
       <RS1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
       <RS2ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
       <RS3ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
       <RS4ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />
       <RS5ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'ThemeResources'" />
       <NineteenH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'ThemeResources'" />
+      <TwentyOneH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'ThemeResources'" />
     </ItemGroup>
   </Target>
   <PropertyGroup>
@@ -646,12 +660,14 @@
   <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multiple times. 
         https://docs.microsoft.com/en-us/visualstudio/msbuild/item-metadata-in-task-batching?view=vs-2019 -->
   <!-- REGISB: Is it OK to add the new *_vu.xaml Outputs even with old SDK builds? -->
+  <!-- Outputs="$(OutDir)Generic_vu.xaml;$(OutDir)rs1_generic_vu.xaml;$(OutDir)rs2_generic_vu.xaml;$(OutDir)rs3_generic_vu.xaml;$(OutDir)rs4_generic_vu.xaml;$(OutDir)rs5_generic_vu.xaml;$(OutDir)19h1_generic_vu.xaml;$(OutDir)21h1_generic_vu.xaml;$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)rs1_generic_2dot5.xaml;$(OutDir)rs2_generic_2dot5.xaml;$(OutDir)rs3_generic_2dot5.xaml;$(OutDir)rs4_generic_2dot5.xaml;$(OutDir)rs5_generic_2dot5.xaml;$(OutDir)19h1_generic_2dot5.xaml;"> -->
   <Target
-    Name="GenerateGenericResourceFile"
+    Name="GenerateGenericResourceFile1"
+    Condition="'$(MuxSdkVersion)' != '10.0.21290.0'"
     DependsOnTargets="CategorizeSharedPages"
     BeforeTargets="$(GenerateXamlFileBeforeTargets)"
     Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)"
-    Outputs="$(OutDir)Generic_vu.xaml;$(OutDir)rs1_generic_vu.xaml;$(OutDir)rs2_generic_vu.xaml;$(OutDir)rs3_generic_vu.xaml;$(OutDir)rs4_generic_vu.xaml;$(OutDir)rs5_generic_vu.xaml;$(OutDir)19h1_generic_vu.xaml;$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)rs1_generic_2dot5.xaml;$(OutDir)rs2_generic_2dot5.xaml;$(OutDir)rs3_generic_2dot5.xaml;$(OutDir)rs4_generic_2dot5.xaml;$(OutDir)rs5_generic_2dot5.xaml;$(OutDir)19h1_generic_2dot5.xaml;">
+    Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)rs1_generic_2dot5.xaml;$(OutDir)rs2_generic_2dot5.xaml;$(OutDir)rs3_generic_2dot5.xaml;$(OutDir)rs4_generic_2dot5.xaml;$(OutDir)rs5_generic_2dot5.xaml;$(OutDir)19h1_generic_2dot5.xaml;">
     <Message Text="Generating generic resources XAML file " />
     <BatchMergeXaml
       RS1Pages="@(RS1StylePage)"
@@ -663,8 +679,8 @@
       PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
       PostfixForGeneratedFile="generic%(MergeXamlConfig.Postfix)"
       OutputDirectory="$(OutDir)"
-      TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog"
-      TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+      TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile1%(MergeXamlConfig.Postfix).read.1u.tlog"
+      TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile1%(MergeXamlConfig.Postfix).write.1u.tlog" />
     <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" /> <!-- REGISB What is unique about rs2_generic.xaml? This copy only happens for that version -->
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
       PropertyGroup values are always evaluated even when their enclosing target is skipped,
@@ -674,12 +690,44 @@
       <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />
     </CreateProperty>
   </Target>
+  <Target
+    Name="GenerateGenericResourceFile2"
+    Condition="'$(MuxSdkVersion)' == '10.0.21290.0'"
+    DependsOnTargets="CategorizeSharedPages"
+    BeforeTargets="$(GenerateXamlFileBeforeTargets)"
+    Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage);@(TwentyOneH1StylePage)"
+    Outputs="$(OutDir)21h1_generic_vu.xaml;$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)rs1_generic_2dot5.xaml;$(OutDir)rs2_generic_2dot5.xaml;$(OutDir)rs3_generic_2dot5.xaml;$(OutDir)rs4_generic_2dot5.xaml;$(OutDir)rs5_generic_2dot5.xaml;$(OutDir)19h1_generic_2dot5.xaml;">
+    <Message Text="Generating generic resources XAML file " />
+    <!-- T21H1Pages="@(TwentyOneH1StylePage)" -->
+    <BatchMergeXaml
+      RS1Pages="@(RS1StylePage)"
+      RS2Pages="@(RS2StylePage)"
+      RS3Pages="@(RS3StylePage)"
+      RS4Pages="@(RS4StylePage)"
+      RS5Pages="@(RS5StylePage)"
+      N19H1Pages="@(NineteenH1StylePage)"
+      PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
+      PostfixForGeneratedFile="generic%(MergeXamlConfig.Postfix)"
+      OutputDirectory="$(OutDir)"
+      TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile2%(MergeXamlConfig.Postfix).read.1u.tlog"
+      TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile2%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" /> <!-- REGISB What is unique about rs2_generic.xaml? This copy only happens for that version -->
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
+      to only set a property if the target actually runs. -->
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <!-- Outputs="$(OutDir)rs1_themeresources_vu.xaml;$(OutDir)rs2_themeresources_vu.xaml;$(OutDir)rs3_themeresources_vu.xaml;$(OutDir)rs4_themeresources_vu.xaml;$(OutDir)rs5_themeresources_vu.xaml;$(OutDir)19h1_themeresources_vu.xaml;$(OutDir)21h1_themeresources_vu.xaml;$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)rs1_themeresources_2dot5.xaml;$(OutDir)rs2_themeresources_2dot5.xaml;$(OutDir)rs3_themeresources_2dot5.xaml;$(OutDir)rs4_themeresources_2dot5.xaml;$(OutDir)rs5_themeresources_2dot5.xaml;$(OutDir)19h1_themeresources_2dot5.xaml;"> -->
   <Target 
-    Name="GenerateThemeResourceFile" 
+    Name="GenerateThemeResourceFile1" 
+    Condition="'$(MuxSdkVersion)' != '10.0.21290.0'"
     DependsOnTargets="CategorizeSharedPages" 
     BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" 
-    Outputs="$(OutDir)rs1_themeresources_vu.xaml;$(OutDir)rs2_themeresources_vu.xaml;$(OutDir)rs3_themeresources_vu.xaml;$(OutDir)rs4_themeresources_vu.xaml;$(OutDir)rs5_themeresources_vu.xaml;$(OutDir)19h1_themeresources_vu.xaml;$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)rs1_themeresources_2dot5.xaml;$(OutDir)rs2_themeresources_2dot5.xaml;$(OutDir)rs3_themeresources_2dot5.xaml;$(OutDir)rs4_themeresources_2dot5.xaml;$(OutDir)rs5_themeresources_2dot5.xaml;$(OutDir)19h1_themeresources_2dot5.xaml;">
+    Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)rs1_themeresources_2dot5.xaml;$(OutDir)rs2_themeresources_2dot5.xaml;$(OutDir)rs3_themeresources_2dot5.xaml;$(OutDir)rs4_themeresources_2dot5.xaml;$(OutDir)rs5_themeresources_2dot5.xaml;$(OutDir)19h1_themeresources_2dot5.xaml;">
     <Message Text="Generating theme resources XAML file  %(MergeXamlConfig.Message)" />
     <BatchMergeXaml 
       RS1Pages="@(RS1ThemeResourcePage)"
@@ -691,8 +739,8 @@
       PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
       PostfixForGeneratedFile="themeresources%(MergeXamlConfig.Postfix)"
       OutputDirectory="$(OutDir)"
-      TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog"
-      TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+      TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile1%(MergeXamlConfig.Postfix).read.1u.tlog"
+      TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile1%(MergeXamlConfig.Postfix).write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
       PropertyGroup values are always evaluated even when their enclosing target is skipped,
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -701,12 +749,43 @@
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
     </CreateProperty>
   </Target>
+  <Target 
+    Name="GenerateThemeResourceFile2" 
+    Condition="'$(MuxSdkVersion)' == '10.0.21290.0'"
+    DependsOnTargets="CategorizeSharedPages" 
+    BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
+    Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage)" 
+    Outputs="$(OutDir)21h1_themeresources_vu.xaml;$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)rs1_themeresources_2dot5.xaml;$(OutDir)rs2_themeresources_2dot5.xaml;$(OutDir)rs3_themeresources_2dot5.xaml;$(OutDir)rs4_themeresources_2dot5.xaml;$(OutDir)rs5_themeresources_2dot5.xaml;$(OutDir)19h1_themeresources_2dot5.xaml;">
+    <Message Text="Generating theme resources XAML file  %(MergeXamlConfig.Message)" />
+    <!-- T21H1Pages="@(TwentyOneH1ThemeResourcePage)" -->
+    <BatchMergeXaml 
+      RS1Pages="@(RS1ThemeResourcePage)"
+      RS2Pages="@(RS2ThemeResourcePage)"
+      RS3Pages="@(RS3ThemeResourcePage)"
+      RS4Pages="@(RS4ThemeResourcePage)"
+      RS5Pages="@(RS5ThemeResourcePage)"
+      N19H1Pages="@(NineteenH1ThemeResourcePage)"
+      PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
+      PostfixForGeneratedFile="themeresources%(MergeXamlConfig.Postfix)"
+      OutputDirectory="$(OutDir)"
+      TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile2%(MergeXamlConfig.Postfix).read.1u.tlog"
+      TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile2%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
+      to only set a property if the target actually runs. -->
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <!-- Outputs="$(OutDir)rs1_compact_themeresources_vu.xaml;$(OutDir)rs2_compact_themeresources_vu.xaml;$(OutDir)rs3_compact_themeresources_vu.xaml;$(OutDir)rs4_compact_themeresources_vu.xaml;$(OutDir)rs5_compact_themeresources_vu.xaml;$(OutDir)19h1_compact_themeresources_vu.xaml;$(OutDir)21h1_compact_themeresources_vu.xaml;$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_2dot5.xaml;$(OutDir)rs2_compact_themeresources_2dot5.xaml;$(OutDir)rs3_compact_themeresources_2dot5.xaml;$(OutDir)rs4_compact_themeresources_2dot5.xaml;$(OutDir)rs5_compact_themeresources_2dot5.xaml;$(OutDir)19h1_compact_themeresources_2dot5.xaml;"> -->
   <Target
-    Name="GenerateCompactThemeResourceFile"
+    Name="GenerateCompactThemeResourceFile1"
+    Condition="'$(MuxSdkVersion)' != '10.0.21290.0'"
     DependsOnTargets="CategorizeSharedPages"
     BeforeTargets="$(GenerateXamlFileBeforeTargets)"
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)"
-    Outputs="$(OutDir)rs1_compact_themeresources_vu.xaml;$(OutDir)rs2_compact_themeresources_vu.xaml;$(OutDir)rs3_compact_themeresources_vu.xaml;$(OutDir)rs4_compact_themeresources_vu.xaml;$(OutDir)rs5_compact_themeresources_vu.xaml;$(OutDir)19h1_compact_themeresources_vu.xaml;$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_2dot5.xaml;$(OutDir)rs2_compact_themeresources_2dot5.xaml;$(OutDir)rs3_compact_themeresources_2dot5.xaml;$(OutDir)rs4_compact_themeresources_2dot5.xaml;$(OutDir)rs5_compact_themeresources_2dot5.xaml;$(OutDir)19h1_compact_themeresources_2dot5.xaml;">
+    Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_2dot5.xaml;$(OutDir)rs2_compact_themeresources_2dot5.xaml;$(OutDir)rs3_compact_themeresources_2dot5.xaml;$(OutDir)rs4_compact_themeresources_2dot5.xaml;$(OutDir)rs5_compact_themeresources_2dot5.xaml;$(OutDir)19h1_compact_themeresources_2dot5.xaml;">
     <Message Text="Generating theme resources XAML file " />
     <BatchMergeXaml
       RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)"
@@ -718,8 +797,37 @@
       PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
       PostfixForGeneratedFile="compact_themeresources%(MergeXamlConfig.Postfix)"
       OutputDirectory="$(OutDir)"
-      TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog"
-      TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+      TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile1%(MergeXamlConfig.Postfix).read.1u.tlog"
+      TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile1%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
+      to only set a property if the target actually runs. -->
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <Target
+    Name="GenerateCompactThemeResourceFile2"
+    Condition="'$(MuxSdkVersion)' == '10.0.21290.0'"
+    DependsOnTargets="CategorizeSharedPages"
+    BeforeTargets="$(GenerateXamlFileBeforeTargets)"
+    Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage);@(CompactPage)"
+    Outputs="$(OutDir)21h1_compact_themeresources_vu.xaml;$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_2dot5.xaml;$(OutDir)rs2_compact_themeresources_2dot5.xaml;$(OutDir)rs3_compact_themeresources_2dot5.xaml;$(OutDir)rs4_compact_themeresources_2dot5.xaml;$(OutDir)rs5_compact_themeresources_2dot5.xaml;$(OutDir)19h1_compact_themeresources_2dot5.xaml;">
+    <Message Text="Generating theme resources XAML file " />
+    <!-- T21H1Pages="@(TwentyOneH1ThemeResourcePage);@(CompactPage)" -->
+    <BatchMergeXaml
+      RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)"
+      RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)"
+      RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)"
+      RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)"
+      RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)"
+      N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)"
+      PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
+      PostfixForGeneratedFile="compact_themeresources%(MergeXamlConfig.Postfix)"
+      OutputDirectory="$(OutDir)"
+      TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile2%(MergeXamlConfig.Postfix).read.1u.tlog"
+      TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile2%(MergeXamlConfig.Postfix).write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
       PropertyGroup values are always evaluated even when their enclosing target is skipped,
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -768,21 +876,30 @@
     <ItemGroup>
       <!-- REGISB: Is the new list of *_vu.xbf files correct?  Do we need 21h1_generic_vu.xbf, 21h1_themeresources_vu.xbf, 21h1_compact_themeresources_vu.xbf? -->
       <!-- REGISB: How can we prevent the new *_vu.xbf on old SDKs? -->
+      <!--
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_generic_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_generic_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs4_generic_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs5_generic_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\19h1_generic_vu.xbf'))" />
+      -->
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '10.0.21290.0' And '%(Filename)' == '21h1_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_generic_vu.xbf'))" />
+      <!--
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs4_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs5_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\19h1_themeresources_vu.xbf'))" />
+      -->
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '10.0.21290.0' And '%(Filename)' == '21h1_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_themeresources_vu.xbf'))" />
+      <!--
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs4_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs5_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\19h1_compact_themeresources_vu.xbf'))" />
+      -->
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '10.0.21290.0' And '%(Filename)' == '21h1_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_generic.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_generic.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs4_generic.xbf'))" />
