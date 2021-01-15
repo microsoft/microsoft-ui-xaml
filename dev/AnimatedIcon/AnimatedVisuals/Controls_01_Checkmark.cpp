@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -InputFile Controls_01_Checkmark.json
 //       
 //       Input file:
-//           Controls_01_Checkmark.json (30311 bytes created 16:32-08:00 Nov 23 2020)
+//           Controls_01_Checkmark.json (26406 bytes created 16:32-08:00 Nov 23 2020)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,25 +21,25 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |   323 |
+// | All CompositionObjects   |   247 |
 // |--------------------------+-------|
-// | Expression animators     |    65 |
-// | KeyFrame animators       |    50 |
-// | Reference parameters     |    78 |
-// | Expression operations    |    60 |
+// | Expression animators     |    42 |
+// | KeyFrame animators       |    32 |
+// | Reference parameters     |    50 |
+// | Expression operations    |    40 |
 // |--------------------------+-------|
-// | Animated brushes         |    15 |
+// | Animated brushes         |    10 |
 // | Animated gradient stops  |     - |
-// | ExpressionAnimations     |    16 |
+// | ExpressionAnimations     |    11 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
 // | ContainerVisuals         |     1 |
 // | ShapeVisuals             |     1 |
 // |--------------------------+-------|
-// | ContainerShapes          |     8 |
-// | CompositionSpriteShapes  |    20 |
+// | ContainerShapes          |     3 |
+// | CompositionSpriteShapes  |    21 |
 // |--------------------------+-------|
-// | Brushes                  |    15 |
+// | Brushes                  |    10 |
 // | Gradient stops           |     - |
 // | CompositionVisualSurface |     - |
 // ------------------------------------
@@ -69,7 +69,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
-    Windows::Graphics::IGeometrySource2DInterop>
+    ::Windows::Graphics::IGeometrySource2DInterop>
 {
     winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };
 
@@ -100,38 +100,27 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 45000000L };
+    static constexpr int64_t c_durationTicks{ 36666666L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_00{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_01{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_02{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_03{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_04{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_05{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_06{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_08{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_09{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_10{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_11{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_12{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_13{ nullptr };
-    CompositionColorBrush _themeColor_Foreground_14{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_0{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_1{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_2{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_3{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_4{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_5{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_6{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_7{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_8{ nullptr };
+    CompositionColorBrush _themeColor_Foreground_9{ nullptr };
     CompositionPath _path{ nullptr };
     CompositionPathGeometry _pathGeometry_0{ nullptr };
     ContainerVisual _root{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
     CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
+    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_0p8_to_1_0{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_0p8_to_1_1{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_0p8_to_1_2{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_0p8_to_1_3{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1_to_0p8_0{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1_to_0p8_1{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1_to_0p8_2{ nullptr };
-    ScalarKeyFrameAnimation _scalarAnimation_1_to_0p8_3{ nullptr };
     StepEasingFunction _holdThenStepEasingFunction{ nullptr };
     StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
@@ -214,196 +203,124 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         return result;
     }
 
-    // - - Layer aggregator
-    // - Layer: Check - PressedOffToNormalOn
-    // Scale:0.8,0.8, Offset:<24, 24>
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_00()
+    CompositionColorBrush ThemeColor_Foreground_0()
     {
-        const auto result = _themeColor_Foreground_00 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0.5F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p5_to_1_0(), RootProgress());
+        const auto result = _themeColor_Foreground_0 = _c.CreateColorBrush();
+        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*0.35,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
         return result;
     }
 
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_01()
+    CompositionColorBrush ThemeColor_Foreground_1()
     {
-        const auto result = _themeColor_Foreground_01 = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_1 = _c.CreateColorBrush();
         BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*1,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
-        return result;
-    }
-
-    // - - Layer aggregator
-    // - Layer: Check - PressedOffToNormalOn 2
-    // Scale:0.8,0.8, Offset:<24, 24>
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_02()
-    {
-        const auto result = _themeColor_Foreground_02 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0.5F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p5_to_1_1(), _rootProgress);
         return result;
     }
 
     // - Layer aggregator
     // Layer: Check - PressedOffToPressedOn
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_03()
+    CompositionColorBrush ThemeColor_Foreground_2()
     {
-        const auto result = _themeColor_Foreground_03 = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_2 = _c.CreateColorBrush();
         const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0.5F);
+        propertySet.InsertScalar(L"Opacity0", 0.349999994F);
         BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p5_to_1_2(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p35_to_1_0(), _rootProgress);
         return result;
     }
 
     // - - Layer aggregator
-    // - Layer: Check - PressedOnToNormalOff
-    // ShapeGroup: Shape 1
+    // - Layer: Check - PressedOnToPointerOverOff
+    // Offset:<24, 24>
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_04()
+    CompositionColorBrush ThemeColor_Foreground_3()
     {
-        const auto result = _themeColor_Foreground_04 = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_3 = _c.CreateColorBrush();
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Opacity0", 1.0F);
         BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0_0(), _rootProgress);
-        return result;
-    }
-
-    // - - Layer aggregator
-    // - Layer: Check - PressedOnToHoverOff
-    // ShapeGroup: Shape 1
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_05()
-    {
-        const auto result = _themeColor_Foreground_05 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 1.0F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0p5_0(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0p35_0(), _rootProgress);
         return result;
     }
 
     // - Layer aggregator
     // Layer: Check - PressedOnToPressedOff
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_06()
+    CompositionColorBrush ThemeColor_Foreground_4()
     {
-        const auto result = _themeColor_Foreground_06 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0.5F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p5_to_1_3(), _rootProgress);
-        return result;
-    }
-
-    // - - Layer aggregator
-    // - Layer: Check - HoverOffToPressedOff
-    // ShapeGroup: Shape 1
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_07()
-    {
-        const auto result = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Foreground.W*0.5,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties);
-        return result;
-    }
-
-    // - Layer aggregator
-    // Layer: Check - HoverOffToNormalOff
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_08()
-    {
-        const auto result = _themeColor_Foreground_08 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0.5F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p5_to_0(), _rootProgress);
-        return result;
-    }
-
-    // - Layer aggregator
-    // Layer: Check - HoverOffToHoverOn
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_09()
-    {
-        const auto result = _themeColor_Foreground_09 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0.5F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p5_to_1_4(), _rootProgress);
-        return result;
-    }
-
-    // - Layer aggregator
-    // Layer: Check - HoverOnToHoverOff
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_10()
-    {
-        const auto result = _themeColor_Foreground_10 = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_4 = _c.CreateColorBrush();
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Opacity0", 1.0F);
         BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0p5_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0p35_1(), _rootProgress);
         return result;
     }
 
-    // - - Layer aggregator
-    // - Layer: Check - NormalOffToPressedOff
-    // ShapeGroup: Shape 1
+    // - Layer aggregator
+    // Layer: Check - PointerOverOffToNormalOff
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_11()
+    CompositionColorBrush ThemeColor_Foreground_5()
     {
-        const auto result = _themeColor_Foreground_11 = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_5 = _c.CreateColorBrush();
+        const auto propertySet = result.Properties();
+        propertySet.InsertScalar(L"Opacity0", 0.349999994F);
+        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p35_to_0(), _rootProgress);
+        return result;
+    }
+
+    // - Layer aggregator
+    // Layer: Check - PointerOverOffToPointerOverOn
+    // Color bound to theme property value: Foreground
+    CompositionColorBrush ThemeColor_Foreground_6()
+    {
+        const auto result = _themeColor_Foreground_6 = _c.CreateColorBrush();
+        const auto propertySet = result.Properties();
+        propertySet.InsertScalar(L"Opacity0", 0.349999994F);
+        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0p35_to_1_1(), _rootProgress);
+        return result;
+    }
+
+    // - Layer aggregator
+    // Layer: Check - PointerOverOnToPointerOverOff
+    // Color bound to theme property value: Foreground
+    CompositionColorBrush ThemeColor_Foreground_7()
+    {
+        const auto result = _themeColor_Foreground_7 = _c.CreateColorBrush();
+        const auto propertySet = result.Properties();
+        propertySet.InsertScalar(L"Opacity0", 1.0F);
+        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0p35_2(), _rootProgress);
+        return result;
+    }
+
+    // - Layer aggregator
+    // Layer: Check - NormalOffToPressedOff
+    // Color bound to theme property value: Foreground
+    CompositionColorBrush ThemeColor_Foreground_8()
+    {
+        const auto result = _themeColor_Foreground_8 = _c.CreateColorBrush();
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Opacity0", 0.0F);
         BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0_to_0p5_0(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0_to_0p35_0(), _rootProgress);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - NormalOffToHoverOff
+    // Layer: Check - NormalOffToPointerOverOff
     // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_12()
+    CompositionColorBrush ThemeColor_Foreground_9()
     {
-        const auto result = _themeColor_Foreground_12 = _c.CreateColorBrush();
+        const auto result = _themeColor_Foreground_9 = _c.CreateColorBrush();
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Opacity0", 0.0F);
         BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0_to_0p5_1(), _rootProgress);
-        return result;
-    }
-
-    // - Layer aggregator
-    // Layer: Check - NormalOnToHoverOn
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_13()
-    {
-        const auto result = _themeColor_Foreground_13 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 1.0F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0p5_2(), _rootProgress);
-        return result;
-    }
-
-    // - Layer aggregator
-    // Layer: Check - NormalOnToNormalOff 
-    // Color bound to theme property value: Foreground
-    CompositionColorBrush ThemeColor_Foreground_14()
-    {
-        const auto result = _themeColor_Foreground_14 = _c.CreateColorBrush();
-        const auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 1.0F);
-        BindProperty2(result, L"Color", L"ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", L"_theme", _themeProperties, L"my", propertySet);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0_1(), _rootProgress);
+        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0_to_0p35_1(), _rootProgress);
         return result;
     }
 
@@ -414,98 +331,41 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         const auto result = _c.CreateContainerShape();
         result.Scale({ 0.0F, 0.0F });
         const auto shapes = result.Shapes();
-        // Scale:0.8,0.8, Offset:<24, 24>
+        // Offset:<24.25, 24>
         shapes.Append(SpriteShape_00());
-        // ShapeGroup: Shape 1
+        // Offset:<24.25, 24>
         shapes.Append(SpriteShape_01());
         StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_00(), _rootProgress);
         return result;
     }
 
     // Layer aggregator
-    // Layer: Check - PressedOffToNormalOn 2
+    // Layer: Check - PressedOffToPointerOverOn
     CompositionContainerShape ContainerShape_1()
     {
         const auto result = _c.CreateContainerShape();
         result.Scale({ 0.0F, 0.0F });
         const auto shapes = result.Shapes();
-        // Scale:0.8,0.8, Offset:<24, 24>
+        // Offset:<24.25, 24>
         shapes.Append(SpriteShape_02());
-        // ShapeGroup: Shape 1
+        // Offset:<24.25, 24>
         shapes.Append(SpriteShape_03());
         StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_01(), _rootProgress);
         return result;
     }
 
     // Layer aggregator
-    // Layer: Check - PressedOnToNormalOff
+    // Layer: Check - PressedOnToPointerOverOff
     CompositionContainerShape ContainerShape_2()
     {
         const auto result = _c.CreateContainerShape();
         result.Scale({ 0.0F, 0.0F });
-        // ShapeGroup: Shape 1
-        result.Shapes().Append(SpriteShape_05());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_03(), _rootProgress);
-        return result;
-    }
-
-    // Layer aggregator
-    // Layer: Check - PressedOnToHoverOff
-    CompositionContainerShape ContainerShape_3()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        // ShapeGroup: Shape 1
-        result.Shapes().Append(SpriteShape_06());
+        const auto shapes = result.Shapes();
+        // Offset:<24, 24>
+        shapes.Append(SpriteShape_06());
+        // Offset:<24, 24>
+        shapes.Append(SpriteShape_07());
         StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_04(), _rootProgress);
-        return result;
-    }
-
-    // Layer aggregator
-    // Layer: Check - HoverOffToPressedOff
-    CompositionContainerShape ContainerShape_4()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        // ShapeGroup: Shape 1
-        result.Shapes().Append(SpriteShape_08());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_06(), _rootProgress);
-        return result;
-    }
-
-    // Layer aggregator
-    // Layer: Check - HoverOnToPressedOn
-    CompositionContainerShape ContainerShape_5()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        // ShapeGroup: Shape 1
-        result.Shapes().Append(SpriteShape_11());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_09(), _rootProgress);
-        return result;
-    }
-
-    // Layer aggregator
-    // Layer: Check - NormalOffToPressedOff
-    CompositionContainerShape ContainerShape_6()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        // ShapeGroup: Shape 1
-        result.Shapes().Append(SpriteShape_14());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_12(), _rootProgress);
-        return result;
-    }
-
-    // Layer aggregator
-    // Layer: Check - NormalOnToPressedOn
-    CompositionContainerShape ContainerShape_7()
-    {
-        const auto result = _c.CreateContainerShape();
-        result.Scale({ 0.0F, 0.0F });
-        // ShapeGroup: Shape 1
-        result.Shapes().Append(SpriteShape_17());
-        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_15(), _rootProgress);
         return result;
     }
 
@@ -522,17 +382,17 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
 
     // - - Layer aggregator
     // - Layer: Check - PressedOffToNormalOn
-    // ShapeGroup: Shape 1
+    // Offset:<24.25, 24>
     CompositionPathGeometry PathGeometry_1()
     {
         const auto result = _c.CreatePathGeometry(_path);
-        StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_1_0(), _rootProgress);
+        StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_1_0(), RootProgress());
         return result;
     }
 
     // - - Layer aggregator
-    // - Layer: Check - PressedOffToNormalOn 2
-    // ShapeGroup: Shape 1
+    // - Layer: Check - PressedOffToPointerOverOn
+    // Offset:<24.25, 24>
     CompositionPathGeometry PathGeometry_2()
     {
         const auto result = _c.CreatePathGeometry(_path);
@@ -541,11 +401,39 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     }
 
     // - Layer aggregator
-    // Layer: Check - NormalOffToNormalOn
+    // Layer: Check - PressedOnToNormalOff
     CompositionPathGeometry PathGeometry_3()
     {
         const auto result = _c.CreatePathGeometry(_path);
+        StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_1_0(), _rootProgress);
+        return result;
+    }
+
+    // - - Layer aggregator
+    // - Layer: Check - PressedOnToPointerOverOff
+    // Offset:<24, 24>
+    CompositionPathGeometry PathGeometry_4()
+    {
+        const auto result = _c.CreatePathGeometry(_path);
+        StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_1_1(), _rootProgress);
+        return result;
+    }
+
+    // - Layer aggregator
+    // Layer: Check - NormalOffToNormalOn
+    CompositionPathGeometry PathGeometry_5()
+    {
+        const auto result = _c.CreatePathGeometry(_path);
         StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_1_2(), _rootProgress);
+        return result;
+    }
+
+    // - Layer aggregator
+    // Layer: Check - NormalOnToNormalOff
+    CompositionPathGeometry PathGeometry_6()
+    {
+        const auto result = _c.CreatePathGeometry(_path);
+        StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_1_2(), _rootProgress);
         return result;
     }
 
@@ -554,9 +442,9 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Path 1
     CompositionSpriteShape SpriteShape_00()
     {
-        // Offset:<24, 24>, Rotation:-0.011598425070025746 degrees, Scale:<0.8, 0.8>
-        const auto result = CreateSpriteShape(PathGeometry_0(), { 0.800000012F, 0.0F, 0.0F, 0.800000012F, 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_00());
+        // Offset:<24.25, 24>
+        const auto result = CreateSpriteShape(PathGeometry_0(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 24.0F });
+        result.StrokeBrush(ThemeColor_Foreground_0());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -571,28 +459,26 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Path 1
     CompositionSpriteShape SpriteShape_01()
     {
-        const auto result = _c.CreateSpriteShape(PathGeometry_1());
-        result.Offset({ 24.25F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_01());
+        // Offset:<24.25, 24>
+        const auto result = CreateSpriteShape(PathGeometry_1(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 24.0F });
+        result.StrokeBrush(ThemeColor_Foreground_1());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
         result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_0p8_to_1_0(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_0p8_to_1_0, _rootProgress);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - PressedOffToNormalOn 2
+    // Layer: Check - PressedOffToPointerOverOn
     // Path 1
     CompositionSpriteShape SpriteShape_02()
     {
-        // Offset:<24, 24>, Rotation:-0.011598425070025746 degrees, Scale:<0.8, 0.8>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.800000012F, 0.0F, 0.0F, 0.800000012F, 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_02());
+        // Offset:<24.25, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 24.0F });
+        result.StrokeBrush(_themeColor_Foreground_0);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -603,21 +489,19 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     }
 
     // - Layer aggregator
-    // Layer: Check - PressedOffToNormalOn 2
+    // Layer: Check - PressedOffToPointerOverOn
     // Path 1
     CompositionSpriteShape SpriteShape_03()
     {
-        const auto result = _c.CreateSpriteShape(PathGeometry_2());
-        result.Offset({ 24.25F, 24.0F });
-        result.StrokeBrush(_themeColor_Foreground_01);
+        // Offset:<24.25, 24>
+        const auto result = CreateSpriteShape(PathGeometry_2(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.25F, 24.0F });
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
         result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_0p8_to_1_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_0p8_to_1_1, _rootProgress);
         return result;
     }
 
@@ -625,10 +509,10 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Path 1
     CompositionSpriteShape SpriteShape_04()
     {
-        // Offset:<24, 24>, Rotation:-0.011598425070025746 degrees, Scale:<0.8, 0.8>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.800000012F, 0.0F, 0.0F, 0.800000012F, 24.0F, 24.0F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_03());
+        result.StrokeBrush(ThemeColor_Foreground_2());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -639,52 +523,66 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         return result;
     }
 
-    // - Layer aggregator
-    // Layer: Check - PressedOnToNormalOff
+    // Layer aggregator
     // Path 1
     CompositionSpriteShape SpriteShape_05()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.Offset({ 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_04());
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_3(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.Scale({ 0.0F, 0.0F });
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
         result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_0p8_to_1_2(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_0p8_to_1_2, _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_03(), _rootProgress);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - PressedOnToHoverOff
+    // Layer: Check - PressedOnToPointerOverOff
     // Path 1
     CompositionSpriteShape SpriteShape_06()
     {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.Offset({ 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_05());
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.StrokeBrush(ThemeColor_Foreground_3());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
         result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
         result.StrokeMiterLimit(2.0F);
         result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_0p8_to_1_3(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_0p8_to_1_3, _rootProgress);
+        return result;
+    }
+
+    // - Layer aggregator
+    // Layer: Check - PressedOnToPointerOverOff
+    // Path 1
+    CompositionSpriteShape SpriteShape_07()
+    {
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(PathGeometry_4(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.StrokeBrush(_themeColor_Foreground_1);
+        result.StrokeDashCap(CompositionStrokeCap::Round);
+        result.StrokeStartCap(CompositionStrokeCap::Round);
+        result.StrokeEndCap(CompositionStrokeCap::Round);
+        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
+        result.StrokeMiterLimit(2.0F);
+        result.StrokeThickness(5.5F);
         return result;
     }
 
     // Layer aggregator
     // Path 1
-    CompositionSpriteShape SpriteShape_07()
+    CompositionSpriteShape SpriteShape_08()
     {
-        // Offset:<24, 24>, Rotation:-0.011598425070025746 degrees, Scale:<0.8, 0.8>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 0.800000012F, 0.0F, 0.0F, 0.800000012F, 24.0F, 24.0F });
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_06());
+        result.StrokeBrush(ThemeColor_Foreground_4());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -695,25 +593,6 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         return result;
     }
 
-    // - Layer aggregator
-    // Layer: Check - HoverOffToPressedOff
-    // Path 1
-    CompositionSpriteShape SpriteShape_08()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.Offset({ 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_07());
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_0p8_0(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_0p8_0, _rootProgress);
-        return result;
-    }
-
     // Layer aggregator
     // Path 1
     CompositionSpriteShape SpriteShape_09()
@@ -721,7 +600,25 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         // Offset:<24, 24>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_08());
+        result.StrokeBrush(_themeColor_Foreground_0);
+        result.StrokeDashCap(CompositionStrokeCap::Round);
+        result.StrokeStartCap(CompositionStrokeCap::Round);
+        result.StrokeEndCap(CompositionStrokeCap::Round);
+        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
+        result.StrokeMiterLimit(2.0F);
+        result.StrokeThickness(5.5F);
+        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_06(), _rootProgress);
+        return result;
+    }
+
+    // Layer aggregator
+    // Path 1
+    CompositionSpriteShape SpriteShape_10()
+    {
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.Scale({ 0.0F, 0.0F });
+        result.StrokeBrush(ThemeColor_Foreground_5());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -734,12 +631,12 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
 
     // Layer aggregator
     // Path 1
-    CompositionSpriteShape SpriteShape_10()
+    CompositionSpriteShape SpriteShape_11()
     {
         // Offset:<24, 24>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_09());
+        result.StrokeBrush(ThemeColor_Foreground_6());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -750,25 +647,6 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         return result;
     }
 
-    // - Layer aggregator
-    // Layer: Check - HoverOnToPressedOn
-    // Path 1
-    CompositionSpriteShape SpriteShape_11()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.Offset({ 24.0F, 24.0F });
-        result.StrokeBrush(_themeColor_Foreground_01);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_0p8_1(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_0p8_1, _rootProgress);
-        return result;
-    }
-
     // Layer aggregator
     // Path 1
     CompositionSpriteShape SpriteShape_12()
@@ -776,7 +654,25 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         // Offset:<24, 24>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(_themeColor_Foreground_01);
+        result.StrokeBrush(_themeColor_Foreground_1);
+        result.StrokeDashCap(CompositionStrokeCap::Round);
+        result.StrokeStartCap(CompositionStrokeCap::Round);
+        result.StrokeEndCap(CompositionStrokeCap::Round);
+        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
+        result.StrokeMiterLimit(2.0F);
+        result.StrokeThickness(5.5F);
+        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_09(), _rootProgress);
+        return result;
+    }
+
+    // Layer aggregator
+    // Path 1
+    CompositionSpriteShape SpriteShape_13()
+    {
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.Scale({ 0.0F, 0.0F });
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -789,12 +685,12 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
 
     // Layer aggregator
     // Path 1
-    CompositionSpriteShape SpriteShape_13()
+    CompositionSpriteShape SpriteShape_14()
     {
         // Offset:<24, 24>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_10());
+        result.StrokeBrush(ThemeColor_Foreground_7());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -805,25 +701,6 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         return result;
     }
 
-    // - Layer aggregator
-    // Layer: Check - NormalOffToPressedOff
-    // Path 1
-    CompositionSpriteShape SpriteShape_14()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.Offset({ 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_11());
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_0p8_2(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_0p8_2, _rootProgress);
-        return result;
-    }
-
     // Layer aggregator
     // Path 1
     CompositionSpriteShape SpriteShape_15()
@@ -831,7 +708,25 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         // Offset:<24, 24>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_12());
+        result.StrokeBrush(ThemeColor_Foreground_8());
+        result.StrokeDashCap(CompositionStrokeCap::Round);
+        result.StrokeStartCap(CompositionStrokeCap::Round);
+        result.StrokeEndCap(CompositionStrokeCap::Round);
+        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
+        result.StrokeMiterLimit(2.0F);
+        result.StrokeThickness(5.5F);
+        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_12(), _rootProgress);
+        return result;
+    }
+
+    // Layer aggregator
+    // Path 1
+    CompositionSpriteShape SpriteShape_16()
+    {
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.Scale({ 0.0F, 0.0F });
+        result.StrokeBrush(ThemeColor_Foreground_9());
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -844,12 +739,12 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
 
     // Layer aggregator
     // Path 1
-    CompositionSpriteShape SpriteShape_16()
+    CompositionSpriteShape SpriteShape_17()
     {
         // Offset:<24, 24>
-        const auto result = CreateSpriteShape(PathGeometry_3(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        const auto result = CreateSpriteShape(PathGeometry_5(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(_themeColor_Foreground_01);
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -860,25 +755,6 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         return result;
     }
 
-    // - Layer aggregator
-    // Layer: Check - NormalOnToPressedOn
-    // Path 1
-    CompositionSpriteShape SpriteShape_17()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry_0);
-        result.Offset({ 24.0F, 24.0F });
-        result.StrokeBrush(_themeColor_Foreground_01);
-        result.StrokeDashCap(CompositionStrokeCap::Round);
-        result.StrokeStartCap(CompositionStrokeCap::Round);
-        result.StrokeEndCap(CompositionStrokeCap::Round);
-        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
-        result.StrokeMiterLimit(2.0F);
-        result.StrokeThickness(5.5F);
-        StartProgressBoundAnimation(result, L"Scale.X", ScalarAnimation_1_to_0p8_3(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", _scalarAnimation_1_to_0p8_3, _rootProgress);
-        return result;
-    }
-
     // Layer aggregator
     // Path 1
     CompositionSpriteShape SpriteShape_18()
@@ -886,7 +762,25 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         // Offset:<24, 24>
         const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
         result.Scale({ 0.0F, 0.0F });
-        result.StrokeBrush(ThemeColor_Foreground_13());
+        result.StrokeBrush(_themeColor_Foreground_1);
+        result.StrokeDashCap(CompositionStrokeCap::Round);
+        result.StrokeStartCap(CompositionStrokeCap::Round);
+        result.StrokeEndCap(CompositionStrokeCap::Round);
+        result.StrokeLineJoin(CompositionStrokeLineJoin::Round);
+        result.StrokeMiterLimit(2.0F);
+        result.StrokeThickness(5.5F);
+        StartProgressBoundAnimation(result, L"Scale", ShapeVisibilityAnimation_15(), _rootProgress);
+        return result;
+    }
+
+    // Layer aggregator
+    // Path 1
+    CompositionSpriteShape SpriteShape_19()
+    {
+        // Offset:<24, 24>
+        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.Scale({ 0.0F, 0.0F });
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -899,11 +793,11 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
 
     // Layer aggregator
     // Path 1
-    CompositionSpriteShape SpriteShape_19()
+    CompositionSpriteShape SpriteShape_20()
     {
         // Offset:<24, 24>
-        const auto result = CreateSpriteShape(_pathGeometry_0, { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
-        result.StrokeBrush(ThemeColor_Foreground_14());
+        const auto result = CreateSpriteShape(PathGeometry_6(), { 1.0F, 0.0F, 0.0F, 1.0F, 24.0F, 24.0F });
+        result.StrokeBrush(_themeColor_Foreground_1);
         result.StrokeDashCap(CompositionStrokeCap::Round);
         result.StrokeStartCap(CompositionStrokeCap::Round);
         result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -927,12 +821,17 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
 
     CubicBezierEasingFunction CubicBezierEasingFunction_0()
     {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
+        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     CubicBezierEasingFunction CubicBezierEasingFunction_1()
     {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
+        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
+    }
+
+    CubicBezierEasingFunction CubicBezierEasingFunction_2()
+    {
+        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.75F, 0.0F }, { 0.833000004F, 0.833000004F });
     }
 
     ExpressionAnimation RootProgress()
@@ -943,214 +842,98 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_0p5_0()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_0p35_0()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.259259254F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.292592585F, 0.5F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.318181813F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.359090894F, 0.349999994F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_0p5_1()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_0p35_1()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.222222224F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.25555557F, 0.5F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.272727281F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.313636363F, 0.349999994F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p5_to_0()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p35_to_0()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.5F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.481481493F, 0.5F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.514814794F, 0.0F, _cubicBezierEasingFunction_0);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.349999994F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.550000012F, 0.349999994F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.586363614F, 0.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p5_to_1_0()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p35_to_1_0()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.5F, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.888888896F, 0.5F, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(0.92592591F, 1.0F, CubicBezierEasingFunction_0());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.349999994F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.772727251F, 0.349999994F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.813636363F, 1.0F, CubicBezierEasingFunction_1());
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p5_to_1_1()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p35_to_1_1()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.5F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.777777791F, 0.5F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.814814806F, 1.0F, _cubicBezierEasingFunction_0);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.349999994F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.5F, 0.349999994F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.540909111F, 1.0F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p5_to_1_2()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.5F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.740740716F, 0.5F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.774074078F, 1.0F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p5_to_1_3()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.5F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.555555582F, 0.5F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.588888884F, 1.0F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_0p5_to_1_4()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.5F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.444444448F, 0.5F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.477777779F, 1.0F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0_0()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0p35_0()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.666666687F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.699999988F, 0.0F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.681818187F, 1.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.722727299F, 0.349999994F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0_1()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.0333333351F, 0.0F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0p5_0()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0p35_1()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.592592597F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.625925899F, 0.5F, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.636363626F, 1.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.677272737F, 0.349999994F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0p5_1()
+    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0p35_2()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.333333343F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.366666675F, 0.5F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Opacity0
-    ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0p5_2()
-    {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0370370373F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.0703703687F, 0.5F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_0p8_to_1_0()
-    {
-        const auto result = _scalarAnimation_0p8_to_1_0 = CreateScalarKeyFrameAnimation(0.0F, 0.800000012F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.888888896F, 0.800000012F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.996296287F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_0p8_to_1_1()
-    {
-        const auto result = _scalarAnimation_0p8_to_1_1 = CreateScalarKeyFrameAnimation(0.0F, 0.800000012F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.777777791F, 0.800000012F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.885185182F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_0p8_to_1_2()
-    {
-        const auto result = _scalarAnimation_0p8_to_1_2 = CreateScalarKeyFrameAnimation(0.0F, 0.800000012F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.666666687F, 0.800000012F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.737037063F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_0p8_to_1_3()
-    {
-        const auto result = _scalarAnimation_0p8_to_1_3 = CreateScalarKeyFrameAnimation(0.0F, 0.800000012F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.592592597F, 0.800000012F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.662962973F, 1.0F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1_to_0p8_0()
-    {
-        const auto result = _scalarAnimation_1_to_0p8_0 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.518518507F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.551851869F, 0.800000012F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1_to_0p8_1()
-    {
-        const auto result = _scalarAnimation_1_to_0p8_1 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.407407403F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.440740734F, 0.800000012F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1_to_0p8_2()
-    {
-        const auto result = _scalarAnimation_1_to_0p8_2 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.259259254F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.333333343F, 0.800000012F, _cubicBezierEasingFunction_1);
-        return result;
-    }
-
-    // Scale
-    ScalarKeyFrameAnimation ScalarAnimation_1_to_0p8_3()
-    {
-        const auto result = _scalarAnimation_1_to_0p8_3 = CreateScalarKeyFrameAnimation(0.0F, 1.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.0740740746F, 1.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.107407406F, 0.800000012F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.363636374F, 1.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.404545456F, 0.349999994F, _cubicBezierEasingFunction_1);
         return result;
     }
 
     // - - - Layer aggregator
     // - - Layer: Check - PressedOffToNormalOn
-    // - ShapeGroup: Shape 1
+    // -  Offset:<24.25, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_0()
     {
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.888888896F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.996296287F, 1.0F, CubicBezierEasingFunction_1());
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, StepThenHoldEasingFunction());
+        result.InsertKeyFrame(0.909090936F, 0.0F, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.9909091F, 1.0F, CubicBezierEasingFunction_0());
         return result;
     }
 
     // - - - Layer aggregator
-    // - - Layer: Check - PressedOffToNormalOn 2
-    // - ShapeGroup: Shape 1
+    // - - Layer: Check - PressedOffToPointerOverOn
+    // -  Offset:<24.25, 24>
     // TrimEnd
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_1()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.777777791F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.885185182F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.818181813F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.899999976F, 1.0F, _cubicBezierEasingFunction_0);
         return result;
     }
 
@@ -1160,8 +943,41 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_1_2()
     {
         const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
-        result.InsertKeyFrame(0.111111112F, 0.0F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.218518525F, 1.0F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.13636364F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.263636351F, 1.0F, _cubicBezierEasingFunction_0);
+        return result;
+    }
+
+    // - - Layer aggregator
+    // - Layer: Check - PressedOnToNormalOff
+    // TrimStart
+    ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_0()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.727272749F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.763636351F, 1.0F, CubicBezierEasingFunction_2());
+        return result;
+    }
+
+    // - - - Layer aggregator
+    // - - Layer: Check - PressedOnToPointerOverOff
+    // -  Offset:<24, 24>
+    // TrimStart
+    ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_1()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _stepThenHoldEasingFunction);
+        result.InsertKeyFrame(0.681818187F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.718181789F, 1.0F, _cubicBezierEasingFunction_2);
+        return result;
+    }
+
+    // - - Layer aggregator
+    // - Layer: Check - NormalOnToNormalOff 
+    // TrimStart
+    ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_1_2()
+    {
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 0.0F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.0363636352F, 1.0F, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -1173,40 +989,40 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
         const auto shapes = result.Shapes();
         // Layer: Check - PressedOffToNormalOn
         shapes.Append(ContainerShape_0());
-        // Layer: Check - PressedOffToNormalOn 2
+        // Layer: Check - PressedOffToPointerOverOn
         shapes.Append(ContainerShape_1());
         // Layer: Check - PressedOffToPressedOn
         shapes.Append(SpriteShape_04());
         // Layer: Check - PressedOnToNormalOff
+        shapes.Append(SpriteShape_05());
+        // Layer: Check - PressedOnToPointerOverOff
         shapes.Append(ContainerShape_2());
-        // Layer: Check - PressedOnToHoverOff
-        shapes.Append(ContainerShape_3());
         // Layer: Check - PressedOnToPressedOff
-        shapes.Append(SpriteShape_07());
-        // Layer: Check - HoverOffToPressedOff
-        shapes.Append(ContainerShape_4());
-        // Layer: Check - HoverOffToNormalOff
+        shapes.Append(SpriteShape_08());
+        // Layer: Check - PointerOverOffToPressedOff
         shapes.Append(SpriteShape_09());
-        // Layer: Check - HoverOffToHoverOn
+        // Layer: Check - PointerOverOffToNormalOff
         shapes.Append(SpriteShape_10());
-        // Layer: Check - HoverOnToPressedOn
-        shapes.Append(ContainerShape_5());
-        // Layer: Check - HoverOnToNormalOn
+        // Layer: Check - PointerOverOffToPointerOverOn
+        shapes.Append(SpriteShape_11());
+        // Layer: Check - PointerOverOnToPressedOn
         shapes.Append(SpriteShape_12());
-        // Layer: Check - HoverOnToHoverOff
+        // Layer: Check - PointerOverOnToNormalOn
         shapes.Append(SpriteShape_13());
+        // Layer: Check - PointerOverOnToPointerOverOff
+        shapes.Append(SpriteShape_14());
         // Layer: Check - NormalOffToPressedOff
-        shapes.Append(ContainerShape_6());
-        // Layer: Check - NormalOffToHoverOff
         shapes.Append(SpriteShape_15());
-        // Layer: Check - NormalOffToNormalOn
+        // Layer: Check - NormalOffToPointerOverOff
         shapes.Append(SpriteShape_16());
+        // Layer: Check - NormalOffToNormalOn
+        shapes.Append(SpriteShape_17());
         // Layer: Check - NormalOnToPressedOn
-        shapes.Append(ContainerShape_7());
-        // Layer: Check - NormalOnToHoverOn
         shapes.Append(SpriteShape_18());
-        // Layer: Check - NormalOnToNormalOff
+        // Layer: Check - NormalOnToPointerOverOn
         shapes.Append(SpriteShape_19());
+        // Layer: Check - NormalOnToNormalOff
+        shapes.Append(SpriteShape_20());
         return result;
     }
 
@@ -1228,16 +1044,16 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - PressedOffToNormalOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_00()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.888888896F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.909090936F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - PressedOffToNormalOn 2
+    // Layer: Check - PressedOffToPointerOverOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_01()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.777777791F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.888888896F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.818181813F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.909090936F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1245,8 +1061,8 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - PressedOffToPressedOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_02()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.740740716F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.777777791F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.772727251F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.818181813F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1254,17 +1070,17 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - PressedOnToNormalOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_03()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.666666687F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.740740716F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.727272749F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.772727251F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - PressedOnToHoverOff
+    // Layer: Check - PressedOnToPointerOverOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_04()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.592592597F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.666666687F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.681818187F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.727272749F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1272,62 +1088,62 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - PressedOnToPressedOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_05()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.555555582F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.592592597F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.636363626F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.681818187F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - HoverOffToPressedOff
+    // Layer: Check - PointerOverOffToPressedOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_06()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.518518507F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.555555582F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.590909064F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.636363626F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - HoverOffToNormalOff
+    // Layer: Check - PointerOverOffToNormalOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_07()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.481481493F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.518518507F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.545454562F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.590909064F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - HoverOffToHoverOn
+    // Layer: Check - PointerOverOffToPointerOverOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_08()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.444444448F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.481481493F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.5F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.545454562F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - HoverOnToPressedOn
+    // Layer: Check - PointerOverOnToPressedOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_09()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.407407403F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.444444448F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.454545468F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - HoverOnToNormalOn
+    // Layer: Check - PointerOverOnToNormalOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_10()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.370370358F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.407407403F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.409090906F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.454545468F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - HoverOnToHoverOff
+    // Layer: Check - PointerOverOnToPointerOverOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_11()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.333333343F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.370370358F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.363636374F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.409090906F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1335,17 +1151,17 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - NormalOffToPressedOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_12()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.259259254F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.333333343F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.318181813F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.363636374F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - NormalOffToHoverOff
+    // Layer: Check - NormalOffToPointerOverOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_13()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.222222224F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.259259254F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.272727281F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.318181813F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1353,8 +1169,8 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - NormalOffToNormalOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_14()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.111111112F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.222222224F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.13636364F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.272727281F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1362,17 +1178,17 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - NormalOnToPressedOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_15()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0740740746F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.111111112F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0909090936F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.13636364F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
     // - Layer aggregator
-    // Layer: Check - NormalOnToHoverOn
+    // Layer: Check - NormalOnToPointerOverOn
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_16()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0370370373F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.0740740746F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0454545468F, { 1.0F, 1.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.0909090936F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1380,7 +1196,7 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     // Layer: Check - NormalOnToNormalOff
     Vector2KeyFrameAnimation ShapeVisibilityAnimation_17()
     {
-        const auto result = CreateVector2KeyFrameAnimation(0.0370370373F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0454545468F, { 0.0F, 0.0F }, _holdThenStepEasingFunction);
         return result;
     }
 
@@ -1486,7 +1302,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::Try
 
 double Controls_01_Checkmark::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 270.0;
+    return frameNumber / 220.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_01_Checkmark::Markers()
@@ -1495,41 +1311,41 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_01_C
         std::map<winrt::hstring, double>
         {
             { L"NormalOnToNormalOff_Start", 0.0 },
-            { L"NormalOnToNormalOff_End", 0.0333333333333333 },
-            { L"NormalOnToHoverOn_Start", 0.037037037037037 },
-            { L"NormalOnToHoverOn_End", 0.0703703703703704 },
-            { L"NormalOnToPressedOn_Start", 0.0740740740740741 },
-            { L"NormalOnToPressedOn_End", 0.107407407407407 },
-            { L"NormalOffToNormalOn_Start", 0.111111111111111 },
-            { L"NormalOffToNormalOn_End", 0.218518518518519 },
-            { L"NormalOffToHoverOff_Start", 0.222222222222222 },
-            { L"NormalOffToHoverOff_End", 0.255555555555556 },
-            { L"NormalOffToPressedOff_Start", 0.259259259259259 },
-            { L"NormalOffToPressedOff_End", 0.32962962962963 },
-            { L"HoverOnToHoverOff_Start", 0.333333333333333 },
-            { L"HoverOnToHoverOff_End", 0.366666666666667 },
-            { L"HoverOnToNormalOn_Start", 0.37037037037037 },
-            { L"HoverOnToNormalOn_End", 0.403703703703704 },
-            { L"HoverOnToPressedOn_Start", 0.407407407407407 },
-            { L"HoverOnToPressedOn_End", 0.440740740740741 },
-            { L"HoverOffToHoverOn_Start", 0.444444444444444 },
-            { L"HoverOffToHoverOn_End", 0.477777777777778 },
-            { L"HoverOffToNormalOff_Start", 0.481481481481481 },
-            { L"HoverOffToNormalOff_End", 0.514814814814815 },
-            { L"HoverOffToPressedOff_Start", 0.518518518518518 },
-            { L"HoverOffToPressedOff_End", 0.551851851851852 },
-            { L"PressedOnToPressedOff_Start", 0.555555555555556 },
-            { L"PressedOnToPressedOff_End", 0.588888888888889 },
-            { L"PressedOnToHoverOff_Start", 0.592592592592593 },
-            { L"PressedOnToHoverOff_End", 0.662962962962963 },
-            { L"PressedOnToNormalOff_Start", 0.666666666666667 },
-            { L"PressedOnToNormalOff_End", 0.737037037037037 },
-            { L"PressedOffToPressedOn_Start", 0.740740740740741 },
-            { L"PressedOffToPressedOn_End", 0.774074074074074 },
-            { L"PressedOffToHoverOn_Start", 0.777777777777778 },
-            { L"PressedOffToHoverOn_End", 0.885185185185185 },
-            { L"PressedOffToNormalOn_Start", 0.888888888888889 },
-            { L"PressedOffToNormalOn_End", 0.996296296296296 },
+            { L"NormalOnToNormalOff_End", 0.0409090909090909 },
+            { L"NormalOnToPointerOverOn_Start", 0.05 },
+            { L"NormalOnToPointerOverOn_End", 0.0818181818181818 },
+            { L"NormalOnToPressedOn_Start", 0.0909090909090909 },
+            { L"NormalOnToPressedOn_End", 0.131818181818182 },
+            { L"NormalOffToNormalOn_Start", 0.136363636363636 },
+            { L"NormalOffToNormalOn_End", 0.268181818181818 },
+            { L"NormalOffToPointerOverOff_Start", 0.272727272727273 },
+            { L"NormalOffToPointerOverOff_End", 0.313636363636364 },
+            { L"NormalOffToPressedOff_Start", 0.318181818181818 },
+            { L"NormalOffToPressedOff_End", 0.359090909090909 },
+            { L"PointerOverOnToPointerOverOff_Start", 0.363636363636364 },
+            { L"PointerOverOnToPointerOverOff_End", 0.404545454545455 },
+            { L"PointerOverOnToNormalOn_Start", 0.409090909090909 },
+            { L"PointerOverOnToNormalOn_End", 0.45 },
+            { L"PointerOverOnToPressedOn_Start", 0.454545454545455 },
+            { L"PointerOverOnToPressedOn_End", 0.495454545454545 },
+            { L"PointerOverOffToPointerOverOn_Start", 0.5 },
+            { L"PointerOverOffToPointerOverOn_End", 0.540909090909091 },
+            { L"PointerOverOffToNormalOff_Start", 0.55 },
+            { L"PointerOverOffToNormalOff_End", 0.586363636363636 },
+            { L"PointerOverOffToPressedOff_Start", 0.590909090909091 },
+            { L"PointerOverOffToPressedOff_End", 0.631818181818182 },
+            { L"PressedOnToPressedOff_Start", 0.636363636363636 },
+            { L"PressedOnToPressedOff_End", 0.677272727272727 },
+            { L"PressedOnToPointerOverOff_Start", 0.681818181818182 },
+            { L"PressedOnToPointerOverOff_End", 0.722727272727273 },
+            { L"PressedOnToNormalOff_Start", 0.727272727272727 },
+            { L"PressedOnToNormalOff_End", 0.768181818181818 },
+            { L"PressedOffToPressedOn_Start", 0.772727272727273 },
+            { L"PressedOffToPressedOn_End", 0.813636363636364 },
+            { L"PressedOffToPointerOverOn_Start", 0.818181818181818 },
+            { L"PressedOffToPointerOverOn_End", 0.904545454545455 },
+            { L"PressedOffToNormalOn_Start", 0.909090909090909 },
+            { L"PressedOffToNormalOn_End", 0.995454545454545 },
         }
     ).GetView();
 }
