@@ -24,6 +24,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="FlyoutContentPadding">12</Thickness>
+    <Thickness x:Key="FlyoutContentThemePadding">0</Thickness>
 
     <Style TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" />
     
