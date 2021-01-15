@@ -35,17 +35,14 @@
             <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
 
-            <contract7Present:StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush"  />
-            <contract7Present:StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush"  />
+            <StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
 
-            <contract7NotPresent:SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
-            <contract7NotPresent:SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9"  />
-            <contract7NotPresent:StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="GhostFillColorDisabledBrush" />
 
-            <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
@@ -199,17 +196,14 @@
             <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
 
-            <contract7Present:StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-            <contract7Present:StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush"  />
-            <contract7Present:StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush"  />
+            <StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
 
-            <contract7NotPresent:SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
-            <contract7NotPresent:SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9"  />
-            <contract7NotPresent:StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="GhostFillColorDisabledBrush" />
 
-            <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="ControlAAFillColorDisabledBrush" />
