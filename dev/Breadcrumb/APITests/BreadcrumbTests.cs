@@ -226,7 +226,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyDropdownItemTemplate()
         {
             Breadcrumb breadcrumb = null;
-            
+
             RunOnUIThread.Execute(() =>
             {
                 breadcrumb = new Breadcrumb();
@@ -241,15 +241,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 breadcrumb.DropdownItemTemplate = itemTemplate;
 
                 var stackPanel = new StackPanel();
-                stackPanel.Width = 140;
+                stackPanel.Width = 130;
                 stackPanel.Children.Add(breadcrumb);
 
                 Content = stackPanel;
                 Content.UpdateLayout();
             });
 
-            ItemsRepeater ellipsisItemsRepeater = null;
+            IdleSynchronizer.Wait();
 
+            Button ellipsisButton = null;
             RunOnUIThread.Execute(() =>
             {
                 ItemsRepeater breadcrumbItemRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
@@ -258,34 +259,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var breadcrumbNode1 = breadcrumbItemRepeater.TryGetElement(0) as BreadcrumbItem;
                 Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbItem.");
 
-                Button ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_BreadcrumbItemButton");
+                ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_BreadcrumbItemButton");
                 Verify.IsNotNull(ellipsisButton, "The ellipsis item (1) could not be retrieved");
-
-                Flyout ellipsisFlyout = (Flyout)ellipsisButton.Flyout;
-                Verify.IsNotNull(ellipsisButton, "The ellipsis flyout (1) could not be retrieved");
-
-                ellipsisItemsRepeater = (ItemsRepeater)ellipsisFlyout.Content;
-                Verify.IsNotNull(breadcrumbItemRepeater, "The underlying flyout items repeater (1) could not be retrieved");
 
                 var automationPeer = new ButtonAutomationPeer(ellipsisButton);
                 var invokationPattern = automationPeer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-                invokationPattern?.Invoke();
-
-                Content.UpdateLayout();
+                invokationPattern?.Invoke();                          
             });
 
             IdleSynchronizer.Wait();
 
-            TextBlock ellipsisNode1 = null;
-
             RunOnUIThread.Execute(() =>
             {
-                ellipsisNode1 = ellipsisItemsRepeater.TryGetElement(0) as TextBlock;
-                Verify.IsNotNull(ellipsisNode1, "Our flyout ItemTemplate (1) should have been wrapped in a TextBlock.");
+                Flyout ellipsisFlyout = (Flyout)ellipsisButton.Flyout;
+                Verify.IsNotNull(ellipsisButton, "The ellipsis flyout (1) could not be retrieved");
 
-                // change this conditions
-                bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
-                Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbItem should not have been [blue].");
+                ItemsRepeater ellipsisItemsRepeater = (ItemsRepeater)ellipsisFlyout.Content;
+                Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
+
+                ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) => {
+                    TextBlock ellipsisNode1 = ellipsisItemsRepeater.TryGetElement(0) as TextBlock;
+                    Verify.IsNotNull(ellipsisNode1, "Our flyout ItemTemplate (1) should have been wrapped in a TextBlock.");
+
+                    // change this conditions
+                    bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
+                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbItem should not have been [blue].");
+                };
             });
         }
 
