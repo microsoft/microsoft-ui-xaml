@@ -92,6 +92,12 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardConditionalXAML>true</UseNonstandardConditionalXAML>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
