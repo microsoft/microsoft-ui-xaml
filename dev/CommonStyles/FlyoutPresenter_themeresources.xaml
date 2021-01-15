@@ -7,28 +7,23 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <contract7Present:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
-            <contract7NotPresent:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlTransientBorderBrush" />
-            <contract7NotPresent:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+            <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlPageBackgroundChromeMediumLowBrush" />
-            <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlTransientBorderBrush" />
-            <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+            <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <Thickness x:Key="FlyoutBorderThemeThickness">2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <contract7Present:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
-            <contract7NotPresent:StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlTransientBorderBrush" />
-            <contract7NotPresent:StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+            <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <Thickness x:Key="FlyoutContentPadding">12</Thickness>
 
     <Style TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" />
     
@@ -39,7 +34,7 @@
         <Setter Property="Background" Value="{ThemeResource FlyoutPresenterBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource FlyoutBorderThemeBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource FlyoutBorderThemeThickness}" />
-        <Setter Property="Padding" Value="{ThemeResource FlyoutContentThemePadding}" />
+        <Setter Property="Padding" Value="{ThemeResource FlyoutContentPadding}" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource FlyoutThemeMinHeight}" />
@@ -54,13 +49,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="FlyoutPresenter">
                     <Border
-                        Background="{TemplateBinding Background}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge"
+                        Background="{TemplateBinding Background}"                        
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
-                        Padding="{ThemeResource FlyoutBorderThemePadding}">
+                        contract7Present:BackgroundSizing="OuterBorderEdge">
                         <ScrollViewer x:Name="ScrollViewer"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"

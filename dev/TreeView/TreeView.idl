@@ -135,8 +135,8 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     [WUXC_VERSION_PREVIEW]
     {
         event Windows.Foundation.TypedEventHandler<TreeView, TreeViewSelectionChangedEventArgs> SelectionChanged;
-        static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
     }
+    static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty SelectionModeProperty{ get; };
 
