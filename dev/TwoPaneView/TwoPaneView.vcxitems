@@ -33,10 +33,22 @@
   </ItemGroup>
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)TwoPaneView_rs1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TwoPaneView_rs1_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TwoPaneView.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS2</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TwoPaneView_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
     </Page>

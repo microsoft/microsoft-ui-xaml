@@ -6,7 +6,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
         </ResourceDictionary>
 
@@ -16,7 +16,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>

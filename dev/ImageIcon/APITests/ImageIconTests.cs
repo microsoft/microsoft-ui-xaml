@@ -33,7 +33,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                imageIcon = new ImageIcon();
+                imageIcon = new ImageIcon();                               
                 var theme = Application.Current.RequestedTheme;
                 if (theme == ApplicationTheme.Dark)
                 {

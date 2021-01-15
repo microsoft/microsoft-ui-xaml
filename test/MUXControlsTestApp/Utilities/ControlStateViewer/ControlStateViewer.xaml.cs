@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace MUXControlsTestApp.Utilities
 {
@@ -16,10 +17,22 @@ namespace MUXControlsTestApp.Utilities
     {
         Type _controlType;
         List<string> _states;
+        Style _style;
 
         public ControlStateViewer()
         {
             this.InitializeComponent();
+        }
+
+        public ControlStateViewer(Type controlType, List<string> states, Style style = null)
+        {
+            this.InitializeComponent();
+
+            _controlType = controlType;
+            _states = states;
+            _style = style;
+
+            UpdateGrid();
         }
 
         public Type ControlType
@@ -70,8 +83,19 @@ namespace MUXControlsTestApp.Utilities
                 sp.Children.Add(textBlock);
 
                 Control c = Activator.CreateInstance(_controlType) as Control;
+                if (_style != null)
+                {
+                    c.Style = _style;
+                }
                 c.Loaded += Control_Loaded;
                 c.DataContext = state;
+
+                // Special setup for some controls that need a bit of help
+                if (_controlType == typeof(Slider))
+                {
+                    c.Width = 100;
+                    (c as Slider).Value = 30;
+                }
 
                 ContentControl cc = c as ContentControl;
                 if (cc != null)
@@ -91,7 +115,10 @@ namespace MUXControlsTestApp.Utilities
             Control c = sender as Control;
             if (c != null)
             {
-                VisualStateManager.GoToState(c, c.DataContext as string, false);
+                foreach (string state in (c.DataContext as string).Split('|'))
+                {
+                    VisualStateManager.GoToState(c, state, false);
+                }
             }
         }
     }
