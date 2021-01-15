@@ -1776,9 +1776,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Get CornerRadius of Menu Item 1's children menu flyout.");
                     FindElement.ByName<Button>("GetMenuItem1ChildrenFlyoutCornerRadiusButton").Invoke();
 
-                    // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
+                    // A CornerRadius of (8,8,8,8) is the current default value for flyouts.
                     TextBlock menuItem1ChildrenFlyoutCornerRadiusTextBlock = new TextBlock(FindElement.ByName("MenuItem1ChildrenFlyoutCornerRadiusTextBlock"));
-                    Verify.AreEqual("4,4,4,4", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
+                    Verify.AreEqual("8,8,8,8", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
 
                     // Close flyout
                     InputHelper.LeftClick(item);
