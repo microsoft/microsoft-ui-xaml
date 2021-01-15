@@ -887,7 +887,8 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths,bool fillAllAvailableSpace
                         }
 
                         // Use current size to update items to fill the currently occupied space
-                        tabWidth = availableTabViewSpace / (double)(TabItems().Size());
+                        auto const tabWidthUnclamped = availableTabViewSpace / (double)(TabItems().Size());
+                        tabWidth = std::clamp(tabWidthUnclamped, minTabWidth, maxTabWidth);
                     }
 
 
