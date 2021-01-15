@@ -80,7 +80,7 @@
     </PRIResource>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <MergeXamlConfig Include="LatestWithVisualUpdateVisualPages" Condition="'$(MuxSdkVersion)' == '10.0.21290.0'">
+    <MergeXamlConfig Include="LatestWithVisualUpdateVisualPages" Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)'">
       <FilterAttribute>UseLatestWithVisualUpdateStyle</FilterAttribute>
       <Postfix>_vu</Postfix>
     </MergeXamlConfig>
@@ -380,7 +380,7 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>-->
-    <PageRequiringCustomCompilation Include="$(OutDir)21h1_generic_vu.xaml" Condition="'$(MuxSdkVersion)' == '10.0.21290.0'">
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_generic_vu.xaml" Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)'">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -416,7 +416,7 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>-->
-    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_vu.xaml;$(OutDir)21h1_compact_themeresources_vu.xaml" Condition="'$(MuxSdkVersion)' == '10.0.21290.0'">
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_vu.xaml;$(OutDir)21h1_compact_themeresources_vu.xaml" Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)'">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -663,7 +663,7 @@
   <!-- Outputs="$(OutDir)Generic_vu.xaml;$(OutDir)rs1_generic_vu.xaml;$(OutDir)rs2_generic_vu.xaml;$(OutDir)rs3_generic_vu.xaml;$(OutDir)rs4_generic_vu.xaml;$(OutDir)rs5_generic_vu.xaml;$(OutDir)19h1_generic_vu.xaml;$(OutDir)21h1_generic_vu.xaml;$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)rs1_generic_2dot5.xaml;$(OutDir)rs2_generic_2dot5.xaml;$(OutDir)rs3_generic_2dot5.xaml;$(OutDir)rs4_generic_2dot5.xaml;$(OutDir)rs5_generic_2dot5.xaml;$(OutDir)19h1_generic_2dot5.xaml;"> -->
   <Target
     Name="GenerateGenericResourceFile1"
-    Condition="'$(MuxSdkVersion)' != '10.0.21290.0'"
+    Condition="'$(MuxSdkVersion)' != '$(SDKVersion21H1)'"
     DependsOnTargets="CategorizeSharedPages"
     BeforeTargets="$(GenerateXamlFileBeforeTargets)"
     Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)"
@@ -692,7 +692,7 @@
   </Target>
   <Target
     Name="GenerateGenericResourceFile2"
-    Condition="'$(MuxSdkVersion)' == '10.0.21290.0'"
+    Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)'"
     DependsOnTargets="CategorizeSharedPages"
     BeforeTargets="$(GenerateXamlFileBeforeTargets)"
     Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage);@(TwentyOneH1StylePage)"
@@ -723,7 +723,7 @@
   <!-- Outputs="$(OutDir)rs1_themeresources_vu.xaml;$(OutDir)rs2_themeresources_vu.xaml;$(OutDir)rs3_themeresources_vu.xaml;$(OutDir)rs4_themeresources_vu.xaml;$(OutDir)rs5_themeresources_vu.xaml;$(OutDir)19h1_themeresources_vu.xaml;$(OutDir)21h1_themeresources_vu.xaml;$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)rs1_themeresources_2dot5.xaml;$(OutDir)rs2_themeresources_2dot5.xaml;$(OutDir)rs3_themeresources_2dot5.xaml;$(OutDir)rs4_themeresources_2dot5.xaml;$(OutDir)rs5_themeresources_2dot5.xaml;$(OutDir)19h1_themeresources_2dot5.xaml;"> -->
   <Target 
     Name="GenerateThemeResourceFile1" 
-    Condition="'$(MuxSdkVersion)' != '10.0.21290.0'"
+    Condition="'$(MuxSdkVersion)' != '$(SDKVersion21H1)'"
     DependsOnTargets="CategorizeSharedPages" 
     BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" 
@@ -751,7 +751,7 @@
   </Target>
   <Target 
     Name="GenerateThemeResourceFile2" 
-    Condition="'$(MuxSdkVersion)' == '10.0.21290.0'"
+    Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)'"
     DependsOnTargets="CategorizeSharedPages" 
     BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage)" 
@@ -781,7 +781,7 @@
   <!-- Outputs="$(OutDir)rs1_compact_themeresources_vu.xaml;$(OutDir)rs2_compact_themeresources_vu.xaml;$(OutDir)rs3_compact_themeresources_vu.xaml;$(OutDir)rs4_compact_themeresources_vu.xaml;$(OutDir)rs5_compact_themeresources_vu.xaml;$(OutDir)19h1_compact_themeresources_vu.xaml;$(OutDir)21h1_compact_themeresources_vu.xaml;$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_2dot5.xaml;$(OutDir)rs2_compact_themeresources_2dot5.xaml;$(OutDir)rs3_compact_themeresources_2dot5.xaml;$(OutDir)rs4_compact_themeresources_2dot5.xaml;$(OutDir)rs5_compact_themeresources_2dot5.xaml;$(OutDir)19h1_compact_themeresources_2dot5.xaml;"> -->
   <Target
     Name="GenerateCompactThemeResourceFile1"
-    Condition="'$(MuxSdkVersion)' != '10.0.21290.0'"
+    Condition="'$(MuxSdkVersion)' != '$(SDKVersion21H1)'"
     DependsOnTargets="CategorizeSharedPages"
     BeforeTargets="$(GenerateXamlFileBeforeTargets)"
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)"
@@ -809,7 +809,7 @@
   </Target>
   <Target
     Name="GenerateCompactThemeResourceFile2"
-    Condition="'$(MuxSdkVersion)' == '10.0.21290.0'"
+    Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)'"
     DependsOnTargets="CategorizeSharedPages"
     BeforeTargets="$(GenerateXamlFileBeforeTargets)"
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage);@(CompactPage)"
@@ -883,7 +883,7 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs5_generic_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\19h1_generic_vu.xbf'))" />
       -->
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '10.0.21290.0' And '%(Filename)' == '21h1_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_generic_vu.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)' And '%(Filename)' == '21h1_generic_vu' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_generic_vu.xbf'))" />
       <!--
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_themeresources_vu.xbf'))" />
@@ -891,7 +891,7 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs5_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\19h1_themeresources_vu.xbf'))" />
       -->
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '10.0.21290.0' And '%(Filename)' == '21h1_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_themeresources_vu.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)' And '%(Filename)' == '21h1_themeresources_vu' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_themeresources_vu.xbf'))" />
       <!--
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_compact_themeresources_vu.xbf'))" />
@@ -899,7 +899,7 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs5_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\19h1_compact_themeresources_vu.xbf'))" />
       -->
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '10.0.21290.0' And '%(Filename)' == '21h1_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_compact_themeresources_vu.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'$(MuxSdkVersion)' == '$(SDKVersion21H1)' And '%(Filename)' == '21h1_compact_themeresources_vu' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\21h1_compact_themeresources_vu.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs2_generic.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs3_generic.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\rs4_generic.xbf'))" />
