@@ -38,7 +38,7 @@ private:
     uint32_t GetItemCount(winrt::NonVirtualizingLayoutContext const& context);
     winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
 
-    winrt::Size m_availableSize;
+    winrt::Size m_availableSize{};
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisButton{ this };
 
     bool m_ellipsisIsRendered{};
