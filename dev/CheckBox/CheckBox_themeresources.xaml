@@ -278,7 +278,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Style TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
-    
+
     <Style x:Key="DefaultCheckBoxStyle" TargetType="CheckBox">
         <Setter Property="Background" Value="{ThemeResource CheckBoxBackgroundUnchecked}" />
         <Setter Property="Foreground" Value="{ThemeResource CheckBoxForegroundUnchecked}" />
@@ -680,5 +680,4 @@
     </Style>
 
 </ResourceDictionary>
-
 

@@ -139,12 +139,6 @@
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
     </Page>
   </ItemDefinitionGroup>
-  <!-- We're going to include the .vcxitems in order to get their <Page> includes -
-       everything else is ignored, since this is a C# project. -->
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\**\*.vcxitems" />
-  <ItemGroup>
-    <PageToTest Include="@(Page)"/>
-  </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
       <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
@@ -294,10 +288,6 @@
   <ItemGroup>
     <AppContent Include="@(Content)" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
-    <!-- In non Razzle environment, themeresource is packaged as .xaml other than .xbf, it's the same way as .png -->
-    <Content Include="@(PageToTest)" />
-  </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
@@ -333,9 +323,6 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(OutDir)ThemeResourcesTests.g.cs" Condition="$(BuildingWithBuildExe) != 'true'" />
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">
@@ -344,11 +331,6 @@
   <Import Project="$(CSharpTargetsFilePath)" />
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\CustomInlineTasks.targets" />
-  <Target Name="RemovePagesToTest" BeforeTargets="MarkupCompilePass1">
-    <ItemGroup>
-      <Page Remove="@(PageToTest)" />
-    </ItemGroup>
-  </Target>
   <!-- There's no way to have a conditional statement in XAML akin to #ifdef BUILD_WINDOWS, so in order
        to use the correct namespace when building WUXC, we copy all of the XAML files to a temp folder,
        edit their namespaces to be the correct namespaces, and then use those XAML files as our XAML compilation source
@@ -376,127 +358,6 @@
   </Target>
   <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage" Condition="$(BuildingWithBuildExe) != 'true'">
     <RunPowershellScript Path="$(MSBuildThisFileDirectory)\..\..\tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" />
-  </Target>
-  <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
-    <ItemGroup>
-      <!-- Filter all 2.5 styles and pages marked with UseNonstandardCondtionalXAML-->
-      <PageToTest Remove="@(PageToTest)" Condition="'%(PageToTest.UseVisualStyle)' == 'V2dot5' Or '%(PageToTest.UseNonstandardCondtionalXAML)' != ''" />
-      <RS1StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'DefaultStyle'" />
-      <RS2StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'DefaultStyle'" />
-      <RS3StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'DefaultStyle'" />
-      <RS4StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
-      <RS5StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
-      <NineteenH1StylePage Include="@(PageToTest)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
-      <RS1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
-      <RS2ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
-      <RS3ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
-      <RS4ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />
-      <RS5ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'ThemeResources'" />
-      <NineteenH1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'ThemeResources'" />
-    </ItemGroup>
-  </Target>
-  <!-- We want to test to make sure that our merged dictionaries resolve keys in the same way that our unmerged dictionaries do.
-       In order to automate that process so we don't need to add anything or change any tests if we add more unmerged dictionaries,
-       we pull in all our unmerged dictionaries via the .vcxitems files included above, and then output a file listing dictionaries
-       to test in our automated test.  That file provides four methods that allow our automated tests to know which unmerged dictionaries
-       should be compared against which merged dictionaries.  Our automated tests will then test every key found in the unmerged dictionaries
-       and verify that the same element is returned from the merged dictionary. -->
-  <Target Name="OutputPagesToTest" BeforeTargets="XamlPreCompile" Inputs="@(PageToTest)" Outputs="$(OutDir)ThemeResourcesTests.g.cs">
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="using System%3B" Overwrite="true" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="using System.Collections.Generic%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0Anamespace Windows.UI.Xaml.Tests.MUXControls.ApiTests" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20partial class ThemeResourcesTests" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS1DefaultStyleDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS1StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS2DefaultStyleDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS2StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS3DefaultStyleDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS3StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS4DefaultStyleDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS4StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS5DefaultStyleDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS5StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; Get19H1DefaultStyleDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(NineteenH1StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS1ThemeResourceDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS1ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS2ThemeResourceDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS2ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS3ThemeResourceDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS3ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS4ThemeResourceDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS4ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS5ThemeResourceDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS5ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; Get19H1ThemeResourceDictionaries()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(NineteenH1ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20}" />
-    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="}" />
-    <ItemGroup>
-      <FileWrites Include="$(OutDir)ThemeResourcesTests.g.cs" />
-    </ItemGroup>
   </Target>
   <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
     <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
