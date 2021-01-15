@@ -118,7 +118,7 @@
                 RenderSize=294,28
               [Windows.UI.Xaml.Controls.TextBlock]
                   Padding=0,3,0,6
-                  Foreground=#99000000
+                  Foreground=#93000000
                   Name=DayTextBlock
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
@@ -129,7 +129,7 @@
                   RenderSize=79,28
               [Windows.UI.Xaml.Controls.TextBlock]
                   Padding=9,3,0,6
-                  Foreground=#99000000
+                  Foreground=#93000000
                   Name=MonthTextBlock
                   Margin=1,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
@@ -140,7 +140,7 @@
                   RenderSize=133,28
               [Windows.UI.Xaml.Controls.TextBlock]
                   Padding=0,3,0,6
-                  Foreground=#99000000
+                  Foreground=#93000000
                   Name=YearTextBlock
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1

@@ -132,7 +132,7 @@
                   RenderSize=79,28
                 [Windows.UI.Xaml.Controls.TextBlock]
                     Padding=0,3,0,6
-                    Foreground=#99000000
+                    Foreground=#93000000
                     Name=HourTextBlock
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -168,7 +168,7 @@
                   RenderSize=80,28
                 [Windows.UI.Xaml.Controls.TextBlock]
                     Padding=0,3,0,6
-                    Foreground=#99000000
+                    Foreground=#93000000
                     Name=MinuteTextBlock
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -204,7 +204,7 @@
                   RenderSize=79,28
                 [Windows.UI.Xaml.Controls.TextBlock]
                     Padding=0,3,0,6
-                    Foreground=#99000000
+                    Foreground=#93000000
                     Name=PeriodTextBlock
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
