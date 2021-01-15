@@ -230,17 +230,17 @@ void BreadcrumbItem::UpdateVisualState()
     }
     else if (m_isLastNode)
     {
-        visualStateName = L"LastNode";
+        visualStateName = L"LastItem";
     }
     else
     {
         if (isLeftToRight)
         {
-            visualStateName = L"Normal";
+            visualStateName = L"Default";
         }
         else
         {
-            visualStateName = L"NormalRTL";
+            visualStateName = L"DefaultRTL";
         }
     }
 

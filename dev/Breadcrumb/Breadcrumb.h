@@ -37,7 +37,7 @@ private:
     void OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs&);
     void OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
     void OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs&);
-    void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnBreadcrumbItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
 
     // Keyboard navigation

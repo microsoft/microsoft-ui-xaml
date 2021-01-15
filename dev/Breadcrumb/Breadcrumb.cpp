@@ -70,7 +70,6 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 {
     const winrt::IDependencyProperty& property = args.Property();
 
-    // TODO: Implement
     if (property == s_ItemsSourceProperty)
     {
         UpdateItemsRepeaterItemsSource();
@@ -94,7 +93,7 @@ void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, cons
 {
     if (const auto& breadcrumbItemRepeater = m_itemsRepeater.get())
     {
-        OnRepeaterCollectionChanged(nullptr, nullptr);
+        OnBreadcrumbItemsSourceCollectionChanged(nullptr, nullptr);
     }
 }
 
@@ -145,46 +144,15 @@ void Breadcrumb::UpdateItemsRepeaterItemsSource()
     if (ItemsSource())
     {
         m_breadcrumbItemsSourceView = winrt::ItemsSourceView(ItemsSource());
-    }
 
-    if (m_breadcrumbItemsSourceView)
-    {
-        m_itemsSourceChanged = m_breadcrumbItemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
-    }
-
-    if (const auto& itemsRepeater = m_itemsRepeater.get())
-    {
-        if (const auto& itemsSource = ItemsSource())
+        if (m_breadcrumbItemsSourceView)
         {
-            const auto& incc = [this, itemsSource]() {
-                if (m_breadcrumbItemsSourceView)
-                {
-                    return m_breadcrumbItemsSourceView.try_as<winrt::INotifyCollectionChanged>();
-                }
-                else
-                {
-                    return itemsSource.try_as<winrt::INotifyCollectionChanged>();
-                }
-            }();
-
-            if (incc)
-            {
-                m_itemsSourceAsCollectionChanged = incc.CollectionChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
-                m_notifyCollectionChanged.set(incc);
-            }
-            else if (const auto bindableObservableVector = itemsSource.try_as<winrt::IBindableObservableVector>())
-            {
-                m_itemsSourceAsBindableVectorChanged = bindableObservableVector.VectorChanged({ this, &Breadcrumb::OnRepeaterCollectionChanged });
-            }
-            else if (const auto& observableVector = itemsSource.try_as<winrt::IObservableVector<IInspectable>>())
-            {
-                m_itemsSourceAsObservableVectorChanged = observableVector.VectorChanged(winrt::auto_revoke, { this, &Breadcrumb::OnRepeaterCollectionChanged });
-            }
+            m_itemsSourceChanged = m_breadcrumbItemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemsSourceCollectionChanged });
         }
     }
 }
 
-void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable& args)
+void Breadcrumb::OnBreadcrumbItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable& args)
 {
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
@@ -192,7 +160,6 @@ void Breadcrumb::OnRepeaterCollectionChanged(const winrt::IInspectable&, const w
         // itemsSource is equals to the new one
         m_itemsIterable = winrt::make_self<BreadcrumbIterable>(ItemsSource());
         itemsRepeater.ItemsSource(*m_itemsIterable);
-        itemsRepeater.UpdateLayout();
 
         // For some reason, when interacting with keyboard, the last element doesn't raise the OnPrepared event
         ForceUpdateLastElement();

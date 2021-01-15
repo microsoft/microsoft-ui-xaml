@@ -19,30 +19,35 @@
 
                     <Button x:Name="PART_BreadcrumbItemButton">
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
 
-                                <VisualState x:Name="NormalRTL">
+                            <VisualStateGroup x:Name="ItemTypeStates">
+                                <VisualState x:Name="Default">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76C;"/>
                                     </VisualState.Setters>
                                 </VisualState>
-
-                                <VisualState x:Name="LastNode">
+                                <VisualState x:Name="LastItem">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_BreadcrumbItemContentPresenter.FontWeight" Value="Bold" />
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
                                     </VisualState.Setters>
                                 </VisualState>
-
                                 <VisualState x:Name="Ellipsis">
                                     <VisualState.Setters>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76C;"/>
                                         <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_BreadcrumbItemContentPresenter.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
+                            </VisualStateGroup>
 
+                            <VisualStateGroup x:Name="ItemTypeRTLStates">
+                                <VisualState x:Name="DefaultRTL">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="EllipsisRTL">
                                     <VisualState.Setters>
                                         <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
@@ -50,8 +55,8 @@
                                         <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                
                             </VisualStateGroup>
+
                         </VisualStateManager.VisualStateGroups>
 
                         <Button.Content>
