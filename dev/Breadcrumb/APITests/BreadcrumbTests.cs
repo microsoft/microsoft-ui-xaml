@@ -29,6 +29,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class BreadcrumbTests : ApiTestBase
     {
+
+        [TestMethod]
+        public void VerifyDefaultBreadcrumb()
+        {
+            Breadcrumb breadcrumb = null;
+            RunOnUIThread.Execute(() =>
+            {
+                breadcrumb = new Breadcrumb();
+                var stackPanel = new StackPanel();
+                stackPanel.Children.Add(breadcrumb);
+
+                Content = stackPanel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater breadcrumbItemRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                Verify.IsNotNull(breadcrumbItemRepeater, "The underlying items repeater could not be retrieved");
+
+                var breadcrumbNode1 = breadcrumbItemRepeater.TryGetElement(1);
+                Verify.IsNull(breadcrumbNode1, "There should be no items.");
+            });
+        }
+
         [TestMethod]
         public void VerifyCustomItemTemplate()
         {
