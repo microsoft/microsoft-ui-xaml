@@ -7,7 +7,7 @@
             <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="SystemControlTransparentBrush"/>
+            <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="ScrollViewerScrollBarSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
