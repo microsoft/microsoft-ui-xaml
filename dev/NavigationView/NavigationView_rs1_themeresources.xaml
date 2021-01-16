@@ -296,7 +296,6 @@
                 <ControlTemplate TargetType="Button">
                     <Grid
                         x:Name="LayoutRoot"
-                        MinWidth="{TemplateBinding MinWidth}"
                         Height="{TemplateBinding MinHeight}"
                         Margin="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
