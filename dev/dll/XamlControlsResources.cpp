@@ -25,11 +25,6 @@ XamlControlsResources::XamlControlsResources()
     UpdateSource();
 }
 
-bool XamlControlsResources::UseLatestStyle()
-{
-    return Version() != winrt::StylesVersion::WinUI_2dot5;
-}
-
 void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
