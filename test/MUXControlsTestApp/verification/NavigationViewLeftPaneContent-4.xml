@@ -2163,11 +2163,11 @@
                                     Visibility=Visible
                                     RenderSize=0,0
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Width=16
                                     Name=HorizontalSmallDecrease
                                     MinHeight=16
@@ -2179,11 +2179,11 @@
                                     Visibility=Visible
                                     RenderSize=0,0
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Width=0
                                     Name=HorizontalLargeDecrease
                                     Margin=0,0,0,0
@@ -2210,11 +2210,11 @@
                                     Visibility=Collapsed
                                     RenderSize=0,0
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Name=HorizontalLargeIncrease
                                     Margin=0,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
@@ -2224,11 +2224,11 @@
                                     Visibility=Visible
                                     RenderSize=0,0
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Width=16
                                     Name=HorizontalSmallIncrease
                                     MinHeight=16
@@ -2295,11 +2295,11 @@
                                     Visibility=Visible
                                     RenderSize=16,40
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Name=VerticalSmallDecrease
                                     MinWidth=16
                                     Margin=0,0,0,0
@@ -2358,11 +2358,11 @@
                                             Visibility=Visible
                                             RenderSize=16,8
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Name=VerticalLargeDecrease
                                     Margin=0,0,0,0
                                     Height=0
@@ -2403,11 +2403,11 @@
                                     Visibility=Collapsed
                                     RenderSize=0,0
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Name=VerticalLargeIncrease
                                     Margin=0,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
@@ -2431,11 +2431,11 @@
                                       Visibility=Visible
                                       RenderSize=16,8
                                 [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
-                                    Padding=11,5,11,6
+                                    Padding=11,5,11,5
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     Name=VerticalSmallIncrease
                                     MinWidth=16
                                     Margin=0,0,0,0
