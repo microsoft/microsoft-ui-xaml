@@ -420,15 +420,18 @@ void ViewportManagerWithPlatformFeatures::EnsureScroller()
             parent = CachedVisualTreeHelpers::GetParent(parent);
         }
 
-        if (!m_scroller)
+        if (!m_managingViewportDisabled)
         {
-            // We usually update the viewport in the post arrange handler. But, since we don't have
-            // a scroller, let's do it now.
-            UpdateViewport(winrt::Rect{});
-        }
-        else if (!m_managingViewportDisabled)
-        {
-            m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
+            if (!m_scroller)
+            {
+                // We usually update the viewport in the post arrange handler. 
+                // But, since we don't have a scroller, let's do it now.s
+                UpdateViewport(winrt::Rect{});
+            }
+            else
+            {
+                m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
+            }
         }
 
         m_ensuredScroller = true;
