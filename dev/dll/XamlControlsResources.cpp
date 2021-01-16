@@ -17,11 +17,6 @@ static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroun
 // so it's OK to assume one instance of XamlControlsResources per thread.
 thread_local bool s_tlsUseLatestStyle = true;
 
-// Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
-// Assume XamlControlsResources is one per Application resource, and application is per thread, 
-// so it's OK to assume one instance of XamlControlsResources per thread.
-thread_local bool s_tlsUseLatestStyle = true;
-
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
@@ -30,11 +25,6 @@ XamlControlsResources::XamlControlsResources()
     UpdateSource();
 
     s_tlsUseLatestStyle = UseLatestStyle();
-}
-
-bool XamlControlsResources::UseLatestStyle()
-{
-    return Version() != winrt::StylesVersion::WinUI_2dot5;
 }
 
 bool XamlControlsResources::UseLatestStyle()
