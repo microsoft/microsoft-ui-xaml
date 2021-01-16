@@ -400,7 +400,8 @@
             <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    
+
+    <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,8</Thickness>
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItems">15</x:Int32>
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
 
