@@ -76,7 +76,7 @@ void XamlControlsResources::UpdateSource()
 
             hstring releasePrefix;
 
-            if (isVisualUpdateAvailable)
+            if (isVisualUpdateAvailable && useNewVisual)
             {
                 releasePrefix = L"21h1_";
             }
@@ -193,7 +193,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             
             if (isInFrameworkPackage)
             {
-                if (isVisualUpdateAvailable)
+                if (isVisualUpdateAvailable && s_tlsUseLatestStyle)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
                 }
@@ -220,7 +220,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else if (isInCBSPackage)
             {
-                if (isVisualUpdateAvailable)
+                if (isVisualUpdateAvailable && s_tlsUseLatestStyle)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
                 }
@@ -236,7 +236,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else
             {
-                if (isVisualUpdateAvailable)
+                if (isVisualUpdateAvailable && s_tlsUseLatestStyle)
                 {
                     releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
                 }
