@@ -32,7 +32,7 @@
         <Setter Property="Background" Value="{ThemeResource FlyoutPresenterBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource FlyoutBorderThemeBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource FlyoutBorderThemeThickness}" />
-        <Setter Property="Padding" Value="{StaticResource FlyoutContentThemePadding}" />
+        <Setter Property="Padding" Value="{ThemeResource FlyoutContentThemePadding}" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource FlyoutThemeMinHeight}" />
