@@ -2221,8 +2221,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Width=16
                                     Name=HorizontalSmallDecrease
@@ -2238,8 +2238,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Width=0
                                     Name=HorizontalLargeDecrease
@@ -2271,8 +2271,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Name=HorizontalLargeIncrease
                                     Margin=0,0,0,0
@@ -2286,8 +2286,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Width=16
                                     Name=HorizontalSmallIncrease
@@ -2358,8 +2358,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Name=VerticalSmallDecrease
                                     MinWidth=16
@@ -2422,8 +2422,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Name=VerticalLargeDecrease
                                     Margin=0,0,0,0
@@ -2469,8 +2469,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Name=VerticalLargeIncrease
                                     Margin=0,0,0,0
@@ -2498,8 +2498,8 @@
                                     Padding=11,5,11,6
                                     Foreground=#E4000000
                                     BorderThickness=1,1,1,1
-                                    BorderBrush=#0F000000
-                                    Background=#4DF9F9F9
+                                    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                                    Background=#B3FFFFFF
                                     CornerRadius=4,4,4,4
                                     Name=VerticalSmallIncrease
                                     MinWidth=16
