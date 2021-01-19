@@ -6,11 +6,8 @@
 #include "AnimatedIcon.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
-#include <AnimatedVisuals\ProgressRingDeterminate.h>
 #include <AnimatedIconTestHooks.h>
 #include "Utils.h"
-#include <errno.h>
-using namespace AnimatedVisuals;
 
 static constexpr wstring_view s_progressPropertyName{ L"Progress"sv };
 static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
