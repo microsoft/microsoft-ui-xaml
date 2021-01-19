@@ -557,7 +557,7 @@
                                 FontSize="12"
                                 Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
                                 Opacity="0"
-                                Margin="0,0,12,0" />
+                                Margin="0,0,16,0" />
                             <TextBlock
                                 x:Name="TextBlock"
                                 Grid.Column="1"
