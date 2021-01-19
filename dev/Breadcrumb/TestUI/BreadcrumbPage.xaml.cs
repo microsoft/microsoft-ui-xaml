@@ -149,7 +149,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ItemRepeater_ButtonClick(object sender, RoutedEventArgs e)
+        private void ItemsRepeater_ButtonClick(object sender, RoutedEventArgs e)
         {
             Button btn = sender as Button;
             TreeNode treeNode = btn.Content as TreeNode;

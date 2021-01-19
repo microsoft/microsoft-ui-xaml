@@ -101,7 +101,7 @@
                 <controls:ItemsRepeater x:Name="ChildrenView" ItemsSource="{x:Bind currentNodeChildrenList}">
                     <controls:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
-                            <Button Content="{Binding}" Click="ItemRepeater_ButtonClick">
+                            <Button Content="{Binding}" Click="ItemsRepeater_ButtonClick">
                                 <Button.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Name}" />
