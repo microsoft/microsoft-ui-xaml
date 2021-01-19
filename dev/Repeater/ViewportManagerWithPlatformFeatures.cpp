@@ -425,7 +425,7 @@ void ViewportManagerWithPlatformFeatures::EnsureScroller()
             if (!m_scroller)
             {
                 // We usually update the viewport in the post arrange handler. 
-                // But, since we don't have a scroller, let's do it now.s
+                // But, since we don't have a scroller, let's do it now.
                 UpdateViewport(winrt::Rect{});
             }
             else
