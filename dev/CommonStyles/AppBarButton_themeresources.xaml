@@ -102,6 +102,11 @@
 
     <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
 
+    <Style x:Key="AppBarButtonOverflowStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="NaN" />
+    </Style>
+
     <!-- LabelOnRightStyle is retired since RS3, We still need it for RS2 or RS3 -->
     <Style x:Key="DefaultAppBarButtonStyle" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />

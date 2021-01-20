@@ -918,12 +918,10 @@
                                         <CommandBarOverflowPresenter.RenderTransform>
                                             <TranslateTransform x:Name="OverflowContentTransform" />
                                         </CommandBarOverflowPresenter.RenderTransform>
-                                        <CommandBarOverflowPresenter.ItemContainerStyle>
-                                            <Style TargetType="FrameworkElement">
-                                                <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                                <Setter Property="Width" Value="NaN" />
-                                            </Style>
-                                        </CommandBarOverflowPresenter.ItemContainerStyle>
+                                        <CommandBarOverflowPresenter.Resources>
+                                            <Style TargetType="AppBarButton" BasedOn="{StaticResource AppBarButtonOverflowStyle}" />
+                                            <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource AppBarToggleButtonOverflowStyle}" />
+                                        </CommandBarOverflowPresenter.Resources>
                                     </CommandBarOverflowPresenter>
                                 </Grid>
                             </Popup>
