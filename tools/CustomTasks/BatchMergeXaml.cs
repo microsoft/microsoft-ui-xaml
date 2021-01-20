@@ -1,4 +1,11 @@
-﻿using Microsoft.Build.Framework;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+// This is no test coverage for BatchMergeXaml, MergedDictionary and StripNamespaces.
+// Please manually verify them if you make change on it. For example, checkout the buildoutput intermediate files 
+// and do the comparision between 19h1_generic_2dot5.prefixed.xaml and 19h1_generic_2dot5.xaml 
+
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
