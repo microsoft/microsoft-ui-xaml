@@ -209,6 +209,7 @@ namespace winrt
     using DragItemsCompletedEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs;
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
+    using Flyout = winrt::Windows::UI::Xaml::Controls::Flyout;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
     using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;

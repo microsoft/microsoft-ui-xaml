@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{563FE343-C6B0-447B-831A-B0CE3AA7A688}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);BREADCRUMB_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Breadcrumb.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Breadcrumb.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Breadcrumb.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Breadcrumb.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Breadcrumb_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)Breadcrumb.idl" />
+  </ItemGroup>
+</Project>
