@@ -225,6 +225,17 @@
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
 
+                    <Button Content="Test flyout">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel>
+                                    <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="All items will be removed. Do you want to continue?" Margin="0,0,0,12" />
+                                    <Button Content="Yes, empty my cart" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
                     <TextBlock  Text="Miscellaneous testing area" Style="{ThemeResource StandardGroupHeader}"/>

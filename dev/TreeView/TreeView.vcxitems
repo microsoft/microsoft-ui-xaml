@@ -71,13 +71,11 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TreeViewItem_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TreeView_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>

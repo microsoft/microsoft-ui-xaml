@@ -47,6 +47,9 @@ namespace MUXControlsTestApp
 
             new ControlStateViewer(typeof(Slider),
                 new List<string>(){ "Normal", "PointerOver", "Pressed", "Disabled" }),
+
+            new ControlStateViewer(typeof(TextBox),
+                new List<string>(){ "Normal", "PointerOver", "Focused", "Disabled" }),
         };
 
         public VisualStatesPage()

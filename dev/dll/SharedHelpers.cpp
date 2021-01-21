@@ -608,6 +608,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return pathIcon;
     }
+#ifdef ANIMATEDICON_INCLUDED
     else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
     {
         winrt::AnimatedIcon animatedIcon;
@@ -625,6 +626,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return animatedIcon;
     }
+#endif
 
     return nullptr;
 }

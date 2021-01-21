@@ -15,6 +15,8 @@
     <FeatureDropDownButtonEnabled>productOnly</FeatureDropDownButtonEnabled>
     <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
     <FeatureIconSourceEnabled>productOnly</FeatureIconSourceEnabled>
+    <FeatureAnimatedIconEnabled>productOnly</FeatureAnimatedIconEnabled>
+    <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
     <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
     <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
     <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
@@ -219,6 +221,10 @@
   <!-- Dependencies for ImageIcon -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
   </PropertyGroup>
+    <!-- Dependencies for AnimatedIcon -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
+    <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -277,6 +283,7 @@
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeatureBreadcrumbEnabled>true</FeatureBreadcrumbEnabled>
     <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
