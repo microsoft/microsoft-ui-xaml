@@ -41,7 +41,7 @@
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
                                         <Setter Target="SeparatorRectangle.Width" Value="NaN"/>
-                                        <Setter Target="SeparatorRectangle.HorizontalAlignment" Value="NaN"/>
+                                        <Setter Target="SeparatorRectangle.HorizontalAlignment" Value="Stretch"/>
                                         <Setter Target="SeparatorRectangle.Height" Value="{StaticResource AppBarOverflowSeparatorHeight}"/>
                                         <Setter Target="SeparatorRectangle.Margin" Value="{StaticResource AppBarOverflowSeparatorMargin}"/>
                                     </VisualState.Setters>
