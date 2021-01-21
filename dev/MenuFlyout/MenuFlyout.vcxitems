@@ -20,7 +20,6 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
       <SubType>Designer</SubType>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
@@ -28,7 +27,6 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
       <SubType>Designer</SubType>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
 </Project>
