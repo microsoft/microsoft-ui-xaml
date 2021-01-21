@@ -86,12 +86,14 @@ void PipsPager::OnApplyTemplate()
     }(GetTemplateChildT<winrt::Button>(c_nextPageButtonName, *this));
 
     m_pipsPagerElementPreparedRevoker.revoke();
+    m_pipsAreaGettingFocusRevoker.revoke();
     [this](const winrt::ItemsRepeater repeater)
     {
         m_pipsPagerRepeater.set(repeater);
         if (repeater)
         {
             m_pipsPagerElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &PipsPager::OnElementPrepared });
+            m_pipsAreaGettingFocusRevoker = repeater.GettingFocus(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaGettingFocus });
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
@@ -514,6 +516,29 @@ void PipsPager::OnNextButtonClicked(const IInspectable& sender, const winrt::Rou
 {
     // In this method, SelectedPageIndex is always less than maximum.
     SelectedPageIndex(SelectedPageIndex() + 1);
+}
+
+void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args)
+{
+    if (const auto repeater = m_pipsPagerRepeater.get())
+    {
+        // Easiest way to check if focus change came from within:
+        // Check if element is child of repeater by getting index and checking for -1
+        // If it is -1, focus came from outside and we want to get to selected element.
+        if (repeater.GetElementIndex(args.OldFocusedElement().try_as<winrt::UIElement>()) == -1)
+        {
+            if (const auto realizedElement = repeater.GetOrCreateElement(SelectedPageIndex()).try_as<winrt::UIElement>())
+            {
+                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                {
+                    if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(realizedElement))
+                    {
+                        args.Handled(true);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
