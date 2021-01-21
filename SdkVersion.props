@@ -3,12 +3,12 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SDKVersionRS2>10.0.15063.0</SDKVersionRS2>
-	<SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
-	<SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
-	<SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
+    <SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
+    <SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
+    <SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
     <SDKVersion19H1>10.0.18362.0</SDKVersion19H1>
-    <SDKVersion21H1>10.0.21290.0</SDKVersion21H1>
-    <SDKVersionInsider>10.0.21290.0</SDKVersionInsider>
+    <SDKVersion21H1>10.0.21296.0</SDKVersion21H1>
+    <SDKVersionInsider>10.0.21296.0</SDKVersionInsider>
   </PropertyGroup>
   <PropertyGroup>
     <!-- By default we use the publicly shipped SDK version which is 19H1 now -->
