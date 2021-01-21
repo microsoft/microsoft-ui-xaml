@@ -122,8 +122,12 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     element.AddHandler(winrt::UIElement::PointerPressedEvent(),
         winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
         true);
-    
-    element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });    
+
+    // TODO: Investigate an RS2 or lower way to invoke via keyboard
+    if (SharedHelpers::IsRS3OrHigher())
+    {
+        element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
+    }
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
