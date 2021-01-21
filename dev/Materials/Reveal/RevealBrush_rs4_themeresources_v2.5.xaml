@@ -1476,6 +1476,8 @@
         </Setter>
     </Style>
 
+    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemRevealStyle}" />
+
     <Style TargetType="GridViewItem" x:Key="GridViewItemRevealStyle">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
@@ -1583,6 +1585,8 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="GridViewItem" BasedOn="{StaticResource GridViewItemRevealStyle}" />
 
     <!-- Style for Windows.UI.Xaml.Controls.ListViewItem -->
     <!-- This style is identifical to ListViewItemRevealStyle, except that the reveal effects is above the content-->

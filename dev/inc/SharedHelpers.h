@@ -60,7 +60,7 @@ public:
 
     static bool IsCompositionRadialGradientBrushAvailable();
 
-    static bool IsVisualUpdateAvailable();
+    static bool AreVisualUpdateAPIsAvailable();
 
     // Actual OS version checks
     static bool IsAPIContractV9Available(); // 19H2

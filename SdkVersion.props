@@ -11,7 +11,7 @@
     <SDKVersionInsider>10.0.21290.0</SDKVersionInsider>
   </PropertyGroup>
   <PropertyGroup>
-    <UseInsiderSDK>false</UseInsiderSDK>
+    <!--<UseInsiderSDK>false</UseInsiderSDK>-->
       
     <!-- By default we use the publicly shipped SDK version which is 19H1 now -->
     <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersion19H1)</MuxSdkVersion>
