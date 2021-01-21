@@ -20,11 +20,11 @@ runtimeclass ButtonInteractionInvokedEventArgs
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ButtonInteraction :
-#ifdef USE_INTERNAL_SDK
-Windows.UI.Xaml.InteractionBase, 
-#else
+//#ifdef USE_INTERNAL_SDK
+//Windows.UI.Xaml.InteractionBase, 
+//#else
 Windows.UI.Xaml.DependencyObject,
-#endif 
+//#endif 
 Windows.UI.Xaml.Data.INotifyPropertyChanged
 {
     ButtonInteraction();
