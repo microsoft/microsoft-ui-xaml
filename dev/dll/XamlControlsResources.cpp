@@ -16,7 +16,7 @@ static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroun
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
 thread_local bool s_tlsUseLatestStyle = true;
-thread_local bool s_tlsAreVisualUpdateResourcesAvailable = true;
+thread_local bool s_tlsAreVisualUpdateResourcesAvailable = false;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -114,7 +114,7 @@ void XamlControlsResources::UpdateSource()
     const bool areVisualUpdateAPIsAvailable = SharedHelpers::AreVisualUpdateAPIsAvailable();
 
     // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
-    //  Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
+    // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
 
     try
@@ -124,12 +124,16 @@ void XamlControlsResources::UpdateSource()
     }
     catch (const winrt::hresult_error& e)
     {
-        // ...
+        // Temporary workaround until there is a public 21H1 Windows SDK with the Visual Updates APIs.
+
         if (!areVisualUpdateAPIsAvailable || e.to_abi() != E_FAIL)
         {
+            // Throw this unexpected exception.
             throw;
         }
 
+        // Handle the situation where the application was built with an old Windows SDK and is run on the 21H1 OS.
+        // Use the non-21H1 resources.
         Source(GetSourceUri(useNewVisual, false /*assumeVisualUpdateResourcesAvailable*/));
         s_tlsAreVisualUpdateResourcesAvailable = false;
     }

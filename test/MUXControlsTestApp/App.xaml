@@ -18,7 +18,7 @@
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
             <ResourceDictionary.MergedDictionaries>
-                <controls:XamlControlsResources Version="Latest"/>
+                <controls:XamlControlsResources Version="Latest" UseCompactResources="False"/>
 
                 <!-- NOTE: If you change this entry, you must update App.StyleOverridesPlaceholder -->
                 <ResourceDictionary x:Name="_styleOverridesPlaceholder"/>
