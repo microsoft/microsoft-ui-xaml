@@ -81,12 +81,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardConditionalXAML>true</UseNonstandardConditionalXAML>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
@@ -117,10 +111,28 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources.xaml">
+      <UseVisualStyle>LatestWithoutVisualUpdate</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>LatestWithVisualUpdate</UseVisualStyle>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
+      <UseVisualStyle>LatestWithoutVisualUpdate</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>LatestWithVisualUpdate</UseVisualStyle>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>

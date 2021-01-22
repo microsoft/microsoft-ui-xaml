@@ -37,6 +37,9 @@ namespace CustomTasks
         public ITaskItem[] N19H1Pages { get; set; }
 
         [Required]
+        public ITaskItem[] T21H1Pages { get; set; }
+
+        [Required]
         // The output file format is like rs1_themeresources.xaml, rs2_generic.xaml, rs2_compact_generic.xaml.
         // then PostfixForGeneratedFile is themeresources/generic/compact_generic here.
         public string PostfixForGeneratedFile { get; set; }
@@ -153,6 +156,7 @@ namespace CustomTasks
                 ExecuteForTaskItems(RS4Pages, "RS4");
                 ExecuteForTaskItems(RS5Pages, "RS5");
                 ExecuteForTaskItems(N19H1Pages, "19H1");
+                ExecuteForTaskItems(T21H1Pages, "21H1");
             }
 
             var filesRead = new List<string>();
@@ -162,6 +166,7 @@ namespace CustomTasks
             filesRead.AddRange(RS4Pages.Select(item => item.ItemSpec));
             filesRead.AddRange(RS5Pages.Select(item => item.ItemSpec));
             filesRead.AddRange(N19H1Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(T21H1Pages.Select(item => item.ItemSpec));
 
             File.WriteAllLines(TlogReadFilesOutputPath, filesRead);
 

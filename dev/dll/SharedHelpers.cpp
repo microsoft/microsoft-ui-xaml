@@ -213,6 +213,12 @@ bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
     return s_isAvailable;
 }
 
+bool SharedHelpers::AreVisualUpdateAPIsAvailable()
+{
+    static bool s_areVisualUpdateAPIsAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
+    return s_areVisualUpdateAPIsAvailable;
+}
+
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
