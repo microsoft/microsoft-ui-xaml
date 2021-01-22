@@ -54,7 +54,6 @@
       <Priority>2</Priority>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs3_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS3</Version>
       <Type>ThemeResources</Type>
       <Priority>3</Priority>
