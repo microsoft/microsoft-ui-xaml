@@ -42,37 +42,37 @@
             <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
             <CornerRadius x:Key='GridViewItemCheckBoxCornerRadius'>3</CornerRadius>
             <Thickness x:Key='GridViewItemSelectedBorderThickness'>2</Thickness>
-            <StaticResource x:Key="GridViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="GridViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="GridViewItemPointerOverBorderBrush" ResourceKey="ControlStrokeColorOnAccentTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemSelectedBorderBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="GridViewItemSelectedPointerOverBorderBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemSelectedPressedBorderBrush" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemSelectedDisabledBorderBrush" ResourceKey="AccentAAFillColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemSelectedInnerBorderBrush" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="GridViewItemCheckBrush" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckPressedBrush" ResourceKey="TextOnAccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckDisabledBrush" ResourceKey="TextOnAccentAAFillColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPointerOverBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPressedBrush" ResourceKey="ControlAltFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxDisabledBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxSelectedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxSelectedPointerOverBrush" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxSelectedPressedBrush" ResourceKey="AccentAAFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxSelectedDisabledBrush" ResourceKey="AccentAAFillColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
-            <StaticResource x:Key="GridViewItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="GridViewItemBackgroundSelectedPointerOver" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="GridViewItemBackgroundSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="GridViewItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorSecondaryBrush" />
+            <SolidColorBrush x:Key="GridViewItemBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="GridViewItemForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemPointerOverBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemSelectedBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemSelectedPointerOverBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemSelectedPressedBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemSelectedDisabledBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemSelectedInnerBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckPressedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxPointerOverBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxPressedBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedPointerOverBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedPressedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxSelectedDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxPointerOverBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxPressedBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemCheckBoxDisabledBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemForegroundPointerOver" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemForegroundSelected" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedDisabled" Color="{ThemeResource SystemColorButtonFaceColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <CornerRadius x:Key='GridViewItemCornerRadius'>4</CornerRadius>
