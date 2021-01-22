@@ -782,7 +782,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Verify correct TabView width");
-                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 500) < pixelTolerance);
+                Verify.IsTrue(Math.Abs(GetActualTabViewWidth() - 283) < pixelTolerance);
             }
 
             void CloseTabAndVerifyWidth(string tabName, int expectedValue, string expectedScrollbuttonStates)
