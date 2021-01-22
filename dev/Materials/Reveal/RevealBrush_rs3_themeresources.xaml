@@ -229,7 +229,7 @@
     </Style>
 
     <Style TargetType="GridViewItem" BasedOn="{StaticResource GridViewItemRevealStyle}" />
-
+    
     <Style TargetType="AppBarButton" x:Key="AppBarButtonRevealStyle">
         <Setter Property="Background" Value="{ThemeResource AppBarButtonRevealBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />

@@ -35,15 +35,15 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs1_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <Priority>2</Priority>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs2_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS2</Version>
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs1_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
@@ -60,13 +60,11 @@
       <Priority>3</Priority>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs4_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
       <Priority>4</Priority>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs5_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
       <Priority>5</Priority>
