@@ -158,30 +158,34 @@
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
             RenderSize=20,20
-          [Windows.UI.Xaml.Shapes.Ellipse]
-              StrokeThickness=1
-              Width=10
+          [Windows.UI.Xaml.Controls.Border]
+              Padding=0,0,0,0
+              CornerRadius=7,7,7,7
+              BorderThickness=0,0,0,0
+              BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+              Background=#FFFFFFFF
+              Width=12
               Name=SwitchKnobOn
-              Margin=0,0,0,0
-              Height=10
+              Margin=0,0,3,0
+              Height=12
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=10,10
-          [Windows.UI.Xaml.Shapes.Ellipse]
+              RenderSize=12,12
+          [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
-              Width=10
+              Width=12
               Name=SwitchKnobOff
-              Margin=0,0,0,0
-              Height=10
+              Margin=3,0,0,0
+              Height=12
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=10,10
+              RenderSize=12,12
         [Windows.UI.Xaml.Controls.Primitives.Thumb]
             Padding=0,0,0,0
             Foreground=#E4000000
