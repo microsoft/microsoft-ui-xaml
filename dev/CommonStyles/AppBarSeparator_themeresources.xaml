@@ -17,7 +17,8 @@
     <Thickness x:Key="AppBarOverflowSeparatorMargin">12,4,12,4</Thickness>
     <x:Double x:Key="AppBarSeparatorWidth">1</x:Double>
     <x:Double x:Key="AppBarOverflowSeparatorHeight">1</x:Double>
-    
+    <x:Double x:Key="AppBarSeparatorCornerRadius">0.5</x:Double>
+
     <Style TargetType="AppBarSeparator" BasedOn="{StaticResource DefaultAppBarSeparatorStyle}"/>
 
     <Style x:Key="DefaultAppBarSeparatorStyle" TargetType="AppBarSeparator">
@@ -50,6 +51,8 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Rectangle x:Name="SeparatorRectangle"
+                            RadiusX="{StaticResource AppBarSeparatorCornerRadius}"
+                            RadiusY="{StaticResource AppBarSeparatorCornerRadius}"
                             Width="{StaticResource AppBarSeparatorWidth}"
                             VerticalAlignment="Stretch"
                             Fill="{TemplateBinding Foreground}"
