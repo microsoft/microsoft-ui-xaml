@@ -218,7 +218,9 @@
 
                                 <Grid x:Name="TopNavGrid" 
                                       Height="{ThemeResource NavigationViewTopPaneHeight}"
-                                      Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}">
+                                      Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}"
+                                      BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                      BorderThickness="0,0,0,1">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="{ThemeResource NavigationBackButtonWidth}"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -389,14 +391,15 @@
                                 IsTabStop="False"
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
-                            
                                 Grid.Row="1">
 
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
                                         HorizontalAlignment="Left"
-                                        Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
+                                        Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"
+                                        BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                        BorderThickness="0,0,1,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->
@@ -588,6 +591,7 @@
                                 <VisualState x:Name="OnTopNavigationPrimary">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Margin" Value="{ThemeResource TopNavigationViewItemMargin}"/>
+                                        <Setter Target="NavigationViewItemPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
                                         <contract7NotPresent:Setter Target="ChildrenFlyout.Placement" Value="Bottom"/>
                                         <contract7Present:Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
@@ -796,7 +800,7 @@
                                 </VisualState>
                                 <VisualState x:Name="VerticalLine">
                                     <VisualState.Setters>
-                                        <Setter Target="SeparatorLine.Height" Value="20" />
+                                        <Setter Target="SeparatorLine.Height" Value="24" />
                                         <Setter Target="SeparatorLine.Width" Value="{ThemeResource TopNavigationViewItemSeparatorWidth}" />
                                         <Setter Target="SeparatorLine.Margin" Value="{ThemeResource TopNavigationViewItemSeparatorMargin}" />
                                         <Setter Target="SeparatorLine.VerticalAlignment" Value="Center" />
