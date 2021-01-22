@@ -44,7 +44,6 @@ void BreadcrumbItem::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    // TODO: Implement
     m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"PART_BreadcrumbItemButton", controlProtected));
 
     RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbItem::OnFlowDirectionChanged });
@@ -122,8 +121,12 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     element.AddHandler(winrt::UIElement::PointerPressedEvent(),
         winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
         true);
-    
-    element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });    
+
+    // TODO: Investigate an RS2 or lower way to invoke via keyboard. Github issue #3997
+    if (SharedHelpers::IsRS3OrHigher())
+    {
+        element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
+    }
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
