@@ -694,6 +694,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Breadcrumb_TestUI", "dev\Breadcrumb\TestUI\Breadcrumb_TestUI.shproj", "{657121B7-3E4F-4C76-ABE2-0221A7997929}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Breadcrumb_InteractionTests", "dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.shproj", "{C1477378-4A7A-43E5-8499-98A23544CC8A}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PipsPager", "PipsPager", "{CE0523BB-5799-4BA0-A461-0ABC6E19F969}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PipsPager", "dev\PipsPager\PipsPager.vcxitems", "{D1EB61D8-C689-4AD1-BD61-FDAA50362563}"

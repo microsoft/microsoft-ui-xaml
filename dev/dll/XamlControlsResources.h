@@ -21,5 +21,4 @@ public:
 private:
     void UpdateSource();
     bool UseLatestStyle();
-    winrt::Uri GetSourceUri(bool useNewVisual, bool assumeVisualUpdateResourcesAvailable);
 };
