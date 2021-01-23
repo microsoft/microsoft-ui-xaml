@@ -116,11 +116,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>21H1</Version>
