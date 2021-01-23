@@ -1977,6 +1977,8 @@
         </Setter>
     </Style>
 
+    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemRevealStyle}" />
+
     <Style TargetType="GridViewItem" x:Key="GridViewItemRevealStyle">
         <Setter Property="Background" Value="{ThemeResource GridViewItemRevealBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource GridViewItemRevealBorderBrush}" />

@@ -16,7 +16,6 @@ static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroun
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
 thread_local bool s_tlsUseLatestStyle = true;
-thread_local bool s_tlsAreVisualUpdateResourcesAvailable = false;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -42,28 +41,31 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
     }
 }
 
-winrt::Uri XamlControlsResources::GetSourceUri(bool useNewVisual, bool assumeVisualUpdateResourcesAvailable)
+void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
+    const bool useNewVisual = UseLatestStyle();
 
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
-    winrt::Uri uri{
-        [useCompactResources, useNewVisual, assumeVisualUpdateResourcesAvailable]() -> hstring {
+    winrt::Uri uri {
+        [useCompactResources, useNewVisual]() -> hstring {
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+#ifdef USE_INTERNAL_SDK
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
+#endif
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
-            const bool areVisualUpdateResourcesAvailable = SharedHelpers::AreVisualUpdateAPIsAvailable() && assumeVisualUpdateResourcesAvailable;
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = useNewVisual ? (areVisualUpdateResourcesAvailable ? L"themeresources_vu.xaml" : L"themeresources.xaml") : L"themeresources_2dot5.xaml";
+            hstring postfix = useNewVisual ? L"themeresources.xaml" : L"themeresources_2dot5.xaml";
 
             if (isInFrameworkPackage)
             {
@@ -76,11 +78,14 @@ winrt::Uri XamlControlsResources::GetSourceUri(bool useNewVisual, bool assumeVis
 
             hstring releasePrefix;
 
-            if (areVisualUpdateResourcesAvailable && useNewVisual)
+#ifdef USE_INTERNAL_SDK
+            if (is21H1OrHigher && useNewVisual)
             {
                 releasePrefix = L"21h1_";
             }
-            else if (is19H1OrHigher)
+            else
+#endif
+            if (is19H1OrHigher)
             {
                 releasePrefix = L"19h1_";
             }
@@ -105,38 +110,11 @@ winrt::Uri XamlControlsResources::GetSourceUri(bool useNewVisual, bool assumeVis
         }()
     };
 
-    return uri;
-}
-
-void XamlControlsResources::UpdateSource()
-{
-    const bool useNewVisual = UseLatestStyle();
-    const bool areVisualUpdateAPIsAvailable = SharedHelpers::AreVisualUpdateAPIsAvailable();
-
     // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
     // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
 
-    try
-    {
-        Source(GetSourceUri(useNewVisual, areVisualUpdateAPIsAvailable /*assumeVisualUpdateResourcesAvailable*/));
-        s_tlsAreVisualUpdateResourcesAvailable = areVisualUpdateAPIsAvailable;
-    }
-    catch (const winrt::hresult_error& e)
-    {
-        // Temporary workaround until there is a public 21H1 Windows SDK with the Visual Updates APIs.
-
-        if (!areVisualUpdateAPIsAvailable || e.to_abi() != E_FAIL)
-        {
-            // Throw this unexpected exception.
-            throw;
-        }
-
-        // Handle the situation where the application was built with an old Windows SDK and is run on the 21H1 OS.
-        // Use the non-21H1 resources.
-        Source(GetSourceUri(useNewVisual, false /*assumeVisualUpdateResourcesAvailable*/));
-        s_tlsAreVisualUpdateResourcesAvailable = false;
-    }
+    Source(uri);
 
     // Hacky workaround for a XAML compiler bug:
     // Assigning nullable primitive types from XAML fails with disabled XAML metadata reflection on older versions.
@@ -213,18 +191,13 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
-            const bool areVisualUpdateResourcesAvailable = SharedHelpers::AreVisualUpdateAPIsAvailable() && s_tlsAreVisualUpdateResourcesAvailable;
             
-            std::wstring postfix = s_tlsUseLatestStyle ? (areVisualUpdateResourcesAvailable ? L"generic_vu.xaml" : L"generic.xaml") : L"generic_2dot5.xaml";
+            std::wstring postfix = s_tlsUseLatestStyle ? L"generic.xaml" : L"generic_2dot5.xaml";
             std::wstring releasePrefix = L"";
             
             if (isInFrameworkPackage)
             {
-                if (areVisualUpdateResourcesAvailable && s_tlsUseLatestStyle)
-                {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
-                }
-                else if (is19H1OrHigher)
+                if (is19H1OrHigher)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
@@ -247,11 +220,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else if (isInCBSPackage)
             {
-                if (areVisualUpdateResourcesAvailable && s_tlsUseLatestStyle)
-                {
-                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
-                }
-                else if (is19H1OrHigher)
+                if (is19H1OrHigher)
                 {
                     releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
@@ -263,11 +232,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else
             {
-                if (areVisualUpdateResourcesAvailable && s_tlsUseLatestStyle)
-                {
-                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
-                }
-                else if (is19H1OrHigher)
+                if (is19H1OrHigher)
                 {
                     releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }

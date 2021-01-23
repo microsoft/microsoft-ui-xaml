@@ -17,9 +17,7 @@ public:
     void UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary);
     void UpdateAcrylicBrushesDarkTheme(const winrt::IInspectable themeDictionary);
     static void EnsureRevealLights(winrt::UIElement const& element);
-
 private:
     void UpdateSource();
     bool UseLatestStyle();
-    winrt::Uri GetSourceUri(bool useNewVisual, bool assumeVisualUpdateResourcesAvailable);
 };
