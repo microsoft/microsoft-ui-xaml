@@ -69,11 +69,6 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);USE_INSIDER_SDK</PreprocessorDefinitions>
     </Midl>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="$(UseInternalSDK) == 'true'">
-    <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);USE_INTERNAL_SDK</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(BuildingWithBuildExe) == 'true'">
     <ClCompile>
       <AdditionalIncludeDirectories>

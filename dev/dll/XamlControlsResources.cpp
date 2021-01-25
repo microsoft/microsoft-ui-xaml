@@ -56,7 +56,7 @@ void XamlControlsResources::UpdateSource()
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
             const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
 #endif
 
@@ -78,7 +78,7 @@ void XamlControlsResources::UpdateSource()
 
             hstring releasePrefix;
 
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
             if (is21H1OrHigher)
             {
                 releasePrefix = L"21h1_";
