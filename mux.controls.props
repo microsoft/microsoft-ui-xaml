@@ -28,7 +28,7 @@
     <MinSDKVersionRequiredForRS4ThemeResource>$(SDKVersionRS4)</MinSDKVersionRequiredForRS4ThemeResource>
     <MinSDKVersionRequiredForRS5ThemeResource>$(SDKVersion19H1)</MinSDKVersionRequiredForRS5ThemeResource>
     <MinSDKVersionRequiredFor19H1ThemeResource>$(SDKVersion19H1)</MinSDKVersionRequiredFor19H1ThemeResource>
-    <MinSDKVersionRequiredFor21H1ThemeResource>$(SDKVersionInternal)</MinSDKVersionRequiredFor21H1ThemeResource>
+    <MinSDKVersionRequiredFor21H1ThemeResource>$(SDKVersionInsider)</MinSDKVersionRequiredFor21H1ThemeResource>
   </PropertyGroup>
 
   <PropertyGroup>

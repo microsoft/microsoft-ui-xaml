@@ -79,7 +79,7 @@ void XamlControlsResources::UpdateSource()
             hstring releasePrefix;
 
 #ifdef USE_INTERNAL_SDK
-            if (is21H1OrHigher && useNewVisual)
+            if (is21H1OrHigher)
             {
                 releasePrefix = L"21h1_";
             }

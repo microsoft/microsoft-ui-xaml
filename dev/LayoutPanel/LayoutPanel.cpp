@@ -17,7 +17,6 @@ void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
         m_layout.set(args.NewValue().as<winrt::Layout>());
         OnLayoutChanged(args.OldValue().as<winrt::Layout>(), m_layout.get());
     }
-/*
 #ifdef USE_INTERNAL_SDK
     else if (dependencyProperty == s_borderBrushProperty)
     {
@@ -41,7 +40,6 @@ void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
         }
     }
 #endif
-*/
     else if (dependencyProperty == s_PaddingProperty)
     {
         InvalidateMeasure();
