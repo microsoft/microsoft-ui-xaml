@@ -529,7 +529,7 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
         {
             if (const auto realizedElement = repeater.GetOrCreateElement(SelectedPageIndex()).try_as<winrt::UIElement>())
             {
-                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                if (const auto argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                 {
                     if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(realizedElement))
                     {
