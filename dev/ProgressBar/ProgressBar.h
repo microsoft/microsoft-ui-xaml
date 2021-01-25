@@ -55,4 +55,5 @@ private:
     static constexpr wstring_view s_IndeterminatePausedStateName{ L"IndeterminatePaused" };
     static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
     static constexpr wstring_view s_UpdatingStateName{ L"Updating" };
+    static constexpr wstring_view s_UpdatingWithErrorStateName{ L"UpdatingError" };
 };

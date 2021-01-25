@@ -46,6 +46,10 @@ NumberBox::NumberBox()
 
     SetDefaultStyleKey(this);
     SetDefaultInputScope();
+
+    // We are not revoking this since the event and the listener reside on the same object and as such have the same lifecycle.
+    // That means that as soon as the NumberBox gets removed so will the event and the listener.
+    this->RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this , &NumberBox::OnAutomationPropertiesNamePropertyChanged });
 }
 
 void NumberBox::SetDefaultInputScope()
@@ -359,6 +363,32 @@ void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyC
 void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateVisualStateForIsEnabledChange();
+}
+
+void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ReevaluateForwardedUIAName();
+}
+
+void NumberBox::ReevaluateForwardedUIAName()
+{
+    if (const auto textBox = m_textBox.get())
+    {
+        const auto name = winrt::AutomationProperties::GetName(*this);
+        if (!name.empty())
+        {
+            // AutomationProperties.Name is a non empty string, we will use that value.
+            winrt::AutomationProperties::SetName(textBox, name);
+        }
+        else
+        {
+            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
+            {
+                // Header is a string, we can use that as our UIA name.
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+            }
+        }
+    }
 }
 
 void NumberBox::UpdateVisualStateForIsEnabledChange()
@@ -686,6 +716,11 @@ void NumberBox::UpdateHeaderPresenterState()
         {
             // Header is not a string, so let's show header presenter
             shouldShowHeader = true;
+            // When our header isn't a string, we use the NumberBox's UIA name for the textbox's UIA name.
+            if (const auto textBox = m_textBox.get())
+            {
+                winrt::AutomationProperties::SetName(textBox, winrt::AutomationProperties::GetName(*this));
+            }
         }
     }
     if(const auto headerTemplate = HeaderTemplate())
@@ -706,6 +741,8 @@ void NumberBox::UpdateHeaderPresenterState()
     {
         headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
+
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::MoveCaretToTextEnd()

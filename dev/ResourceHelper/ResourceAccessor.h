@@ -118,6 +118,10 @@ public:
 #define SR_PagerControlPreviousPageButtonTextName L"PagerControlPreviousPageButtonText"
 #define SR_PagerControlNextPageButtonTextName L"PagerControlNextPageButtonText"
 #define SR_PagerControlLastPageButtonTextName L"PagerControlLastPageButtonText"
+#define SR_PipsPagerNameText L"PipsPagerNameText"
+#define SR_PipsPagerNextPageButtonText L"PipsPagerNextPageButtonText"
+#define SR_PipsPagerPreviousPageButtonText L"PipsPagerPreviousPageButtonText"
+#define SR_PipsPagerPageText L"PipsPagerPageText"
 #define SR_PlaceAfterString L"PlaceAfterString"
 #define SR_PlaceBeforeString L"PlaceBeforeString"
 #define SR_PlaceBetweenString L"PlaceBetweenString"
@@ -170,5 +174,12 @@ public:
 #define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
+#define SR_ExpanderDefaultControlName L"ExpanderDefaultControlName"
+
+#define SR_InfoBarCloseButtonName L"InfoBarCloseButtonName"
+#define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
+#define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
+#define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
+#define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

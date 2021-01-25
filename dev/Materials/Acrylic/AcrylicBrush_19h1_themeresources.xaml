@@ -1,0 +1,77 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.UI.Xaml.Media">
+
+    <!--
+        Due to a low level compiler bug, setting nullable doubles does not work on all platforms.
+        Because of that, TintLuminosityOpacity will be set through code behind when loading these brushes.
+        This is being done in XAMLControlsResources.cpp .
+    -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <local:AcrylicBrush
+                x:Key="AcrylicBackgroundFillColorDefaultBrush"
+                TintColor="#2C2C2C"
+                TintOpacity="0.15"
+                FallbackColor="#2C2C2C"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="AcrylicInAppFillColorDefaultBrush"
+                TintColor="#2C2C2C"
+                TintOpacity="0.15"
+                FallbackColor="#2C2C2C"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.0"
+                FallbackColor="#FCFCFC"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="AcrylicBackgroundFillColorBaseBrush"
+                TintColor="#202020"
+                TintOpacity="0.0"
+                FallbackColor="#202020"
+                BackgroundSource="HostBackdrop"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+            <local:AcrylicBrush
+                x:Key="AcrylicBackgroundFillColorDefaultBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.0"
+                FallbackColor="#FCFCFC"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="AcrylicInAppFillColorDefaultBrush"
+                TintColor="#FCFCFC"
+                TintOpacity="0.0"
+                FallbackColor="#FCFCFC"
+                BackgroundSource="Backdrop"/>
+            <local:AcrylicBrush
+                x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
+                TintColor="#2C2C2C"
+                TintOpacity="0.15"
+                FallbackColor="#2C2C2C"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush
+                x:Key="AcrylicBackgroundFillColorBaseBrush"
+                TintColor="#F3F3F3"
+                TintOpacity="0.0"
+                FallbackColor="#F3F3F3"
+                BackgroundSource="HostBackdrop"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

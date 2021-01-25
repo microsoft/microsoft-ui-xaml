@@ -16,7 +16,7 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'')
   pool:
-    vmImage: 'windows-2019'
+    name: 'windevbuildagents'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -115,14 +115,40 @@ jobs:
       arguments: -localDirectory "$(Build.ArtifactStagingDirectory)\drop" -Verbose
     displayName: 'Publish Symbols'
 
-  - task: PkgESCodeSign@10
-    displayName: CodeSign
-    env:
-      SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: 'CodeSign'
     inputs:
-      signConfigXml: '$(Build.SourcesDirectory)\build\SignConfig.xml'
-      inPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
-      outPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
+      ConnectedServiceName: WinUISigning
+      FolderPath: '$(Build.ArtifactStagingDirectory)\drop\Release'
+      # Recursively finds files matching these patterns:
+      Pattern: |
+        **/Microsoft.UI.Xaml.dll
+        **/Microsoft.UI.Xaml.winmd
+      UseMinimatch: true
+      signConfigType: inlineSignParams
+      inlineOperation: | 
+        [
+          {
+              "KeyCode" : "CP-230217",
+              "OperationCode" : "SigntoolSign",
+              "Parameters" : {
+                  "OpusName" : "Microsoft",
+                  "OpusInfo" : "http://www.microsoft.com",
+                  "FileDigest" : "/fd \"SHA256\"",
+                  "PageHash" : "/NPH",
+                  "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+              },
+              "ToolName" : "sign",
+              "ToolVersion" : "1.0"
+          },
+          {
+              "KeyCode" : "CP-230217",
+              "OperationCode" : "SigntoolVerify",
+              "Parameters" : {},
+              "ToolName" : "sign",
+              "ToolVersion" : "1.0"
+          }
+        ]
 
   # Re-publish signed artifacts to the drop.
   - task: PublishBuildArtifacts@1
@@ -136,7 +162,7 @@ jobs:
   parameters:
     jobName: CreateNugetPackage
     dependsOn: SignBinariesAndPublishSymbols
-    signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
+    signOutput: true
     useReleaseTag: '$(MUXFinalRelease)'
     prereleaseVersionTag: prerelease
 

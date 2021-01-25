@@ -1,4 +1,11 @@
-﻿using Microsoft.Build.Framework;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+// This is no test coverage for BatchMergeXaml, MergedDictionary and StripNamespaces.
+// Please manually verify them if you make change on it. For example, checkout the buildoutput intermediate files 
+// and do the comparision between 19h1_generic_2dot5.prefixed.xaml and 19h1_generic_2dot5.xaml 
+
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
@@ -9,6 +16,8 @@ namespace CustomTasks
 {
     public class BatchMergeXaml : Task
     {
+        public string PagesFilteredBy { get; set; }
+
         [Required]
         public ITaskItem[] RS1Pages { get; set; }
 
@@ -67,6 +76,12 @@ namespace CustomTasks
             {
                 foreach (ITaskItem item in items)
                 {
+                    if (!string.IsNullOrEmpty(PagesFilteredBy) && !item.GetMetadata(PagesFilteredBy).Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log.LogMessage(MessageImportance.Low, "Filtered item " + item.ItemSpec);
+                        continue;
+                    }
+
                     string file = item.ItemSpec;
                     if (File.Exists(file))
                     {

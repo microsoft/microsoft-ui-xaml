@@ -5,6 +5,7 @@
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
@@ -133,7 +134,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:TabViewListView">
-                    <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                    <Border
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        Background="{TemplateBinding Background}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <ScrollViewer x:Name="ScrollViewer"
                             Grid.Column="1"
                             AutomationProperties.AccessibilityView="Raw"
@@ -186,7 +192,7 @@
                                 Background="{ThemeResource TabViewScrollButtonBackground}"
                                 BorderThickness="1"
                                 Delay="50"
-                                FontFamily="Segoe MDL2 Assets"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Interval="100"
                                 Style="{StaticResource RepeatButtonRevealStyle}"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
@@ -209,7 +215,7 @@
                                 Background="{ThemeResource TabViewScrollButtonBackground}"
                                 BorderThickness="1"
                                 Delay="50"
-                                FontFamily="Segoe MDL2 Assets"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Interval="100"
                                 Style="{StaticResource RepeatButtonRevealStyle}"
                                 HighContrastAdjustment="None"
@@ -227,10 +233,10 @@
         <Setter Property="Padding" Value="0"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
-        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
         <Setter Property="FocusVisualMargin" Value="-3"/>
         <Setter Property="Template">
@@ -244,7 +250,8 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         Content="{TemplateBinding Content}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
                         HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                         Padding="{TemplateBinding Padding}"
@@ -290,9 +297,9 @@
     <Style x:Name="TabViewButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource TabViewButtonBackground}"/>
         <Setter Property="Foreground" Value="{ThemeResource TabViewButtonForeground}"/>
-        <Setter Property="CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
+        <contract7Present:Setter Property="CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="Margin" Value="0,7,0,0"/>
         <Setter Property="Padding" Value="10,10,10,11"/>
@@ -305,7 +312,8 @@
                         Content="{TemplateBinding Content}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         FontSize="{TemplateBinding FontSize}"
                         FontFamily="{TemplateBinding FontFamily}"
                         FontWeight="SemiLight"
@@ -422,6 +430,7 @@
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -435,6 +444,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -448,6 +458,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

@@ -90,4 +90,28 @@ unsealed runtimeclass PathIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty DataProperty { get; };
 }
 
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ImageIconSource : IconSource
+{
+    ImageIconSource();
+
+    Windows.UI.Xaml.Media.ImageSource ImageSource{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass AnimatedIconSource : IconSource
+{
+    AnimatedIconSource();
+
+    IRichAnimatedVisualSource Source{ get; set; };
+    IconSource FallbackIconSource{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty SourceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty FallbackIconSourceProperty { get; };
+}
+
 }

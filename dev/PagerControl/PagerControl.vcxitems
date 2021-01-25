@@ -29,10 +29,22 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)PagerControl.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PagerControl_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)PagerControl_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PagerControl_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
@@ -42,6 +54,6 @@
     <Midl Include="$(MSBuildThisFileDirectory)PagerControlAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

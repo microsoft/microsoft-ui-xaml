@@ -3,7 +3,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MUXVersionMajor>2</MUXVersionMajor>
-    <MUXVersionMinor>5</MUXVersionMinor>
+    <MUXVersionMinor>6</MUXVersionMinor>
     <MUXVersionPatch>0</MUXVersionPatch>
     <MUXVersionBuild Condition="$(MUXVersionBuild) == ''">0</MUXVersionBuild>
     <MUXVersionRevision Condition="$(MUXVersionRevision) == ''">0</MUXVersionRevision>
