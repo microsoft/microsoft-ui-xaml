@@ -178,7 +178,8 @@
 
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
     <Thickness x:Key="TextBoxInnerButtonMargin">0,4,4,4</Thickness>
-
+    <x:Double x:Key="TextBoxIconFontSize">12</x:Double>
+    
     <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}" />
 
     <Style x:Key="DefaultTextBoxStyle" TargetType="TextBox">
@@ -266,7 +267,7 @@
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
-                                                    FontSize="12"
+                                                    FontSize="{ThemeResource TextBoxIconFontSize}"
                                                     Text="&#xE10A;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />
