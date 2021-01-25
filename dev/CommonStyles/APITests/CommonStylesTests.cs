@@ -104,7 +104,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // #3956
         public void VerifyVisualTreeForControlsInCommonStyles()
         {
             var controlsToVerify = new List<string> {
