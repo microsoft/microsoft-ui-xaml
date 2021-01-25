@@ -35,6 +35,16 @@
                 FallbackColor="#202020"
                 BackgroundSource="HostBackdrop"/>
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
+                TintColor="{ThemeResource SystemAccentColorDark1}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorDark1}"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorDark2}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorDark2}"
+                BackgroundSource="HostBackdrop"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -63,6 +73,16 @@
                 FallbackColor="#F3F3F3"
                 BackgroundSource="HostBackdrop"/>
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorLight2}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                BackgroundSource="HostBackdrop"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -71,6 +91,8 @@
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemAccentColor}"/>
+            <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemAccentColor}"/>
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>
