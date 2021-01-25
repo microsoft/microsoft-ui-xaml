@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 
@@ -50,6 +50,8 @@ namespace RuntimeProfiler
         ProfId_InfoBar,
         ProfId_Expander,
         ProfId_PagerControl,
+        ProfId_Breadcrumb,
+        ProfId_BreadcrumbItem,
         ProfId_PipsPager,
         ProfId_ImageIcon,
         ProfId_AnimatedIcon,
