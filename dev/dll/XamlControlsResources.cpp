@@ -56,9 +56,7 @@ void XamlControlsResources::UpdateSource()
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
-#ifdef USE_INSIDER_SDK
             const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
-#endif
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
@@ -78,14 +76,11 @@ void XamlControlsResources::UpdateSource()
 
             hstring releasePrefix;
 
-#ifdef USE_INSIDER_SDK
             if (is21H1OrHigher)
             {
                 releasePrefix = L"21h1_";
             }
-            else
-#endif
-            if (is19H1OrHigher)
+            else if (is19H1OrHigher)
             {
                 releasePrefix = L"19h1_";
             }
@@ -188,6 +183,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
@@ -197,7 +193,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             
             if (isInFrameworkPackage)
             {
-                if (is19H1OrHigher)
+                if (is21H1OrHigher)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
                 {
                     releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
@@ -220,7 +220,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else if (isInCBSPackage)
             {
-                if (is19H1OrHigher)
+                if (is21H1OrHigher)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
                 {
                     releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
@@ -232,7 +236,11 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             }
             else
             {
-                if (is19H1OrHigher)
+                if (is21H1OrHigher)
+                {
+                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
                 {
                     releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
