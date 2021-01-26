@@ -67,9 +67,7 @@ namespace MUXControlsTestApp
                     "SystemControlAltMediumLowAcrylicWindowMediumBrush",
                     "SystemControlAltMediumLowAcrylicElementMediumBrush",
                     "SystemControlAltHighAcrylicWindowBrush",
-                    "SystemControlAltHighAcrylicElementBrush",
-                    "AccentAcrylicBackgroundFillColorDefaultBrush",
-                    "AccentAcrylicBackgroundFillColorBaseBrush"
+                    "SystemControlAltHighAcrylicElementBrush"
                 };
             }
         }
