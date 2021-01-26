@@ -229,6 +229,7 @@
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarToggleButton">
@@ -358,6 +359,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundChecked}" />
                                         <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushChecked}" />
+                                        <contract7Present:Setter Target="AppBarToggleButtonInnerBorder.BackgroundSizing" Value="OuterBorderEdge" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundChecked}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked}" />
@@ -368,6 +370,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPointerOver}" />
                                         <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPointerOver}" />
+                                        <contract7Present:Setter Target="AppBarToggleButtonInnerBorder.BackgroundSizing" Value="OuterBorderEdge" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPointerOver}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedPointerOver}" />
@@ -380,6 +383,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedPressed}" />
                                         <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedPressed}" />
+                                        <contract7Present:Setter Target="AppBarToggleButtonInnerBorder.BackgroundSizing" Value="OuterBorderEdge" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedPressed}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedPressed}" />
@@ -392,6 +396,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="AppBarToggleButtonInnerBorder.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedDisabled}" />
                                         <Setter Target="AppBarToggleButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedDisabled}" />
+                                        <contract7Present:Setter Target="AppBarToggleButtonInnerBorder.BackgroundSizing" Value="OuterBorderEdge" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedDisabled}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedDisabled}" />
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundCheckedDisabled}" />
@@ -494,7 +499,8 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"/>
                         <Grid x:Name="ContentRoot" MinHeight="{ThemeResource AppBarThemeMinHeight}">
 
                             <Grid.ColumnDefinitions>

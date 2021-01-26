@@ -121,6 +121,7 @@
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
@@ -338,7 +339,8 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"/>
 
                         <Grid x:Name="ContentRoot"
                             MinHeight="{ThemeResource AppBarThemeMinHeight}" >
