@@ -4625,7 +4625,7 @@ void NavigationView::UpdateTitleBarPadding()
             {
                 if (IsOverlay())
                 {
-                    thickness = winrt::ThicknessHelper::FromLengths(c_backButtonHeight, 0, 0, 0);
+                    thickness = winrt::ThicknessHelper::FromLengths(c_backButtonWidth, 0, 0, 0);
                 }
                 else
                 {
@@ -4634,7 +4634,7 @@ void NavigationView::UpdateTitleBarPadding()
             }
             else if (ShouldShowCloseButton() && IsOverlay())
             {
-                thickness = winrt::ThicknessHelper::FromLengths(c_backButtonHeight, 0, 0, 0);
+                thickness = winrt::ThicknessHelper::FromLengths(c_backButtonWidth, 0, 0, 0);
             }
 
             if (setPaneTitleHolderFrameworkElementMargin)
