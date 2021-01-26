@@ -334,7 +334,6 @@
             <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
             <Color x:Key="LayerFillColorSecondary">#FFFFFF</Color>
             <Color x:Key="LayerFillColorTertiary">#40FFFFFF</Color>
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Opacity="0.25" Color="{ThemeResource SystemAccentColorLight3}"/>
 
             <Color x:Key="SolidBackgroundFillColorBase">#F3F3F3</Color>
             <Color x:Key="SolidBackgroundFillColorSecondary">#EEEEEE</Color>
@@ -437,6 +436,7 @@
             <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
             <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{StaticResource LayerFillColorSecondary}" />
             <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{StaticResource LayerFillColorTertiary}" />
+            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Opacity="0.25" Color="{ThemeResource SystemAccentColorLight3}"/>
 
             <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
