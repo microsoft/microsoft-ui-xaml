@@ -1,0 +1,30 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <Color x:Key="HyperlinkForegroundColor">#FF99EBFF</Color>
+            <Color x:Key="HyperlinkForegroundPointerOverColor">#FF99EBFF</Color>
+            <Color x:Key="HyperlinkForegroundPressedColor">#FF4CC2FF</Color>
+
+            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource HyperlinkForegroundColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource HyperlinkForegroundPointerOverColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource HyperlinkForegroundPressedColor}"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource SystemColorWindowTextColor}"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="HyperlinkForegroundColor">#FF003E92</Color>
+            <Color x:Key="HyperlinkForegroundPointerOverColor">#FF001A68</Color>
+            <Color x:Key="HyperlinkForegroundPressedColor">#FF0067C0</Color>
+
+            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource HyperlinkForegroundColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource HyperlinkForegroundPointerOverColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource HyperlinkForegroundPressedColor}"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
