@@ -72,7 +72,7 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{StaticResource AccentFillColorDefault}"/>
+                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColor}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
@@ -169,7 +169,7 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{StaticResource AccentFillColorDefault}"/>
+                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColor}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
