@@ -20,6 +20,7 @@
             <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+            <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
             <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="ControlElevationBorderBrush" />
