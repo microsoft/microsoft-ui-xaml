@@ -100,7 +100,6 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
-      <UseNonstandardConditionalXAML>true</UseNonstandardConditionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
@@ -132,9 +131,19 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v2.5.xaml">

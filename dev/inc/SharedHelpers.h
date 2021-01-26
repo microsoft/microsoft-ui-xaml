@@ -16,6 +16,7 @@ public:
     static bool IsInDesignModeV2();
 
     // Logical OS version checks
+    static bool Is21H1OrHigher();
     static bool IsVanadiumOrHigher();
     static bool Is19H1OrHigher();
     static bool IsRS5OrHigher();
@@ -60,14 +61,17 @@ public:
 
     static bool IsCompositionRadialGradientBrushAvailable();
 
+    static bool IsSelectionIndicatorModeAvailable();
+
     // Actual OS version checks
-    static bool IsAPIContractV9Available(); // 19H2
-    static bool IsAPIContractV8Available(); // 19H1
-    static bool IsAPIContractV7Available(); // RS5
-    static bool IsAPIContractV6Available(); // RS4
-    static bool IsAPIContractV5Available(); // RS3
-    static bool IsAPIContractV4Available(); // RS2
-    static bool IsAPIContractV3Available(); // RS1
+    static bool IsAPIContractV13Available(); // 21H1
+    static bool IsAPIContractV9Available();  // 19H2
+    static bool IsAPIContractV8Available();  // 19H1
+    static bool IsAPIContractV7Available();  // RS5
+    static bool IsAPIContractV6Available();  // RS4
+    static bool IsAPIContractV5Available();  // RS3
+    static bool IsAPIContractV4Available();  // RS2
+    static bool IsAPIContractV3Available();  // RS1
 
     static bool IsInFrameworkPackage();
     static bool IsInCBSPackage();
