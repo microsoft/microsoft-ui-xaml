@@ -169,5 +169,10 @@ namespace MUXControlsTestApp
             }
             return numberOfPages;
         }
+
+        private void GoToExamplesPage(object sender, RoutedEventArgs args)
+        {
+            Frame.NavigateWithoutAnimation(typeof(PipsPagerExamples));
+        }
     }
 }
