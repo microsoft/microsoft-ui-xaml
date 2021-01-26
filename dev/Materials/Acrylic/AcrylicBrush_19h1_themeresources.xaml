@@ -45,7 +45,6 @@
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorDark2}"
                 BackgroundSource="HostBackdrop"/>
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Opacity="0.25" Color="{ThemeResource SystemAccentColorDark1}"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -84,7 +83,6 @@
                 TintOpacity="0.8"
                 FallbackColor="{ThemeResource SystemAccentColorLight2}"
                 BackgroundSource="HostBackdrop"/>
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Opacity="0.25" Color="{ThemeResource SystemAccentColorLight3}"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -95,7 +93,6 @@
             <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>
