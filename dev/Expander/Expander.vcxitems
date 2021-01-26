@@ -24,11 +24,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Expander.xaml">
-      <UseVisualStyle>Any</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
