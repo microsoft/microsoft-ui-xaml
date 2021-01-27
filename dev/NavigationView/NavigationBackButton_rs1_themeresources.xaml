@@ -8,10 +8,10 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="NavigationViewBackButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="NavigationViewBackButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="NavigationViewBackButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="NavigationViewBackButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="NavigationViewBackButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />

@@ -13,10 +13,10 @@
             <StaticResource x:Key="ToggleSwitchContentForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleSwitchHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackgroundPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackgroundPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- ColorAnimation requires TargetProperty to be Color thus some resources point to the colour instead of brush-->
             <StaticResource x:Key="ToggleSwitchFillOff" ResourceKey="ControlAltFillColorSecondaryBrush" />
@@ -138,10 +138,10 @@
             <StaticResource x:Key="ToggleSwitchContentForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleSwitchHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ToggleSwitchHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackgroundPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackgroundPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ToggleSwitchContainerBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ToggleSwitchContainerBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- ColorAnimation requires TargetProperty to be Color thus some resources point to the colour instead of brush-->
             <StaticResource x:Key="ToggleSwitchFillOff" ResourceKey="ControlAltFillColorSecondaryBrush" />
