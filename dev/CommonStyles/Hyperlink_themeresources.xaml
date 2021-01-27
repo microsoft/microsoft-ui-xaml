@@ -4,27 +4,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <Color x:Key="HyperlinkForegroundColor">#FF99EBFF</Color>
-            <Color x:Key="HyperlinkForegroundPointerOverColor">#FF99EBFF</Color>
-            <Color x:Key="HyperlinkForegroundPressedColor">#FF4CC2FF</Color>
-
-            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource HyperlinkForegroundColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource HyperlinkForegroundPointerOverColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource HyperlinkForegroundPressedColor}"/>
+            <StaticResource x:Key="HyperlinkForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
+            <StaticResource x:Key="HyperlinkForegroundPointerOver" ResourceKey="AccentTextFillColorSecondaryBrush" />
+            <StaticResource x:Key="HyperlinkForegroundPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource SystemColorWindowTextColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource SystemColorWindowTextColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource SystemColorHotlightColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource SystemColorHotlightColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource SystemColorHotlightColor}"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <Color x:Key="HyperlinkForegroundColor">#FF003E92</Color>
-            <Color x:Key="HyperlinkForegroundPointerOverColor">#FF001A68</Color>
-            <Color x:Key="HyperlinkForegroundPressedColor">#FF0067C0</Color>
-
-            <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource HyperlinkForegroundColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource HyperlinkForegroundPointerOverColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource HyperlinkForegroundPressedColor}"/>
+            <StaticResource x:Key="HyperlinkForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
+            <StaticResource x:Key="HyperlinkForegroundPointerOver" ResourceKey="AccentTextFillColorSecondaryBrush" />
+            <StaticResource x:Key="HyperlinkForegroundPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
