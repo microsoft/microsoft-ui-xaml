@@ -10,8 +10,8 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource SystemColorHotlightColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource SystemColorHotlightColor}"/>
-            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource SystemColorHotlightColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource SystemColorHighlightColor}"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="HyperlinkForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
