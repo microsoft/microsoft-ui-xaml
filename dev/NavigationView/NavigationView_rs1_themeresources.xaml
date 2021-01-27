@@ -303,7 +303,7 @@
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="PaneToggleButtonIconWidthColumn" Width="{ThemeResource PaneToggleButtonWidth}"/>
+                            <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -360,7 +360,8 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Viewbox
+                        <Border Width="{TemplateBinding MinWidth}">
+                            <Viewbox
                             x:Name="IconHost"
                             Width="16"
                             Height="16"
@@ -368,20 +369,20 @@
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw">
 
-                            <TextBlock
+                                <TextBlock
                                 x:Name="Icon"
                                 Text="&#xE700;"
                                 FontSize="{TemplateBinding FontSize}"
                                 AutomationProperties.AccessibilityView="Raw"/>
 
-                        </Viewbox>
-
+                            </Viewbox>
+                        </Border>
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             VerticalContentAlignment="Center"
                             Content="{TemplateBinding Content}"
                             FontSize="{TemplateBinding FontSize}"
-                            Margin="4,0,0,0"
+                            Padding="4,0,0,0"
                             Grid.Column="1"/>
                         
                     </Grid>
