@@ -225,6 +225,17 @@
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
 
+                    <Button Content="Test flyout">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel>
+                                    <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="All items will be removed. Do you want to continue?" Margin="0,0,0,12" />
+                                    <Button Content="Yes, empty my cart" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
                     <TextBlock  Text="Miscellaneous testing area" Style="{ThemeResource StandardGroupHeader}"/>
@@ -239,6 +250,81 @@
                         </Button.Resources>
                         <FontIcon Glyph="&#xE781;" />
                     </Button>
+                </StackPanel>
+                <StackPanel Style="{ThemeResource CompactPanelStyle}">
+                    <TextBlock  Text="ListViewItem/GridViewItem testing area" Style="{ThemeResource StandardGroupHeader}"/>
+                    <StackPanel Orientation='Horizontal' Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                        <StackPanel>
+                            <StackPanel Orientation='Horizontal'>
+                                <TextBlock Text='ListView - SelectionMode=' VerticalAlignment='Center' Margin='2'/>
+                                <ComboBox x:Name='cmbListViewSelectionMode' SelectedIndex='2' SelectionChanged="CmbListViewSelectionMode_SelectionChanged">
+                                    <ComboBoxItem>None</ComboBoxItem>
+                                    <ComboBoxItem>Single</ComboBoxItem>
+                                    <ComboBoxItem>Multiple</ComboBoxItem>
+                                    <ComboBoxItem>Extended</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                            <CheckBox x:Name='chkListViewIsEnabled' Content='IsEnabled?' IsChecked='True' Margin='2' Checked="ChkListViewIsEnabled_Checked" Unchecked="ChkListViewIsEnabled_Unchecked"/>
+                            <ListView x:Name='listView1' CanReorderItems='True' AllowDrop='True' SelectionMode='Multiple' Width='300' HorizontalAlignment='Left' Margin='2'>
+                                <ListViewItem x:Name='listViewItem1' Content='List Item 1'/>
+                                <ListViewItem x:Name='listViewItem2' Content='List Item 2'/>
+                                <ListViewItem x:Name='listViewItem3' Content='List Item 3' IsSelected='true'/>
+                            </ListView>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation='Horizontal'>
+                                <TextBlock Text='GridView - SelectionMode=' VerticalAlignment='Center' Margin='2'/>
+                                <ComboBox x:Name='cmbGridViewSelectionMode' SelectedIndex='2' SelectionChanged="CmbGridViewSelectionMode_SelectionChanged">
+                                    <ComboBoxItem>None</ComboBoxItem>
+                                    <ComboBoxItem>Single</ComboBoxItem>
+                                    <ComboBoxItem>Multiple</ComboBoxItem>
+                                    <ComboBoxItem>Extended</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                            <CheckBox x:Name='chkGridViewIsEnabled' Content='IsEnabled?' IsChecked='True' Margin='2' Checked="ChkGridViewIsEnabled_Checked" Unchecked="ChkGridViewIsEnabled_Unchecked"/>
+                            <GridView x:Name='gridView1' CanReorderItems='True' AllowDrop='True' SelectionMode='Multiple' Width='300' HorizontalAlignment='Left' Margin='2'>
+                                <GridViewItem x:Name='gridViewItem1' Content='Item 1' MinWidth='120' MinHeight='60'/>
+                                <GridViewItem x:Name='gridViewItem2' Content='Item 2' MinWidth='120' MinHeight='60'/>
+                                <GridViewItem x:Name='gridViewItem3' Content='Item 3' MinWidth='120' MinHeight='60' IsSelected='true'/>
+                            </GridView>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation='Horizontal' Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                        <StackPanel>
+                            <TextBlock Text='ListView - SelectionMode=Extended:' Margin='2'/>
+                            <ListView x:Name='listView2' CanReorderItems='True' AllowDrop='True' SelectionMode='Extended' Width='300' HorizontalAlignment='Left' Margin='2'>
+                                <ListViewItem x:Name='listViewItem4' Content='List Item 4' Height='5'/>
+                                <ListViewItem x:Name='listViewItem5' Content='List Item 5' Height='70'/>
+                                <ListViewItem x:Name='listViewItem6' Content='List Item 6' Height='90' IsSelected='true'/>
+                            </ListView>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text='GridView - SelectionMode=Extended:' Margin='2'/>
+                            <GridView x:Name='gridView2' CanReorderItems='True' AllowDrop='True' SelectionMode='Extended' Width='300' HorizontalAlignment='Left' Margin='2'>
+                                <GridViewItem x:Name='gridViewItem4' Content='Item 4' MinWidth='120' MinHeight='60'/>
+                                <GridViewItem x:Name='gridViewItem5' Content='Item 5' MinWidth='120' MinHeight='60'/>
+                                <GridViewItem x:Name='gridViewItem6' Content='Item 6' MinWidth='120' MinHeight='60' IsSelected='true'/>
+                            </GridView>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation='Horizontal' Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                        <StackPanel>
+                            <TextBlock Text='ListView - SelectionMode=Single:' Margin='2'/>
+                            <ListView x:Name='listView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
+                                <ListViewItem x:Name='listViewItem7' Content='List Item 7'/>
+                                <ListViewItem x:Name='listViewItem8' Content='List Item 8'/>
+                                <ListViewItem x:Name='listViewItem9' Content='List Item 9' IsSelected='true'/>
+                            </ListView>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text='GridView - SelectionMode=Single:' Margin='2'/>
+                            <GridView x:Name='gridView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
+                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60'/>
+                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60'/>
+                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' IsSelected='true'/>
+                            </GridView>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
             <StackPanel>

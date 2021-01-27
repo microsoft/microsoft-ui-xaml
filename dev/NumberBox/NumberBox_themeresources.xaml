@@ -17,7 +17,7 @@
             <contract7NotPresent:StaticResource x:Key="NumberBoxPopupBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="NumberBoxPopupBorderThickness">1</Thickness>
 
-            <StaticResource x:Key="NumberBoxPopupSpinButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="NumberBoxPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">0</Thickness>
         </ResourceDictionary>
 
@@ -32,7 +32,7 @@
             <contract7NotPresent:StaticResource x:Key="NumberBoxPopupBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <Thickness x:Key="NumberBoxPopupBorderThickness">1</Thickness>
 
-            <StaticResource x:Key="NumberBoxPopupSpinButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="NumberBoxPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">0</Thickness>
         </ResourceDictionary>
 

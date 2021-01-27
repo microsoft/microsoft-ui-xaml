@@ -51,6 +51,16 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
@@ -78,6 +88,11 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RichEditBox_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
@@ -111,9 +126,19 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v2.5.xaml">
