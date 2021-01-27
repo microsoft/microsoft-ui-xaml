@@ -16,15 +16,15 @@
             <StaticResource x:Key="ExpanderBorderPointerOverBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="ExpanderBorderPressedBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="ExpanderDropDownBrush" ResourceKey="ExpanderBorderBrush" />
-            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronPointerOverBackground" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ExpanderChevronPressedBackground" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronPointerOverBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ExpanderChevronPressedBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ExpanderChevronPointerOverForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ExpanderChevronPressedForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronBorderPointerOverBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronBorderPressedBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="ExpanderBorderBrush" />
             <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
@@ -41,15 +41,15 @@
             <StaticResource x:Key="ExpanderBorderPointerOverBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="ExpanderBorderPressedBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="ExpanderDropDownBrush" ResourceKey="ExpanderBorderBrush" />
-            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronPointerOverBackground" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ExpanderChevronPressedBackground" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronPointerOverBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ExpanderChevronPressedBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ExpanderChevronPointerOverForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ExpanderChevronPressedForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronBorderPointerOverBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronBorderPressedBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ExpanderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ExpanderDisabledBorderBrush" ResourceKey="ExpanderBorderBrush" />
             <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
