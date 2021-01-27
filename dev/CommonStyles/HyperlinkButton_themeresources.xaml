@@ -9,14 +9,14 @@
             <StaticResource x:Key="HyperlinkButtonForegroundPointerOver" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
             <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="AccentTextFillColorDisabledBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <Thickness x:Key="HyperlinkButtonBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
@@ -24,14 +24,14 @@
             <StaticResource x:Key="HyperlinkButtonForegroundPointerOver" ResourceKey="AccentTextFillColorPrimaryBrush" />
             <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
             <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="AccentTextFillColorDisabledBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="HyperlinkButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="HyperlinkButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <Thickness x:Key="HyperlinkButtonBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">

@@ -38,6 +38,11 @@ bool SharedHelpers::IsInDesignModeV2()
 }
 
 // logical helpers
+bool SharedHelpers::Is21H1OrHigher()
+{
+    return IsAPIContractV13Available();
+}
+
 bool SharedHelpers::IsVanadiumOrHigher()
 {
     return IsAPIContractV9Available();
@@ -194,7 +199,7 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =
-         IsVanadiumOrHigher() ||
+        IsVanadiumOrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
     return s_isThemeShadowAvailable;
 }
@@ -209,8 +214,16 @@ bool SharedHelpers::IsIsLoadedAvailable()
 
 bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
 {
-    static bool s_isAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
+    static bool s_isAvailable =
+        Is21H1OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
     return s_isAvailable;
+}
+
+bool SharedHelpers::IsSelectionIndicatorModeAvailable()
+{
+    static bool s_isSelectionIndicatorModeAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
+    return s_isSelectionIndicatorModeAvailable;
 }
 
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
@@ -227,6 +240,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 }
 
 // base helpers
+bool SharedHelpers::IsAPIContractV13Available()
+{
+    return IsAPIContractVxAvailable<13>();
+}
+
 bool SharedHelpers::IsAPIContractV9Available()
 {
     return IsAPIContractVxAvailable<9>();
@@ -602,6 +620,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return pathIcon;
     }
+#ifdef ANIMATEDICON_INCLUDED
     else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
     {
         winrt::AnimatedIcon animatedIcon;
@@ -619,6 +638,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return animatedIcon;
     }
+#endif
 
     return nullptr;
 }

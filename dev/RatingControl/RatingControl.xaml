@@ -52,7 +52,9 @@
 
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="-20,-20,-20,-20">
                             <StackPanel x:Name="RatingBackgroundStackPanel" Orientation="Horizontal" Background="Transparent" Margin="20,20,0,20"/>
-                            <TextBlock x:Name="Caption" Height="32" Margin="4,9,20,0" TextLineBounds="TrimToBaseline" Style="{ThemeResource CaptionTextBlockStyle}" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw" AutomationProperties.Name="RatingCaption" IsHitTestVisible="False" Text="{TemplateBinding Caption}"/>
+                            <TextBlock x:Name="Caption" Height="32" Margin="4,9,20,0" TextLineBounds="TrimToBaseline" Style="{ThemeResource CaptionTextBlockStyle}"
+                                Foreground="{ThemeResource RatingControlCaptionForeground}" VerticalAlignment="Center" IsHitTestVisible="False" 
+                                AutomationProperties.AccessibilityView="Raw" AutomationProperties.Name="RatingCaption" Text="{TemplateBinding Caption}"/>
                             <!-- 4 = 8 item spacing +4 of magic redline spacing -8 to compensate for scale of the last RatingItem -->
                             <!-- NB: The redlines say 8px, but it's really 12 px because:
                                 Designer note: The value between the last glyph and first text character is 12px.

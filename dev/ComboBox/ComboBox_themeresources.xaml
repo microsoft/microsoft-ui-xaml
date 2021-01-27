@@ -32,30 +32,30 @@
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedUnfocused" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedUnfocused" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <StaticResource x:Key="ComboBoxBackground" ResourceKey="ControlFillColorDefaultBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="ControlFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ComboBoxBackgroundUnfocused" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -126,8 +126,8 @@
 
             <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
-            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
             <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="TextFillColorSecondaryBrush" />
@@ -278,30 +278,30 @@
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedUnfocused" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPointerOver" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedUnfocused" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <StaticResource x:Key="ComboBoxBackground" ResourceKey="ControlFillColorDefaultBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="ControlFillColorTertiaryBrush" />
-            <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ComboBoxBackgroundUnfocused" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushFocused" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="ComboBoxBackgroundBorderBrushUnfocused" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -372,8 +372,8 @@
 
             <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
             <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
-            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="ControlFillColorTertiaryBrush" />
             <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
             <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="TextFillColorSecondaryBrush" />
