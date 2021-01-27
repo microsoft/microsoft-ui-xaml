@@ -17,7 +17,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbItem">
 
-                    <Button x:Name="PART_BreadcrumbItemButton">
+                    <Button x:Name="PART_BreadcrumbItemButton" AutomationProperties.Name="BreadcrumbItemButton">
                         <VisualStateManager.VisualStateGroups>
 
                             <VisualStateGroup x:Name="ItemTypeStates">

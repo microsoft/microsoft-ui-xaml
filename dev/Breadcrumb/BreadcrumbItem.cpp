@@ -127,6 +127,9 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     {
         element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
     }
+
+    hstring name = L"EllipsisItem" + winrt::to_hstring(args.Index() + 1);
+    winrt::AutomationProperties::SetName(element, name);
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -299,6 +302,8 @@ void BreadcrumbItem::InstantiateFlyout()
     {
         // Create ItemsRepeater and set the DataTemplate 
         const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
+        ellipsisItemsRepeater.Name(L"PART_EllipsisItemsRepeater");
+        winrt::AutomationProperties::SetName(ellipsisItemsRepeater, L"EllipsisItemsRepeater");
         ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
 
         if (const auto& dataTemplate = m_ellipsisDataTemplate.get())
@@ -312,6 +317,7 @@ void BreadcrumbItem::InstantiateFlyout()
 
         // Create the Flyout and add the ItemsRepeater as content
         const auto& ellipsisFlyout = winrt::Flyout();
+        winrt::AutomationProperties::SetName(ellipsisFlyout, L"EllipsisFlyout");
         ellipsisFlyout.Content(ellipsisItemsRepeater);
         ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
 
