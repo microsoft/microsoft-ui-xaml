@@ -301,7 +301,7 @@
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="PaneToggleButtonIconWidthColumn" Width="{ThemeResource PaneToggleButtonWidth}"/>
+                            <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -358,22 +358,22 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Viewbox
+                        <Border Width="{TemplateBinding MinWidth}">
+                            <Viewbox
                             x:Name="IconHost"
                             Width="16"
                             Height="16"
                             HorizontalAlignment="Center"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw">
-
-                            <TextBlock
+                                <TextBlock
                                 x:Name="Icon"
                                 Text="&#xE700;"
                                 FontSize="{TemplateBinding FontSize}"
                                 AutomationProperties.AccessibilityView="Raw"/>
+                            </Viewbox>
+                        </Border>
 
-                        </Viewbox>
-                        
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             VerticalContentAlignment="Center"

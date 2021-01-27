@@ -368,15 +368,14 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw">
-
                                 <TextBlock
                                 x:Name="Icon"
                                 Text="&#xE700;"
                                 FontSize="{TemplateBinding FontSize}"
                                 AutomationProperties.AccessibilityView="Raw"/>
-
                             </Viewbox>
                         </Border>
+
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             VerticalContentAlignment="Center"
@@ -384,7 +383,6 @@
                             FontSize="{TemplateBinding FontSize}"
                             Padding="4,0,0,0"
                             Grid.Column="1"/>
-                        
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

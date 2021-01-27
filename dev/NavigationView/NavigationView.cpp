@@ -1742,6 +1742,7 @@ void NavigationView::UpdatePaneButtonsWidths()
             return static_cast<double>(c_paneToggleButtonWidth);
         }
         return CompactPaneLength();
+    }();
  
     templateSettings->PaneButtonWidth(newButtonWidths);
     templateSettings->LatestPaneButtonWidth(newButtonWidths - 8);
