@@ -223,7 +223,7 @@
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicInAppFillColorDefaultBrush"
-                TintColor="#1C1C1C"
+                TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="Backdrop"/>
