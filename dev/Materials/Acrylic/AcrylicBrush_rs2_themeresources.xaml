@@ -217,7 +217,7 @@
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultBrush"
-                TintColor="#1C1C1C"
+                TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
@@ -231,11 +231,11 @@
                 x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
-                FallbackColor="#FCFCFC"
+                FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
-                TintColor="#1C1C1C"
+                TintColor="#202020"
                 TintOpacity="0.8"
                 FallbackColor="#202020"
                 BackgroundSource="HostBackdrop"/>
@@ -465,7 +465,7 @@
                 x:Key="AcrylicBackgroundFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
-                FallbackColor="#FCFCFC"
+                FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicInAppFillColorDefaultBrush"
@@ -475,9 +475,9 @@
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
-                TintColor="#1C1C1C"
+                TintColor="#2C2C2C"
                 TintOpacity="0.8"
-                FallbackColor="#202020"
+                FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorBaseBrush"
