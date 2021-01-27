@@ -245,7 +245,7 @@
             <StaticResource x:Key="ButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="ButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.Primitives.RepeatButton -->
             <StaticResource x:Key="RepeatButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="RepeatButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
@@ -254,7 +254,7 @@
             <StaticResource x:Key="RepeatButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="RepeatButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="RepeatButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="RepeatButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="RepeatButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.Primitives.ToggleButton -->
             <StaticResource x:Key="ToggleButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="ToggleButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
@@ -271,36 +271,36 @@
             <StaticResource x:Key="ToggleButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushChecked" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminate" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminateDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminateDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <!-- Resources for ellipsis button in Windows.UI.Xaml.Controls.CommandBar -->
             <StaticResource x:Key="AppBarEllipsisButtonRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
-            <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushPressed" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
-            <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.AppBarButton -->
             <StaticResource x:Key="AppBarButtonRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarButtonRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarButtonRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
-            <StaticResource x:Key="AppBarButtonRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
             <StaticResource x:Key="AppBarButtonRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
-            <StaticResource x:Key="AppBarButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.AppBarToggleButton -->
             <StaticResource x:Key="AppBarToggleButtonRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
-            <StaticResource x:Key="AppBarToggleButtonRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBackgroundHighLightOverlay" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBackgroundHighLightOverlayPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBackgroundHighLightOverlayPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
@@ -309,11 +309,11 @@
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushChecked" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedPointerOver" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.ListViewItem -->
             <StaticResource x:Key="ListViewItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
@@ -322,7 +322,7 @@
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.GridViewItem -->
@@ -338,21 +338,21 @@
             <StaticResource x:Key="ComboBoxItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedUnfocused" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelected" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedUnfocused" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- Other Resource Forwarders -->
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
@@ -594,7 +594,7 @@
             <StaticResource x:Key="ButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="ButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.Primitives.RepeatButton -->
             <StaticResource x:Key="RepeatButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="RepeatButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
@@ -603,7 +603,7 @@
             <StaticResource x:Key="RepeatButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="RepeatButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="RepeatButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="RepeatButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="RepeatButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.Primitives.ToggleButton -->
             <StaticResource x:Key="ToggleButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="ToggleButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
@@ -620,36 +620,36 @@
             <StaticResource x:Key="ToggleButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushChecked" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminate" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowRevealBorderBrush" />
             <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminateDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="ToggleButtonRevealBorderBrushIndeterminateDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <!-- Resources for ellipsis button in Windows.UI.Xaml.Controls.CommandBar -->
             <StaticResource x:Key="AppBarEllipsisButtonRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
-            <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarEllipsisButtonRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushPressed" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
-            <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarEllipsisButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.AppBarButton -->
             <StaticResource x:Key="AppBarButtonRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarButtonRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarButtonRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
-            <StaticResource x:Key="AppBarButtonRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
             <StaticResource x:Key="AppBarButtonRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
-            <StaticResource x:Key="AppBarButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.AppBarToggleButton -->
             <StaticResource x:Key="AppBarToggleButtonRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
-            <StaticResource x:Key="AppBarToggleButtonRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBackgroundHighLightOverlay" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBackgroundHighLightOverlayPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBackgroundHighLightOverlayPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
@@ -658,11 +658,11 @@
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushChecked" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedPointerOver" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
             <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedPressed" ResourceKey="SystemControlHighlightTransparentRevealBorderBrush" />
-            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarToggleButtonRevealBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.ListViewItem -->
             <StaticResource x:Key="ListViewItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
@@ -671,7 +671,7 @@
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
             <StaticResource x:Key="ListViewItemRevealPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ListViewItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <!-- Resources for Windows.UI.Xaml.Controls.GridViewItem -->
@@ -687,21 +687,21 @@
             <StaticResource x:Key="ComboBoxItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBackgroundDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedUnfocused" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedPressed" ResourceKey="SystemControlHighlightAccent3RevealAccent2BackgroundBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrush" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBackgroundSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrushDisabled" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelected" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedUnfocused" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
             <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedPointerOver" ResourceKey="SystemControlTransparentRevealBorderBrush" />
-            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedDisabled" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ComboBoxItemRevealBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
 
             <!-- Other Resource Forwarders -->
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
@@ -2018,9 +2018,9 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="BorderRectangle.Visibility" Value="Visible"/>
-                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource GhostFillColorSecondaryBrush}"/>
+                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource GhostFillColorSecondaryBrush}"/>
+                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryThickness" Value="2"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundPointerOver}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="PointerOver"/>
@@ -2034,9 +2034,9 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="BorderRectangle.Visibility" Value="Visible"/>
-                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource GhostFillColorTertiaryBrush}"/>
+                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource GhostFillColorTertiaryBrush}"/>
+                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryThickness" Value="2"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundPressed}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="Pressed"/>
@@ -2086,9 +2086,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheck.Visibility" Value="Visible"/>
                                         <Setter Target="BorderRectangle.Visibility" Value="Visible"/>
-                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource GhostFillColorTertiaryBrush}"/>
+                                        <Setter Target="BorderRectangle.Stroke" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource GhostFillColorTertiaryBrush}"/>
+                                        <Setter Target="ContentBorder.FocusVisualSecondaryBrush" Value="{ThemeResource SubtleFillColorTertiaryBrush}"/>
                                         <Setter Target="ContentBorder.FocusVisualSecondaryThickness" Value="2"/>
                                         <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelectedPressed}"/>
@@ -2295,7 +2295,7 @@
                         <Rectangle x:Name="PlaceholderRect" Visibility="Collapsed" Fill="{ThemeResource GridViewItemRevealPlaceholderBackground}" />
                         <Rectangle x:Name="BorderRectangle"  
                             IsHitTestVisible="False"  
-                            Stroke="{ThemeResource GhostFillColorTertiaryBrush}"  
+                            Stroke="{ThemeResource SubtleFillColorTertiaryBrush}"  
                             StrokeThickness="2"  
                             Visibility="Collapsed"/>
                         <Border x:Name="MultiSelectSquare"  

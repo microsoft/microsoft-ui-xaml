@@ -17,13 +17,13 @@
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
             <x:Double x:Key="ListViewItemMinHeight">38</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
-            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
@@ -36,7 +36,7 @@
             <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />   
@@ -76,7 +76,7 @@
             <StaticResource x:Key="ListViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemSelectionIndicatorPointerOverBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemSelectionIndicatorPressedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
@@ -175,13 +175,13 @@
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
             <x:Double x:Key="ListViewItemMinHeight">38</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
-            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
@@ -194,7 +194,7 @@
             <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="ControlAltFillColorSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
             <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
             <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" /> 
@@ -233,7 +233,7 @@
             <StaticResource x:Key="ListViewItemCheckBoxPointerOverBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxPressedBorderBrush" ResourceKey="ControlAAStrokeColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemCheckBoxDisabledBorderBrush" ResourceKey="ControlAAStrokeColorDisabledBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedDisabled" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemSelectionIndicatorPointerOverBrush" ResourceKey="AccentAAFillColorDefaultBrush" />
             <StaticResource x:Key="ListViewItemSelectionIndicatorPressedBrush" ResourceKey="AccentAAFillColorDefaultBrush" />

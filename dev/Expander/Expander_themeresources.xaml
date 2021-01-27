@@ -6,14 +6,14 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimaryBrush" />
         </ResourceDictionary>
 
