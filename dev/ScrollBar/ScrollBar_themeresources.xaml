@@ -189,10 +189,10 @@
     <Thickness x:Key="ScrollBarMargin">1</Thickness>
 
     <x:Double x:Key="ScrollBarVerticalThumbMinHeight">30</x:Double>
-    <x:Double x:Key="ScrollBarVerticalThumbMinWidth">2</x:Double>
+    <x:Double x:Key="ScrollBarVerticalThumbMinWidth">8</x:Double>
 
     <x:Double x:Key="ScrollBarHorizontalThumbMinWidth">30</x:Double>
-    <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">2</x:Double>
+    <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">8</x:Double>
 
     <Thickness x:Key="ScrollBarThumbBorderThickness">6,6,6,6</Thickness>
 
@@ -201,10 +201,6 @@
     <x:String x:Key="ScrollBarContractBeginTime">00:00:02.00</x:String>
     <CornerRadius x:Key="ScrollBarCornerRadius">3,3,3,3</CornerRadius>
     <CornerRadius x:Key="ScrollBarTrackCornerRadius">6,6,6,6</CornerRadius>
-
-    <!-- These resources are to clip the Thumb visual to have the correct hit area. It clips by half of stroke thickness from both sides (depending on orientation). -->
-    <x:String x:Key="ScrollBarVerticalThumbClipRectangleGeometry">0,3,12,24</x:String>
-    <x:String x:Key="ScrollBarHorizontalThumbClipRectangleGeometry">3,0,24,12</x:String>
 
     <primitives:CornerRadiusFilterConverter x:Key="TopLeftCornerRadiusDoubleValueConverter8x" Filter="TopLeftValue" Scale="8"/>
     <primitives:CornerRadiusFilterConverter x:Key="BottomRightCornerRadiusDoubleValueConverter8x" Filter="BottomRightValue" Scale="8"/>
@@ -695,9 +691,6 @@
                                 <Thumb.RenderTransform>
                                     <TranslateTransform x:Name="HorizontalThumbTransform" Y="{StaticResource ScrollBarThumbOffset}" />
                                 </Thumb.RenderTransform>
-                                <Thumb.Clip>
-                                    <RectangleGeometry Rect="{StaticResource ScrollBarHorizontalThumbClipRectangleGeometry}"/>
-                                </Thumb.Clip>
                             </Thumb>
 
                             <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
@@ -736,9 +729,6 @@
                                 <Thumb.RenderTransform>
                                     <TranslateTransform x:Name="VerticalThumbTransform" X="{StaticResource ScrollBarThumbOffset}" />
                                 </Thumb.RenderTransform>
-                                <Thumb.Clip>
-                                    <RectangleGeometry Rect="{StaticResource ScrollBarVerticalThumbClipRectangleGeometry}"/>
-                                </Thumb.Clip>
                             </Thumb>
 
                             <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
