@@ -57,7 +57,7 @@
                 x:Key="AcrylicInAppFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.0"
-                FallbackColor="#FCFCFC"
+                FallbackColor="#F9F9F9"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
                 x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
