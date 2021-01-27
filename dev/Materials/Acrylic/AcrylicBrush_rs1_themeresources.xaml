@@ -49,7 +49,6 @@
             <StaticResource x:Key="AcrylicInAppFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#F2F2F2" />
             <StaticResource x:Key="AcrylicBackgroundFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -96,7 +95,6 @@
             <StaticResource x:Key="AcrylicInAppFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#2B2B2B" />
             <StaticResource x:Key="AcrylicBackgroundFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -143,7 +141,6 @@
             <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
