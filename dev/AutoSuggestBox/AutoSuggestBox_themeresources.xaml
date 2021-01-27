@@ -321,6 +321,8 @@
                             IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
                             IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"
@@ -379,6 +381,8 @@
 
     <Style x:Key="DefaultAutoSuggestBoxStyle" TargetType="AutoSuggestBox">
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
         <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
@@ -425,6 +429,8 @@
                             FontFamily="{TemplateBinding FontFamily}"
                             FontWeight="{TemplateBinding FontWeight}"
                             FontStretch="{TemplateBinding FontStretch}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             ScrollViewer.BringIntoViewOnFocusChange="False"
                             Canvas.ZIndex="0"
                             Margin="0"
