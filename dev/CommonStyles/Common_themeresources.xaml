@@ -37,10 +37,10 @@
 
             <Color x:Key="ControlSolidFillColorDefault">#454545</Color>
 
-            <Color x:Key="GhostFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="GhostFillColorSecondary">#08FFFFFF</Color>
-            <Color x:Key="GhostFillColorTertiary">#0FFFFFFF</Color>
-            <Color x:Key="GhostFillColorDisabled">#00FFFFFF</Color>
+            <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="SubtleFillColorSecondary">#08FFFFFF</Color>
+            <Color x:Key="SubtleFillColorTertiary">#0FFFFFFF</Color>
+            <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
             <Color x:Key="ControlAltFillColorSecondary">#19000000</Color>
@@ -51,10 +51,8 @@
             <Color x:Key="ControlOnImageFillColorDefault">#B31C1C1C</Color>
             <Color x:Key="ControlOnImageFillColorSecondary">#1A1A1A</Color>
             <Color x:Key="ControlOnImageFillColorTertiary">#131313</Color>
-            <Color x:Key="ControlOnImageFillColorDisabled">#131313</Color>
-
-            <Color x:Key="AccentFillColorDefault">#0078D4</Color>
-
+            <Color x:Key="ControlOnImageFillColorDisabled">#1E1E1E</Color>
+            
             <Color x:Key="AccentAAFillColorDisabled">#28FFFFFF</Color>
 
             <Color x:Key="ControlStrokeColorDefault">#14FFFFFF</Color>
@@ -75,7 +73,7 @@
             <Color x:Key="SurfaceStrokeColorFlyout">#33000000</Color>
             <Color x:Key="SurfaceStrokeColorInverse">#0F000000</Color>
 
-            <Color x:Key="DividerStrokeColorDefault">#33000000</Color>
+            <Color x:Key="DividerStrokeColorDefault">#15FFFFFF</Color>
 
             <Color x:Key="FocusStrokeColorOuter">#FFFFFF</Color>
             <Color x:Key="FocusStrokeColorInner">#B3000000</Color>
@@ -94,7 +92,7 @@
             <Color x:Key="SolidBackgroundFillColorTertiary">#282828</Color>
             <Color x:Key="SolidBackgroundFillColorQuarternary">#2C2C2C</Color>
 
-            <Color x:Key="SystemFillColorAttention">#0070CB</Color>
+            <Color x:Key="SystemFillColorAttention">#50C0FF</Color>
             <Color x:Key="SystemFillColorSuccess">#6CCB5F</Color>
             <Color x:Key="SystemFillColorCaution">#FCE100</Color>
             <Color x:Key="SystemFillColorCritical">#FF99A4</Color>
@@ -136,10 +134,10 @@
 
             <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{StaticResource ControlSolidFillColorDefault}" />
 
-            <SolidColorBrush x:Key="GhostFillColorTransparentBrush" Color="{StaticResource GhostFillColorTransparent}" />
-            <SolidColorBrush x:Key="GhostFillColorSecondaryBrush" Color="{StaticResource GhostFillColorSecondary}" />
-            <SolidColorBrush x:Key="GhostFillColorTertiaryBrush" Color="{StaticResource GhostFillColorTertiary}" />
-            <SolidColorBrush x:Key="GhostFillColorDisabledBrush" Color="{StaticResource GhostFillColorDisabled}" />
+            <SolidColorBrush x:Key="SubtleFillColorTransparentBrush" Color="{StaticResource SubtleFillColorTransparent}" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="{StaticResource SubtleFillColorSecondary}" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{StaticResource SubtleFillColorTertiary}" />
+            <SolidColorBrush x:Key="SubtleFillColorDisabledBrush" Color="{StaticResource SubtleFillColorDisabled}" />
 
             <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="{StaticResource ControlAltFillColorTransparent}" />
             <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{StaticResource ControlAltFillColorSecondary}" />
@@ -282,10 +280,10 @@
 
             <Color x:Key="ControlSolidFillColorDefault">#FFFFFF</Color>
 
-            <Color x:Key="GhostFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="GhostFillColorSecondary">#06000000</Color>
-            <Color x:Key="GhostFillColorTertiary">#0A000000</Color>
-            <Color x:Key="GhostFillColorDisabled">#00FFFFFF</Color>
+            <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
+            <Color x:Key="SubtleFillColorSecondary">#06000000</Color>
+            <Color x:Key="SubtleFillColorTertiary">#0A000000</Color>
+            <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
             <Color x:Key="ControlAltFillColorSecondary">#06000000</Color>
@@ -297,8 +295,6 @@
             <Color x:Key="ControlOnImageFillColorSecondary">#F3F3F3</Color>
             <Color x:Key="ControlOnImageFillColorTertiary">#EBEBEB</Color>
             <Color x:Key="ControlOnImageFillColorDisabled">#00FFFFFF</Color>
-
-            <Color x:Key="AccentFillColorDefault">#0078D4</Color>
 
             <Color x:Key="AccentAAFillColorDisabled">#37000000</Color>
 
@@ -320,7 +316,7 @@
             <Color x:Key="SurfaceStrokeColorFlyout">#0F000000</Color>
             <Color x:Key="SurfaceStrokeColorInverse">#15FFFFFF</Color>
 
-            <Color x:Key="DividerStrokeColorDefault">#14000000</Color>
+            <Color x:Key="DividerStrokeColorDefault">#0F000000</Color>
 
             <Color x:Key="FocusStrokeColorOuter">#E4000000</Color>
             <Color x:Key="FocusStrokeColorInner">#B3FFFFFF</Color>
@@ -340,9 +336,9 @@
             <Color x:Key="SolidBackgroundFillColorQuarternary">#FFFFFF</Color>
 
             <Color x:Key="SystemFillColorAttention">#0070CB</Color>
-            <Color x:Key="SystemFillColorSuccess">#117D11</Color>
-            <Color x:Key="SystemFillColorCaution">#A16100</Color>
-            <Color x:Key="SystemFillColorCritical">#D03728</Color>
+            <Color x:Key="SystemFillColorSuccess">#0F7B0F</Color>
+            <Color x:Key="SystemFillColorCaution">#9D5D00</Color>
+            <Color x:Key="SystemFillColorCritical">#C42B1C</Color>
             <Color x:Key="SystemFillColorNeutral">#72000000</Color>
             <Color x:Key="SystemFillColorAttentionBackground">#80F6F6F6</Color>
             <Color x:Key="SystemFillColorSuccessBackground">#DFF6DD</Color>
@@ -381,10 +377,10 @@
 
             <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{StaticResource ControlSolidFillColorDefault}" />
 
-            <SolidColorBrush x:Key="GhostFillColorTransparentBrush" Color="{StaticResource GhostFillColorTransparent}" />
-            <SolidColorBrush x:Key="GhostFillColorSecondaryBrush" Color="{StaticResource GhostFillColorSecondary}" />
-            <SolidColorBrush x:Key="GhostFillColorTertiaryBrush" Color="{StaticResource GhostFillColorTertiary}" />
-            <SolidColorBrush x:Key="GhostFillColorDisabledBrush" Color="{StaticResource GhostFillColorDisabled}" />
+            <SolidColorBrush x:Key="SubtleFillColorTransparentBrush" Color="{StaticResource SubtleFillColorTransparent}" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="{StaticResource SubtleFillColorSecondary}" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{StaticResource SubtleFillColorTertiary}" />
+            <SolidColorBrush x:Key="SubtleFillColorDisabledBrush" Color="{StaticResource SubtleFillColorDisabled}" />
 
             <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="{StaticResource ControlAltFillColorTransparent}" />
             <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{StaticResource ControlAltFillColorSecondary}" />
@@ -527,10 +523,10 @@
 
             <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
 
-            <SolidColorBrush x:Key="GhostFillColorTransparentBrush" Color="Transparent" />
-            <SolidColorBrush x:Key="GhostFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="GhostFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="GhostFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="SubtleFillColorTransparentBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="SubtleFillColorDisabledBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
 
             <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
