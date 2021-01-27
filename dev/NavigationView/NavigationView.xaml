@@ -582,6 +582,7 @@
                                 <VisualState x:Name="OnLeftNavigation">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
+                                        <Setter Target="NavigationViewItemPresenter.MinWidth" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LatestPaneButtonWidth}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimary">
@@ -607,7 +608,7 @@
                             Icon="{TemplateBinding Icon}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Margin="{TemplateBinding Margin}"
+                            MinWidth="{TemplateBinding MinWidth}"
                             Padding="{TemplateBinding Padding}"
                             Foreground="{TemplateBinding Foreground}"
                             Background="{TemplateBinding Background}"

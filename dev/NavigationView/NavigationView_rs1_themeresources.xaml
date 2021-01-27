@@ -527,6 +527,7 @@
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="MinWidth" Value="{ThemeResource NavigationViewIconBoxWidth}" />
         <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -663,18 +664,20 @@
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                                 HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewIconBoxWidth}" />
+                                    <ColumnDefinition x:Name="IconColumn" Width="auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Viewbox x:Name="IconBox"
-                                Height="16"
-                                Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
+                                <Border Width="{TemplateBinding MinWidth}">
+                                    <Viewbox x:Name="IconBox"
+                                        Height="16"
+                                        Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                     <ContentPresenter 
                                     x:Name="Icon" 
                                     Content="{TemplateBinding Icon}" />
-                                </Viewbox>
+                                    </Viewbox>
+                                </Border>
 
                                 <ContentPresenter
                                     x:Name="ContentPresenter"

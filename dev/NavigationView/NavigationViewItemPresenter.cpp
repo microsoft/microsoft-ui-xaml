@@ -133,7 +133,7 @@ void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLeng
         {
             auto gridLength = iconGridColumn.Width();
             gridLength.Value = compactPaneLength - 8;
-            iconGridColumn.Width(gridLength);
+            //iconGridColumn.Width(gridLength);
         }
     }
 }
