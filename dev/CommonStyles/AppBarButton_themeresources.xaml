@@ -8,10 +8,10 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="AppBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
@@ -24,7 +24,7 @@
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="ControlFillColorTransparentBrush" />
@@ -62,10 +62,10 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="AppBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
@@ -78,7 +78,7 @@
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="GhostFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="ControlFillColorTransparentBrush" />
