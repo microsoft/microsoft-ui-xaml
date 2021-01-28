@@ -227,7 +227,7 @@
     <Style x:Key="AccentButtonStyle" TargetType="Button">
         <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
         <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
-        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
