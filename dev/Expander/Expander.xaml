@@ -2,8 +2,8 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:local="using:Microsoft.UI.Xaml.Controls">
+    xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="local:Expander" BasedOn="{StaticResource DefaultExpanderStyle}"/>
 
@@ -21,7 +21,6 @@
                doesn't work how they would expect.-->
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Background" Value="{ThemeResource ExpanderBackground}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}"/>
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}"/>
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}"/>
@@ -31,6 +30,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Expander">
