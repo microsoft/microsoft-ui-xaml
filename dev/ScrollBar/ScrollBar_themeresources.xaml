@@ -194,7 +194,7 @@
     <x:Double x:Key="ScrollBarHorizontalThumbMinWidth">30</x:Double>
     <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">8</x:Double>
 
-    <Thickness x:Key="ScrollBarThumbBorderThickness">6</Thickness>
+    <x:Double x:Key="ScrollBarThumbStrokeThickness">6</x:Double>
 
     <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
     <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
@@ -357,7 +357,7 @@
                             <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">
                                 <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}"
                                            Stroke="{TemplateBinding BorderBrush}"
-                                           StrokeThickness="{Binding BorderThickness.Top, RelativeSource={RelativeSource TemplatedParent}}"
+                                           StrokeThickness="{StaticResource ScrollBarThumbStrokeThickness}"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                     <VisualStateManager.VisualStateGroups>
@@ -378,7 +378,7 @@
                             <ControlTemplate x:Key="HorizontalThumbTemplate" TargetType="Thumb">
                                 <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}"
                                            Stroke="{TemplateBinding BorderBrush}"
-                                           StrokeThickness="{Binding BorderThickness.Left, RelativeSource={RelativeSource TemplatedParent}}"
+                                           StrokeThickness="{StaticResource ScrollBarThumbStrokeThickness}"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                     <VisualStateManager.VisualStateGroups>
@@ -681,7 +681,6 @@
                                    Grid.Column="2"
                                    Background="{ThemeResource ScrollBarPanningThumbBackground}"
                                    BorderBrush="{ThemeResource ScrollBarThumbBorderBrush}"
-                                   BorderThickness="{StaticResource ScrollBarThumbBorderThickness}"
                                    Template="{StaticResource HorizontalThumbTemplate}"
                                    Height="{StaticResource ScrollBarHorizontalThumbMinHeight}"
                                    MinWidth="{StaticResource ScrollBarHorizontalThumbMinWidth}"
@@ -719,7 +718,6 @@
                                    Grid.Row="2"
                                    Background="{ThemeResource ScrollBarPanningThumbBackground}"
                                    BorderBrush="{ThemeResource ScrollBarThumbBorderBrush}"
-                                   BorderThickness="{StaticResource ScrollBarThumbBorderThickness}"
                                    Template="{StaticResource VerticalThumbTemplate}"
                                    Width="{StaticResource ScrollBarVerticalThumbMinWidth}"
                                    MinHeight="{StaticResource ScrollBarVerticalThumbMinHeight}"
