@@ -171,7 +171,7 @@
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
-                Background=#FFE6E6E6
+                Background=#00FFFFFF
                 Name=ScrollBarSeparator
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
