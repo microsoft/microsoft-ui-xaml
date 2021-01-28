@@ -808,6 +808,7 @@
         <Setter Property="Padding" Value="{ThemeResource ComboBoxItemThemePadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="-3"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ComboBoxItemCornerRadius}"/>
         <Setter Property="Template">
             <Setter.Value>
