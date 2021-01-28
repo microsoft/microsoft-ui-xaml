@@ -11,6 +11,8 @@ static constexpr auto c_AcrylicBackgroundFillColorDefaultBrush = L"AcrylicBackgr
 static constexpr auto c_AcrylicInAppFillColorDefaultBrush = L"AcrylicInAppFillColorDefaultBrush"sv;
 static constexpr auto c_AcrylicBackgroundFillColorDefaultInverseBrush = L"AcrylicBackgroundFillColorDefaultInverseBrush"sv;
 static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroundFillColorBaseBrush"sv;
+static constexpr auto c_AccentAcrylicBackgroundFillColorDefaultBrush = L"AccentAcrylicBackgroundFillColorDefaultBrush"sv;
+static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcrylicBackgroundFillColorBaseBrush"sv;
 
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
@@ -144,6 +146,14 @@ void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspect
     {
         acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.9);
     }
+    if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        accentAcrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.8);
+    }
+    if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        accentAcrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.8);
+    }
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspectable themeDictionary)
@@ -165,6 +175,14 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
         if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
             acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.96);
+        }
+        if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            accentAcrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.8);
+        }
+        if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            accentAcrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.8);
         }
     }
 }
