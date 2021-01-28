@@ -16,13 +16,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-using System.Linq;
-using Windows.AI.MachineLearning;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -99,7 +94,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public void AddAndRemoveItemsToBreadcrumbTest()
+        public void AddItemsAndInvokeBreadcrumbItemTest()
         {
             using (var setup = new TestSetupHelper("Breadcrumb Tests"))
             {
@@ -166,8 +161,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify only 3 ellipsis items exist");
                 var ellipsisItem4 = FindElement.ByName("EllipsisItem4");
                 Verify.IsNull(ellipsisItem4, "EllipsisItem4 was found");
-
-                // VerifyBreadcrumbItemsContain(breadcrumbItems, new string[] { "Root", "Node A", "Node A_2" });
             }
         }
 
@@ -203,6 +196,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ellipsisItem2.Invoke();
 
                 VerifyBreadcrumbItemsContain(breadcrumb.Children, new string[] { "Root", "Node A" });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void LeftRightKeyboardNavigationTest()
+        {
+            using (var setup = new TestSetupHelper("Breadcrumb Tests"))
+            {
+                Log.Comment("Retrieve breadcrumb control as generic UIElement");
+                UIObject breadcrumb = FindElement.ByName("BreadcrumbControl");
+                Verify.IsNotNull(breadcrumb, "Verifying that we found a UIElement called BreadcrumbControl");
+
+                ClickOnElements(new string[] { "Node A", "Node A_2", "Node A_2_3", "Node A_2_3_1" });               
+
+                var breadcrumbItems = breadcrumb.Children;
+                Verify.AreEqual(6, breadcrumbItems.Count, "The breadcrumb should contain 6 items: 5 items and an ellipsis");
+
+                UIObject rtlCheckbox = FindElement.ByName("RightToLeftCheckbox");
+                Verify.IsNotNull(rtlCheckbox, "Verifying that we found a UIElement called RightToLeftCheckbox");
+
+                FocusHelper.SetFocus(rtlCheckbox);
+                KeyboardHelper.PressKey(Key.Tab);
+
+                Log.Comment("Verify root node is focused");
+
+                UIObject bi1 = FindElement.ByName("BreadcrumbItem1");
+                Verify.IsNotNull(bi1, "BreadcrumbItem1 does not exist");
+
+                var i1 = breadcrumbItems[1];
+                Verify.IsTrue(i1.HasKeyboardFocus, "'Root' BreadcrumbItem doesn't have focus");
+
+                KeyboardHelper.PressKey(Key.Right);
+                KeyboardHelper.PressKey(Key.Tab);
+
+                Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Root' BreadcrumbItem doesn't have focus");
+
             }
         }
 
@@ -252,9 +282,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void VerifyEllipsisItemContainsText(Button ellipsisItem, string expectedEllipsisItemText)
         {
             var ellipsisItemTextBlock = ConvertTo<TextBlock>(ellipsisItem.FirstChild);
-            Assert.IsNotNull(ellipsisItemTextBlock, "The ellipsis Item should contain a Textblock as first item");
+            Verify.IsNotNull(ellipsisItemTextBlock, "The ellipsis Item should contain a Textblock as first item");
 
-            Assert.AreEqual(expectedEllipsisItemText, ellipsisItemTextBlock.GetText(), 
+            Verify.AreEqual(expectedEllipsisItemText, ellipsisItemTextBlock.GetText(), 
                 "The ellipsis item doesn't match " + expectedEllipsisItemText);
         }
     }

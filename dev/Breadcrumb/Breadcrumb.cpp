@@ -245,6 +245,8 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
                         // Any other element just resets the visual properties
                         itemImpl->ResetVisualProperties();
                     }
+
+                    winrt::AutomationProperties::SetName(item, L"BreadcrumbItem" + winrt::to_hstring(itemIndex));
                 }
             }
         }
@@ -256,6 +258,7 @@ void Breadcrumb::OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const w
     if (m_focusedIndex == args.OldIndex())
     {
         FocusElementAt(args.NewIndex());
+        winrt::AutomationProperties::SetName(args.Element(), L"BreadcrumbItem" + winrt::to_hstring(args.NewIndex()));
     }
 }
 
@@ -265,6 +268,8 @@ void Breadcrumb::OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt
     {
         const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item);
         itemImpl->ResetVisualProperties();
+
+        winrt::AutomationProperties::SetName(item, winrt::hstring());
     }
 }
 
