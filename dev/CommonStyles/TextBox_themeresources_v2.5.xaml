@@ -102,8 +102,6 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="VerticalContentAlignment" Value="Top"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
         <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
         <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
@@ -317,8 +315,6 @@
                             IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
                             IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"
