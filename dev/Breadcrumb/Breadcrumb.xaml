@@ -20,6 +20,14 @@
                     <Button x:Name="PART_BreadcrumbItemButton">
                         <VisualStateManager.VisualStateGroups>
 
+                            <VisualStateGroup x:Name="LargeTextNodeStates">
+                                <VisualState x:Name="Rest">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BFC1}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
                             <VisualStateGroup x:Name="ItemTypeStates">
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
@@ -71,7 +79,8 @@
                                 <ContentPresenter x:Name="PART_BreadcrumbItemContentPresenter"
                                                   Content="{TemplateBinding Content}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                  Grid.Column="0"/>
+                                                  Grid.Column="0"
+                                                  LineHeight="36"/>
 
                                 <TextBlock x:Name="PART_BreadcrumbEllipsisTextBlock"
                                            FontFamily="Segoe MDL2 Assets"
@@ -105,6 +114,7 @@
 
                     <local:ItemsRepeater x:Name="PART_BreadcrumbItemsRepeater"
                                          HorizontalAlignment="Left">
+                        
                         <local:ItemsRepeater.Layout>
                             <local:BreadcrumbLayout />
                         </local:ItemsRepeater.Layout>

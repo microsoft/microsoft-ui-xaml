@@ -220,6 +220,8 @@ void BreadcrumbItem::UpdateVisualState()
     const bool isLeftToRight = (FlowDirection() == winrt::FlowDirection::LeftToRight);
     hstring visualStateName;
 
+    // winrt::VisualStateManager::GoToState(*this, L"Rest", false);
+
     if (m_isEllipsisNode)
     {
         if (isLeftToRight)
