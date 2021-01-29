@@ -35,12 +35,14 @@ private:
     void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
+    void OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
     void InstantiateFlyout();
     void OpenFlyout();
     void CloseFlyout();
 
     void UpdateVisualState();
+    void UpdateCommonVisualState();
 
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
 
@@ -61,4 +63,5 @@ private:
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
+    PropertyChanged_revoker m_pointerOverButtonRevoker{};
 };

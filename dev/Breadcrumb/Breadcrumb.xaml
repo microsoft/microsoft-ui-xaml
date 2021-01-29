@@ -23,7 +23,61 @@
                             <VisualStateGroup x:Name="LargeTextNodeStates">
                                 <VisualState x:Name="Rest">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BFC1}" />
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbRestForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CurrentRest">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentRestForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Hover">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CurrentHover">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CurrentPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CurrentDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Focus">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundColor}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CurrentFocus">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -80,7 +134,10 @@
                                                   Content="{TemplateBinding Content}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   Grid.Column="0"
-                                                  LineHeight="36"/>
+                                                  LineHeight="36"
+                                                  FontFamily="Segoe UI"
+                                                  FontStyle="Normal"
+                                                  FontWeight="SemiBold"/>
 
                                 <TextBlock x:Name="PART_BreadcrumbEllipsisTextBlock"
                                            FontFamily="Segoe MDL2 Assets"
