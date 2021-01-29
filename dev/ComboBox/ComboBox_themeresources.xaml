@@ -134,10 +134,10 @@
 
             <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="AccentAAFillColorDefaultBrush"/>
             <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
-            <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7,7,7,7</CornerRadius>
-            <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4,4,4,4</CornerRadius>
-            <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4</Thickness>
+            <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
+            <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ComboBoxItemCornerRadius">3</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="ComboBoxBackgroundBorderThicknessFocused">2</Thickness>
@@ -264,10 +264,10 @@
 
             <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="SystemControlHighlightListAccentLowBrush"/>
             <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
-            <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7,7,7,7</CornerRadius>
-            <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4,4,4,4</CornerRadius>
-            <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4</Thickness>
+            <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
+            <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ComboBoxItemCornerRadius">3</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
@@ -394,10 +394,10 @@
 
             <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="AccentAAFillColorDefaultBrush"/>
             <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
-            <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7,7,7,7</CornerRadius>
-            <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4,4,4,4</CornerRadius>
-            <CornerRadius x:Key="ComboBoxItemCornerRadius">3,3,3,3</CornerRadius>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4</Thickness>
+            <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
+            <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ComboBoxItemCornerRadius">3</CornerRadius>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -673,7 +673,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
-                            Margin="-4,-4"
+                            Margin="-4"
                             Background="{ThemeResource ComboBoxBackgroundFocused}"
                             BorderBrush="{ThemeResource ComboBoxBackgroundBorderBrushFocused}"
                             BorderThickness="{ThemeResource ComboBoxBackgroundBorderThicknessFocused}"
@@ -720,7 +720,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
-                            Style="{StaticResource ComboBoxTextBoxStyle}"
+                            Style="{TemplateBinding TextBoxStyle}"
                             Margin="0,0,0,0"
                             Padding="{ThemeResource ComboBoxEditableTextPadding}"
                             BorderBrush="Transparent"                  
