@@ -63,9 +63,9 @@
             <StaticResource x:Key="TopNavigationViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TopNavigationViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TopNavigationViewItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-            <StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TopNavigationViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TopNavigationViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TopNavigationViewItemForegroundSelectedPressed" ResourceKey="TextFillColorTertiaryBrush" />
