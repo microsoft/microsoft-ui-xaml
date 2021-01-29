@@ -56,6 +56,7 @@ void BreadcrumbItem::OnApplyTemplate()
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
         m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+        m_pointerOverButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
     }
 }
 
@@ -86,6 +87,8 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::Rout
     {
         ResetVisualProperties();
     }
+
+    UpdateCommonVisualState();
 }
 
 void BreadcrumbItem::SetParentBreadcrumb(const winrt::Breadcrumb& parent)
@@ -215,12 +218,15 @@ void BreadcrumbItem::CloseFlyout()
     }
 }
 
+void BreadcrumbItem::OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    UpdateCommonVisualState();
+}
+
 void BreadcrumbItem::UpdateVisualState()
 {
     const bool isLeftToRight = (FlowDirection() == winrt::FlowDirection::LeftToRight);
     hstring visualStateName;
-
-    // winrt::VisualStateManager::GoToState(*this, L"Rest", false);
 
     if (m_isEllipsisNode)
     {
@@ -250,6 +256,35 @@ void BreadcrumbItem::UpdateVisualState()
     }
 
     winrt::VisualStateManager::GoToState(*this, visualStateName, false);
+}
+
+void BreadcrumbItem::UpdateCommonVisualState()
+{
+    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
+    {
+        if (m_isLastNode)
+        {
+            if (breadcrumbItemButton.IsPointerOver())
+            {
+                winrt::VisualStateManager::GoToState(*this, L"CurrentHover", false);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, L"CurrentRest", false);
+            }
+        }
+        else
+        {
+            if (breadcrumbItemButton.IsPointerOver())
+            {
+                winrt::VisualStateManager::GoToState(*this, L"Hover", false);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, L"Rest", false);
+            }
+        }
+    }
 }
 
 void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
