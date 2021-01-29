@@ -128,19 +128,14 @@ void NavigationViewItemPresenter::UpdateMargin()
 void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLength, bool shouldUpdate)
 {
     m_compactPaneLengthValue = compactPaneLength;
+
     if (shouldUpdate)
     {
-        if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
-        {
-            const auto templateSettings = winrt::get_self<NavigationViewItemPresenterTemplateSettings>(TemplateSettings());
-            //auto gridLength = iconGridColumn.Width();
+        const auto templateSettings = winrt::get_self<NavigationViewItemPresenterTemplateSettings>(TemplateSettings());
+        const auto gridLength = compactPaneLength;
 
-            const auto gridLength = compactPaneLength;
-            //iconGridColumn.Width(gridLength);
-
-            templateSettings->IconColumnWidth(gridLength);
-            templateSettings->LatestIconColumnWidth(gridLength - 8);
-        }
+        templateSettings->IconColumnWidth(gridLength);
+        templateSettings->LatestIconColumnWidth(gridLength - 8);
     }
 }
 

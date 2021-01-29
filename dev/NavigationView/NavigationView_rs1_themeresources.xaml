@@ -663,12 +663,12 @@
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                                 HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="IconColumn" Width="auto" />
+                                    <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LatestIconColumnWidth}">
+                                <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LatestIconColumnWidth}">
                                     <Viewbox x:Name="IconBox"
                                         Height="16"
                                         Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">

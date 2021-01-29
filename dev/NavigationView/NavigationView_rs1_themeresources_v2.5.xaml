@@ -691,18 +691,20 @@
                                 x:Name="ContentGrid"
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewCompactPaneLength}" />
+                                    <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Viewbox x:Name="IconBox"
+                                <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconColumnWidth}">
+                                    <Viewbox x:Name="IconBox"
                                 Height="16"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
-                                    <ContentPresenter 
+                                        <ContentPresenter 
                                     x:Name="Icon" 
                                     Content="{TemplateBinding Icon}" />
-                                </Viewbox>
+                                    </Viewbox>
+                                </Border>
 
                                 <ContentPresenter
                                     x:Name="ContentPresenter"
