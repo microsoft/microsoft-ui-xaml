@@ -605,10 +605,19 @@
             <SolidColorBrush x:Key="CircleElevationBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AccentControlElevationBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
 
-            <!-- Other -->
+            <!-- System high contrast colors -->
             
             <SolidColorBrush x:Key="SystemColorWindowTextColorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="SystemColorWindowColorBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SystemColorButtonFaceColorBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="SystemColorButtonTextColorBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="SystemColorHighlightColorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="SystemColorHighlightTextColorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="SystemColorHotlightColorBrush" Color="{ThemeResource SystemColorHotlightColor}" />
+            <SolidColorBrush x:Key="SystemColorGrayTextColorBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+
+            <!-- Other -->
+
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemColorHighlightColor}" />
