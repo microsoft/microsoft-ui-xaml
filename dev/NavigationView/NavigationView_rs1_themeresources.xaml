@@ -303,7 +303,7 @@
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition x:Name="iconGridColumn" Width="auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -527,7 +527,6 @@
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
-        <Setter Property="MinWidth" Value="{ThemeResource NavigationViewIconBoxWidth}" />
         <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -669,7 +668,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Width="{TemplateBinding MinWidth}">
+                                <Border Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LatestIconColumnWidth}">
                                     <Viewbox x:Name="IconBox"
                                         Height="16"
                                         Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
