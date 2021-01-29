@@ -1,6 +1,6 @@
 parameters:
   solutionPath: ''
-  nugetConfigPath: ''
+  nugetConfigPath: 'nuget.config'
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
   artifactName: 'drop'
