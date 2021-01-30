@@ -278,8 +278,8 @@
             <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocused" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+            <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
             <contract7NotPresent:StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
             <contract7Present:StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
@@ -333,10 +333,11 @@
     <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
     <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>
     <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
+    <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
     <x:Double x:Key="ComboBoxItemPillHeight">16</x:Double>
     <x:Double x:Key="ComboBoxItemPillWidth">3</x:Double>
     <x:Double x:Key="ComboBoxItemPillMinScale">0.625</x:Double>
-
+    
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItems">15</x:Int32>
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
 
@@ -355,7 +356,7 @@
     <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
-    <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
+  
 
     <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
     <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
