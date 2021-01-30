@@ -1,6 +1,6 @@
 [Microsoft.UI.Xaml.Controls.NavigationView]
     Padding=0,0,0,0
-    Foreground=#FF000000
+    Foreground=#E4000000
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]
@@ -72,10 +72,10 @@
           Visibility=Visible
           RenderSize=40,40
         [Windows.UI.Xaml.Controls.Button]
-            Padding=8,5,8,6
+            Padding=11,5,11,6
             Foreground=#FF000000
             BorderThickness=1,1,1,1
-            BorderBrush=#00FFFFFF
+            BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
             Background=#00FFFFFF
             CornerRadius=0,0,0,0
             Width=40
@@ -103,7 +103,7 @@
               Visibility=Visible
               RenderSize=40,40
             [Windows.UI.Xaml.Controls.FontIcon]
-                Foreground=#66000000
+                Foreground=#5C000000
                 Name=Content
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
@@ -127,7 +127,7 @@
                   RenderSize=16,16
                 [Windows.UI.Xaml.Controls.TextBlock]
                     Padding=0,0,0,0
-                    Foreground=#66000000
+                    Foreground=#5C000000
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
@@ -136,10 +136,10 @@
                     Visibility=Visible
                     RenderSize=16,16
         [Windows.UI.Xaml.Controls.Button]
-            Padding=8,5,8,6
+            Padding=11,5,11,6
             Foreground=#FF000000
             BorderThickness=1,1,1,1
-            BorderBrush=#00FFFFFF
+            BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
             Background=#00FFFFFF
             CornerRadius=0,0,0,0
             Width=40
@@ -154,9 +154,9 @@
             RenderSize=0,0
         [Windows.UI.Xaml.Controls.Button]
             Padding=0,0,0,0
-            Foreground=#FF000000
+            Foreground=#E4000000
             BorderThickness=1,1,1,1
-            BorderBrush=#00FFFFFF
+            BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
             Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
             CornerRadius=0,0,0,0
             Width=40
@@ -186,7 +186,7 @@
             RenderSize=0,0
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
-              Foreground=#FF000000
+              Foreground=#E4000000
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=[NULL]
@@ -273,7 +273,7 @@
               RenderSize=0,40
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
-              Foreground=#FF000000
+              Foreground=#E4000000
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=[NULL]
@@ -287,7 +287,7 @@
               Visibility=Visible
               RenderSize=0,40
             [Windows.UI.Xaml.Controls.ContentPresenter]
-                Foreground=#FF000000
+                Foreground=#E4000000
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
@@ -302,7 +302,7 @@
                 RenderSize=0,40
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
-              Foreground=#FF000000
+              Foreground=#E4000000
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=[NULL]
@@ -316,7 +316,7 @@
               Visibility=Visible
               RenderSize=0,40
             [Windows.UI.Xaml.Controls.ContentPresenter]
-                Foreground=#FF000000
+                Foreground=#E4000000
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
@@ -339,7 +339,7 @@
               RenderSize=168,40
             [Windows.UI.Xaml.Controls.ScrollViewer]
                 Padding=0,0,0,0
-                Foreground=#FF000000
+                Foreground=#E4000000
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
                 Background=#00FFFFFF
@@ -379,7 +379,7 @@
                     Visibility=Visible
                     RenderSize=168,40
                   [Windows.UI.Xaml.Controls.ScrollContentPresenter]
-                      Foreground=#FF000000
+                      Foreground=#E4000000
                       Padding=0,0,0,0
                       CornerRadius=0,0,0,0
                       BorderThickness=0,0,0,0
@@ -405,11 +405,11 @@
                         RenderSize=168,40
                       [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                           Padding=0,0,0,0
-                          Foreground=#FF000000
+                          Foreground=#E4000000
                           BorderThickness=1,1,1,1
                           BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
                           Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                          CornerRadius=2,2,2,2
+                          CornerRadius=4,4,4,4
                           Margin=0,0,0,0
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#99FFFFFF
@@ -433,11 +433,11 @@
                             RenderSize=90,40
                           [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                               Padding=0,0,0,0
-                              Foreground=#FF000000
+                              Foreground=#E4000000
                               BorderThickness=1,1,1,1
                               BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
                               Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                              CornerRadius=2,2,2,2
+                              CornerRadius=4,4,4,4
                               Name=NavigationViewItemPresenter
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
@@ -523,7 +523,7 @@
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.ContentPresenter]
-                                        Foreground=#FF000000
+                                        Foreground=#E4000000
                                         Padding=0,0,0,0
                                         CornerRadius=0,0,0,0
                                         BorderThickness=0,0,0,0
@@ -538,7 +538,7 @@
                                         Visibility=Visible
                                         RenderSize=20,20
                                       [Windows.UI.Xaml.Controls.SymbolIcon]
-                                          Foreground=#FF000000
+                                          Foreground=#E4000000
                                           Margin=0,0,0,0
                                           FocusVisualSecondaryThickness=1,1,1,1
                                           FocusVisualSecondaryBrush=#99FFFFFF
@@ -561,7 +561,7 @@
                                             RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
                                               Padding=0,0,0,0
-                                              Foreground=#FF000000
+                                              Foreground=#E4000000
                                               Margin=0,0,0,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
@@ -570,7 +570,7 @@
                                               Visibility=Visible
                                               RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                    Foreground=#FF000000
+                                    Foreground=#E4000000
                                     Padding=0,0,0,0
                                     CornerRadius=0,0,0,0
                                     BorderThickness=0,0,0,0
@@ -586,7 +586,7 @@
                                     RenderSize=34,19
                                   [Windows.UI.Xaml.Controls.TextBlock]
                                       Padding=0,0,0,0
-                                      Foreground=#FF000000
+                                      Foreground=#E4000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -611,7 +611,7 @@
                                     RenderSize=0,0
                                   [Windows.UI.Xaml.Controls.TextBlock]
                                       Padding=0,0,0,0
-                                      Foreground=#FF000000
+                                      Foreground=#E4000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -656,11 +656,11 @@
                               RenderSize=0,0
                       [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                           Padding=0,0,0,0
-                          Foreground=#FF000000
+                          Foreground=#E4000000
                           BorderThickness=1,1,1,1
                           BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
                           Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                          CornerRadius=2,2,2,2
+                          CornerRadius=4,4,4,4
                           Margin=0,0,0,0
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#99FFFFFF
@@ -684,11 +684,11 @@
                             RenderSize=78,40
                           [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                               Padding=0,0,0,0
-                              Foreground=#FF000000
+                              Foreground=#E4000000
                               BorderThickness=1,1,1,1
                               BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
                               Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                              CornerRadius=2,2,2,2
+                              CornerRadius=4,4,4,4
                               Name=NavigationViewItemPresenter
                               Margin=0,0,0,0
                               FocusVisualSecondaryThickness=1,1,1,1
@@ -774,7 +774,7 @@
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.ContentPresenter]
-                                        Foreground=#FF000000
+                                        Foreground=#E4000000
                                         Padding=0,0,0,0
                                         CornerRadius=0,0,0,0
                                         BorderThickness=0,0,0,0
@@ -789,7 +789,7 @@
                                         Visibility=Visible
                                         RenderSize=20,20
                                       [Windows.UI.Xaml.Controls.SymbolIcon]
-                                          Foreground=#FF000000
+                                          Foreground=#E4000000
                                           Margin=0,0,0,0
                                           FocusVisualSecondaryThickness=1,1,1,1
                                           FocusVisualSecondaryBrush=#99FFFFFF
@@ -812,7 +812,7 @@
                                             RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
                                               Padding=0,0,0,0
-                                              Foreground=#FF000000
+                                              Foreground=#E4000000
                                               Margin=0,0,0,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
@@ -821,7 +821,7 @@
                                               Visibility=Visible
                                               RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                    Foreground=#FF000000
+                                    Foreground=#E4000000
                                     Padding=0,0,0,0
                                     CornerRadius=0,0,0,0
                                     BorderThickness=0,0,0,0
@@ -837,7 +837,7 @@
                                     RenderSize=22,19
                                   [Windows.UI.Xaml.Controls.TextBlock]
                                       Padding=0,0,0,0
-                                      Foreground=#FF000000
+                                      Foreground=#E4000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -862,7 +862,7 @@
                                     RenderSize=0,0
                                   [Windows.UI.Xaml.Controls.TextBlock]
                                       Padding=0,0,0,0
-                                      Foreground=#FF000000
+                                      Foreground=#E4000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -924,7 +924,7 @@
                       BorderThickness=0,0,0,0
                       BorderBrush=#00FFFFFF
                       Background=#00FFFFFF
-                      CornerRadius=2,2,2,2
+                      CornerRadius=3,3,3,3
                       Name=VerticalScrollBar
                       MinWidth=16
                       MinHeight=16
@@ -941,7 +941,7 @@
                       BorderThickness=0,0,0,0
                       BorderBrush=#00FFFFFF
                       Background=#00FFFFFF
-                      CornerRadius=2,2,2,2
+                      CornerRadius=3,3,3,3
                       Name=HorizontalScrollBar
                       MinWidth=16
                       MinHeight=16
@@ -957,7 +957,7 @@
                       CornerRadius=0,0,0,0
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
-                      Background=#FFE6E6E6
+                      Background=#00FFFFFF
                       Name=ScrollBarSeparator
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
@@ -967,8 +967,8 @@
                       Visibility=Collapsed
                       RenderSize=0,0
           [Windows.UI.Xaml.Controls.Button]
-              Padding=8,5,8,6
-              Foreground=#FF000000
+              Padding=11,5,11,6
+              Foreground=#E4000000
               BorderThickness=1,1,1,1
               BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
               Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
@@ -985,7 +985,7 @@
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
-              Foreground=#FF000000
+              Foreground=#E4000000
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=[NULL]
@@ -999,7 +999,7 @@
               Visibility=Visible
               RenderSize=544,40
             [Windows.UI.Xaml.Controls.ContentPresenter]
-                Foreground=#FF000000
+                Foreground=#E4000000
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
@@ -1029,7 +1029,7 @@
               RenderSize=0,0
             [Windows.UI.Xaml.Controls.ContentControl]
                 Padding=0,0,0,0
-                Foreground=#FF000000
+                Foreground=#E4000000
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=[NULL]
@@ -1045,7 +1045,7 @@
                 RenderSize=0,0
           [Windows.UI.Xaml.Controls.ContentControl]
               Padding=0,0,0,0
-              Foreground=#FF000000
+              Foreground=#E4000000
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=[NULL]
@@ -1059,7 +1059,7 @@
               Visibility=Visible
               RenderSize=0,40
             [Windows.UI.Xaml.Controls.ContentPresenter]
-                Foreground=#FF000000
+                Foreground=#E4000000
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
@@ -1084,11 +1084,11 @@
               RenderSize=48,40
             [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                 Padding=0,0,0,0
-                Foreground=#FF000000
+                Foreground=#E4000000
                 BorderThickness=1,1,1,1
                 BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
                 Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                CornerRadius=2,2,2,2
+                CornerRadius=4,4,4,4
                 Name=SettingsItem
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
@@ -1113,11 +1113,11 @@
                   RenderSize=48,40
                 [Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter]
                     Padding=0,0,0,0
-                    Foreground=#FF000000
+                    Foreground=#E4000000
                     BorderThickness=1,1,1,1
                     BorderBrush=Microsoft.UI.Xaml.Media.RevealBorderBrush
                     Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                    CornerRadius=2,2,2,2
+                    CornerRadius=4,4,4,4
                     Name=NavigationViewItemPresenter
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -1204,7 +1204,7 @@
                             Visibility=Visible
                             RenderSize=20,20
                           [Windows.UI.Xaml.Controls.ContentPresenter]
-                              Foreground=#FF000000
+                              Foreground=#E4000000
                               Padding=0,0,0,0
                               CornerRadius=0,0,0,0
                               BorderThickness=0,0,0,0
@@ -1219,7 +1219,7 @@
                               Visibility=Visible
                               RenderSize=20,20
                             [Windows.UI.Xaml.Controls.SymbolIcon]
-                                Foreground=#FF000000
+                                Foreground=#E4000000
                                 Margin=0,0,0,0
                                 FocusVisualSecondaryThickness=1,1,1,1
                                 FocusVisualSecondaryBrush=#99FFFFFF
@@ -1242,7 +1242,7 @@
                                   RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.TextBlock]
                                     Padding=0,0,0,0
-                                    Foreground=#FF000000
+                                    Foreground=#E4000000
                                     Margin=0,0,0,0
                                     FocusVisualSecondaryThickness=1,1,1,1
                                     FocusVisualSecondaryBrush=#99FFFFFF
@@ -1251,7 +1251,7 @@
                                     Visibility=Visible
                                     RenderSize=20,20
                       [Windows.UI.Xaml.Controls.ContentPresenter]
-                          Foreground=#FF000000
+                          Foreground=#E4000000
                           Padding=0,0,0,0
                           CornerRadius=0,0,0,0
                           BorderThickness=0,0,0,0
@@ -1282,7 +1282,7 @@
                           RenderSize=0,0
                         [Windows.UI.Xaml.Controls.TextBlock]
                             Padding=0,0,0,0
-                            Foreground=#FF000000
+                            Foreground=#E4000000
                             Margin=0,0,0,0
                             FocusVisualSecondaryThickness=1,1,1,1
                             FocusVisualSecondaryBrush=#99FFFFFF
@@ -1341,7 +1341,7 @@
             RenderSize=800,0
       [Windows.UI.Xaml.Controls.SplitView]
           Padding=0,0,0,0
-          Foreground=#FF000000
+          Foreground=#E4000000
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
           Background=[NULL]
@@ -1439,7 +1439,7 @@
                     RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
                       Padding=0,0,0,0
-                      Foreground=#FF000000
+                      Foreground=#E4000000
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=[NULL]
@@ -1469,7 +1469,7 @@
                     RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
                       Padding=0,0,0,0
-                      Foreground=#FF000000
+                      Foreground=#E4000000
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=[NULL]
@@ -1483,10 +1483,10 @@
                       Visibility=Visible
                       RenderSize=0,0
                   [Windows.UI.Xaml.Controls.Button]
-                      Padding=8,5,8,6
-                      Foreground=#FF000000
+                      Padding=11,5,11,6
+                      Foreground=#E4000000
                       BorderThickness=1,1,1,1
-                      BorderBrush=#00FFFFFF
+                      BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
                       Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
                       CornerRadius=0,0,0,0
                       Width=40
@@ -1501,7 +1501,7 @@
                       RenderSize=0,0
                 [Windows.UI.Xaml.Controls.ContentControl]
                     Padding=0,0,0,0
-                    Foreground=#FF000000
+                    Foreground=#E4000000
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
                     Background=[NULL]
@@ -1538,7 +1538,7 @@
                       RenderSize=0,0
                     [Windows.UI.Xaml.Controls.ScrollViewer]
                         Padding=0,0,0,0
-                        Foreground=#FF000000
+                        Foreground=#E4000000
                         BorderThickness=0,0,0,0
                         BorderBrush=#00FFFFFF
                         Background=#00FFFFFF
@@ -1553,7 +1553,7 @@
                         RenderSize=0,0
                   [Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator]
                       Padding=0,0,0,0
-                      Foreground=#FF000000
+                      Foreground=#E4000000
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=[NULL]
@@ -1568,7 +1568,7 @@
                       RenderSize=0,0
                   [Windows.UI.Xaml.Controls.ContentControl]
                       Padding=0,0,0,0
-                      Foreground=#FF000000
+                      Foreground=#E4000000
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=[NULL]
@@ -1591,7 +1591,7 @@
                       RenderSize=0,0
                     [Windows.UI.Xaml.Controls.ScrollViewer]
                         Padding=0,0,0,0
-                        Foreground=#FF000000
+                        Foreground=#E4000000
                         BorderThickness=0,0,0,0
                         BorderBrush=#00FFFFFF
                         Background=#00FFFFFF
@@ -1677,7 +1677,7 @@
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.ContentControl]
                     Padding=0,0,0,0
-                    Foreground=#FF000000
+                    Foreground=#E4000000
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
                     Background=[NULL]
@@ -1692,7 +1692,7 @@
                     Visibility=Collapsed
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                    Foreground=#FF000000
+                    Foreground=#E4000000
                     Padding=0,0,0,0
                     CornerRadius=0,0,0,0
                     BorderThickness=0,0,0,0
@@ -1707,7 +1707,7 @@
                     RenderSize=800,560
                   [Windows.UI.Xaml.Controls.TextBlock]
                       Padding=0,0,0,0
-                      Foreground=#FF000000
+                      Foreground=#E4000000
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF

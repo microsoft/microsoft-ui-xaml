@@ -1,4 +1,4 @@
-<local:TestPage
+﻿<local:TestPage
     x:Class="MUXControlsTestApp.ProgressBarReTemplatePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,10 +12,6 @@
     <Page.Resources>
         <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
         <Style TargetType="controls:ProgressBar">
-            <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
-            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
-            <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource SystemControlHighlightTransparentBrush}" />
             <Setter Property="Maximum" Value="100" />
             <Setter Property="MinHeight" Value="{ThemeResource ProgressBarThemeMinHeight}" />
             <Setter Property="IsTabStop" Value="False" />

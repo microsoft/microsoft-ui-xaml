@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{F1C8A5A1-B1B0-4095-8849-E550FCF2EBF6}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);ANIMATEDICON_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AnimatedIconDevDesign.md" />
+    <None Include="$(MSBuildThisFileDirectory)Docs\MultiStateSegmentLookupProposal.md" />
+    <None Include="$(MSBuildThisFileDirectory)Docs\SingleStateSegmentLookup.md" />
+  </ItemGroup>
+</Project>
