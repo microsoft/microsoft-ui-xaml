@@ -84,9 +84,9 @@
             <StaticResource x:Key="ToggleSwitchFillOffPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleSwitchFillOffDisabled" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="SystemBaseMediumLowColor" />
             <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="SystemControlHighlightAltListAccentHighBrush" />
             <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
@@ -96,13 +96,13 @@
             <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="SystemBaseMediumHighColor" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="SystemColorGrayTextColor" />
             <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="SystemControlHighlightChromeWhiteBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="SystemControlPageBackgroundBaseLowBrush" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="SystemChromeWhiteColor" />
+            <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="SystemBaseLowColor" />
             <StaticResource x:Key="ToggleSwitchKnobStrokeOn" ResourceKey="SystemControlTransparentBrush" />
 
             <x:Double x:Key="ToggleSwitchOnStrokeThickness">1</x:Double>

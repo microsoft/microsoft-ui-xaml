@@ -97,18 +97,18 @@
             <x:Double x:Key="ListViewItemMinHeight">38</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
             <SolidColorBrush x:Key="ListViewItemBorderBackground" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemBackground" Color="Transparent" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="ListViewItemForegroundPointerOver" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="ListViewItemForegroundPressed" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackground" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemForeground" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundPointerOver" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundPressed" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="ListViewItemFocusVisualPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="ListViewItemFocusVisualSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="ListViewItemFocusBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
@@ -155,11 +155,11 @@
             <SolidColorBrush x:Key="ListViewItemCheckBoxPointerOverBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ListViewItemCheckBoxPressedBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ListViewItemCheckBoxDisabledBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedDisabled" Color="{ThemeResource SystemColorButtonFaceColor}" />
-            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorPointerOverBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorPressedBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedDisabled" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemSelectionIndicatorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Boolean x:Key="ListViewBaseItemRoundedChromeEnabled">True</x:Boolean>
