@@ -333,11 +333,11 @@
     <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
     <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>
     <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
-    <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
     <x:Double x:Key="ComboBoxItemPillHeight">16</x:Double>
     <x:Double x:Key="ComboBoxItemPillWidth">3</x:Double>
     <x:Double x:Key="ComboBoxItemPillMinScale">0.625</x:Double>
-    
+    <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
+
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItems">15</x:Int32>
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
 
@@ -356,7 +356,6 @@
     <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,8</Thickness>
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
-  
 
     <CornerRadius x:Key="ComboBoxHiglightBorderCornerRadius">7</CornerRadius>
     <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
@@ -381,12 +380,12 @@
     <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}"/>
 
     <Style x:Key="DefaultComboBoxStyle" TargetType="ComboBox">
-        <Setter Property="Padding" Value="{StaticResource ComboBoxPadding}" />
+        <Setter Property="Padding" Value="{ThemeResource ComboBoxPadding}" />
         <Setter Property="MaxDropDownHeight" Value="504" />
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxForeground}" />
         <Setter Property="Background" Value="{ThemeResource ComboBoxBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ComboBoxBorderBrush}" />
-        <Setter Property="BorderThickness" Value="{StaticResource ComboBoxBorderThemeThickness}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ComboBoxBorderThemeThickness}" />
         <Setter Property="TabNavigation" Value="Once" />
         <contract7Present:Setter Property="TextBoxStyle" Value="{StaticResource ComboBoxTextBoxStyle}" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -613,8 +612,8 @@
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             FlowDirection="{TemplateBinding FlowDirection}"
                             Foreground="{ThemeResource ComboBoxHeaderForeground}"
-                            FontWeight="{StaticResource ComboBoxHeaderThemeFontWeight}"
-                            Margin="{StaticResource ComboBoxTopHeaderMargin}"
+                            FontWeight="{ThemeResource ComboBoxHeaderThemeFontWeight}"
+                            Margin="{ThemeResource ComboBoxTopHeaderMargin}"
                             TextWrapping="Wrap"
                             VerticalAlignment="Top"
                             Visibility="Collapsed"
@@ -643,7 +642,7 @@
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Control.IsTemplateFocusTarget="True"
-                            MinWidth="{StaticResource ComboBoxThemeMinWidth}" />
+                            MinWidth="{ThemeResource ComboBoxThemeMinWidth}" />
 
                         <Rectangle x:Name="Pill"
                             Style="{StaticResource ComboBoxItemPill}"
@@ -673,7 +672,7 @@
                             Grid.ColumnSpan="2"
                             Style="{TemplateBinding TextBoxStyle}"
                             Margin="0,0,0,0"
-                            Padding="{StaticResource ComboBoxEditableTextPadding}"
+                            Padding="{ThemeResource ComboBoxEditableTextPadding}"
                             BorderBrush="Transparent"                  
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -698,7 +697,7 @@
                             HorizontalAlignment="Right"
                             x:Load="False" />
                         <FontIcon x:Name="DropDownGlyph"
-                            MinHeight="{StaticResource ComboBoxMinHeight}"
+                            MinHeight="{ThemeResource ComboBoxMinHeight}"
                             Grid.Row="1"
                             Grid.Column="1"
                             IsHitTestVisible="False"
@@ -722,9 +721,9 @@
                                 Background="{ThemeResource ComboBoxDropDownBackground}"
                                 contract7Present:BackgroundSizing="OuterBorderEdge"
                                 BorderBrush="{ThemeResource ComboBoxDropDownBorderBrush}"
-                                BorderThickness="{StaticResource ComboBoxDropdownBorderThickness}"
+                                BorderThickness="{ThemeResource ComboBoxDropdownBorderThickness}"
                                 Margin="0,-0.5,0,-1"
-                                Padding="{StaticResource ComboBoxDropdownBorderPadding}"
+                                Padding="{ThemeResource ComboBoxDropdownBorderPadding}"
                                 HorizontalAlignment="Stretch"
                                 CornerRadius="{ThemeResource OverlayCornerRadius}">
                                 <ScrollViewer x:Name="ScrollViewer"
@@ -742,7 +741,7 @@
                                     BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
                                     ZoomMode="Disabled"
                                     AutomationProperties.AccessibilityView="Raw">
-                                    <ItemsPresenter Margin="{StaticResource ComboBoxDropdownContentMargin}" />
+                                    <ItemsPresenter Margin="{ThemeResource ComboBoxDropdownContentMargin}" />
                                 </ScrollViewer>
                             </Border>
                         </Popup>
@@ -758,7 +757,7 @@
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource ComboBoxItemBackground}" />
         <Setter Property="TabNavigation" Value="Local" />
-        <Setter Property="Padding" Value="{StaticResource ComboBoxItemThemePadding}" />
+        <Setter Property="Padding" Value="{ThemeResource ComboBoxItemThemePadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3"/>
@@ -912,14 +911,14 @@
                                 <VisualState x:Name="TouchInputMode">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Margin">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource ComboBoxItemThemeTouchPadding}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxItemThemeTouchPadding}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="GameControllerInputMode">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Margin">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource ComboBoxItemThemeGameControllerPadding}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxItemThemeGameControllerPadding}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
