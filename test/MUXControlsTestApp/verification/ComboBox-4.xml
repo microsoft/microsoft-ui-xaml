@@ -2,7 +2,7 @@
     Padding=12,5,0,7
     Foreground=#E4000000
     BorderThickness=1,1,1,1
-    BorderBrush=#0F000000
+    BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
     Background=#B3FFFFFF
     MinWidth=64
     Margin=0,0,0,0
@@ -29,8 +29,22 @@
     [Windows.UI.Xaml.Controls.Border]
         Padding=0,0,0,0
         CornerRadius=4,4,4,4
+        BorderThickness=2,2,2,2
+        BorderBrush=#E4000000
+        Background=#B3FFFFFF
+        Name=HighlightBackground
+        Margin=-4,-4,-4,-4
+        FocusVisualSecondaryThickness=1,1,1,1
+        FocusVisualSecondaryBrush=#99FFFFFF
+        FocusVisualPrimaryThickness=2,2,2,2
+        FocusVisualPrimaryBrush=#FF000000
+        Visibility=Visible
+        RenderSize=72,40
+    [Windows.UI.Xaml.Controls.Border]
+        Padding=0,0,0,0
+        CornerRadius=4,4,4,4
         BorderThickness=1,1,1,1
-        BorderBrush=#0F000000
+        BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
         Background=#B3FFFFFF
         Name=Background
         MinWidth=64
@@ -41,20 +55,18 @@
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
         RenderSize=64,32
-    [Windows.UI.Xaml.Controls.Border]
-        Padding=0,0,0,0
-        CornerRadius=4,4,4,4
-        BorderThickness=1,1,1,1
-        BorderBrush=#0F000000
-        Background=#0A000000
-        Name=HighlightBackground
-        Margin=0,0,0,0
+    [Windows.UI.Xaml.Shapes.Rectangle]
+        StrokeThickness=1
+        Width=3
+        Name=Pill
+        Margin=1,0,0,0
+        Height=16
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
-        RenderSize=64,32
+        RenderSize=3,16
     [Windows.UI.Xaml.Controls.ContentPresenter]
         Foreground=#E4000000
         Padding=0,0,0,0
@@ -85,7 +97,7 @@
         Foreground=#93000000
         Name=DropDownGlyph
         MinHeight=32
-        Margin=0,0,10,0
+        Margin=0,0,14,0
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
