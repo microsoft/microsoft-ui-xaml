@@ -493,7 +493,7 @@
                                 <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
                                 <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
                             </Grid.RowDefinitions>
-                           <!-- This TailEdgeBorder needs to be z ordered underneath the TailPolygon while the TailOcclusionGrid needs to be over it, hence declaring these parts
+                            <!-- This TailEdgeBorder needs to be z ordered underneath the TailPolygon while the TailOcclusionGrid needs to be over it, hence declaring these parts
                                  in this order. This is to achieve the desired occlusion of the tail's content edge border. The tail edge border is a low opacity highlight,
                                  which means we need to have the background color present underneath the highlight, hence the double grid here. -->
                             <Grid x:Name="TailEdgeBorder" Background="{TemplateBinding Background}">
@@ -583,14 +583,17 @@
                                                         FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
                                                         FontStyle="{TemplateBinding FontStyle}" FontFamily="{TemplateBinding FontFamily}"
                                                         FontStretch="{TemplateBinding FontStretch}"/>
-                                                <Grid Grid.Row="2">
+                                                <Grid Grid.Row="2" Margin="{StaticResource TeachingTipButtonPanelMargin}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition x:Name="ActionButtonColumn" Width="*"/>
-                                                        <ColumnDefinition x:Name="ButtonCenterSpacingColumn" Width="{StaticResource TeachingTipCenterSpacingWidth}"/>
+                                                        <ColumnDefinition
+                                                            x:Name="ActionButtonColumn"
+                                                            Width="*"/>
+                                                        <ColumnDefinition
+                                                            x:Name="ButtonCenterSpacingColumn"
+                                                            Width="{StaticResource TeachingTipCenterSpacingWidth}"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Button x:Name="ActionButton"
-                                                            Margin="{StaticResource TeachingTipActionButtonMargin}"
                                                             HorizontalAlignment="Stretch"
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
@@ -600,7 +603,6 @@
                                                     <Button x:Name="CloseButton"
                                                             Grid.Column="2"
                                                             HorizontalAlignment="Stretch"
-                                                            Margin="{StaticResource TeachingTipCloseButtonMargin}"
                                                             Style="{TemplateBinding CloseButtonStyle}"
                                                             Command="{TemplateBinding CloseButtonCommand}"
                                                             CommandParameter="{TemplateBinding CloseButtonCommandParameter}">

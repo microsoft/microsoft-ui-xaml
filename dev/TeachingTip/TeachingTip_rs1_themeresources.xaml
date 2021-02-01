@@ -43,8 +43,7 @@
 
     <Thickness x:Key="TeachingTipRightButtonMargin">6,12,0,0</Thickness>
     <Thickness x:Key="TeachingTipLeftButtonMargin">0,12,6,0</Thickness>
-    <Thickness x:Key="TeachingTipActionButtonMargin">0,12,0,0</Thickness>
-    <Thickness x:Key="TeachingTipCloseButtonMargin">0,12,0,0</Thickness>
+    <Thickness x:Key="TeachingTipButtonPanelMargin">0,12,0,0</Thickness>
     <GridLength x:Key="TeachingTipCenterSpacingWidth">12</GridLength>
 
     <Thickness x:Key="TeachingTipMainContentPresentMargin">0,12,0,0</Thickness>
