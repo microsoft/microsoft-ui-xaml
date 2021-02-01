@@ -336,7 +336,6 @@
                                             Duration="0" />-->
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"/>
                                         <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -427,7 +426,8 @@
                                             Duration="0" />-->
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="DisabledOff"/>
+                                        <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
+                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="CheckedNormal">
@@ -551,7 +551,8 @@
                                             Duration="0" /-->
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="DisabledOn"/>
+                                        <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
+                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminateNormal">
@@ -683,7 +684,8 @@
                                             Duration="0" />-->
                                     </Storyboard>
                                     <VisualState.Setters>
-                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="DisabledIndeterminate"/>
+                                        <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
+                                        <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalIndeterminate"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
