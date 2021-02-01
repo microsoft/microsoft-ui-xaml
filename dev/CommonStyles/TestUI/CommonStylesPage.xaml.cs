@@ -248,8 +248,8 @@ namespace MUXControlsTestApp
             var root = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
-
-            string expectedHeaderMargin = "0,0,0,4";
+            
+            string expectedHeaderMargin = control == ComboBox ? "0,0,0,8" : "0,0,0,4";
             if (contentPresenter != null)
             {
                 simpleVerify.IsEqual(contentPresenter.Margin.ToString(), expectedHeaderMargin, "HeaderContentPresenter.Margin");
