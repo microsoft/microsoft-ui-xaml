@@ -43,7 +43,7 @@
                     <ContentPresenter x:Name="LayoutRoot"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Background="{TemplateBinding Background}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge"
+                        contract7Present:BackgroundSizing="InnerBorderEdge"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         MaxWidth="320"
                         Content="{TemplateBinding Content}"
