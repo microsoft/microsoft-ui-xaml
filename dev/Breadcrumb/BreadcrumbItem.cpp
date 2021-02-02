@@ -56,7 +56,17 @@ void BreadcrumbItem::OnApplyTemplate()
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
         m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+
+        m_pressedButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
         m_pointerOverButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
+
+        // Register for pointer events so we can keep track of the last used pointer type
+        m_breadcrumbItemPointerEnteredRevoker = breadcrumbItemButton.PointerEntered(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
+        m_breadcrumbItemPointerExitedRevoker = breadcrumbItemButton.PointerExited(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
+        m_breadcrumbItemPointerPressedRevoker = breadcrumbItemButton.PointerPressed(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
+        m_breadcrumbItemPointerReleasedRevoker = breadcrumbItemButton.PointerReleased(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
+        m_breadcrumbItemPointerCanceledRevoker = breadcrumbItemButton.PointerCanceled(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
+        m_breadcrumbItemPointerCaptureLostRevoker = breadcrumbItemButton.PointerCaptureLost(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
     }
 }
 
@@ -115,6 +125,11 @@ void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable&, const win
         auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
         breadcrumbImpl->RaiseItemClickedEvent(Content());
     }
+}
+
+void BreadcrumbItem::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    UpdateCommonVisualState();
 }
 
 void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
@@ -262,28 +277,32 @@ void BreadcrumbItem::UpdateCommonVisualState()
 {
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
     {
+        hstring commonVisualStateName = L"";
+
+        // If is last item: place Current as prefix for visual state
         if (m_isLastNode)
         {
-            if (breadcrumbItemButton.IsPointerOver())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"CurrentHover", false);
-            }
-            else
-            {
-                winrt::VisualStateManager::GoToState(*this, L"CurrentRest", false);
-            }
+            commonVisualStateName = L"Current";
+        }
+
+        if (!breadcrumbItemButton.IsEnabled())
+        {
+            commonVisualStateName = commonVisualStateName + L"Disabled";
+        }
+        else if (breadcrumbItemButton.IsPressed())
+        {
+            commonVisualStateName = commonVisualStateName + L"Pressed";
+        }
+        else if (breadcrumbItemButton.IsPointerOver())
+        {
+            commonVisualStateName = commonVisualStateName + L"Hover";
         }
         else
         {
-            if (breadcrumbItemButton.IsPointerOver())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"Hover", false);
-            }
-            else
-            {
-                winrt::VisualStateManager::GoToState(*this, L"Rest", false);
-            }
+            commonVisualStateName = commonVisualStateName + L"Rest";
         }
+
+        winrt::VisualStateManager::GoToState(*this, commonVisualStateName, false);
     }
 }
 

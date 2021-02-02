@@ -36,6 +36,7 @@ private:
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
 
     void InstantiateFlyout();
     void OpenFlyout();
@@ -63,5 +64,16 @@ private:
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
+
+    PropertyChanged_revoker m_pressedButtonRevoker{};
     PropertyChanged_revoker m_pointerOverButtonRevoker{};
+
+    winrt::UIElement::PointerEntered_revoker m_breadcrumbItemPointerEnteredRevoker{};
+    winrt::UIElement::PointerExited_revoker m_breadcrumbItemPointerExitedRevoker{};
+    winrt::UIElement::PointerPressed_revoker m_breadcrumbItemPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_breadcrumbItemPointerReleasedRevoker{};
+    winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemPointerCanceledRevoker{};
+    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};
+
+    
 };

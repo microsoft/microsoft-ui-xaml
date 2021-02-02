@@ -43,7 +43,7 @@
                                       VerticalAlignment="Stretch"
                                       Grid.Column="1">
                     <controls:TwoPaneView.Pane1>
-                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="{ThemeResource SystemChromeDisabledHighColor}">
+                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content">
 
                             <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderThickness="5" Padding="7">
                                 <Grid>

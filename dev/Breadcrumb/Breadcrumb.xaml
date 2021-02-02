@@ -10,74 +10,95 @@
 
     <Style x:Key="BreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
 
+        <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="Padding" Value="{ThemeResource ButtonPadding}"/>
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbItem">
 
-                    <Button x:Name="PART_BreadcrumbItemButton">
+                    <Button x:Name="PART_BreadcrumbItemButton"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Padding="{TemplateBinding Padding}"
+                            IsTabStop="False">
                         <VisualStateManager.VisualStateGroups>
 
-                            <VisualStateGroup x:Name="LargeTextNodeStates">
+                            <VisualStateGroup x:Name="CommonVisualStates">
                                 <VisualState x:Name="Rest">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbRestForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbRestForegroundColor}" />                                        
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CurrentRest">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentRestForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentRestForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Hover">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbHoverBackgroundBrush}"/>
+                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbHoverBorderBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CurrentHover">
                                     <VisualState.Setters>
                                         <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbHoverBackgroundBrush}"/>
+                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbHoverBorderBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
+                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CurrentPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
+                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CurrentDisabled">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Focus">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CurrentFocus">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundColor}" />
+                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundColor}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -85,36 +106,37 @@
                             <VisualStateGroup x:Name="ItemTypeStates">
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76C;"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronLeftToRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
+
+                                <VisualState x:Name="DefaultRTL">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronRightToLeft}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+
                                 <VisualState x:Name="LastItem">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.FontWeight" Value="Bold" />
+                                        <Setter Target="PART_SeparatorColumnDefinition.Width" Value="0px"/>
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
                                     </VisualState.Setters>
                                 </VisualState>
+                                
                                 <VisualState x:Name="Ellipsis">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76C;"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronLeftToRight}"/>
                                         <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_BreadcrumbItemContentPresenter.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                            </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="ItemTypeRTLStates">
-                                <VisualState x:Name="DefaultRTL">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
-                                    </VisualState.Setters>
-                                </VisualState>
                                 <VisualState x:Name="EllipsisRTL">
                                     <VisualState.Setters>
                                         <Setter Target="PART_BreadcrumbEllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_BreadcrumbItemContentPresenter.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="&#xE76B;"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronRightToLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -127,32 +149,41 @@
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="30px" />
+                                    <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="11px" />
+                                    <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                
+
                                 <ContentPresenter x:Name="PART_BreadcrumbItemContentPresenter"
-                                                  Content="{TemplateBinding Content}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   Grid.Column="0"
-                                                  LineHeight="36"
-                                                  FontFamily="Segoe UI"
-                                                  FontStyle="Normal"
-                                                  FontWeight="SemiBold"/>
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  FontFamily="{TemplateBinding FontFamily}"
+                                                  FontSize="{TemplateBinding FontSize}"
+                                                  FontWeight="{TemplateBinding FontWeight}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  AutomationProperties.AccessibilityView="Raw"/>
 
                                 <TextBlock x:Name="PART_BreadcrumbEllipsisTextBlock"
-                                           FontFamily="Segoe MDL2 Assets"
+                                           FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                            Text="&#xE712;"
                                            Visibility="Collapsed"
                                            VerticalAlignment="Stretch"
+                                           IsTextScaleFactorEnabled="False"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           AutomationProperties.AccessibilityView="Raw"
                                            Grid.Column="0"/>
 
                                 <TextBlock x:Name="PART_ChevronTextBlock"
-                                           FontFamily="Segoe MDL2 Assets"
+                                           FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                            Text="&#xE76C;"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Center"
                                            IsTextScaleFactorEnabled="False"
-                                           Grid.Column="1"/>
+                                           FontSize="{TemplateBinding FontSize}"
+                                           AutomationProperties.AccessibilityView="Raw"
+                                           Grid.Column="2"/>
                             </Grid>
 
                         </Button.Content>
@@ -169,9 +200,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:Breadcrumb">
 
-                    <local:ItemsRepeater x:Name="PART_BreadcrumbItemsRepeater"
-                                         HorizontalAlignment="Left">
-                        
+                    <local:ItemsRepeater x:Name="PART_BreadcrumbItemsRepeater">
+
                         <local:ItemsRepeater.Layout>
                             <local:BreadcrumbLayout />
                         </local:ItemsRepeater.Layout>
