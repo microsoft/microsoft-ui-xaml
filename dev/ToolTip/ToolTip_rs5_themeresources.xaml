@@ -5,22 +5,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="ToolTipForegroundBrush" ResourceKey="TextFillColorInverseBrush" />
-            <StaticResource x:Key="ToolTipBackgroundBrush" ResourceKey="AcrylicBackgroundFillColorDefaultInverseBrush" />
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorInverseBrush" />
+            <StaticResource x:Key="ToolTipForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToolTipBackgroundBrush" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
 
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="ToolTipForegroundBrush" ResourceKey="TextFillColorInverseBrush" />
-            <StaticResource x:Key="ToolTipBackgroundBrush" ResourceKey="AcrylicBackgroundFillColorDefaultInverseBrush" />
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorInverseBrush" />
+            <StaticResource x:Key="ToolTipForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ToolTipBackgroundBrush" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="ToolTipForegroundBrush" ResourceKey="SystemColorWindowBrush" />
-            <StaticResource x:Key="ToolTipBackgroundBrush" ResourceKey="SystemColorWindowTextBrush" />
-            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SystemColorWindowTextBrush" />
+            <StaticResource x:Key="ToolTipForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="ToolTipBackgroundBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
