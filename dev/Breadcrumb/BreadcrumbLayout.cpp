@@ -77,10 +77,10 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
 void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight)
 {
     const winrt::Size elementSize = breadcrumbItem.DesiredSize();
-    const winrt::Rect arrangeRect(accumulatedWidths, 0, elementSize.Width, elementSize.Height);
+    const winrt::Rect arrangeRect(accumulatedWidths, 0, elementSize.Width, maxElementHeight);
     breadcrumbItem.Arrange(arrangeRect);
 
-    maxElementHeight = std::max(maxElementHeight, elementSize.Height);
+    // maxElementHeight = std::max(maxElementHeight, elementSize.Height);
     accumulatedWidths += elementSize.Width;
 }
 
@@ -121,6 +121,23 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayo
     return 0;
 }
 
+float BreadcrumbLayout::GetBreadcrumbItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender)
+{
+    float maxElementHeight{};
+
+    if (m_ellipsisIsRendered)
+    {
+        maxElementHeight = m_ellipsisButton.get().DesiredSize().Height;
+    }
+
+    for (uint32_t i = firstItemToRender; i < GetItemCount(context); ++i)
+    {
+        maxElementHeight = std::max(maxElementHeight, GetElementAt(context, i).DesiredSize().Height);
+    }
+
+    return maxElementHeight;
+}
+
 // Arranging is performed in a single step, as many elements are tried to be drawn going from the last element
 // towards the first one, if there's not enough space, then the ellipsis button is drawn
 winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize)
@@ -139,7 +156,7 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     }
 
     float accumulatedWidths{};
-    float maxElementHeight{};
+    float maxElementHeight = GetBreadcrumbItemsHeight(context, firstElementToRender);
 
     // If there is at least one element, we may render the ellipsis item
     if (itemCount > 0)
