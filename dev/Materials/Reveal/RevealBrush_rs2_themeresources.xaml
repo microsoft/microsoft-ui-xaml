@@ -2463,8 +2463,6 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ComboBoxItemRevealStyle}" />
-
     <Style TargetType="SemanticZoom" x:Key="SemanticZoomRevealStyle">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
