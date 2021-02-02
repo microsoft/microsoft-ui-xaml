@@ -25,17 +25,20 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="ToolTipBorderPadding">9,6,9,8</Thickness>
+    <x:Double x:Key="ToolTipMaxWidth">320</x:Double>
 
     <Style TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipStyle}" />
 
     <Style x:Key="DefaultToolTipStyle" TargetType="ToolTip">
         <Setter Property="Foreground" Value="{ThemeResource ToolTipForegroundBrush}" />
         <Setter Property="Background" Value="{ThemeResource ToolTipBackgroundBrush}" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="BorderBrush" Value="{ThemeResource ToolTipBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ToolTipBorderThemeThickness}" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ToolTipContentThemeFontSize}" />
         <Setter Property="Padding" Value="{ThemeResource ToolTipBorderPadding}" />
+        <Setter Property="MaxWidth" Value="{StaticResource ToolTipMaxWidth}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -43,9 +46,9 @@
                     <ContentPresenter x:Name="LayoutRoot"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Background="{TemplateBinding Background}"
-                        contract7Present:BackgroundSizing="InnerBorderEdge"
+                        contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        MaxWidth="320"
+                        MaxWidth="{TemplateBinding MaxHeight}"
                         Content="{TemplateBinding Content}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
