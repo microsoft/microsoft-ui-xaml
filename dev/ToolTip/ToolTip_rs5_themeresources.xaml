@@ -48,7 +48,7 @@
                         Background="{TemplateBinding Background}"
                         contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        MaxWidth="{TemplateBinding MaxHeight}"
+                        MaxWidth="{TemplateBinding MaxWidth}"
                         Content="{TemplateBinding Content}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
