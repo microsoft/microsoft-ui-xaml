@@ -280,7 +280,8 @@
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Bottom"
                                         XYFocusKeyboardNavigation="Enabled"
-                                        Padding="{StaticResource ContentDialogPadding}">
+                                        Padding="{StaticResource ContentDialogPadding}"
+                                        Background="{TemplateBinding Background}">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition x:Name="PrimaryColumn" Width="*" />
                                             <ColumnDefinition x:Name="FirstSpacer" Width="0" />
