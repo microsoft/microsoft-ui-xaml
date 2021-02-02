@@ -279,7 +279,7 @@
                     <Grid
                         Background="{TemplateBinding Background}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge">
+                        contract7Present:BackgroundSizing="InnerBorderEdge">
                         <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer"
                             Margin="{TemplateBinding Padding}"
                             MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.FlyoutContentMinWidth}"

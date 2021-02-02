@@ -53,7 +53,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge">
+                        contract7Present:BackgroundSizing="InnerBorderEdge">
                         <ScrollViewer
                             x:Name="ScrollViewer"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
@@ -68,9 +68,7 @@
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                MinHeight="{TemplateBinding MinHeight}"/>
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </ScrollViewer>
                     </Border>
                 </ControlTemplate>

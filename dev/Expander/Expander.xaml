@@ -21,6 +21,7 @@
                doesn't work how they would expect.-->
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Background" Value="{ThemeResource ExpanderBackground}" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}"/>
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}"/>
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}"/>
@@ -79,13 +80,13 @@
                             x:Name="ExpanderHeader"
                             AutomationProperties.AutomationId="ExpanderToggleButton"
                             Background="{TemplateBinding Background}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             MinHeight="{TemplateBinding MinHeight}"
                             MinWidth="{TemplateBinding MinWidth}"
                             MaxWidth="{TemplateBinding MaxWidth}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7Present:BackgroundSizing="OuterBorderEdge"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             Style="{StaticResource ExpanderHeaderDownStyle}"
                             Content="{TemplateBinding Header}"
@@ -99,13 +100,13 @@
                             Grid.Row="1"
                             Visibility="Collapsed"
                             Background="{ThemeResource ExpanderDropDownBackground}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                             BorderBrush="{ThemeResource ExpanderDropDownBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             MinHeight="{TemplateBinding MinHeight}"
                             MinWidth="{TemplateBinding MinWidth}"
                             MaxWidth="{TemplateBinding MaxWidth}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7Present:BackgroundSizing="OuterBorderEdge"
                             Padding="{TemplateBinding Padding}">
                             <ContentPresenter
                                 Content="{TemplateBinding Content}"

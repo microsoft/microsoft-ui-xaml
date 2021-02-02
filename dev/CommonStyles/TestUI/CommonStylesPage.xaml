@@ -257,6 +257,14 @@
                         </Button.Flyout>
                     </Button>
 
+                    <Button Content="Test flyout with short text" Margin="0,24,0,0">
+                        <Button.Flyout>
+                            <Flyout>
+                                <TextBlock Text="OK"/>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
                     <TextBlock  Text="Miscellaneous testing area" Style="{ThemeResource StandardGroupHeader}"/>
