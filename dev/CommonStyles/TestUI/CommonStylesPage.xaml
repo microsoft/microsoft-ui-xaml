@@ -235,12 +235,23 @@
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
 
-                    <Button Content="Test flyout">
+                    <Button Content="Test flyout with text and button" Margin="0,24,0,0">
                         <Button.Flyout>
                             <Flyout>
                                 <StackPanel>
-                                    <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="All items will be removed. Do you want to continue?" Margin="0,0,0,12" />
+                                    <TextBlock Text="All items will be removed. Do you want to continue?" Margin="0,0,0,12" />
                                     <Button Content="Yes, empty my cart" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <Button Content="Test with button and long text" Margin="0,24,0,0">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Width="300">
+                                    <Button Content="Yes, empty my cart" Margin="0,0,0,12"/>
+                                    <TextBlock TextWrapping="Wrap" Text="The giant panda, also known as the panda bear or simply the panda, is a bear native to south central China. It is characterised by large, black patches around its eyes, over the ears, and across its round body. The name giant panda is sometimes used to distinguish it from the red panda, a neighboring musteloid. Though it belongs to the order Carnivora, the giant panda is a folivore, with bamboo shoots and leaves making up more than 99% of its diet.[7] Giant pandas in the wild will occasionally eat other grasses, wild tubers, or even meat in the form of birds, rodents, or carrion. In captivity, they may receive honey, eggs, fish, yams, shrub leaves, oranges, or bananas along with specially prepared food."/>
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>
