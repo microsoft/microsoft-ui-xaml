@@ -20,8 +20,8 @@
             <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent" />
             <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent" />
             <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondary" />
-            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiary" />
+            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiaryBrush" />
             <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabled" />
             <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
@@ -129,8 +129,8 @@
             <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent"/>
             <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent"/>
             <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondary"/>
-            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiary"/>
+            <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush"/>
+            <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentAAFillColorTertiaryBrush"/>
             <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentAAFillColorDisabled"/>
             <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
             <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
