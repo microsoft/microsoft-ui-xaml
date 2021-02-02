@@ -37,7 +37,7 @@
         <Setter Property="BorderThickness" Value="{ThemeResource ToolTipBorderThemeThickness}" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ToolTipContentThemeFontSize}" />
-        <Setter Property="Padding" Value="{ThemeResource ToolTipBorderPadding}" />
+        <Setter Property="Padding" Value="{StaticResource ToolTipBorderPadding}" />
         <Setter Property="MaxWidth" Value="{StaticResource ToolTipMaxWidth}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
