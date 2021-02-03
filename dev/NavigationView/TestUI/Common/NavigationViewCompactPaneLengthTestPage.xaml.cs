@@ -95,13 +95,14 @@ namespace MUXControlsTestApp
             var buttonHolderGrid = VisualTreeHelper.GetChild(paneToggleButtonGrid, 1);
             var backButton = VisualTreeHelper.GetChild(buttonHolderGrid, 0) as Button;
             var togglePaneButton = VisualTreeHelper.GetChild(buttonHolderGrid, 2) as Button;
+            var CompactPaneMargin = 8;
 
-            if (Math.Abs(backButton.ActualWidth - NavView.CompactPaneLength) > double.Epsilon)
+            if (Math.Abs(backButton.ActualWidth - NavView.CompactPaneLength) - CompactPaneMargin > double.Epsilon)
             {
                 allCorrect = false;
             }
 
-            if (Math.Abs(togglePaneButton.ActualWidth - NavView.CompactPaneLength) > double.Epsilon)
+            if (Math.Abs(togglePaneButton.ActualWidth - NavView.CompactPaneLength) - CompactPaneMargin > double.Epsilon)
             {
                 allCorrect = false;
             }
