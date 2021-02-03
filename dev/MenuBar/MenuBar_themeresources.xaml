@@ -9,12 +9,12 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="MenuBarBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuBarBackground" ResourceKey="SubtleFillColorTransparentBrush" />
 
-            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">0</Thickness>
 
@@ -25,12 +25,12 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="MenuBarBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuBarBackground" ResourceKey="SubtleFillColorTransparentBrush" />
 
-            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="GhostFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">0</Thickness>
 

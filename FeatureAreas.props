@@ -283,6 +283,7 @@
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeatureBreadcrumbEnabled>true</FeatureBreadcrumbEnabled>
     <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
     <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
     <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
