@@ -183,7 +183,14 @@ void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, co
 {
     if (args.Key() == winrt::VirtualKey::Enter)
     {
-        OnBreadcrumbItemClick(nullptr, nullptr);
+        if (m_isEllipsisNode)
+        {
+            OnEllipsisItemClick(nullptr, nullptr);
+        }
+        else
+        {
+            OnBreadcrumbItemClick(nullptr, nullptr);
+        }
         args.Handled(true);
     }
 }
@@ -306,7 +313,7 @@ void BreadcrumbItem::UpdateCommonVisualState()
     }
 }
 
-void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
