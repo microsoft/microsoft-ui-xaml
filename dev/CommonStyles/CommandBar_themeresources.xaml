@@ -547,14 +547,11 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBorderBrushOpen}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="BorderThickness">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBorderThicknessOpen}" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ContentTransform" Storyboard.TargetProperty="Y">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CompactVerticalDelta}" />
@@ -581,14 +578,11 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBorderBrushOpen}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="BorderThickness">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBorderThicknessOpen}" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ClipGeometryTransform" Storyboard.TargetProperty="Y">
                                             <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
@@ -856,6 +850,13 @@
                                 VerticalAlignment="Stretch"
                                 Stroke="{ThemeResource CommandBarHighContrastBorder}"
                                 StrokeThickness="1" />
+                            <Border x:Name="OpenBorder"
+                                Grid.ColumnSpan="2"
+                                Visibility="Collapsed"
+                                VerticalAlignment="Stretch"
+                                BorderThickness="{ThemeResource CommandBarBorderThicknessOpen}"
+                                BorderBrush="{ThemeResource CommandBarBorderBrushOpen}"
+                                contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}" />
                         </Grid>
                         <Popup x:Name="OverflowPopup">
                             <Popup.RenderTransform>
@@ -983,7 +984,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="Width" Value="{ThemeResource AppBarExpandButtonThemeWidth}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="FocusVisualMargin" Value="0" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -1054,7 +1055,8 @@
                             Padding="0"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw" />
+                            AutomationProperties.AccessibilityView="Raw"
+                            Control.IsTemplateFocusTarget="True" />
 
                     </Grid>
 
