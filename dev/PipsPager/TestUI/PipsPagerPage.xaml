@@ -77,7 +77,8 @@
                 <CheckBox x:Name="NextPageButtonIsEnabledCheckBox" AutomationProperties.Name="NextPageButtonIsEnabledCheckBox" IsChecked="False" IsEnabled="False"/>
             </StackPanel>
             <TextBlock x:Name="CurrentPageIndexTextBlock"/>
-            <TextBlock x:Name="CurrentNumberOfPagesTextBlock"/>
+            <TextBlock x:Name="FocusedPageIndexTextBlock"/>
+            <TextBlock x:Name="CurrentNumberOfPagesTextBlock" Text="Current focused page index: "/>
             <TextBlock x:Name="CurrentMaxVisualIndicatorsTextBlock"/>
             <TextBlock x:Name="CurrentOrientationTextBlock"/>
         </StackPanel>

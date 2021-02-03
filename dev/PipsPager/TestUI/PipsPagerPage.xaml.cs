@@ -9,6 +9,7 @@ using PipsPagerButtonVisibility = Microsoft.UI.Xaml.Controls.PipsPagerButtonVisi
 using PipsPagerSelectedIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.PipsPagerSelectedIndexChangedEventArgs;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
@@ -17,6 +18,7 @@ namespace MUXControlsTestApp
     {
         Button previousPageButton;
         Button nextPageButton;
+        ItemsRepeater repeater;
 
         public List<string> Pictures = new List<string>()
         {
@@ -42,6 +44,7 @@ namespace MUXControlsTestApp
             var rootPanel = VisualTreeHelper.GetChild(TestPipsPager, 0);
             previousPageButton = VisualTreeHelper.GetChild(rootPanel, 0) as Button;
             nextPageButton = VisualTreeHelper.GetChild(rootPanel, 2) as Button;
+            repeater = FindChildByType<ItemsRepeater>(ref rootPanel);
 
             PreviousPageButtonVisibilityComboBox.SelectionChanged += OnPreviousPageButtonVisibilityChanged;
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextPageButtonVisibilityChanged;
@@ -52,6 +55,8 @@ namespace MUXControlsTestApp
             TestPipsPager.PointerExited += TestPipsPager_PointerExited;
             previousPageButton.IsEnabledChanged += OnButtonEnabledChanged; ;
             nextPageButton.IsEnabledChanged += OnButtonEnabledChanged;
+            repeater.GotFocus += OnRepeaterGotFocus;
+   
 
             PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
             NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
@@ -62,6 +67,38 @@ namespace MUXControlsTestApp
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
             CurrentMaxVisualIndicatorsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisualIndicators}";
             CurrentOrientationTextBlock.Text = GetCurrentOrientation();
+        }
+        
+        private T FindChildByType<T>(ref DependencyObject parent) where T : DependencyObject
+        {
+
+            if (parent == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child != null && child is T)
+                {
+                    return (T)child;
+                }
+                else
+                {
+                    T foundObject = FindChildByType<T>(ref child);
+                    if (foundObject != null)
+                    {
+                        return foundObject;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void OnRepeaterGotFocus(object sender, RoutedEventArgs e)
+        {
+            FocusedPageIndexTextBlock.Text = $"Current focused page index: {repeater.GetElementIndex((UIElement)e.OriginalSource).ToString()}";
         }
 
         private void OnButtonEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
