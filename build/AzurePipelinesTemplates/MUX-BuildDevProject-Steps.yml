@@ -6,8 +6,6 @@ steps:
       appxPackageDir: $(appxPackageDir)
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
-      ${{ if ne(variables['System.CollectionUri'],'https://dev.azure.com/ms/') }}:
-        useInsiderSDK: true
 
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:
