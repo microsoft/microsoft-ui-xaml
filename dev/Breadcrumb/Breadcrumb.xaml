@@ -20,7 +20,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
-        <Setter Property="Padding" Value="{ThemeResource ButtonPadding}"/>
+        <Setter Property="Padding" Value="0,5,11,6"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -31,78 +31,116 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False">
+
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Foreground" Value="{ThemeResource BreadcrumbNormalForegroundColor}" />
+                                <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
+                                <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
+                                <Setter Property="HorizontalAlignment" Value="Left" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}" />
+                                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                                <Setter Property="FocusVisualMargin" Value="-3" />
+                                <Setter Property="Padding" Value="0,5,11,6" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid Background="Transparent">
+
+                                                <VisualStateManager.VisualStateGroups>
+
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbNormalForegroundColor}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="CurrentNormal">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentNormalForegroundColor}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="PointerOver">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
+                                                                <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="CurrentPointerOver">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
+                                                                <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="Pressed">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
+                                                                <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="CurrentPressed">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Background" Value="Transparent"/>
+                                                                <Setter Target="PART_ContentPresenter.BorderBrush" Value="Transparent"/>
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="Disabled">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundColor}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="CurrentDisabled">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundColor}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="Focus">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundColor}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="CurrentFocus">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundColor}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+
+                                                <ContentPresenter x:Name="PART_ContentPresenter"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        Content="{TemplateBinding Content}"
+                                                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                        Padding="0,5,11,6"
+                                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                        AutomationProperties.AccessibilityView="Raw"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+
+
                         <VisualStateManager.VisualStateGroups>
-
-                            <VisualStateGroup x:Name="CommonVisualStates">
-                                <VisualState x:Name="Rest">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbRestForegroundColor}" />                                        
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="CurrentRest">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentRestForegroundColor}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="Hover">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundColor}" />
-                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbHoverBackgroundBrush}"/>
-                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbHoverBorderBrush}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="CurrentHover">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundColor}" />
-                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbHoverBackgroundBrush}"/>
-                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbHoverBorderBrush}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="Pressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundColor}" />
-                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
-                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="CurrentPressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundColor}" />
-                                        <Setter Target="PART_BreadcrumbItemButton.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
-                                        <Setter Target="PART_BreadcrumbItemButton.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="Disabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundColor}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="CurrentDisabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundColor}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="Focus">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundColor}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="CurrentFocus">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_BreadcrumbItemButton.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundColor}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            
                             <VisualStateGroup x:Name="ItemTypeStates">
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
