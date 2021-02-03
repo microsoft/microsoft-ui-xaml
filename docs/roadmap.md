@@ -107,7 +107,7 @@ See the image below for a more detailed look at our plans for getting WinUI 3.0 
 ## WinUI 3.0 Feature Roadmap
 We know that for many of our developers, the choice to adopt WinUI 3 is dependent on certain features and capabilities. The table below outlines the status on WinUI 3 features, and the expected date they'll be available to you. 
 
-As we begin switching towards releasing preview and stable packages in parallel, you'll see in the feature roadmap below that some features become "preview" features (marked with a *) at a certain release. This means that the feature is not stable/bug-free enough to be included in the stable release, but will be available in the corresponding pre-release package. 
+As we begin moving towards releasing preview and stable packages in parallel, you'll see in the feature roadmap below that some features remain "preview" features during stable releases. This means that the feature is not stable/bug-free enough to be included in the stable release, but will be available in the corresponding pre-release package. 
 
 **Please note: This is a living document, and the information below can and likely will change as the project continues development. The feature availability dates listed here are the team's current goals and expectations, but are not promises or guarantees.**
 
