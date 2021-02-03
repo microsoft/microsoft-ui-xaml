@@ -96,7 +96,7 @@ For existing UWP XAML apps there will be some updates required when migrating to
 
 ### WinUI 3.0 Timelines and Milestones
 
-WinUI 3 will release as a series of preview releases throughout 2020, culminating with v3.0 shipping in 2021. 
+WinUI 3 will release as a series of preview releases throughout 2020, culminating with our first supported, production-ready release shipping in March 2021. 
 
 As we move towards releasing a stable, supported version of WinUI 3, we're looking to transition into a release cadence that includes more frequent pre-releases alongside less frequent stable releases, similar to the release cadence of WinUI 2.x. 
 
@@ -114,48 +114,43 @@ As we begin switching towards releasing preview and stable packages in parallel,
 For questions or status updates on either features listed here, or features not on this list, you can file an issue on [our repo](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=question&template=question.md&title=Question%3A+%5Byour+question+here%5D) or ask during our [monthly community calls](communitycalls/WinUICommunityCall.ics). 
 
 ### Legend
-&#128994; - Included, or planned to be included
+&#128994; - Available as supported feature
 
-&#128311; - Partial capability 
+&#128311; - Available as preview feature 
 
 &#129002; - Stretch goal 
 
-Blank -  Not included, or not planned to be included
+Blank -  Not available
+
 
 **Preview 3** is our latest release. 
 
-| Customer Capability                                                         | Preview 2 (July 2020) | Preview 3 (Nov 2020) | Preview 4 (Feb 2021) | Reunion 0.5 (March 2021) | Reunion 0.8 (May 2021) | Reunion 1.0 or beyond |
-|-----------------------------------------------------------------------------|-----------------------|----------------------|----------------------|--------------------------|------------------------|-----------------------|
-| WinUI in Desktop (Win32) apps                                               | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Supports MSIX Deployment                                                    | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| WinUI works downlevel to Windows 10 version 1803 and above                  | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| .NET 5 Support for Desktop apps                                             | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| `<SwapChainPanel>`                                                          | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Chromium-based WebView2                                                     | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Title Bar customization for Desktop apps                                    | &#128994;                   | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Fluent Shadows                                                              |  &#128311;               |  &#128311;              |  &#128311;              |  &#128311;                  |  &#128311;                | &#128994;                   |
-| Input validation for data fields                                            |  &#128311;               | &#128311;              |        &#128311;             |        &#128311; *                |          &#128311; *            | &#128994;                   |
-| Multi-window support for Desktop apps (separate threads)                    |  &#128311;               | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Multi-window support for Desktop apps (same thread)                         |                      |  &#128311;              |                     |                         |                       | &#128994;                   |
-| ARM64 support                                                               |                      | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Drag and drop                                                               |                      | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Off-thread input for SwapChainPanels                                        |                      | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| RenderTargetBitmap                                                          |                      |  &#128311;              |  &#128311;              |  &#128311;                  |  &#128311;                | &#128994;                   |
-| Mouse cursor customization                                                  |                      | &#128994;                  | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Animated Gif support                                                        |              | &#128994;             | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| VirtualSurfaceImageSource (VSIS) support                                    |                      |                     | &#128994;                  | &#128994;                      | &#128994;                    | &#128994;                   |
-| Ready for production apps                                                   |                      |                     |                     | &#128994;                      | &#128994;                    | &#128994;                   |
-| Supports non-MSIX deployment                                                |                      |                     |                     |                         |                       | &#128994;                   |
-| .NET 5 Support for UWP apps                                                 |                      |                     |                     |                         |                       | &#128994;                   |
-| XAML Islands                                                                |                      |                     |                     |                         |                       | &#128994;                   |
-| Works on Windows 10X                                                        |                      |                     |                     |                         |                       | &#128994;                   |
-| Works on additional Windows form factors (Xbox, HoloLens, IoT, Surface Hub) |                      |                     |                     |                         |                       | &#128994;                   |
-| Title Bar customization for UWP apps                                        |                      |                     |                     |                         |                       | &#128994;                   |
-| Acrylic material                                                            |                      |                     |                     |                         |                       | &#128994;                   |
-| Reveal Highlight                                                            |                      |                     |                     |                         |                       | &#128994;                   |
-| Rounded corners for top level windows and popups                            |                      |                     |                     |                         |                       | &#128994;                   |
-| Media Controls                                                              |                      |                     |                     |                         |                       | &#128994;                   |
-| `<InkCanvas>`                                                               |                      |                     |                     |                         |                       | &#128994;                   |
-| `<Map Control>`                                                             |                      |                     |                     |                         |                       | &#129002;               |
-
-`*` Items marked with an asterisk are preview features - they will not be included in the stable release, but will be available in the corresponding preview package. 
+| Customer Capability                                                         | Preview 3 (Nov 2020) | Preview 4 (Feb 2021) | Reunion 0.5 (March 2021) | Reunion 0.8 (May 2021) | Planned for a future update |
+|-----------------------------------------------------------------------------|----------------------|----------------------|--------------------------|------------------------|-----------------------------|
+| WinUI 3 in Desktop (Win32) apps                                             | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Supports MSIX Deployment                                                    | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| WinUI 3 works downlevel to Windows 10 version 1809 and above                | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Supports the latest .NET                                                    | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| `<SwapChainPanel>`                                                          | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Chromium-based WebView2                                                     | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Title bar customization                                                     | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Fluent Shadows                                                              | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| ARM64 support                                                               | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Input validation for data fields                                            | &#128311;              | &#128311;              | &#128311;                  | &#128311;                | &#128994;                         |
+| Supports multiple top-level windows                                         | &#128311;              | &#128311;              | &#128311;                  | &#128311;                | &#128994;                         |
+| Drag and drop                                                               | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Off-thread input for SwapChainPanels                                        | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| RenderTargetBitmap                                                          | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Mouse cursor customization                                                  | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| Animated Gif support                                                        | &#128311;              | &#128311;              | &#128994;                      | &#128994;                    | &#128994;                         |
+| VirtualSurfaceImageSource (VSIS) support                                    |                     | &#128311;                  | &#128994;                      | &#128994;                    | &#128994;                         |
+| WinUI 3 in UWP apps                                                         |                     |                     |                         |                       | &#128994;                         |
+| Supports non-MSIX deployment                                                |                     |                     |                         |                       | &#128994;                         |
+| XAML Islands                                                                |                     |                     |                         |                       | &#128994;                         |
+| Works on Windows 10X                                                        |                     |                     |                         |                       | &#128994;                         |
+| Works on additional Windows form factors (Xbox, HoloLens, IoT, Surface Hub) |                     |                     |                         |                       | &#128994;                         |
+| Acrylic material                                                            |                     |                     |                         |                       | &#128994;                         |
+| Reveal Highlight                                                            |                     |                     |                         |                       | &#129002;                     |
+| Media Controls                                                              |                     |                     |                         |                       | &#128994;                         |
+| `<InkCanvas>`                                                               |                     |                     |                         |                       | &#128994;                         |
+| `<Map Control>`                                                             |                     |                     |                         |                       | &#129002;                     |
