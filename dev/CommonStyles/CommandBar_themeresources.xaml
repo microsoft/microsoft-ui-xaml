@@ -132,6 +132,15 @@
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition From="CompactClosed" To="CompactOpenUp" GeneratedDuration="0:0:0.467">
                                         <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
+                                            </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton" Storyboard.TargetProperty="VerticalAlignment">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Stretch" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -195,6 +204,15 @@
                                     </VisualTransition>
                                     <VisualTransition From="CompactClosed" To="CompactOpenDown" GeneratedDuration="0:0:0.467">
                                         <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource CommandBarBackgroundOpen}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource ControlCornerRadius}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OpenBorder" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
+                                            </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton" Storyboard.TargetProperty="VerticalAlignment">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Stretch" />
                                             </ObjectAnimationUsingKeyFrames>
