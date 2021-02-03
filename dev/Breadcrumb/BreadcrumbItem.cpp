@@ -295,14 +295,14 @@ void BreadcrumbItem::UpdateCommonVisualState()
         }
         else if (breadcrumbItemButton.IsPointerOver())
         {
-            commonVisualStateName = commonVisualStateName + L"Hover";
+            commonVisualStateName = commonVisualStateName + L"PointerOver";
         }
         else
         {
-            commonVisualStateName = commonVisualStateName + L"Rest";
+            commonVisualStateName = commonVisualStateName + L"Normal";
         }
 
-        winrt::VisualStateManager::GoToState(*this, commonVisualStateName, false);
+        winrt::VisualStateManager::GoToState(breadcrumbItemButton, commonVisualStateName, false);
     }
 }
 
