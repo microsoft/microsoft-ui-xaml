@@ -137,13 +137,23 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     const auto& element = args.Element();
 
     element.AddHandler(winrt::UIElement::PointerPressedEvent(),
-        winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
+        winrt::box_value<winrt::PointerEventHandler>({ this, &BreadcrumbItem::OnFlyoutElementClickEvent }),
         true);
 
     // TODO: Investigate an RS2 or lower way to invoke via keyboard. Github issue #3997
     if (SharedHelpers::IsRS3OrHigher())
     {
         element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
+    }
+    else
+    {
+        // Prior to RS3, UIElement.PreviewKeyDown is not available.
+        AddRoutedEventHandler<RoutedEventType::KeyDown>(element.try_as<winrt::UIElement>(), 
+            [this](auto const& sender, auto const& args)
+            {
+                OnFlyoutElementKeyDownEvent(sender, nullptr);
+            },
+            true /*handledEventsToo*/);
     }
 }
 
@@ -176,7 +186,7 @@ void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender
 
 void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
 {
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
 
 void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -245,7 +255,7 @@ void BreadcrumbItem::OnVisualPropertyChanged(const winrt::DependencyObject&, con
     UpdateCommonVisualState();
 }
 
-void BreadcrumbItem::UpdateVisualState()
+void BreadcrumbItem::UpdateItemTypeVisualState()
 {
     const bool isLeftToRight = (FlowDirection() == winrt::FlowDirection::LeftToRight);
     hstring visualStateName;
@@ -337,7 +347,7 @@ void BreadcrumbItem::SetPropertiesForLastNode()
     m_isEllipsisNode = false;
     m_isLastNode = true;
 
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
 
 void BreadcrumbItem::ResetVisualProperties()
@@ -352,7 +362,7 @@ void BreadcrumbItem::ResetVisualProperties()
     m_ellipsisFlyout.set(nullptr);
     m_ellipsisItemsRepeater.set(nullptr);
 
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
 
 void BreadcrumbItem::InstantiateFlyout()
@@ -392,5 +402,5 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
 
     InstantiateFlyout();
 
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
