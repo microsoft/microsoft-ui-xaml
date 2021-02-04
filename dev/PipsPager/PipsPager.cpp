@@ -536,6 +536,15 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
                         args.Handled(true);
                     }
                 }
+                else
+                {
+                    // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
+                    m_dispatcherHelper.RunAsync([realizedElement]()
+                    {
+                        SetFocus(realizedElement, winrt::FocusState::Programmatic);
+                    });
+                    args.Handled(true);
+                }
             }
         }
     }
