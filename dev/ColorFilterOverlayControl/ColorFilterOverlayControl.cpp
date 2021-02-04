@@ -25,7 +25,7 @@ ColorFilterOverlayControl::ColorFilterOverlayControl()
 void ColorFilterOverlayControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
-    
+
     InvalidateBrush();
 }
 

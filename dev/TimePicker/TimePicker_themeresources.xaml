@@ -392,29 +392,61 @@
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" x:Name="ThirdPickerHostColumn" />
                                     </Grid.ColumnDefinitions>
-                                    <Border x:Name="FirstPickerHost" Grid.Column="0" />
+                                    <Grid x:Name="HighlightRect"
+                                        Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="5"
+                                        VerticalAlignment="Center"
+                                        Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
+                                        IsHitTestVisible="false"/>
+                                    <primitives:ColorFilterOverlayControl
+                                        Canvas.ZIndex="10000"
+                                        Grid.Column="0"
+                                        Margin="3,0"
+                                        TargetElement="{Binding ElementName=FirstPickerHost, Mode=OneTime}"
+                                        ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
+                                        Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
+                                        Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                       VerticalAlignment="Center" IsHitTestVisible="false"/>
+                                    <primitives:ColorFilterOverlayControl
+                                        Canvas.ZIndex="10000"
+                                        Grid.Column="2"
+                                        Margin="3,0"
+                                        TargetElement="{Binding ElementName=SecondPickerHost}"
+                                        ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
+                                        Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
+                                        Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        VerticalAlignment="Center" IsHitTestVisible="false"/>
+                                    <primitives:ColorFilterOverlayControl
+                                        Canvas.ZIndex="10000"
+                                        Grid.Column="4"
+                                        Margin="3,0"
+                                        TargetElement="{Binding ElementName=ThirdPickerHost}"
+                                        ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
+                                        Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
+                                        Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        VerticalAlignment="Center" IsHitTestVisible="false"/>
+                                    <Border x:Name="FirstPickerHost" Grid.Column="0"/>
                                     <Rectangle x:Name="FirstPickerSpacing"
+                                        Canvas.ZIndex="10000"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="1" />
                                     <Border x:Name="SecondPickerHost" Grid.Column="2" />
                                     <Rectangle x:Name="SecondPickerSpacing"
+                                        Canvas.ZIndex="10000"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
                                     Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="3" />
                                     <Border x:Name="ThirdPickerHost" Grid.Column="4" />
+
                                 </Grid>
-                                <primitives:ColorFilterOverlayControl
-                                    x:Name="HighlightRect"
-                                    TargetElement="{Binding ElementName=PickerHostGrid}"
-                                    ReplacementColor="{ThemeResource TimePickerFlyoutPresenterHighlightForegroundColor}"
-                                    Background="{ThemeResource TimePickerFlyoutPresenterHighlightFill}"
-                                    Height="{ThemeResource TimePickerFlyoutPresenterHighlightHeight}"
-                                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                                    VerticalAlignment="Center"
-                                    IsHitTestVisible="false"/>
                             </Grid>
 
                             <Grid Grid.Row="1" Height="{ThemeResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}" x:Name="AcceptDismissHostGrid">

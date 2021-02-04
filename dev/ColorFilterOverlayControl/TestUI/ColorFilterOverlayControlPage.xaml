@@ -14,6 +14,9 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel x:Name="Panel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <DatePicker/>
+            <DatePicker Margin="0,10,0,0"/>
+            <DatePicker YearVisible="false" Margin="0,10,0,0"/>
+            <DatePicker MonthVisible="false" Margin="0,10,0,0"/>
             <TimePicker Margin="0,10,0,0"/>
 
             <Grid Margin="2,10,0,0">
