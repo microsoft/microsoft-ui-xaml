@@ -103,7 +103,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
+        //Task 30789390: Re-enable disabled tests
+        //[TestMethod]
         public void VerifyVisualTreeForControlsInCommonStyles()
         {
             var controlsToVerify = new List<string> {
