@@ -119,7 +119,7 @@ jobs:
   - task: PublishSymbols@2
     displayName: 'Publish symbols'
     inputs:
-      SearchPattern: $(Build.ArtifactStagingDirectory)\drop\**.pdb
+      SearchPattern: $(Build.ArtifactStagingDirectory)/drop/**/*.pdb
       SymbolServerType: 'TeamServices'
       indexSources: true
     env:
