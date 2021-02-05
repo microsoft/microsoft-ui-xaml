@@ -1734,7 +1734,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
-                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+                Verify.AreEqual("4,0,20,0", contentPresenterMarginTextBlock.DocumentText);
             }
         }
 
