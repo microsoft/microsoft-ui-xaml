@@ -13,6 +13,17 @@ namespace MUXControlsTestApp
         {
             Tests = new List<TestDeclaration>();
             AxeTests = new List<TestDeclaration>();
+
+            // Why are we using two different properties and are separating normal test pages from AXE test pages?
+            // 
+            // The main issue with treating them the same is that AXE test pages offer not much beyond being available for AXE testing
+            // On the other hand normal test pages are very likely to fail regular AXE tests so can't be used for that.
+            // 
+            // To prevent the list of test pages to be crowded and bloated with all the AXE test pages, we separate them into two inventories.
+            // In some cases, the test page for a control might work for AXE testing too.
+            // In that case, the page can have both attributes in order to indicate that it's a regular test page and an AXE test page.
+            // To enable that, we have the logic below to sort the pages into the correct lists so they can be picked up by the UI for rendering.
+
             foreach (Type type in typeof(TestInventory).GetTypeInfo().Assembly.GetTypes())
             {
                 var attributeTest = type.GetTypeInfo().GetCustomAttribute<TopLevelTestPageAttribute>();

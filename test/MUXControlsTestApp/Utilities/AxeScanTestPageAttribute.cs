@@ -4,6 +4,10 @@
 using System;
 namespace MUXControlsTestApp
 {
+    /// <summary>
+    /// Attribute indicating that this page can be used for AXE testing.
+    /// A detailed explanation of the decision behind two separate attributes can be found in the <see cref="TestInventory"/> file.
+    /// </summary>
     public class AxeScanTestPageAttribute : Attribute
     {
         public string Name { get; set; } = "NoName";
