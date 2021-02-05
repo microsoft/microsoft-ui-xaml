@@ -20,6 +20,12 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common_21h1_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>1</Priority>
+    </Page>    
     <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
@@ -135,6 +141,7 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
+      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
@@ -145,6 +152,7 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
+      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>

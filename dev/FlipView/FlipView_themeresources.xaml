@@ -202,7 +202,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E2;"
+                                        Glyph="{ThemeResource FlipViewCaretLeft}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         MirroredWhenRightToLeft="True"
@@ -251,7 +251,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E5;"
+                                        Glyph="{ThemeResource FlipViewCaretDown}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         UseLayoutRounding="False" />
@@ -299,7 +299,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E4;"
+                                        Glyph="{ThemeResource FlipViewCaretUp}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         UseLayoutRounding="False" />
