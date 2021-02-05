@@ -20,7 +20,7 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
-        <Setter Property="Padding" Value="0,5,11,6"/>
+        <Setter Property="Padding" Value="6,5,5,6"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -34,7 +34,7 @@
 
                         <Button.Style>
                             <Style TargetType="Button">
-                                <Setter Property="Foreground" Value="{ThemeResource BreadcrumbNormalForegroundColor}" />
+                                <Setter Property="Foreground" Value="{ThemeResource BreadcrumbNormalForegroundBrush}" />
                                 <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
                                 <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />
@@ -44,7 +44,7 @@
                                 <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}" />
                                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                 <Setter Property="FocusVisualMargin" Value="-3" />
-                                <Setter Property="Padding" Value="0,5,11,6" />
+                                <Setter Property="Padding" Value="6,5,5,6" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -55,19 +55,19 @@
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbNormalForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbNormalForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
 
                                                         <VisualState x:Name="CurrentNormal">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentNormalForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentNormalForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
 
                                                         <VisualState x:Name="PointerOver">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundBrush}" />
                                                                 <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
                                                                 <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
                                                             </VisualState.Setters>
@@ -75,7 +75,7 @@
 
                                                         <VisualState x:Name="CurrentPointerOver">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundBrush}" />
                                                                 <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
                                                                 <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
                                                             </VisualState.Setters>
@@ -83,7 +83,7 @@
 
                                                         <VisualState x:Name="Pressed">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundBrush}" />
                                                                 <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
                                                                 <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
                                                             </VisualState.Setters>
@@ -91,7 +91,7 @@
 
                                                         <VisualState x:Name="CurrentPressed">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundBrush}" />
                                                                 <Setter Target="PART_ContentPresenter.Background" Value="Transparent"/>
                                                                 <Setter Target="PART_ContentPresenter.BorderBrush" Value="Transparent"/>
                                                             </VisualState.Setters>
@@ -99,25 +99,25 @@
 
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
 
                                                         <VisualState x:Name="CurrentDisabled">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
 
                                                         <VisualState x:Name="Focus">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
 
                                                         <VisualState x:Name="CurrentFocus">
                                                             <VisualState.Setters>
-                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundColor}" />
+                                                                <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                     </VisualStateGroup>
@@ -128,7 +128,7 @@
                                                         Content="{TemplateBinding Content}"
                                                         ContentTransitions="{TemplateBinding ContentTransitions}"
                                                         ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                        Padding="0,5,11,6"
+                                                        Padding="{TemplateBinding Padding}"
                                                         HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                                         AutomationProperties.AccessibilityView="Raw"/>
