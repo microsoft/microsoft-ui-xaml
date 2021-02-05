@@ -63,7 +63,10 @@ private:
 
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
+    RoutedEventHandler_revoker m_breadcrumbItemKeyDownHandlerRevoker{};
+
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_ellipsisRepeaterElementClearingRevoker{};
 
     PropertyChanged_revoker m_pressedButtonRevoker{};
     PropertyChanged_revoker m_pointerOverButtonRevoker{};
@@ -77,5 +80,5 @@ private:
     winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};
 
     // Revokers for the ellipsis item flyout elements
-    RoutedEventHandler_revoker m_ellipsisItemKeyDownRevoker{};
+    std::vector<RoutedEventHandler_revoker> m_ellipsisItemKeyDownRevokers;
 };

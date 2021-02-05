@@ -68,6 +68,7 @@ private:
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_itemRepeaterElementClearingRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
+    RoutedEventHandler_revoker m_breadcrumbKeyDownHandlerRevoker{};
     
     tracker_ref<winrt::INotifyCollectionChanged> m_notifyCollectionChanged{ this };
     winrt::event_token m_itemsSourceAsCollectionChanged{};
