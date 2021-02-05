@@ -8,7 +8,7 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousPageButtonStyle}"/>
         <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextPageButtonStyle}"/>
         <Setter Property="SelectedIndicatorButtonStyle" Value="{StaticResource PipsPagerSelectedPipButtonStyle}"/>

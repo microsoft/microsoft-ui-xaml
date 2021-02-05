@@ -516,6 +516,18 @@ void PipsPager::OnNextButtonClicked(const IInspectable& sender, const winrt::Rou
     SelectedPageIndex(SelectedPageIndex() + 1);
 }
 
+void PipsPager::OnGotFocus(const winrt::RoutedEventArgs& args)
+{
+    m_isPointerOver = true;
+    UpdateNavigationButtonVisualStates();
+}
+
+void PipsPager::OnLostFocus(const winrt::RoutedEventArgs& args)
+{
+    m_isPointerOver = false;
+    UpdateNavigationButtonVisualStates();
+}
+
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();

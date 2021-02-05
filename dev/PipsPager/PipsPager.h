@@ -33,6 +33,8 @@ public:
     void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
     void OnPointerCanceled(const winrt::PointerRoutedEventArgs& args);
     void OnKeyDown(const winrt::KeyRoutedEventArgs& args);
+    void OnLostFocus(const winrt::RoutedEventArgs& args);
+    void OnGotFocus(const winrt::RoutedEventArgs& args);
 
     /* Property changed handlers */
     void OnNumberOfPagesChanged();
