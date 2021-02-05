@@ -34,6 +34,7 @@ void BreadcrumbItem::RevokeListeners()
     m_breadcrumbItemButtonLoadedRevoker.revoke();
     m_breadcrumbItemButtonClickRevoker.revoke();
     m_ellipsisRepeaterElementPreparedRevoker.revoke();
+    m_breadcrumbItemKeyDownHandlerRevoker.revoke();
 }
 
 void BreadcrumbItem::OnApplyTemplate()
@@ -51,6 +52,12 @@ void BreadcrumbItem::OnApplyTemplate()
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
         thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbItem::OnChildPreviewKeyDown });
+    }
+    else if (auto const& thisAsUIElement = this->try_as<winrt::UIElement>())
+    {
+        m_breadcrumbItemKeyDownHandlerRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(thisAsUIElement,
+            { this, &BreadcrumbItem::OnChildPreviewKeyDown },
+            true /*handledEventsToo*/);
     }
 
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
@@ -148,12 +155,23 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     else
     {
         // Prior to RS3, UIElement.PreviewKeyDown is not available.
-        AddRoutedEventHandler<RoutedEventType::KeyDown>(element.try_as<winrt::UIElement>(), 
-            [this](auto const& sender, auto const& args)
+        if (const auto& uiElement = element.try_as<winrt::UIElement>())
+        {
+            uint32_t itemIndex = args.Index();
+
+            if (itemIndex >= m_ellipsisItemKeyDownRevokers.size())
             {
-                OnFlyoutElementKeyDownEvent(sender, nullptr);
-            },
-            true /*handledEventsToo*/);
+                // The resize function only appends elements at the end of the vector
+                // and as we know all indexes are used in [0, item count) this should
+                // not be a big performance issue
+                m_ellipsisItemKeyDownRevokers.resize(args.Index() + 1);
+            }
+
+            m_ellipsisItemKeyDownRevokers[itemIndex].revoke();
+            m_ellipsisItemKeyDownRevokers[itemIndex] = AddRoutedEventHandler<RoutedEventType::KeyDown>(uiElement,
+                { this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent },
+                true /*handledEventsToo*/);
+        }
     }
 }
 
@@ -380,7 +398,7 @@ void BreadcrumbItem::InstantiateFlyout()
         }
 
         m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
-        
+       
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
         // Create the Flyout and add the ItemsRepeater as content
