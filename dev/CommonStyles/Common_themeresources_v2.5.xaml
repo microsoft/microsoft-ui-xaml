@@ -13,20 +13,18 @@
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
-
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.9" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumLowBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.75" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
-
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightListAccentVeryHighBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -37,7 +35,7 @@
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
+   
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 </ResourceDictionary>

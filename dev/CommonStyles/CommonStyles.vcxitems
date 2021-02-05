@@ -15,6 +15,18 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Common_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_any.xaml">
       <UseVisualStyle>Any</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
