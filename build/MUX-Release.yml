@@ -78,6 +78,7 @@ jobs:
       productName: dep.controls
       branchVersion: false
       nugetVer: true
+      useDfs: false
 
   - task: DownloadBuildArtifacts@0
     condition:
