@@ -17,5 +17,5 @@
     <Thickness x:Key="ComboBoxEditableTextPadding">10,0,30,0</Thickness>
     <x:Double x:Key="ComboBoxMinHeight">24</x:Double>
     <Thickness x:Key="ComboBoxPadding">12,1,0,3</Thickness>
-    <x:Double x:Key="NavigationViewItemOnLeftMinHeight">36</x:Double>
+    <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
 </ResourceDictionary>
