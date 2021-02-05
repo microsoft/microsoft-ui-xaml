@@ -2242,7 +2242,7 @@
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
-                Visibility=Visible
+                Visibility=Collapsed
                 RenderSize=1,600
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
