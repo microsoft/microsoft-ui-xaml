@@ -632,14 +632,14 @@
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 
     <!-- Caret/Chevron Icons -->
-    <x:String x:key="ScrollBarCaretLeft">&#xE0E2;</x:String>
-    <x:String x:key="ScrollBarCaretRight">&#xE0E3;</x:String>
-    <x:String x:key="ScrollBarCaretUp">&#xE0E4;</x:String>
-    <x:String x:key="ScrollBarCaretDown">&#xE0E5;</x:String>
+    <x:String x:Key="ScrollBarCaretLeft">&#xE0E2;</x:String>
+    <x:String x:Key="ScrollBarCaretRight">&#xE0E3;</x:String>
+    <x:String x:Key="ScrollBarCaretUp">&#xE0E4;</x:String>
+    <x:String x:Key="ScrollBarCaretDown">&#xE0E5;</x:String>
 
-    <x:String x:key="FlipViewCaretLeft">&#xE0E2;</x:String>
-    <x:String x:key="FlipViewCaretRight">&#xE0E3;</x:String>
-    <x:String x:key="FlipViewCaretUp">&#xE0E4;</x:String>
-    <x:String x:key="FlipViewCaretDown">&#xE0E5;</x:String>
+    <x:String x:Key="FlipViewCaretLeft">&#xE0E2;</x:String>
+    <x:String x:Key="FlipViewCaretRight">&#xE0E3;</x:String>
+    <x:String x:Key="FlipViewCaretUp">&#xE0E4;</x:String>
+    <x:String x:Key="FlipViewCaretDown">&#xE0E5;</x:String>
 
 </ResourceDictionary>

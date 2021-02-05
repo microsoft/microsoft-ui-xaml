@@ -13,13 +13,13 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <x:String x:key="ScrollBarCaretLeft">&#xF08D;</x:String>
-    <x:String x:key="ScrollBarCaretRight">&#xF08F;</x:String>
-    <x:String x:key="ScrollBarCaretUp">&#xF090;</x:String>
-    <x:String x:key="ScrollBarCaretDown">&#xF08E;</x:String>
+    <x:String x:Key="ScrollBarCaretLeft">&#xF08D;</x:String>
+    <x:String x:Key="ScrollBarCaretRight">&#xF08F;</x:String>
+    <x:String x:Key="ScrollBarCaretUp">&#xF090;</x:String>
+    <x:String x:Key="ScrollBarCaretDown">&#xF08E;</x:String>
 
-    <x:String x:key="FlipViewCaretLeft">&#xF08D;</x:String>
-    <x:String x:key="FlipViewCaretRight">&#xF08F;</x:String>
-    <x:String x:key="FlipViewCaretUp">&#xF090;</x:String>
-    <x:String x:key="FlipViewCaretDown">&#xF08E;</x:String>
+    <x:String x:Key="FlipViewCaretLeft">&#xF08D;</x:String>
+    <x:String x:Key="FlipViewCaretRight">&#xF08F;</x:String>
+    <x:String x:Key="FlipViewCaretUp">&#xF090;</x:String>
+    <x:String x:Key="FlipViewCaretDown">&#xF08E;</x:String>
 </ResourceDictionary>
