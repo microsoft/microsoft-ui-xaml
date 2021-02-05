@@ -9,27 +9,27 @@ class InfoBarPanelProperties
 public:
     InfoBarPanelProperties();
 
-    void PaddingInHorizontalOrientation(winrt::Thickness const& value);
-    winrt::Thickness PaddingInHorizontalOrientation();
+    static void SetHorizontalOrientationMargin(winrt::DependencyObject const& target, winrt::Thickness const& value);
+    static winrt::Thickness GetHorizontalOrientationMargin(winrt::DependencyObject const& target);
 
-    void PaddingInVerticalOrientation(winrt::Thickness const& value);
-    winrt::Thickness PaddingInVerticalOrientation();
+    void HorizontalOrientationPadding(winrt::Thickness const& value);
+    winrt::Thickness HorizontalOrientationPadding();
 
-    static void SetSpacingInHorizontalOrientation(winrt::DependencyObject const& target, winrt::Thickness const& value);
-    static winrt::Thickness GetSpacingInHorizontalOrientation(winrt::DependencyObject const& target);
+    static void SetVerticalOrientationMargin(winrt::DependencyObject const& target, winrt::Thickness const& value);
+    static winrt::Thickness GetVerticalOrientationMargin(winrt::DependencyObject const& target);
 
-    static void SetSpacingInVerticalOrientation(winrt::DependencyObject const& target, winrt::Thickness const& value);
-    static winrt::Thickness GetSpacingInVerticalOrientation(winrt::DependencyObject const& target);
+    void VerticalOrientationPadding(winrt::Thickness const& value);
+    winrt::Thickness VerticalOrientationPadding();
 
-    static winrt::DependencyProperty PaddingInHorizontalOrientationProperty() { return s_PaddingInHorizontalOrientationProperty; }
-    static winrt::DependencyProperty PaddingInVerticalOrientationProperty() { return s_PaddingInVerticalOrientationProperty; }
-    static winrt::DependencyProperty SpacingInHorizontalOrientationProperty() { return s_SpacingInHorizontalOrientationProperty; }
-    static winrt::DependencyProperty SpacingInVerticalOrientationProperty() { return s_SpacingInVerticalOrientationProperty; }
+    static winrt::DependencyProperty HorizontalOrientationMarginProperty() { return s_HorizontalOrientationMarginProperty; }
+    static winrt::DependencyProperty HorizontalOrientationPaddingProperty() { return s_HorizontalOrientationPaddingProperty; }
+    static winrt::DependencyProperty VerticalOrientationMarginProperty() { return s_VerticalOrientationMarginProperty; }
+    static winrt::DependencyProperty VerticalOrientationPaddingProperty() { return s_VerticalOrientationPaddingProperty; }
 
-    static GlobalDependencyProperty s_PaddingInHorizontalOrientationProperty;
-    static GlobalDependencyProperty s_PaddingInVerticalOrientationProperty;
-    static GlobalDependencyProperty s_SpacingInHorizontalOrientationProperty;
-    static GlobalDependencyProperty s_SpacingInVerticalOrientationProperty;
+    static GlobalDependencyProperty s_HorizontalOrientationMarginProperty;
+    static GlobalDependencyProperty s_HorizontalOrientationPaddingProperty;
+    static GlobalDependencyProperty s_VerticalOrientationMarginProperty;
+    static GlobalDependencyProperty s_VerticalOrientationPaddingProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

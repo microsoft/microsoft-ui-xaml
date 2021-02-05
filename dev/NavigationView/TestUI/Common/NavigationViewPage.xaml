@@ -282,6 +282,16 @@
                     <StackPanel Orientation="Horizontal" Margin="0 5">
                         <Button x:Name="BringSettingsIntoViewButton" AutomationProperties.Name="BringSettingsIntoViewButton" Click="BringSettingsIntoViewButton_Click"
                                 Content="Bring Settings into view"/>
+                        <ComboBox x:Name="ScrollItemIntoViewComboBox"
+                                AutomationProperties.Name="ScrollItemIntoViewComboBox"
+                                Header="Pick item to scroll into view"
+                                Margin="5">
+                            <ComboBoxItem Content="Home" Tag="Home"/>
+                            <ComboBoxItem Content="HasChildItem" Tag="HasChildItem"/>
+                        </ComboBox>
+                        <Button x:Name="ScrollItemIntoViewButton" AutomationProperties.Name="ScrollItemIntoViewButton" Click="ScrollItemIntoViewButton_Click"
+                                Content="Scroll item into view"/>
+
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0 5">
@@ -311,9 +321,12 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
             </muxcontrols:NavigationView.AutoSuggestBox>
 
             <muxcontrols:NavigationView.PaneFooter>
-                <Grid Background="Plum">
-                    <Button x:Name="FooterButton" AutomationProperties.Name="FooterButton" Content="Footer Button" Margin="5"/>
-                </Grid>
+                <StackPanel Background="Plum">
+                    <Button x:Name="PaneFooterButton" AutomationProperties.Name="PaneFooterButton" Content="PaneFooter Button" Margin="5"/>
+                    <muxcontrols:NavigationViewItem x:Name="PaneFooterNavigationViewItem"
+                                                    AutomationProperties.Name="PaneFooterNavigationViewItem"
+                                                    Content="NVI" /> 
+                </StackPanel>
             </muxcontrols:NavigationView.PaneFooter>
         </muxcontrols:NavigationView>
     </Grid>

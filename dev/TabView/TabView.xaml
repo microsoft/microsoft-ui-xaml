@@ -192,7 +192,7 @@
                                 Background="{ThemeResource TabViewScrollButtonBackground}"
                                 BorderThickness="1"
                                 Delay="50"
-                                FontFamily="Segoe MDL2 Assets"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Interval="100"
                                 Style="{StaticResource RepeatButtonRevealStyle}"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
@@ -215,7 +215,7 @@
                                 Background="{ThemeResource TabViewScrollButtonBackground}"
                                 BorderThickness="1"
                                 Delay="50"
-                                FontFamily="Segoe MDL2 Assets"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Interval="100"
                                 Style="{StaticResource RepeatButtonRevealStyle}"
                                 HighContrastAdjustment="None"
@@ -233,7 +233,7 @@
         <Setter Property="Padding" Value="0"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
@@ -299,7 +299,7 @@
         <Setter Property="Foreground" Value="{ThemeResource TabViewButtonForeground}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="Margin" Value="0,7,0,0"/>
         <Setter Property="Padding" Value="10,10,10,11"/>
@@ -430,6 +430,7 @@
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -443,6 +444,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -456,6 +458,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LeftRadiusRender.Visibility" Value="Visible"/>
                                         <Setter Target="RightRadiusRender.Visibility" Value="Visible"/>
+                                        <Setter Target="ContentPresenter.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

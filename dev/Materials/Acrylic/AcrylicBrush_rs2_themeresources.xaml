@@ -216,30 +216,39 @@
                 FallbackColor="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundBrush"
-                TintColor="#1C1C1C"
+                x:Key="AcrylicBackgroundFillColorDefaultBrush"
+                TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientAcrylicElementBrush"
-                TintColor="#1C1C1C"
+                x:Key="AcrylicInAppFillColorDefaultBrush"
+                TintColor="#2C2C2C"
                 TintOpacity="0.8"
                 FallbackColor="#2C2C2C"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundInverseBrush"
+                x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
-                FallbackColor="#FCFCFC"
+                FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlBaseAcrylicBrush"
-                TintColor="#1C1C1C"
+                x:Key="AcrylicBackgroundFillColorBaseBrush"
+                TintColor="#202020"
                 TintOpacity="0.8"
                 FallbackColor="#202020"
                 BackgroundSource="HostBackdrop"/>
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.0419"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
+                TintColor="{ThemeResource SystemAccentColorDark1}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorDark1}"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorDark2}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorDark2}"
+                BackgroundSource="HostBackdrop"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -453,31 +462,39 @@
                 FallbackColor="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.14" />
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundBrush"
+                x:Key="AcrylicBackgroundFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
-                FallbackColor="#FCFCFC"
+                FallbackColor="#F9F9F9"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientAcrylicElementBrush"
+                x:Key="AcrylicInAppFillColorDefaultBrush"
                 TintColor="#FCFCFC"
                 TintOpacity="0.8"
-                FallbackColor="#FCFCFC"
+                FallbackColor="#F9F9F9"
                 BackgroundSource="Backdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlTransientBackgroundInverseBrush"
-                TintColor="#1C1C1C"
+                x:Key="AcrylicBackgroundFillColorDefaultInverseBrush"
+                TintColor="#2C2C2C"
                 TintOpacity="0.8"
-                FallbackColor="#202020"
+                FallbackColor="#2C2C2C"
                 BackgroundSource="HostBackdrop"/>
             <local:AcrylicBrush
-                x:Key="SystemControlBaseAcrylicBrush"
+                x:Key="AcrylicBackgroundFillColorBaseBrush"
                 TintColor="#F3F3F3"
                 TintOpacity="0.8"
                 FallbackColor="#F3F3F3"
                 BackgroundSource="HostBackdrop"/>
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="#FFFFFF" Opacity="0.5"/>
-
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush"
+                TintColor="{ThemeResource SystemAccentColorLight3}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorLight3}"
+                BackgroundSource="HostBackdrop"/>
+            <local:AcrylicBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush"
+                TintColor="{ThemeResource SystemAccentColorLight2}"
+                TintOpacity="0.8"
+                FallbackColor="{ThemeResource SystemAccentColorLight2}"
+                BackgroundSource="HostBackdrop"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -520,11 +537,12 @@
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicWindowBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemControlAltHighAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlTransientAcrylicElementBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlTransientBackgroundInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="SystemControlBaseAcrylicBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="SystemControlDefaultBrighteningBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

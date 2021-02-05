@@ -545,6 +545,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         } 
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // #3956
         public void GamePadTest()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))

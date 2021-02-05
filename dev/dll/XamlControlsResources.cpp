@@ -7,10 +7,17 @@
 #include "RevealBrush.h"
 #include "MUXControlsFactory.h"
 
-static constexpr auto c_SystemControlTransientBackgroundBrush = L"SystemControlTransientBackgroundBrush"sv;
-static constexpr auto c_SystemControlTransientAcrylicElementBrush = L"SystemControlTransientAcrylicElementBrush"sv;
-static constexpr auto c_SystemControlTransientBackgroundInverseBrush = L"SystemControlTransientBackgroundInverseBrush"sv;
-static constexpr auto c_SystemControlBaseAcrylicBrush = L"SystemControlBaseAcrylicBrush"sv;
+static constexpr auto c_AcrylicBackgroundFillColorDefaultBrush = L"AcrylicBackgroundFillColorDefaultBrush"sv;
+static constexpr auto c_AcrylicInAppFillColorDefaultBrush = L"AcrylicInAppFillColorDefaultBrush"sv;
+static constexpr auto c_AcrylicBackgroundFillColorDefaultInverseBrush = L"AcrylicBackgroundFillColorDefaultInverseBrush"sv;
+static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroundFillColorBaseBrush"sv;
+static constexpr auto c_AccentAcrylicBackgroundFillColorDefaultBrush = L"AccentAcrylicBackgroundFillColorDefaultBrush"sv;
+static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcrylicBackgroundFillColorBaseBrush"sv;
+
+// Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
+// Assume XamlControlsResources is one per Application resource, and application is per thread, 
+// so it's OK to assume one instance of XamlControlsResources per thread.
+thread_local bool s_tlsUseLatestStyle = true;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -20,12 +27,18 @@ XamlControlsResources::XamlControlsResources()
     UpdateSource();
 }
 
+bool XamlControlsResources::UseLatestStyle()
+{
+    return Version() != winrt::StylesVersion::WinUI_2dot5;
+}
+
 void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_UseCompactResourcesProperty)
+    if (property == s_UseCompactResourcesProperty || property == s_VersionProperty)
     {
+        // Source link depends on Version and UseCompactResources flag, we need to update it when either property changed
         UpdateSource();
     }
 }
@@ -33,23 +46,26 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
+    const bool useNewVisual = UseLatestStyle();
+
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
-    winrt::Uri uri{
-        [useCompactResources]() -> hstring {
+    winrt::Uri uri {
+        [useCompactResources, useNewVisual]() -> hstring {
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = L"themeresources.xaml";
+            hstring postfix = useNewVisual ? L"themeresources.xaml" : L"themeresources_2dot5.xaml";
 
             if (isInFrameworkPackage)
             {
@@ -62,7 +78,11 @@ void XamlControlsResources::UpdateSource()
 
             hstring releasePrefix;
 
-            if (is19H1OrHigher)
+            if (is21H1OrHigher)
+            {
+                releasePrefix = L"21h1_";
+            }
+            else if (is19H1OrHigher)
             {
                 releasePrefix = L"19h1_";
             }
@@ -88,7 +108,7 @@ void XamlControlsResources::UpdateSource()
     };
 
     // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
-    //  Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
+    // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
 
     Source(uri);
@@ -103,26 +123,36 @@ void XamlControlsResources::UpdateSource()
         UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
         UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
     }
+
+    s_tlsUseLatestStyle = useNewVisual;
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
 {
     const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>();
-    if (const auto systemControlTransientBackgroundBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlTransientBackgroundBrush.TintLuminosityOpacity(0.85);
+        acrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.85);
     }
-    if (const auto systemControlTransientAcrylicElementBrush = dictionary.Lookup(box_value(c_SystemControlTransientAcrylicElementBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlTransientAcrylicElementBrush.TintLuminosityOpacity(0.85);
+        acrylicInAppFillColorDefaultBrush.TintLuminosityOpacity(0.85);
     }
-    if (const auto systemControlTransientBackgroundInverseBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundInverseBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlTransientBackgroundInverseBrush.TintLuminosityOpacity(0.96);
+        acrylicBackgroundFillColorDefaultInverseBrush.TintLuminosityOpacity(0.96);
     }
-    if (const auto systemControlBaseAcrylicBrush = dictionary.Lookup(box_value(c_SystemControlBaseAcrylicBrush)).try_as<winrt::AcrylicBrush>())
+    if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
     {
-        systemControlBaseAcrylicBrush.TintLuminosityOpacity(0.9);
+        acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.9);
+    }
+    if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        accentAcrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.8);
+    }
+    if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
+    {
+        accentAcrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.8);
     }
 }
 
@@ -130,21 +160,29 @@ void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspecta
 {
     if (const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>())
     {
-        if (const auto systemControlTransientBackgroundBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlTransientBackgroundBrush.TintLuminosityOpacity(0.96);
+            acrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.96);
         }
-        if (const auto systemControlTransientAcrylicElementBrush = dictionary.Lookup(box_value(c_SystemControlTransientAcrylicElementBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlTransientAcrylicElementBrush.TintLuminosityOpacity(0.96);
+            acrylicInAppFillColorDefaultBrush.TintLuminosityOpacity(0.96);
         }
-        if (const auto systemControlTransientBackgroundInverseBrush = dictionary.Lookup(box_value(c_SystemControlTransientBackgroundInverseBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlTransientBackgroundInverseBrush.TintLuminosityOpacity(0.85);
+            acrylicBackgroundFillColorDefaultInverseBrush.TintLuminosityOpacity(0.85);
         }
-        if (const auto systemControlBaseAcrylicBrush = dictionary.Lookup(box_value(c_SystemControlBaseAcrylicBrush)).try_as<winrt::AcrylicBrush>())
+        if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
         {
-            systemControlBaseAcrylicBrush.TintLuminosityOpacity(0.96);
+            acrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.96);
+        }
+        if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            accentAcrylicBackgroundFillColorDefaultBrush.TintLuminosityOpacity(0.8);
+        }
+        if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).try_as<winrt::AcrylicBrush>())
+        {
+            accentAcrylicBackgroundFillColorBaseBrush.TintLuminosityOpacity(0.8);
         }
     }
 }
@@ -156,75 +194,93 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
     if (auto control5 = controlProtected.try_as<winrt::IControl5>())
     {
         winrt::Uri uri{
-            []() -> PCWSTR {
+            []() {
             
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
             const bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             const bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
+            const bool is21H1OrHigher = SharedHelpers::Is21H1OrHigher() && SharedHelpers::IsSelectionIndicatorModeAvailable();
 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
-
+            
+            std::wstring postfix = s_tlsUseLatestStyle ? L"generic.xaml" : L"generic_2dot5.xaml";
+            std::wstring releasePrefix = L"";
+            
             if (isInFrameworkPackage)
             {
-                if (is19H1OrHigher)
+                if (is21H1OrHigher)
                 {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
+                {
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
                 else if (isRS5OrHigher)
                 {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_";
                 }
                 else if (isRS4OrHigher)
                 {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_";
                 }
                 else if (isRS3OrHigher)
                 {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_";
                 }
                 else
                 {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
             else if (isInCBSPackage)
             {
-                if (is19H1OrHigher)
+                if (is21H1OrHigher)
                 {
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
+                    releasePrefix = L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
+                {
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
                 else
                 {
                     MUX_FAIL_FAST_MSG("CBS package doesn't apply to old platforms");
-                    return L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
+                    releasePrefix =  L"ms-appx://" MUXCONTROLS_CBS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
             else
             {
-                if (is19H1OrHigher)
+                if (is21H1OrHigher)
                 {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
+                    releasePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/21h1_";
+                }
+                else if (is19H1OrHigher)
+                {
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_";
                 }
                 else if (isRS5OrHigher)
                 {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_generic.xaml";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_";
                 }
                 else if (isRS4OrHigher)
                 {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_generic.xaml";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs4_";
                 }
                 else if (isRS3OrHigher)
                 {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_generic.xaml";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_";
                 }
                 else
                 {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
+                    releasePrefix =  L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_";
                 }
             }
+
+            return releasePrefix + postfix;
         }()
         };
         // Choose a default resource URI based on whether we're running in a framework package scenario or not.
