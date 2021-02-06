@@ -11,7 +11,6 @@ jobs:
       productName: dep.controls
       branchVersion: true
       nugetVer: true
-      useDfs: false
 
   - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
 
