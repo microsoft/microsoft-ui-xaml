@@ -148,6 +148,29 @@ void PagerControl::OnApplyTemplate()
     OnDisplayModeChanged();
     UpdateOnEdgeButtonVisualStates();
     OnNumberOfPagesChanged(0);
+
+    // Update button visibilities
+    OnButtonVisibilityChanged(FirstButtonVisibility(),
+        c_firstPageButtonVisibleVisualState,
+        c_firstPageButtonNotVisibleVisualState,
+        c_firstPageButtonHiddenVisualState,
+        0);
+    OnButtonVisibilityChanged(PreviousButtonVisibility(),
+        c_previousPageButtonVisibleVisualState,
+        c_previousPageButtonNotVisibleVisualState,
+        c_previousPageButtonHiddenVisualState,
+        0);
+    OnButtonVisibilityChanged(NextButtonVisibility(),
+        c_nextPageButtonVisibleVisualState,
+        c_nextPageButtonNotVisibleVisualState,
+        c_nextPageButtonHiddenVisualState,
+        NumberOfPages() - 1);
+    OnButtonVisibilityChanged(LastButtonVisibility(),
+        c_lastPageButtonVisibleVisualState,
+        c_lastPageButtonNotVisibleVisualState,
+        c_lastPageButtonHiddenVisualState,
+        NumberOfPages() - 1);
+
     OnSelectedPageIndexChange(-1);
 }
 
