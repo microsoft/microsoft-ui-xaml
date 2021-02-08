@@ -500,7 +500,7 @@ void PipsPager::OnGotFocus(const winrt::RoutedEventArgs& args)
 }
 
 // In order to avoid switching visibility of the navigation buttons while moving focus inside the Pager,
-// wee'll check if the next focused element is inside the Pager.
+// we'll check if the next focused element is inside the Pager.
 void PipsPager::LosingFocus(const IInspectable& sender, const winrt::LosingFocusEventArgs& args)
 {
     if (const auto repeater = m_pipsPagerRepeater.get())
