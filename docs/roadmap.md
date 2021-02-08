@@ -65,7 +65,7 @@ The 3rd generation of WinUI has some key benefits over the 2nd generation, inclu
 WinUI 3 will let you more easily mix and match the right combination of:
     * **Language**: C# (.NET 5), C++ 17
     * **App model**: UWP, Win32
-    * **Packaging**: [MSIX](https://docs.microsoft.com/windows/msix/) (AppX for the Microsoft Store), unpackaged  (xcopy, MSI, etc.)
+    * **Packaging**: [MSIX](https://docs.microsoft.com/windows/msix/), unpackaged  (xcopy, MSI, etc.)
     * **Interop**: use WinUI 3 to extend existing WPF, WinForms, and MFC apps with modern Fluent UI
 
 - **A native Windows target for web and cross-platform frameworks**  
