@@ -169,14 +169,14 @@ jobs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)\drop'
       artifactName: 'drop'
 
-# # Create Nuget Package
-# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-#   parameters:
-#     jobName: CreateNugetPackage
-#     dependsOn: SignBinariesAndPublishSymbols
-#     signOutput: true
-#     useReleaseTag: '$(MUXFinalRelease)'
-#     prereleaseVersionTag: prerelease
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: SignBinariesAndPublishSymbols
+    signOutput: true
+    useReleaseTag: '$(MUXFinalRelease)'
+    prereleaseVersionTag: prerelease
 
 # # Build solution that depends on nuget package
 # - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
