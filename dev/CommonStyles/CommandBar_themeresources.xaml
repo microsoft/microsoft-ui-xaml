@@ -12,8 +12,9 @@
             <x:Double x:Key="CommandBarOverflowMaxWidth">480</x:Double>
             <x:Double x:Key="CommandBarOverflowMaxHeight">198</x:Double>
             <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolid" />
+            <contract7NotPresent:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <contract7Present:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolidBrush" />
             <Thickness x:Key="CommandBarBorderThicknessOpen">1</Thickness>
             <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CommandBarHighContrastBorder" ResourceKey="ControlFillColorTransparentBrush" />
@@ -60,8 +61,9 @@
             <x:Double x:Key="CommandBarOverflowMaxWidth">480</x:Double>
             <x:Double x:Key="CommandBarOverflowMaxHeight">198</x:Double>
             <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
-            <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolid" />
+            <contract7NotPresent:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <contract7Present:StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolidBrush" />
             <Thickness x:Key="CommandBarBorderThicknessOpen">1</Thickness>
             <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="CommandBarHighContrastBorder" ResourceKey="ControlFillColorTransparentBrush" />
