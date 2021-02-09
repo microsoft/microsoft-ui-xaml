@@ -7,6 +7,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:AnimatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
     
     <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12"
@@ -235,6 +236,15 @@
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
 
+                    <Button Margin="0,24,0,0">
+                        <Button.Content>
+                            <muxc:AnimatedIcon>
+                                <muxc:AnimatedIcon.Source>
+                                    <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                </muxc:AnimatedIcon.Source>
+                            </muxc:AnimatedIcon>
+                        </Button.Content>
+                    </Button>
                     <Button Content="Test flyout with text and button" Margin="0,24,0,0">
                         <Button.Flyout>
                             <Flyout>

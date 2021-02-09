@@ -406,18 +406,18 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_02_U
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
         {
-            { L"NormalToHover_Start", 0.0 },
-            { L"NormalToHover_End", 0.316666663 },
+            { L"NormalToPointerOver_Start", 0.0 },
+            { L"NormalToPointerOver_End", 0.316666663 },
             { L"NormalToPressed_Start", 0.0 },
             { L"NormalToPressed_End", 0.816666663 },
-            { L"HoverToNormal_Start", 0.316666663 },
-            { L"HoverToNormal_End", 0.0 },
-            { L"HoverToPressed_Start", 0.333333343 },
-            { L"HoverToPressed_End", 0.816666663 },
+            { L"PointerOverToNormal_Start", 0.316666663 },
+            { L"PointerOverToNormal_End", 0.0 },
+            { L"PointerOverToPressed_Start", 0.333333343 },
+            { L"PointerOverToPressed_End", 0.816666663 },
             { L"PressedToNormal_Start", 0.833333313 },
             { L"PressedToNormal_End", 0.983333349 },
-            { L"PressedToHover_Start", 0.816666663 },
-            { L"PressedToHover_End", 0.333333343 },
+            { L"PressedToPointerOver_Start", 0.816666663 },
+            { L"PressedToPointerOver_End", 0.333333343 },
             { L"Disabled", 0.0 }
         }
     ).GetView();
