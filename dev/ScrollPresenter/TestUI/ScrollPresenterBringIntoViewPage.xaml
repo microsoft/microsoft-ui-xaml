@@ -110,7 +110,7 @@
                         </Border>
                     </StackPanel>
                     <controlsPrimitives:ScrollPresenter x:Name="innerScrollPresenter" Width="400" Height="300" Background="AliceBlue"
-                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainingMode="Always">
+                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainMode="Always">
                         <Border x:Name="border1" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                             <controls:ItemsRepeater x:Name="repeater1" Margin="30">
                                 <controls:ItemsRepeater.Layout>
@@ -180,7 +180,7 @@
                         </Border>
                     </StackPanel>
                     <controlsPrimitives:ScrollPresenter x:Name="innerScrollPresenter3" Width="400" Height="300" Background="AliceBlue"
-                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainingMode="Always">
+                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainMode="Always">
                         <StackPanel Width="400">
                             <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
                                 <TextBox x:Name="TextBox00F" Text="TextBox00" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -293,7 +293,7 @@
                         </Border>
                     </StackPanel>
                     <controlsPrimitives:ScrollPresenter x:Name="innerScrollPresenter2" Width="400" Height="300" Background="AliceBlue"
-                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainingMode="Always">
+                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainMode="Always">
                         <Border x:Name="border2" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                             <controls:ItemsRepeater x:Name="repeater2" Margin="30">
                                 <controls:ItemsRepeater.Layout>

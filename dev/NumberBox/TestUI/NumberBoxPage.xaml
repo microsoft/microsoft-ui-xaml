@@ -31,6 +31,20 @@
                 <ComboBoxItem Content="Inline"/>
             </ComboBox>
 
+            <ComboBox x:Name="TextAlignmentComboBox" AutomationProperties.Name="TextAlignmentComboBox" Header="TextAlignment" SelectedIndex="0" SelectionChanged="TextAlignment_Changed">
+                <ComboBoxItem Content="Left" />
+                <ComboBoxItem Content="Center" />
+                <ComboBoxItem Content="Right" />
+            </ComboBox>
+
+            <ComboBox x:Name="InputScopeComboBox" AutomationProperties.Name="InputScopeComboBox" Header="InputScope" SelectedIndex="0" SelectionChanged="InputScope_Changed">
+                <ComboBoxItem Content="Number" />
+                <ComboBoxItem Content="Default" />
+                <ComboBoxItem Content="CurrencyAmountAndSymbol" />
+                <ComboBoxItem Content="TelephoneNumber" />
+                <ComboBoxItem Content="Formula" />
+            </ComboBox>
+
             <CheckBox x:Name="EnabledCheckBox" AutomationProperties.Name="EnabledCheckBox" IsChecked="True" Content="Enabled"/>
 
             <CheckBox x:Name="ExpressionCheckBox" AutomationProperties.Name="ExpressionCheckBox" IsChecked="False" Content="Accepts Expression"/>
@@ -146,6 +160,9 @@
                     </controls:NumberBox>
                     <controls:NumberBox x:Name="HeaderTemplateTestingNumberBox"/>
                 </StackPanel>
+
+                <!-- FontSize propagation -->
+                <controls:NumberBox Header="Header text" FontSize="50"/>
             </StackPanel>
         </Grid>
 

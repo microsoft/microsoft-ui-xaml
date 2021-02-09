@@ -1,4 +1,7 @@
-﻿#include "pch.h"
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -44,7 +47,6 @@ void TeachingTip::OnApplyTemplate()
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
     m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
-    m_iconBorder.set(GetTemplateChildT<winrt::Border>(s_iconBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
@@ -106,6 +108,7 @@ void TeachingTip::OnApplyTemplate()
     UpdateButtonsState();
     OnIsLightDismissEnabledChanged();
     OnIconSourceChanged();
+    OnHeroContentPlacementChanged();
 
     EstablishShadows();
 
@@ -266,7 +269,7 @@ bool TeachingTip::UpdateTail()
     // An effective placement of auto indicates that no tail should be shown.
     auto const [placement, tipDoesNotFit] = DetermineEffectivePlacement();
     m_currentEffectiveTailPlacementMode = placement;
-    auto&& tailVisibility = TailVisibility();
+    const auto tailVisibility = TailVisibility();
     if (tailVisibility == winrt::TeachingTipTailVisibility::Collapsed || (!m_target && tailVisibility != winrt::TeachingTipTailVisibility::Visible))
     {
         m_currentEffectiveTailPlacementMode = winrt::TeachingTipPlacementMode::Auto;
@@ -441,7 +444,7 @@ void TeachingTip::PositionPopup()
 
 bool TeachingTip::PositionTargetedPopup()
 {
-    bool tipDoesNotFit = UpdateTail();
+    const bool tipDoesNotFit = UpdateTail();
     auto const offset = PlacementMargin();
 
     auto const [tipHeight, tipWidth] = [this]()
@@ -548,7 +551,7 @@ bool TeachingTip::PositionUntargetedPopup()
         return std::make_tuple(0.0, 0.0);
     }();
 
-    bool tipDoesNotFit = UpdateTail();
+    const bool tipDoesNotFit = UpdateTail();
 
     auto const offset = PlacementMargin();
 
@@ -556,7 +559,7 @@ bool TeachingTip::PositionUntargetedPopup()
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     if (auto&& popup = m_popup.get())
     {
-        switch (PreferredPlacement())
+        switch (GetFlowDirectionAdjustedPlacement(PreferredPlacement()))
         {
         case winrt::TeachingTipPlacementMode::Auto:
         case winrt::TeachingTipPlacementMode::Bottom:
@@ -711,7 +714,7 @@ void TeachingTip::UpdateButtonsState()
 {
     auto const actionContent = ActionButtonContent();
     auto const closeContent = CloseButtonContent();
-    bool isLightDismiss = IsLightDismissEnabled();
+    const bool isLightDismiss = IsLightDismissEnabled();
     if (actionContent && closeContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
@@ -748,12 +751,17 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToTop()
 {
     if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToTopImpl();
+    }
+}
+
+void TeachingTip::UpdateDynamicHeroContentPlacementToTopImpl()
+{
+    winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+    if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
+    {
+        m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+        TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
     }
 }
 
@@ -761,12 +769,17 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 {
     if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToBottomImpl();
+    }
+}
+
+void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
+{
+    winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+    if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
+    {
+        m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+        TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
     }
 }
 
@@ -1004,20 +1017,10 @@ void TeachingTip::OnHeroContentPlacementChanged()
     case winrt::TeachingTipHeroContentPlacementMode::Auto:
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Top:
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToTopImpl();
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Bottom:
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToBottomImpl();
         break;
     }
 
@@ -1122,7 +1125,7 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
                 auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, auto const& args) {
                     m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
                 });
-                bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
+                const bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
                 args.Handled(setFocus);
             }
         }
@@ -1189,7 +1192,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
             {
                 try
                 {
-                    if (auto&& package = winrt::ApplicationModel::Package::Current())
+                    if (const auto package = winrt::ApplicationModel::Package::Current())
                     {
                         return package.DisplayName();
                     }
@@ -1341,6 +1344,49 @@ void TeachingTip::ClosePopup()
         // small scale.
         tailOcclusionGrid.Scale({ 1.0f,1.0f,1.0f });
     }
+}
+
+winrt::TeachingTipPlacementMode TeachingTip::GetFlowDirectionAdjustedPlacement(const winrt::TeachingTipPlacementMode& placementMode)
+{
+    if (FlowDirection() == winrt::FlowDirection::LeftToRight)
+    {
+        return placementMode;
+    }
+    else
+    {
+        switch (placementMode)
+        {
+            case winrt::TeachingTipPlacementMode::Auto:
+                return winrt::TeachingTipPlacementMode::Auto;
+            case winrt::TeachingTipPlacementMode::Left:
+                return winrt::TeachingTipPlacementMode::Right;
+            case winrt::TeachingTipPlacementMode::Right:
+                return winrt::TeachingTipPlacementMode::Left;
+            case winrt::TeachingTipPlacementMode::Top:
+                return winrt::TeachingTipPlacementMode::Top;
+            case winrt::TeachingTipPlacementMode::Bottom:
+                return winrt::TeachingTipPlacementMode::Bottom;
+            case winrt::TeachingTipPlacementMode::LeftBottom:
+                return winrt::TeachingTipPlacementMode::RightBottom;
+            case winrt::TeachingTipPlacementMode::LeftTop:
+                return winrt::TeachingTipPlacementMode::RightTop;
+            case winrt::TeachingTipPlacementMode::TopLeft:
+                return winrt::TeachingTipPlacementMode::TopRight;
+            case winrt::TeachingTipPlacementMode::TopRight:
+                return winrt::TeachingTipPlacementMode::TopLeft;
+            case winrt::TeachingTipPlacementMode::RightTop:
+                return winrt::TeachingTipPlacementMode::LeftTop;
+            case winrt::TeachingTipPlacementMode::RightBottom:
+                return winrt::TeachingTipPlacementMode::LeftBottom;
+            case winrt::TeachingTipPlacementMode::BottomRight:
+                return winrt::TeachingTipPlacementMode::BottomLeft;
+            case winrt::TeachingTipPlacementMode::BottomLeft:
+                return winrt::TeachingTipPlacementMode::BottomRight;
+            case winrt::TeachingTipPlacementMode::Center:
+                return winrt::TeachingTipPlacementMode::Center;
+        }
+    }
+    return winrt::TeachingTipPlacementMode::Auto;
 }
 
 void TeachingTip::OnTargetChanged()
@@ -1668,7 +1714,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     // SetReturnTopForOutOfWindowBounds test hook.
     if (!ShouldConstrainToRootBounds() && m_returnTopForOutOfWindowPlacement)
     {
-        auto const placement = PreferredPlacement();
+        auto const placement =  GetFlowDirectionAdjustedPlacement(PreferredPlacement());
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
             return std::make_tuple(winrt::TeachingTipPlacementMode::Top, false);
@@ -1722,8 +1768,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     availability[winrt::TeachingTipPlacementMode::RightBottom] = true;
     availability[winrt::TeachingTipPlacementMode::Center] = true;
 
-    double tipHeight = contentHeight + TailShortSideLength();
-    double tipWidth = contentWidth + TailShortSideLength();
+    const double tipHeight = contentHeight + TailShortSideLength();
+    const double tipWidth = contentWidth + TailShortSideLength();
 
     // We try to avoid having the tail touch the HeroContent so rule out positions where this would be required
     if (HeroContent())
@@ -1893,7 +1939,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::RightBottom] = false;
     }
 
-    auto const priorities = GetPlacementFallbackOrder(PreferredPlacement());
+    auto const wantedDirection = GetFlowDirectionAdjustedPlacement(PreferredPlacement());
+    auto const priorities = GetPlacementFallbackOrder(wantedDirection);
 
     for (auto const mode : priorities)
     {
@@ -2115,7 +2162,7 @@ void TeachingTip::EstablishShadows()
                 m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
                 if (auto&& contentRootGrid = m_contentRootGrid.get())
                 {
-                    auto&& contentRootGridTranslation = contentRootGrid.Translation();
+                    const auto contentRootGridTranslation = contentRootGrid.Translation();
                     contentRootGrid.Translation({ contentRootGridTranslation.x, contentRootGridTranslation.y, m_contentElevation });
                 }
             }

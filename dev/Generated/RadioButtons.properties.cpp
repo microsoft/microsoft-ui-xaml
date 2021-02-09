@@ -82,7 +82,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(winrt::make<RadioButtonsElementFactory>()),
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnItemTemplatePropertyChanged));
     }
     if (!s_MaxColumnsProperty)
@@ -198,7 +198,10 @@ void RadioButtonsProperties::OnSelectedItemPropertyChanged(
 
 void RadioButtonsProperties::Header(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable RadioButtonsProperties::Header()
@@ -208,7 +211,10 @@ winrt::IInspectable RadioButtonsProperties::Header()
 
 void RadioButtonsProperties::HeaderTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate RadioButtonsProperties::HeaderTemplate()
@@ -218,7 +224,10 @@ winrt::DataTemplate RadioButtonsProperties::HeaderTemplate()
 
 void RadioButtonsProperties::Items(winrt::IVector<winrt::IInspectable> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_ItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::IInspectable> RadioButtonsProperties::Items()
@@ -228,7 +237,10 @@ winrt::IVector<winrt::IInspectable> RadioButtonsProperties::Items()
 
 void RadioButtonsProperties::ItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_ItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable RadioButtonsProperties::ItemsSource()
@@ -238,7 +250,10 @@ winrt::IInspectable RadioButtonsProperties::ItemsSource()
 
 void RadioButtonsProperties::ItemTemplate(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable RadioButtonsProperties::ItemTemplate()
@@ -248,7 +263,10 @@ winrt::IInspectable RadioButtonsProperties::ItemTemplate()
 
 void RadioButtonsProperties::MaxColumns(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_MaxColumnsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int RadioButtonsProperties::MaxColumns()
@@ -258,7 +276,10 @@ int RadioButtonsProperties::MaxColumns()
 
 void RadioButtonsProperties::SelectedIndex(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_SelectedIndexProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int RadioButtonsProperties::SelectedIndex()
@@ -268,7 +289,10 @@ int RadioButtonsProperties::SelectedIndex()
 
 void RadioButtonsProperties::SelectedItem(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioButtons*>(this)->SetValue(s_SelectedItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable RadioButtonsProperties::SelectedItem()

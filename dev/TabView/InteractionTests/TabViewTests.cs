@@ -535,12 +535,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         } 
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // #3956
         public void GamePadTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                // Disabled on RS2 for reliability issues: https://github.com/microsoft/microsoft-ui-xaml/issues/3093
+                Log.Warning("This test is unreliable on RS2 and has been disabled.");
+                return;
+            }
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Button tabContent = FindElement.ByName<Button>("FirstTabButton");
-                Button toggleThemeButton = FindElement.ById<Button>("__ToggleThemeButton");
+                ToggleButton toggleInnerFrameDimensions = FindElement.ById<ToggleButton>("__InnerFrameInLabDimensions");
                 TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
@@ -566,7 +573,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickUp);
                 Wait.ForIdle();
-                Verify.IsTrue(toggleThemeButton.HasKeyboardFocus, "GamePad Up should move to toggle theme button");
+                Verify.IsTrue(toggleInnerFrameDimensions.HasKeyboardFocus, "GamePad Up should move to toggle inner frame dimensions button");
             }
         }
 

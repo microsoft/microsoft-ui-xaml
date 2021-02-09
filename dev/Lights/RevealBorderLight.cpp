@@ -278,7 +278,7 @@ void RevealBorderLight::SwitchLight(bool turnOn)
 
     m_shouldLightBeOn = turnOn;
 
-    auto animateSpotLight = [this, turnOn]()
+    const auto animateSpotLight = [this, turnOn]()
     {
         auto animation = m_colorsProxy.Compositor().CreateScalarKeyFrameAnimation();
         animation.Duration(250ms);

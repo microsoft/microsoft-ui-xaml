@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MUXCustomBuildTasks</id>
-    <version>1.0.48</version>
+    <version>1.0.71</version>
     <title>MUXCustomBuildTasks</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>

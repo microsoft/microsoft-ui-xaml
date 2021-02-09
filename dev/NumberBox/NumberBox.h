@@ -53,7 +53,6 @@ public:
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnLargeChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsWrapEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -69,7 +68,11 @@ private:
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
-    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
+    void OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
+    void OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+
+    void ReevaluateForwardedUIAName();
 
     void ValidateInput();
     void CoerceMinimum();
@@ -84,7 +87,13 @@ private:
 
     void UpdateHeaderPresenterState();
 
+    void UpdateVisualStateForIsEnabledChange();
+
     bool IsInBounds(double value);
+
+    void MoveCaretToTextEnd();
+
+    void SetDefaultInputScope();
 
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
@@ -104,4 +113,6 @@ private:
     winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
 
     PropertyChanged_revoker m_cornerRadiusChangedRevoker{};
+
+    winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 };

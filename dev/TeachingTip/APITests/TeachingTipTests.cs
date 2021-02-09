@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Windows.UI.Xaml.Controls;
@@ -25,6 +28,8 @@ using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Xaml.Controls;
+using Windows.UI.Xaml.Shapes;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -87,21 +92,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 {
                     var popup = TeachingTipTestHooks.GetPopup(teachingTipLightDismiss);
-                    var child = popup.Child;
-                    var grandChild = VisualTreeHelper.GetChild(child, 0);
-                    var actualBrush = ((Grid)grandChild).Background;
+                    var child = popup.Child as Grid;
+
                     Log.Comment("Checking LightDismiss TeachingTip Background is using resource for first invocation");
-                    if (lightDismissBackgroundBrush != actualBrush)
+
+                    Grid tailEdgeBorder = VisualTreeUtils.FindVisualChildByName(child, "TailEdgeBorder") as Grid;
+                    Polygon tailPolygon = VisualTreeUtils.FindVisualChildByName(child, "TailPolygon") as Polygon;
+                    Polygon topTailPolygonHighlight = VisualTreeUtils.FindVisualChildByName(child, "TopTailPolygonHighlight") as Polygon;
+                    Grid contentRootGrid = VisualTreeUtils.FindVisualChildByName(child, "ContentRootGrid") as Grid;
+                    ContentPresenter mainContentPresenter = VisualTreeUtils.FindVisualChildByName(child, "MainContentPresenter") as ContentPresenter;
+                    Border heroContentBorder = VisualTreeUtils.FindVisualChildByName(child, "HeroContentBorder") as Border;
+
+                    VerifyLightDismissTipBackground(tailEdgeBorder.Background, "TailEdgeBorder");
+                    VerifyLightDismissTipBackground(tailPolygon.Fill, "TailPolygon");
+                    VerifyLightDismissTipBackground(topTailPolygonHighlight.Fill, "TopTailPolygonHighlight");
+                    VerifyLightDismissTipBackground(contentRootGrid.Background, "ContentRootGrid");
+                    VerifyLightDismissTipBackground(mainContentPresenter.Background, "MainContentPresenter");
+                    VerifyLightDismissTipBackground(heroContentBorder.Background, "HeroContentBorder");
+
+                    void VerifyLightDismissTipBackground(Brush brush, string uiPart)
                     {
-                        if (actualBrush is SolidColorBrush actualSolidBrush)
+                        if (lightDismissBackgroundBrush != brush)
                         {
-                            string teachingTipMessage = $"LightDismiss TeachingTip Background is SolidColorBrush with color {actualSolidBrush.Color}";
-                            Log.Comment(teachingTipMessage);
-                            Verify.Fail(teachingTipMessage);
-                        }
-                        else
-                        {
-                            Verify.AreSame(lightDismissBackgroundBrush, actualBrush, "Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                            if (brush is SolidColorBrush actualSolidBrush)
+                            {
+                                string teachingTipMessage = $"LightDismiss TeachingTip's {uiPart} Background is SolidColorBrush with color {actualSolidBrush.Color}";
+                                Log.Comment(teachingTipMessage);
+                                Verify.Fail(teachingTipMessage);
+                            }
+                            else
+                            {
+                                Verify.AreSame(lightDismissBackgroundBrush, brush, $"Checking LightDismiss TeachingTip's {uiPart} Background is using resource for first invocation");
+                            }
                         }
                     }
                 }
@@ -117,13 +139,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var popup = TeachingTipTestHooks.GetPopup(teachingTip);
                 var child = popup.Child as Grid;
-                var grandChild = VisualTreeHelper.GetChild(child, 0);
-                var grandChildBackgroundBrush = ((Grid)grandChild).Background;
-                //If we can no longer cast the background brush to a solid color brush then changing the
-                //IsLightDismissEnabled has changed the background as we expected it to.
-                if (grandChildBackgroundBrush is SolidColorBrush)
+
+                Grid tailEdgeBorder = VisualTreeUtils.FindVisualChildByName(child, "TailEdgeBorder") as Grid;
+                Polygon tailPolygon = VisualTreeUtils.FindVisualChildByName(child, "TailPolygon") as Polygon;
+                Polygon topTailPolygonHighlight = VisualTreeUtils.FindVisualChildByName(child, "TopTailPolygonHighlight") as Polygon;
+                Grid contentRootGrid = VisualTreeUtils.FindVisualChildByName(child, "ContentRootGrid") as Grid;
+                ContentPresenter mainContentPresenter = VisualTreeUtils.FindVisualChildByName(child, "MainContentPresenter") as ContentPresenter;
+                Border heroContentBorder = VisualTreeUtils.FindVisualChildByName(child, "HeroContentBorder") as Border;
+
+                VerifyBackgroundChanged(tailEdgeBorder.Background, "TailEdgeBorder");
+                VerifyBackgroundChanged(tailPolygon.Fill, "TailPolygon");
+                VerifyBackgroundChanged(topTailPolygonHighlight.Fill, "TopTailPolygonHighlight");
+                VerifyBackgroundChanged(contentRootGrid.Background, "ContentRootGrid");
+                VerifyBackgroundChanged(mainContentPresenter.Background, "MainContentPresenter");
+                VerifyBackgroundChanged(heroContentBorder.Background, "HeroContentBorder");
+
+                void VerifyBackgroundChanged(Brush brush, string uiPart)
                 {
-                    Verify.AreNotEqual(blueBrush.Color, ((SolidColorBrush)grandChildBackgroundBrush).Color);
+                    // If we can no longer cast the background brush to a solid color brush then changing the
+                    // IsLightDismissEnabled has changed the background as we expected it to.
+                    if (brush is SolidColorBrush solidColorBrush)
+                    {
+                        Verify.AreNotEqual(blueBrush.Color, solidColorBrush.Color, $"TeachingTip's {uiPart} Background should have changed");
+                    }
                 }
             });
         }
@@ -165,6 +203,98 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
             loadedEvent.WaitOne();
+        }
+
+        [TestMethod]
+        public void PropagatePropertiesDown()
+        {
+            TextBlock content = null;
+            TeachingTip tip = null;
+            RunOnUIThread.Execute(() =>
+            {
+                content = new TextBlock() {
+                    Text = "Some text"
+                };
+
+                tip = new TeachingTip() {
+                    Content = content,
+                    FontSize = 22,
+                    Foreground = new SolidColorBrush() {
+                        Color = Colors.Red
+                    }
+                };
+
+                Content = tip;
+                Content.UpdateLayout();
+                tip.IsOpen = true;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(Math.Abs(22 - content.FontSize) < 1);
+                var foregroundBrush = content.Foreground as SolidColorBrush;
+                Verify.AreEqual(Colors.Red, foregroundBrush.Color);
+            });
+        }
+
+
+        [TestMethod]
+        public void TeachingTipHeroContentPlacementTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var iPlacementMode in Enum.GetValues(typeof(TeachingTipHeroContentPlacementMode)))
+                {
+                    var placementMode = (TeachingTipHeroContentPlacementMode)iPlacementMode;
+
+                    Log.Comment($"Verifying TeachingTipHeroContentPlacementMode [{placementMode}]");
+
+                    TeachingTip teachingTip = new TeachingTip();
+                    teachingTip.HeroContentPlacement = placementMode;
+
+                    // Open the teaching tip to enter the correct visual state for the HeroContentPlacement.
+                    teachingTip.IsOpen = true;
+
+                    Content = teachingTip;
+                    Content.UpdateLayout();
+
+                    Verify.IsTrue(teachingTip.HeroContentPlacement == placementMode, $"HeroContentPlacement should have been [{placementMode}]");
+                    
+                    var root = VisualTreeUtils.FindVisualChildByName(teachingTip, "Container") as FrameworkElement;
+
+                    switch (placementMode)
+                    {
+                        case TeachingTipHeroContentPlacementMode.Auto:
+                            Verify.IsTrue(IsVisualStateActive(root, "HeroContentPlacementStates", "HeroContentTop"),
+                                "The [HeroContentTop] visual state should have been active");
+                            break;
+                        case TeachingTipHeroContentPlacementMode.Top:
+                            Verify.IsTrue(IsVisualStateActive(root, "HeroContentPlacementStates", "HeroContentTop"), 
+                                "The [HeroContentTop] visual state should have been active");
+                            break;
+                        case TeachingTipHeroContentPlacementMode.Bottom:
+                            Verify.IsTrue(IsVisualStateActive(root, "HeroContentPlacementStates", "HeroContentBottom"),
+                                "The [HeroContentBottom] visual state should have been active");
+                            break;
+                    }
+                }
+            });
+
+            bool IsVisualStateActive(FrameworkElement root, string groupName, string stateName)
+            {
+                foreach (var group in VisualStateManager.GetVisualStateGroups(root))
+                {
+                    if (group.Name == groupName)
+                    {
+                        return group.CurrentState != null && group.CurrentState.Name == stateName;
+                    }
+                }
+
+                return false;
+            }
         }
     }
 }

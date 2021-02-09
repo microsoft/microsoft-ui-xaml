@@ -8,7 +8,7 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style x:Key="DefaultCommandBarFlyoutCommandBarStyle" TargetType="local:CommandBarFlyoutCommandBar">
-        <Setter Property="Background" Value="{ThemeResource SystemControlAcrylicElementBrush}" />
+        <Setter Property="Background" Value="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SystemControlTransientBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderThemeThickness}" />
@@ -21,7 +21,7 @@
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
-        <Setter Property="Height" Value="40" />
+        <Setter Property="Height" Value="48" />
         <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
@@ -323,9 +323,8 @@
                         <Grid x:Name="OuterContentRoot"
                             VerticalAlignment="Top"
                             Margin="{TemplateBinding Padding}"
-                            Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                            MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
                             Height="{TemplateBinding Height}"
-                            Background="{TemplateBinding Background}"
                             contract4Present:XYFocusKeyboardNavigation="Enabled">
                             <Grid.Clip>
                                 <RectangleGeometry x:Name="OuterContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
@@ -334,7 +333,8 @@
                                     </RectangleGeometry.Transform>
                                 </RectangleGeometry>
                             </Grid.Clip>
-                            <Grid x:Name="ContentRoot">
+                            <Grid x:Name="ContentRoot"
+                                    Background="{TemplateBinding Background}">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
@@ -360,6 +360,7 @@
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
+                                        Margin="3,3,0,3"
                                         Grid.Column="0"
                                         IsTabStop="False"
                                         HorizontalAlignment="Left">
@@ -376,6 +377,7 @@
                                         contract4Present:Control.IsTemplateKeyTipTarget="True"
                                         IsAccessKeyScope="True"
                                         IsTabStop="False"
+                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>
                                             <TranslateTransform x:Name="MoreButtonTransform" />
@@ -431,12 +433,6 @@
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{ThemeResource CommandBarFlyoutBorderThemeThickness}"
                                                 IsTabStop="False">
-                                                <CommandBarOverflowPresenter.ItemContainerStyle>
-                                                    <Style TargetType="FrameworkElement">
-                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                                        <Setter Property="Width" Value="NaN" />
-                                                    </Style>
-                                                </CommandBarOverflowPresenter.ItemContainerStyle>
                                             </CommandBarOverflowPresenter>
                                         </Grid>
                                     </Grid>

@@ -4,10 +4,9 @@ parameters:
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: 'true'
-  pkgArtifactPath: ''
-  nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   helixType: 'test/nuget'
   test_matrix: ''
+  useFrameworkPkg: false
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -40,73 +39,45 @@ jobs:
   variables:
     solutionDir: test\MUXControlsReleaseTest
     solutionPath: test\MUXControlsReleaseTest\MUXControlsReleaseTest.sln
-    nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
-    packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
-    currentPackageVersion: 2.1.190606001
     buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
+    useFrameworkPkg: ${{ parameters.useFrameworkPkg }}
+    localPackagesPath: $(Build.SourcesDirectory)\localpackages
+
 
   steps:
   # When using the nupkg from artifacts we need to make a new nuget.config that points the MUXReleaseTest
   # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version so we need
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
-  - ${{ if parameters.pkgArtifactPath }}:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        artifactName: drop
-        downloadPath: $(artifactDownloadPath)
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: drop
+      downloadPath: $(artifactDownloadPath)
+      itemPattern: '**\*.nupkg'
 
-    # Rewrite the nuget.config to use drop location.
-    - powershell: |
-        $nugetConfigFullPath = "$env:BUILD_SOURCESDIRECTORY\$env:nugetConfigPath"
-        @"
-        <?xml version='1.0' encoding='utf-8'?>
-        <configuration>
-          <packageSources>
-            <clear />
-            <add key='MUX-Dependencies' value='https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v3/index.json' />
-            <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
-            <add key='local' value='${{parameters.pkgArtifactPath}}'/>
-          </packageSources>
-        </configuration>
-        "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
-        # Output for debugging
-        Write-Host (Get-Content $nugetConfigFullPath)
-      displayName: Rewrite nuget.config to use artifacts
+  # Copy nupkg to localpackages and update proj file to point to it
+  - powershell: |
+      $pathToNupkg = "$($env:artifactDownloadPath)\drop"
+      if($env:useFrameworkPkg -eq "true")
+      {
+        $pathToNupkg = "$($env:artifactDownloadPath)\drop\FrameworkPackage"
+      }
+      Write-Host "pathToNupkg: $pathToNupkg"
 
-    # Rewrite the project files to use the new version
-    - powershell: |
-        # First, get the new version
-        $candidateNupkgs = Get-ChildItem $env:artifactDownloadPath\drop\Microsoft.UI.Xaml.*.nupkg
-        $newVersion = $candidateNupkgs[0].Name.Replace("Microsoft.UI.Xaml.", "").Replace(".nupkg", "")
+      $candidateNupkgs = Get-ChildItem $pathToNupkg\Microsoft.UI.Xaml.*.nupkg
+      $nupkgFile = $candidateNupkgs[0].FullName;
 
-        Write-Host "New version: $newVersion"
+      Copy-Item $nupkgFile $env:localPackagesPath
 
-        $numFilesReplaced = 0
-        Get-ChildItem -r $env:solutionDir -File |
-          ForEach-Object {
-            $path = $_.FullName
-            $contents = [System.IO.File]::ReadAllText($path)
-            $newContents = $contents.Replace("$env:currentPackageVersion", "$newVersion")
-            if ($contents -ne $newContents) {
-              Write-Host "Updating version in $path"
-              $newContents | Set-Content $path -Encoding UTF8
-              $numFilesReplaced += 1
-            }
-          }
-
-        if ($numFilesReplaced -eq 0)
-        {
-          Write-Host "##vso[task.logissue type=error]No files found with '$env:currentPackageVersion' in them, make sure to update *.yml files when retargeting ReleaseTest projects"
-          Exit 1
-        }
-      displayName: Rewrite project files to use new version
+      $newVersion = $candidateNupkgs[0].Name.Replace("Microsoft.UI.Xaml.", "").Replace(".nupkg", "")
+      Write-Host "New version: $newVersion"
+      .\test\MUXControlsReleaseTest\updateUsedNugetPackageVersion.ps1 $newVersion
+    displayName: Update proj files to use candidate nupkg.
 
   - template: MUX-BuildProject-Steps.yml
     parameters:
       solutionPath: $(solutionPath)
-      nugetConfigPath: $(nugetConfigPath)
       artifactName: ${{ parameters.buildArtifactName }}
 
   - template: MUX-PublishProjectOutput-Steps.yml

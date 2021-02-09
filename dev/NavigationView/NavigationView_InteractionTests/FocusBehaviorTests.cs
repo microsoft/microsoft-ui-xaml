@@ -46,8 +46,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 var readSettingsSelectedButton = new Button(FindElement.ByName("ReadSettingsSelected"));
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
 
+                Log.Comment("Bring Settings into view.");
+                FindElement.ByName<Button>("BringSettingsIntoViewButton").Invoke();
+                Wait.ForIdle();
+
                 var leftSettingsItem = new Button(FindElement.ByName("Settings"));
-                leftSettingsItem.Invoke();
+                leftSettingsItem.Click();
 
                 Log.Comment("Verify the left settings item is selected.");
                 readSettingsSelectedButton.Invoke();
@@ -101,6 +105,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Verify.IsNotNull(focusedElement);
             }
         }
+
         [TestMethod]
         public void EnsureLeftSettingsRetainsFocusAfterOrientationChanges()
         {
@@ -114,8 +119,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 flipOrientationButton.Invoke();
                 Wait.ForIdle();
 
-                var topSettingsItem = new Button(FindElement.ByName("SettingsTopNavPaneItem"));
-                topSettingsItem.Invoke();
+                var topSettingsItem = new Button(FindElement.ByName("Settings"));
+                topSettingsItem.Click();
 
                 Log.Comment("Verify the top settings item is selected.");
                 readSettingsSelectedButton.Invoke();
@@ -155,7 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     UIObject firstItem = FindElement.ByName("Home");
                     UIObject appsItem = FindElement.ByName("Apps");
-                    UIObject lastItem = FindElement.ByName("Integer");
+                    UIObject lastItem = FindElement.ByName("HasChildItem");
 
                     Log.Comment("Make sure something inside the ListView other than the first item has input focus");
                     appsItem.SetFocus();
@@ -183,57 +188,123 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    //TODO: Update RS3 and below tab behavior to match RS4+
+                    // TODO: Update RS3 and below tab behavior to match RS4+
                     if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
                     {
-                        Log.Warning("Test is disabled because the repeater tab behavior is current different rs3 and below.");
+                        Log.Warning("Test is disabled because the repeater tab behavior is currently different on RS3 and below.");
                         return;
                     }
 
                     SetNavViewWidth(ControlWidth.Wide);
 
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
-                    UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");
-                    UIObject firstItem = FindElement.ByName("Home");
+                    UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");                   
                     UIObject settingsItem = FindElement.ByName("Settings");
-                    togglePaneButton.SetFocus();
-                    Wait.ForIdle();
 
-                    Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to the search box");
-                    KeyboardHelper.PressKey(Key.Tab);
-                    Wait.ForIdle();
-                    Verify.IsTrue(searchBox.HasKeyboardFocus);
+                    VerifyTabNavigationWithoutMenuItemSelected();
+                    VerifyTabNavigationWithMenuItemSelected();
 
-                    Log.Comment("Verify that pressing tab while the search box has focus moves to the first menu item");
-                    KeyboardHelper.PressKey(Key.Tab);
-                    Wait.ForIdle();
-                    Verify.IsTrue(firstItem.HasKeyboardFocus);
+                    void VerifyTabNavigationWithoutMenuItemSelected()
+                    {
+                        Log.Comment("Verify Tab navigation without a selected menu item");
 
-                    Log.Comment("Verify that pressing tab twice more will move focus to the settings item");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 2);
-                    Wait.ForIdle();
-                    Verify.IsTrue(settingsItem.HasKeyboardFocus);
+                        // Clear any item selection
+                        var clearSelectedItemButton = new Button(FindElement.ByName("ClearSelectedItemButton"));
+                        clearSelectedItemButton.Click();
+                        Wait.ForIdle();
 
-                    // TODO: Re-enable test part and remove workaround once saving tab state is fixed
+                        Verify.AreEqual("null", GetSelectedItem());
 
-                    Log.Comment("Move Focus to first item");
-                    firstItem.SetFocus();
-                    Wait.ForIdle();
+                        UIObject firstMenuItem = FindElement.ByName("Home");
+                        UIObject lastMenuItem = FindElement.ByName("HasChildItem");
 
-                    //Log.Comment("Verify that pressing SHIFT+tab twice will move focus to the first menu item");
-                    //KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 2);
-                    //Wait.ForIdle();
-                    //Verify.IsTrue(firstItem.HasKeyboardFocus);
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
 
-                    Log.Comment("Verify that pressing SHIFT+tab will move focus to the search box");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
-                    Wait.ForIdle();
-                    Verify.IsTrue(searchBox.HasKeyboardFocus);
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to the search box");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
 
-                    Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
-                    Wait.ForIdle();
-                    Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                        Log.Comment("Verify that pressing tab while the search box has focus moves to the first menu item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(firstMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab thrice more will move focus to the settings item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(settingsItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab thrice will move focus to the last menu item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(lastMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the search box");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                    }
+
+                    void VerifyTabNavigationWithMenuItemSelected()
+                    {
+                        Log.Comment("Verify Tab navigation with a selected menu item");
+
+                        // Select a menu item (preferably not the first or last menu item)
+                        UIObject thirdMenuItem = FindElement.ByName("Games");
+
+                        var selectedItemComboBox = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                        selectedItemComboBox.SelectItemByName("Games");
+                        Wait.ForIdle();
+
+                        Verify.IsTrue(Convert.ToBoolean(thirdMenuItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to the search box");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab while the search box has focus moves to the selected menu item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(thirdMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab thrice more will move focus to the settings item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(settingsItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab thrice will move focus to the selected menu item");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(thirdMenuItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the search box");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(searchBox.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                    }
+                }
+
+                string GetSelectedItem()
+                {
+                    return FindElement.ByName("SelectionChangedItemType").GetText();
                 }
             }
         }
@@ -243,14 +314,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
             {
-                // Go to the navview items.
+                // Set focus inside page
+                var focusButton = FindElement.ByName("FocusAnchorButton");
+                focusButton.SetFocus();
+
+                // Navigate to NavView
                 KeyboardHelper.PressKey(Key.Tab);
                 // Select the first item.
                 KeyboardHelper.PressKey(Key.Space);
+
+                Log.Comment("Verify correct items have been passed to selection event");
+                var selectedItem = FindElement.ByName("SelectionEventResult");
+                Verify.AreEqual("Passed", selectedItem.GetText());
                 // Go to the second item.
                 KeyboardHelper.PressKey(Key.Right);
                 // Select the second item.
                 KeyboardHelper.PressKey(Key.Space);
+                Log.Comment("Verify correct items have been passed to selection event");
+                Verify.AreEqual("Passed", selectedItem.GetText());
             }
         }
 
@@ -271,9 +352,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     SetNavViewWidth(ControlWidth.Wide);
 
+                    // Clear any item selection
+                    var clearSelectedItemButton = new Button(FindElement.ByName("ClearSelectedItemButton"));
+                    clearSelectedItemButton.Click();
+                    Wait.ForIdle();
+
+                    Verify.AreEqual("null", GetSelectedItem());
+
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
                     togglePaneButton.SetFocus();
-                    Wait.ForIdle();
+                    Wait.ForIdle();           
 
                     // Grab references to all the menu items in the test UI
                     UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");
@@ -283,6 +371,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     UIObject item4 = FindElement.ByName("Music");
                     UIObject item5 = FindElement.ByName("Movies");
                     UIObject item6 = FindElement.ByName("TV");
+                    UIObject item7 = FindElement.ByName("Volume");
+                    UIObject item8 = FindElement.ByName("Integer");
+                    UIObject item9 = FindElement.ByName("HasChildItem");
                     UIObject settingsItem = FindElement.ByName("Settings");
 
                     Log.Comment("Verify that tab from the TogglePaneButton goes to the search box");
@@ -316,23 +407,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Wait.ForIdle();
                     Verify.IsTrue(item6.HasKeyboardFocus);
 
-                    Log.Comment("Verify that tab twice from the last menu item goes to the settings item");
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 2);
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item7.HasKeyboardFocus);
+
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item8.HasKeyboardFocus);
+
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item9.HasKeyboardFocus);
+
+                    Log.Comment("Verify that tab thrice from the last menu item goes to the settings item");
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
                     Wait.ForIdle();
                     Verify.IsTrue(settingsItem.HasKeyboardFocus);
 
-                    // TODO: Re-enable test part and remove workaround once saving tab state is fixed
-
-                    Log.Comment("Move Focus to TV item");
-                    item6.SetFocus();
+                    Log.Comment("Verify that shift+tab thrice from the settings item goes to the last menu item");
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
                     Wait.ForIdle();
-
-                    //Log.Comment("Verify that shift+tab twice from the settings item goes to the last menu item");
-                    //KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 2);
-                    //Wait.ForIdle();
-                    //Verify.IsTrue(item6.HasKeyboardFocus);
+                    Verify.IsTrue(item9.HasKeyboardFocus);
 
                     Log.Comment("Verify that up arrow can navigate through all items");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item8.HasKeyboardFocus);
+
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item7.HasKeyboardFocus);
+
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item6.HasKeyboardFocus);
+
                     KeyboardHelper.PressKey(Key.Up);
                     Wait.ForIdle();
                     Verify.IsTrue(item5.HasKeyboardFocus);
@@ -362,6 +471,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                     Wait.ForIdle();
                     Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                }
+
+                string GetSelectedItem()
+                {
+                    return FindElement.ByName("SelectionChangedItemType").GetText();
                 }
             }
         }
@@ -456,6 +570,86 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Wait.ForIdle();
                 Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
 
+            }
+        }
+
+        [TestMethod]
+        public void VerifyShoulderNavigationEnabledAlwaysIsConsistent()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
+            {
+                var navView = FindElement.ByName("NavView");
+                var shoulderNavigationEnabled = new ComboBox(FindElement.ByName("ShoulderNavigationEnabledSetter"));
+                var selectionFollowsFocusComboBox = new ComboBox(FindElement.ByName("SelectionFollowsFocusSetter"));
+
+                Log.Comment("Set ShoulderNavigation to always");
+                shoulderNavigationEnabled.SelectItemByName("ShoulderNavigationEnabledAlways");
+
+                Log.Comment("Set SelectionFollowsFocus to enabled");
+                selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusEnabled");
+
+                Log.Comment("Select first item");
+                FindElement.ByName("Home").Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Home", GetSelectedItem());
+
+                GamepadHelper.PressButton(navView, GamepadButton.RightShoulder);
+                Wait.ForIdle();
+                Verify.AreEqual("Apps", GetSelectedItem());
+
+                Log.Comment("Set SelectionFollowsFocus to disabled");
+                selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusDisabled");
+                Wait.ForIdle();
+
+                GamepadHelper.PressButton(navView, GamepadButton.RightShoulder);
+
+                Wait.ForIdle();
+                Verify.AreEqual("Games", GetSelectedItem());
+            }
+
+            string GetSelectedItem()
+            {
+                return FindElement.ByName("SelectionChangedResult").GetText();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyShoulderNavigationEnabledOnlySelectionFollowsFocusIsCorrect()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
+            {
+                var navView = FindElement.ByName("NavView");
+                var shoulderNavigationEnabled = new ComboBox(FindElement.ByName("ShoulderNavigationEnabledSetter"));
+                var selectionFollowsFocusComboBox = new ComboBox(FindElement.ByName("SelectionFollowsFocusSetter"));
+
+                Log.Comment("Set ShoulderNavigation to always");
+                shoulderNavigationEnabled.SelectItemByName("ShoulderNavigationEnabledWhenSelectionFollowsFocus");
+
+                Log.Comment("Set SelectionFollowsFocus to enabled");
+                selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusEnabled");
+
+                Log.Comment("Select first item");
+                FindElement.ByName("Home").Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Home", GetSelectedItem());
+
+                GamepadHelper.PressButton(navView, GamepadButton.RightShoulder);
+                Wait.ForIdle();
+                Verify.AreEqual("Apps", GetSelectedItem());
+
+                Log.Comment("Set SelectionFollowsFocus to disabled");
+                selectionFollowsFocusComboBox.SelectItemByName("SelectionFollowsFocusDisabled");
+                Wait.ForIdle();
+
+                GamepadHelper.PressButton(navView, GamepadButton.RightShoulder);
+
+                Wait.ForIdle();
+                Verify.AreEqual("Apps", GetSelectedItem());
+            }
+
+            string GetSelectedItem()
+            {
+                return FindElement.ByName("SelectionChangedResult").GetText();
             }
         }
     }

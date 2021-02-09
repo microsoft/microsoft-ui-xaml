@@ -1,4 +1,7 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -411,6 +414,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref effectiveTeachingTipContentUnloadedCheckbox, "VisualTreeTeachingTipContentTextBlockUnloaded");
         }
         private CheckBox effectiveTeachingTipContentUnloadedCheckbox;
+
+        public CheckBox GetPageRTLCheckbox()
+        {
+            return GetElement(ref effectivePageRTLCheckbox, "PageRTLCheckbox");
+        }
+        private CheckBox effectivePageRTLCheckbox;
 
         public Button GetRemoveOpenButtonFromVisualTreeButton()
         {

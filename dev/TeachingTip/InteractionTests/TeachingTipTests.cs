@@ -1,4 +1,7 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -20,6 +23,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Foundation;
 
 using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestPageElements;
+using System.Drawing;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -51,7 +55,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CloseReasonIsAccurate()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -91,7 +95,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message6.ToString().Contains("Programmatic"));
 
                     OpenTeachingTip();
-                    CloseTeachingTipByLightDismiss();
+                    CloseTeachingTipByLightDismiss(useEscKey: false);
                     var message7 = GetTeachingTipDebugMessage(7);
                     var message8 = GetTeachingTipDebugMessage(8);
                     Verify.IsTrue(message7.ToString().Contains("Closing"));
@@ -99,17 +103,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message8.ToString().Contains("Closed"));
                     Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
 
+                    OpenTeachingTip();
+                    CloseTeachingTipByLightDismiss(useEscKey: true);
+                    var message9 = GetTeachingTipDebugMessage(9);
+                    var message10 = GetTeachingTipDebugMessage(10);
+                    Verify.IsTrue(message9.ToString().Contains("Closing"));
+                    Verify.IsTrue(message9.ToString().Contains("LightDismiss"));
+                    Verify.IsTrue(message10.ToString().Contains("Closed"));
+                    Verify.IsTrue(message10.ToString().Contains("LightDismiss"));
+
                     SetCloseButtonContent(CloseButtonContentOptions.ShortText);
                     OpenTeachingTip();
                     PressTipCloseButton();
-                    var message9 = GetTeachingTipDebugMessage(9);
-                    var message10 = GetTeachingTipDebugMessage(10);
                     var message11 = GetTeachingTipDebugMessage(11);
-                    Verify.IsTrue(message9.ToString().Contains("Close Button Clicked"));
-                    Verify.IsTrue(message10.ToString().Contains("Closing"));
-                    Verify.IsTrue(message10.ToString().Contains("CloseButton"));
-                    Verify.IsTrue(message11.ToString().Contains("Closed"));
-                    Verify.IsTrue(message11.ToString().Contains("CloseButton"));
+                    var message12 = GetTeachingTipDebugMessage(12);
+                    var message13 = GetTeachingTipDebugMessage(13);
+                    Verify.IsTrue(message11.ToString().Contains("Close Button Clicked"));
+                    Verify.IsTrue(message12.ToString().Contains("Closing"));
+                    Verify.IsTrue(message12.ToString().Contains("CloseButton"));
+                    Verify.IsTrue(message13.ToString().Contains("Closed"));
+                    Verify.IsTrue(message13.ToString().Contains("CloseButton"));
 
                     ClearTeachingTipDebugMessages();
                 }
@@ -119,7 +132,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TargetUnloadingClosesTeachingTip()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 elements.GetSetTargetButton().InvokeAndWait();
@@ -140,7 +153,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void PreviousTargetUnloadingLeavesTeachingTipOpen()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 elements.GetSetTargetButton().InvokeAndWait();
@@ -163,7 +176,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TeachingTipRemovalClosesPopup()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 ScrollTargetIntoView();
@@ -186,7 +199,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TipCanFollowTarget()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -249,7 +262,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -304,10 +317,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod] // Not currently passing, tracked by issue #643
+        [TestMethod] 
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void AutoPlacement()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -333,7 +347,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void SpecifiedPlacement()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -349,6 +363,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     var targetRect = GetTargetBounds();
 
                     // All positions are valid
+                    // The following might not always work, so repeat.
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
                     UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
 
                     SetPreferredPlacement(PlacementOptions.Top);
@@ -501,11 +517,188 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void SpecifiedPlacementRTL()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+
+                    elements.GetPageRTLCheckbox().Check();
+
+                    SetHeroContent(HeroContentOptions.NoContent);
+
+                    var targetRect = GetTargetBounds();
+
+                    // All positions are valid
+                    // The following might not always work, so repeat.
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
+
+                    // Eliminate left of the target
+                    UseTestBounds(targetRect.W - 120, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
+
+                    // Eliminate top of the target
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 1, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
+
+                    // Eliminate right of the target
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 500, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Left");
+
+                    // Eliminate bottom of target
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 501, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
+
+                    elements.GetPageRTLCheckbox().Uncheck();
+                }
+            }
+        }
+
 
         [TestMethod]
         public void NoIconDoesNotCrash()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -530,7 +723,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanSwitchShouldConstrainToRootBounds()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -564,7 +757,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TipsWhichDoNotFitDoNotOpen()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
 
@@ -605,7 +798,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -620,28 +813,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     var themingComboBox = elements.GetThemingComboBox();
                     themingComboBox.SelectItemByName("Light");
 
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                    // Substring removes the opacity of the color, as that may vary
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText().Substring(3), "Default button foreground should be black");
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText().Substring(3), "Default content foreground should be black");
 
                     // Change to Dark, make sure the font switches to light
                     themingComboBox.SelectItemByName("Dark");
 
-                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be white");
-                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be white");
+                    Verify.AreEqual("FFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText().Substring(3), "Default button foreground should be white");
+                    Verify.AreEqual("FFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText().Substring(3), "Default content foreground should be white");
 
                     // Change to Light, make sure the font switches to dark
                     themingComboBox.SelectItemByName("Light");
 
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
-                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText().Substring(3), "Default button foreground should be black");
+                    Verify.AreEqual("000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText().Substring(3), "Default content foreground should be black");
                 }
             }
         }
 
-        //[TestMethod] Disabled with issue #1769
+        [TestMethod] //Disabled with issue #1769
+        [TestProperty("Ignore", "True")]
         public void SettingTitleOrSubtitleToEmptyStringCollapsesTextBox()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -713,7 +908,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void AutomationNameIsForwardedToPopup()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 foreach(TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
@@ -735,7 +930,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void F6PutsFocusOnCloseButton()
         {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
                 ScrollTargetIntoView();
@@ -748,6 +943,72 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 OpenTeachingTip();
                 UseF6ToReturnToTestPageToCloseTip();
                 SetCloseButtonContent(CloseButtonContentOptions.NoText);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTeachingTipNotIncludedInTabOrder()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTipFocus Test" }))
+            {
+                var elements = new TeachingTipFocusTestPageElements();
+                var openTeachingTipButton = elements.GetOpenButton();
+
+                Log.Comment("Verify open button has keyboard focus.");
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Verify that a closed teaching tip does not appear in tab order.");
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Verify that an opened teaching tip does not appear in tab order.");
+                OpenTeachingTip();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Switch to light-dismissable teaching tip.");
+                CloseTeachingTipProgrammatically();
+                EnableLightDismiss();
+
+                Log.Comment("Verify that a closed light-dismissable teaching tip does not appear in tab order.");
+
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                void OpenTeachingTip()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
+                    {
+                        openTeachingTipButton.InvokeAndWait();
+                        WaitForChecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+
+                void CloseTeachingTipProgrammatically()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
+                    {
+                        elements.GetCloseButton().InvokeAndWait();
+                        WaitForUnchecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+
+                void EnableLightDismiss()
+                {
+                    var isLightDismissEnabledCheckBox = elements.GetIsLightDismissEnabledCheckBox();
+                    if (isLightDismissEnabledCheckBox.ToggleState != ToggleState.On)
+                    {
+                        isLightDismissEnabledCheckBox.Check();
+                        WaitForChecked(isLightDismissEnabledCheckBox);
+                    }
+                }
             }
         }
 
@@ -797,11 +1058,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void CloseTeachingTipByLightDismiss()
+        private void CloseTeachingTipByLightDismiss(bool useEscKey)
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                InputHelper.LeftClick(elements.GetActionButtonContentComboBox());
+                if (useEscKey)
+                {
+                    KeyboardHelper.PressKey(Key.Escape);
+                }
+                else
+                {
+                    InputHelper.LeftClick(elements.GetActionButtonContentComboBox());
+                }
+
                 WaitForTipClosed();
             }
         }

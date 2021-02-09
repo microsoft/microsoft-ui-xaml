@@ -53,7 +53,10 @@ void ToggleSplitButtonProperties::OnIsCheckedPropertyChanged(
 
 void ToggleSplitButtonProperties::IsChecked(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ToggleSplitButton*>(this)->SetValue(s_IsCheckedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ToggleSplitButtonProperties::IsChecked()

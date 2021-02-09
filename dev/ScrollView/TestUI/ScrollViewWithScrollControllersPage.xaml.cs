@@ -7,10 +7,10 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
@@ -103,7 +103,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ContentOrientation co = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+                ScrollingContentOrientation co = (ScrollingContentOrientation)cmbContentOrientation.SelectedIndex;
                 scrollView.ContentOrientation = co;
             }
             catch (Exception ex)
@@ -117,7 +117,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollMode ssm = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+                ScrollingScrollMode ssm = (ScrollingScrollMode)cmbHorizontalScrollMode.SelectedIndex;
                 scrollView.HorizontalScrollMode = ssm;
             }
             catch (Exception ex)
@@ -131,7 +131,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollMode ssm = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
+                ScrollingScrollMode ssm = (ScrollingScrollMode)cmbVerticalScrollMode.SelectedIndex;
                 scrollView.VerticalScrollMode = ssm;
             }
             catch (Exception ex)
@@ -145,7 +145,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ZoomMode ssm = (ZoomMode)cmbZoomMode.SelectedIndex;
+                ScrollingZoomMode ssm = (ScrollingZoomMode)cmbZoomMode.SelectedIndex;
                 scrollView.ZoomMode = ssm;
             }
             catch (Exception ex)

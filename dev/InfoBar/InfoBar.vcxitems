@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{CCC102B7-F5EF-479D-94F1-008D189448B1}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);INFOBAR_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarTemplateSettings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBarPanel.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InfoBarTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarTemplateSettings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)InfoBar.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)InfoBar_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)InfoBar_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)InfoBar_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)InfoBar.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

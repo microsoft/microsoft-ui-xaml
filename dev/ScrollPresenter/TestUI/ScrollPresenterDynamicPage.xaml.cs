@@ -18,14 +18,14 @@ using Windows.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingChainMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using ScrollingRailMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
@@ -81,14 +81,15 @@ namespace MUXControlsTestApp
             public string StringValue { get; set; }
         }
 
-        private int lastOffsetsChangeId = -1;
-        private int lastOffsetsChangeWithAdditionalVelocityId = -1;
-        private int lastZoomFactorChangeId = -1;
-        private int lastZoomFactorChangeWithAdditionalVelocityId = -1;
-        private HashSet<int> relativeChangeIds = new HashSet<int>();
+        private int lastOffsetsChangeCorrelationId = -1;
+        private int lastOffsetsChangeWithAdditionalVelocityCorrelationId = -1;
+        private int lastZoomFactorChangeCorrelationId = -1;
+        private int lastZoomFactorChangeWithAdditionalVelocityCorrelationId = -1;
+        private HashSet<int> relativeChangeCorrelationIds = new HashSet<int>();
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
         private List<QueuedOperation> lstQueuedOperations = new List<QueuedOperation>();
+        private TextBlock textBlock;
         private Viewbox viewbox;
         private TilePanel tilePanel;
         private Image largeImg;
@@ -128,25 +129,34 @@ namespace MUXControlsTestApp
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            AppendAsyncEventMessage("ScrollCompleted OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
         }
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
         }
 
         private void ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
         }
 
         private void CreateChildren()
         {
+            textBlock = new TextBlock();
+            textBlock.TextWrapping = TextWrapping.Wrap;
+            string textBlockText = string.Empty;
+            for (int i = 0; i < 50; i++)
+            {
+                textBlockText += "Large TextBlock Text. ";
+            }
+            textBlock.Text = textBlockText;
+
             viewbox = new Viewbox();
             tilePanel = new TilePanel();
             tilePanel.TileCount = 100;
@@ -164,7 +174,8 @@ namespace MUXControlsTestApp
             lgb.GradientStops.Add(gs);
             rectangle = new Rectangle() { Fill = lgb };
             button = new Button() { Content = "Button" };
-            Rectangle viewboxChild = new Rectangle() {
+            Rectangle viewboxChild = new Rectangle()
+            {
                 Fill = lgb,
                 Width = 600,
                 Height = 500
@@ -176,7 +187,9 @@ namespace MUXControlsTestApp
             };
             border = new Border()
             {
-                BorderBrush = chartreuseBrush, BorderThickness = new Thickness(5), Child = borderChild
+                BorderBrush = chartreuseBrush,
+                BorderThickness = new Thickness(5),
+                Child = borderChild
             };
             StackPanel populatedBorderChild = new StackPanel();
             populatedBorderChild.Margin = new Thickness(30);
@@ -203,8 +216,11 @@ namespace MUXControlsTestApp
             }
             populatedBorder = new Border()
             {
-                BorderBrush = chartreuseBrush, BorderThickness = new Thickness(3), Margin = new Thickness(15),
-                Background = new SolidColorBrush(Colors.Beige), Child = populatedBorderChild
+                BorderBrush = chartreuseBrush,
+                BorderThickness = new Thickness(3),
+                Margin = new Thickness(15),
+                Background = new SolidColorBrush(Colors.Beige),
+                Child = populatedBorderChild
             };
             verticalStackPanel = new StackPanel();
             for (int index = 0; index < 10; index++)
@@ -300,7 +316,7 @@ namespace MUXControlsTestApp
 
         private void Content_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
-            AppendAsyncEventMessage("Content_EffectiveViewportChanged: BringIntoViewDistance=" + 
+            AppendAsyncEventMessage("Content_EffectiveViewportChanged: BringIntoViewDistance=" +
                 args.BringIntoViewDistanceX + "," + args.BringIntoViewDistanceY + ", EffectiveViewport=" +
                 args.EffectiveViewport.ToString() + ", MaxViewport=" + args.MaxViewport.ToString());
         }
@@ -410,13 +426,13 @@ namespace MUXControlsTestApp
         private void CmbContentOrientation_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.ContentOrientation = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+                scrollPresenter.ContentOrientation = (ScrollingContentOrientation)cmbContentOrientation.SelectedIndex;
         }
 
         private void CmbHorizontalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.HorizontalScrollMode = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+                scrollPresenter.HorizontalScrollMode = (ScrollingScrollMode)cmbHorizontalScrollMode.SelectedIndex;
         }
 
         private void UpdateCmbContentOrientation()
@@ -437,32 +453,32 @@ namespace MUXControlsTestApp
             cmbHorizontalScrollMode.SelectedIndex = (int)scrollPresenter.HorizontalScrollMode;
         }
 
-        private void CmbHorizontalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.HorizontalScrollChainingMode = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
+                scrollPresenter.HorizontalScrollChainMode = (ScrollingChainMode)cmbHorizontalScrollChainMode.SelectedIndex;
         }
 
-        private void UpdateCmbHorizontalScrollChainingMode()
+        private void UpdateCmbHorizontalScrollChainMode()
         {
-            cmbHorizontalScrollChainingMode.SelectedIndex = (int)scrollPresenter.HorizontalScrollChainingMode;
+            cmbHorizontalScrollChainMode.SelectedIndex = (int)scrollPresenter.HorizontalScrollChainMode;
         }
 
-        private void CmbHorizontalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.HorizontalScrollRailingMode = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
+                scrollPresenter.HorizontalScrollRailMode = (ScrollingRailMode)cmbHorizontalScrollRailMode.SelectedIndex;
         }
 
-        private void UpdateCmbHorizontalScrollRailingMode()
+        private void UpdateCmbHorizontalScrollRailMode()
         {
-            cmbHorizontalScrollRailingMode.SelectedIndex = (int)scrollPresenter.HorizontalScrollRailingMode;
+            cmbHorizontalScrollRailMode.SelectedIndex = (int)scrollPresenter.HorizontalScrollRailMode;
         }
 
         private void CmbVerticalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.VerticalScrollMode = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
+                scrollPresenter.VerticalScrollMode = (ScrollingScrollMode)cmbVerticalScrollMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollMode()
@@ -470,32 +486,32 @@ namespace MUXControlsTestApp
             cmbVerticalScrollMode.SelectedIndex = (int)scrollPresenter.VerticalScrollMode;
         }
 
-        private void CmbVerticalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.VerticalScrollChainingMode = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
+                scrollPresenter.VerticalScrollChainMode = (ScrollingChainMode)cmbVerticalScrollChainMode.SelectedIndex;
         }
 
-        private void UpdateCmbVerticalScrollChainingMode()
+        private void UpdateCmbVerticalScrollChainMode()
         {
-            cmbVerticalScrollChainingMode.SelectedIndex = (int)scrollPresenter.VerticalScrollChainingMode;
+            cmbVerticalScrollChainMode.SelectedIndex = (int)scrollPresenter.VerticalScrollChainMode;
         }
 
-        private void CmbVerticalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.VerticalScrollRailingMode = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
+                scrollPresenter.VerticalScrollRailMode = (ScrollingRailMode)cmbVerticalScrollRailMode.SelectedIndex;
         }
 
-        private void UpdateCmbVerticalScrollRailingMode()
+        private void UpdateCmbVerticalScrollRailMode()
         {
-            cmbVerticalScrollRailingMode.SelectedIndex = (int)scrollPresenter.VerticalScrollRailingMode;
+            cmbVerticalScrollRailMode.SelectedIndex = (int)scrollPresenter.VerticalScrollRailMode;
         }
 
         private void CmbZoomMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.ZoomMode = (ZoomMode)cmbZoomMode.SelectedIndex;
+                scrollPresenter.ZoomMode = (ScrollingZoomMode)cmbZoomMode.SelectedIndex;
         }
 
         private void UpdateCmbZoomMode()
@@ -503,72 +519,72 @@ namespace MUXControlsTestApp
             cmbZoomMode.SelectedIndex = (int)scrollPresenter.ZoomMode;
         }
 
-        private void CmbZoomChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbZoomChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
-                scrollPresenter.ZoomChainingMode = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
+                scrollPresenter.ZoomChainMode = (ScrollingChainMode)cmbZoomChainMode.SelectedIndex;
         }
 
-        private void UpdateCmbZoomChainingMode()
+        private void UpdateCmbZoomChainMode()
         {
-            cmbZoomChainingMode.SelectedIndex = (int)scrollPresenter.ZoomChainingMode;
+            cmbZoomChainMode.SelectedIndex = (int)scrollPresenter.ZoomChainMode;
         }
 
-        private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbIgnoredInputKinds_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
             {
-                switch (cmbIgnoredInputKind.SelectedIndex)
+                switch (cmbIgnoredInputKinds.SelectedIndex)
                 {
                     case 0:
-                        scrollPresenter.IgnoredInputKind = InputKind.None;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.None;
                         break;
                     case 1:
-                        scrollPresenter.IgnoredInputKind = InputKind.Touch;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Touch;
                         break;
                     case 2:
-                        scrollPresenter.IgnoredInputKind = InputKind.Pen;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Pen;
                         break;
                     case 3:
-                        scrollPresenter.IgnoredInputKind = InputKind.MouseWheel;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.MouseWheel;
                         break;
                     case 4:
-                        scrollPresenter.IgnoredInputKind = InputKind.Keyboard;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Keyboard;
                         break;
                     case 5:
-                        scrollPresenter.IgnoredInputKind = InputKind.Gamepad;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Gamepad;
                         break;
                     case 6:
-                        scrollPresenter.IgnoredInputKind = InputKind.All;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.All;
                         break;
                 }
             }
         }
 
-        private void UpdateCmbIgnoredInputKind()
+        private void UpdateCmbIgnoredInputKinds()
         {
-            switch (scrollPresenter.IgnoredInputKind)
+            switch (scrollPresenter.IgnoredInputKinds)
             {
-                case InputKind.None:
-                    cmbIgnoredInputKind.SelectedIndex = 0;
+                case ScrollingInputKinds.None:
+                    cmbIgnoredInputKinds.SelectedIndex = 0;
                     break;
-                case InputKind.Touch:
-                    cmbIgnoredInputKind.SelectedIndex = 1;
+                case ScrollingInputKinds.Touch:
+                    cmbIgnoredInputKinds.SelectedIndex = 1;
                     break;
-                case InputKind.Pen:
-                    cmbIgnoredInputKind.SelectedIndex = 2;
+                case ScrollingInputKinds.Pen:
+                    cmbIgnoredInputKinds.SelectedIndex = 2;
                     break;
-                case InputKind.MouseWheel:
-                    cmbIgnoredInputKind.SelectedIndex = 3;
+                case ScrollingInputKinds.MouseWheel:
+                    cmbIgnoredInputKinds.SelectedIndex = 3;
                     break;
-                case InputKind.Keyboard:
-                    cmbIgnoredInputKind.SelectedIndex = 4;
+                case ScrollingInputKinds.Keyboard:
+                    cmbIgnoredInputKinds.SelectedIndex = 4;
                     break;
-                case InputKind.Gamepad:
-                    cmbIgnoredInputKind.SelectedIndex = 5;
+                case ScrollingInputKinds.Gamepad:
+                    cmbIgnoredInputKinds.SelectedIndex = 5;
                     break;
-                case InputKind.All:
-                    cmbIgnoredInputKind.SelectedIndex = 6;
+                case ScrollingInputKinds.All:
+                    cmbIgnoredInputKinds.SelectedIndex = 6;
                     break;
             }
         }
@@ -743,6 +759,9 @@ namespace MUXControlsTestApp
                     case 9:
                         newContent = viewbox;
                         break;
+                    case 10:
+                        newContent = textBlock;
+                        break;
                 }
 
                 if (chkPreserveProperties.IsChecked == true && currentContent != null && newContent != null)
@@ -827,6 +846,10 @@ namespace MUXControlsTestApp
             else if (scrollPresenter.Content is Viewbox)
             {
                 cmbContent.SelectedIndex = 9;
+            }
+            else if (scrollPresenter.Content is TextBox)
+            {
+                cmbContent.SelectedIndex = 10;
             }
         }
 
@@ -1445,8 +1468,8 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AnimationMode animatioMode = (AnimationMode)cmbScrollAnimationMode.SelectedIndex;
-                SnapPointsMode snapPointsMode = (SnapPointsMode)cmbScrollSnapPointsMode.SelectedIndex;
+                ScrollingAnimationMode animatioMode = (ScrollingAnimationMode)cmbScrollAnimationMode.SelectedIndex;
+                ScrollingSnapPointsMode snapPointsMode = (ScrollingSnapPointsMode)cmbScrollSnapPointsMode.SelectedIndex;
                 ScrollingScrollOptions options = new ScrollingScrollOptions(animatioMode, snapPointsMode);
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
@@ -1455,20 +1478,20 @@ namespace MUXControlsTestApp
 
                 if (isRelativeChange)
                 {
-                    lastOffsetsChangeId = scrollPresenter.ScrollBy(
+                    lastOffsetsChangeCorrelationId = scrollPresenter.ScrollBy(
                         Convert.ToDouble(txtScrollHorizontalOffset.Text),
                         Convert.ToDouble(txtScrollVerticalOffset.Text),
-                        options).OffsetsChangeId;
-                    relativeChangeIds.Add(lastOffsetsChangeId);
-                    AppendAsyncEventMessage("Invoked ScrollBy Id=" + lastOffsetsChangeId);
+                        options);
+                    relativeChangeCorrelationIds.Add(lastOffsetsChangeCorrelationId);
+                    AppendAsyncEventMessage("Invoked ScrollBy CorrelationId=" + lastOffsetsChangeCorrelationId);
                 }
                 else
                 {
-                    lastOffsetsChangeId = scrollPresenter.ScrollTo(
+                    lastOffsetsChangeCorrelationId = scrollPresenter.ScrollTo(
                         Convert.ToDouble(txtScrollHorizontalOffset.Text),
                         Convert.ToDouble(txtScrollVerticalOffset.Text),
-                        options).OffsetsChangeId;
-                    AppendAsyncEventMessage("Invoked ScrollTo Id=" + lastOffsetsChangeId);
+                        options);
+                    AppendAsyncEventMessage("Invoked ScrollTo CorrelationId=" + lastOffsetsChangeCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1482,13 +1505,13 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (lastOffsetsChangeId != -1)
+                if (lastOffsetsChangeCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling scrollTo/By Id=" + lastOffsetsChangeId);
+                    AppendAsyncEventMessage("Canceling scrollTo/By CorrelationId=" + lastOffsetsChangeCorrelationId);
                     scrollPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1502,7 +1525,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y + ") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y + ")");
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeCorrelationId=" + args.CorrelationId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y + ") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y + ")");
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 
@@ -1512,7 +1535,7 @@ namespace MUXControlsTestApp
 
                     if (cmbOverriddenOffsetsChangeAnimation.SelectedIndex != 0)
                     {
-                        bool isRelativeChange = relativeChangeIds.Contains(args.ScrollInfo.OffsetsChangeId);
+                        bool isRelativeChange = relativeChangeCorrelationIds.Contains(args.CorrelationId);
 
                         double targetHorizontalOffset = Convert.ToDouble(txtScrollHorizontalOffset.Text);
                         if (isRelativeChange)
@@ -1594,7 +1617,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnScrollFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnAddScrollVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1609,10 +1632,10 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastOffsetsChangeWithAdditionalVelocityId = scrollPresenter.ScrollFrom(
+                lastOffsetsChangeWithAdditionalVelocityCorrelationId = scrollPresenter.AddScrollVelocity(
                     new Vector2(Convert.ToSingle(txtScrollHorizontalVelocity.Text), Convert.ToSingle(txtScrollVerticalVelocity.Text)),
-                    inertiaDecayRate).OffsetsChangeId;
-                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
+                    inertiaDecayRate);
+                AppendAsyncEventMessage("Invoked AddScrollVelocity CorrelationId=" + lastOffsetsChangeWithAdditionalVelocityCorrelationId);
             }
             catch (Exception ex)
             {
@@ -1621,17 +1644,17 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnCancelScrollFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnCancelAddScrollVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (lastOffsetsChangeWithAdditionalVelocityId != -1)
+                if (lastOffsetsChangeWithAdditionalVelocityCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
+                    AppendAsyncEventMessage("Canceling AddScrollVelocity CorrelationId=" + lastOffsetsChangeWithAdditionalVelocityCorrelationId);
                     scrollPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1735,8 +1758,8 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AnimationMode animationMode = (AnimationMode)cmbZoomAnimationMode.SelectedIndex;
-                SnapPointsMode snapPointsMode = (SnapPointsMode)cmbZoomSnapPointsMode.SelectedIndex;
+                ScrollingAnimationMode animationMode = (ScrollingAnimationMode)cmbZoomAnimationMode.SelectedIndex;
+                ScrollingSnapPointsMode snapPointsMode = (ScrollingSnapPointsMode)cmbZoomSnapPointsMode.SelectedIndex;
                 ScrollingZoomOptions options = new ScrollingZoomOptions(animationMode, snapPointsMode);
 
                 txtStockZoomFactorChangeDuration.Text = string.Empty;
@@ -1745,20 +1768,20 @@ namespace MUXControlsTestApp
 
                 if (isRelativeChange)
                 {
-                    lastZoomFactorChangeId = scrollPresenter.ZoomBy(
+                    lastZoomFactorChangeCorrelationId = scrollPresenter.ZoomBy(
                         Convert.ToSingle(txtZoomZoomFactor.Text),
                         (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
-                        options).ZoomFactorChangeId;
-                    relativeChangeIds.Add(lastZoomFactorChangeId);
-                    AppendAsyncEventMessage("Invoked ZoomBy Id=" + lastZoomFactorChangeId);
+                        options);
+                    relativeChangeCorrelationIds.Add(lastZoomFactorChangeCorrelationId);
+                    AppendAsyncEventMessage("Invoked ZoomBy CorrelationId=" + lastZoomFactorChangeCorrelationId);
                 }
                 else
                 {
-                    lastZoomFactorChangeId = scrollPresenter.ZoomTo(
+                    lastZoomFactorChangeCorrelationId = scrollPresenter.ZoomTo(
                         Convert.ToSingle(txtZoomZoomFactor.Text),
                         (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
-                        options).ZoomFactorChangeId;
-                    AppendAsyncEventMessage("Invoked ZoomTo Id=" + lastZoomFactorChangeId);
+                        options);
+                    AppendAsyncEventMessage("Invoked ZoomTo CorrelationId=" + lastZoomFactorChangeCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1772,13 +1795,13 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (lastZoomFactorChangeId != -1)
+                if (lastZoomFactorChangeCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling ZoomTo/By Id=" + lastZoomFactorChangeId);
+                    AppendAsyncEventMessage("Canceling ZoomTo/By CorrelationId=" + lastZoomFactorChangeCorrelationId);
                     scrollPresenter.ZoomBy(
                         0,
-                        Vector2.Zero, 
-                        new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        Vector2.Zero,
+                        new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1792,8 +1815,8 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AppendAsyncEventMessage("ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
-                
+                AppendAsyncEventMessage("ZoomAnimationStarting ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
+
                 ScalarKeyFrameAnimation stockKeyFrameAnimation = args.Animation as ScalarKeyFrameAnimation;
 
                 if (stockKeyFrameAnimation != null)
@@ -1803,7 +1826,7 @@ namespace MUXControlsTestApp
                     if (cmbOverriddenZoomFactorChangeAnimation.SelectedIndex != 0)
                     {
                         float targetZoomFactor = Convert.ToSingle(txtZoomZoomFactor.Text);
-                        if (relativeChangeIds.Contains(args.ZoomInfo.ZoomFactorChangeId))
+                        if (relativeChangeCorrelationIds.Contains(args.CorrelationId))
                         {
                             targetZoomFactor += scrollPresenter.ZoomFactor;
                         }
@@ -1871,7 +1894,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnZoomFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnAddZoomVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1879,11 +1902,11 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastZoomFactorChangeWithAdditionalVelocityId = scrollPresenter.ZoomFrom(
-                    Convert.ToSingle(txtZoomFromVelocity.Text),
-                    (txtZoomFromCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomFromCenterPoint.Text),
-                    (txtZoomFromInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtZoomFromInertiaDecayRate.Text)).ZoomFactorChangeId;
-                AppendAsyncEventMessage("Invoked ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                lastZoomFactorChangeWithAdditionalVelocityCorrelationId = scrollPresenter.AddZoomVelocity(
+                    Convert.ToSingle(txtAddZoomVelocityVelocity.Text),
+                    (txtAddZoomVelocityCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtAddZoomVelocityCenterPoint.Text),
+                    (txtAddZoomVelocityInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtAddZoomVelocityInertiaDecayRate.Text));
+                AppendAsyncEventMessage("Invoked AddZoomVelocity CorrelationId=" + lastZoomFactorChangeWithAdditionalVelocityCorrelationId);
             }
             catch (Exception ex)
             {
@@ -1892,17 +1915,17 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnCancelZoomFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnCancelAddZoomVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (lastZoomFactorChangeWithAdditionalVelocityId != -1)
+                if (lastZoomFactorChangeWithAdditionalVelocityCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                    AppendAsyncEventMessage("Canceling AddZoomVelocity CorrelationId=" + lastZoomFactorChangeWithAdditionalVelocityCorrelationId);
                     scrollPresenter.ZoomBy(
                         0,
                         Vector2.Zero,
-                        new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1955,7 +1978,7 @@ namespace MUXControlsTestApp
                         scrollPresenter.HorizontalSnapPoints.Add(snapPoint);
                     }
                 }
-                else if(cmbSnapPointKind.SelectedIndex == 2)
+                else if (cmbSnapPointKind.SelectedIndex == 2)
                 {
                     ZoomSnapPoint snapPoint = new ZoomSnapPoint(
                         Convert.ToSingle(txtIrregularSnapPointValue.Text));
@@ -2022,7 +2045,7 @@ namespace MUXControlsTestApp
                     return;
                 }
 
-                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scrollPresenter.ZoomFactor) ? 
+                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scrollPresenter.ZoomFactor) ?
                     cmbScrollAnimationMode : cmbZoomAnimationMode;
 
                 switch (((ContentControl)cmbAnimationMode.SelectedItem).Content)
@@ -2070,13 +2093,13 @@ namespace MUXControlsTestApp
                     return false;
                 }
 
-                lastOffsetsChangeId = scrollPresenter.ScrollTo(
+                lastOffsetsChangeCorrelationId = scrollPresenter.ScrollTo(
                     targetHorizontalOffset,
                     targetVerticalOffset,
                     new ScrollingScrollOptions(
-                        disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
-                        disableAnimation ? SnapPointsMode.Ignore : SnapPointsMode.Default)).OffsetsChangeId;
-                AppendAsyncEventMessage($"ChangeView invoked ScrollTo(horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset}) Id={lastOffsetsChangeId}");
+                        disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
+                        disableAnimation ? ScrollingSnapPointsMode.Ignore : ScrollingSnapPointsMode.Default));
+                AppendAsyncEventMessage($"ChangeView invoked ScrollTo(horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset}) CorrelationId={lastOffsetsChangeCorrelationId}");
             }
             else
             {
@@ -2121,19 +2144,19 @@ namespace MUXControlsTestApp
                     (float)(targetVerticalOffset * scrollPresenter.ZoomFactor - currentPositionY * targetZoomFactor) / deltaZoomFactor);
 
 
-                lastZoomFactorChangeId = scrollPresenter.ZoomTo(
+                lastZoomFactorChangeCorrelationId = scrollPresenter.ZoomTo(
                     targetZoomFactor,
                     centerPoint,
                     new ScrollingZoomOptions(
-                        disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
-                        disableAnimation ? SnapPointsMode.Ignore : SnapPointsMode.Default)).ZoomFactorChangeId;
-                AppendAsyncEventMessage($"ChangeView invoked ZoomBy(zoomFactor:{targetZoomFactor}, centerPoint:{centerPoint}) targetting horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset} Id={lastZoomFactorChangeId}");
+                        disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
+                        disableAnimation ? ScrollingSnapPointsMode.Ignore : ScrollingSnapPointsMode.Default));
+                AppendAsyncEventMessage($"ChangeView invoked ZoomBy(zoomFactor:{targetZoomFactor}, centerPoint:{centerPoint}) targetting horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset} CorrelationId={lastZoomFactorChangeCorrelationId}");
             }
 
             return true;
         }
 
-    private void BtnClearSnapPoints_Click(object sender, RoutedEventArgs e)
+        private void BtnClearSnapPoints_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -2477,14 +2500,14 @@ namespace MUXControlsTestApp
 
                 UpdateCmbContentOrientation();
                 UpdateCmbHorizontalScrollMode();
-                UpdateCmbHorizontalScrollChainingMode();
-                UpdateCmbHorizontalScrollRailingMode();
+                UpdateCmbHorizontalScrollChainMode();
+                UpdateCmbHorizontalScrollRailMode();
                 UpdateCmbVerticalScrollMode();
-                UpdateCmbVerticalScrollChainingMode();
-                UpdateCmbVerticalScrollRailingMode();
+                UpdateCmbVerticalScrollChainMode();
+                UpdateCmbVerticalScrollRailMode();
                 UpdateCmbZoomMode();
-                UpdateCmbZoomChainingMode();
-                UpdateCmbIgnoredInputKind();
+                UpdateCmbZoomChainMode();
+                UpdateCmbIgnoredInputKinds();
                 UpdateCmbContentHorizontalAlignment();
                 UpdateCmbContentVerticalAlignment();
                 UpdateCmbScrollPresenterManipulationMode();

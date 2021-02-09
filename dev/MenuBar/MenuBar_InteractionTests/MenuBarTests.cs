@@ -42,7 +42,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: 
         // https://github.com/Microsoft/microsoft-ui-xaml/issues/115
         public void BasicMouseInteractionTest()
@@ -156,7 +157,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
         
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: MenuBarTests.KeyboardNavigationWithAccessKeysTest unreliable #135
         public void KeyboardNavigationWithAccessKeysTest()
         {
@@ -375,6 +377,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void EmptyMenuBarItemNoPopupTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                FindElement.ByName<Button>("NoChildrenFlyout").Click();
+                VerifyElement.NotFound("Popup",FindBy.Name);
+
+                FindElement.ByName<Button>("OneChildrenFlyout").Click();
+                VerifyElement.Found("Popup", FindBy.Name);
+
+                // Click twice to close flyout
+                FindElement.ByName<Button>("RemoveItemsFromOneChildrenItem").Click();
+                FindElement.ByName<Button>("RemoveItemsFromOneChildrenItem").Click();
+
+                FindElement.ByName<Button>("OneChildrenFlyout").Click();
+                VerifyElement.NotFound("Popup", FindBy.Name);
+            }
+        }
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {

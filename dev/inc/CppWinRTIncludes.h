@@ -3,15 +3,6 @@
 
 #pragma once
 
-// After updating to VS 16.4.3 the updated compiler contains a bug that is hit by C++/WinRT resulting in crashes
-// at runtime.
-// See https://github.com/microsoft/cppwinrt/issues/486
-// The workaround from the cppwinrt team is to define '__INTELLISENSE__', which allows us to avoid the compiler issue.
-// Once the underlying issue has been resolved, we should remove this workaround.
-// Tracked by: #1877 - Remove "#define __INTELLISENSE__" from CppWinRTIncludes.h once underlying issue with cppwinrt/msvc has been resolved 
-// Also remove the corresponding #undef at the bottom of this file.
-#define __INTELLISENSE__
-
 #include <winrt\base.h>
 #include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
@@ -67,6 +58,10 @@
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
 #if __has_include("winrt\Microsoft.UI.Xaml.Controls.Primitives.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h")
+#include <winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h>
 #endif
 
 #if __has_include("winrt\Microsoft.UI.Xaml.Media.h")
@@ -136,6 +131,8 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
     namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals {}
+    using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals;
     namespace Microsoft::UI::Xaml::Media {}
     using namespace ::winrt::Microsoft::UI::Xaml::Media;
     namespace Microsoft::UI::Xaml::Automation::Peers {}
@@ -150,6 +147,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::Primitives::implementation {}
     namespace Microsoft::UI::Xaml::Media::implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation {}
     namespace implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::implementation;
@@ -157,8 +155,10 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::implementation;
+
     }
 
     namespace Microsoft::UI::Private::Controls::factory_implementation {}
@@ -166,6 +166,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::factory_implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::factory_implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
     namespace Microsoft::UI::Xaml::Media::factory_implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::factory_implementation {}
     namespace factory_implementation
@@ -175,6 +176,7 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::factory_implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
     }
@@ -207,6 +209,7 @@ namespace winrt
     using DragItemsCompletedEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs;
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
+    using Flyout = winrt::Windows::UI::Xaml::Controls::Flyout;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
     using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;
@@ -389,5 +392,3 @@ namespace winrt
     using IElementFactory = winrt::IInspectable;
 #endif
 }
-
-#undef __INTELLISENSE__

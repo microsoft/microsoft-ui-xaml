@@ -14,9 +14,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
@@ -544,7 +544,7 @@ namespace MUXControlsTestApp
 
             double newScrollPresenterOffset = stackPanel.Orientation == Orientation.Horizontal ? scrollPresenter.HorizontalOffset : scrollPresenter.VerticalOffset;
 
-            if (lstTriggeredOperations.Count > 0 && 
+            if (lstTriggeredOperations.Count > 0 &&
                 ((lastScrollPresenterOffset <= 350.0 && newScrollPresenterOffset > 350.0) || (lastScrollPresenterOffset >= 350.0 && newScrollPresenterOffset < 350.0)))
             {
                 ExecuteTriggerableOperations();
@@ -563,7 +563,7 @@ namespace MUXControlsTestApp
             {
                 ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
             }
         }
 
@@ -672,6 +672,28 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnGetCurrentAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (scrollPresenter.CurrentAnchor == null)
+                {
+                    txtCurrentAnchor.Text = "null";
+                }
+                else
+                {
+                    FrameworkElement currentAnchorAsFE = scrollPresenter.CurrentAnchor as FrameworkElement;
+
+                    txtCurrentAnchor.Text = currentAnchorAsFE == null ? "UIElement" : currentAnchorAsFE.Name;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
+            }
+        }
+
         private void BtnGetAnchorElement_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -771,11 +793,11 @@ namespace MUXControlsTestApp
             {
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scrollPresenter.ScrollTo(
+                int viewChangeCorrelationId = scrollPresenter.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore)).OffsetsChangeId;
-                AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
+                    new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
+                AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeCorrelationId);
             }
             catch (Exception ex)
             {
@@ -788,7 +810,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeCorrelationId=" + args.CorrelationId);
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 
@@ -806,7 +828,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnScrollFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnAddScrollVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -821,12 +843,12 @@ namespace MUXControlsTestApp
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scrollPresenter.ScrollFrom(
+                int viewChangeCorrelationId = scrollPresenter.AddScrollVelocity(
                     new Vector2(
                         chkHorizontalOrientation.IsChecked == true ? Convert.ToSingle(txtCOWAVAV.Text) : 0,
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAV.Text)),
-                    inertiaDecayRate).OffsetsChangeId;
-                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + viewChangeId);
+                    inertiaDecayRate);
+                AppendAsyncEventMessage("Invoked AddScrollVelocity Id=" + viewChangeCorrelationId);
             }
             catch (Exception ex)
             {
@@ -887,7 +909,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Checked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Horizontal;
-            scrollPresenter.ContentOrientation = ContentOrientation.Horizontal;
+            scrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
             scrollPresenter.Width = 600;
             scrollPresenter.Height = 300;
             cnsAnchorPoint.Width = 600;
@@ -907,7 +929,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Unchecked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Vertical;
-            scrollPresenter.ContentOrientation = ContentOrientation.Vertical;
+            scrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
             scrollPresenter.Width = 300;
             scrollPresenter.Height = 600;
             cnsAnchorPoint.Width = 300;

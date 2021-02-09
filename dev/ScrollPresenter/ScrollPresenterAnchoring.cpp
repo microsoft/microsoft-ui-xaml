@@ -87,7 +87,7 @@ void ScrollPresenter::IsAnchoring(
     // removing the check is the correct fix due to dcomp bug 17523225. I filed a 
     // tracking bug to follow up once the dcomp bug is fixed.
     // Bug 17523266: ScrollPresenter is not anchoring during mouse wheel
-    if (!m_interactionTracker || m_state == winrt::InteractionState::Animation)
+    if (!m_interactionTracker || m_state == winrt::ScrollingInteractionState::Animation)
     {
         // Skip calls to SetContentLayoutOffsetX / SetContentLayoutOffsetY when the InteractionTracker has not been set up yet,
         // or when it is performing a custom animation because if would result in a visual flicker.
@@ -162,7 +162,7 @@ void ScrollPresenter::ComputeViewportAnchorPoint(
     *viewportAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *viewportAnchorPointVerticalOffset = DoubleUtil::NaN;
 
-    winrt::Rect viewportAnchorBounds{
+    const winrt::Rect viewportAnchorBounds{
         static_cast<float>(m_zoomedHorizontalOffset / m_zoomFactor),
         static_cast<float>(m_zoomedVerticalOffset / m_zoomFactor),
         static_cast<float>(viewportWidth / m_zoomFactor),
@@ -248,8 +248,8 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
         double viewportAnchorPointVerticalOffset{ 0.0 };
 
         ComputeElementAnchorPoint(
-            isForPreArrange, 
-            &elementAnchorPointHorizontalOffset, 
+            isForPreArrange,
+            &elementAnchorPointHorizontalOffset,
             &elementAnchorPointVerticalOffset);
         ComputeViewportAnchorPoint(
             viewportWidth,
@@ -262,10 +262,10 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
         MUX_ASSERT(isnan(viewportAnchorPointVerticalOffset) == isnan(elementAnchorPointVerticalOffset));
 
         // Rounding the distance to 6 precision digits to avoid layout cycles due to float/double conversions.
-        winrt::Size viewportToElementAnchorPointsDistance = winrt::Size{
-            isnan(viewportAnchorPointHorizontalOffset) ? 
+        const winrt::Size viewportToElementAnchorPointsDistance = winrt::Size{
+            isnan(viewportAnchorPointHorizontalOffset) ?
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointHorizontalOffset - viewportAnchorPointHorizontalOffset) * 1000000) / 1000000),
-            isnan(viewportAnchorPointVerticalOffset) ? 
+            isnan(viewportAnchorPointVerticalOffset) ?
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointVerticalOffset - viewportAnchorPointVerticalOffset) * 1000000) / 1000000)
         };
 

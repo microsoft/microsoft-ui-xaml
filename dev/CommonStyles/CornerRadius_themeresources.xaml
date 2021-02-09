@@ -5,16 +5,16 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
-            <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="ControlCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">8,8,8,8</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
-            <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="ControlCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">8,8,8,8</CornerRadius>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
-            <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="ControlCornerRadius">4,4,4,4</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">8,8,8,8</CornerRadius>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -30,5 +30,8 @@
     <primitives:CornerRadiusToThicknessConverter x:Key="BottomThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromBottom"/>
     <primitives:CornerRadiusToThicknessConverter x:Key="LeftThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromLeft"/>
     <primitives:CornerRadiusToThicknessConverter x:Key="RightThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromRight"/>
+
+    <primitives:CornerRadiusToThicknessConverter x:Key="TabViewLeftInsetCornerConverter" ConversionKind="FilterLeftFromBottomLeft" Multiplier="-1"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="TabViewRightInsetCornerConverter" ConversionKind="FilterRightFromBottomRight" Multiplier="-1"/>
 
 </ResourceDictionary>

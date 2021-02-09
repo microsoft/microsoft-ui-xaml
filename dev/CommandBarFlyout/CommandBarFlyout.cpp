@@ -54,8 +54,8 @@ CommandBarFlyout::CommandBarFlyout()
                 // The only exception is buttons with flyouts - in that case, clicking on the button
                 // will just open the flyout rather than executing an action, so we don't want that to
                 // do anything.
-                int index = args.Index();
-                auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
+                const int index = args.Index();
+                const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
 
                 switch (args.CollectionChange())
                 {
@@ -162,8 +162,9 @@ CommandBarFlyout::CommandBarFlyout()
                             Hide();
                             m_isClosingAfterCloseAnimation = false;
                         });
-                    commandBar->IsOpen(false);
                 }
+                // Close commandbar and thus other associated flyouts
+                commandBar->IsOpen(false);
 
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
@@ -263,7 +264,7 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
     m_secondaryToggleButtonCheckedRevokerByIndexMap.clear();
     m_secondaryToggleButtonUncheckedRevokerByIndexMap.clear();
 
-    auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
+    const auto closeFlyoutFunc = [this](auto const& sender, auto const& args) { Hide(); };
 
     for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
     {
@@ -271,7 +272,7 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
         auto button = element.try_as<winrt::AppBarButton>();
         auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
-        if (button)
+        if (button && !button.Flyout())
         {
             m_secondaryButtonClickRevokerByIndexMap[i] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
         }

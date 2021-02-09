@@ -47,8 +47,8 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
     if (pattern == winrt::PatternInterface::SelectionItem ||
-        pattern == winrt::PatternInterface::Invoke ||
-        pattern == winrt::PatternInterface::ExpandCollapse)
+        // Only provide expand collapse pattern if we have children!
+        (pattern == winrt::PatternInterface::ExpandCollapse && HasChildren()))
     {
         return *this;
     }
@@ -82,12 +82,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
     int32_t positionInSet = 0;
 
-    if (IsSettingsItem())
-    {
-        return 1;
-    }
-
-    if (IsOnTopNavigation())
+    if (IsOnTopNavigation() && !IsOnFooterNavigation())
     {
         positionInSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Position);
     }
@@ -103,14 +98,13 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 {
     int32_t sizeOfSet = 0;
 
-    if (IsSettingsItem())
+    if (IsOnTopNavigation() && !IsOnFooterNavigation())
     {
-        return 1;
-    }
+        if (auto navview = GetParentNavigationView())
+        {
+            sizeOfSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Size);
 
-    if (IsOnTopNavigation())
-    {
-        sizeOfSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Size);
+        }
     }
     else
     {
@@ -135,7 +129,8 @@ int32_t NavigationViewItemAutomationPeer::GetLevelCore()
             {
                 if (auto const indexPath = winrt::get_self<NavigationView>(navView)->GetIndexPathForContainer(nvib))
                 {
-                    return indexPath.GetSize();
+                    // first index in path stands for main or footer menu
+                    return indexPath.GetSize() - 1;
                 }
             }
         }
@@ -204,7 +199,7 @@ void NavigationViewItemAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt:
 {
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
+        const winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
             winrt::ExpandCollapseState::Collapsed :
             winrt::ExpandCollapseState::Expanded;
 
@@ -265,12 +260,19 @@ bool NavigationViewItemAutomationPeer::IsSettingsItem()
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigation()
 {
-    return GetNavigationViewRepeaterPosition() != NavigationViewRepeaterPosition::LeftNav;
+    const auto position = GetNavigationViewRepeaterPosition();
+    return position != NavigationViewRepeaterPosition::LeftNav && position != NavigationViewRepeaterPosition::LeftFooter;
 }
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigationOverflow()
 {
     return GetNavigationViewRepeaterPosition() == NavigationViewRepeaterPosition::TopOverflow;
+}
+
+bool NavigationViewItemAutomationPeer::IsOnFooterNavigation()
+{
+    const auto position = GetNavigationViewRepeaterPosition();
+    return position == NavigationViewRepeaterPosition::LeftFooter || position == NavigationViewRepeaterPosition::TopFooter;
 }
 
 NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationViewRepeaterPosition()
@@ -282,7 +284,7 @@ NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationVi
     return NavigationViewRepeaterPosition::LeftNav;
 }
 
-winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentRepeater()
+winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentItemsRepeater()
 {
     if (auto const navview = GetParentNavigationView())
     {
@@ -303,9 +305,9 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 {
     int returnValue = 0;
 
-    if (auto const repeater = GetParentRepeater())
+    if (auto const repeater = GetParentItemsRepeater())
     {
-        if (auto const parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
+        if (auto const parent = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(repeater).try_as<winrt::AutomationPeer>())
         {
             if (auto const children = parent.GetChildren())
             {
@@ -365,11 +367,11 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(Au
     int32_t returnValue = 0;
     bool itemFound = false;
 
-    if (auto const parentRepeater = GetParentRepeater())
+    if (auto const parentRepeater = GetParentItemsRepeater())
     {
         if (auto const itemsSourceView = parentRepeater.ItemsSourceView())
         {
-            auto numberOfElements = itemsSourceView.Count();
+            auto const numberOfElements = itemsSourceView.Count();
 
             for (int32_t i = 0; i < numberOfElements; i++)
             {
@@ -456,4 +458,13 @@ void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
     {
         nvi.IsSelected(isSelected);
     }
+}
+
+bool NavigationViewItemAutomationPeer::HasChildren()
+{
+    if (const auto& navigationViewItem = Owner().try_as<NavigationViewItem>())
+    {
+        return navigationViewItem->HasChildren();
+    }
+    return false;
 }

@@ -25,9 +25,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
             if (commands)
             {
-                bool usingPrimaryCommands = commands == PrimaryCommands();
-                bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
-                auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
+                const bool usingPrimaryCommands = commands == PrimaryCommands();
+                const bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
+                const auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
 
                 if (firstCommandAsFrameworkElement)
                 {
@@ -423,7 +423,7 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
     // is when the secondary commands are showing, in which case we want to connect the primary and secondary command lists.
     if (IsOpen())
     {
-        auto isElementFocusable = [](winrt::ICommandBarElement const& element, bool checkTabStop)
+        const auto isElementFocusable = [](winrt::ICommandBarElement const& element, bool checkTabStop)
         {
             winrt::Control primaryCommandAsControl = element.try_as<winrt::Control>();
             return IsControlFocusable(primaryCommandAsControl, checkTabStop);
@@ -495,7 +495,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         {
             double availableHeight = -1;
             bool isConstrainedToRootBounds = true;
-            auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
+            const auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
             
             if (winrt::IFlyoutBase6 owningFlyoutAsFlyoutBase6 = m_owningFlyout.get())
             {
@@ -518,7 +518,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
             if (availableHeight >= 0)
             {
                 m_secondaryItemsRoot.get().Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
-                auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
+                const auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
 
                 shouldExpandUp =
                     controlBounds.Y + controlBounds.Height + overflowPopupSize.Height > availableHeight &&
@@ -571,18 +571,18 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
 {
     if (m_primaryItemsRoot && m_secondaryItemsRoot)
     {
-        auto flyoutTemplateSettings = winrt::get_self<CommandBarFlyoutCommandBarTemplateSettings>(FlyoutTemplateSettings());
-        float maxWidth = static_cast<float>(MaxWidth());
+        const auto flyoutTemplateSettings = winrt::get_self<CommandBarFlyoutCommandBarTemplateSettings>(FlyoutTemplateSettings());
+        const auto maxWidth = static_cast<float>(MaxWidth());
 
-        winrt::Size infiniteSize = { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+        const winrt::Size infiniteSize = { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
         m_primaryItemsRoot.get().Measure(infiniteSize);
-        winrt::Size primaryItemsRootDesiredSize = m_primaryItemsRoot.get().DesiredSize();
+        const winrt::Size primaryItemsRootDesiredSize = m_primaryItemsRoot.get().DesiredSize();
         float collapsedWidth = std::min(maxWidth, primaryItemsRootDesiredSize.Width);
 
         if (m_secondaryItemsRoot)
         {
             m_secondaryItemsRoot.get().Measure(infiniteSize);
-            auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
+            const auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
 
             flyoutTemplateSettings->ExpandedWidth(std::min(maxWidth, std::max(collapsedWidth, overflowPopupSize.Width)));
             flyoutTemplateSettings->ExpandUpOverflowVerticalPosition(-overflowPopupSize.Height);
@@ -610,7 +610,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
             flyoutTemplateSettings->OverflowContentClipRect({ 0, 0, 0, 0 });
         }
 
-        double expandedWidth = flyoutTemplateSettings->ExpandedWidth();
+        const double expandedWidth = flyoutTemplateSettings->ExpandedWidth();
 
         // If collapsedWidth is 0, then we'll never be showing in collapsed mode,
         // so we'll set it equal to expandedWidth to ensure that our open/close animations are correct.
@@ -801,11 +801,11 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
     case winrt::VirtualKey::Down:
     case winrt::VirtualKey::Up:
     {
-        bool isRightToLeft = m_primaryItemsRoot && m_primaryItemsRoot.get().FlowDirection() == winrt::FlowDirection::RightToLeft;
-        bool isLeft = (args.Key() == winrt::VirtualKey::Left && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Right && isRightToLeft);
-        bool isRight = (args.Key() == winrt::VirtualKey::Right && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Left && isRightToLeft);
-        bool isDown = args.Key() == winrt::VirtualKey::Down;
-        bool isUp = args.Key() == winrt::VirtualKey::Up;
+        const bool isRightToLeft = m_primaryItemsRoot && m_primaryItemsRoot.get().FlowDirection() == winrt::FlowDirection::RightToLeft;
+        const bool isLeft = (args.Key() == winrt::VirtualKey::Left && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Right && isRightToLeft);
+        const bool isRight = (args.Key() == winrt::VirtualKey::Right && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Left && isRightToLeft);
+        const bool isDown = args.Key() == winrt::VirtualKey::Down;
+        const bool isUp = args.Key() == winrt::VirtualKey::Up;
 
         auto moreButton = m_moreButton.get();
 
@@ -1118,7 +1118,7 @@ void CommandBarFlyoutCommandBar::AddShadow()
                 winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
                 grid_uiElement10.Shadow(shadow);
 
-                auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
+                const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
                 grid.Translation(translation);
             }
         }
@@ -1138,7 +1138,7 @@ void CommandBarFlyoutCommandBar::ClearShadow()
                 grid_uiElement10.Shadow(nullptr);
 
                 //Undo the elevation
-                auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
+                const auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
                 grid.Translation(translation);
             }
         }

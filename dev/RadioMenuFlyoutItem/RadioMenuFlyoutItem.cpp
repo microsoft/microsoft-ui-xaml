@@ -61,7 +61,7 @@ void RadioMenuFlyoutItem::UpdateSiblings()
         // Since this item is checked, uncheck all siblings
         if (auto parent = winrt::VisualTreeHelper::GetParent(*this))
         {
-            int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(parent);
+            const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(parent);
             for (int i = 0; i < childrenCount; i++)
             {
                 auto child = winrt::VisualTreeHelper::GetChild(parent, i);

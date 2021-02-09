@@ -145,6 +145,70 @@ WinRTReturn GetTemplateChildT(std::wstring_view const& childName, const winrt::I
     return nullptr;
 }
 
+struct ScopedBatchCompleted_revoker
+{
+    ScopedBatchCompleted_revoker() noexcept = default;
+    ScopedBatchCompleted_revoker(ScopedBatchCompleted_revoker const&) = delete;
+    ScopedBatchCompleted_revoker& operator=(ScopedBatchCompleted_revoker const&) = delete;
+    ScopedBatchCompleted_revoker(ScopedBatchCompleted_revoker&& other) noexcept
+    {
+        move_from(other);
+    }
+
+    ScopedBatchCompleted_revoker& operator=(ScopedBatchCompleted_revoker&& other) noexcept
+    {
+        move_from(other);
+        return *this;
+    }
+
+    ScopedBatchCompleted_revoker(winrt::CompositionScopedBatch const& batch, winrt::event_token token) :
+        m_batch(batch),
+        m_token(token)
+    {}
+
+    ~ScopedBatchCompleted_revoker() noexcept
+    {
+        revoke();
+    }
+
+    void revoke() noexcept
+    {
+        if (!m_batch)
+        {
+            return;
+        }
+
+        m_batch.Completed(m_token);
+        m_batch = nullptr;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return static_cast<bool>(m_batch);
+    }
+private:
+    void move_from(ScopedBatchCompleted_revoker& other)
+    {
+        if (this != &other)
+        {
+            revoke();
+            m_batch = other.m_batch;
+            m_token = other.m_token;
+            other.m_batch = nullptr;
+            other.m_token.value = 0;
+        }
+    }
+
+    winrt::CompositionScopedBatch m_batch{nullptr};
+    winrt::event_token m_token{};
+};
+
+inline ScopedBatchCompleted_revoker RegisterScopedBatchCompleted(winrt::CompositionScopedBatch const& object, winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs> const& handler)
+{
+    const auto value = object.Completed(handler);
+    return { object, value };
+}
+
 struct PropertyChanged_revoker
 {
    PropertyChanged_revoker() noexcept = default;
@@ -215,7 +279,7 @@ private:
 
 inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, winrt::DependencyPropertyChangedCallback const& callback)
 {
-    auto value = object.RegisterPropertyChangedCallback(dp, callback);
+    const auto value = object.RegisterPropertyChangedCallback(dp, callback);
     return { object, dp, value };
 }
 
@@ -264,6 +328,40 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 // class YourType : ReferenceTracker<YourType, DeriveFromPanelHelper_base, winrt::YourType>  <--- note the extra winrt::YourType here that's normally not needed.
 template <typename D, typename T, typename ... I>
 struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
+{
+    using composable = T;
+    using class_type = typename T;
+
+    operator class_type() const noexcept
+    {
+        return static_cast<winrt::IInspectable>(*this).as<class_type>();
+    }
+
+    hstring GetRuntimeClassName() const
+    {
+        return hstring{ winrt::name_of<T>() };
+    }
+};
+
+template <typename D, typename T, typename ... I>
+struct __declspec(empty_bases)DeriveFromBitmapIconHelper_base : winrt::Windows::UI::Xaml::Controls::BitmapIconT<D, winrt::default_interface<T>, winrt::composable, I...>
+{
+    using composable = T;
+    using class_type = typename T;
+
+    operator class_type() const noexcept
+    {
+        return static_cast<winrt::IInspectable>(*this).as<class_type>();
+    }
+
+    hstring GetRuntimeClassName() const
+    {
+        return hstring{ winrt::name_of<T>() };
+    }
+};
+
+template <typename D, typename T, typename ... I>
+struct __declspec(empty_bases)DeriveFromPathIconHelper_base : winrt::Windows::UI::Xaml::Controls::PathIconT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;

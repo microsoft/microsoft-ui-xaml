@@ -253,6 +253,58 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);
         }
 
+        [TestMethod]
+        public void VerifyClearingHexInputFieldDoesNotCrash()
+        {
+            ColorPicker colorPicker = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker();
+                colorPicker.IsHexInputVisible = true;
+
+                Content = colorPicker;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var hexTextBox = VisualTreeUtils.FindVisualChildByName(colorPicker, "HexTextBox") as TextBox;
+
+                Verify.IsGreaterThan(hexTextBox.Text.Length, 0, "Hex TextBox should have not been empty.");
+
+                // Clearing the hex input field should not crash the app.
+                hexTextBox.Text = "";
+            });
+        }
+
+        [TestMethod]
+        public void VerifyClearingAlphaChannelInputFieldDoesNotCrash()
+        {
+            ColorPicker colorPicker = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker();
+                colorPicker.IsAlphaEnabled = true;
+
+                Content = colorPicker;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var alphaChannelTextBox = VisualTreeUtils.FindVisualChildByName(colorPicker, "AlphaTextBox") as TextBox;
+
+                Verify.IsGreaterThan(alphaChannelTextBox.Text.Length, 0, "Alpha channel TextBox should have not been empty.");
+
+                // Clearing the alpha channel input field should not crash the app.
+                alphaChannelTextBox.Text = "";
+            });
+        }
+
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
         // so we can't execute this test as authored there.
         [TestMethod]
@@ -269,6 +321,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void VerifyVisualTree()
         {
             ColorPicker colorPicker = null;
@@ -278,7 +331,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
             TestUtilities.SetAsVisualTreeRoot(colorPicker);
 
-            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, masterFilePrefix: "ColorPicker");
+            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, verificationFileNamePrefix: "ColorPicker");
         }
 
         // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.

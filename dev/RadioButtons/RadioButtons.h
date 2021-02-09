@@ -58,6 +58,9 @@ private:
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args);
 
+    void OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&);
+    void UpdateVisualStateForIsEnabledChange();
+
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();
 
@@ -66,6 +69,8 @@ private:
 
     void Select(int index);
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
+
+    void UpdateItemTemplate();
 
     winrt::FindNextElementOptions GetFindNextElementOptions();
     bool MoveFocusNext();
@@ -83,7 +88,10 @@ private:
 
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
 
+    com_ptr<RadioButtonsElementFactory> m_radioButtonsElementFactory{ nullptr };
+
     winrt::Control::Loaded_revoker m_repeaterLoadedRevoker{};
+    winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};

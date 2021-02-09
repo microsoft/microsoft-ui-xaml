@@ -20,16 +20,24 @@
                 <ControlTemplate TargetType="local:NumberBox">
                     <Grid>
                         <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="HeaderContentPresenter.Foreground" Value="{ThemeResource TextControlHeaderForegroundDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="SpinButtonStates">
                                 <VisualState x:Name="SpinButtonsCollapsed" />
 
-                                    <VisualState x:Name="SpinButtonsVisible">
-                                        <VisualState.Setters>
-                                            <Setter Target="DownSpinButton.Visibility" Value="Visible" />
-                                            <Setter Target="UpSpinButton.Visibility" Value="Visible" />
-                                            <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
-                                        </VisualState.Setters>
-                                    </VisualState>
+                                <VisualState x:Name="SpinButtonsVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="DownSpinButton.Visibility" Value="Visible" />
+                                        <Setter Target="UpSpinButton.Visibility" Value="Visible" />
+                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
 
                                 <VisualState x:Name="SpinButtonsPopup">
                                     <VisualState.Setters>
@@ -85,7 +93,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        
+
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -99,6 +107,8 @@
                             FontWeight="Normal"
                             Foreground="{ThemeResource TextControlHeaderForeground}"
                             Margin="{ThemeResource TextBoxTopHeaderMargin}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontFamily="{TemplateBinding FontFamily}"
                             TextWrapping="Wrap"
                             VerticalAlignment="Top"
                             Visibility="Collapsed"
@@ -106,12 +116,16 @@
 
                         <TextBox x:Name="InputBox"
                             Grid.Row="1"
-                            InputScope="Number"
+                            InputScope="{TemplateBinding InputScope}"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
                             TextReadingOrder="{TemplateBinding TextReadingOrder}"
                             PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            TextAlignment="{TemplateBinding TextAlignment}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
 
                         <Popup x:Name="UpDownPopup"
@@ -123,9 +137,9 @@
                             HorizontalAlignment="Left">
 
                             <Grid x:Name="PopupContentRoot"
-                                Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
-                                BorderBrush="{ThemeResource ToolTipBorderBrush}"
-                                BorderThickness="{ThemeResource ToolTipBorderThemeThickness}"
+                                Background="{ThemeResource NumberBoxPopupBackground}"
+                                BorderBrush="{ThemeResource NumberBoxPopupBorderBrush}"
+                                BorderThickness="{ThemeResource NumberBoxPopupBorderThickness}"
                                 CornerRadius="{ThemeResource OverlayCornerRadius}">
 
                                 <Grid.RowDefinitions>
@@ -192,7 +206,7 @@
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="32"/>
-            <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
+            <Setter Property="Background" Value="{ThemeResource NumberBoxPopupSpinButtonBackground}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxPopupSpinButtonBorderThickness}"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>
@@ -261,7 +275,7 @@
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
-                                                    FontSize="12"
+                                                    FontSize="{ThemeResource TextBoxIconFontSize}"
                                                     Text="&#xE10A;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />

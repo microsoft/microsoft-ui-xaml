@@ -28,8 +28,8 @@ static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupS
 const std::wstring c_whitespace = L" \n\r\t\f\v";
 std::wstring trim(const std::wstring& s)
 {
-    size_t start = s.find_first_not_of(c_whitespace);
-    size_t end = s.find_last_not_of(c_whitespace);
+    const size_t start = s.find_first_not_of(c_whitespace);
+    const size_t end = s.find_last_not_of(c_whitespace);
     return (start == std::wstring::npos || end == std::wstring::npos) ? L"" : s.substr(start, end - start + 1);
 }
 
@@ -45,6 +45,24 @@ NumberBox::NumberBox()
     LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
     SetDefaultStyleKey(this);
+    SetDefaultInputScope();
+
+    // We are not revoking this since the event and the listener reside on the same object and as such have the same lifecycle.
+    // That means that as soon as the NumberBox gets removed so will the event and the listener.
+    this->RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this , &NumberBox::OnAutomationPropertiesNamePropertyChanged });
+}
+
+void NumberBox::SetDefaultInputScope()
+{
+    // Sets the default value of the InputScope property.
+    // Note that InputScope is a class that cannot be set to a default value within the IDL.
+    const auto inputScopeName = winrt::InputScopeName(winrt::InputScopeNameValue::Number);
+    const auto inputScope = winrt::InputScope();
+    inputScope.Names().Append(inputScopeName);
+
+    static_cast<NumberBox*>(this)->SetValue(s_InputScopeProperty, ValueHelper<winrt::InputScope>::BoxValueIfNecessary(inputScope));
+
+    return;
 }
 
 // This was largely copied from Calculator's GetRegionalSettingsAwareDecimalFormatter()
@@ -179,7 +197,7 @@ void NumberBox::OnApplyTemplate()
             if (!popupRoot.Shadow())
             {
                 popupRoot.Shadow(winrt::ThemeShadow{});
-                auto&& translation = popupRoot.Translation();
+                const auto translation = popupRoot.Translation();
 
                 const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_numberBoxPopupShadowDepthName, box_value(c_popupShadowDepth)));
 
@@ -198,11 +216,15 @@ void NumberBox::OnApplyTemplate()
         m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
     }
 
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NumberBox::OnIsEnabledChanged });
+
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
 
     UpdateSpinButtonPlacement();
     UpdateSpinButtonEnabled();
+
+    UpdateVisualStateForIsEnabledChange();
 
     if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
         && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
@@ -216,7 +238,7 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+void NumberBox::OnCornerRadiusPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     if (this->SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
@@ -336,6 +358,42 @@ void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyC
 {
     ValidateInput();
     UpdateSpinButtonEnabled();
+}
+
+void NumberBox::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateVisualStateForIsEnabledChange();
+}
+
+void NumberBox::OnAutomationPropertiesNamePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ReevaluateForwardedUIAName();
+}
+
+void NumberBox::ReevaluateForwardedUIAName()
+{
+    if (const auto textBox = m_textBox.get())
+    {
+        const auto name = winrt::AutomationProperties::GetName(*this);
+        if (!name.empty())
+        {
+            // AutomationProperties.Name is a non empty string, we will use that value.
+            winrt::AutomationProperties::SetName(textBox, name);
+        }
+        else
+        {
+            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
+            {
+                // Header is a string, we can use that as our UIA name.
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+            }
+        }
+    }
+}
+
+void NumberBox::UpdateVisualStateForIsEnabledChange()
+{
+    winrt::VisualStateManager::GoToState(*this, IsEnabled() ? L"Normal" : L"Disabled", false);
 }
 
 void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -549,6 +607,10 @@ void NumberBox::StepValue(double change)
         }
 
         Value(newVal);
+
+        // We don't want the caret to move to the front of the text for example when using the up/down arrows
+        // to change the numberbox value.
+        MoveCaretToTextEnd();
     }
 }
 
@@ -575,9 +637,6 @@ void NumberBox::UpdateTextToValue()
         });
         m_textUpdating = true;
         Text(newText.data());
-
-        // This places the caret at the end of the text.
-        textBox.Select(static_cast<int32_t>(newText.size()), 0);
     }
 }
 
@@ -657,6 +716,11 @@ void NumberBox::UpdateHeaderPresenterState()
         {
             // Header is not a string, so let's show header presenter
             shouldShowHeader = true;
+            // When our header isn't a string, we use the NumberBox's UIA name for the textbox's UIA name.
+            if (const auto textBox = m_textBox.get())
+            {
+                winrt::AutomationProperties::SetName(textBox, winrt::AutomationProperties::GetName(*this));
+            }
         }
     }
     if(const auto headerTemplate = HeaderTemplate())
@@ -676,5 +740,16 @@ void NumberBox::UpdateHeaderPresenterState()
     if (auto&& headerPresenter = m_headerPresenter.get())
     {
         headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    }
+
+    ReevaluateForwardedUIAName();
+}
+
+void NumberBox::MoveCaretToTextEnd()
+{
+    if (auto && textBox = m_textBox.get())
+    {
+        // This places the caret at the end of the text.
+        textBox.Select(static_cast<int32_t>(textBox.Text().size()), 0);
     }
 }

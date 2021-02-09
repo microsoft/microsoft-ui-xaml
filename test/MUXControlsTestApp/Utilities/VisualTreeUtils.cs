@@ -8,7 +8,7 @@ namespace MUXControlsTestApp.Utilities
 {
     public static class VisualTreeUtils
     {
-        public static T FindElementOfTypeInSubtree<T>(this DependencyObject element)
+        public static T FindVisualChildByType<T>(this DependencyObject element)
             where T : DependencyObject
         {
             if (element == null)
@@ -16,15 +16,15 @@ namespace MUXControlsTestApp.Utilities
                 return null;
             }
 
-            if (element is T)
+            if (element is T elementAsT)
             {
-                return (T)element;
+                return elementAsT;
             }
 
             int childrenCount = VisualTreeHelper.GetChildrenCount(element);
             for (int i = 0; i < childrenCount; i++)
             {
-                var result = FindElementOfTypeInSubtree<T>(VisualTreeHelper.GetChild(element, i));
+                var result = VisualTreeHelper.GetChild(element, i).FindVisualChildByType<T>();
                 if (result != null)
                 {
                     return result;
@@ -34,31 +34,42 @@ namespace MUXControlsTestApp.Utilities
             return null;
         }
 
-        public static DependencyObject FindVisualChildByName(FrameworkElement parent, string name)
+        public static FrameworkElement FindVisualChildByName(this DependencyObject element, string name)
         {
-            if (parent.Name == name)
+            if (element == null || string.IsNullOrWhiteSpace(name))
             {
-                return parent;
+                return null;
             }
 
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            if (element is FrameworkElement elementAsFE && elementAsFE.Name == name)
+            {
+                return elementAsFE;
+            }
 
+            int childrenCount = VisualTreeHelper.GetChildrenCount(element);
             for (int i = 0; i < childrenCount; i++)
             {
-                FrameworkElement childAsFE = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
-
-                if (childAsFE != null)
+                var result = VisualTreeHelper.GetChild(element, i).FindVisualChildByName(name);
+                if (result != null)
                 {
-                    DependencyObject result = FindVisualChildByName(childAsFE, name);
-
-                    if (result != null)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
             }
 
             return null;
+        }
+
+        public static T FindVisualParentByType<T>(this DependencyObject element)
+            where T : DependencyObject
+        {
+            if (element is null)
+            {
+                return null;
+            }
+
+            return element is T elementAsT 
+                ? elementAsT 
+                : VisualTreeHelper.GetParent(element).FindVisualParentByType<T>();
         }
     }
 }

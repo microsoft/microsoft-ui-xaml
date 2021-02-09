@@ -50,8 +50,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal class CommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
-            public CommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base(new[] { "CommandBarFlyout Tests", "Base CommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
+            public CommandBarFlyoutTestSetupHelper(string languageOverride = "")
+                : base(new[] { "CommandBarFlyout Tests", "Base CommandBarFlyout Tests" }, new TestSetupHelperOptions{ LanguageOverride = languageOverride})
             {
                 statusReportingTextBox = FindElement.ById<Edit>("StatusReportingTextBox");
             }
@@ -185,6 +185,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
                 
                 Verify.IsTrue(isFlyoutOpenCheckBox.ToggleState == ToggleState.Off);
+            }
+        }
+
+        [TestMethod]
+        public void CanTapOnSecondaryItemWithFlyoutWithoutClosing()
+        {
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                Action openCommandBarAction = () =>
+                {
+                    Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                    InputHelper.Tap(showCommandBarFlyoutButton);
+
+                    // Pre-RS5, CommandBarFlyouts always open expanded,
+                    // so we don't need to tap on the more button in that case.
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                    {
+                        Log.Comment("Expanding the CommandBar by invoking the more button.");
+                        FindElement.ById<Button>("MoreButton").InvokeAndWait();
+                    }
+                };
+
+                Log.Comment("Opening the CommandBar and invoking the first button in the secondary commands list.");
+                openCommandBarAction();
+
+
+                setup.ExecuteAndWaitForEvents(() => FindElement.ById<Button>("ProofingButton").Invoke(), new List<string>() { "ProofingButton clicked" });
+
+
+                Verify.IsTrue(isFlyoutOpenCheckBox.ToggleState == ToggleState.On);
             }
         }
 
@@ -585,6 +618,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFlyoutClosingBehavior()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                showCommandBarFlyoutButton.Click();
+
+                // Pre-RS5, CommandBarFlyouts always open expanded,
+                // so we don't need to tap on the more button in that case.
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Expanding the CommandBar by invoking the more button.");
+                    FindElement.ById<Button>("MoreButton").InvokeAndWait();
+                }
+
+                // Click item to open flyout
+                FindElement.ById<Button>("ProofingButton").Click();
+
+                // Move around over the first item to keep flyout open safely
+                // This also verifies that the flyout is open as it would crash otherwise
+                PointerInput.Move(FindElement.ByName("FirstFlyoutItem"), 5, 5);
+                PointerInput.Move(FindElement.ByName("FirstFlyoutItem"), 6, 5);
+                PointerInput.Move(FindElement.ByName("FirstFlyoutItem"), 5, 6);
+
+                // Click outside of the flyout to close it
+                InputHelper.Tap(FindElement.ByName<Button>("Show CommandBarFlyout"));
+
+                // Check that the flyout item is not present anymore
+                VerifyElement.NotFound("FirstFlyoutItem",FindBy.Name);
             }
         }
     }

@@ -21,11 +21,6 @@ void UniformGridLayoutState::InitializeForContext(
 void UniformGridLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutContext& context)
 {
     m_flowAlgorithm.UninitializeForContext(context);
-
-    if (m_cachedFirstElement)
-    {
-        context.RecycleElement(m_cachedFirstElement);
-    }
 }
 
 void UniformGridLayoutState::EnsureElementSize(
@@ -46,36 +41,27 @@ void UniformGridLayoutState::EnsureElementSize(
 
     if (context.ItemCount() > 0)
     {
-        // If the first element is realized we don't need to cache it or to get it from the context
+        // If the first element is realized we don't need to get it from the context
         if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
         {
             realizedElement.Measure(availableSize);
-            SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
-            m_cachedFirstElement = nullptr;
+            SetSize(realizedElement.DesiredSize(), layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
         }
         else
         {
-            if (!m_cachedFirstElement)
+            // Not realized by flowlayout, so do this now!
+            if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
             {
-                // we only cache if we aren't realizing it
-                m_cachedFirstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle); // expensive
-            }
-
-            m_cachedFirstElement.Measure(availableSize);
-            SetSize(m_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
-
-            // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
-            bool added = m_flowAlgorithm.TryAddElement0(m_cachedFirstElement);
-            if (added)
-            {
-                m_cachedFirstElement = nullptr;
+                firstElement.Measure(availableSize);
+                SetSize(firstElement.DesiredSize(), layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
+                context.RecycleElement(firstElement);
             }
         }
     }
 }
 
 void UniformGridLayoutState::SetSize(
-    const winrt::UIElement& UIElement,
+    const winrt::Size& desiredItemSize,
     const double layoutItemWidth,
     const double LayoutItemHeight,
     const winrt::Size availableSize,
@@ -90,22 +76,22 @@ void UniformGridLayoutState::SetSize(
         maxItemsPerLine = 1;
     }
 
-    m_effectiveItemWidth = (std::isnan(layoutItemWidth) ? UIElement.DesiredSize().Width : layoutItemWidth);
-    m_effectiveItemHeight = (std::isnan(LayoutItemHeight) ? UIElement.DesiredSize().Height : LayoutItemHeight);
+    m_effectiveItemWidth = (std::isnan(layoutItemWidth) ? desiredItemSize.Width : layoutItemWidth);
+    m_effectiveItemHeight = (std::isnan(LayoutItemHeight) ? desiredItemSize.Height : LayoutItemHeight);
 
-    auto availableSizeMinor = orientation == winrt::Orientation::Horizontal ? availableSize.Width : availableSize.Height;
-    auto minorItemSpacing = orientation == winrt::Orientation::Vertical ? minRowSpacing : minColumnSpacing;
+    const auto availableSizeMinor = orientation == winrt::Orientation::Horizontal ? availableSize.Width : availableSize.Height;
+    const auto minorItemSpacing = orientation == winrt::Orientation::Vertical ? minRowSpacing : minColumnSpacing;
 
-    auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
+    const auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
 
     double extraMinorPixelsForEachItem = 0.0;
     if (std::isfinite(availableSizeMinor))
     {
-        auto numItemsPerColumn = std::min(
+        const auto numItemsPerColumn = std::min(
             maxItemsPerLine,
             static_cast<unsigned int>(std::max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing))));
-        auto usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
-        auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
+        const auto usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
+        const auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
         extraMinorPixelsForEachItem = remainingSpace / ((int)numItemsPerColumn);
     }
 
@@ -122,8 +108,8 @@ void UniformGridLayoutState::SetSize(
     }
     else if (stretch == winrt::UniformGridLayoutItemsStretch::Uniform)
     {
-        auto itemSizeMajor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemHeight : m_effectiveItemWidth;
-        auto extraMajorPixelsForEachItem = itemSizeMajor * (extraMinorPixelsForEachItem / itemSizeMinor);
+        const auto itemSizeMajor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemHeight : m_effectiveItemWidth;
+        const auto extraMajorPixelsForEachItem = itemSizeMajor * (extraMinorPixelsForEachItem / itemSizeMinor);
         if (orientation == winrt::Orientation::Horizontal)
         {
             m_effectiveItemWidth += extraMinorPixelsForEachItem;
@@ -133,53 +119,6 @@ void UniformGridLayoutState::SetSize(
         {
             m_effectiveItemHeight += extraMinorPixelsForEachItem;
             m_effectiveItemWidth += extraMajorPixelsForEachItem;
-        }
-    }
-}
-
-void UniformGridLayoutState::EnsureFirstElementOwnership(winrt::VirtualizingLayoutContext const& context)
-{
-    if (m_cachedFirstElement != nullptr && m_flowAlgorithm.GetElementIfRealized(0))
-    {
-        // We created the element, but then flowlayout algorithm took ownership, so we can clear it and
-        // let flowlayout algorithm do its thing.
-        context.RecycleElement(m_cachedFirstElement);
-        m_cachedFirstElement = nullptr;
-    }
-}
-
-void UniformGridLayoutState::ClearElementOnDataSourceChange(winrt::VirtualizingLayoutContext const& context, winrt::NotifyCollectionChangedEventArgs const& args)
-{
-    if (m_cachedFirstElement)
-    {
-        bool shouldClear = false;
-        switch (args.Action())
-        {
-        case winrt::NotifyCollectionChangedAction::Add:
-            shouldClear = args.NewStartingIndex() == 0;
-            break;
-
-        case winrt::NotifyCollectionChangedAction::Replace:
-            shouldClear = args.NewStartingIndex() == 0 || args.OldStartingIndex() == 0;
-            break;
-
-        case winrt::NotifyCollectionChangedAction::Remove:
-            shouldClear = args.OldStartingIndex() == 0;
-            break;
-
-        case winrt::NotifyCollectionChangedAction::Reset:
-            shouldClear = true;
-            break;
-
-        case winrt::NotifyCollectionChangedAction::Move:
-            throw winrt::hresult_not_implemented();
-            break;
-        }
-
-        if (shouldClear)
-        {
-            context.RecycleElement(m_cachedFirstElement);
-            m_cachedFirstElement = nullptr;
         }
     }
 }

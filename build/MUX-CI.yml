@@ -5,7 +5,7 @@ variables:
 jobs:
 - job: Build
   pool:
-    vmImage: 'windows-2019'
+    name: 'windevbuildagents'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -59,7 +59,7 @@ jobs:
     runTestJobName: 'RunNugetPkgTestsInHelix'
     helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+    useFrameworkPkg: false
 
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
@@ -69,7 +69,7 @@ jobs:
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+    useFrameworkPkg: true
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:

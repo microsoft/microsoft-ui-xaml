@@ -29,6 +29,8 @@ RadioButtons::RadioButtons()
     AccessKeyInvoked({ this, &RadioButtons::OnAccessKeyInvoked });
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
 
+    m_radioButtonsElementFactory = winrt::make_self<RadioButtonsElementFactory>();
+
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
     // To ensure proper lifetime management we create revokers for these elements and attach
     // the revokers to the child radio button via this attached property.  This way, if/when the child
@@ -47,9 +49,13 @@ void RadioButtons::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected{ *this };
 
+    m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &RadioButtons::OnIsEnabledChanged });
+
     m_repeater.set([this, controlProtected]() {
         if (auto const repeater = GetTemplateChildT<winrt::ItemsRepeater>(s_repeaterName, controlProtected))
         {
+            repeater.ItemTemplate(*m_radioButtonsElementFactory);
+
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementPrepared });
             m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementClearing });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &RadioButtons::OnRepeaterElementIndexChanged });
@@ -60,6 +66,7 @@ void RadioButtons::OnApplyTemplate()
     }());
 
     UpdateItemsSource();
+    UpdateVisualStateForIsEnabledChange();
 }
 
 // When focus comes from outside the RadioButtons control we will put focus on the selected radio button.
@@ -70,34 +77,31 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
         auto const inputDevice = args.InputDevice();
         if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
         {
-            if (auto const oldFocusedElement = args.OldFocusedElement())
+            // If focus is coming from outside the repeater, put focus on the selected item.
+            auto const oldFocusedElement = args.OldFocusedElement();
+            if (!oldFocusedElement || repeater != winrt::VisualTreeHelper::GetParent(oldFocusedElement))
             {
-                auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-                // If focus is coming from outside the repeater, put focus on the selected item.
-                if (repeater != oldElementParent)
+                if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                 {
-                    if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                    if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                     {
-                        if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        if (args.TrySetNewFocusedElement(selectedItem))
                         {
-                            if (args.TrySetNewFocusedElement(selectedItem))
-                            {
-                                args.Handled(true);
-                            }
+                            args.Handled(true);
                         }
                     }
                 }
+            }
 
-                // On RS3+ Selection follows focus unless control is held down.
-                else if (SharedHelpers::IsRS3OrHigher() &&
-                    (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-                        winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            // Focus was already in the repeater: in On RS3+ Selection follows focus unless control is held down.
+            else if (SharedHelpers::IsRS3OrHigher() &&
+                (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+                    winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            {
+                if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
-                    if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
-                    {
-                        Select(repeater.GetElementIndex(newFocusedElementAsUIE));
-                        args.Handled(true);
-                    }
+                    Select(repeater.GetElementIndex(newFocusedElementAsUIE));
+                    args.Handled(true);
                 }
             }
         }
@@ -482,6 +486,15 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateSelectedItem();
     }
+    else if (property == s_ItemTemplateProperty)
+    {
+        UpdateItemTemplate();
+    }
+}
+
+void RadioButtons::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
+{
+    UpdateVisualStateForIsEnabledChange();
 }
 
 winrt::UIElement RadioButtons::ContainerFromIndex(int index)
@@ -540,6 +553,16 @@ void RadioButtons::UpdateSelectedItem()
             }
         }
     }
+}
+
+void RadioButtons::UpdateItemTemplate()
+{
+    m_radioButtonsElementFactory->UserElementFactory(ItemTemplate());
+}
+
+void RadioButtons::UpdateVisualStateForIsEnabledChange()
+{
+    winrt::VisualStateManager::GoToState(*this, IsEnabled() ? L"Normal" : L"Disabled", false);
 }
 
 // Test Hooks helpers, only function when m_testHooksEnabled == true

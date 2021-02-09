@@ -22,10 +22,46 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsActive{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsIndeterminate{ get; set; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource DeterminateSource{ get; set; };
+
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource IndeterminateSource{ get; set; };
+    }
+
     [MUX_PROPERTY_NEEDS_DP_FIELD]
     ProgressRingTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        static Windows.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
+    }
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.0")]
+    Double Value;
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.0")]
+    Double Minimum;
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("100.0")]
+    Double Maximum;
+
+    static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MinimumProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaximumProperty{ get; };
 }
 
 }
@@ -35,7 +71,7 @@ namespace MU_XAP_NAMESPACE
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Windows.UI.Xaml.Automation.Provider.IRangeValueProvider
 {
     ProgressRingAutomationPeer(MU_XC_NAMESPACE.ProgressRing owner);
 }

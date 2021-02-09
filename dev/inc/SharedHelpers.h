@@ -16,6 +16,7 @@ public:
     static bool IsInDesignModeV2();
 
     // Logical OS version checks
+    static bool Is21H1OrHigher();
     static bool IsVanadiumOrHigher();
     static bool Is19H1OrHigher();
     static bool IsRS5OrHigher();
@@ -40,6 +41,8 @@ public:
 
     static bool IsScrollContentPresenterSizesContentToTemplatedParentAvailable();
 
+    static bool IsBringIntoViewOptionsVerticalAlignmentRatioAvailable();
+
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
     static bool IsControlCornerRadiusAvailable();
@@ -58,16 +61,20 @@ public:
 
     static bool IsCompositionRadialGradientBrushAvailable();
 
+    static bool IsSelectionIndicatorModeAvailable();
+
     // Actual OS version checks
-    static bool IsAPIContractV9Available(); // 19H2
-    static bool IsAPIContractV8Available(); // 19H1
-    static bool IsAPIContractV7Available(); // RS5
-    static bool IsAPIContractV6Available(); // RS4
-    static bool IsAPIContractV5Available(); // RS3
-    static bool IsAPIContractV4Available(); // RS2
-    static bool IsAPIContractV3Available(); // RS1
+    static bool IsAPIContractV13Available(); // 21H1
+    static bool IsAPIContractV9Available();  // 19H2
+    static bool IsAPIContractV8Available();  // 19H1
+    static bool IsAPIContractV7Available();  // RS5
+    static bool IsAPIContractV6Available();  // RS4
+    static bool IsAPIContractV5Available();  // RS3
+    static bool IsAPIContractV4Available();  // RS2
+    static bool IsAPIContractV3Available();  // RS1
 
     static bool IsInFrameworkPackage();
+    static bool IsInCBSPackage();
 
     // Platform scale helpers
     static winrt::Rect ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect);
@@ -262,7 +269,7 @@ public:
         winrt::IObservableVector<ElementType> const& destination,
         winrt::IVectorChangedEventArgs const& args)
     {
-        uint32_t index = args.Index();
+        const uint32_t index = args.Index();
 
         switch (args.CollectionChange())
         {
@@ -290,7 +297,7 @@ public:
     template <typename IndexType, typename ElementType>
     static void EraseIfExists(std::map<IndexType, ElementType>& map, IndexType const& index)
     {
-        auto it = map.find(index);
+        const auto it = map.find(index);
         if (it != map.end())
         {
             map.erase(it);

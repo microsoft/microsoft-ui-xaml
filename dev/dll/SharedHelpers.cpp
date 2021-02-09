@@ -5,6 +5,7 @@
 #include "common.h"
 #include "MUXControlsFactory.h"
 #include "SharedHelpers.h"
+#include <roapi.h>
 
 bool SharedHelpers::s_isOnXboxInitialized{ false };
 bool SharedHelpers::s_isOnXbox{ false };
@@ -37,6 +38,11 @@ bool SharedHelpers::IsInDesignModeV2()
 }
 
 // logical helpers
+bool SharedHelpers::Is21H1OrHigher()
+{
+    return IsAPIContractV13Available();
+}
+
 bool SharedHelpers::IsVanadiumOrHigher()
 {
     return IsAPIContractV9Available();
@@ -137,6 +143,14 @@ bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailab
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
 }
 
+bool SharedHelpers::IsBringIntoViewOptionsVerticalAlignmentRatioAvailable()
+{
+    static bool s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable =
+        IsRS4OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.BringIntoViewOptions", L"VerticalAlignmentRatio");
+    return s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable;
+}
+
 bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
 {
     static bool s_isFrameworkElementInvalidateViewportAvailable = IsRS5OrHigher();
@@ -185,7 +199,7 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =
-         IsVanadiumOrHigher() ||
+        IsVanadiumOrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
     return s_isThemeShadowAvailable;
 }
@@ -200,8 +214,16 @@ bool SharedHelpers::IsIsLoadedAvailable()
 
 bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
 {
-    static bool s_isAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
+    static bool s_isAvailable =
+        Is21H1OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
     return s_isAvailable;
+}
+
+bool SharedHelpers::IsSelectionIndicatorModeAvailable()
+{
+    static bool s_isSelectionIndicatorModeAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
+    return s_isSelectionIndicatorModeAvailable;
 }
 
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
@@ -218,6 +240,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 }
 
 // base helpers
+bool SharedHelpers::IsAPIContractV13Available()
+{
+    return IsAPIContractVxAvailable<13>();
+}
+
 bool SharedHelpers::IsAPIContractV9Available()
 {
     return IsAPIContractVxAvailable<9>();
@@ -256,27 +283,36 @@ bool SharedHelpers::IsAPIContractV3Available()
 
 void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
 
+bool IsInPackage(std::wstring_view detectorName)
+{
+    // Special type that we manually list here which is not part of the Nuget dll distribution package. 
+    // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
+    // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
+    // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
+    // matter what comes back for the activationfactory. If it succeeds it means we're running against
+    // the framework package.
+
+    winrt::hstring typeName{ detectorName };
+    winrt::IActivationFactory activationFactory;
+
+    if (SUCCEEDED(RoGetActivationFactory(static_cast<HSTRING>(winrt::get_abi(typeName)), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 bool SharedHelpers::IsInFrameworkPackage()
 {
-    static bool isInFrameworkPackage = []() {
-        // Special type that we manually list here which is not part of the Nuget dll distribution package. 
-        // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
-        // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
-        // mater what comes back for the activationfactory. If it succeeds it means we're running against
-        // the framework package.
-
-        winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
-        winrt::IActivationFactory activationFactory;
-        if (SUCCEEDED(WINRT_RoGetActivationFactory(winrt::get_abi(typeName), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
-        {
-            return true;
-        }
-
-        return false;
-    }();
-
+    static bool isInFrameworkPackage = IsInPackage(L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv);
     return isInFrameworkPackage;
+}
+
+bool SharedHelpers::IsInCBSPackage()
+{
+    static bool isInCBSPackage = IsInPackage(L"Microsoft.UI.Private.Controls.CBSPackageDetector"sv);
+    return isInCBSPackage;
 }
 
 // Platform scale helpers
@@ -409,7 +445,7 @@ void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> c
             callback();
         });
     }
-    catch (winrt::hresult_error &e)
+    catch (const winrt::hresult_error &e)
     {
         // DirectUI::CompositionTarget::add_Rendering can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown,
         // and there is evidence from Watson that such calls are made in real apps (see Bug 13554197).
@@ -426,7 +462,7 @@ bool SharedHelpers::DoRectsIntersect(
     const winrt::Rect& rect1,
     const winrt::Rect& rect2)
 {
-    auto doIntersect =
+    const auto doIntersect =
         !(rect1.Width <= 0 || rect1.Height <= 0 || rect2.Width <= 0 || rect2.Height <= 0) &&
         (rect2.X <= rect1.X + rect1.Width) &&
         (rect2.X + rect2.Width >= rect1.X) &&
@@ -509,6 +545,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
 
         fontIcon.Glyph(fontIconSource.Glyph());
         fontIcon.FontSize(fontIconSource.FontSize());
+        if (const auto newForeground = fontIconSource.Foreground())
+        {
+            fontIcon.Foreground(newForeground);
+        }
 
         if (fontIconSource.FontFamily())
         {
@@ -526,7 +566,10 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
     {
         winrt::SymbolIcon symbolIcon;
         symbolIcon.Symbol(symbolIconSource.Symbol());
-
+        if (const auto newForeground = symbolIconSource.Foreground())
+        {
+            symbolIcon.Foreground(newForeground);
+        }
         return symbolIcon;
     }
     else if (auto bitmapIconSource = iconSource.try_as<winrt::BitmapIconSource>())
@@ -542,9 +585,27 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
         }
-
+        if (const auto newForeground = bitmapIconSource.Foreground())
+        {
+            bitmapIcon.Foreground(newForeground);
+        }
         return bitmapIcon;
     }
+#ifdef IMAGEICON_INCLUDED
+    else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
+    {
+        winrt::ImageIcon imageIcon;
+        if (const auto imageSource = imageIconSource.ImageSource())
+        {
+            imageIcon.Source(imageSource);
+        }
+        if (const auto newForeground = imageIconSource.Foreground())
+        {
+            imageIcon.Foreground(newForeground);
+        }
+        return imageIcon;
+    }
+#endif
     else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
     {
         winrt::PathIcon pathIcon;
@@ -553,9 +614,31 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         {
             pathIcon.Data(pathIconSource.Data());
         }
-
+        if (const auto newForeground = pathIconSource.Foreground())
+        {
+            pathIcon.Foreground(newForeground);
+        }
         return pathIcon;
     }
+#ifdef ANIMATEDICON_INCLUDED
+    else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
+    {
+        winrt::AnimatedIcon animatedIcon;
+        if (auto const source = animatedIconSource.Source())
+        {
+            animatedIcon.Source(source);
+        }
+        if (auto const fallbackIconSource = animatedIconSource.FallbackIconSource())
+        {
+            animatedIcon.FallbackIconSource(fallbackIconSource);
+        }
+        if (const auto newForeground = animatedIconSource.Foreground())
+        {
+            animatedIcon.Foreground(newForeground);
+        }
+        return animatedIcon;
+    }
+#endif
 
     return nullptr;
 }

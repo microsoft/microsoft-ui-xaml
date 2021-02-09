@@ -20,6 +20,8 @@ GlobalDependencyProperty NavigationViewProperties::s_CompactPaneLengthProperty{ 
 GlobalDependencyProperty NavigationViewProperties::s_ContentOverlayProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_DisplayModeProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_ExpandedModeThresholdWidthProperty{ nullptr };
+GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemsProperty{ nullptr };
+GlobalDependencyProperty NavigationViewProperties::s_FooterMenuItemsSourceProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_IsBackButtonVisibleProperty{ nullptr };
@@ -142,6 +144,28 @@ void NavigationViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1008.0),
                 winrt::PropertyChangedCallback(&OnExpandedModeThresholdWidthPropertyChanged));
+    }
+    if (!s_FooterMenuItemsProperty)
+    {
+        s_FooterMenuItemsProperty =
+            InitializeDependencyProperty(
+                L"FooterMenuItems",
+                winrt::name_of<winrt::IVector<winrt::IInspectable>>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFooterMenuItemsPropertyChanged));
+    }
+    if (!s_FooterMenuItemsSourceProperty)
+    {
+        s_FooterMenuItemsSourceProperty =
+            InitializeDependencyProperty(
+                L"FooterMenuItemsSource",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFooterMenuItemsSourcePropertyChanged));
     }
     if (!s_HeaderProperty)
     {
@@ -462,6 +486,8 @@ void NavigationViewProperties::ClearProperties()
     s_ContentOverlayProperty = nullptr;
     s_DisplayModeProperty = nullptr;
     s_ExpandedModeThresholdWidthProperty = nullptr;
+    s_FooterMenuItemsProperty = nullptr;
+    s_FooterMenuItemsSourceProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_IsBackButtonVisibleProperty = nullptr;
@@ -567,6 +593,22 @@ void NavigationViewProperties::OnExpandedModeThresholdWidthPropertyChanged(
         return;
     }
 
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::OnFooterMenuItemsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::OnFooterMenuItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
 
@@ -782,7 +824,10 @@ void NavigationViewProperties::OnShoulderNavigationEnabledPropertyChanged(
 
 void NavigationViewProperties::AlwaysShowHeader(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_AlwaysShowHeaderProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::AlwaysShowHeader()
@@ -792,7 +837,10 @@ bool NavigationViewProperties::AlwaysShowHeader()
 
 void NavigationViewProperties::AutoSuggestBox(winrt::AutoSuggestBox const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_AutoSuggestBoxProperty, ValueHelper<winrt::AutoSuggestBox>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::AutoSuggestBox NavigationViewProperties::AutoSuggestBox()
@@ -802,9 +850,12 @@ winrt::AutoSuggestBox NavigationViewProperties::AutoSuggestBox()
 
 void NavigationViewProperties::CompactModeThresholdWidth(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
     static_cast<NavigationView*>(this)->SetValue(s_CompactModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double NavigationViewProperties::CompactModeThresholdWidth()
@@ -814,9 +865,12 @@ double NavigationViewProperties::CompactModeThresholdWidth()
 
 void NavigationViewProperties::CompactPaneLength(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
     static_cast<NavigationView*>(this)->SetValue(s_CompactPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double NavigationViewProperties::CompactPaneLength()
@@ -826,7 +880,10 @@ double NavigationViewProperties::CompactPaneLength()
 
 void NavigationViewProperties::ContentOverlay(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_ContentOverlayProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement NavigationViewProperties::ContentOverlay()
@@ -836,7 +893,10 @@ winrt::UIElement NavigationViewProperties::ContentOverlay()
 
 void NavigationViewProperties::DisplayMode(winrt::NavigationViewDisplayMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_DisplayModeProperty, ValueHelper<winrt::NavigationViewDisplayMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewDisplayMode NavigationViewProperties::DisplayMode()
@@ -846,9 +906,12 @@ winrt::NavigationViewDisplayMode NavigationViewProperties::DisplayMode()
 
 void NavigationViewProperties::ExpandedModeThresholdWidth(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
     static_cast<NavigationView*>(this)->SetValue(s_ExpandedModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double NavigationViewProperties::ExpandedModeThresholdWidth()
@@ -856,9 +919,38 @@ double NavigationViewProperties::ExpandedModeThresholdWidth()
     return ValueHelper<double>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_ExpandedModeThresholdWidthProperty));
 }
 
+void NavigationViewProperties::FooterMenuItems(winrt::IVector<winrt::IInspectable> const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IVector<winrt::IInspectable> NavigationViewProperties::FooterMenuItems()
+{
+    return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemsProperty));
+}
+
+void NavigationViewProperties::FooterMenuItemsSource(winrt::IInspectable const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationView*>(this)->SetValue(s_FooterMenuItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IInspectable NavigationViewProperties::FooterMenuItemsSource()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_FooterMenuItemsSourceProperty));
+}
+
 void NavigationViewProperties::Header(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NavigationViewProperties::Header()
@@ -868,7 +960,10 @@ winrt::IInspectable NavigationViewProperties::Header()
 
 void NavigationViewProperties::HeaderTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate NavigationViewProperties::HeaderTemplate()
@@ -878,7 +973,10 @@ winrt::DataTemplate NavigationViewProperties::HeaderTemplate()
 
 void NavigationViewProperties::IsBackButtonVisible(winrt::NavigationViewBackButtonVisible const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsBackButtonVisibleProperty, ValueHelper<winrt::NavigationViewBackButtonVisible>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewBackButtonVisible NavigationViewProperties::IsBackButtonVisible()
@@ -888,7 +986,10 @@ winrt::NavigationViewBackButtonVisible NavigationViewProperties::IsBackButtonVis
 
 void NavigationViewProperties::IsBackEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsBackEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::IsBackEnabled()
@@ -898,7 +999,10 @@ bool NavigationViewProperties::IsBackEnabled()
 
 void NavigationViewProperties::IsPaneOpen(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsPaneOpenProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::IsPaneOpen()
@@ -908,7 +1012,10 @@ bool NavigationViewProperties::IsPaneOpen()
 
 void NavigationViewProperties::IsPaneToggleButtonVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsPaneToggleButtonVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::IsPaneToggleButtonVisible()
@@ -918,7 +1025,10 @@ bool NavigationViewProperties::IsPaneToggleButtonVisible()
 
 void NavigationViewProperties::IsPaneVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsPaneVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::IsPaneVisible()
@@ -928,7 +1038,10 @@ bool NavigationViewProperties::IsPaneVisible()
 
 void NavigationViewProperties::IsSettingsVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsSettingsVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::IsSettingsVisible()
@@ -938,7 +1051,10 @@ bool NavigationViewProperties::IsSettingsVisible()
 
 void NavigationViewProperties::IsTitleBarAutoPaddingEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_IsTitleBarAutoPaddingEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool NavigationViewProperties::IsTitleBarAutoPaddingEnabled()
@@ -948,7 +1064,10 @@ bool NavigationViewProperties::IsTitleBarAutoPaddingEnabled()
 
 void NavigationViewProperties::MenuItemContainerStyle(winrt::Style const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemContainerStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Style NavigationViewProperties::MenuItemContainerStyle()
@@ -958,7 +1077,10 @@ winrt::Style NavigationViewProperties::MenuItemContainerStyle()
 
 void NavigationViewProperties::MenuItemContainerStyleSelector(winrt::StyleSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemContainerStyleSelectorProperty, ValueHelper<winrt::StyleSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::StyleSelector NavigationViewProperties::MenuItemContainerStyleSelector()
@@ -968,7 +1090,10 @@ winrt::StyleSelector NavigationViewProperties::MenuItemContainerStyleSelector()
 
 void NavigationViewProperties::MenuItems(winrt::IVector<winrt::IInspectable> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::IInspectable> NavigationViewProperties::MenuItems()
@@ -978,7 +1103,10 @@ winrt::IVector<winrt::IInspectable> NavigationViewProperties::MenuItems()
 
 void NavigationViewProperties::MenuItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NavigationViewProperties::MenuItemsSource()
@@ -988,7 +1116,10 @@ winrt::IInspectable NavigationViewProperties::MenuItemsSource()
 
 void NavigationViewProperties::MenuItemTemplate(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate NavigationViewProperties::MenuItemTemplate()
@@ -998,7 +1129,10 @@ winrt::DataTemplate NavigationViewProperties::MenuItemTemplate()
 
 void NavigationViewProperties::MenuItemTemplateSelector(winrt::DataTemplateSelector const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplateSelector NavigationViewProperties::MenuItemTemplateSelector()
@@ -1008,9 +1142,12 @@ winrt::DataTemplateSelector NavigationViewProperties::MenuItemTemplateSelector()
 
 void NavigationViewProperties::OpenPaneLength(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     double coercedValue = value;
     static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
     static_cast<NavigationView*>(this)->SetValue(s_OpenPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
+    }
 }
 
 double NavigationViewProperties::OpenPaneLength()
@@ -1020,7 +1157,10 @@ double NavigationViewProperties::OpenPaneLength()
 
 void NavigationViewProperties::OverflowLabelMode(winrt::NavigationViewOverflowLabelMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_OverflowLabelModeProperty, ValueHelper<winrt::NavigationViewOverflowLabelMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewOverflowLabelMode NavigationViewProperties::OverflowLabelMode()
@@ -1030,7 +1170,10 @@ winrt::NavigationViewOverflowLabelMode NavigationViewProperties::OverflowLabelMo
 
 void NavigationViewProperties::PaneCustomContent(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_PaneCustomContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement NavigationViewProperties::PaneCustomContent()
@@ -1040,7 +1183,10 @@ winrt::UIElement NavigationViewProperties::PaneCustomContent()
 
 void NavigationViewProperties::PaneDisplayMode(winrt::NavigationViewPaneDisplayMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_PaneDisplayModeProperty, ValueHelper<winrt::NavigationViewPaneDisplayMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewPaneDisplayMode NavigationViewProperties::PaneDisplayMode()
@@ -1050,7 +1196,10 @@ winrt::NavigationViewPaneDisplayMode NavigationViewProperties::PaneDisplayMode()
 
 void NavigationViewProperties::PaneFooter(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_PaneFooterProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement NavigationViewProperties::PaneFooter()
@@ -1060,7 +1209,10 @@ winrt::UIElement NavigationViewProperties::PaneFooter()
 
 void NavigationViewProperties::PaneHeader(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_PaneHeaderProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement NavigationViewProperties::PaneHeader()
@@ -1070,7 +1222,10 @@ winrt::UIElement NavigationViewProperties::PaneHeader()
 
 void NavigationViewProperties::PaneTitle(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_PaneTitleProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring NavigationViewProperties::PaneTitle()
@@ -1080,7 +1235,10 @@ winrt::hstring NavigationViewProperties::PaneTitle()
 
 void NavigationViewProperties::PaneToggleButtonStyle(winrt::Style const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_PaneToggleButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Style NavigationViewProperties::PaneToggleButtonStyle()
@@ -1090,7 +1248,10 @@ winrt::Style NavigationViewProperties::PaneToggleButtonStyle()
 
 void NavigationViewProperties::SelectedItem(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_SelectedItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NavigationViewProperties::SelectedItem()
@@ -1100,7 +1261,10 @@ winrt::IInspectable NavigationViewProperties::SelectedItem()
 
 void NavigationViewProperties::SelectionFollowsFocus(winrt::NavigationViewSelectionFollowsFocus const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_SelectionFollowsFocusProperty, ValueHelper<winrt::NavigationViewSelectionFollowsFocus>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewSelectionFollowsFocus NavigationViewProperties::SelectionFollowsFocus()
@@ -1110,7 +1274,10 @@ winrt::NavigationViewSelectionFollowsFocus NavigationViewProperties::SelectionFo
 
 void NavigationViewProperties::SettingsItem(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_SettingsItemProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable NavigationViewProperties::SettingsItem()
@@ -1120,7 +1287,10 @@ winrt::IInspectable NavigationViewProperties::SettingsItem()
 
 void NavigationViewProperties::ShoulderNavigationEnabled(winrt::NavigationViewShoulderNavigationEnabled const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_ShoulderNavigationEnabledProperty, ValueHelper<winrt::NavigationViewShoulderNavigationEnabled>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewShoulderNavigationEnabled NavigationViewProperties::ShoulderNavigationEnabled()
@@ -1130,7 +1300,10 @@ winrt::NavigationViewShoulderNavigationEnabled NavigationViewProperties::Shoulde
 
 void NavigationViewProperties::TemplateSettings(winrt::NavigationViewTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<NavigationView*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::NavigationViewTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::NavigationViewTemplateSettings NavigationViewProperties::TemplateSettings()

@@ -12,7 +12,7 @@
 
 ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEventArgs(
     double offset,
-    winrt::ScrollingScrollOptions const & options)
+    winrt::ScrollingScrollOptions const& options)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offset);
@@ -31,14 +31,14 @@ winrt::ScrollingScrollOptions ScrollControllerScrollToRequestedEventArgs::Option
     return m_options;
 }
 
-winrt::ScrollInfo ScrollControllerScrollToRequestedEventArgs::Info() const
+int32_t ScrollControllerScrollToRequestedEventArgs::CorrelationId() const
 {
-    return m_info;
+    return m_correlationId;
 }
 
-void ScrollControllerScrollToRequestedEventArgs::Info(winrt::ScrollInfo info)
+void ScrollControllerScrollToRequestedEventArgs::CorrelationId(int32_t correlationId)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 
-    m_info = info;
+    m_correlationId = correlationId;
 }

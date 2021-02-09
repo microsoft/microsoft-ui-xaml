@@ -37,14 +37,14 @@ void ScrollingZoomAnimationStartingEventArgs::Animation(winrt::CompositionAnimat
     m_animation = value;
 }
 
-winrt::ZoomInfo ScrollingZoomAnimationStartingEventArgs::ZoomInfo()
+int32_t ScrollingZoomAnimationStartingEventArgs::CorrelationId()
 {
-    return winrt::ZoomInfo{ m_zoomFactorChangeId };
+    return m_zoomFactorChangeCorrelationId;
 }
 
-void ScrollingZoomAnimationStartingEventArgs::SetZoomFactorChangeId(int32_t zoomFactorChangeId)
+void ScrollingZoomAnimationStartingEventArgs::SetZoomFactorChangeCorrelationId(int32_t zoomFactorChangeCorrelationId)
 {
-    m_zoomFactorChangeId = zoomFactorChangeId;
+    m_zoomFactorChangeCorrelationId = zoomFactorChangeCorrelationId;
 }
 
 winrt::CompositionAnimation ScrollingZoomAnimationStartingEventArgs::GetAnimation() const

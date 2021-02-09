@@ -49,8 +49,8 @@ void Phaser::PhaseElement(
             dataTemplateComponent.Recycle();
 
             nextPhase = VirtualizationInfo::PhaseReachedEnd;
-            auto index = virtInfo->Index();
-            auto data = m_owner->ItemsSourceView().GetAt(index);
+            const auto index = virtInfo->Index();
+            const auto data = m_owner->ItemsSourceView().GetAt(index);
             // Run Phase 0
             dataTemplateComponent.ProcessBindings(data, index, 0 /* currentPhase */, nextPhase);
 
@@ -98,19 +98,19 @@ void Phaser::DoPhasedWorkCallback()
         int currentIndex = static_cast<int>(m_pendingElements.size()) - 1;
         do
         {
-            auto info = m_pendingElements[currentIndex];
-            auto element = info.Element();
-            auto virtInfo = info.VirtInfo();
-            auto dataIndex = virtInfo->Index();
+            const auto info = m_pendingElements[currentIndex];
+            const auto element = info.Element();
+            const auto virtInfo = info.VirtInfo();
+            const auto dataIndex = virtInfo->Index();
 
-            int currentPhase = virtInfo->Phase();
+            const int currentPhase = virtInfo->Phase();
             if (currentPhase > 0)
             {
                 int nextPhase = VirtualizationInfo::PhaseReachedEnd;
                 virtInfo->DataTemplateComponent().ProcessBindings(virtInfo->Data(), -1 /* item index unused */, currentPhase, nextPhase);
                 ValidatePhaseOrdering(currentPhase, nextPhase);
 
-                auto previousAvailableSize = winrt::LayoutInformation::GetAvailableSize(element);
+                const auto previousAvailableSize = winrt::LayoutInformation::GetAvailableSize(element);
                 element.Measure(previousAvailableSize);
 
                 if (nextPhase > 0)
@@ -135,7 +135,7 @@ void Phaser::DoPhasedWorkCallback()
                 throw winrt::hresult_error(E_FAIL, L"Cleared element found in pending list which is not expected");
             }
 
-            auto pendingCount = static_cast<int>(m_pendingElements.size());
+            const auto pendingCount = static_cast<int>(m_pendingElements.size());
             if (currentIndex == -1)
             {
                 // Reached the top, start from the bottom again

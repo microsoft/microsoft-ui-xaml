@@ -21,6 +21,9 @@ public:
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
 
+    void InputScope(winrt::InputScope const& value);
+    winrt::InputScope InputScope();
+
     void IsWrapEnabled(bool value);
     bool IsWrapEnabled();
 
@@ -57,6 +60,9 @@ public:
     void Text(winrt::hstring const& value);
     winrt::hstring Text();
 
+    void TextAlignment(winrt::TextAlignment const& value);
+    winrt::TextAlignment TextAlignment();
+
     void TextReadingOrder(winrt::TextReadingOrder const& value);
     winrt::TextReadingOrder TextReadingOrder();
 
@@ -70,6 +76,7 @@ public:
     static winrt::DependencyProperty DescriptionProperty() { return s_DescriptionProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
+    static winrt::DependencyProperty InputScopeProperty() { return s_InputScopeProperty; }
     static winrt::DependencyProperty IsWrapEnabledProperty() { return s_IsWrapEnabledProperty; }
     static winrt::DependencyProperty LargeChangeProperty() { return s_LargeChangeProperty; }
     static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
@@ -82,6 +89,7 @@ public:
     static winrt::DependencyProperty SmallChangeProperty() { return s_SmallChangeProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
+    static winrt::DependencyProperty TextAlignmentProperty() { return s_TextAlignmentProperty; }
     static winrt::DependencyProperty TextReadingOrderProperty() { return s_TextReadingOrderProperty; }
     static winrt::DependencyProperty ValidationModeProperty() { return s_ValidationModeProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
@@ -90,6 +98,7 @@ public:
     static GlobalDependencyProperty s_DescriptionProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
+    static GlobalDependencyProperty s_InputScopeProperty;
     static GlobalDependencyProperty s_IsWrapEnabledProperty;
     static GlobalDependencyProperty s_LargeChangeProperty;
     static GlobalDependencyProperty s_MaximumProperty;
@@ -102,6 +111,7 @@ public:
     static GlobalDependencyProperty s_SmallChangeProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
     static GlobalDependencyProperty s_TextProperty;
+    static GlobalDependencyProperty s_TextAlignmentProperty;
     static GlobalDependencyProperty s_TextReadingOrderProperty;
     static GlobalDependencyProperty s_ValidationModeProperty;
     static GlobalDependencyProperty s_ValueProperty;

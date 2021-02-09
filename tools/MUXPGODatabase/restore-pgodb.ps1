@@ -8,7 +8,7 @@ $currentVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDat
 
 Write-Host ( "PGO OPTIMIZE: requesting {0} version {1}" -f $packageId, ( FormatVersion $currentVersion ) )
 
-$packageSource = Register-PackageSource -Name MUX_Dependencies -Location $feedUri -ProviderName NuGet -Trusted
+$packageSource = Register-PackageSource -ForceBootstrap -Name MUX_Dependencies -Location $feedUri -ProviderName NuGet -Trusted
 $packages = ( Find-Package $packageId -Source MUX_Dependencies -AllowPrereleaseVersions -AllVersions ) | Sort-Object -Property Version -Descending
 
 $best = $null

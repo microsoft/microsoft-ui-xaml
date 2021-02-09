@@ -52,9 +52,10 @@ private:
     };
 
     winrt::NavigationView GetParentNavigationView();
-    winrt::ItemsRepeater GetParentRepeater();
+    winrt::ItemsRepeater GetParentItemsRepeater();
     bool IsOnTopNavigation();
     bool IsOnTopNavigationOverflow();
+    bool IsOnFooterNavigation();
     bool IsSettingsItem();
     NavigationViewRepeaterPosition GetNavigationViewRepeaterPosition();
     int32_t GetNavigationViewItemCountInPrimaryList();
@@ -62,4 +63,5 @@ private:
     int32_t GetPositionOrSetCountInLeftNavHelper(AutomationOutput automationOutput);
     int32_t GetPositionOrSetCountInTopNavHelper(AutomationOutput automationOutput);
     void ChangeSelection(bool isSelected);
+    bool HasChildren();
 };

@@ -77,8 +77,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         UIElement _popupRoot;
         UIElement _fullWindowMediaRoot;
         AutoResetEvent _validationCompleted;
-        
-        [TestMethod]
+
+        // Tracked by Task 30789390: Re-enable disabled tests
+        //[TestMethod]
         public void VerifyLightsOnMainWindow()
         {
             using (var config = new MainWindowLightConfiguration())
@@ -87,8 +88,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        //[TestMethod]
-        //BUGBUG: Bug 18287798: Failure 183760047- Failed: MUXControls.ApiTests.LightConfigurationTests.VerifyLightsOnSecondaryWindow
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 18287798
         public void VerifyLightsOnSecondaryWindow()
         {
             using (var config = new SecondaryWindowLightConfiguration())
@@ -106,8 +107,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Disabled due to: Bug 17808897: Test unreliable in master: MUXControls.ApiTests.LightConfigurationTests.VerifyLightsAfterResettingContentOnSecondaryWindow
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 17808897
         public void VerifyLightsAfterResettingContentOnSecondaryWindow()
         {
             using (var config = new SecondaryWindowLightConfiguration())
@@ -116,8 +117,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Disabled due to: Bug 17808897: Test unreliable in master: MUXControls.ApiTests.LightConfigurationTests.VerifyLightsAfterResettingContentOnSecondaryWindow
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]  // Disabled as per tracking issue #3125 and internal issue 17808897
         public void VerifyLightsAttachedDuringLayoutOnSecondaryWindow()
         {
             using (var config = new SecondaryWindowLightConfiguration())

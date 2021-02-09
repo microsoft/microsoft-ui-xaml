@@ -17,7 +17,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, const wi
     while (input[0] != '\0')
     {
         // Skip spaces
-        auto nextChar = input[0];
+        const auto nextChar = input[0];
         if (nextChar != L' ')
         {
             if (expectNumber)
@@ -92,7 +92,7 @@ std::tuple<double, size_t> NumberBoxParser::GetNextNumber(const std::wstring& in
     return { std::numeric_limits<double>::quiet_NaN(), 0 };
 }
 
-int NumberBoxParser::GetPrecedenceValue(wchar_t c)
+int constexpr NumberBoxParser::GetPrecedenceValue(wchar_t c)
 {
     int opPrecedence = 0;
     if (c == L'*' || c == L'/')
@@ -113,7 +113,7 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(const std::vector<
     std::vector<MathToken> postfixTokens;
     std::stack<MathToken> operatorStack;
 
-    for (auto const token : infixTokens)
+    for (auto const& token : infixTokens)
     {
         if (token.Type == MathTokenType::Numeric)
         {
@@ -123,7 +123,7 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(const std::vector<
         {
             while (!operatorStack.empty())
             {
-                const auto top = operatorStack.top();
+                const auto& top = operatorStack.top();
                 if (top.Type != MathTokenType::Parenthesis && (GetPrecedenceValue(top.Char) >= GetPrecedenceValue(token.Char)))
                 {
                     postfixTokens.push_back(operatorStack.top());
@@ -183,7 +183,7 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(const std::v
 {
     std::stack<double> stack;
 
-    for (auto const token : tokens)
+    for (auto const& token : tokens)
     {
         if (token.Type == MathTokenType::Operator)
         {

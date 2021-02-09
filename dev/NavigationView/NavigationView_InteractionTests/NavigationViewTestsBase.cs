@@ -310,7 +310,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
             var itemToBeClicked = items.ElementAt(0);
             Log.Comment("Invoke the item " + UIObjectToString(itemToBeClicked));
-            new Button(itemToBeClicked).Invoke();
+            new Button(itemToBeClicked).Click();
             Wait.ForIdle();
             //When a overflow item is clicked, NavView depends on another UI ticket to update the layout.
             Wait.ForSeconds(1);

@@ -3,7 +3,7 @@
     "DiffPlex": "1.2.1",
     "Microsoft.Net.Native.Compiler": "2.2.3",
     "Microsoft.NETCore.UniversalWindowsPlatform": "6.2.8",
-    "MUXCustomBuildTasks": "1.0.48",
+    "MUXCustomBuildTasks": "1.0.71",
     "TAEF.Redist.Wlk": "10.31.180822002",
     "Win2D.uwp": "1.22.0"
   },

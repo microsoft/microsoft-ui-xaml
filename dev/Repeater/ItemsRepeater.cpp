@@ -462,10 +462,8 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
 // can be used to make logging a little easier to read.
 int ItemsRepeater::Indent()
 {
-    int indent = 1;
-
-    // Expensive, so we do it only in debug builds.
 #ifdef _DEBUG
+    // Expensive, so we do it only in debug builds.
     auto parent = this->Parent().as<winrt::FrameworkElement>();
     while (parent && !parent.try_as<winrt::ItemsRepeater>())
     {
@@ -475,11 +473,11 @@ int ItemsRepeater::Indent()
     if (parent)
     {
         auto parentRepeater = winrt::get_self<ItemsRepeater>(parent.as<winrt::ItemsRepeater>());
-        indent = parentRepeater->Indent();
+        return parentRepeater->Indent() * 4;
     }
 #endif
 
-    return indent * 4;
+    return 4;
 }
 
 void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -623,7 +621,17 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
-            if (!dataTemplate.LoadContent().as<winrt::FrameworkElement>()) {
+            if (auto content = dataTemplate.LoadContent().as<winrt::FrameworkElement>())
+            {
+                // Due to bug https://github.com/microsoft/microsoft-ui-xaml/issues/3057, we need to get the framework
+                // to take ownership of the extra implicit ref that was returned by LoadContent. The simplest way to do
+                // this is to add it to a Children collection and immediately remove it.
+                auto children = Children();
+                children.Append(content);
+                children.RemoveAtEnd();
+            }
+            else
+            {
                 // We have a DataTemplate which is empty, so we need to set it to true
                 m_isItemTemplateEmpty = true;
             }
