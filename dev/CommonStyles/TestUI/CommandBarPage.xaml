@@ -5,6 +5,7 @@
     xmlns:local="using:CommonStyles_TestUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
   xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
@@ -25,6 +26,12 @@
                 <AppBarSeparator/>
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <contract7Present:AppBarElementContainer IsTabStop="False">
+                    <controls:SplitButton Content="Split" Style="{StaticResource SplitButtonCommandBarStyle}"/>
+                </contract7Present:AppBarElementContainer>
+                <contract7Present:AppBarElementContainer IsTabStop="False">
+                    <controls:ToggleSplitButton Content="Toggle" Style="{StaticResource SplitButtonCommandBarStyle}"/>
+                </contract7Present:AppBarElementContainer>
             </CommandBar>
             
             <CommandBar>
@@ -47,6 +54,30 @@
                 <AppBarSeparator/>
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <contract7Present:AppBarElementContainer>
+                    <controls:SplitButton Style="{StaticResource SplitButtonCommandBarStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <SymbolIcon Symbol="Keyboard" Margin="0,0,8,0"/>
+                            <TextBlock Grid.Column="1" Text="Split"/>
+                        </Grid>
+                    </controls:SplitButton>
+                </contract7Present:AppBarElementContainer>
+                <contract7Present:AppBarElementContainer>
+                    <controls:ToggleSplitButton Style="{StaticResource SplitButtonCommandBarStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <SymbolIcon Symbol="Shuffle" Margin="0,0,8,0"/>
+                            <TextBlock Grid.Column="1" Text="Toggle"/>
+                        </Grid>
+                    </controls:ToggleSplitButton>
+                </contract7Present:AppBarElementContainer>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="Add" Label="Add"/>
                     <AppBarButton Icon="Remove" Label="Remove"/>
