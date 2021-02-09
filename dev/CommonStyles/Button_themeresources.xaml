@@ -166,9 +166,8 @@
                         Padding="{TemplateBinding Padding}"
                         HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        AutomationProperties.AccessibilityView="Raw">
-
-
+                        AutomationProperties.AccessibilityView="Raw"
+                        local:AnimatedIcon.State="Normal">
 
                         <contract7Present:ContentPresenter.BackgroundTransition>
                             <contract7Present:BrushTransition Duration="0:0:0.083" />
@@ -176,13 +175,8 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <VisualState.Setters>
-                                        <Setter Target="ContentPresenter.(local:AnimatedIcon.State)" Value="Normal"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-
-
+                                <VisualState x:Name="Normal"/>
+                                
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">

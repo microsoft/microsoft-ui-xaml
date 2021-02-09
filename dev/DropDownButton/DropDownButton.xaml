@@ -36,11 +36,7 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <VisualState.Setters>
-                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="Normal"/>
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
@@ -114,7 +110,7 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw" />
 
-                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="10,4,2,0" AutomationProperties.AccessibilityView="Raw">
+                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="10,4,2,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal">
                             <local:AnimatedIcon.Source>
                                 <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
                             </local:AnimatedIcon.Source>
