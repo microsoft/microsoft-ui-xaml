@@ -209,7 +209,7 @@
                                 FlowDirection="{TemplateBinding FlowDirection}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                contract7Present:BackgroundSizing="OuterBorderEdge"
+                                contract7Present:BackgroundSizing="InnerBorderEdge"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                 MinWidth="{StaticResource ContentDialogMinWidth}"
                                 MaxWidth="{StaticResource ContentDialogMaxWidth}"
