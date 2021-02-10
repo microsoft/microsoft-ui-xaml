@@ -99,6 +99,7 @@
     <Thickness x:Key="AppBarButtonTextLabelOnRightMargin">8,16,12,10</Thickness>
     <Thickness x:Key="AppBarButtonInnerBorderMargin">0,9,0,9</Thickness>
     <Thickness x:Key="AppBarButtonInnerBorderCompactMargin">0,9,0,25</Thickness>
+    <Thickness x:Key="AppBarButtonInnerBorderOverflowMargin">4,0,4,0</Thickness>
 
     <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
 
@@ -118,6 +119,7 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Width" Value="68" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
@@ -185,6 +187,7 @@
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="TextLabel.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
@@ -193,6 +196,7 @@
                                 <VisualState x:Name="OverflowWithToggleButtons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="TextLabel.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
@@ -202,6 +206,7 @@
                                 <VisualState x:Name="OverflowWithMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
@@ -215,6 +220,7 @@
                                 <VisualState x:Name="OverflowWithToggleButtonsAndMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
@@ -265,8 +271,7 @@
                                 <VisualState x:Name="OverflowNormal"/>
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
                                         <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
@@ -277,8 +282,7 @@
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}" />
                                         <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
@@ -289,8 +293,7 @@
                                 </VisualState>
                                 <VisualState x:Name="OverflowSubMenuOpened">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundSubMenuOpened}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushSubMenuOpened}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundSubMenuOpened}" />
                                         <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushSubMenuOpened}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
@@ -340,7 +343,8 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"/>
+                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                Control.IsTemplateFocusTarget="True" />
 
                         <Grid x:Name="ContentRoot"
                             MinHeight="{ThemeResource AppBarThemeMinHeight}" >
