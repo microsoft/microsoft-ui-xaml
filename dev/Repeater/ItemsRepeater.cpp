@@ -309,7 +309,7 @@ winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
 {
     if (ItemsSourceView() == nullptr)
     {
-       throw winrt::hresult_error(E_FAIL, L"No ItemSource has been set");
+       throw winrt::hresult_error(E_FAIL, L"ItemSource doesn't have a value");
     }
 
     if (index >= 0 && index >= ItemsSourceView().Count())
