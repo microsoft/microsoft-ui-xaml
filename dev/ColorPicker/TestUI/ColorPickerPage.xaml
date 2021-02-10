@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     GotFocus="TestPage_GotFocus">
 
-    <Grid x:Name="Root" Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Margin="12">
+    <Grid x:Name="Root" Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
