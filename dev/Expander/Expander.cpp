@@ -112,9 +112,18 @@ void Expander::UpdateExpandDirection(bool useTransitions)
 void Expander::UpdateExpandState(bool useTransitions)
 {
     const auto isExpanded = IsExpanded();
+    const auto direction = ExpandDirection();
+
     if (isExpanded)
     {
-        winrt::VisualStateManager::GoToState(*this, L"Expanded", useTransitions);
+        if (direction == winrt::ExpandDirection::Down)
+        {
+            winrt::VisualStateManager::GoToState(*this, L"ExpandedDown", useTransitions);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, L"ExpandedUp", useTransitions);
+        }
     }
     else
     {
