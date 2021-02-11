@@ -3,6 +3,7 @@
 
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using Common;
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -252,6 +253,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+                {
+                    Log.Warning("This test is only designed to run on RS4 + machines due to difference in focus behaviour.");
+                    return;
+                }
+
                 elements = new PipsPagerElements();
                 SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
                 SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
@@ -280,6 +287,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+                {
+                    Log.Warning("This test is only designed to run on RS4+ machines due to difference in focus behaviour.");
+                    return;
+                }
+
                 elements = new PipsPagerElements();
                 SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
                 SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
