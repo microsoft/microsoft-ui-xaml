@@ -560,8 +560,6 @@ void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, con
     }
 }
 
-
-
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
