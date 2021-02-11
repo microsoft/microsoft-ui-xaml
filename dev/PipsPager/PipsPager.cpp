@@ -95,7 +95,10 @@ void PipsPager::OnApplyTemplate()
         {
             m_pipsPagerElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &PipsPager::OnElementPrepared });
             m_pipsAreaGettingFocusRevoker = repeater.GettingFocus(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaGettingFocus });
-            m_pipsAreaBringIntoViewRequestedRevoker = repeater.BringIntoViewRequested(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaBringIntoViewRequested });
+            if (SharedHelpers::IsRS4OrHigher())
+            {
+                m_pipsAreaBringIntoViewRequestedRevoker = repeater.BringIntoViewRequested(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaBringIntoViewRequested });
+            }
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
@@ -527,25 +530,28 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
         // Easiest way to check if focus change came from within:
         // Check if element is child of repeater by getting index and checking for -1
         // If it is -1, focus came from outside and we want to get to selected element.
-        if (repeater.GetElementIndex(args.OldFocusedElement().try_as<winrt::UIElement>()) == -1)
+        if (const auto oldFocusedElement = args.OldFocusedElement().try_as<winrt::UIElement>())
         {
-            if (const auto realizedElement = repeater.GetOrCreateElement(SelectedPageIndex()).try_as<winrt::UIElement>())
+            if (repeater.GetElementIndex(oldFocusedElement) == -1)
             {
-                if (const auto argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                if (const auto realizedElement = repeater.GetOrCreateElement(SelectedPageIndex()).try_as<winrt::UIElement>())
                 {
-                    if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(realizedElement))
+                    if (const auto argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                     {
+                        if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(realizedElement))
+                        {
+                            args.Handled(true);
+                        }
+                    }
+                    else
+                    {
+                        // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
+                        m_dispatcherHelper.RunAsync([realizedElement]()
+                            {
+                                SetFocus(realizedElement, winrt::FocusState::Programmatic);
+                            });
                         args.Handled(true);
                     }
-                }
-                else
-                {
-                    // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
-                    m_dispatcherHelper.RunAsync([realizedElement]()
-                    {
-                        SetFocus(realizedElement, winrt::FocusState::Programmatic);
-                    });
-                    args.Handled(true);
                 }
             }
         }

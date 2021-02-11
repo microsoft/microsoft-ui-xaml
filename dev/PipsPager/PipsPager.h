@@ -87,7 +87,7 @@ private:
     winrt::Button::Click_revoker m_nextPageButtonClickRevoker{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_pipsAreaGettingFocusRevoker{};
-    winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker;
+    winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
     /* Items */
     winrt::IObservableVector<IInspectable> m_pipsPagerItems{};
 
