@@ -301,7 +301,7 @@
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -360,17 +360,17 @@
 
                         <Border Width="{TemplateBinding MinWidth}">
                             <Viewbox
-                            x:Name="IconHost"
-                            Width="16"
-                            Height="16"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw">
+                                x:Name="IconHost"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AutomationProperties.AccessibilityView="Raw">
                                 <TextBlock
-                                x:Name="Icon"
-                                Text="&#xE700;"
-                                FontSize="{TemplateBinding FontSize}"
-                                AutomationProperties.AccessibilityView="Raw"/>
+                                    x:Name="Icon"
+                                    Text="&#xE700;"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    AutomationProperties.AccessibilityView="Raw"/>
                             </Viewbox>
                         </Border>
 
@@ -691,18 +691,18 @@
                                 x:Name="ContentGrid"
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
                                 <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconColumnWidth}">
                                     <Viewbox x:Name="IconBox"
-                                Height="16"
-                                Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
+                                        Height="16"
+                                        Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                         <ContentPresenter 
-                                    x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}" />
+                                            x:Name="Icon" 
+                                            Content="{TemplateBinding Icon}" />
                                     </Viewbox>
                                 </Border>
 
