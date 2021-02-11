@@ -72,7 +72,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=17,30
+          RenderSize=398,398
         [Windows.UI.Xaml.Controls.Border]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -86,7 +86,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=17,30
+            RenderSize=398,398
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -99,7 +99,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=17,30
+              RenderSize=398,398
             [Windows.UI.Xaml.Controls.ScrollContentPresenter]
                 Foreground=#E4000000
                 Padding=0,0,0,0
@@ -114,7 +114,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=1,19
+                RenderSize=382,387
               [Windows.UI.Xaml.FrameworkElement]
                   Margin=0,0,0,0
                   FocusVisualSecondaryThickness=1,1,1,1
@@ -122,7 +122,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=1,19
+                  RenderSize=382,387
             [Windows.UI.Xaml.Controls.Grid]
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
@@ -135,14 +135,14 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=17,30
+                RenderSize=398,398
             [Windows.UI.Xaml.Controls.Primitives.ScrollBar]
                 Padding=0,0,0,0
                 Foreground=#00FFFFFF
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
                 Background=#00FFFFFF
-                CornerRadius=4,4,4,4
+                CornerRadius=3,3,3,3
                 Name=VerticalScrollBar
                 MinWidth=16
                 MinHeight=16
@@ -159,7 +159,7 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
                 Background=#00FFFFFF
-                CornerRadius=4,4,4,4
+                CornerRadius=3,3,3,3
                 Name=HorizontalScrollBar
                 MinWidth=16
                 MinHeight=16
@@ -175,7 +175,7 @@
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
-                Background=#FFE6E6E6
+                Background=#00FFFFFF
                 Name=ScrollBarSeparator
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1

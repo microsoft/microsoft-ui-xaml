@@ -26,6 +26,17 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_any.xaml">
+      <UseVisualStyle>Any</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Hyperlink_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)HyperlinkButton_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
@@ -47,6 +58,16 @@
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)AppBarButton_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources_v2.5.xaml">
       <UseVisualStyle>V2dot5</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -81,6 +102,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
@@ -111,9 +137,19 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_21h1.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Version>21H1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v2.5.xaml">

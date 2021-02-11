@@ -8,9 +8,9 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
@@ -18,9 +18,9 @@
 
         <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="PagerControlSelectionIndicatorForeground" ResourceKey="AccentAAFillColorDefaultBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="GhostFillColorSecondaryBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="GhostFillColorTertiaryBrush" />
-            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="GhostFillColorDisabledBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="PagerControlPageNavigationButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="PagerControlPageNavigationButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />

@@ -27,7 +27,7 @@
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualPrimaryBrush=#FF000000
       Visibility=Visible
-      RenderSize=68,40
+      RenderSize=68,56
     [Windows.UI.Xaml.Controls.Grid]
         Padding=0,0,0,0
         CornerRadius=0,0,0,0
@@ -41,7 +41,7 @@
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
-        RenderSize=68,40
+        RenderSize=68,56
       [Windows.UI.Xaml.Shapes.Rectangle]
           StrokeThickness=1
           Name=CheckedHighlightBackground
@@ -51,7 +51,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=68,40
+          RenderSize=68,56
       [Windows.UI.Xaml.Shapes.Rectangle]
           StrokeThickness=1
           Name=AccentOverlayBackground
@@ -61,7 +61,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=68,40
+          RenderSize=68,56
       [Windows.UI.Xaml.Shapes.Rectangle]
           StrokeThickness=1
           Name=AppBarToggleButtonInnerBorder
@@ -71,7 +71,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=68,40
+          RenderSize=68,56
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
           CornerRadius=0,0,0,0
@@ -79,14 +79,14 @@
           BorderBrush=[NULL]
           Background=[NULL]
           Name=ContentRoot
-          MinHeight=40
+          MinHeight=56
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=68,40
+          RenderSize=68,56
         [Windows.UI.Xaml.Controls.TextBlock]
             Padding=0,0,0,0
             Foreground=#FF000000
@@ -147,8 +147,8 @@
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
-            Visibility=Collapsed
-            RenderSize=0,0
+            Visibility=Visible
+            RenderSize=64,16
         [Windows.UI.Xaml.Controls.TextBlock]
             Padding=0,5,0,8
             Foreground=#FF000000
