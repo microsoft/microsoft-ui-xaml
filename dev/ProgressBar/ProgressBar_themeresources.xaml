@@ -40,7 +40,4 @@
     <CornerRadius x:Key="ProgressBarCornerRadius">1.5</CornerRadius>
     <CornerRadius x:Key="ProgressBarTrackCornerRadius">0.5</CornerRadius>
 
-    <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}" />
-    <Style x:Key="DefaultProgressBarStyle" TargetType="ProgressBar" />
-    
 </ResourceDictionary>
