@@ -26,6 +26,12 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_any.xaml">
+      <UseVisualStyle>Any</UseVisualStyle>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>1</Priority>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Hyperlink_themeresources.xaml">
       <UseVisualStyle>Latest</UseVisualStyle>
       <Version>RS1</Version>
