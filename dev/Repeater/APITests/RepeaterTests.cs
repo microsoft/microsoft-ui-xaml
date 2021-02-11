@@ -154,7 +154,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                int hResult = 0;
+                string errorMessage = string.Empty;
                 ItemsRepeater repeater = new ItemsRepeater();
                 try
                 {
@@ -162,10 +162,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
                 catch (COMException e)
                 {
-                    hResult = e.HResult;
+                    errorMessage = e.Message;
                 }
                 //Make sure that we threw E_FAIL
-                Verify.AreEqual((uint)hResult, 0x80004005);
+                Verify.IsTrue(errorMessage.Contains("ItemSource doesn't have a value"));
             });
         }
 
