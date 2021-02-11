@@ -10,6 +10,7 @@ using PipsPagerSelectedIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.PipsPa
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -22,7 +23,6 @@ namespace MUXControlsTestApp
 
         public List<string> Pictures = new List<string>()
         {
-
             "Assets/ingredient1.png",
             "Assets/ingredient2.png",
             "Assets/ingredient3.png",
@@ -44,7 +44,7 @@ namespace MUXControlsTestApp
             var rootPanel = VisualTreeHelper.GetChild(TestPipsPager, 0);
             previousPageButton = VisualTreeHelper.GetChild(rootPanel, 0) as Button;
             nextPageButton = VisualTreeHelper.GetChild(rootPanel, 2) as Button;
-            repeater = FindChildByType<ItemsRepeater>(ref rootPanel);
+            repeater = rootPanel.FindVisualChildByType<ItemsRepeater>();
 
             PreviousPageButtonVisibilityComboBox.SelectionChanged += OnPreviousPageButtonVisibilityChanged;
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextPageButtonVisibilityChanged;
@@ -67,33 +67,6 @@ namespace MUXControlsTestApp
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
             CurrentMaxVisualIndicatorsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisualIndicators}";
             CurrentOrientationTextBlock.Text = GetCurrentOrientation();
-        }
-        
-        private T FindChildByType<T>(ref DependencyObject parent) where T : DependencyObject
-        {
-
-            if (parent == null)
-            {
-                return null;
-            }
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                if (child != null && child is T)
-                {
-                    return (T)child;
-                }
-                else
-                {
-                    T foundObject = FindChildByType<T>(ref child);
-                    if (foundObject != null)
-                    {
-                        return foundObject;
-                    }
-                }
-            }
-            return null;
         }
 
         private void OnRepeaterGotFocus(object sender, RoutedEventArgs e)
