@@ -14,6 +14,7 @@
 
 #include "Vector.h"
 #include "BreadcrumbIterable.h"
+#include "BreadcrumbLayout.h"
 
 class Breadcrumb :
     public ReferenceTracker<Breadcrumb, winrt::implementation::BreadcrumbT>,
@@ -54,7 +55,7 @@ private:
 
     void UpdateItemsRepeaterItemsSource();
     void UpdateItemTemplate();
-    void UpdateEllipsisBreadcrumbItemDropdownItemTemplate();
+    void UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
     void UpdateBreadcrumbItemsFlowDirection();
 
     void ResetLastBreadcrumbItem();
@@ -85,6 +86,7 @@ private:
 
     tracker_ref<winrt::ItemsRepeater> m_itemsRepeater { this };
     com_ptr<BreadcrumbElementFactory> m_itemsRepeaterElementFactory{ nullptr };
+    com_ptr<BreadcrumbLayout> m_itemsRepeaterLayout{ nullptr };
 
     // Pointers to first and last items to update visual states
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };

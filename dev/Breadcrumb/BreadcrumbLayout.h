@@ -9,10 +9,8 @@
 #include "NonVirtualizingLayout.h"
 #include "VirtualizingLayout.h"
 
-#include "BreadcrumbLayout.g.h"
-
-struct BreadcrumbLayout :
-    public ReferenceTracker<BreadcrumbLayout, winrt::implementation::BreadcrumbLayoutT, NonVirtualizingLayout>
+class BreadcrumbLayout :
+    public winrt::implements<BreadcrumbLayout, NonVirtualizingLayout>
 {
 public:
     BreadcrumbLayout();
@@ -40,7 +38,7 @@ private:
     winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
 
     winrt::Size m_availableSize{};
-    tracker_ref<winrt::BreadcrumbItem> m_ellipsisButton{ this };
+    winrt::BreadcrumbItem m_ellipsisButton{nullptr};
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};

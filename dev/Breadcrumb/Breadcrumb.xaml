@@ -15,12 +15,12 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
-        <Setter Property="Padding" Value="6,5,5,6"/>
+        <Setter Property="Padding" Value="0,0,0,0"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -40,11 +40,11 @@
                                 <Setter Property="HorizontalAlignment" Value="Left" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="FontWeight" Value="Normal" />
                                 <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}" />
                                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                 <Setter Property="FocusVisualMargin" Value="-3" />
-                                <Setter Property="Padding" Value="6,5,5,6" />
+                                <Setter Property="Padding" Value="0,0,0,0" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
@@ -187,7 +187,7 @@
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="11px" />
+                                    <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="0px" />
                                     <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
@@ -201,6 +201,7 @@
                                                   FontWeight="{TemplateBinding FontWeight}"
                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  LineHeight="20"
                                                   AutomationProperties.AccessibilityView="Raw"/>
 
                                 <TextBlock x:Name="PART_BreadcrumbEllipsisTextBlock"
@@ -215,12 +216,14 @@
 
                                 <TextBlock x:Name="PART_ChevronTextBlock"
                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                           Foreground="{ThemeResource BreadcrumbNormalForegroundBrush}"
                                            Text="&#xE76C;"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Center"
                                            IsTextScaleFactorEnabled="False"
-                                           FontSize="{TemplateBinding FontSize}"
+                                           FontSize="12"
                                            AutomationProperties.AccessibilityView="Raw"
+                                           Padding="2,2,2,2"
                                            Grid.Column="2"/>
                             </Grid>
 
@@ -237,14 +240,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Breadcrumb">
-
-                    <local:ItemsRepeater x:Name="PART_BreadcrumbItemsRepeater">
-
-                        <local:ItemsRepeater.Layout>
-                            <local:BreadcrumbLayout />
-                        </local:ItemsRepeater.Layout>
-                    </local:ItemsRepeater>
-
+                    <local:ItemsRepeater x:Name="PART_BreadcrumbItemsRepeater" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -8,13 +8,6 @@
 #include "ResourceAccessor.h"
 #include "BreadcrumbItem.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithBasicFactory(BreadcrumbLayout)
-}
-
-#include "BreadcrumbLayout.g.cpp"
-
 BreadcrumbLayout::BreadcrumbLayout()
 {
 }
@@ -58,7 +51,7 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
     {
         if (const auto& ellipsisButton = GetElementAt(context, 0).try_as<winrt::BreadcrumbItem>())
         {
-            m_ellipsisButton.set(ellipsisButton);
+            m_ellipsisButton = ellipsisButton;
         }
     }
 
@@ -106,7 +99,7 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayo
 {
     const int itemCount = GetItemCount(context);
     float accumLength = GetElementAt(context, itemCount - 1).DesiredSize().Width +
-        m_ellipsisButton.get().DesiredSize().Width;
+        m_ellipsisButton.DesiredSize().Width;
 
     for (int i = itemCount - 2; i >= 0; --i)
     {
@@ -127,7 +120,7 @@ float BreadcrumbLayout::GetBreadcrumbItemsHeight(winrt::NonVirtualizingLayoutCon
 
     if (m_ellipsisIsRendered)
     {
-        maxElementHeight = m_ellipsisButton.get().DesiredSize().Height;
+        maxElementHeight = m_ellipsisButton.DesiredSize().Height;
     }
 
     for (uint32_t i = firstItemToRender; i < GetItemCount(context); ++i)
@@ -161,7 +154,7 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     // If there is at least one element, we may render the ellipsis item
     if (itemCount > 0)
     {
-        const auto& ellipsisButton = m_ellipsisButton.get();
+        const auto& ellipsisButton = m_ellipsisButton;
 
         if (m_ellipsisIsRendered)
         {

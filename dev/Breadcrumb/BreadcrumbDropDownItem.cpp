@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "BreadcrumbItem.h"
+#include "BreadcrumbDropDownItem.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
@@ -12,30 +12,28 @@
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
-    CppWinRTActivatableClassWithBasicFactory(BreadcrumbItem)
+    CppWinRTActivatableClassWithBasicFactory(BreadcrumbDropDownItem)
 }
 
-#include "BreadcrumbItem.g.cpp"
+#include "BreadcrumbDropDownItem.g.cpp"
 
-BreadcrumbItem::BreadcrumbItem()
+BreadcrumbDropDownItem::BreadcrumbDropDownItem()
 {
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_BreadcrumbItem);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_BreadcrumbDropDownItem);
 
     SetDefaultStyleKey(this);
 }
 
-BreadcrumbItem::~BreadcrumbItem()
+BreadcrumbDropDownItem::~BreadcrumbDropDownItem()
 {
     RevokeListeners();
 }
 
-void BreadcrumbItem::RevokeListeners()
+void BreadcrumbDropDownItem::RevokeListeners()
 {
-    m_breadcrumbItemButtonLoadedRevoker.revoke();
-    m_breadcrumbItemButtonClickRevoker.revoke();
-    m_ellipsisRepeaterElementPreparedRevoker.revoke();
 }
 
+/*
 void BreadcrumbItem::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
@@ -372,7 +370,6 @@ void BreadcrumbItem::ResetVisualProperties()
     }
     m_ellipsisFlyout.set(nullptr);
     m_ellipsisItemsRepeater.set(nullptr);
-    m_ellipsisElementFactory = nullptr;
 
     UpdateVisualState();
 }
@@ -386,12 +383,9 @@ void BreadcrumbItem::InstantiateFlyout()
         const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
         ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
 
-        m_ellipsisElementFactory = winrt::make_self<BreadcrumbDropDownElementFactory>();
-        ellipsisItemsRepeater.ItemTemplate(*m_ellipsisElementFactory);
-
         if (const auto& dataTemplate = m_ellipsisDataTemplate.get())
         {
-            m_ellipsisElementFactory->UserElementFactory(dataTemplate);
+            ellipsisItemsRepeater.ItemTemplate(dataTemplate);
         }
 
         m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
@@ -416,5 +410,7 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
     m_isLastNode = false;
 
     InstantiateFlyout();
+
     UpdateVisualState();
 }
+*/

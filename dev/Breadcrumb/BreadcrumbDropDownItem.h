@@ -5,29 +5,31 @@
 
 #include "pch.h"
 #include "common.h"
-#include "BreadcrumbDropDownElementFactory.h"
 
-#include "BreadcrumbItem.g.h"
+#include "BreadcrumbDropDownItem.g.h"
 
-class BreadcrumbItem :
-    public ReferenceTracker<BreadcrumbItem, winrt::implementation::BreadcrumbItemT>
+class BreadcrumbDropDownItem :
+    public ReferenceTracker<BreadcrumbDropDownItem, winrt::implementation::BreadcrumbDropDownItemT>
 {
 public:
-    BreadcrumbItem();
-    ~BreadcrumbItem();
+    BreadcrumbDropDownItem();
+    ~BreadcrumbDropDownItem();
 
     // IFrameworkElement
-    void OnApplyTemplate();
+    // void OnApplyTemplate();
     void RevokeListeners();
 
+    /*
     // internal
     void ResetVisualProperties();
     void SetPropertiesForLastNode();
     void SetPropertiesForEllipsisNode();
     void SetParentBreadcrumb(const winrt::Breadcrumb& parent);
     void SetFlyoutDataTemplate(const winrt::IInspectable& newDataTemplate);
-
+    */
 private:
+
+    /*
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
@@ -58,7 +60,6 @@ private:
     tracker_ref<winrt::FlyoutBase> m_ellipsisFlyout{ this };
     tracker_ref<winrt::ItemsRepeater> m_ellipsisItemsRepeater{ this };
     tracker_ref<winrt::DataTemplate> m_ellipsisDataTemplate{ this };
-    com_ptr<BreadcrumbDropDownElementFactory> m_ellipsisElementFactory{ nullptr };
 
     // Parent BreadcrumbItem to ask for hidden elements
     tracker_ref<winrt::Breadcrumb> m_parentBreadcrumb{ this };
@@ -76,4 +77,6 @@ private:
     winrt::UIElement::PointerReleased_revoker m_breadcrumbItemPointerReleasedRevoker{};
     winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemPointerCanceledRevoker{};
     winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};
+    */
+    
 };

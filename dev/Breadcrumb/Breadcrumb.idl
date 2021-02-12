@@ -8,6 +8,7 @@ runtimeclass StackLayout;
 [default_interface]
 runtimeclass BreadcrumbItemClickedEventArgs
 {
+    Int32 Index { get; };
     Object Item { get; };
 }
 
@@ -20,9 +21,9 @@ unsealed runtimeclass BreadcrumbItem : Windows.UI.Xaml.Controls.ContentControl
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass BreadcrumbLayout : NonVirtualizingLayout
+unsealed runtimeclass BreadcrumbDropDownItem : Windows.UI.Xaml.Controls.ContentControl
 {
-    BreadcrumbLayout();
+    BreadcrumbDropDownItem();
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -33,13 +34,13 @@ unsealed runtimeclass Breadcrumb : Windows.UI.Xaml.Controls.Control
 {
     Breadcrumb();
 
-    Object DropdownItemTemplate{ get; set; };
+    Object DropDownItemTemplate{ get; set; };
     Object ItemsSource{ get; set; };
     Object ItemTemplate{ get; set; };
 
     event Windows.Foundation.TypedEventHandler<Breadcrumb, BreadcrumbItemClickedEventArgs> ItemClicked;
 
-    static Windows.UI.Xaml.DependencyProperty DropdownItemTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DropDownItemTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty{ get; };
 }

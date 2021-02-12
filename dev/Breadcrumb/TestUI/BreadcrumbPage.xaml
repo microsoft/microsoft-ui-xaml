@@ -51,7 +51,7 @@
                                     <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
                                                          x:Name="BreadCrumbControl"
                                                          ItemClicked="BreadCrumbControl_ItemClicked"
-                                                         Grid.Column="0">
+                                                         Grid.Column="0" Grid.Row="1">
                                         <controls:Breadcrumb.ItemTemplate>
                                             <DataTemplate x:DataType="local2:TreeNode">
                                                 <controls:BreadcrumbItem Content="{Binding}">
@@ -64,18 +64,27 @@
                                             </DataTemplate>
                                         </controls:Breadcrumb.ItemTemplate>
 
-                                        <controls:Breadcrumb.DropdownItemTemplate>
+                                        <controls:Breadcrumb.DropDownItemTemplate>
                                             <DataTemplate x:DataType="local2:TreeNode">
-                                                <Button Content="{Binding}" Background="Transparent"
-                                                        HorizontalAlignment="Stretch" >
-                                                    <Button.ContentTemplate>
+                                                <ListViewItem Content="{Binding}">
+                                                    <ListViewItem.ContentTemplate>
                                                         <DataTemplate>
                                                             <TextBlock Text="{Binding Name}" />
                                                         </DataTemplate>
-                                                    </Button.ContentTemplate>
-                                                </Button>
+                                                    </ListViewItem.ContentTemplate>
+                                                </ListViewItem>
+                                                <!--
+                                                <ContentPresenter Content="{Binding}" Background="Transparent"
+                                                        HorizontalAlignment="Stretch" >
+                                                    <ContentPresenter.ContentTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Name}" />
+                                                        </DataTemplate>
+                                                    </ContentPresenter.ContentTemplate>
+                                                </ContentPresenter>
+                                                -->
                                             </DataTemplate>
-                                        </controls:Breadcrumb.DropdownItemTemplate>
+                                        </controls:Breadcrumb.DropDownItemTemplate>
 
                                     </controls:Breadcrumb>
                                 </Grid>
@@ -137,7 +146,7 @@
                         </DataTemplate>
                     </controls:Breadcrumb.ItemTemplate>
 
-                    <controls:Breadcrumb.DropdownItemTemplate>
+                    <controls:Breadcrumb.DropDownItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
                             <Button Content="{Binding}" Background="Transparent"
                                                         HorizontalAlignment="Stretch" >
@@ -148,7 +157,7 @@
                                 </Button.ContentTemplate>
                             </Button>
                         </DataTemplate>
-                    </controls:Breadcrumb.DropdownItemTemplate>
+                    </controls:Breadcrumb.DropDownItemTemplate>
                 </controls:Breadcrumb>
             </Grid>
         </StackPanel>
