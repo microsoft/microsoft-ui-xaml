@@ -255,8 +255,14 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const in
     if (SharedHelpers::IsBringIntoViewOptionsVerticalAlignmentRatioAvailable())
     {
         winrt::BringIntoViewOptions options;
-        options.VerticalAlignmentRatio(0.5);
-        options.HorizontalAlignmentRatio(0.5);
+        if (Orientation() == winrt::Orientation::Horizontal)
+        {
+            options.HorizontalAlignmentRatio(0.5);
+        }
+        else
+        {
+            options.VerticalAlignmentRatio(0.5);
+        }
         options.AnimationDesired(true);
         sender.StartBringIntoView(options);
     }
