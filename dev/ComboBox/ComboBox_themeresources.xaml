@@ -719,7 +719,7 @@
                         <Popup x:Name="Popup">
                             <Border x:Name="PopupBorder"
                                 Background="{ThemeResource ComboBoxDropDownBackground}"
-                                contract7Present:BackgroundSizing="OuterBorderEdge"
+                                contract7Present:BackgroundSizing="InnerBorderEdge"
                                 BorderBrush="{ThemeResource ComboBoxDropDownBorderBrush}"
                                 BorderThickness="{ThemeResource ComboBoxDropdownBorderThickness}"
                                 Margin="0,-0.5,0,-1"
