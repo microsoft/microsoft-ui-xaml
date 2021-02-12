@@ -45,13 +45,9 @@ PipsPager::PipsPager()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_PipsPager);
     m_pipsPagerItems = winrt::make<Vector<winrt::IInspectable>>().as<winrt::IObservableVector<winrt::IInspectable>>();
-   //m_pipsPagerItems = winrt::single_threaded_observable_vector<int>();
     const auto templateSettings = winrt::make<PipsPagerTemplateSettings>();
     templateSettings.SetValue(PipsPagerTemplateSettings::s_PipsPagerItemsProperty, m_pipsPagerItems);
     SetValue(s_TemplateSettingsProperty, templateSettings);
-
-    //TemplateSettings(winrt::make<PipsPagerTemplateSettings>());
-    //TemplateSettings().SetValue(PipsPagerTemplateSettings::s_PipsPagerItemsProperty, m_pipsPagerItems);
 
     s_pipButtonHandlersProperty =
         InitializeDependencyProperty(
