@@ -99,7 +99,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         protected void SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode mode)
         {
-            var m = $"{mode}PreviousButton";
             elements.GetPreviousPageButtonVisibilityComboBox().SelectItemByName($"{mode}PreviousButton");
         }
 

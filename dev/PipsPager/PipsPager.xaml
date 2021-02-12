@@ -12,7 +12,7 @@
         <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousPageButtonStyle}"/>
         <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextPageButtonStyle}"/>
         <Setter Property="SelectedPipStyle" Value="{StaticResource PipsPagerSelectedPipButtonStyle}"/>
-        <Setter Property="NormalPipStyle" Value="{StaticResource PipsPagerDefaultPipButtonStyle}"/>
+        <Setter Property="NormalPipStyle" Value="{StaticResource PipsPagerNormalPipButtonStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PipsPager">
