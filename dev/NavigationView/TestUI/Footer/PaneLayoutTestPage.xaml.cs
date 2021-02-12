@@ -88,6 +88,13 @@ namespace MUXControlsTestApp
             }
         }
 
+        
+        private void ClearCollectionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            menuItems.Clear();
+            footerItems.Clear();
+        }
+
         private void GetLayoutHeightsButton_Click(object sender, RoutedEventArgs e)
         {
             var itemsScroll = VisualTreeUtils.FindVisualChildByName(RootNavigationView, "MenuItemsScrollViewer");
@@ -95,5 +102,14 @@ namespace MUXControlsTestApp
             LayoutHeightsReport.Text = itemsScroll.ActualHeight + ";" + footerScroll.ActualHeight;
         }
 
+        private void IsSettingsEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            RootNavigationView.IsSettingsVisible = true;
+        }
+
+        private void IsSettingsEnabledCheckbox_UnChecked(object sender, RoutedEventArgs e)
+        {
+            RootNavigationView.IsSettingsVisible = false;
+        }
     }
 }
