@@ -5,8 +5,8 @@
     <x:Double x:Key="BodyStrongTextBlockFontSize">14</x:Double>
     <x:Double x:Key="TitleLargeTextBlockFontSize">40</x:Double>
     <x:Double x:Key="DisplayTextBlockFontSize">68</x:Double>
-    
-    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+
+    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
         <Setter Property="FontSize" Value="{StaticResource BodyStrongTextBlockFontSize}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="OpticalMarginAlignment" Value="None" />

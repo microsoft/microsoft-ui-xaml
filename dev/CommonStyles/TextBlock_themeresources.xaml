@@ -4,9 +4,8 @@
 
     <x:Double x:Key="CaptionTextBlockFontSize">12</x:Double>
     <x:Double x:Key="BodyTextBlockFontSize">14</x:Double>
-    <x:Double x:Key="BodyStrongTextBlockFontSize">14</x:Double>
     <x:Double x:Key="SubtitleTextBlockFontSize">20</x:Double>
-    <x:Double x:Key="TitleTextBlockFontSize">20</x:Double>
+    <x:Double x:Key="TitleTextBlockFontSize">28</x:Double>
     <x:Double x:Key="TitleLargeTextBlockFontSize">40</x:Double>
     <x:Double x:Key="DisplayTextBlockFontSize">68</x:Double>
 
@@ -31,10 +30,8 @@
         <Setter Property="OpticalMarginAlignment" Value="None" />
     </Style>
 
-    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
-        <Setter Property="FontSize" Value="{StaticResource BodyStrongTextBlockFontSize}" />
+    <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="OpticalMarginAlignment" Value="None" />
     </Style>
 
     <Style x:Key="SubtitleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
