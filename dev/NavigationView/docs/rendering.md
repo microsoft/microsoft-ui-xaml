@@ -85,7 +85,7 @@ For displaymode Top the following parts are used:
 * `TopNavMenuItemsOverflowHost`: Renders the items in the overflow flyout
 * `PaneCustomContentOnTopPane`: Renders the custom pane content
 * `TopPaneAutoSuggestArea`: Takes up space for the search box
-* `TopPaneAutoSuggestBoxPresenter`: Renders the AutoSuggetBox
+* `TopPaneAutoSuggestBoxPresenter`: Renders the AutoSuggestBox
 * `TopFooterMenuItemsHost`: Renders the footer menu items
 * `PaneFooterOnTopPane`: Shows the panefooter
 * `TopNavContentOverlayAreaGrid`: Used for content overlays
