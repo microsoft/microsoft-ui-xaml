@@ -37,7 +37,7 @@ public:
     /* Property changed handlers */
     void OnNumberOfPagesChanged();
     void OnSelectedPageIndexChanged(const int oldValue);
-    void OnMaxVisualIndicatorsChanged();
+    void OnMaxVisiblePipsChanged();
     void OnNavigationButtonVisibilityChanged(
         const winrt::PipsPagerButtonVisibility visibility,
         const wstring_view& collapsedStateName,
@@ -86,7 +86,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
 
     /* Items */
-    winrt::IObservableVector<IInspectable> m_pipsPagerItems{};
+    winrt::IObservableVector<winrt::IInspectable> m_pipsPagerItems{};
 
     /* Additional variables class variables*/
     winrt::Size m_defaultPipSize{ 0.0,0.0 };

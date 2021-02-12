@@ -1,33 +1,31 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum PipsPagerButtonVisibility
 {
     Visible,
-    VisibleOnHover,
+    VisibleOnPointerOver,
     Collapsed
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
+[default_interface]
 [webhosthidden]
 runtimeclass PipsPagerSelectedIndexChangedEventArgs
-{
-    Int32 NewPageIndex{get; };
-    Int32 PreviousPageIndex{get; };
+{ 
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
-unsealed runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObject
+runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    PipsPagerTemplateSettings();
     Windows.Foundation.Collections.IVector<Object> PipsPagerItems { get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -42,7 +40,7 @@ unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
     Int32 SelectedPageIndex;
 
     [MUX_DEFAULT_VALUE("5")]
-    Int32 MaxVisualIndicators;
+    Int32 MaxVisiblePips;
 
     [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation;
@@ -55,8 +53,8 @@ unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.Style PreviousButtonStyle;
     Windows.UI.Xaml.Style NextButtonStyle;
 
-    Windows.UI.Xaml.Style SelectedIndicatorButtonStyle;
-    Windows.UI.Xaml.Style DefaultIndicatorButtonStyle;
+    Windows.UI.Xaml.Style SelectedPipStyle;
+    Windows.UI.Xaml.Style NormalPipStyle;
 
     event Windows.Foundation.TypedEventHandler<PipsPager, PipsPagerSelectedIndexChangedEventArgs> SelectedIndexChanged;
 
@@ -65,14 +63,14 @@ unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
 
     static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty MaxVisualIndicatorsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaxVisiblePipsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PreviousButtonVisibilityProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty NextButtonVisibilityProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PreviousButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SelectedIndicatorButtonStyleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty DefaultIndicatorButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedPipStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NormalPipStyleProperty{ get; };
 };
 
 }

@@ -44,11 +44,14 @@ constexpr auto c_pipsPagerVerticalOrientationVisualState = L"VerticalOrientation
 PipsPager::PipsPager()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_PipsPager);
-
-    m_pipsPagerItems = winrt::make<Vector<IInspectable>>().as<winrt::IObservableVector<IInspectable>>();
+    m_pipsPagerItems = winrt::make<Vector<winrt::IInspectable>>().as<winrt::IObservableVector<winrt::IInspectable>>();
+   //m_pipsPagerItems = winrt::single_threaded_observable_vector<int>();
     const auto templateSettings = winrt::make<PipsPagerTemplateSettings>();
     templateSettings.SetValue(PipsPagerTemplateSettings::s_PipsPagerItemsProperty, m_pipsPagerItems);
     SetValue(s_TemplateSettingsProperty, templateSettings);
+
+    //TemplateSettings(winrt::make<PipsPagerTemplateSettings>());
+    //TemplateSettings().SetValue(PipsPagerTemplateSettings::s_PipsPagerItemsProperty, m_pipsPagerItems);
 
     s_pipButtonHandlersProperty =
         InitializeDependencyProperty(
@@ -97,11 +100,11 @@ void PipsPager::OnApplyTemplate()
 
     m_pipsPagerScrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(c_pipsPagerScrollViewerName, *this));
 
-    m_defaultPipSize = GetDesiredPipSize(DefaultIndicatorButtonStyle());
-    m_selectedPipSize = GetDesiredPipSize(SelectedIndicatorButtonStyle());
+    m_defaultPipSize = GetDesiredPipSize(NormalPipStyle());
+    m_selectedPipSize = GetDesiredPipSize(SelectedPipStyle());
     OnNavigationButtonVisibilityChanged(PreviousButtonVisibility(), c_previousPageButtonCollapsedVisualState, c_previousPageButtonDisabledVisualState);
     OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState, c_nextPageButtonDisabledVisualState);
-    UpdatePipsItems(NumberOfPages(), MaxVisualIndicators());
+    UpdatePipsItems(NumberOfPages(), MaxVisiblePips());
     OnOrientationChanged();
     OnSelectedPageIndexChanged(m_lastSelectedPageIndex);
 }
@@ -208,7 +211,7 @@ void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const wstring_view& enabledStateName,
     const wstring_view& disabledStateName) {
 
-    const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && MaxVisualIndicators() > 0;
+    const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && MaxVisiblePips() > 0;
     if (visibility != ButtonVisibility::Collapsed)
     {
         if ((visibility == ButtonVisibility::Visible || m_isPointerOver) && ifGenerallyVisible)
@@ -271,7 +274,7 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const in
             pipSize = m_defaultPipSize.Height;
             changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(nullptr, offset, nullptr);};
         }
-        const int maxVisualIndicators = MaxVisualIndicators();
+        const int maxVisualIndicators = MaxVisiblePips();
         /* This line makes sure that while having even # of indicators the scrolling will be done correctly */
         const int offSetChangeForEvenSizeWindow = maxVisualIndicators % 2 == 0 && index > m_lastSelectedPageIndex ? 1 : 0;
         const int offSetNumOfElements = index + offSetChangeForEvenSizeWindow - maxVisualIndicators / 2;
@@ -281,18 +284,18 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const in
 }
 
 void PipsPager::UpdateSelectedPip(const int index) {
-    if (NumberOfPages() != 0 && MaxVisualIndicators() > 0)
+    if (NumberOfPages() != 0 && MaxVisiblePips() > 0)
     {
         if (const auto repeater = m_pipsPagerRepeater.get())
         {
             repeater.UpdateLayout();
             if (const auto element = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::Button>())
             {
-                element.Style(DefaultIndicatorButtonStyle());
+                element.Style(NormalPipStyle());
             }
             if (const auto element = repeater.GetOrCreateElement(index).try_as<winrt::Button>())
             {
-                element.Style(SelectedIndicatorButtonStyle());
+                element.Style(SelectedPipStyle());
                 ScrollToCenterOfViewport(element, index);
             }
         }
@@ -322,13 +325,13 @@ void PipsPager::SetScrollViewerMaxSize() {
     {
         if (Orientation() == winrt::Orientation::Horizontal)
         {
-            const auto scrollViewerWidth = CalculateScrollViewerSize(m_defaultPipSize.Width, m_selectedPipSize.Width, NumberOfPages(), MaxVisualIndicators());
+            const auto scrollViewerWidth = CalculateScrollViewerSize(m_defaultPipSize.Width, m_selectedPipSize.Width, NumberOfPages(), MaxVisiblePips());
             scrollViewer.MaxWidth(scrollViewerWidth);
             scrollViewer.MaxHeight(std::max(m_defaultPipSize.Height, m_selectedPipSize.Height));
         }
         else
         {
-            const auto scrollViewerHeight = CalculateScrollViewerSize(m_defaultPipSize.Height, m_selectedPipSize.Height, NumberOfPages(), MaxVisualIndicators());
+            const auto scrollViewerHeight = CalculateScrollViewerSize(m_defaultPipSize.Height, m_selectedPipSize.Height, NumberOfPages(), MaxVisiblePips());
             scrollViewer.MaxHeight(scrollViewerHeight);
             scrollViewer.MaxWidth(std::max(m_defaultPipSize.Width, m_selectedPipSize.Width));
         }
@@ -382,7 +385,7 @@ void PipsPager::OnElementPrepared(winrt::ItemsRepeater sender, winrt::ItemsRepea
             auto const index = args.Index();
             if (index != SelectedPageIndex())
             {
-                pip.Style(DefaultIndicatorButtonStyle());
+                pip.Style(NormalPipStyle());
             }
 
             // Narrator says: Page 5, Button 5 of 30. Is it expected behavior?
@@ -417,11 +420,11 @@ void PipsPager::OnElementIndexChanged(const winrt::ItemsRepeater&, const winrt::
     }
 }
 
-void PipsPager::OnMaxVisualIndicatorsChanged()
+void PipsPager::OnMaxVisiblePipsChanged()
 {
     const auto numberOfPages = NumberOfPages();
     if (numberOfPages < 0) {
-        UpdatePipsItems(numberOfPages, MaxVisualIndicators());
+        UpdatePipsItems(numberOfPages, MaxVisiblePips());
     }
     SetScrollViewerMaxSize();
     UpdateSelectedPip(SelectedPageIndex());
@@ -433,7 +436,7 @@ void PipsPager::OnNumberOfPagesChanged()
     const int numberOfPages = NumberOfPages();
     const int selectedPageIndex = SelectedPageIndex();
     UpdateSizeOfSetForElements(numberOfPages);
-    UpdatePipsItems(numberOfPages, MaxVisualIndicators());
+    UpdatePipsItems(numberOfPages, MaxVisiblePips());
     SetScrollViewerMaxSize();
     if (SelectedPageIndex() > numberOfPages - 1 && numberOfPages > -1)
     {
@@ -469,7 +472,7 @@ void PipsPager::OnSelectedPageIndexChanged(const int oldValue)
             winrt::get_self<PipsPagerAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
         }
         if (NumberOfPages() < 0) {
-            UpdatePipsItems(NumberOfPages(), MaxVisualIndicators());
+            UpdatePipsItems(NumberOfPages(), MaxVisiblePips());
         }
         UpdateSelectedPip(SelectedPageIndex());
         UpdateNavigationButtonVisualStates();
@@ -529,8 +532,8 @@ void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
         {
             OnSelectedPageIndexChanged(winrt::unbox_value<int>(args.OldValue()));
         }
-        else if (property == MaxVisualIndicatorsProperty()) {
-            OnMaxVisualIndicatorsChanged();
+        else if (property == MaxVisiblePipsProperty()) {
+            OnMaxVisiblePipsChanged();
         }
         else if (property == PreviousButtonVisibilityProperty())
         {
@@ -540,15 +543,15 @@ void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
         {
             OnNavigationButtonVisibilityChanged(NextButtonVisibility(), c_nextPageButtonCollapsedVisualState, c_nextPageButtonDisabledVisualState);
         }
-        else if (property == DefaultIndicatorButtonStyleProperty())
+        else if (property == NormalPipStyleProperty())
         {
-            m_defaultPipSize = GetDesiredPipSize(DefaultIndicatorButtonStyle());
+            m_defaultPipSize = GetDesiredPipSize(NormalPipStyle());
             SetScrollViewerMaxSize();
             UpdateSelectedPip(SelectedPageIndex());
         }
-        else if (property == SelectedIndicatorButtonStyleProperty())
+        else if (property == SelectedPipStyleProperty())
         {
-            m_selectedPipSize = GetDesiredPipSize(SelectedIndicatorButtonStyle());
+            m_selectedPipSize = GetDesiredPipSize(SelectedPipStyle());
             SetScrollViewerMaxSize();
             UpdateSelectedPip(SelectedPageIndex());
         }

@@ -103,7 +103,7 @@
     <Thickness x:Key="PipsPagerNavigationButtonBorderThickness">1</Thickness>
 
     <x:String x:Key="PipsPagerSelectedGlyph">&#xEA3B;</x:String>
-    <x:String x:Key="PipsPagerDefaultGlyph">&#xEA3B;</x:String>
+    <x:String x:Key="PipsPagerNormalGlyph">&#xEA3B;</x:String>
 
     <x:String x:Key="PipsPagerPreviousPageButtonGlyph">&#xE70E;</x:String>
     <x:String x:Key="PipsPagerNextPageButtonGlyph">&#xE70D;</x:String>
@@ -114,7 +114,7 @@
     <x:Double x:Key="PipsPagerNavigationButtonFontSize">9</x:Double>
 
     <x:String x:Key="PipsPagerSelectedGlyphFontSize">5</x:String>
-    <x:String x:Key="PipsPagerDefaultGlyphFontSize">3</x:String>
+    <x:String x:Key="PipsPagerNormalGlyphFontSize">3</x:String>
 
     <Style x:Key="PipsPagerNavigationButtonBaseStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource PipsPagerNavigationButtonBackground}"/>
@@ -218,8 +218,8 @@
         <Setter Property="FocusVisualMargin" Value="0" />
         <Setter Property="Width" Value="{StaticResource PipsPagerButtonWidth}" />
         <Setter Property="Height" Value="{StaticResource PipsPagerButtonHeight}" />
-        <Setter Property="Content" Value="{StaticResource PipsPagerDefaultGlyph}" />
-        <Setter Property="FontSize" Value="{StaticResource PipsPagerDefaultGlyphFontSize}" />
+        <Setter Property="Content" Value="{StaticResource PipsPagerNormalGlyph}" />
+        <Setter Property="FontSize" Value="{StaticResource PipsPagerNormalGlyphFontSize}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -301,9 +301,9 @@
         <Setter Property="Foreground" Value="{ThemeResource PipsPagerSelectionIndicatorForegroundSelected}" />
     </Style>
 
-    <Style x:Key="PipsPagerDefaultPipButtonStyle" TargetType="Button" BasedOn="{StaticResource PipsPagerButtonBaseStyle}">
-        <Setter Property="Content" Value="{StaticResource PipsPagerDefaultGlyph}" />
-        <Setter Property="FontSize" Value="{StaticResource PipsPagerDefaultGlyphFontSize}" />
+    <Style x:Key="PipsPagerNormalPipButtonStyle" TargetType="Button" BasedOn="{StaticResource PipsPagerButtonBaseStyle}">
+        <Setter Property="Content" Value="{StaticResource PipsPagerNormalGlyph}" />
+        <Setter Property="FontSize" Value="{StaticResource PipsPagerNormalGlyphFontSize}" />
     </Style>
     
 </ResourceDictionary>

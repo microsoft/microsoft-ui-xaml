@@ -6,13 +6,6 @@
 #include "common.h"
 #include "PipsPagerTemplateSettings.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithDPFactory(PipsPagerTemplateSettings)
-}
-
-#include "PipsPagerTemplateSettings.g.cpp"
-
 GlobalDependencyProperty PipsPagerTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
 GlobalDependencyProperty PipsPagerTemplateSettingsProperties::s_PipsPagerItemsProperty{ nullptr };
 
