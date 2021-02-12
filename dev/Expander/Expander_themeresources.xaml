@@ -99,13 +99,14 @@
         <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Tag" Value="{StaticResource ExpanderChevronDownGlyph}" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
                     <Grid
                         x:Name="ToggleButtonGrid"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="InnerBorderEdge"
+                        contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         Background="{TemplateBinding Background}"
                         MinHeight="{TemplateBinding MinHeight}"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -324,6 +325,7 @@
                             Height="{ThemeResource ExpanderChevronButtonSize}"
                             Margin="{ThemeResource ExpanderChevronMargin}"
                             contract7Present:CornerRadius="{StaticResource ExpanderChevronButtonCornerRadius}"
+                            contract7Present:BackgroundSizing="InnerBorderEdge"
                             BorderBrush="{ThemeResource ExpanderChevronBorderBrush}"
                             BorderThickness="{ThemeResource ExpanderChevronBorderThickness}"
                             Background="{ThemeResource ExpanderChevronBackground}">
