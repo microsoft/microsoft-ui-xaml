@@ -36,7 +36,6 @@
                 VerticalAlignment="Center"
                 AutomationProperties.Name="TestProgressBar"
                 HorizontalAlignment="Left"
-                Value="0"
                 IsIndeterminate="{x:Bind ShowIsIndeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
