@@ -199,7 +199,7 @@
 
     <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
     <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
-    <x:String x:Key="ScrollBarContractBeginTime">00:00:02.00</x:String>
+    <x:String x:Key="ScrollBarContractBeginTime">00:00:00.50</x:String>
     <CornerRadius x:Key="ScrollBarCornerRadius">3</CornerRadius>
 
     <primitives:CornerRadiusFilterConverter x:Key="TopLeftCornerRadiusDoubleValueConverter8x" Filter="TopLeftValue" Scale="8"/>

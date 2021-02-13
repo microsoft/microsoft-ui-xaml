@@ -78,6 +78,7 @@ jobs:
       productName: dep.controls
       branchVersion: false
       nugetVer: true
+      useDfs: false
 
   - task: DownloadBuildArtifacts@0
     condition:
@@ -108,12 +109,15 @@ jobs:
 
   - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
 
-  - task: powershell@2
+  - task: PublishSymbols@2
+    displayName: 'Publish symbols'
     inputs:
-      targetType: filePath
-      filePath: $(Build.SourcesDirectory)\tools\PublishSymbols\PublishSymbols.ps1
-      arguments: -localDirectory "$(Build.ArtifactStagingDirectory)\drop" -Verbose
-    displayName: 'Publish Symbols'
+      SearchPattern: $(Build.ArtifactStagingDirectory)/drop/**/*.pdb
+      SymbolServerType: 'TeamServices'
+    env:
+      LIB: $(Build.SourcesDirectory)
+      ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+      ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
 
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: 'CodeSign'
@@ -174,7 +178,7 @@ jobs:
     runTestJobName: 'RunNugetPkgTestsInHelix'
     helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+    useFrameworkPkg: false
 
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
@@ -184,7 +188,7 @@ jobs:
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+    useFrameworkPkg: true
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
