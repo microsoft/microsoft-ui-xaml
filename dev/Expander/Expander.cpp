@@ -11,12 +11,16 @@
 #include "winnls.h"
 
 static constexpr auto c_expanderHeader = L"ExpanderHeader"sv;
+static constexpr auto c_expanderContent = L"ExpanderContent"sv;
+static constexpr auto c_expanderContentClip = L"ExpanderContentClip"sv;
 
 Expander::Expander()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Expander);
 
     SetDefaultStyleKey(this);
+
+    SetValue(s_TemplateSettingsProperty, winrt::make<::ExpanderTemplateSettings>());
 }
 
 winrt::AutomationPeer Expander::OnCreateAutomationPeer()
@@ -62,8 +66,27 @@ void Expander::OnApplyTemplate()
         }
     }
 
+    if (auto expanderContentClip = GetTemplateChildT<winrt::Border>(c_expanderContentClip, *this))
+    {
+        auto visual = winrt::ElementCompositionPreview::GetElementVisual(expanderContentClip);
+        visual.Clip(visual.Compositor().CreateInsetClip());
+    }
+
+    if (auto expanderContent = GetTemplateChildT<winrt::Border>(c_expanderContent, *this))
+    {
+        m_expanderContentSizeChangedRevoker = expanderContent.SizeChanged(winrt::auto_revoke, { this, &Expander::OnContentSizeChanged });
+    }
+
     UpdateExpandState(false);
     UpdateExpandDirection(false);
+}
+
+void Expander::OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args)
+{
+    const auto templateSettings = winrt::get_self<::ExpanderTemplateSettings>(TemplateSettings());
+
+    templateSettings->ContentHeight(args.NewSize().Height);
+    templateSettings->NegativeContentHeight(-1 * args.NewSize().Height);
 }
 
 
@@ -118,16 +141,23 @@ void Expander::UpdateExpandState(bool useTransitions)
     {
         if (direction == winrt::ExpandDirection::Down)
         {
-            winrt::VisualStateManager::GoToState(*this, L"ExpandedDown", useTransitions);
+            winrt::VisualStateManager::GoToState(*this, L"ExpandDown", useTransitions);
         }
         else
         {
-            winrt::VisualStateManager::GoToState(*this, L"ExpandedUp", useTransitions);
+            winrt::VisualStateManager::GoToState(*this, L"ExpandUp", useTransitions);
         }
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"Collapsed", useTransitions);
+        if (direction == winrt::ExpandDirection::Down)
+        {
+            winrt::VisualStateManager::GoToState(*this, L"CollapseUp", useTransitions);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, L"CollapseDown", useTransitions);
+        }
     }
 
     if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))

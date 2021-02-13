@@ -1,6 +1,15 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ExpanderTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    Double ContentHeight{ get; };
+    Double NegativeContentHeight{ get; };
+}
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
@@ -20,6 +29,9 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
 
     event Windows.Foundation.TypedEventHandler<Expander, ExpanderExpandingEventArgs> Expanding;
     event Windows.Foundation.TypedEventHandler<Expander, ExpanderCollapsedEventArgs> Collapsed;
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    ExpanderTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
