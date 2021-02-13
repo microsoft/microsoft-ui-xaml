@@ -159,7 +159,7 @@
                                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                 <Setter Property="FontSize" Value="20" />
                                 <Setter Property="Background" Value="{ThemeResource CalendarViewNavigationButtonBackground}" />
-                                <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+                                <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">

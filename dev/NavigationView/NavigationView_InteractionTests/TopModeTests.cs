@@ -644,6 +644,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as Reveal styles are being deprecated.
         public void VerifyTopNavigationItemFocusVisualKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
