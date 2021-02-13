@@ -60,7 +60,7 @@
                                     <VisualState.Storyboard>
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ExpanderContent" Storyboard.TargetProperty="Visibility">
-                                                <DiscreteObjectKeyFrame KeyTime="0:0:0.333" Value="Collapsed" />
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="Collapsed" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames
                                             Storyboard.TargetName="ExpanderContent"
@@ -148,7 +148,7 @@
                                 <Border.RenderTransform>
                                     <CompositeTransform />
                                 </Border.RenderTransform>
-                        </Border>
+                            </Border>
                         </Border>
 
                         <ToggleButton
