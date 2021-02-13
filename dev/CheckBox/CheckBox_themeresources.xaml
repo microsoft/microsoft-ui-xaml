@@ -802,16 +802,16 @@
                                 FontSize="{StaticResource CheckBoxGlyphSize}"
                                 Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
                                 Opacity="0" />-->
-                            <local:AnimatedIcon x:Name="CheckGlyph" Foreground="{TemplateBinding Foreground}">
+                            <local:AnimatedIcon x:Name="CheckGlyph" Foreground="{TemplateBinding Foreground}" Margin="4">
                                 <local:AnimatedIcon.Source>
                                     <AnimatedVisuals:Controls_01_Checkmark/>
                                 </local:AnimatedIcon.Source>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource
-                                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"    
-                                                                 FontSize="16"
-                                                                 Glyph="&#xE001;"
-                                                                 IsTextScaleFactorEnabled="False"/>
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"    
+                                        FontSize="16"
+                                        Glyph="&#xE001;"
+                                        IsTextScaleFactorEnabled="False"/>
                                 </local:AnimatedIcon.FallbackIconSource>
                             </local:AnimatedIcon>
 

@@ -240,7 +240,7 @@
                         <Button.Content>
                             <muxc:AnimatedIcon>
                                 <muxc:AnimatedIcon.Source>
-                                    <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                    <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
                                 </muxc:AnimatedIcon.Source>
                             </muxc:AnimatedIcon>
                         </Button.Content>

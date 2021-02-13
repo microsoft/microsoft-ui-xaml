@@ -6,10 +6,10 @@
 //           7.0.0-build.104+geebe28e7e9
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_01_Checkmark.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_02_Hamburger.json
 //       
 //       Input file:
-//           Controls_01_Checkmark.json (34078 bytes created 16:32-08:00 Nov 23 2020)
+//           Controls_02_Hamburger.json (55198 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -22,9 +22,9 @@ namespace MU_XCAV_NAMESPACE
 {
     [WUXC_VERSION_PREVIEW]
     [webhosthidden]
-    runtimeclass Controls_01_Checkmark
+    runtimeclass Controls_02_Hamburger
         : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IRichAnimatedVisualSource
     {
-        Controls_01_Checkmark();
+        Controls_02_Hamburger();
     };
 }

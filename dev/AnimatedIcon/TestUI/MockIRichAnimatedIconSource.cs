@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
-using Controls_09_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Controls_09_Hamburger;
+using Controls_02_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Controls_02_Hamburger;
 
 namespace MUXControlsTestApp
 {
@@ -12,7 +12,7 @@ namespace MUXControlsTestApp
     {
         Dictionary<string, double> markers = new Dictionary<string, double>();
 
-        IRichAnimatedVisualSource visual = new Controls_09_Hamburger();
+        IRichAnimatedVisualSource visual = new Controls_02_Hamburger();
         public MockIRichAnimatedIconSource()
         {
             markers.Add("aTob_Start", 0.12345);
@@ -22,9 +22,9 @@ namespace MUXControlsTestApp
             markers.Add("dToe", 0.12345);
             markers.Add("f", 0.12345);
         }
-        public IAnimatedVisual TryCreateAnimatedIconVisual(Compositor compositor)
+        public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor)
         {
-            return visual.TryCreateAnimatedIconVisual(Window.Current.Compositor);
+            return visual.TryCreateAnimatedVisual(Window.Current.Compositor);
         }
 
         public void SetColorProperty(string propertyName, Color value)

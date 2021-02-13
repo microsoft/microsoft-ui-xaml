@@ -4,66 +4,84 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_06_DownChevron_DropDown.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_DownChevron_NavView.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_SideChevron_TreeView.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_05_Search.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_04_Settings.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_03_Back.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_Hamburger.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_06_DownChevron_DropDown.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_DownChevron_NavView.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_SideChevron_TreeView.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_05_Search.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_04_Settings.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_03_Back.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_Hamburger.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.idl">
-      <Filter>AnimatedVisuals</Filter>
-    </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.idl">
-      <Filter>AnimatedVisuals</Filter>
-    </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.idl">
-      <Filter>AnimatedVisuals</Filter>
-    </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.idl">
-      <Filter>AnimatedVisuals</Filter>
-    </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.idl">
-      <Filter>AnimatedVisuals</Filter>
-    </Midl>
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_06_DownChevron_DropDown.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_DownChevron_NavView.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_SideChevron_TreeView.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_05_Search.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_04_Settings.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_03_Back.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_Hamburger.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
   </ItemGroup>

@@ -6,10 +6,10 @@
 //           7.0.0-build.104+geebe28e7e9
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_01_Checkmark.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_06_DownChevron_DropDown.json
 //       
 //       Input file:
-//           Controls_01_Checkmark.json (34078 bytes created 16:32-08:00 Nov 23 2020)
+//           Controls_06_DownChevron_DropDown.json (11111 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -22,9 +22,9 @@ namespace MU_XCAV_NAMESPACE
 {
     [WUXC_VERSION_PREVIEW]
     [webhosthidden]
-    runtimeclass Controls_01_Checkmark
+    runtimeclass Controls_06_DownChevron_DropDown
         : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IRichAnimatedVisualSource
     {
-        Controls_01_Checkmark();
+        Controls_06_DownChevron_DropDown();
     };
 }

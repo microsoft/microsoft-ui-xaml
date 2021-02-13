@@ -150,7 +150,12 @@ void AnimatedIcon::OnStatePropertyChanged()
 {
     m_pendingState = ValueHelper<winrt::hstring>::CastOrUnbox(this->GetValue(AnimatedIconStateProperty()));
     m_layoutUpdatedRevoker = this->LayoutUpdated(winrt::auto_revoke, { this, &AnimatedIcon::OnLayoutUpdatedAfterStateChanged });
-    InvalidateArrange();
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong()]
+        {
+            strongThis->InvalidateArrange();
+        }
+    );
 }
 
 void AnimatedIcon::OnLayoutUpdatedAfterStateChanged(winrt::IInspectable const& sender, winrt::IInspectable const& args)
@@ -387,7 +392,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         {
             TrySetForegroundProperty(source);
 
-            auto const visual = source.TryCreateAnimatedIconVisual(winrt::Window::Current().Compositor());
+            auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor());
             m_animatedVisual.set(visual);
             return visual ? visual.RootVisual() : nullptr;
         }

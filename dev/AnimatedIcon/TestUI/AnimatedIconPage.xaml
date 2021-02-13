@@ -18,7 +18,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:AnimatedIconHost">
-                        <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}">
+                        <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}" MinWidth="300" MaxWidth="300">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal">
@@ -29,8 +29,8 @@
                                     </VisualState>
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="Hover"/>
-                                            <Setter Target="StateTextBlock.Text" Value="Hover"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PointerOver"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PointerOver"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
@@ -47,8 +47,78 @@
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
+                            <TextBlock Text="{TemplateBinding Title}"/>
                             <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
                                 <Border x:Name="Icon" controls:AnimatedIcon.State="Normal"/>
+                            </ContentPresenter>
+                            <TextBlock x:Name="StateTextBlock" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TransitionTextBlock" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="local:ToggleAnimatedIconHost">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="local:ToggleAnimatedIconHost">
+                        <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}" MinWidth="300" MaxWidth="300">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="CheckedNormal">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="NormalOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="NormalOn"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PointerOverOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PointerOverOn"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PressedOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PressedOn"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedDisabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="DisabledOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="DisabledOn"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="UncheckedNormal">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="NormalOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="NormalOff"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="UncheckedPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PointerOverOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PointerOverOff"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="UncheckedPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PressedOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PressedOff"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="UncheckedDisabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="DisabledOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="DisabledOff"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <CheckBox HorizontalAlignment="Right" IsChecked="{TemplateBinding IsChecked}" IsEnabled="False"/>
+                            <TextBlock Text="{TemplateBinding Title}"/>
+                            <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
+                                <Border x:Name="Icon" controls:AnimatedIcon.State="NormalOff"/>
                             </ContentPresenter>
                             <TextBlock x:Name="StateTextBlock" HorizontalAlignment="Center"/>
                             <TextBlock x:Name="TransitionTextBlock" HorizontalAlignment="Center"/>
@@ -81,11 +151,11 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_Cut" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="DropDownIcon_Cut" Title="Controls_06_DownChevron_DropDown" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                            <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -99,11 +169,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="DropDownIcon_Queue" Title="Controls_06_DownChevron_DropDown" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                            <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -117,11 +187,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="DropDownIcon_SpeedUpQueue" Title="Controls_06_DownChevron_DropDown" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                            <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -138,14 +208,176 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="HamburgerIcon_Cut" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
+                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_Cut" Title="Controls_07_DownChevron_NavView" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_09_Hamburger/>
+                                            <AnimatedVisuals:Controls_07_DownChevron_NavView/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_Queue" Title="Controls_07_DownChevron_NavView" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_07_DownChevron_NavView/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_SpeedUpQueue" Title="Controls_07_DownChevron_NavView" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_07_DownChevron_NavView/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="SideChevron_Cut" Title="Controls_08_SideChevron_TreeView" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_08_SideChevron_TreeView/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="SideChevron_Queue" Title="Controls_08_SideChevron_TreeView" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_08_SideChevron_TreeView/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="SideChevron_SpeedUpQueue" Title="Controls_08_SideChevron_TreeView" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_08_SideChevron_TreeView/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="HamburgerIcon_Cut" Title="Controls_02_Hamburger" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_02_Hamburger/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="HamburgerIcon_Queue" Title="Controls_02_Hamburger" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_02_Hamburger/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost x:Name="HamburgerIcon_SpeedUpQueue" Title="Controls_02_Hamburger" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_02_Hamburger/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:AnimatedIconHost x:Name="SettingsIcon_Cut" Title="Controls_04_Settings" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <AnimatedVisuals:Controls_04_Settings/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -153,14 +385,14 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="HamburgerIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SettingsIcon_Queue" Title="Controls_04_Settings" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_09_Hamburger/>
+                                            <AnimatedVisuals:Controls_04_Settings/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -168,14 +400,14 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="HamburgerIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SettingsIcon_SpeedUpQueue" Title="Controls_04_Settings" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_09_Hamburger/>
+                                            <AnimatedVisuals:Controls_04_Settings/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -186,59 +418,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_Cut" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="BackIcon_Cut" Title="Controls_03_Back" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_07_Settings/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:AnimatedIconHost.IconSource>
-                            </local:AnimatedIconHost>
-                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_Queue" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_07_Settings/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:AnimatedIconHost.IconSource>
-                            </local:AnimatedIconHost>
-                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_SpeedUpQueue" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_07_Settings/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:AnimatedIconHost.IconSource>
-                            </local:AnimatedIconHost>
-                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
-                        <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_Cut" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_08_Back/>
+                                            <AnimatedVisuals:Controls_03_Back/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -251,11 +435,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="BackIcon_Queue" Title="Controls_03_Back" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_08_Back/>
+                                            <AnimatedVisuals:Controls_03_Back/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -268,11 +452,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="BackIcon_SpeedUpQueue" Title="Controls_03_Back" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_08_Back/>
+                                            <AnimatedVisuals:Controls_03_Back/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -288,11 +472,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_Cut" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SearchIcon_Cut" Title="Controls_05_Search" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_10_Search/>
+                                            <AnimatedVisuals:Controls_05_Search/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -303,11 +487,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SearchIcon_Queue" Title="Controls_05_Search" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_10_Search/>
+                                            <AnimatedVisuals:Controls_05_Search/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -318,11 +502,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost x:Name="SearchIcon_SpeedUpQueue" Title="Controls_05_Search" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_10_Search/>
+                                            <AnimatedVisuals:Controls_05_Search/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>

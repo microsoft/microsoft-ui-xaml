@@ -5,7 +5,7 @@
 [webhosthidden]
 interface IRichAnimatedVisualSource
 {
-    IAnimatedVisual TryCreateAnimatedIconVisual(Windows.UI.Composition.Compositor compositor);
+    IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Composition.Compositor compositor);
     Windows.Foundation.Collections.IMapView<String, Double> Markers { get; };
     void SetColorProperty(String propertyName, Windows.UI.Color value);
 };
@@ -22,7 +22,6 @@ unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IconSource FallbackIconSource{ get; set; };
 
-    [MUX_DEFAULT_VALUE("Normal")]
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnAnimatedIconStatePropertyChanged")]
     static Windows.UI.Xaml.DependencyProperty StateProperty{ get; };
     static void SetState(Windows.UI.Xaml.DependencyObject object, String value);

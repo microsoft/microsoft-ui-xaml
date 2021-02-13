@@ -112,7 +112,7 @@
 
                         <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="10,4,2,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal">
                             <local:AnimatedIcon.Source>
-                                <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
                             </local:AnimatedIcon.Source>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource

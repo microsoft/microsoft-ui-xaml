@@ -16,16 +16,10 @@ using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 
 namespace MUXControlsTestApp
 {
-    public sealed class AnimatedIconHost : Button
+    public sealed class ToggleAnimatedIconHost : CheckBox
     {
         Border m_iconPresenter;
         TextBlock m_transitionTextBlock;
-
-        public IconSource IconSource
-        {
-            get { return (IconSource)GetValue(IconSourceProperty); }
-            set { SetValue(IconSourceProperty, value); }
-        }
 
         public static readonly DependencyProperty IconSourceProperty = DependencyProperty.Register(
           "IconSource",
@@ -34,9 +28,15 @@ namespace MUXControlsTestApp
           new PropertyMetadata(null, new PropertyChangedCallback(OnIconSourceChanged))
         );
 
+        public IconSource IconSource
+        {
+            get { return (IconSource)GetValue(IconSourceProperty); }
+            set { SetValue(IconSourceProperty, value); }
+        }
+
         private static void OnIconSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((AnimatedIconHost)d).IconSourceChanged();
+            ((ToggleAnimatedIconHost)d).IconSourceChanged();
         }
 
         public String Title
@@ -48,11 +48,11 @@ namespace MUXControlsTestApp
         public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
           "Title",
           typeof(String),
-          typeof(AnimatedIconHost),
+          typeof(ToggleAnimatedIconHost),
           null
         );
 
-        public AnimatedIconHost()
+        public ToggleAnimatedIconHost()
         {
             this.DefaultStyleKey = typeof(AnimatedIconHost);
             AnimatedIconTestHooks.LastAnimationSegmentChanged += AnimatedIconTestHooks_LastAnimationSegmentChanged;
@@ -60,7 +60,7 @@ namespace MUXControlsTestApp
 
         private void AnimatedIconTestHooks_LastAnimationSegmentChanged(AnimatedIcon sender, object args)
         {
-            if(sender == GetAnimatedIcon())
+            if (sender == GetAnimatedIcon())
             {
                 m_transitionTextBlock.Text = AnimatedIconTestHooks.GetLastAnimationSegment(sender);
             }

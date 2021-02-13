@@ -54,7 +54,7 @@ void AnimatedIconProperties::EnsureProperties()
                 winrt::name_of<winrt::hstring>(),
                 winrt::name_of<winrt::AnimatedIcon>(),
                 true /* isAttached */,
-                ValueHelper<winrt::hstring>::BoxValueIfNecessary(L"Normal"),
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 &AnimatedIcon::OnAnimatedIconStatePropertyChanged);
     }
 }
