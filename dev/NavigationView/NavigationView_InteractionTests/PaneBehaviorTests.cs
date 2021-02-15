@@ -1060,14 +1060,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 // Fill menu items
                 AddMenuItem(160, 160);
                 AddMenuItem(200, 160);
-                AddMenuItem(223, 160);
+                AddMenuItem(219, 160);
 
                 // Fill footer items
-                AddFooterItem(192, 192);
+                AddFooterItem(190, 190);
 
                 // Check that we reached equilibrium.
-                AddFooterItem(192, 192);
-                AddMenuItem(192, 192);
+                AddFooterItem(190, 190);
+                AddMenuItem(190, 190);
 
                 resetCollectionsButton.Click();
                 Wait.ForIdle();
@@ -1113,13 +1113,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 // Fill footer items
                 AddFooterItem(120, 200);
                 AddFooterItem(120, 240);
-                AddFooterItem(120, 263);
+                AddFooterItem(120, 259);
                 // Reached maximum height
-                AddFooterItem(120, 263);
+                AddFooterItem(120, 259);
 
-                AddMenuItem(120, 263);
-                AddMenuItem(160, 223);
-                AddMenuItem(192, 192);
+                AddMenuItem(120, 259);
+                AddMenuItem(160, 219);
+                AddMenuItem(190, 190);
 
                 void VerifyHeights(double menuItemsHeight, double footerItemsHeight)
                 {
@@ -1167,9 +1167,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddMenuItem(280, 0);
                 AddMenuItem(320, 0);
                 AddMenuItem(360, 0);
-                AddMenuItem(400, 0);
-                AddMenuItem(403, 0);
-                AddMenuItem(403, 0);
+                AddMenuItem(399, 0);
+                AddMenuItem(399, 0);
+                AddMenuItem(399, 0);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
@@ -1210,9 +1210,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 AddFooterItem(0,280);
                 AddFooterItem(0,320);
                 AddFooterItem(0,360);
-                AddFooterItem(0,400);
-                AddFooterItem(0,403);
-                AddFooterItem(0,403);
+                AddFooterItem(0,399);
+                AddFooterItem(0,399);
+                AddFooterItem(0,399);
 
                 void VerifyHeights(int menuItemsHeight, int footerItemsHeight)
                 {
