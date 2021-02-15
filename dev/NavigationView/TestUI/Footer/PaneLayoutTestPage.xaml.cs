@@ -21,7 +21,7 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 menuItems.Add(
                     new NavigationViewItem() {
@@ -31,7 +31,7 @@ namespace MUXControlsTestApp
             }
 
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 footerItems.Add(
                     new NavigationViewItem() {
@@ -77,12 +77,12 @@ namespace MUXControlsTestApp
 
         private void ResetCollectionsButton_Click(object sender, RoutedEventArgs e)
         {
-            for (int i = menuItems.Count - 1; i > 3; i--)
+            for (int i = menuItems.Count - 1; i > 2; i--)
             {
                 menuItems.RemoveAt(i);
             }
 
-            for (int i = footerItems.Count - 1; i > 3; i--)
+            for (int i = footerItems.Count - 1; i > 2; i--)
             {
                 footerItems.RemoveAt(i);
             }
