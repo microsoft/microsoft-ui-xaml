@@ -1461,9 +1461,14 @@ void NavigationView::UpdatePaneLayout()
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
-                // 20px is the padding between the two item lists
-                if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
+                // We have 9px margin at the bottom, that's why we subtract 9 everywhere
+                if (m_menuItemsSource && m_footerItemsSource && m_menuItemsSource.Count() * m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                 {
+                    // Either of these collections has no items, let it take all of the available space then.
+                    return paneContentRow.ActualHeight() - 9;
+                }else if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
+                {
+                    // 20px is the padding between the two item lists
                     return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
                 }
                 else
@@ -1490,7 +1495,25 @@ void NavigationView::UpdatePaneLayout()
                         {
                             const auto footersActualHeight = footerItemsRepeater.ActualHeight();
                             const auto menuItemsActualHeight = menuItems.ActualHeight();
-                            if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
+
+                            if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
+                            {
+                                footerItemsScrollViewer.MaxHeight(0);
+                                if (const auto& separator = m_visualItemsSeparator.get())
+                                {
+                                    separator.Visibility(winrt::Visibility::Collapsed);
+                                }
+                                return totalAvailableHeight;
+                            }
+                            else if (m_menuItemsSource.Count() == 0)
+                            {
+                                footerItemsScrollViewer.MaxHeight(totalAvailableHeight);
+                                if (const auto& separator = m_visualItemsSeparator.get())
+                                {
+                                    separator.Visibility(winrt::Visibility::Collapsed);
+                                }
+                                return 0.0;
+                            }else if (totalAvailableHeight > menuItemsActualHeight + footersActualHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
                                 footerItemsScrollViewer.MaxHeight(footersActualHeight);
