@@ -81,8 +81,8 @@
             <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundSelected" ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="PipsPagerSelectionIndicatorForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
-            <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
-            <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPressed" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPointerOver" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="PipsPagerNavigationButtonBackgroundPressed" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBackgroundDisabled" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="PipsPagerNavigationButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
