@@ -31,9 +31,9 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources_v2.5.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources__v1.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_v2.5.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing__v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

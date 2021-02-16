@@ -19,5 +19,5 @@ public:
     static void EnsureRevealLights(winrt::UIElement const& element);
 private:
     void UpdateSource();
-    bool UseLatestStyle();
+    bool UseThemeVersion2();
 };

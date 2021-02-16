@@ -39,10 +39,10 @@ void XamlControlsResourcesProperties::EnsureProperties()
         s_VersionProperty =
             InitializeDependencyProperty(
                 L"Version",
-                winrt::name_of<winrt::StylesVersion>(),
+                winrt::name_of<winrt::ThemeVersion>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
-                ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(winrt::StylesVersion::WinUI_2dot5),
+                ValueHelper<winrt::ThemeVersion>::BoxValueIfNecessary(winrt::ThemeVersion::Version1),
                 winrt::PropertyChangedCallback(&OnVersionPropertyChanged));
     }
 }
@@ -82,15 +82,15 @@ bool XamlControlsResourcesProperties::UseCompactResources()
     return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseCompactResourcesProperty));
 }
 
-void XamlControlsResourcesProperties::Version(winrt::StylesVersion const& value)
+void XamlControlsResourcesProperties::Version(winrt::ThemeVersion const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<XamlControlsResources*>(this)->SetValue(s_VersionProperty, ValueHelper<winrt::StylesVersion>::BoxValueIfNecessary(value));
+    static_cast<XamlControlsResources*>(this)->SetValue(s_VersionProperty, ValueHelper<winrt::ThemeVersion>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::StylesVersion XamlControlsResourcesProperties::Version()
+winrt::ThemeVersion XamlControlsResourcesProperties::Version()
 {
-    return ValueHelper<winrt::StylesVersion>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_VersionProperty));
+    return ValueHelper<winrt::ThemeVersion>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_VersionProperty));
 }

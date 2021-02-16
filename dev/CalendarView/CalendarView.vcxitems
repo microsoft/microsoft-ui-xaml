@@ -16,12 +16,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

@@ -74,54 +74,54 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

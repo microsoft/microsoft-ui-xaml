@@ -31,23 +31,23 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>

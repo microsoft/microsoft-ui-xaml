@@ -15,22 +15,22 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs1_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs1_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs1_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs5_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseThemeVersion>Version2</UseThemeVersion>
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs5_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+    <Page Include="$(MSBuildThisFileDirectory)ToolTip_rs5_themeresources__v1.xaml">
+      <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>

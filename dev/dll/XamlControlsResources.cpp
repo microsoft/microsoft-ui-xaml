@@ -17,7 +17,7 @@ static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcry
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
-thread_local bool s_tlsUseLatestStyle = true;
+thread_local bool s_tlsUseThemeVersion2 = true;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -27,18 +27,18 @@ XamlControlsResources::XamlControlsResources()
     UpdateSource();
 }
 
-bool XamlControlsResources::UseLatestStyle()
+bool XamlControlsResources::UseThemeVersion2()
 {
-    return Version() != winrt::StylesVersion::WinUI_2dot5;
+    return ThemeVersion() != winrt::ThemeVersion::Version1;
 }
 
 void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_UseCompactResourcesProperty || property == s_VersionProperty)
+    if (property == s_UseCompactResourcesProperty || property == s_ThemeVersionProperty)
     {
-        // Source link depends on Version and UseCompactResources flag, we need to update it when either property changed
+        // Source link depends on ThemeVersion and UseCompactResources flag, we need to update it when either property changed
         UpdateSource();
     }
 }
@@ -46,13 +46,13 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
-    const bool useNewVisual = UseLatestStyle();
+    const bool useThemeVersion2 = UseThemeVersion2();
 
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
     winrt::Uri uri {
-        [useCompactResources, useNewVisual]() -> hstring {
+        [useCompactResources, useThemeVersion2]() -> hstring {
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             const bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             const bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
@@ -65,7 +65,7 @@ void XamlControlsResources::UpdateSource()
 
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = useNewVisual ? L"themeresources.xaml" : L"themeresources_2dot5.xaml";
+            hstring postfix = useThemeVersion2 ? L"themeresources.xaml" : L"themeresources_v1.xaml";
 
             if (isInFrameworkPackage)
             {
@@ -124,7 +124,7 @@ void XamlControlsResources::UpdateSource()
         UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
     }
 
-    s_tlsUseLatestStyle = useNewVisual;
+    s_tlsUseThemeVersion2 = useThemeVersion2;
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
@@ -206,7 +206,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
             
-            std::wstring postfix = s_tlsUseLatestStyle ? L"generic.xaml" : L"generic_2dot5.xaml";
+            std::wstring postfix = s_tlsUseThemeVersion2 ? L"generic.xaml" : L"generic_v1.xaml";
             std::wstring releasePrefix = L"";
             
             if (isInFrameworkPackage)

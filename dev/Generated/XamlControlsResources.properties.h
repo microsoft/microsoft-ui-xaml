@@ -12,8 +12,8 @@ public:
     void UseCompactResources(bool value);
     bool UseCompactResources();
 
-    void Version(winrt::StylesVersion const& value);
-    winrt::StylesVersion Version();
+    void Version(winrt::ThemeVersion const& value);
+    winrt::ThemeVersion Version();
 
     static winrt::DependencyProperty UseCompactResourcesProperty() { return s_UseCompactResourcesProperty; }
     static winrt::DependencyProperty VersionProperty() { return s_VersionProperty; }
