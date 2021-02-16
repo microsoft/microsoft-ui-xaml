@@ -44,7 +44,7 @@ constexpr auto c_pipsPagerVerticalOrientationVisualState = L"VerticalOrientation
 PipsPager::PipsPager()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_PipsPager);
-    m_pipsPagerItems = winrt::make<Vector<winrt::IInspectable>>().as<winrt::IObservableVector<winrt::IInspectable>>();
+    m_pipsPagerItems = winrt::single_threaded_observable_vector<int>();
     const auto templateSettings = winrt::make<PipsPagerTemplateSettings>();
     templateSettings.SetValue(PipsPagerTemplateSettings::s_PipsPagerItemsProperty, m_pipsPagerItems);
     SetValue(s_TemplateSettingsProperty, templateSettings);
@@ -356,18 +356,18 @@ void PipsPager::UpdatePipsItems(const int numberOfPages, int maxVisualIndicators
         {
             for (int i = pipsListSize; i < minNumberOfElements; i++)
             {
-                m_pipsPagerItems.Append(winrt::box_value(i + 1));
+                m_pipsPagerItems.Append(i + 1);
             }
         }
         else if (SelectedPageIndex() == pipsListSize - 1) {
-            m_pipsPagerItems.Append(winrt::box_value(pipsListSize + 1));
+            m_pipsPagerItems.Append(pipsListSize + 1);
         }
     }
     else if (pipsListSize < numberOfPages)
     {
         for (int i = pipsListSize; i < numberOfPages; i++)
         {
-            m_pipsPagerItems.Append(winrt::box_value(i + 1));
+            m_pipsPagerItems.Append(i + 1);
         }
     }
     else {

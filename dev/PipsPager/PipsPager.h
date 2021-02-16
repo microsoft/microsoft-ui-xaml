@@ -86,7 +86,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_pipsPagerElementPreparedRevoker{};
 
     /* Items */
-    winrt::IObservableVector<winrt::IInspectable> m_pipsPagerItems{};
+    winrt::IObservableVector<int> m_pipsPagerItems{};
 
     /* Additional variables class variables*/
     winrt::Size m_defaultPipSize{ 0.0,0.0 };

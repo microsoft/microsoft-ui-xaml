@@ -22,7 +22,7 @@ runtimeclass PipsPagerSelectedIndexChangedEventArgs
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    Windows.Foundation.Collections.IVector<Object> PipsPagerItems { get; };
+    Windows.Foundation.Collections.IVector<Int32> PipsPagerItems { get; };
 };
 
 [WUXC_VERSION_MUXONLY]
