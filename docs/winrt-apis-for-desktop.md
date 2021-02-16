@@ -6,7 +6,7 @@ Note that when a class is unsupported in Desktop it can lead to other unsupporte
 
 This document lists out these APIs - these are no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. There are suggested replacements below, where available, to achieve the same functionality. 
 
-This doc will continue to be updated as our community files bugs and as we identify more workarounds/replacements. If you are encountering issues with an API not listed here, please go ahead and [file a bug](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=&template=bug_report.md&title=) on this repo with the API in question and what you are trying to achieve by using it. 
+This doc is a live document and will continue to be updated as we identify more workarounds/replacements. If you are encountering issues with an API not listed here, please go ahead and [file a bug](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=&template=bug_report.md&title=) on this repo with the API in question and what you are trying to achieve by using it. 
 
 ## ApplicationView
 
