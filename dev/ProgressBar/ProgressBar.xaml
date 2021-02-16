@@ -218,6 +218,7 @@
                             x:Name="ProgressBarRoot"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{StaticResource ProgressBarCornerRadius}">
                             
@@ -241,7 +242,6 @@
                                         x:Name="DeterminateProgressBarIndicator"
                                         Fill="{TemplateBinding Foreground}"         
                                         HorizontalAlignment="Left"
-                                        Margin="{TemplateBinding Padding}"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                         contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                         contract7NotPresent:RadiusX="{Binding Source={StaticResource ProgressBarCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -252,7 +252,6 @@
                                         x:Name="IndeterminateProgressBarIndicator"
                                         Fill="{TemplateBinding Foreground}"         
                                         HorizontalAlignment="Left"
-                                        Margin="{TemplateBinding Padding}"
                                         Opacity="0"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                         contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
@@ -267,7 +266,6 @@
                                         x:Name="IndeterminateProgressBarIndicator2"
                                         Fill="{TemplateBinding Foreground}"         
                                         HorizontalAlignment="Left"
-                                        Margin="{TemplateBinding Padding}"
                                         Opacity="0"
                                         contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                         contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
