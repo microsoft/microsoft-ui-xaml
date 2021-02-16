@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
 #include "NavigationViewItemPresenter.g.cpp"
 
 GlobalDependencyProperty NavigationViewItemPresenterProperties::s_IconProperty{ nullptr };
+GlobalDependencyProperty NavigationViewItemPresenterProperties::s_TemplateSettingsProperty{ nullptr };
 
 NavigationViewItemPresenterProperties::NavigationViewItemPresenterProperties()
 {
@@ -33,11 +34,23 @@ void NavigationViewItemPresenterProperties::EnsureProperties()
                 ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::NavigationViewItemPresenterTemplateSettings>(),
+                winrt::name_of<winrt::NavigationViewItemPresenter>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NavigationViewItemPresenterTemplateSettings>::BoxedDefaultValue(),
+                nullptr);
+    }
 }
 
 void NavigationViewItemPresenterProperties::ClearProperties()
 {
     s_IconProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
 void NavigationViewItemPresenterProperties::Icon(winrt::IconElement const& value)
@@ -51,4 +64,17 @@ void NavigationViewItemPresenterProperties::Icon(winrt::IconElement const& value
 winrt::IconElement NavigationViewItemPresenterProperties::Icon()
 {
     return ValueHelper<winrt::IconElement>::CastOrUnbox(static_cast<NavigationViewItemPresenter*>(this)->GetValue(s_IconProperty));
+}
+
+void NavigationViewItemPresenterProperties::TemplateSettings(winrt::NavigationViewItemPresenterTemplateSettings const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewItemPresenter*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::NavigationViewItemPresenterTemplateSettings>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::NavigationViewItemPresenterTemplateSettings NavigationViewItemPresenterProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::NavigationViewItemPresenterTemplateSettings>::CastOrUnbox(static_cast<NavigationViewItemPresenter*>(this)->GetValue(s_TemplateSettingsProperty));
 }

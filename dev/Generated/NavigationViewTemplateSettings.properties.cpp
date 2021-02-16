@@ -14,8 +14,10 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "NavigationViewTemplateSettings.g.cpp"
 
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_BackButtonVisibilityProperty{ nullptr };
+GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_LatestPaneButtonWidthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_LeftPaneVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_OverflowButtonVisibilityProperty{ nullptr };
+GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneButtonWidthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneToggleButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_SingleSelectionFollowsFocusProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_TopPaddingProperty{ nullptr };
@@ -39,6 +41,17 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<winrt::Visibility>::BoxValueIfNecessary(winrt::Visibility::Collapsed),
                 nullptr);
     }
+    if (!s_LatestPaneButtonWidthProperty)
+    {
+        s_LatestPaneButtonWidthProperty =
+            InitializeDependencyProperty(
+                L"LatestPaneButtonWidth",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NavigationViewTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_LeftPaneVisibilityProperty)
     {
         s_LeftPaneVisibilityProperty =
@@ -59,6 +72,17 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Visibility>::BoxValueIfNecessary(winrt::Visibility::Collapsed),
+                nullptr);
+    }
+    if (!s_PaneButtonWidthProperty)
+    {
+        s_PaneButtonWidthProperty =
+            InitializeDependencyProperty(
+                L"PaneButtonWidth",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NavigationViewTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_PaneToggleButtonVisibilityProperty)
@@ -110,8 +134,10 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
 void NavigationViewTemplateSettingsProperties::ClearProperties()
 {
     s_BackButtonVisibilityProperty = nullptr;
+    s_LatestPaneButtonWidthProperty = nullptr;
     s_LeftPaneVisibilityProperty = nullptr;
     s_OverflowButtonVisibilityProperty = nullptr;
+    s_PaneButtonWidthProperty = nullptr;
     s_PaneToggleButtonVisibilityProperty = nullptr;
     s_SingleSelectionFollowsFocusProperty = nullptr;
     s_TopPaddingProperty = nullptr;
@@ -129,6 +155,19 @@ void NavigationViewTemplateSettingsProperties::BackButtonVisibility(winrt::Visib
 winrt::Visibility NavigationViewTemplateSettingsProperties::BackButtonVisibility()
 {
     return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_BackButtonVisibilityProperty));
+}
+
+void NavigationViewTemplateSettingsProperties::LatestPaneButtonWidth(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_LatestPaneButtonWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double NavigationViewTemplateSettingsProperties::LatestPaneButtonWidth()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_LatestPaneButtonWidthProperty));
 }
 
 void NavigationViewTemplateSettingsProperties::LeftPaneVisibility(winrt::Visibility const& value)
@@ -155,6 +194,19 @@ void NavigationViewTemplateSettingsProperties::OverflowButtonVisibility(winrt::V
 winrt::Visibility NavigationViewTemplateSettingsProperties::OverflowButtonVisibility()
 {
     return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_OverflowButtonVisibilityProperty));
+}
+
+void NavigationViewTemplateSettingsProperties::PaneButtonWidth(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_PaneButtonWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double NavigationViewTemplateSettingsProperties::PaneButtonWidth()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_PaneButtonWidthProperty));
 }
 
 void NavigationViewTemplateSettingsProperties::PaneToggleButtonVisibility(winrt::Visibility const& value)

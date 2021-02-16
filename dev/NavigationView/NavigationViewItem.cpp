@@ -231,10 +231,12 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
 void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newContent)
 {
     auto potentialString = newContent.try_as<winrt::IPropertyValue>();
-    const bool stringableToolTip = (potentialString && potentialString.Type() == winrt::PropertyType::String);
+    const bool validStringableToolTip = potentialString
+        && potentialString.Type() == winrt::PropertyType::String
+        && !potentialString.GetString().empty();
     
     winrt::IInspectable newToolTipContent{ nullptr };
-    if (stringableToolTip)
+    if (validStringableToolTip)
     {
         newToolTipContent = newContent;
     }
