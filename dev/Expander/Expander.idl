@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[MUX_PUBLIC]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass ExpanderTemplateSettings : Windows.UI.Xaml.DependencyObject
@@ -10,7 +10,7 @@ runtimeclass ExpanderTemplateSettings : Windows.UI.Xaml.DependencyObject
     Double NegativeContentHeight{ get; };
 }
 
-[MUX_PUBLIC]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
 {
@@ -41,7 +41,7 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty ExpandDirectionProperty{ get; };
 }
 
-[MUX_PUBLIC]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ExpandDirection
 {
@@ -49,14 +49,14 @@ enum ExpandDirection
     Up = 1
 };
 
-[MUX_PUBLIC]
+[MUX_PREVIEW]
 [default_interface]
 [webhosthidden]
 runtimeclass ExpanderExpandingEventArgs
 {
 }
 
-[MUX_PUBLIC]
+[MUX_PREVIEW]
 [default_interface]
 [webhosthidden]
 runtimeclass ExpanderCollapsedEventArgs
