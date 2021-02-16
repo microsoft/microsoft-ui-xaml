@@ -19,7 +19,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)DatePicker_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)DatePicker_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -29,7 +29,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)DateTimePickerFlyout_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)DateTimePickerFlyout_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

@@ -20,7 +20,7 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -47,7 +47,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -57,7 +57,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)AppBarButton_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)AppBarButton_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -67,7 +67,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -77,7 +77,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -87,7 +87,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ListBox_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ListBox_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -97,7 +97,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RichEditBox_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RichEditBox_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -112,7 +112,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -122,7 +122,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CommandBar_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CommandBar_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -132,7 +132,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)PasswordBox_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)PasswordBox_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -152,7 +152,7 @@
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -162,7 +162,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TextBox_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TextBox_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -172,7 +172,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)FlyoutPresenter_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)FlyoutPresenter_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -182,7 +182,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Button_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Button_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -192,7 +192,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ToggleButton_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ToggleButton_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -202,7 +202,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CornerRadius_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CornerRadius_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -212,7 +212,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControls_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControls_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -222,7 +222,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RepeatButton_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RepeatButton_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

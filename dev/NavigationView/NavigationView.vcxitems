@@ -78,7 +78,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -88,7 +88,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -99,7 +99,7 @@
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
@@ -110,7 +110,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -120,7 +120,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

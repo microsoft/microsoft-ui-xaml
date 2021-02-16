@@ -30,7 +30,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TeachingTip__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
@@ -42,7 +42,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
@@ -54,7 +54,7 @@
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>

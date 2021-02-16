@@ -39,7 +39,7 @@
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollView__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
@@ -53,7 +53,7 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
@@ -67,7 +67,7 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS3</Version>
@@ -81,7 +81,7 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS4</Version>

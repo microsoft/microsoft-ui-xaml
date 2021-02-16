@@ -25,7 +25,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -35,7 +35,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

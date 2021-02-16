@@ -21,7 +21,7 @@
       <Priority>2</Priority>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

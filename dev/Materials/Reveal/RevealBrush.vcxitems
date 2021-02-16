@@ -41,13 +41,13 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs1_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs1_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs2_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_rs2_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>

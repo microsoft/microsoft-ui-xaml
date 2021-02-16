@@ -62,7 +62,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -72,7 +72,7 @@
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeViewItem__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TreeViewItem_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
@@ -82,7 +82,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

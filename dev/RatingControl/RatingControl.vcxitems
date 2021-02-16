@@ -38,7 +38,7 @@
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RatingControl__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RatingControl_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -50,7 +50,7 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RatingControl_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RatingControl_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>

@@ -36,7 +36,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuBar__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MenuBar_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -46,7 +46,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuBarItem__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MenuBarItem_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -56,7 +56,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources__v1.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
