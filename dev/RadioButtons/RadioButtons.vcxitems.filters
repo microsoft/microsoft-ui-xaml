@@ -19,9 +19,9 @@
     <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButtons__v1.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources__v1.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)RadioButton__v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />

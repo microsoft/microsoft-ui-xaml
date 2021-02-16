@@ -12,8 +12,8 @@
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)NumberBox.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox__v1.xaml" />
-    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources__v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources_v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)NumberBox.h" />

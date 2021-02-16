@@ -163,7 +163,7 @@
     <!-- Deduce UseThemeVersion2 and UseThemeVersion1 flag from UseThemeVersion for MergeXaml -->
     <SharedPage Update="@(Page)">
       <UseThemeVersion2 Condition="'%(Page.UseThemeVersion)' != 'Version1'">true</UseThemeVersion2>
-      <UseThemeVersion1 Condition="'%(Page.UseThemeVersion)' != 'Latest'">true</UseThemeVersion1>
+      <UseThemeVersion1 Condition="'%(Page.UseThemeVersion)' != 'Version2'">true</UseThemeVersion1>
     </SharedPage>
   </ItemGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
