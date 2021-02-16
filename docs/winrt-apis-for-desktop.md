@@ -4,21 +4,19 @@ Some Windows APIs are designed for and only completely supported in a UWP app, e
 
 Note that when a class is unsupported in Desktop it can lead to other unsupported classes. For example, several classes in the Windows API have a static GetForCurrentView method, such as [UIViewSettings.GetForCurrentView](https://docs.microsoft.com/uwp/api/Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView), which is a pattern that indicates a dependence on ApplicationView, and so are not supported in Desktop apps.
 
-This document lists out these APIs, and suggests replacements where available to achieve the same functionality. 
+This document lists out these APIs - these are no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. There are suggested replacements below, where available, to achieve the same functionality. 
 
 This doc will continue to be updated as our community files bugs and as we identify more workarounds/replacements. If you are encountering issues with an API not listed here, please go ahead and [file a bug](https://github.com/microsoft/microsoft-ui-xaml/issues/new?assignees=&labels=&template=bug_report.md&title=) on this repo with the API in question and what you are trying to achieve by using it. 
 
 ## ApplicationView
-This API is no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. Below is a list of workarounds the team has identified for members or dependencies of the ApplicationView class.
 
 - [`ApplicationViewTitleBar.ExtendViewIntoTitleBar`](https://docs.microsoft.com/en-us/uwp/api/windows.applicationmodel.core.coreapplicationviewtitlebar.extendviewintotitlebar?view=winrt-19041) 
     
     Use `Window.ExtendsContentIntoTitleBar` instead. This API was added in Preview 4 and is intended as a permanent replacement in WinUI 3. API reference documentation for this is coming soon.
 
 ## CoreWindow
-This API is no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. Below is a list of workarounds the team has identified for members or dependencies of the CoreWindow class.
 
-- [`CoreWindow.GetKeyState()`]((https://docs.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.getkeystate?view=winrt-19041) ) 
+- [`CoreWindow.GetKeyState()`](https://docs.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.getkeystate?view=winrt-19041) 
 
     Use [`KeyboardInput.GetKeyStateForCurrentThread`](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.input.keyboardinput.getkeystateforcurrentthread?view=winui-3.0-preview) instead.
 
@@ -37,8 +35,8 @@ Note too that the [Window.Dispatcher](https://docs.microsoft.com/uwp/api/Windows
 This API is no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it.
 
 ## DisplayInformation
-This API is no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. Below is a list of workarounds the team has identified for members or dependencies of the DisplayInformation class.
- - [`DisplayInformation.LogicalDpi`](https://docs.microsoft.com/en-us/uwp/api/windows.graphics.display.displayinformation.logicaldpi?view=winrt-19041)
+
+- [`DisplayInformation.LogicalDpi`](https://docs.microsoft.com/en-us/uwp/api/windows.graphics.display.displayinformation.logicaldpi?view=winrt-19041)
     
     Use [`XamlRoot.RasterizationScale`](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.xamlroot.rasterizationscale?view=winui-3.0-preview) instead, and listen for changes on the [`XamlRoot.Changed`](https://docs.microsoft.com/uwp/api/windows.ui.xaml.xamlroot.changed?view=winrt-19041) event. 
 
@@ -47,7 +45,6 @@ This API is no longer supported in Desktop apps, and neither are any of its memb
     Use [`XamlRoot.RasterizationScale`](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.xamlroot.rasterizationscale?view=winui-3.0-preview) instead. 
 
 ## UIViewSettings
-This API is no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. Below is a list of workarounds the team has identified for members or dependencies of the UIViewSettings class.
 
 - [`UIViewSettings.GetForCurrentView()`](https://docs.microsoft.com/en-us/uwp/api/windows.ui.viewmanagement.uiviewsettings.getforcurrentview?view=winrt-19041)
 
@@ -55,7 +52,6 @@ This API is no longer supported in Desktop apps, and neither are any of its memb
 
 ## SystemNavigationManager
 
-This API is no longer supported in Desktop apps, and neither are any of its members or other APIs that depend on it. Below is a list of workarounds the team has identified for members or dependencies of the SystemNavigationManager class.
 
 - [`SystemNavigationManager.GetForCurrentView()`](https://docs.microsoft.com/en-us/uwp/api/windows.ui.core.systemnavigationmanager.getforcurrentview?view=winrt-19041)
 
