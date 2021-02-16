@@ -153,7 +153,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E3;"
+                                        Glyph="{ThemeResource FlipViewCaretRight}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         MirroredWhenRightToLeft="True"
