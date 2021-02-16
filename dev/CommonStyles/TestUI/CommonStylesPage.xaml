@@ -143,11 +143,14 @@
                             </CommandBar.SecondaryCommands>
                         </CommandBar>
                         <RichEditBox x:Name="RichEditBox" Grid.Row="6" Header="RichEditBox" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Row="7">
-                            <Run>Pre-hyperlink</Run>
-                            <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
-                            <Run>Post-hyperlink</Run>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Grid.Row="7">
+                            <TextBlock Margin="2,0,2,0">
+                                <Run>Pre-hyperlink</Run>
+                                <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
+                                <Run>Post-hyperlink</Run>
+                            </TextBlock>
+                            <HyperlinkButton Margin="2,0,2,0" Content="Microsoft.com HyperlinkButton" NavigateUri="http://www.microsoft.com"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
@@ -222,11 +225,14 @@
                             </CommandBar.SecondaryCommands>
                         </CommandBar>
                         <RichEditBox Grid.Row="6" Header="RichEditBox" VerticalAlignment="Top" />
-                        <TextBlock Grid.Row="7">
-                            <Run>Pre-hyperlink</Run>
-                            <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
-                            <Run>Post-hyperlink</Run>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Grid.Row="7">
+                            <TextBlock Margin="2,0,2,0">
+                                <Run>Pre-hyperlink</Run>
+                                <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
+                                <Run>Post-hyperlink</Run>
+                            </TextBlock>
+                            <HyperlinkButton Margin="2,0,2,0" Content="Microsoft.com HyperlinkButton" NavigateUri="http://www.microsoft.com"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
