@@ -72,7 +72,7 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColor}"/>
+                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColorLight2}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
@@ -169,7 +169,7 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColor}"/>
+                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColorDark1}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
@@ -202,10 +202,11 @@
         <contract7Present:Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Grid >
+                    <Grid>
                         <Grid.Resources>
                             <Style x:Name="DeleteButtonStyle" TargetType="Button">
                                 <Setter Property="Template">
@@ -216,6 +217,7 @@
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 Background="{ThemeResource TextControlButtonBackground}"
+                                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                                 contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
                                                 <VisualStateManager.VisualStateGroups>
