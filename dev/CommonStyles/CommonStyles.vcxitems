@@ -147,6 +147,7 @@
       <UseThemeVersion>Version2</UseThemeVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
+      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources.xaml">
       <UseThemeVersion>Version2</UseThemeVersion>
@@ -157,6 +158,7 @@
       <UseThemeVersion>Version2</UseThemeVersion>
       <Version>21H1</Version>
       <Type>ThemeResources</Type>
+      <RequireInsiderSDK>true</RequireInsiderSDK>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
