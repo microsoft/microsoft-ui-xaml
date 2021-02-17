@@ -43,6 +43,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PipsPager_21h1_themeresources.xaml">
+      <UseThemeVersion>Version2</UseThemeVersion>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)PipsPager_themeresources_v1.xaml">
       <UseThemeVersion>Version1</UseThemeVersion>
       <Version>RS1</Version>

@@ -25,5 +25,10 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CalendarView_21h1_themeresources.xaml">
+      <UseThemeVersion>Version2</UseThemeVersion>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
   </ItemGroup>
 </Project>
