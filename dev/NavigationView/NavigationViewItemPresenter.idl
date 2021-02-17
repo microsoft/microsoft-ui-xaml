@@ -8,7 +8,24 @@ unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.Con
     NavigationViewItemPresenter();
 
     Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
+    NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
+
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    NavigationViewItemPresenterTemplateSettings();
+
+    Double IconColumnWidth{ get; };
+    Double LatestIconColumnWidth{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty IconColumnWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LatestIconColumnWidthProperty{ get; };
+
 }
 
 }
