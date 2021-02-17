@@ -8,5 +8,11 @@
     <ItemGroup>
         <Reference Include="$(MSBuildThisFileDirectory)..\..\lib\uap10.0\Microsoft.UI.Xaml.winmd"/>
     </ItemGroup>
+    <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="_CreatePackageLayout">
+      <Copy
+          SourceFiles="@(_PackageLayoutFileSource)"
+          DestinationFiles="@(_PackageLayoutFileSource->'$(AppxLayoutDir)%(Filename)%(Extension)')"
+          Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd'" />
+    </Target>
   <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.UI.Xaml.props"/>
 </Project>
