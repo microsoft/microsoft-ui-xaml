@@ -1,7 +1,7 @@
 namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass DropDownButton : Windows.UI.Xaml.Controls.Button
 {

@@ -1,7 +1,7 @@
 namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum ColorSpectrumShape
 {
@@ -9,7 +9,7 @@ enum ColorSpectrumShape
     Ring = 1,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum ColorSpectrumComponents
 {
@@ -21,7 +21,7 @@ enum ColorSpectrumComponents
     ValueSaturation = 5,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum ColorPickerHsvChannel
 {
@@ -31,9 +31,8 @@ enum ColorPickerHsvChannel
     Alpha = 3,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IColorChangedEventArgs", 34f7201f-aad0-4c3a-b97b-2abf36455539)]
 runtimeclass ColorChangedEventArgs
 {
     Windows.UI.Color OldColor { get; };

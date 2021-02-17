@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum PipsPagerButtonVisibility
 {
@@ -10,7 +10,7 @@ enum PipsPagerButtonVisibility
     Collapsed
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass PipsPagerSelectedIndexChangedEventArgs
 {
@@ -18,7 +18,7 @@ runtimeclass PipsPagerSelectedIndexChangedEventArgs
     Int32 PreviousPageIndex{get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 unsealed runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObject
@@ -27,7 +27,7 @@ unsealed runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObje
     Windows.Foundation.Collections.IVector<Object> PipsPagerItems { get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
