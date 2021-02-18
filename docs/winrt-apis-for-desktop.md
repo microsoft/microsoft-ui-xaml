@@ -14,7 +14,7 @@ This doc is a live document and will continue to be updated as we identify more 
     
     Use `Window.ExtendsContentIntoTitleBar` instead. This API was added in Preview 4 and is intended as a permanent replacement in WinUI 3. API reference documentation for this is coming soon.
     
-As mentioned above, `GetForCurrentView()` methods have a dependence on `ApplicationView` and are not supported in Desktop apps. Note that some `GetForCurrentView` methods will not only return null, but will also throw exceptions. We advise checking if `Window.Current()` is null before calling these APIs. 
+As mentioned above, `GetForCurrentView()` methods have a dependence on `ApplicationView` and are not supported in Desktop apps. Note that some `GetForCurrentView` methods will not only return null, but will also throw exceptions. We advise checking if `Window.Current()` is null before calling these APIs - although `Window.Current()` returning null may be expected in some scenarios, such as during background activation. 
 
 ## CoreWindow
 
