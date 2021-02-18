@@ -80,7 +80,6 @@
             <TextBlock x:Name="CurrentNumberOfPagesTextBlock"/>
             <TextBlock x:Name="CurrentMaxVisiblePipsTextBlock"/>
             <TextBlock x:Name="FocusedPageIndexTextBlock" Text="Current focused page index: "/>
-            <TextBlock x:Name="CurrentMaxVisualIndicatorsTextBlock"/>
             <TextBlock x:Name="CurrentOrientationTextBlock"/>
         </StackPanel>
         <Button x:Name="GoToExamplesPageButton"
