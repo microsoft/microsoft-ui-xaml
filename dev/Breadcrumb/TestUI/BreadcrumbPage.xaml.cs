@@ -16,6 +16,8 @@ using Breadcrumb_TestUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Security.Authentication.OnlineId;
+using Microsoft.UI.Xaml.Controls;
+using System.Linq;
 
 namespace MUXControlsTestApp
 {
@@ -193,11 +195,19 @@ namespace MUXControlsTestApp
             ReplaceList(currentNodeChildrenList, node.Children);
         }
 
-        private void BreadCrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
+        private void BreadcrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
         {
             TreeNode treeNode = (TreeNode)args.Item;
             ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
             UpdateChildrenList(treeNode);
+        }
+
+        private void Child_ElementPrepared(object sender, ItemsRepeaterElementPreparedEventArgs e)
+        {
+            Button button = e.Element as Button;
+            TreeNode node = (currentNodeChildrenList.ToArray<object>().GetValue(e.Index) as TreeNode);
+
+            button.Name = node.Name;
         }
     }
 }

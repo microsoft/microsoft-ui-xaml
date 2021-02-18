@@ -50,7 +50,7 @@
 
                                     <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
                                                          x:Name="BreadCrumbControl"
-                                                         ItemClicked="BreadCrumbControl_ItemClicked"
+                                                         ItemClicked="BreadcrumbControl_ItemClicked"
                                                          Grid.Column="0" Grid.Row="1">
 
                                         <controls:Breadcrumb.DropDownItemTemplate>
@@ -77,8 +77,6 @@
                                             </DataTemplate>
                                         </controls:Breadcrumb.ItemTemplate>
 
-                                        
-
                                     </controls:Breadcrumb>
                                 </Grid>
                             </Border>
@@ -100,7 +98,7 @@
 
         <StackPanel Grid.Row="1">
             <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1" >
-                <controls:ItemsRepeater x:Name="ChildrenView" ItemsSource="{x:Bind currentNodeChildrenList}">
+                <controls:ItemsRepeater x:Name="ChildrenItemsRepeater" ItemsSource="{x:Bind currentNodeChildrenList}" ElementPrepared="Child_ElementPrepared">
                     <controls:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
                             <Button Content="{Binding}" Click="ItemsRepeater_ButtonClick">
@@ -124,8 +122,8 @@
                 </Grid.ColumnDefinitions>
 
                 <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
-                                                         x:Name="BreadCrumbControl2"
-                                                         ItemClicked="BreadCrumbControl_ItemClicked"
+                                                         x:Name="BreadcrumbControl2"
+                                                         ItemClicked="BreadcrumbControl_ItemClicked"
                                                          Grid.Column="0">
                     <controls:Breadcrumb.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
