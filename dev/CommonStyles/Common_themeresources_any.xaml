@@ -37,8 +37,8 @@
             <Color x:Key="ControlSolidFillColorDefault">#454545</Color>
 
             <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
-            <Color x:Key="SubtleFillColorSecondary">#08FFFFFF</Color>
-            <Color x:Key="SubtleFillColorTertiary">#0FFFFFFF</Color>
+            <Color x:Key="SubtleFillColorSecondary">#0AFFFFFF</Color>
+            <Color x:Key="SubtleFillColorTertiary">#04FFFFFF</Color>
             <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
@@ -266,7 +266,7 @@
 
             <Color x:Key="SubtleFillColorTransparent">#00FFFFFF</Color>
             <Color x:Key="SubtleFillColorSecondary">#06000000</Color>
-            <Color x:Key="SubtleFillColorTertiary">#0A000000</Color>
+            <Color x:Key="SubtleFillColorTertiary">#03000000</Color>
             <Color x:Key="SubtleFillColorDisabled">#00FFFFFF</Color>
 
             <Color x:Key="ControlAltFillColorTransparent">#00FFFFFF</Color>
