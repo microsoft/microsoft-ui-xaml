@@ -8,7 +8,10 @@
 #include "ResourceAccessor.h"
 
 #include "ItemTemplateWrapper.h"
+
 #include "Breadcrumb.h"
+#include "BreadcrumbDropDownItem.h"
+#include "BreadcrumbItemAutomationPeer.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
@@ -106,15 +109,24 @@ void BreadcrumbItem::SetParentBreadcrumb(const winrt::Breadcrumb& parent)
     m_parentBreadcrumb.set(parent);
 }
 
-void BreadcrumbItem::SetFlyoutDataTemplate(const winrt::IInspectable& newDataTemplate)
+void BreadcrumbItem::SetDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate)
 {
     if (auto const& dataTemplate = newDataTemplate.try_as<winrt::DataTemplate>())
     {
-        m_ellipsisDataTemplate.set(dataTemplate);
+        m_dropDownItemDataTemplate.set(dataTemplate);
     }
     else if (!newDataTemplate)
     {
-        m_ellipsisDataTemplate.set(nullptr);
+        m_dropDownItemDataTemplate.set(nullptr);
+    }
+}
+
+void BreadcrumbItem::RaiseItemClickedEvent(const winrt::IInspectable& content)
+{
+    if (const auto& breadcrumb = m_parentBreadcrumb.get())
+    {
+        auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
+        breadcrumbImpl->RaiseItemClickedEvent(content);
     }
 }
 
@@ -136,15 +148,15 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
 {
     const auto& element = args.Element();
 
-    element.AddHandler(winrt::UIElement::PointerPressedEvent(),
-        winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
-        true);
-
-    // TODO: Investigate an RS2 or lower way to invoke via keyboard. Github issue #3997
-    if (SharedHelpers::IsRS3OrHigher())
+    if (const auto& dropDownItem = element.try_as<winrt::BreadcrumbDropDownItem>())
     {
-        element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
+        if (const auto& dropDownItemImpl = winrt::get_self<BreadcrumbDropDownItem>(dropDownItem))
+        {
+            dropDownItemImpl->SetEllipsisBreadcrumbItem(*this);
+        }
     }
+
+    args.Index();
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -342,9 +354,13 @@ void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt
         {
             const auto& hiddenElements = CloneEllipsisItemSource(breadcrumbImpl->HiddenElements());
 
+            if (const auto& dataTemplate = m_dropDownItemDataTemplate.get())
+            {
+                m_ellipsisElementFactory->UserElementFactory(dataTemplate);
+            }
+
             if (const auto& flyoutRepeater = m_ellipsisItemsRepeater.get())
             {
-                flyoutRepeater.ItemTemplate(m_ellipsisDataTemplate.get());
                 flyoutRepeater.ItemsSource(hiddenElements);
             }
 
@@ -389,7 +405,11 @@ void BreadcrumbItem::InstantiateFlyout()
         m_ellipsisElementFactory = winrt::make_self<BreadcrumbDropDownElementFactory>();
         ellipsisItemsRepeater.ItemTemplate(*m_ellipsisElementFactory);
 
-        if (const auto& dataTemplate = m_ellipsisDataTemplate.get())
+        const auto& stackLayout = winrt::StackLayout();
+        stackLayout.Orientation(winrt::Controls::Orientation::Vertical);
+        ellipsisItemsRepeater.Layout(stackLayout);
+
+        if (const auto& dataTemplate = m_dropDownItemDataTemplate.get())
         {
             m_ellipsisElementFactory->UserElementFactory(dataTemplate);
         }
@@ -417,4 +437,21 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
 
     InstantiateFlyout();
     UpdateVisualState();
+}
+
+winrt::AutomationPeer BreadcrumbItem::OnCreateAutomationPeer()
+{
+    return winrt::make<BreadcrumbItemAutomationPeer>(*this);
+}
+
+void BreadcrumbItem::OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+{
+    if (m_isEllipsisNode)
+    {
+        OnEllipsisItemClick(nullptr, nullptr);
+    }
+    else
+    {
+        OnBreadcrumbItemClick(nullptr, nullptr);
+    }
 }

@@ -16,6 +16,9 @@ public:
     BreadcrumbItem();
     ~BreadcrumbItem();
 
+    // IUIElement
+    winrt::AutomationPeer OnCreateAutomationPeer();
+
     // IFrameworkElement
     void OnApplyTemplate();
     void RevokeListeners();
@@ -25,7 +28,10 @@ public:
     void SetPropertiesForLastNode();
     void SetPropertiesForEllipsisNode();
     void SetParentBreadcrumb(const winrt::Breadcrumb& parent);
-    void SetFlyoutDataTemplate(const winrt::IInspectable& newDataTemplate);
+    void SetDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate);
+    void RaiseItemClickedEvent(const winrt::IInspectable& content);
+    void CloseFlyout();
+    void OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -41,7 +47,6 @@ private:
 
     void InstantiateFlyout();
     void OpenFlyout();
-    void CloseFlyout();
 
     void UpdateVisualState();
     void UpdateCommonVisualState();
@@ -57,7 +62,7 @@ private:
     // Flyout content for ellipsis item
     tracker_ref<winrt::FlyoutBase> m_ellipsisFlyout{ this };
     tracker_ref<winrt::ItemsRepeater> m_ellipsisItemsRepeater{ this };
-    tracker_ref<winrt::DataTemplate> m_ellipsisDataTemplate{ this };
+    tracker_ref<winrt::DataTemplate> m_dropDownItemDataTemplate{ this };
     com_ptr<BreadcrumbDropDownElementFactory> m_ellipsisElementFactory{ nullptr };
 
     // Parent BreadcrumbItem to ask for hidden elements

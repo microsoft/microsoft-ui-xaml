@@ -8,7 +8,8 @@
 #include "ResourceAccessor.h"
 
 #include "ItemTemplateWrapper.h"
-#include "Breadcrumb.h"
+#include "BreadcrumbItem.h"
+#include "BreadcrumbDropDownItemAutomationPeer.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
@@ -31,10 +32,10 @@ BreadcrumbDropDownItem::~BreadcrumbDropDownItem()
 
 void BreadcrumbDropDownItem::RevokeListeners()
 {
+    m_dropDownItemContentPresenterLoadedRevoker.revoke();
 }
 
-/*
-void BreadcrumbItem::OnApplyTemplate()
+void BreadcrumbDropDownItem::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
 
@@ -42,114 +43,45 @@ void BreadcrumbItem::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    m_breadcrumbItemButton.set(GetTemplateChildT<winrt::Button>(L"PART_BreadcrumbItemButton", controlProtected));
-
-    RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbItem::OnFlowDirectionChanged });
+    m_dropDownItemContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"PART_ContentPresenter", controlProtected));
 
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
-        thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbItem::OnChildPreviewKeyDown });
+        thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbDropDownItem::OnChildPreviewKeyDown });
     }
 
-    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
+    if (const auto& contentPresenter = m_dropDownItemContentPresenter.get())
     {
-        m_breadcrumbItemButtonLoadedRevoker = breadcrumbItemButton.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+        m_dropDownItemContentPresenterLoadedRevoker = contentPresenter.Loaded(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnLoadedEvent });
 
-        m_pressedButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
-        m_pointerOverButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
+        /*
+        m_pressedButtonRevoker = RegisterPropertyChanged(contentPresenter, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbDropDownItem::OnVisualPropertyChanged });
+        m_pointerOverButtonRevoker = RegisterPropertyChanged(contentPresenter, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbDropDownItem::OnVisualPropertyChanged });
+        */
 
         // Register for pointer events so we can keep track of the last used pointer type
-        m_breadcrumbItemPointerEnteredRevoker = breadcrumbItemButton.PointerEntered(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemPointerExitedRevoker = breadcrumbItemButton.PointerExited(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemPointerPressedRevoker = breadcrumbItemButton.PointerPressed(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemPointerReleasedRevoker = breadcrumbItemButton.PointerReleased(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemPointerCanceledRevoker = breadcrumbItemButton.PointerCanceled(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemPointerCaptureLostRevoker = breadcrumbItemButton.PointerCaptureLost(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
+        m_breadcrumbItemPointerEnteredRevoker = PointerEntered(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerEnteredEvent });
+        m_breadcrumbItemPointerExitedRevoker = PointerExited(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerExitedEvent });
+        m_breadcrumbItemPointerPressedRevoker = PointerPressed(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerPressedEvent });
+        m_breadcrumbItemPointerReleasedRevoker = PointerReleased(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerReleasedEvent });
+        m_breadcrumbItemPointerCanceledRevoker = PointerCanceled(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerReleasedEvent });
+        m_breadcrumbItemPointerCaptureLostRevoker = PointerCaptureLost(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerReleasedEvent });
     }
-}
-
-void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
-{
-    if (auto breadcrumbItemButton = m_breadcrumbItemButton.get())
-    {
-        m_breadcrumbItemButtonClickRevoker.revoke();
-        if (m_isEllipsisNode)
-        {
-            m_breadcrumbItemButtonClickRevoker = breadcrumbItemButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnEllipsisItemClick });
-        }
-        else
-        {
-            m_breadcrumbItemButtonClickRevoker = breadcrumbItemButton.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnBreadcrumbItemClick });
-        }
-    }
-
-    if (m_isEllipsisNode)
-    {
-        SetPropertiesForEllipsisNode();
-    }
-    else if (m_isLastNode)
-    {
-        SetPropertiesForLastNode();
-    }
-    else
-    {
-        ResetVisualProperties();
-    }
-
-    UpdateCommonVisualState();
-}
-
-void BreadcrumbItem::SetParentBreadcrumb(const winrt::Breadcrumb& parent)
-{
-    m_parentBreadcrumb.set(parent);
-}
-
-void BreadcrumbItem::SetFlyoutDataTemplate(const winrt::IInspectable& newDataTemplate)
-{
-    if (auto const& dataTemplate = newDataTemplate.try_as<winrt::DataTemplate>())
-    {
-        m_ellipsisDataTemplate.set(dataTemplate);
-    }
-    else if (!newDataTemplate)
-    {
-        m_ellipsisDataTemplate.set(nullptr);
-    }
-}
-
-void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
-{
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
-    {
-        auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
-        breadcrumbImpl->RaiseItemClickedEvent(Content());
-    }
-}
-
-void BreadcrumbItem::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
-{
-    UpdateCommonVisualState();
-}
-
-void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
-{
-    const auto& element = args.Element();
-
-    element.AddHandler(winrt::UIElement::PointerPressedEvent(),
-        winrt::box_value<winrt::PointerEventHandler>({this, &BreadcrumbItem::OnFlyoutElementClickEvent}),
+       
+    AddHandler(winrt::UIElement::PointerPressedEvent(),
+        winrt::box_value<winrt::PointerEventHandler>({ this, &BreadcrumbDropDownItem::OnClickEvent }),
         true);
-
-    // TODO: Investigate an RS2 or lower way to invoke via keyboard. Github issue #3997
-    if (SharedHelpers::IsRS3OrHigher())
-    {
-        element.PreviewKeyDown({ this, &BreadcrumbItem::OnFlyoutElementKeyDownEvent });
-    }
 }
 
-void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void BreadcrumbDropDownItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+}
+
+void BreadcrumbDropDownItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Key() == winrt::VirtualKey::Enter)
     {
-        this->OnFlyoutElementClickEvent(sender, nullptr);
+        this->OnClickEvent(sender, nullptr);
         args.Handled(true);
     }
     else
@@ -158,168 +90,74 @@ void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& send
     }
 }
 
-void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
+void BreadcrumbDropDownItem::OnClickEvent(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
+    if (const auto& breadcrumbItem = m_ellipsisBreadcrumbItem.get())
     {
-        const auto& breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
-        const auto& senderAsContentControl = sender.try_as<winrt::ContentControl>();
-
-        const auto& senderAsContentPresenter = sender.try_as<winrt::ContentPresenter>();
-
         // Once an element has been clicked, close the flyout
-        CloseFlyout();
-
-        if (senderAsContentControl)
+        if (const auto& breadcrumbItemImpl = winrt::get_self<BreadcrumbItem>(breadcrumbItem))
         {
-            if (const auto& senderAsListViewItem = sender.try_as<winrt::ListViewItem>())
-            {
-                const auto& content = senderAsContentControl.Content();
-                if (const auto& contentAsTextBlock = content.try_as<winrt::TextBlock>())
-                {
-                    breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
-                }
-                else
-                {
-                    breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
-                }
-            }
-        }
-        else if (senderAsContentPresenter)
-        {
-            breadcrumbImpl->RaiseItemClickedEvent(senderAsContentPresenter.Content());
-        }
-        
+            breadcrumbItemImpl->CloseFlyout();
+            breadcrumbItemImpl->RaiseItemClickedEvent(Content());
+        }   
     }
 }
 
-void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
+void BreadcrumbDropDownItem::SetEllipsisBreadcrumbItem(const winrt::BreadcrumbItem& ellipsisBreadcrumbItem)
 {
-    UpdateVisualState();
+    m_ellipsisBreadcrumbItem.set(ellipsisBreadcrumbItem);
 }
 
-void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
-{
-    if (args.Key() == winrt::VirtualKey::Enter)
-    {
-        if (m_isEllipsisNode)
-        {
-            OnEllipsisItemClick(nullptr, nullptr);
-        }
-        else
-        {
-            OnBreadcrumbItemClick(nullptr, nullptr);
-        }
-        args.Handled(true);
-    }
-}
-
-winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource)
-{
-    // A copy of the hidden elements array in BreadcrumbLayout is created
-    // to avoid getting a Layout cycle exception
-    auto newItemsSource = winrt::make<Vector<winrt::IInspectable>>();
-
-    // The new list contains all the elements in reverse order
-    const int itemsSourceSize = ellipsisItemsSource.Size();
-
-    // The itemsSourceSize should always be at least 1 as it must always contain the ellipsis item
-    assert(itemsSourceSize > 0);
-
-    for (int i = itemsSourceSize - 1; i >= 0; --i)
-    {
-        const auto& item = ellipsisItemsSource.GetAt(i);
-        newItemsSource.Append(item);
-    }
-
-    return newItemsSource;
-}
-
-void BreadcrumbItem::OpenFlyout()
-{
-    if (auto flyout = m_ellipsisFlyout.get())
-    {
-        if (SharedHelpers::IsFlyoutShowOptionsAvailable())
-        {
-            winrt::FlyoutShowOptions options{};
-            flyout.ShowAt(*this, options);
-        }
-        else
-        {
-            flyout.ShowAt(*this);
-        }
-    }
-}
-
-void BreadcrumbItem::CloseFlyout()
-{
-    if (auto flyout = m_ellipsisFlyout.get())
-    {
-        flyout.Hide();
-    }
-}
-
-void BreadcrumbItem::OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+void BreadcrumbDropDownItem::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
     UpdateCommonVisualState();
 }
 
-void BreadcrumbItem::UpdateVisualState()
+void BreadcrumbDropDownItem::OnPointerEnteredEvent(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
 {
-    const bool isLeftToRight = (FlowDirection() == winrt::FlowDirection::LeftToRight);
-    hstring visualStateName;
-
-    if (m_isEllipsisNode)
-    {
-        if (isLeftToRight)
-        {
-            visualStateName = L"Ellipsis";
-        }
-        else
-        {
-            visualStateName = L"EllipsisRTL";
-        }
-    }
-    else if (m_isLastNode)
-    {
-        visualStateName = L"LastItem";
-    }
-    else
-    {
-        if (isLeftToRight)
-        {
-            visualStateName = L"Default";
-        }
-        else
-        {
-            visualStateName = L"DefaultRTL";
-        }
-    }
-
-    winrt::VisualStateManager::GoToState(*this, visualStateName, false);
+    m_isPointerOver = true;
+    UpdateCommonVisualState();
 }
 
-void BreadcrumbItem::UpdateCommonVisualState()
+void BreadcrumbDropDownItem::OnPointerPressedEvent(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
 {
-    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
+    m_isPressed = true;
+    UpdateCommonVisualState();
+}
+
+void BreadcrumbDropDownItem::OnPointerReleasedEvent(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
+{
+    OnClickEvent(nullptr, nullptr);
+    m_isPressed = false;
+    UpdateCommonVisualState();
+}
+
+void BreadcrumbDropDownItem::OnPointerExitedEvent(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+{
+    m_isPointerOver = false;
+    UpdateCommonVisualState();
+}
+
+void BreadcrumbDropDownItem::OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    UpdateCommonVisualState();
+}
+
+void BreadcrumbDropDownItem::UpdateCommonVisualState()
+{
+    if (const auto& contentPresenter = m_dropDownItemContentPresenter.get())
     {
         hstring commonVisualStateName = L"";
 
-        // If is last item: place Current as prefix for visual state
-        if (m_isLastNode)
-        {
-            commonVisualStateName = L"Current";
-        }
-
-        if (!breadcrumbItemButton.IsEnabled())
+        if (!IsEnabled())
         {
             commonVisualStateName = commonVisualStateName + L"Disabled";
         }
-        else if (breadcrumbItemButton.IsPressed())
+        else if (m_isPressed)
         {
             commonVisualStateName = commonVisualStateName + L"Pressed";
         }
-        else if (breadcrumbItemButton.IsPointerOver())
+        else if (m_isPointerOver)
         {
             commonVisualStateName = commonVisualStateName + L"PointerOver";
         }
@@ -328,89 +166,11 @@ void BreadcrumbItem::UpdateCommonVisualState()
             commonVisualStateName = commonVisualStateName + L"Normal";
         }
 
-        winrt::VisualStateManager::GoToState(breadcrumbItemButton, commonVisualStateName, false);
+        winrt::VisualStateManager::GoToState(*this, commonVisualStateName, false);
     }
 }
 
-void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+winrt::AutomationPeer BreadcrumbDropDownItem::OnCreateAutomationPeer()
 {
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
-    {
-        if (const auto& breadcrumbImpl = breadcrumb.try_as<Breadcrumb>())
-        {
-            const auto& hiddenElements = CloneEllipsisItemSource(breadcrumbImpl->HiddenElements());
-
-            if (const auto& flyoutRepeater = m_ellipsisItemsRepeater.get())
-            {
-                flyoutRepeater.ItemTemplate(m_ellipsisDataTemplate.get());
-                flyoutRepeater.ItemsSource(hiddenElements);
-            }
-
-            OpenFlyout();
-        }
-    }
+    return winrt::make<BreadcrumbDropDownItemAutomationPeer>(*this);
 }
-
-void BreadcrumbItem::SetPropertiesForLastNode()
-{
-    m_isEllipsisNode = false;
-    m_isLastNode = true;
-
-    UpdateVisualState();
-}
-
-void BreadcrumbItem::ResetVisualProperties()
-{
-    m_isEllipsisNode = false;
-    m_isLastNode = false;
-
-    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
-    {
-        breadcrumbItemButton.Flyout(nullptr);
-    }
-    m_ellipsisFlyout.set(nullptr);
-    m_ellipsisItemsRepeater.set(nullptr);
-
-    UpdateVisualState();
-}
-
-void BreadcrumbItem::InstantiateFlyout()
-{
-    // Only if the element has been created visually, instantiate the flyout
-    if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
-    {
-        // Create ItemsRepeater and set the DataTemplate 
-        const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
-        ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
-
-        if (const auto& dataTemplate = m_ellipsisDataTemplate.get())
-        {
-            ellipsisItemsRepeater.ItemTemplate(dataTemplate);
-        }
-
-        m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
-        
-        m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
-
-        // Create the Flyout and add the ItemsRepeater as content
-        const auto& ellipsisFlyout = winrt::Flyout();
-        ellipsisFlyout.Content(ellipsisItemsRepeater);
-        ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
-
-        m_ellipsisFlyout.set(ellipsisFlyout);
-
-        // Set the Flyout to the ellipsis button
-        breadcrumbItemButton.Flyout(ellipsisFlyout);
-    }
-}
-
-void BreadcrumbItem::SetPropertiesForEllipsisNode()
-{
-    m_isEllipsisNode = true;
-    m_isLastNode = false;
-
-    InstantiateFlyout();
-
-    UpdateVisualState();
-}
-*/

@@ -53,6 +53,6 @@ void BreadcrumbDropDownItemAutomationPeer::Invoke()
 {
     if (auto dropDownItem = GetImpl())
     {
-        // dropDownItem->OnClickPrimary(nullptr, nullptr);
+        dropDownItem->OnClickEvent(nullptr, nullptr);
     }
 }

@@ -54,7 +54,7 @@ void Breadcrumb::OnApplyTemplate()
 
     if (const auto& itemsRepeater = m_itemsRepeater.get())
     {
-        // itemsRepeater.Layout(*m_itemsRepeaterLayout);
+        itemsRepeater.Layout(*m_itemsRepeaterLayout);
         itemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
         itemsRepeater.ItemTemplate(*m_itemsRepeaterElementFactory);
         
@@ -116,7 +116,7 @@ void Breadcrumb::UpdateEllipsisBreadcrumbItemDropDownItemTemplate()
     {
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(ellipsisBreadcrumbItem))
         {
-            itemImpl->SetFlyoutDataTemplate(newItemTemplate);
+            itemImpl->SetDropDownItemDataTemplate(newItemTemplate);
         }
     }
 }

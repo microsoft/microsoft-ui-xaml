@@ -2,11 +2,92 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.UI.Xaml.Controls">
+    xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)">
 
     <!-- see https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font -->
     <x:String x:Key="SplitButtonSecondaryButtonContent">&#xE76C;</x:String>
     <x:String x:Key="SplitButtonSecondaryButtonDefaultContent">&#xE70D;</x:String>
+
+    <Style x:Key="BreadcrumbDropDownItemStyle" TargetType="local:BreadcrumbDropDownItem">
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        
+        <Setter Property="Background" Value="{ThemeResource MenuFlyoutItemBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource MenuFlyoutItemForeground}" />
+        <Setter Property="Padding" Value="{ThemeResource MenuFlyoutItemThemePadding}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+
+        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:BreadcrumbDropDownItem">
+                    <Grid x:Name="LayoutRoot"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}" >
+
+                        <VisualStateManager.VisualStateGroups>
+
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemBackgroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemForegroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemBackgroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemForegroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <Style x:Key="BreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
 
@@ -53,12 +134,14 @@
                                                 <VisualStateManager.VisualStateGroups>
 
                                                     <VisualStateGroup x:Name="CommonStates">
+                                                        
                                                         <VisualState x:Name="Normal">
                                                             <VisualState.Setters>
                                                                 <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbNormalForegroundBrush}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
 
+                                                        <!-- Current refers to the last item -->
                                                         <VisualState x:Name="CurrentNormal">
                                                             <VisualState.Setters>
                                                                 <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentNormalForegroundBrush}" />
@@ -138,7 +221,6 @@
                                 </Setter>
                             </Style>
                         </Button.Style>
-
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
@@ -235,7 +317,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-
+    
     <Style TargetType="local:Breadcrumb">
         <Setter Property="Template">
             <Setter.Value>
@@ -246,6 +328,7 @@
         </Setter>
     </Style>
 
+    <Style TargetType="local:BreadcrumbDropDownItem" BasedOn="{StaticResource BreadcrumbDropDownItemStyle}"/>
     <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource BreadcrumbItemStyle}"/>
 
 </ResourceDictionary>

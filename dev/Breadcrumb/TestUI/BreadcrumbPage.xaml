@@ -52,6 +52,19 @@
                                                          x:Name="BreadCrumbControl"
                                                          ItemClicked="BreadCrumbControl_ItemClicked"
                                                          Grid.Column="0" Grid.Row="1">
+
+                                        <controls:Breadcrumb.DropDownItemTemplate>
+                                            <DataTemplate x:DataType="local2:TreeNode">
+                                                <controls:BreadcrumbDropDownItem Content="{Binding}">
+                                                    <controls:BreadcrumbDropDownItem.ContentTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Name}" />
+                                                        </DataTemplate>
+                                                    </controls:BreadcrumbDropDownItem.ContentTemplate>
+                                                </controls:BreadcrumbDropDownItem>
+                                            </DataTemplate>
+                                        </controls:Breadcrumb.DropDownItemTemplate>
+
                                         <controls:Breadcrumb.ItemTemplate>
                                             <DataTemplate x:DataType="local2:TreeNode">
                                                 <controls:BreadcrumbItem Content="{Binding}">
@@ -64,27 +77,7 @@
                                             </DataTemplate>
                                         </controls:Breadcrumb.ItemTemplate>
 
-                                        <controls:Breadcrumb.DropDownItemTemplate>
-                                            <DataTemplate x:DataType="local2:TreeNode">
-                                                <ListViewItem Content="{Binding}">
-                                                    <ListViewItem.ContentTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </ListViewItem.ContentTemplate>
-                                                </ListViewItem>
-                                                <!--
-                                                <ContentPresenter Content="{Binding}" Background="Transparent"
-                                                        HorizontalAlignment="Stretch" >
-                                                    <ContentPresenter.ContentTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </ContentPresenter.ContentTemplate>
-                                                </ContentPresenter>
-                                                -->
-                                            </DataTemplate>
-                                        </controls:Breadcrumb.DropDownItemTemplate>
+                                        
 
                                     </controls:Breadcrumb>
                                 </Grid>

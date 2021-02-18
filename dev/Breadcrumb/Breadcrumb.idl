@@ -1,8 +1,5 @@
 ﻿namespace MU_XC_NAMESPACE
 {
-
-runtimeclass StackLayout;
-
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [default_interface]
@@ -14,16 +11,16 @@ runtimeclass BreadcrumbItemClickedEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass BreadcrumbItem : Windows.UI.Xaml.Controls.ContentControl
+unsealed runtimeclass BreadcrumbDropDownItem : Windows.UI.Xaml.Controls.ContentControl
 {
-    BreadcrumbItem();
+    BreadcrumbDropDownItem();
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass BreadcrumbDropDownItem : Windows.UI.Xaml.Controls.ContentControl
+unsealed runtimeclass BreadcrumbItem : Windows.UI.Xaml.Controls.ContentControl
 {
-    BreadcrumbDropDownItem();
+    BreadcrumbItem();
 }
 
 [WUXC_VERSION_PREVIEW]

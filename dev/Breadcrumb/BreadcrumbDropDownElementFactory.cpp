@@ -30,8 +30,8 @@ void BreadcrumbDropDownElementFactory::UserElementFactory(const winrt::IInspecta
 
 winrt::UIElement BreadcrumbDropDownElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
-
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]()
+    {
         if (args.Data().try_as<winrt::BreadcrumbDropDownItem>())
         {
             return args.Data();
@@ -44,23 +44,23 @@ winrt::UIElement BreadcrumbDropDownElementFactory::GetElementCore(const winrt::E
         return args.Data();
     }();
   
-    // Element is already a BreadcrumbItem, so we just return it.
-    if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbDropDownItem>())
+    // Element is already a BreadcrumbDropDownItem, so we just return it.
+    if (auto const dropDownItem = newContent.try_as<winrt::BreadcrumbDropDownItem>())
     {
-        return breadcrumbItem;
+        return dropDownItem;
     }
 
-    auto const newBreadcrumbItem = winrt::BreadcrumbDropDownItem{};
-    newBreadcrumbItem.Content(args.Data());
+    auto const newDropDownItem = winrt::BreadcrumbDropDownItem{};
+    newDropDownItem.Content(args.Data());
 
     // If a user provided item template exists, we pass the template down
     // to the ContentPresenter of the BreadcrumbItem.
     if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
     {
-        newBreadcrumbItem.ContentTemplate(itemTemplateWrapper->Template());
+        newDropDownItem.ContentTemplate(itemTemplateWrapper->Template());
     }
     
-    return newBreadcrumbItem;
+    return newDropDownItem;
 }
 
 void BreadcrumbDropDownElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)

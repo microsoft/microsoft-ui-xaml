@@ -11,6 +11,7 @@
 
 #include "SplitButton.h"
 #include "BreadcrumbElementFactory.h"
+#include "BreadcrumbDropDownElementFactory.h"
 
 #include "Vector.h"
 #include "BreadcrumbIterable.h"
