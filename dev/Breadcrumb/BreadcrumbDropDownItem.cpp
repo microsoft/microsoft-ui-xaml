@@ -49,15 +49,16 @@ void BreadcrumbDropDownItem::OnApplyTemplate()
     {
         thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbDropDownItem::OnChildPreviewKeyDown });
     }
+    else if (auto const& thisAsUIElement = this->try_as<winrt::UIElement>())
+    {
+        m_dropDownItemKeyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(thisAsUIElement,
+            { this, &BreadcrumbDropDownItem::OnChildPreviewKeyDown },
+            true /*handledEventsToo*/);
+    }
 
     if (const auto& contentPresenter = m_dropDownItemContentPresenter.get())
     {
         m_dropDownItemContentPresenterLoadedRevoker = contentPresenter.Loaded(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnLoadedEvent });
-
-        /*
-        m_pressedButtonRevoker = RegisterPropertyChanged(contentPresenter, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbDropDownItem::OnVisualPropertyChanged });
-        m_pointerOverButtonRevoker = RegisterPropertyChanged(contentPresenter, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbDropDownItem::OnVisualPropertyChanged });
-        */
 
         // Register for pointer events so we can keep track of the last used pointer type
         m_breadcrumbItemPointerEnteredRevoker = PointerEntered(winrt::auto_revoke, { this, &BreadcrumbDropDownItem::OnPointerEnteredEvent });

@@ -23,6 +23,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <Thickness x:Key="FlyoutContentPadding">16,15,16,17</Thickness>
+
     <Style TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" />
     
     <Style x:Key="DefaultFlyoutPresenterStyle" TargetType="FlyoutPresenter">
@@ -32,7 +34,7 @@
         <Setter Property="Background" Value="{ThemeResource FlyoutPresenterBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource FlyoutBorderThemeBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource FlyoutBorderThemeThickness}" />
-        <Setter Property="Padding" Value="{ThemeResource FlyoutContentThemePadding}" />
+        <Setter Property="Padding" Value="{StaticResource FlyoutContentPadding}" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource FlyoutThemeMinHeight}" />
@@ -51,15 +53,17 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge">
-                        <ScrollViewer x:Name="ScrollViewer"
+                        contract7Present:BackgroundSizing="InnerBorderEdge">
+                        <ScrollViewer
+                            x:Name="ScrollViewer"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                             VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
                             VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                             AutomationProperties.AccessibilityView="Raw">
-                            <ContentPresenter Content="{TemplateBinding Content}"
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 Margin="{TemplateBinding Padding}"

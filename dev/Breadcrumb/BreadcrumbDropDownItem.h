@@ -54,5 +54,7 @@ private:
     winrt::UIElement::PointerPressed_revoker m_breadcrumbItemPointerPressedRevoker{};
     winrt::UIElement::PointerReleased_revoker m_breadcrumbItemPointerReleasedRevoker{};
     winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemPointerCanceledRevoker{};
-    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};   
+    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};
+
+    RoutedEventHandler_revoker m_dropDownItemKeyDownRevoker{};
 };

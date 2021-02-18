@@ -46,6 +46,12 @@ void Breadcrumb::OnApplyTemplate()
     {
         thisAsIUIElement7.PreviewKeyDown({ this, &Breadcrumb::OnChildPreviewKeyDown });
     }
+    else if (auto const& thisAsUIElement = this->try_as<winrt::UIElement>())
+    {
+        m_breadcrumbKeyDownHandlerRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(thisAsUIElement,
+            { this, &Breadcrumb::OnChildPreviewKeyDown },
+            true /*handledEventsToo*/);
+    }
 
     AccessKeyInvoked({ this, &Breadcrumb::OnAccessKeyInvoked });
     GettingFocus({ this, &Breadcrumb::OnGettingFocus });

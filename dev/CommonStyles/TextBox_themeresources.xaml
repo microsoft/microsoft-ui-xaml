@@ -72,7 +72,7 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColor}"/>
+                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColorLight2}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
@@ -169,7 +169,7 @@
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColor}"/>
+                    <GradientStop Offset="0" Color="{ThemeResource SystemAccentColorDark1}"/>
                     <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
@@ -195,8 +195,6 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="VerticalContentAlignment" Value="Top"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
         <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
         <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
@@ -411,8 +409,6 @@
                             IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
                             IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"

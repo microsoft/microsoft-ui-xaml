@@ -37,9 +37,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Breadcrumb.xaml">

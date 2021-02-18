@@ -48,7 +48,7 @@ private:
     void InstantiateFlyout();
     void OpenFlyout();
 
-    void UpdateVisualState();
+    void UpdateItemTypeVisualState();
     void UpdateCommonVisualState();
 
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
@@ -70,11 +70,15 @@ private:
 
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
+    RoutedEventHandler_revoker m_breadcrumbItemKeyDownHandlerRevoker{};
+
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_ellipsisRepeaterElementClearingRevoker{};
 
     PropertyChanged_revoker m_pressedButtonRevoker{};
     PropertyChanged_revoker m_pointerOverButtonRevoker{};
 
+    // Revokers for events that change visual state changes
     winrt::UIElement::PointerEntered_revoker m_breadcrumbItemPointerEnteredRevoker{};
     winrt::UIElement::PointerExited_revoker m_breadcrumbItemPointerExitedRevoker{};
     winrt::UIElement::PointerPressed_revoker m_breadcrumbItemPointerPressedRevoker{};

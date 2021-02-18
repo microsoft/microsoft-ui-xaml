@@ -37,6 +37,7 @@ void BreadcrumbItem::RevokeListeners()
     m_breadcrumbItemButtonLoadedRevoker.revoke();
     m_breadcrumbItemButtonClickRevoker.revoke();
     m_ellipsisRepeaterElementPreparedRevoker.revoke();
+    m_breadcrumbItemKeyDownHandlerRevoker.revoke();
 }
 
 void BreadcrumbItem::OnApplyTemplate()
@@ -54,6 +55,12 @@ void BreadcrumbItem::OnApplyTemplate()
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
         thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbItem::OnChildPreviewKeyDown });
+    }
+    else if (auto const& thisAsUIElement = this->try_as<winrt::UIElement>())
+    {
+        m_breadcrumbItemKeyDownHandlerRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(thisAsUIElement,
+            { this, &BreadcrumbItem::OnChildPreviewKeyDown },
+            true /*handledEventsToo*/);
     }
 
     if (const auto& breadcrumbItemButton = m_breadcrumbItemButton.get())
@@ -148,15 +155,6 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
 {
     const auto& element = args.Element();
 
-    if (const auto& dropDownItem = element.try_as<winrt::BreadcrumbDropDownItem>())
-    {
-        if (const auto& dropDownItemImpl = winrt::get_self<BreadcrumbDropDownItem>(dropDownItem))
-        {
-            dropDownItemImpl->SetEllipsisBreadcrumbItem(*this);
-        }
-    }
-
-    args.Index();
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -209,7 +207,7 @@ void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender
 
 void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
 {
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
 
 void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -278,7 +276,7 @@ void BreadcrumbItem::OnVisualPropertyChanged(const winrt::DependencyObject&, con
     UpdateCommonVisualState();
 }
 
-void BreadcrumbItem::UpdateVisualState()
+void BreadcrumbItem::UpdateItemTypeVisualState()
 {
     const bool isLeftToRight = (FlowDirection() == winrt::FlowDirection::LeftToRight);
     hstring visualStateName;
@@ -374,7 +372,7 @@ void BreadcrumbItem::SetPropertiesForLastNode()
     m_isEllipsisNode = false;
     m_isLastNode = true;
 
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
 
 void BreadcrumbItem::ResetVisualProperties()
@@ -390,7 +388,7 @@ void BreadcrumbItem::ResetVisualProperties()
     m_ellipsisItemsRepeater.set(nullptr);
     m_ellipsisElementFactory = nullptr;
 
-    UpdateVisualState();
+    UpdateItemTypeVisualState();
 }
 
 void BreadcrumbItem::InstantiateFlyout()
@@ -415,7 +413,7 @@ void BreadcrumbItem::InstantiateFlyout()
         }
 
         m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
-        
+       
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
         // Create the Flyout and add the ItemsRepeater as content
@@ -436,7 +434,8 @@ void BreadcrumbItem::SetPropertiesForEllipsisNode()
     m_isLastNode = false;
 
     InstantiateFlyout();
-    UpdateVisualState();
+    
+    UpdateItemTypeVisualState();
 }
 
 winrt::AutomationPeer BreadcrumbItem::OnCreateAutomationPeer()

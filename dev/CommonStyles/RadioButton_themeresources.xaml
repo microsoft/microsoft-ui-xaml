@@ -20,9 +20,9 @@
             <StaticResource x:Key="RadioButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
 
             <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="ControlAAStrokeColorDisabledBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="ControlAAStrokeColorDisabledBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="ControlAAStrokeColorDefault" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="ControlAAStrokeColorDisabled" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="ControlAAStrokeColorDisabled" />
             <StaticResource x:Key="RadioButtonOuterEllipseFill" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="ControlAltFillColorTertiaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
@@ -81,9 +81,9 @@
             <StaticResource x:Key="RadioButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
 
             <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="SystemBaseMediumHighColor" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="SystemColorGrayTextColor" />
             <StaticResource x:Key="RadioButtonOuterEllipseFill" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="SystemControlTransparentBrush" />
@@ -91,7 +91,7 @@
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="SystemColorGrayTextColor" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="SystemControlHighlightAltTransparentBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
@@ -140,9 +140,9 @@
             <StaticResource x:Key="RadioButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
 
             <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="ControlAAStrokeColorDefaultBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="ControlAAStrokeColorDisabledBrush" />
-            <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="ControlAAStrokeColorDisabledBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="ControlAAStrokeColorDefault" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="ControlAAStrokeColorDisabled" />
+            <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="ControlAAStrokeColorDisabled" />
             <StaticResource x:Key="RadioButtonOuterEllipseFill" ResourceKey="ControlAltFillColorSecondaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="ControlAltFillColorTertiaryBrush" />
             <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
@@ -249,7 +249,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonBorderBrushPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="(Shape.Stroke).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{Binding Color, Source={ThemeResource RadioButtonOuterEllipseStrokePointerOver}}" />
+                                            <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{ThemeResource RadioButtonOuterEllipseStrokePointerOver}" />
                                         </ColorAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{Binding Color, Source={ThemeResource RadioButtonOuterEllipseFillPointerOver}}" />
@@ -288,7 +288,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonBorderBrushPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames  Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="(Shape.Stroke).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame  KeyTime="0:0:0.083" Value="{Binding Color, Source={ThemeResource RadioButtonOuterEllipseStrokePressed}}" />
+                                            <LinearColorKeyFrame  KeyTime="0:0:0.083" Value="{ThemeResource RadioButtonOuterEllipseStrokePressed}" />
                                         </ColorAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{Binding Color, Source={ThemeResource RadioButtonOuterEllipseFillPressed}}" />
@@ -338,7 +338,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonBorderBrushDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames  Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="(Shape.Stroke).(SolidColorBrush.Color)">
-                                            <LinearColorKeyFrame  KeyTime="0:0:0.083" Value="{Binding Color, Source={ThemeResource RadioButtonOuterEllipseStrokeDisabled}}" />
+                                            <LinearColorKeyFrame  KeyTime="0:0:0.083" Value="{ThemeResource RadioButtonOuterEllipseStrokeDisabled}" />
                                         </ColorAnimationUsingKeyFrames>
                                         <ColorAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame KeyTime="0:0:0.083" Value="{Binding Color, Source={ThemeResource RadioButtonOuterEllipseFillDisabled}}" />
