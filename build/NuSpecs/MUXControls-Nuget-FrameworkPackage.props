@@ -73,4 +73,10 @@
       <PackagingOutputs Include="@(XamlWinmd)" />
     </ItemGroup>
   </Target>
+  <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="_CreatePackageLayout">
+    <Copy
+        SourceFiles="@(_PackageLayoutFileSource)"
+        DestinationFiles="@(_PackageLayoutFileSource->'$(AppxLayoutDir)%(Filename)%(Extension)')"
+        Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd'" />
+  </Target>
 </Project>
