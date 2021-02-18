@@ -1,11 +1,8 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IIconSource", 92ec8d55-45eb-47a4-863c-91b224044f9b)]
-[WUXC_STATIC_NAME("IIconSourceStatics", 1d389dbe-1cd3-4f4f-83b0-55dc6387685b)]
-[WUXC_CONSTRUCTOR_NAME("IIconSourceFactory", 4d117cf1-1fd6-49d7-b483-02ec3de997d6)]
 unsealed runtimeclass IconSource : Windows.UI.Xaml.DependencyObject
 {
     Windows.UI.Xaml.Media.Brush Foreground { get; set; };
@@ -13,11 +10,8 @@ unsealed runtimeclass IconSource : Windows.UI.Xaml.DependencyObject
     static Windows.UI.Xaml.DependencyProperty ForegroundProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ISymbolIconSource", 625d95a2-b6b1-408a-b289-eab2ecba62d8)]
-[WUXC_STATIC_NAME("ISymbolIconSourceStatics", 8bc49738-d94e-4148-8d64-1adf0f23f25f)]
-[WUXC_CONSTRUCTOR_NAME("ISymbolIconSourceFactory", a526aab0-4130-4907-b049-21f9240c7a40)]
 unsealed runtimeclass SymbolIconSource : IconSource
 {
     SymbolIconSource();
@@ -28,11 +22,8 @@ unsealed runtimeclass SymbolIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty SymbolProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IFontIconSource", 2211ac9a-74e3-43ed-b61c-21afc7df4d10)]
-[WUXC_STATIC_NAME("IFontIconSourceStatics", 8c0e422f-8269-43b1-b95a-ef070e86770d)]
-[WUXC_CONSTRUCTOR_NAME("IFontIconSourceFactory", 8bdcf6bd-fc06-42b8-b30b-7505082ac38f)]
 unsealed runtimeclass FontIconSource : IconSource
 {
     FontIconSource();
@@ -59,11 +50,8 @@ unsealed runtimeclass FontIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty MirroredWhenRightToLeftProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IBitmapIconSource", c8e33dc7-d4ae-4a87-947f-ac4d0bcf5af4)]
-[WUXC_STATIC_NAME("IBitmapIconSourceStatics", 5a105887-e494-4d2b-8528-39472296133f)]
-[WUXC_CONSTRUCTOR_NAME("IBitmapIconSourceFactory", 6509e5c6-44b6-4cd1-86cd-c3189b12c43c)]
 unsealed runtimeclass BitmapIconSource : IconSource
 {
     BitmapIconSource();
@@ -76,11 +64,8 @@ unsealed runtimeclass BitmapIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty ShowAsMonochromeProperty { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IPathIconSource", 1f47010e-b305-4863-8b7a-15d08d633c7a)]
-[WUXC_STATIC_NAME("IPathIconSourceStatics", df7027d5-3682-43ff-80f0-afa256b2fdc3)]
-[WUXC_CONSTRUCTOR_NAME("IPathIconSourceFactory", 8f7f85b9-5247-4f3b-833f-e384bf7e9c84)]
 unsealed runtimeclass PathIconSource : IconSource
 {
     PathIconSource();
@@ -90,7 +75,7 @@ unsealed runtimeclass PathIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty DataProperty { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ImageIconSource : IconSource
 {
@@ -101,7 +86,7 @@ unsealed runtimeclass ImageIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass AnimatedIconSource : IconSource
 {

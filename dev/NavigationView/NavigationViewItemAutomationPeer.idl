@@ -1,17 +1,15 @@
 ﻿namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewItemAutomationPeer", 309847a5-9971-4d8d-a81c-085c7086a1b9)]
-[WUXC_CONSTRUCTOR_NAME("INavigationViewItemAutomationPeerFactory", 0bc2835d-aa38-4f97-9664-e6fc821d81ed)]
 unsealed runtimeclass NavigationViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider
 {
     [method_name("CreateInstanceWithOwner")] NavigationViewItemAutomationPeer(MU_XC_NAMESPACE.NavigationViewItem owner);
 }
 
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass NavigationViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {

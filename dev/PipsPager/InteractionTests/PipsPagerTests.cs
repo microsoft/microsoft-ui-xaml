@@ -181,15 +181,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
                 VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.Collapsed);
 
-                /* Test for VisibleOnHover */
-                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.VisibleOnHover);
+                /* Test for VisibleOnPointerOver */
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.VisibleOnPointerOver);
                 VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.Collapsed);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.VisibleOnHover, true);
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.VisibleOnPointerOver, true);
 
                 InputHelper.LeftClick(elements.GetCurrentNumberOfPagesTextBlock());
-                VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.VisibleOnHover);
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.VisibleOnPointerOver);
             }
         }
 
@@ -200,7 +200,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("PipsPager Tests"))
             {
                 elements = new PipsPagerElements();
-                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.VisibleOnHover);
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.VisibleOnPointerOver);
 
                 ChangeNumberOfPages(NumberOfPagesOptions.Five);
                 VerifyNumberOfPages("5");
@@ -219,15 +219,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.LeftClick(elements.GetNextPageButton());
                 VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.Collapsed);
 
-                /* Test for VisibleOnHover */
-                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.VisibleOnHover);
+                /* Test for VisibleOnPointerOver */
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.VisibleOnPointerOver);
                 VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.Collapsed);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.VisibleOnHover, true);
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.VisibleOnPointerOver, true);
 
                 InputHelper.LeftClick(elements.GetCurrentNumberOfPagesTextBlock());
-                VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.VisibleOnHover);
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.VisibleOnPointerOver);
             }
         }
 
