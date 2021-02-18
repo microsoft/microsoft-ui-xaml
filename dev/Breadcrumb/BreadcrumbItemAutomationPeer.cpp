@@ -53,7 +53,6 @@ void BreadcrumbItemAutomationPeer::Invoke()
 {
     if (auto breadcrumbItem = GetImpl())
     {
-        
-        // splitButton->OnClickPrimary(nullptr, nullptr);
+        breadcrumbItem->OnClickEvent(nullptr, nullptr);
     }
 }
