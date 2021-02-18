@@ -320,6 +320,7 @@
     </Style>
     
     <Style TargetType="local:Breadcrumb">
+        <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:Breadcrumb">
