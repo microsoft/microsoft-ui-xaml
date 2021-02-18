@@ -33,6 +33,7 @@ public:
 
     void RaiseItemClickedEvent(const winrt::IInspectable& content);
     winrt::IVector<winrt::IInspectable> HiddenElements() const;
+    void ReIndexVisibleElementsForAccessibility() const;
 
 private:
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);

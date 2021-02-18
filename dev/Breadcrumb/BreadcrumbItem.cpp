@@ -157,6 +157,15 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
 
     hstring name = L"EllipsisItem" + winrt::to_hstring(args.Index() + 1);
     winrt::AutomationProperties::SetName(element, name);
+
+    if (auto const& itemsRepeater = m_ellipsisItemsRepeater.get())
+    {
+        if (auto const& itemSourceView = itemsRepeater.ItemsSourceView())
+        {
+            element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.Index() + 1));
+            element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(itemSourceView.Count()));
+        }
+    }
 }
 
 void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
