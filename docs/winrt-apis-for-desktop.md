@@ -58,3 +58,13 @@ This API is no longer supported in Desktop apps, and neither are any of its memb
 - [`SystemNavigationManager.GetForCurrentView()`](https://docs.microsoft.com/uwp/api/windows.ui.core.systemnavigationmanager.getforcurrentview)
 
     No alternative - this functionality is not intended to be supported in Desktop apps. 
+
+## CoreTextServicesManager 
+- [`CoreTextServicesManager.GetForCurrentView()`](https://docs.microsoft.com/uwp/api/windows.ui.text.core.coretextservicesmanager?view=winrt-19041)
+    
+    This method will be supported for Desktop apps in future Windows versions, and is currently only supported in Insider builds. For non-Insider builds, this API is unsupported and there is no current workaround. 
+
+## CoreInputView
+- [`CoreInputView.GetForCurrentView()`](https://docs.microsoft.com/uwp/api/windows.ui.viewmanagement.core.coreinputview.getforcurrentview?view=winrt-19041)
+
+    This method is **still working and supported for Desktop apps**, even without [CoreWindow](https://docs.microsoft.com/uwp/api/windows.ui.core.corewindow?view=winrt-19041). It can be created on any thread, and if that thread has a foreground window, it will produce events.
