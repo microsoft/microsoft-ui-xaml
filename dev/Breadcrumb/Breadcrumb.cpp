@@ -25,9 +25,9 @@ Breadcrumb::Breadcrumb()
 void Breadcrumb::RevokeListeners()
 {
     m_itemsRepeaterLoadedRevoker.revoke();
-    m_itemRepeaterElementPreparedRevoker.revoke();
-    m_itemRepeaterElementIndexChangedRevoker.revoke();
-    m_itemRepeaterElementClearingRevoker.revoke();
+    m_itemsRepeaterElementPreparedRevoker.revoke();
+    m_itemsRepeaterElementIndexChangedRevoker.revoke();
+    m_itemsRepeaterElementClearingRevoker.revoke();
     m_itemsSourceChanged.revoke();
     m_itemsSourceAsObservableVectorChanged.revoke();
 }
@@ -40,7 +40,7 @@ void Breadcrumb::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(L"PART_BreadcrumbItemsRepeater", controlProtected));
+    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(s_breadcrumbItemsRepeaterPartName, controlProtected));
 
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
@@ -64,11 +64,11 @@ void Breadcrumb::OnApplyTemplate()
         itemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
         itemsRepeater.ItemTemplate(*m_itemsRepeaterElementFactory);
         
-        m_itemRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
-        m_itemRepeaterElementIndexChangedRevoker = itemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &Breadcrumb::OnElementIndexChangedEvent });
-        m_itemRepeaterElementClearingRevoker = itemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
+        m_itemsRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &Breadcrumb::OnElementPreparedEvent });
+        m_itemsRepeaterElementIndexChangedRevoker = itemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &Breadcrumb::OnElementIndexChangedEvent });
+        m_itemsRepeaterElementClearingRevoker = itemsRepeater.ElementClearing(winrt::auto_revoke, { this, &Breadcrumb::OnElementClearingEvent });
 
-        m_itemsRepeaterLoadedRevoker = itemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemRepeaterLoaded });
+        m_itemsRepeaterLoadedRevoker = itemsRepeater.Loaded(winrt::auto_revoke, { this, &Breadcrumb::OnBreadcrumbItemsRepeaterLoaded });
     }
 
     UpdateItemsRepeaterItemsSource();
@@ -97,9 +97,9 @@ void Breadcrumb::OnFlowDirectionChanged(winrt::DependencyObject const& o, winrt:
     UpdateBreadcrumbItemsFlowDirection();
 }
 
-void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void Breadcrumb::OnBreadcrumbItemsRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
-    if (const auto& breadcrumbItemRepeater = m_itemsRepeater.get())
+    if (const auto& breadcrumbItemsRepeater = m_itemsRepeater.get())
     {
         OnBreadcrumbItemsSourceCollectionChanged(nullptr, nullptr);
     }
@@ -258,7 +258,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
                         itemImpl->ResetVisualProperties();
                     }
 
-                    winrt::AutomationProperties::SetName(item, L"BreadcrumbItem" + winrt::to_hstring(itemIndex));
+                    winrt::AutomationProperties::SetName(item, s_breadcrumbItemAutomationName + winrt::to_hstring(itemIndex));
                 }
             }
         }
@@ -280,7 +280,7 @@ void Breadcrumb::OnElementIndexChangedEvent(const winrt::ItemsRepeater& sender, 
         }
 
         FocusElementAt(newIndex);
-        winrt::AutomationProperties::SetName(args.Element(), L"BreadcrumbItem" + winrt::to_hstring(newIndex));
+        winrt::AutomationProperties::SetName(args.Element(), s_breadcrumbItemAutomationName + winrt::to_hstring(newIndex));
     }
 }
 

@@ -21,7 +21,6 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-    void RevokeListeners();
 
     // internal
     void ResetVisualProperties();
@@ -49,11 +48,14 @@ private:
     void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
     void OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
 
+    void HookListeners();
+    void RevokeListeners();
+    void RevokePartsListeners();
     void InstantiateFlyout();
     void OpenFlyout();
 
-    void UpdateItemTypeVisualState();
-    void UpdateCommonVisualState();
+    void UpdateItemTypeVisualState(bool useTransitions);
+    void UpdateCommonVisualState(bool useTransitions);
 
     void UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index);
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
@@ -78,19 +80,43 @@ private:
 
     winrt::Button::Loaded_revoker m_breadcrumbItemButtonLoadedRevoker{};
     winrt::Button::Click_revoker m_breadcrumbItemButtonClickRevoker{};
-    RoutedEventHandler_revoker m_breadcrumbItemKeyDownHandlerRevoker{};
+    RoutedEventHandler_revoker m_keyDownRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_ellipsisRepeaterElementIndexChangedRevoker{};
 
-    PropertyChanged_revoker m_pressedButtonRevoker{};
-    PropertyChanged_revoker m_pointerOverButtonRevoker{};
+    PropertyChanged_revoker m_isPressedButtonRevoker{};
+    PropertyChanged_revoker m_isPointerOverButtonRevoker{};
+    PropertyChanged_revoker m_isEnabledButtonRevoker{};
 
     // Revokers for events that change visual state changes
-    winrt::UIElement::PointerEntered_revoker m_breadcrumbItemPointerEnteredRevoker{};
-    winrt::UIElement::PointerExited_revoker m_breadcrumbItemPointerExitedRevoker{};
-    winrt::UIElement::PointerPressed_revoker m_breadcrumbItemPointerPressedRevoker{};
-    winrt::UIElement::PointerReleased_revoker m_breadcrumbItemPointerReleasedRevoker{};
-    winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemPointerCanceledRevoker{};
-    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};
+    winrt::UIElement::PointerEntered_revoker m_breadcrumbItemButtonPointerEnteredRevoker{};
+    winrt::UIElement::PointerExited_revoker m_breadcrumbItemButtonPointerExitedRevoker{};
+    winrt::UIElement::PointerPressed_revoker m_breadcrumbItemButtonPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_breadcrumbItemButtonPointerReleasedRevoker{};
+    winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemButtonPointerCanceledRevoker{};
+    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemButtonPointerCaptureLostRevoker{};
+
+    // Common Visual States
+    static constexpr std::wstring_view s_normalStateName{ L"Normal"sv };
+    static constexpr std::wstring_view s_currentStateName{ L"Current"sv };
+    static constexpr std::wstring_view s_pointerOverStateName{ L"PointerOver"sv };
+    static constexpr std::wstring_view s_pressedStateName{ L"Pressed"sv };
+    static constexpr std::wstring_view s_disabledStateName{ L"Disabled"sv };
+
+    // Item Type Visual States
+    static constexpr std::wstring_view s_ellipsisStateName{ L"Ellipsis"sv };
+    static constexpr std::wstring_view s_ellipsisRTLStateName{ L"EllipsisRTL"sv };
+    static constexpr std::wstring_view s_lastItemStateName{ L"LastItem"sv };
+    static constexpr std::wstring_view s_defaultStateName{ L"Default"sv };
+    static constexpr std::wstring_view s_defaultRTLStateName{ L"DefaultRTL"sv };
+
+    // Template Parts
+    static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
+    static constexpr std::wstring_view s_breadcrumbItemButtonPartName{ L"PART_BreadcrumbItemButton"sv };
+
+    // Automation Names
+    static constexpr std::wstring_view s_ellipsisFlyoutAutomationName{ L"EllipsisFlyout"sv };
+    static constexpr std::wstring_view s_ellipsisItemAutomationName{ L"EllipsisItem"sv };
+    static constexpr std::wstring_view s_ellipsisItemsRepeaterAutomationName{ L"EllipsisItemsRepeater"sv };
 };

@@ -65,14 +65,5 @@ winrt::UIElement BreadcrumbDropDownElementFactory::GetElementCore(const winrt::E
 
 void BreadcrumbDropDownElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)
 {
-    if (auto element = args.Element())
-    {
-        if (auto breadcrumbItem = element.try_as<winrt::BreadcrumbDropDownItem>())
-        {
-            auto breadcrumbItemImpl = winrt::get_self<BreadcrumbDropDownItem>(breadcrumbItem);
-            // breadcrumbItemImpl->ResetVisualProperties();
-        }
-    }
-
     m_itemTemplateWrapper.RecycleElement(args);
 }
