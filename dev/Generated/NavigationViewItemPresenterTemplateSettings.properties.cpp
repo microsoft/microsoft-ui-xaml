@@ -13,8 +13,8 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
 
 #include "NavigationViewItemPresenterTemplateSettings.g.cpp"
 
-GlobalDependencyProperty NavigationViewItemPresenterTemplateSettingsProperties::s_IconColumnWidthProperty{ nullptr };
-GlobalDependencyProperty NavigationViewItemPresenterTemplateSettingsProperties::s_LatestIconColumnWidthProperty{ nullptr };
+GlobalDependencyProperty NavigationViewItemPresenterTemplateSettingsProperties::s_IconWidthProperty{ nullptr };
+GlobalDependencyProperty NavigationViewItemPresenterTemplateSettingsProperties::s_SmallerIconWidthProperty{ nullptr };
 
 NavigationViewItemPresenterTemplateSettingsProperties::NavigationViewItemPresenterTemplateSettingsProperties()
 {
@@ -23,22 +23,22 @@ NavigationViewItemPresenterTemplateSettingsProperties::NavigationViewItemPresent
 
 void NavigationViewItemPresenterTemplateSettingsProperties::EnsureProperties()
 {
-    if (!s_IconColumnWidthProperty)
+    if (!s_IconWidthProperty)
     {
-        s_IconColumnWidthProperty =
+        s_IconWidthProperty =
             InitializeDependencyProperty(
-                L"IconColumnWidth",
+                L"IconWidth",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::NavigationViewItemPresenterTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_LatestIconColumnWidthProperty)
+    if (!s_SmallerIconWidthProperty)
     {
-        s_LatestIconColumnWidthProperty =
+        s_SmallerIconWidthProperty =
             InitializeDependencyProperty(
-                L"LatestIconColumnWidth",
+                L"SmallerIconWidth",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::NavigationViewItemPresenterTemplateSettings>(),
                 false /* isAttached */,
@@ -49,32 +49,32 @@ void NavigationViewItemPresenterTemplateSettingsProperties::EnsureProperties()
 
 void NavigationViewItemPresenterTemplateSettingsProperties::ClearProperties()
 {
-    s_IconColumnWidthProperty = nullptr;
-    s_LatestIconColumnWidthProperty = nullptr;
+    s_IconWidthProperty = nullptr;
+    s_SmallerIconWidthProperty = nullptr;
 }
 
-void NavigationViewItemPresenterTemplateSettingsProperties::IconColumnWidth(double value)
+void NavigationViewItemPresenterTemplateSettingsProperties::IconWidth(double value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->SetValue(s_IconColumnWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->SetValue(s_IconWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
     }
 }
 
-double NavigationViewItemPresenterTemplateSettingsProperties::IconColumnWidth()
+double NavigationViewItemPresenterTemplateSettingsProperties::IconWidth()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->GetValue(s_IconColumnWidthProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->GetValue(s_IconWidthProperty));
 }
 
-void NavigationViewItemPresenterTemplateSettingsProperties::LatestIconColumnWidth(double value)
+void NavigationViewItemPresenterTemplateSettingsProperties::SmallerIconWidth(double value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->SetValue(s_LatestIconColumnWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->SetValue(s_SmallerIconWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
     }
 }
 
-double NavigationViewItemPresenterTemplateSettingsProperties::LatestIconColumnWidth()
+double NavigationViewItemPresenterTemplateSettingsProperties::SmallerIconWidth()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->GetValue(s_LatestIconColumnWidthProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewItemPresenterTemplateSettings*>(this)->GetValue(s_SmallerIconWidthProperty));
 }

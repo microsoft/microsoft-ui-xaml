@@ -6,3 +6,8 @@
 #include "SharedHelpers.h"
 
 #include "IconSource.h"
+
+winrt::IconElement IconSource::CreateIconElement()
+{
+    return CreateIconElementCore();
+}

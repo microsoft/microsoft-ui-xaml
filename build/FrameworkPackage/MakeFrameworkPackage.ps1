@@ -29,6 +29,90 @@ function Copy-IntoNewDirectory {
     }
 }
 
+function ExecuteMakePri
+{
+    Param($WindowsSdkBinDir, $makePriArgs)
+    $makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" $makePriArgs"
+    Write-Host $makepriNew
+    cmd /c $makepriNew
+    if ($LastExitCode -ne 0) { Exit 1 }
+}
+
+# only keep 21h1 themeresources, and set othe themeresources to " "
+# I didn't set it to "" because "" will change the `makepri dump` layout, but " " will not.
+function RepackCBSResourcesPri
+{
+    Param($WindowsSdkBinDir, $sourceFile, $targetFile, $intermediateFolder)
+    New-Item -Path "$intermediateFolder" -ItemType Directory -Force | Out-Null
+
+    $priconfigFrom = Join-Path "$PSScriptRoot" "cbspriconfig.xml"
+    $priconfig = Join-Path "$intermediateFolder" "priconfig.xml"
+    Copy-Item "$priconfigFrom" "$priconfig" -Force | Out-Null
+
+    $cbsResourcesPriXml = "$intermediateFolder\CBSresources.pri.xml"
+    $resourcesPriXml = "$intermediateFolder\resources.pri.xml"
+
+    # step 1: makepri dump CBSresources.pri to CBSresources.pri.xml
+    ExecuteMakePri "$WindowsSdkBinDir" "dump /dt detailed /if $sourceFile /of `"$cbsResourcesPriXml`" /o"
+
+    # step 2: set rs2-19h1 resources to " " and save as resources.pri.xml
+    # In base64, IA== is " ".
+    [XML] $xml = Get-Content  -Encoding UTF8  "$cbsResourcesPriXml"
+    $nodes = $xml.PriInfo.ResourceMap.SelectNodes("ResourceMapSubtree/ResourceMapSubtree/ResourceMapSubtree/NamedResource")
+    
+    $namesToBeChanged = @("19h1_themeresources.xbf", "rs5_themeresources.xbf", "rs4_themeresources.xbf", "rs3_themeresources.xbf", "rs2_themeresources.xbf",
+        "19h1_generic.xbf", "rs5_generic.xbf", "rs4_generic.xbf", "rs4_generic.xbf", "rs3_generic.xbf", "rs2_generic.xbf",
+        "19h1_themeresources_v1.xbf", "rs5_themeresources_v1.xbf", "rs4_themeresources_v1.xbf", "rs3_themeresources_V1.xbf", "rs2_themeresources_v1.xbf",
+        "19h1_generic_v1.xbf", "rs5_generic_v1.xbf", "rs4_generic_v1.xbf", "rs4_generic_v1.xbf", "rs3_generic_v1.xbf", "rs2_generic_v1.xbf",
+        "19h1_compact_themeresources.xbf", "rs5_compact_themeresources.xbf", "rs4_compact_themeresources.xbf", "rs3_compact_themeresources.xbf", "rs2_compact_themeresources.xbf",
+        "19h1_compact_themeresources_v1.xbf", "rs5_compact_themeresources_v1.xbf", "rs4_compact_themeresources_v1.xbf", "rs3_compact_themeresources_V1.xbf", "rs2_compact_themeresources_v1.xbf",
+        "21h1_compact_themeresources_v1.xbf", "21h1_compact_themeresources.xbf"
+        )
+    
+    foreach($name in $namesToBeChanged) { 
+        $nodes | 
+            ? { $_.name -eq $name } | 
+            % { $_.Candidate.Base64Value = "IA==" }
+    }
+        
+    [System.Xml.XmlWriterSettings] $xmlSettings = New-Object System.Xml.XmlWriterSettings
+    
+    #Preserve Windows formating
+    $xmlSettings.Indent = $true
+    $xmlSettings.IndentChars = "`t"
+    
+    #Keeping UTF-8 without BOM
+    $xmlSettings.Encoding = New-Object System.Text.UTF8Encoding($false)
+    
+    [System.Xml.xmlWriter] $xmlWriter = [System.Xml.xmlWriter]::Create("$resourcesPriXml", $xmlSettings)
+    $xml.Save($xmlWriter)
+    $xmlWriter.Close()
+
+    # step 3: re-create PRI with resources.pri.xml
+    ExecuteMakePri "$WindowsSdkBinDir" "new  /pr `"$intermediateFolder`" /cf `"$priconfig`" /in Microsoft.UI.Xaml.CBS /of `"$targetFile`"  /o"
+  
+    # step 4: verify the re-created PRI is not the same with the original .pri
+    if((Get-FileHash "$sourceFile").hash -eq (Get-FileHash "$targetFile").hash)
+    {
+        Write-Error("$sourceFile should not equal to $targetFile");
+        Exit 1
+    }
+
+    # step 5: dump the two pris and compare the content, they should be the same.
+    $file1 = "$intermediateFolder\source.pri.xml"
+    $file2 = "$intermediateFolder\target.pri.xml"
+    
+    ExecuteMakePri "$WindowsSdkBinDir" "dump /if $sourceFile /of `"$file1`" /o"
+    ExecuteMakePri "$WindowsSdkBinDir" "dump /if $targetFile /of `"$file2`" /o"
+
+    # step 6: verify the dumped file, they should be the same
+    if((Get-FileHash "$file1").hash -ne (Get-FileHash "$file2").hash)
+    {
+        Write-Error("$file1 should equal to $file2");
+        Exit 1
+    }
+}
+
 pushd $PSScriptRoot
 
 $fullOutputPath = [IO.Path]::GetFullPath($outputDirectory)
@@ -37,6 +121,7 @@ Write-Host "MakeFrameworkPackage: $fullOutputPath" -ForegroundColor Magenta
 
 mkdir -Force $fullOutputPath\PackageContents | Out-Null
 mkdir -Force $fullOutputPath\Resources | Out-Null
+mkdir -Force $fullOutputPath\CBS | Out-Null
 
 Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
@@ -258,15 +343,16 @@ if (($Configuration -ilike "debug") -and (Test-Path $xbfFilesPath))
 "$noiseAssetPath" "Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png"
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
-$makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $fullOutputPath /cf $priConfigPath /of $priOutputPath /in $PackageName /o"
-Write-Host $makepriNew
-cmd /c $makepriNew
-if ($LastExitCode -ne 0) { Exit 1 }
+ExecuteMakePri "$WindowsSdkBinDir" "new /pr $fullOutputPath /cf $priConfigPath /of $priOutputPath /in $PackageName /o"
 
-$makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $fullOutputPath /cf $priConfigPath /of $priCBSOutputPath /in Microsoft.UI.Xaml.CBS /o"
-Write-Host $makepriNew
-cmd /c $makepriNew
-if ($LastExitCode -ne 0) { Exit 1 }
+$cbsIntermediateFolder = [IO.Path]::GetFullPath("$fullOutputPath\CBS")
+$cbsIntermediatePri = Join-Path $cbsIntermediateFolder "CBSresources.pri"
+
+# create CBS\CBSresources.pri
+ExecuteMakePri "$WindowsSdkBinDir" " new /pr $fullOutputPath /cf $priConfigPath /of $cbsIntermediatePri /in Microsoft.UI.Xaml.CBS /o"
+
+# unpack CBS\CBSresources.pri and repack it as CBSresources.pri
+RepackCBSResourcesPri "$WindowsSdkBinDir" "$cbsIntermediatePri" "$priCBSOutputPath" "$cbsIntermediateFolder"
 
 $outputAppxFileFullPath = Join-Path $fullOutputPath "$PackageName.appx"
 $outputAppxFileFullPath = [IO.Path]::GetFullPath($outputAppxFileFullPath)

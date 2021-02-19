@@ -141,8 +141,8 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
     Windows.UI.Xaml.Visibility LeftPaneVisibility { get; };
     Boolean SingleSelectionFollowsFocus { get; };
-    Double PaneButtonWidth{ get; };
-    Double LatestPaneButtonWidth{ get; };
+    Double PaneToggleButtonWidth{ get; };
+    Double SmallerPaneToggleButtonWidth{ get; };   
 
     static Windows.UI.Xaml.DependencyProperty TopPaddingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty OverflowButtonVisibilityProperty { get; };
@@ -151,8 +151,8 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty TopPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty LeftPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty PaneButtonWidthProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty LatestPaneButtonWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PaneToggleButtonWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SmallerPaneToggleButtonWidthProperty{ get; };
 }
 
 [MUX_PUBLIC]

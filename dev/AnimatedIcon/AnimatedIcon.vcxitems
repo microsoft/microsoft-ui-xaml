@@ -17,33 +17,39 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_UpDown_Dropdown.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_Settings.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_Back.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_09_Hamburger.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_10_Search.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)AnimatedIconDevDesign.md" />
