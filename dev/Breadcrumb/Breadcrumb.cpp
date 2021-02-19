@@ -383,9 +383,18 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
             auto const& oldFocusedElement = args.OldFocusedElement();
             if (!oldFocusedElement || itemsRepeater != winrt::VisualTreeHelper::GetParent(oldFocusedElement))
             {
-                // If the last focused element is now hidden, then focus the ellipsis button
+                // Reset the focused index
                 if (m_itemsRepeaterLayout)
                 {
+                    if (m_itemsRepeaterLayout.get()->EllipsisIsRendered())
+                    {
+                        m_focusedIndex = 0;
+                    }
+                    else
+                    {
+                        m_focusedIndex = 1;
+                    }
+
                     if (m_itemsRepeaterLayout->EllipsisIsRendered() &&
                         m_focusedIndex < static_cast<int>(m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis()))
                     {
@@ -473,7 +482,11 @@ bool Breadcrumb::MoveFocusPrevious()
         const auto& repeaterLayout = itemsRepeater.Layout();
         if (m_itemsRepeaterLayout)
         {
-            if (m_itemsRepeaterLayout->EllipsisIsRendered() &&
+            if (m_focusedIndex == 1)
+            {
+                movementPrevious = 0;
+            }
+            else if (m_itemsRepeaterLayout->EllipsisIsRendered() &&
                 m_focusedIndex == static_cast<int>(m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis()))
             {
                 movementPrevious = -m_focusedIndex;
