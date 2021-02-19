@@ -200,7 +200,6 @@ void BreadcrumbItem::UpdateFlyoutIndex(const winrt::UIElement& element, const ui
             hstring name = L"EllipsisItem" + winrt::to_hstring(index + 1);
             winrt::AutomationProperties::SetName(element, name);
 
-
             element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(index + 1));
             element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(itemCount));
         }
