@@ -71,13 +71,12 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
     return accumulatedCrumbsSize;
 }
 
-void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight)
+void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float maxElementHeight)
 {
     const winrt::Size elementSize = breadcrumbItem.DesiredSize();
     const winrt::Rect arrangeRect(accumulatedWidths, 0, elementSize.Width, maxElementHeight);
     breadcrumbItem.Arrange(arrangeRect);
 
-    // maxElementHeight = std::max(maxElementHeight, elementSize.Height);
     accumulatedWidths += elementSize.Width;
 }
 
