@@ -172,12 +172,12 @@ namespace MUXControlsTestApp
 
         private void RTL_Checked(object sender, RoutedEventArgs e)
         {
-            BreadCrumbControl.FlowDirection = FlowDirection.RightToLeft;
+            BreadcrumbControl.FlowDirection = FlowDirection.RightToLeft;
         }
 
         private void RTL_Unchecked(object sender, RoutedEventArgs e)
         {
-            BreadCrumbControl.FlowDirection = FlowDirection.LeftToRight;
+            BreadcrumbControl.FlowDirection = FlowDirection.LeftToRight;
         }
 
         private void ReplaceList(ObservableCollection<object> oldItemsList, List<object> newItemsList)
@@ -197,11 +197,14 @@ namespace MUXControlsTestApp
 
         private void BreadcrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
         {
-            TreeNode treeNode = (TreeNode)args.Item;
+            LastClickedItem.Text = args.Item.ToString();
             LastClickedItemIndex.Text = args.Index.ToString();
 
-            ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
-            UpdateChildrenList(treeNode);
+            if (args.Item is TreeNode treeNode)
+            {
+                ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
+                UpdateChildrenList(treeNode);
+            }
         }
 
         private void Child_ElementPrepared(object sender, ItemsRepeaterElementPreparedEventArgs e)

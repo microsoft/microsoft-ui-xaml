@@ -74,5 +74,8 @@ void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRec
         }
     }
 
-    m_itemTemplateWrapper.RecycleElement(args);
+    if (m_itemTemplateWrapper)
+    {
+        m_itemTemplateWrapper.RecycleElement(args);
+    }
 }

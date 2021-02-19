@@ -18,9 +18,60 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
+
+    public class BreadcrumbItem : UIObject, IInvoke
+    {
+        public BreadcrumbItem(UIObject uiObject)
+            : base(uiObject)
+        {
+            this.Initialize();
+        }
+
+        private void Initialize()
+        {
+            _invokePattern = new InvokeImplementation(this);
+        }
+
+        public void Invoke()
+        {
+            _invokePattern.Invoke();
+        }
+
+        public UIEventWaiter GetInvokedWaiter()
+        {
+            return _invokePattern.GetInvokedWaiter();
+        }
+
+        new public static IFactory<BreadcrumbItem> Factory
+        {
+            get
+            {
+                if (null == BreadcrumbItem._factory)
+                {
+                    BreadcrumbItem._factory = new BreadcrumbItemFactory();
+                }
+                return BreadcrumbItem._factory;
+            }
+        }
+
+        private IInvoke _invokePattern;
+        private static IFactory<BreadcrumbItem> _factory = null;
+
+        private class BreadcrumbItemFactory : IFactory<BreadcrumbItem>
+        {
+            public BreadcrumbItem Create(UIObject element)
+            {
+                return new BreadcrumbItem(element);
+            }
+        }
+    }
+
+
     [TestClass]
     public class BreadcrumbTests
     {
@@ -51,30 +102,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var breadcrumbItems = breadcrumb.Children;
 
                 Verify.AreEqual(2, breadcrumbItems.Count, "The breadcrumb should contain 2 items: 1 item and an ellipsis");
-
-                var ellipsisItemButton = ConvertTo<Button>(breadcrumbItems[0]);
-                Verify.IsNotNull(ellipsisItemButton, "Ellipsis button should not be null");
-
-                var ellipsisItemTextBlock = ConvertTo<TextBlock>(ellipsisItemButton.FirstChild);
-                Verify.IsNotNull(ellipsisItemTextBlock, "Ellipsis TextBlock should not be null");
-
-                var ellipsisItemText = ellipsisItemTextBlock.GetText();
-                Verify.AreEqual(0xE712, ellipsisItemText[0], "The text in the root button is not '&#xE712;'");
-
-                var rootItemButton = ConvertTo<Button>(breadcrumbItems[1]);
-                Verify.IsNotNull(rootItemButton, "Root button should not be null");
-
-                var rootItemTextBlock = ConvertTo<TextBlock>(rootItemButton.FirstChild);
-                Verify.IsNotNull(rootItemTextBlock, "Root TextBlock should not be null");
-
-                var breadcrumbItemText = rootItemTextBlock.GetText();
-                Verify.AreEqual("Root", breadcrumbItemText, "The text in the root button is not 'Root'");
             }
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public void AddItemsToBreadcrumbTest()
+        public void AddItemsAndCompressBreadcrumbTest()
         {
             using (var setup = new TestSetupHelper("Breadcrumb Tests"))
             {
@@ -89,6 +122,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(5, breadcrumbItems.Count, "The breadcrumb should contain 5 items: 4 items and an ellipsis");
 
                 VerifyBreadcrumbItemsContain(breadcrumbItems, new string[] { "Root", "Node A", "Node A_2", "Node A_2_3" });
+
+                Verify.AreEqual(2, breadcrumbItems.Count, "The breadcrumb should contain 2 items: the root and an ellipsis");
             }
         }
 
@@ -111,6 +146,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var NodeA_2BreadcrumbItem = breadcrumbItems[3];
                 NodeA_2BreadcrumbItem.Click();
 
+                var lastClickedItemIndex = GetLastClickedItemIndex();
+                Verify.AreEqual(2, lastClickedItemIndex,
+                        "The last clicked item index " + lastClickedItemIndex + "doesn't match the expected 2");
+
+                var lastClickedItem = GetLastClickedItem();
+                Verify.AreEqual("Node A_2", lastClickedItem,
+                        "The text in the button " + lastClickedItem + "doesn't match the expected 'Node A_2'");
+
                 Verify.AreEqual(4, breadcrumbItems.Count, "The breadcrumb should contain 4 items: 3 items and an ellipsis");
 
                 VerifyBreadcrumbItemsContain(breadcrumbItems, new string[] { "Root", "Node A", "Node A_2" });
@@ -119,7 +162,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public void AddItemsAndCompressBreadcrumbTest()
+        public void AddItemsAndCompressBreadcrumbTest2()
         {
             using (var setup = new TestSetupHelper("Breadcrumb Tests"))
             {
@@ -265,17 +308,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.IsTrue(breadcrumbItems.Count > expectedItemValues.Length, 
                 "The expected values count should at least be one less than the BreadcrumbItems count");
 
-            for (int i = 0; i < expectedItemValues.Length; ++i)
+            for (int i = expectedItemValues.Length - 1; i >= 0; --i)
             {
-                var breadcrumbItemButton = ConvertTo<Button>(breadcrumbItems[i + 1]);
-                Verify.IsNotNull(breadcrumbItemButton, "Button should not be null");
+                var currentItem = breadcrumbItems[i + 1];
+                Verify.IsNotNull(currentItem, "Current BreadcrumbItem should not be null");
 
-                var breadcrumbItemTextBlock = ConvertTo<TextBlock>(breadcrumbItemButton.FirstChild);
-                Verify.IsNotNull(breadcrumbItemTextBlock, "TextBlock should not be null");
+                var currentBreadcrumbItem = ConvertTo<BreadcrumbItem>(currentItem);
+                Verify.IsNotNull(currentBreadcrumbItem, "UIElement should be a BreadcrumbItem");
 
-                var breadcrumbItemText = breadcrumbItemTextBlock.GetText();
-                Verify.AreEqual(expectedItemValues[i], breadcrumbItemText,
-                        "The text in the button " + breadcrumbItemText + "doesn't match the expected " + expectedItemValues[i]);
+                currentBreadcrumbItem.Click();
+
+                var lastClickedItemIndex = GetLastClickedItemIndex();
+                Verify.AreEqual(i, lastClickedItemIndex,
+                        "The last clicked item index " + lastClickedItemIndex + "doesn't match the expected " + i);
+
+                var lastClickedItem = GetLastClickedItem();
+                Verify.AreEqual(expectedItemValues[i], lastClickedItem,
+                        "The text in the button " + lastClickedItem + "doesn't match the expected " + expectedItemValues[i]);
             }
         }
 
@@ -286,6 +335,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Verify.AreEqual(expectedEllipsisItemText, ellipsisItemTextBlock.GetText(), 
                 "The ellipsis item doesn't match " + expectedEllipsisItemText);
+        }
+
+        private string GetLastClickedItem()
+        {
+            var lastItemTextBlock = FindElement.ByName<TextBlock>("LastClickedItem");
+            return lastItemTextBlock.DocumentText;
+        }
+
+        private int GetLastClickedItemIndex()
+        {
+            var lastItemTextBlock = FindElement.ByName<TextBlock>("LastClickedItemIndex");
+            return Int32.Parse(lastItemTextBlock.DocumentText);
         }
     }
 }

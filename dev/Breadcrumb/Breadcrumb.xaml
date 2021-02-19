@@ -208,6 +208,7 @@
                                                 </VisualStateManager.VisualStateGroups>
 
                                                 <ContentPresenter x:Name="PART_ContentPresenter"
+                                                        AutomationProperties.Name="ContentPresenter"
                                                         BorderBrush="{TemplateBinding BorderBrush}"
                                                         Content="{TemplateBinding Content}"
                                                         ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -266,15 +267,18 @@
 
                         <Button.Content>
 
-                            <Grid>
+                            <Grid x:Name="PART_BreadcrumbItemGrid"
+                                  AutomationProperties.Name="BreadcrumbItemGrid"
+                                  AutomationProperties.AccessibilityView="Raw">
 
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition x:Name="ContentColumnDefinition" Width="Auto" />
                                     <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="0px" />
                                     <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
                                 <ContentPresenter x:Name="PART_BreadcrumbItemContentPresenter"
+                                                  AutomationProperties.Name="BreadcrumbItemContentPresenter"
                                                   Grid.Column="0"
                                                   Content="{TemplateBinding Content}"
                                                   ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -288,6 +292,7 @@
                                                   AutomationProperties.AccessibilityView="Raw"/>
 
                                 <TextBlock x:Name="PART_BreadcrumbEllipsisTextBlock"
+                                           AutomationProperties.Name="BreadcrumbEllipsisTextBlock"
                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                            Text="&#xE712;"
                                            Visibility="Collapsed"
@@ -298,6 +303,7 @@
                                            Grid.Column="0"/>
 
                                 <TextBlock x:Name="PART_ChevronTextBlock"
+                                           AutomationProperties.Name="ChevronTextBlock"
                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                            Foreground="{ThemeResource BreadcrumbNormalForegroundBrush}"
                                            Text="&#xE76C;"

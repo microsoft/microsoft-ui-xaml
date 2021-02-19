@@ -38,7 +38,12 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Last clicked element: " />
-                        <TextBlock x:Name="LastClickedItemIndex" Text="-1" />
+                        <TextBlock x:Name="LastClickedItem" AutomationProperties.Name="LastClickedItem" Text="" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Last clicked element index: " />
+                        <TextBlock x:Name="LastClickedItemIndex" AutomationProperties.Name="LastClickedItemIndex" Text="-1" />
                     </StackPanel>
 
                 </StackPanel>
@@ -55,9 +60,10 @@
                                 <Grid>
 
                                     <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
-                                                         x:Name="BreadCrumbControl"
+                                                         x:Name="BreadcrumbControl"
+                                                         AutomationProperties.Name="BreadcrumbControl"
                                                          ItemClicked="BreadcrumbControl_ItemClicked"
-                                                         Grid.Column="0" Grid.Row="1">
+                                                         Grid.Column="0">
 
                                         <controls:Breadcrumb.DropDownItemTemplate>
                                             <DataTemplate x:DataType="local2:TreeNode">
@@ -104,7 +110,9 @@
 
         <StackPanel Grid.Row="1">
             <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1" >
-                <controls:ItemsRepeater x:Name="ChildrenItemsRepeater" ItemsSource="{x:Bind currentNodeChildrenList}" ElementPrepared="Child_ElementPrepared">
+                <controls:ItemsRepeater x:Name="ChildrenItemsRepeater"
+                                        ItemsSource="{x:Bind currentNodeChildrenList}"
+                                        ElementPrepared="Child_ElementPrepared">
                     <controls:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
                             <Button Content="{Binding}" Click="ItemsRepeater_ButtonClick">
