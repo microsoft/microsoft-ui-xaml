@@ -4,9 +4,6 @@
 #include "pch.h"
 #include "common.h"
 #include "BreadcrumbLayout.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-
 #include "Breadcrumb.h"
 #include "BreadcrumbItem.h"
 

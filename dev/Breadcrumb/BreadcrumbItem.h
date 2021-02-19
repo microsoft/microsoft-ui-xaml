@@ -89,7 +89,7 @@ private:
     PropertyChanged_revoker m_isPointerOverButtonRevoker{};
     PropertyChanged_revoker m_isEnabledButtonRevoker{};
 
-    // Revokers for events that change visual state changes
+    // Revokers for events that change visual states
     winrt::UIElement::PointerEntered_revoker m_breadcrumbItemButtonPointerEnteredRevoker{};
     winrt::UIElement::PointerExited_revoker m_breadcrumbItemButtonPointerExitedRevoker{};
     winrt::UIElement::PointerPressed_revoker m_breadcrumbItemButtonPointerPressedRevoker{};

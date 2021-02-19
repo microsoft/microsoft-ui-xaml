@@ -182,4 +182,6 @@ public:
 #define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
 #define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
 
+#define SR_AutomationNameEllipsisBreadcrumbItem L"AutomationNameEllipsisBreadcrumbItem"
+
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

@@ -5,7 +5,6 @@
 #include "common.h"
 #include "BreadcrumbItem.h"
 #include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
 #include "ItemTemplateWrapper.h"
 #include "Breadcrumb.h"
 #include "BreadcrumbDropDownItem.h"
