@@ -7,7 +7,6 @@
 #include "Breadcrumb.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
-
 #include "BreadcrumbItem.h"
 #include "BreadcrumbLayout.h"
 #include "BreadcrumbItemClickedEventArgs.h"
@@ -241,6 +240,8 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
                 itemImpl->SetPropertiesForEllipsisNode();
                 m_ellipsisBreadcrumbItem.set(item);
                 UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
+
+                winrt::AutomationProperties::SetName(item, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameEllipsisBreadcrumbItem));
             }
             else
             {
@@ -368,7 +369,6 @@ void Breadcrumb::ReIndexVisibleElementsForAccessibility() const
             }
         }
     }
-
 }
 
 // When focus comes from outside the Breadcrumb control we will put focus on the selected item.

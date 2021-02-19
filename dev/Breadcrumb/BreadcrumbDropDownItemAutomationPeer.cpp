@@ -3,11 +3,8 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ResourceAccessor.h"
 #include "BreadcrumbDropDownItem.h"
 #include "BreadcrumbDropDownItemAutomationPeer.h"
-#include "Utils.h"
-
 #include "BreadcrumbDropDownItemAutomationPeer.properties.cpp"
 
 BreadcrumbDropDownItemAutomationPeer::BreadcrumbDropDownItemAutomationPeer(winrt::BreadcrumbDropDownItem const& owner)

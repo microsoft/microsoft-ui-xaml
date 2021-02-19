@@ -55,4 +55,7 @@
     <Midl Include="$(MSBuildThisFileDirectory)Breadcrumb.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)BreadcrumbAutomationPeer.idl" />
   </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
 </Project>
