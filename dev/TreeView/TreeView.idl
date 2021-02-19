@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TreeViewSelectionMode
 {
@@ -10,22 +10,18 @@ enum TreeViewSelectionMode
     Multiple = 2,
 };
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewItemInvokedEventArgs", 472ab521-0242-4290-9363-ab4fe704527f)]
 runtimeclass TreeViewItemInvokedEventArgs
 {
     Object InvokedItem { get; };
     Boolean Handled { set; get; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 /*The bindable tag is needed for bindings in C++ apps if a class isn't being referenced in markup*/
 [bindable]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewNode", c04c8ed3-9af2-4e75-a329-7497a110e7a8)]
-[WUXC_STATIC_NAME("ITreeViewNodeStatics", 5d8276fe-e1d1-4b61-9e81-c7fb189a2980)]
-[WUXC_CONSTRUCTOR_NAME("ITreeViewNodeFactory", 6ec62d90-aa19-414a-8a45-0a5589a836f7)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TreeViewNode : Windows.UI.Xaml.DependencyObject
 {
@@ -48,31 +44,29 @@ unsealed runtimeclass TreeViewNode : Windows.UI.Xaml.DependencyObject
     static Windows.UI.Xaml.DependencyProperty HasChildrenProperty { get; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewExpandingEventArgs", c5e1fa63-4154-49d2-a21f-c34176605e3a)]
 runtimeclass TreeViewExpandingEventArgs
 {
     TreeViewNode Node { get; };
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         Object Item{ get; };
     }
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewCollapsedEventArgs", 391db3b0-1e58-4539-9e93-387978f46cce)]
 runtimeclass TreeViewCollapsedEventArgs
 {
     TreeViewNode Node { get; };
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         Object Item{ get; };
     }
 }
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass TreeViewDragItemsStartingEventArgs
 {
@@ -81,20 +75,20 @@ runtimeclass TreeViewDragItemsStartingEventArgs
     Windows.Foundation.Collections.IVector<Object> Items{ get; };
 }
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass TreeViewDragItemsCompletedEventArgs
 {
     Windows.ApplicationModel.DataTransfer.DataPackageOperation DropResult{ get; };
     Windows.Foundation.Collections.IVectorView<Object> Items{ get; };
 
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     {
         Object NewParentItem{ get; };
     }
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass TreeViewSelectionChangedEventArgs
 {
@@ -102,20 +96,15 @@ runtimeclass TreeViewSelectionChangedEventArgs
     Windows.Foundation.Collections.IVector<Object> RemovedItems{ get; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewList", 0f00a54e-099a-47a5-a942-94692b01f452)]
-[WUXC_CONSTRUCTOR_NAME("ITreeViewListFactory", 288f6232-41d2-46f7-b1f5-691c625264b7)]
 unsealed runtimeclass TreeViewList : Windows.UI.Xaml.Controls.ListView
 {
     TreeViewList();
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeView", 9353cc5c-dd6e-453c-aedd-0c3ac993978b)]
-[WUXC_STATIC_NAME("ITreeViewStatics", ef913e08-83f2-4e16-bfb1-1577b98355f5)]
-[WUXC_CONSTRUCTOR_NAME("ITreeViewFactory", cc5267c3-6c69-49ce-b445-753acee7948b)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
 {
@@ -132,7 +121,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TreeView, TreeViewItemInvokedEventArgs> ItemInvoked;
     event Windows.Foundation.TypedEventHandler<TreeView, TreeViewExpandingEventArgs> Expanding;
     event Windows.Foundation.TypedEventHandler<TreeView, TreeViewCollapsedEventArgs> Collapsed;
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         event Windows.Foundation.TypedEventHandler<TreeView, TreeViewSelectionChangedEventArgs> SelectionChanged;
     }
@@ -140,7 +129,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
 
     static Windows.UI.Xaml.DependencyProperty SelectionModeProperty{ get; };
 
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         TreeViewNode NodeFromContainer(Windows.UI.Xaml.DependencyObject container);
         Windows.UI.Xaml.DependencyObject ContainerFromNode(TreeViewNode node);
@@ -171,7 +160,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
         static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
     }
 
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     {
         TreeViewNode SelectedNode{ get; set; };
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -180,11 +169,8 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     }
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewItemTemplateSettings", ec323744-de31-4936-bfc2-1cb37ba1dc08)]
-[WUXC_STATIC_NAME("ITreeViewItemTemplateSettingsStatics", 55c720a8-70ed-4c21-93f4-2d79c1a4a5f7)]
-[WUXC_CONSTRUCTOR_NAME("ITreeViewItemTemplateSettingsFactory", 11a1953b-31b7-4f40-8633-02fc614b518c)]
 unsealed runtimeclass TreeViewItemTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
     TreeViewItemTemplateSettings();
@@ -202,11 +188,8 @@ unsealed runtimeclass TreeViewItemTemplateSettings : Windows.UI.Xaml.DependencyO
     static Windows.UI.Xaml.DependencyProperty DragItemsCountProperty { get; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("ITreeViewItem", 4e05d3e6-6167-44e7-9c74-291ddd6df6eb)]
-[WUXC_STATIC_NAME("ITreeViewItemStatics", 436795be-7396-46dc-a264-21c56581c5e5)]
-[WUXC_CONSTRUCTOR_NAME("ITreeViewItemFactory", 4ea32731-568d-4d0d-adfd-3d8dc5aa5d88)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TreeViewItem : Windows.UI.Xaml.Controls.ListViewItem
 {
@@ -233,7 +216,7 @@ unsealed runtimeclass TreeViewItem : Windows.UI.Xaml.Controls.ListViewItem
     static Windows.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
     static Windows.UI.Xaml.DependencyProperty TreeViewItemTemplateSettingsProperty { get; };
 
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Boolean HasUnrealizedChildren{ get; set; };

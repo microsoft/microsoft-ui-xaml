@@ -29,23 +29,18 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)PipsPager.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)PipsPager_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <UseVisualStyle>Any</UseVisualStyle>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)PipsPager_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
+      <UseVisualStyle>Any</UseVisualStyle>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)PipsPager_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
-      <Version>RS1</Version>
+    <Page Include="$(MSBuildThisFileDirectory)PipsPager_21h1_themeresources.xaml">
+      <UseVisualStyle>Any</UseVisualStyle>
+      <Version>21H1</Version>
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>

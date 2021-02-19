@@ -1,29 +1,29 @@
 ﻿namespace MU_XC_NAMESPACE
 {
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
+[MUX_PREVIEW]
 [default_interface]
+[webhosthidden]
 runtimeclass BreadcrumbItemClickedEventArgs
 {
     Int32 Index { get; };
     Object Item { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass BreadcrumbDropDownItem : Windows.UI.Xaml.Controls.ContentControl
 {
     BreadcrumbDropDownItem();
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass BreadcrumbItem : Windows.UI.Xaml.Controls.ContentControl
 {
     BreadcrumbItem();
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
