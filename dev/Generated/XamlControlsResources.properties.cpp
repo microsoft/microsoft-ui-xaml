@@ -13,7 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "XamlControlsResources.g.cpp"
 
-GlobalDependencyProperty XamlControlsResourcesProperties::s_ThemeVersionProperty{ nullptr };
+GlobalDependencyProperty XamlControlsResourcesProperties::s_ControlsResourceVersionProperty{ nullptr };
 GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactResourcesProperty{ nullptr };
 
 XamlControlsResourcesProperties::XamlControlsResourcesProperties()
@@ -23,16 +23,16 @@ XamlControlsResourcesProperties::XamlControlsResourcesProperties()
 
 void XamlControlsResourcesProperties::EnsureProperties()
 {
-    if (!s_ThemeVersionProperty)
+    if (!s_ControlsResourceVersionProperty)
     {
-        s_ThemeVersionProperty =
+        s_ControlsResourceVersionProperty =
             InitializeDependencyProperty(
-                L"ThemeVersion",
-                winrt::name_of<winrt::ThemeVersion>(),
+                L"ControlsResourceVersion",
+                winrt::name_of<winrt::ControlsResourceVersion>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ThemeVersion>::BoxValueIfNecessary(winrt::ThemeVersion::Version1),
-                winrt::PropertyChangedCallback(&OnThemeVersionPropertyChanged));
+                ValueHelper<winrt::ControlsResourceVersion>::BoxValueIfNecessary(winrt::ControlsResourceVersion::Version1),
+                winrt::PropertyChangedCallback(&OnControlsResourceVersionPropertyChanged));
     }
     if (!s_UseCompactResourcesProperty)
     {
@@ -49,11 +49,11 @@ void XamlControlsResourcesProperties::EnsureProperties()
 
 void XamlControlsResourcesProperties::ClearProperties()
 {
-    s_ThemeVersionProperty = nullptr;
+    s_ControlsResourceVersionProperty = nullptr;
     s_UseCompactResourcesProperty = nullptr;
 }
 
-void XamlControlsResourcesProperties::OnThemeVersionPropertyChanged(
+void XamlControlsResourcesProperties::OnControlsResourceVersionPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -69,17 +69,17 @@ void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
     winrt::get_self<XamlControlsResources>(owner)->OnPropertyChanged(args);
 }
 
-void XamlControlsResourcesProperties::ThemeVersion(winrt::ThemeVersion const& value)
+void XamlControlsResourcesProperties::ControlsResourceVersion(winrt::ControlsResourceVersion const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<XamlControlsResources*>(this)->SetValue(s_ThemeVersionProperty, ValueHelper<winrt::ThemeVersion>::BoxValueIfNecessary(value));
+    static_cast<XamlControlsResources*>(this)->SetValue(s_ControlsResourceVersionProperty, ValueHelper<winrt::ControlsResourceVersion>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::ThemeVersion XamlControlsResourcesProperties::ThemeVersion()
+winrt::ControlsResourceVersion XamlControlsResourcesProperties::ControlsResourceVersion()
 {
-    return ValueHelper<winrt::ThemeVersion>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_ThemeVersionProperty));
+    return ValueHelper<winrt::ControlsResourceVersion>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_ControlsResourceVersionProperty));
 }
 
 void XamlControlsResourcesProperties::UseCompactResources(bool value)

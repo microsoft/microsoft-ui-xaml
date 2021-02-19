@@ -158,7 +158,7 @@ namespace MU_XC_NAMESPACE
 {
     [WUXC_VERSION_PREVIEW]
     [webhosthidden]
-    enum ThemeVersion
+    enum ControlsResourceVersion
     {
         Version1 = 1,
         Version2 = 2,
@@ -184,10 +184,10 @@ namespace MU_XC_NAMESPACE
 
         [WUXC_VERSION_PREVIEW]
         {
-            [MUX_DEFAULT_VALUE("winrt::ThemeVersion::Version1")]
-            ThemeVersion ThemeVersion{ get; set; };
+            [MUX_DEFAULT_VALUE("winrt::ControlsResourceVersion::Version1")]
+            ControlsResourceVersion ControlsResourceVersion{ get; set; };
 
-            static Windows.UI.Xaml.DependencyProperty ThemeVersionProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty ControlsResourceVersionProperty{ get; };
         }
     }
 }

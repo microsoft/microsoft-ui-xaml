@@ -31,22 +31,22 @@
   </ItemGroup>
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)PersonPicture.xaml">
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)PersonPicture_v1.xaml">
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)PersonPicture_themeresources.xaml">
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)PersonPicture_themeresources_v1.xaml">
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

@@ -71,7 +71,7 @@
       <IsPublic>true</IsPublic>
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
       <!-- Valid value: Version1, Version2 and Any, default is Any -->
-      <UseThemeVersion>Any</UseThemeVersion>
+      <ControlsResourceVersion>Any</ControlsResourceVersion>
       <RequireInsiderSDK>false</RequireInsiderSDK>
     </Page>
   </ItemDefinitionGroup>
@@ -82,11 +82,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <MergeXamlConfig Include="Version2VisualPages">
-      <FilterAttribute>UseThemeVersion2</FilterAttribute>
+      <FilterAttribute>ControlsResourceVersion2</FilterAttribute>
       <Postfix />
     </MergeXamlConfig>
     <MergeXamlConfig Include="Version1VisualPages">
-      <FilterAttribute>UseThemeVersion1</FilterAttribute>
+      <FilterAttribute>ControlsResourceVersion1</FilterAttribute>
       <Postfix>_v1</Postfix>
     </MergeXamlConfig>
   </ItemGroup>
@@ -161,10 +161,10 @@
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
-    <!-- Deduce UseThemeVersion2 and UseThemeVersion1 flag from UseThemeVersion for MergeXaml -->
+    <!-- Deduce ControlsResourceVersion2 and ControlsResourceVersion1 flag from ControlsResourceVersion for MergeXaml -->
     <SharedPage Update="@(Page)">
-      <UseThemeVersion2 Condition="'%(Page.UseThemeVersion)' != 'Version1'">true</UseThemeVersion2>
-      <UseThemeVersion1 Condition="'%(Page.UseThemeVersion)' != 'Version2'">true</UseThemeVersion1>
+      <ControlsResourceVersion2 Condition="'%(Page.ControlsResourceVersion)' != 'Version1'">true</ControlsResourceVersion2>
+      <ControlsResourceVersion1 Condition="'%(Page.ControlsResourceVersion)' != 'Version2'">true</ControlsResourceVersion1>
     </SharedPage>
   </ItemGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -491,8 +491,8 @@
     </PageRequiringCustomCompilation>
     <Page Include="@(PageRequiringCustomCompilation)" />
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
-      <UseThemeVersion2>true</UseThemeVersion2>
-      <UseThemeVersion1>true</UseThemeVersion1>
+      <ControlsResourceVersion2>true</ControlsResourceVersion2>
+      <ControlsResourceVersion1>true</ControlsResourceVersion1>
     </CompactPage>
   </ItemGroup>
   <ItemGroup>

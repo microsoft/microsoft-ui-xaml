@@ -34,56 +34,56 @@
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)ScrollView.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS3</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS3</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>

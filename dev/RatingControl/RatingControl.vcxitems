@@ -33,25 +33,25 @@
   </ItemGroup>
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RatingControl.xaml">
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RatingControl_v1.xaml">
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RatingControl_themeresources.xaml">
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RatingControl_themeresources_v1.xaml">
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>

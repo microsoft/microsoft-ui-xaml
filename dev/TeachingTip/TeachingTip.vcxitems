@@ -26,37 +26,37 @@
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version2</UseThemeVersion>
+      <ControlsResourceVersion>Version2</ControlsResourceVersion>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs2_themeresources_v1.xaml">
       <IsPublic>false</IsPublic>
-      <UseThemeVersion>Version1</UseThemeVersion>
+      <ControlsResourceVersion>Version1</ControlsResourceVersion>
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>

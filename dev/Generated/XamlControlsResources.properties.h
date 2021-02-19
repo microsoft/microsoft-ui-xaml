@@ -9,22 +9,22 @@ class XamlControlsResourcesProperties
 public:
     XamlControlsResourcesProperties();
 
-    void ThemeVersion(winrt::ThemeVersion const& value);
-    winrt::ThemeVersion ThemeVersion();
+    void ControlsResourceVersion(winrt::ControlsResourceVersion const& value);
+    winrt::ControlsResourceVersion ControlsResourceVersion();
 
     void UseCompactResources(bool value);
     bool UseCompactResources();
 
-    static winrt::DependencyProperty ThemeVersionProperty() { return s_ThemeVersionProperty; }
+    static winrt::DependencyProperty ControlsResourceVersionProperty() { return s_ControlsResourceVersionProperty; }
     static winrt::DependencyProperty UseCompactResourcesProperty() { return s_UseCompactResourcesProperty; }
 
-    static GlobalDependencyProperty s_ThemeVersionProperty;
+    static GlobalDependencyProperty s_ControlsResourceVersionProperty;
     static GlobalDependencyProperty s_UseCompactResourcesProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnThemeVersionPropertyChanged(
+    static void OnControlsResourceVersionPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
