@@ -6,10 +6,17 @@
 #include "BreadcrumbLayout.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+
+#include "Breadcrumb.h"
 #include "BreadcrumbItem.h"
 
 BreadcrumbLayout::BreadcrumbLayout()
 {
+}
+
+BreadcrumbLayout::BreadcrumbLayout(const winrt::Breadcrumb& breadcrumb)
+{
+    m_breadcrumb = breadcrumb;
 }
 
 BreadcrumbLayout::~BreadcrumbLayout()
@@ -138,6 +145,7 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     const int itemCount = GetItemCount(context);
     int firstElementToRender{};
     m_firstRenderedItemIndexAfterEllipsis = itemCount - 1;
+    m_visibleItemsCount = 0;
 
     // If the ellipsis must be drawn, then we find the index (x) of the first element to be rendered, any element with
     // a lower index than x will be hidden (except for the ellipsis button) and every element after x (including x) will
@@ -177,7 +185,13 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
         else
         {
             ArrangeItem(context, i, accumulatedWidths, maxElementHeight);
+            ++m_visibleItemsCount;
         }
+    }
+
+    if (const auto& breadcrumb = m_breadcrumb.try_as<Breadcrumb>())
+    {
+        breadcrumb->ReIndexVisibleElementsForAccessibility();
     }
 
     return finalSize;
@@ -191,4 +205,9 @@ bool BreadcrumbLayout::EllipsisIsRendered()
 uint32_t BreadcrumbLayout::FirstRenderedItemIndexAfterEllipsis()
 {
     return m_firstRenderedItemIndexAfterEllipsis;
+}
+
+uint32_t BreadcrumbLayout::GetVisibleItemsCount()
+{
+    return m_visibleItemsCount;
 }

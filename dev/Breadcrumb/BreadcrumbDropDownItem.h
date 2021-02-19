@@ -22,6 +22,7 @@ public:
 
     // internal
     void SetEllipsisBreadcrumbItem(const winrt::BreadcrumbItem& ellipsisBreadcrumbItem);
+    void SetIndex(const uint32_t index);
     void OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerMoved(winrt::PointerRoutedEventArgs const& args);
@@ -48,6 +49,8 @@ private:
     
     RoutedEventHandler_revoker m_keyDownRevoker{};
     IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+
+    uint32_t m_index{};
 
     // Visual State tracking
     uint32_t m_trackedPointerId{ 0 };

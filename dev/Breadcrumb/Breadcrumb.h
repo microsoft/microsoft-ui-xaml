@@ -31,8 +31,9 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void RevokeListeners();
 
-    void RaiseItemClickedEvent(const winrt::IInspectable& content);
+    void RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index);
     winrt::IVector<winrt::IInspectable> HiddenElements() const;
+    void ReIndexVisibleElementsForAccessibility() const;
 
 private:
     void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);

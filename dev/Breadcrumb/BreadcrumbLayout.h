@@ -7,13 +7,14 @@
 
 #include "Vector.h"
 #include "NonVirtualizingLayout.h"
-#include "VirtualizingLayout.h"
 
 class BreadcrumbLayout :
     public winrt::implements<BreadcrumbLayout, NonVirtualizingLayout>
 {
 public:
     BreadcrumbLayout();
+    BreadcrumbLayout(const winrt::Breadcrumb& breadcrumb);
+
     ~BreadcrumbLayout();
 
     winrt::Size MeasureOverride(
@@ -25,6 +26,7 @@ public:
 
     bool EllipsisIsRendered();
     uint32_t FirstRenderedItemIndexAfterEllipsis();
+    uint32_t GetVisibleItemsCount();
 
 private:
     void ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight);
@@ -39,7 +41,9 @@ private:
 
     winrt::Size m_availableSize{};
     winrt::BreadcrumbItem m_ellipsisButton{nullptr};
+    winrt::Breadcrumb m_breadcrumb{ nullptr };
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};
+    uint32_t m_visibleItemsCount{};
 };

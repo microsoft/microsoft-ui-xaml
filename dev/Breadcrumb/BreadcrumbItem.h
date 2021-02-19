@@ -25,11 +25,14 @@ public:
 
     // internal
     void ResetVisualProperties();
+
     void SetPropertiesForLastNode();
     void SetPropertiesForEllipsisNode();
     void SetParentBreadcrumb(const winrt::Breadcrumb& parent);
     void SetDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate);
-    void RaiseItemClickedEvent(const winrt::IInspectable& content);
+    void SetIndex(const uint32_t index);
+
+    void RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index);
     void CloseFlyout();
     void OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
@@ -37,13 +40,14 @@ private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
-    void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
-    void OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs&);
-    void OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+
+    // Flyout events
+    void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
+    void OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
 
     void InstantiateFlyout();
     void OpenFlyout();
@@ -51,10 +55,14 @@ private:
     void UpdateItemTypeVisualState();
     void UpdateCommonVisualState();
 
+    void UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index);
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
 
     bool m_isEllipsisNode{};
     bool m_isLastNode{};
+
+    // Contains the 1-indexed assigned to the element
+    uint32_t m_index{};
 
     // BreadcrumbItem visual representation
     tracker_ref<winrt::Button> m_breadcrumbItemButton{ this };
@@ -73,7 +81,7 @@ private:
     RoutedEventHandler_revoker m_breadcrumbItemKeyDownHandlerRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
-    winrt::ItemsRepeater::ElementClearing_revoker m_ellipsisRepeaterElementClearingRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_ellipsisRepeaterElementIndexChangedRevoker{};
 
     PropertyChanged_revoker m_pressedButtonRevoker{};
     PropertyChanged_revoker m_pointerOverButtonRevoker{};

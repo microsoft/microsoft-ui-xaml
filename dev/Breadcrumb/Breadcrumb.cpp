@@ -18,7 +18,7 @@ Breadcrumb::Breadcrumb()
 
     SetDefaultStyleKey(this);
     m_itemsRepeaterElementFactory = winrt::make_self<BreadcrumbElementFactory>();
-    m_itemsRepeaterLayout = winrt::make_self<BreadcrumbLayout>();
+    m_itemsRepeaterLayout = winrt::make_self<BreadcrumbLayout>(*this);
     m_itemsIterable = winrt::make_self<BreadcrumbIterable>();
 }
 
@@ -228,10 +228,14 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
     {
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item))
         {
-            // The first element is always the ellipsis item
+            // Set the parent breadcrumb reference for raising click events
             itemImpl->SetParentBreadcrumb(*this);
 
+            // Set the item index to fill the Index parameter in the ClickedEventArgs
             const uint32_t itemIndex = args.Index();
+            itemImpl->SetIndex(itemIndex);
+
+            // The first element is always the ellipsis item
             if (itemIndex == 0)
             {
                 itemImpl->SetPropertiesForEllipsisNode();
@@ -261,12 +265,22 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
     }
 }
 
-void Breadcrumb::OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
+void Breadcrumb::OnElementIndexChangedEvent(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
     if (m_focusedIndex == args.OldIndex())
     {
-        FocusElementAt(args.NewIndex());
-        winrt::AutomationProperties::SetName(args.Element(), L"BreadcrumbItem" + winrt::to_hstring(args.NewIndex()));
+        const uint32_t newIndex = args.NewIndex();
+
+        if (const auto& item = args.Element().try_as<winrt::BreadcrumbItem>())
+        {
+            if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item))
+            {
+                itemImpl->SetIndex(newIndex);
+            }
+        }
+
+        FocusElementAt(newIndex);
+        winrt::AutomationProperties::SetName(args.Element(), L"BreadcrumbItem" + winrt::to_hstring(newIndex));
     }
 }
 
@@ -281,10 +295,11 @@ void Breadcrumb::OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt
     }
 }
 
-void Breadcrumb::RaiseItemClickedEvent(const winrt::IInspectable& content)
+void Breadcrumb::RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index)
 {
     const auto& eventArgs = winrt::make_self<BreadcrumbItemClickedEventArgs>();
     eventArgs->Item(content);
+    eventArgs->Index(index);
 
     if (m_itemClickedEventSource)
     {
@@ -324,6 +339,36 @@ winrt::IVector<winrt::IInspectable> Breadcrumb::HiddenElements() const
 
     // By default just return an empty list
     return winrt::make<Vector<winrt::IInspectable>>();
+}
+
+void Breadcrumb::ReIndexVisibleElementsForAccessibility() const
+{
+    // Once the arrangement of Breadcrumb Items has happened then index all visible items
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
+    {
+        const uint32_t visibleItemsCount{ m_itemsRepeaterLayout->GetVisibleItemsCount() };
+        uint32_t firstItemToIndex{ 1 };
+
+        if (m_itemsRepeaterLayout->EllipsisIsRendered())
+        {
+            firstItemToIndex = m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis();
+        }
+
+        const auto& itemsSourceView = itemsRepeater.ItemsSourceView();
+
+        // For every Breadcrumb item we set the index (starting from 1 for the root/highest-level item)
+        // accessibilityIndex is the index to be assigned to each item
+        // itemToIndex is the real index and it may differ from accessibilityIndex as we must only index the visible items
+        for (uint32_t accessibilityIndex = 1, itemToIndex = firstItemToIndex; accessibilityIndex <= visibleItemsCount; ++accessibilityIndex, ++itemToIndex)
+        {
+            if (const auto& element = itemsRepeater.TryGetElement(itemToIndex))
+            {
+                element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(accessibilityIndex));
+                element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(visibleItemsCount));
+            }
+        }
+    }
+
 }
 
 // When focus comes from outside the Breadcrumb control we will put focus on the selected item.

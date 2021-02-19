@@ -198,6 +198,8 @@ namespace MUXControlsTestApp
         private void BreadcrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
         {
             TreeNode treeNode = (TreeNode)args.Item;
+            LastClickedItemIndex.Text = args.Index.ToString();
+
             ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
             UpdateChildrenList(treeNode);
         }
