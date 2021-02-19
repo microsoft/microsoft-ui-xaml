@@ -1466,7 +1466,8 @@ void NavigationView::UpdatePaneLayout()
                 {
                     // Either of these collections has no items, let it take all of the available space then.
                     return paneContentRow.ActualHeight() - 9;
-                }else if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
+                }
+                else if (const auto &paneFooter = m_leftNavFooterContentBorder.get())
                 {
                     // 20px is the padding between the two item lists
                     return paneContentRow.ActualHeight() - 29 - paneFooter.ActualHeight();
