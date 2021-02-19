@@ -66,6 +66,10 @@ public:
 
     bool IsFullScreenOrTabletMode();
 
+    void SetShadow();
+
+    void UnsetShadow();
+
     void OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
 
     int GetNavigationViewItemCountInPrimaryList();

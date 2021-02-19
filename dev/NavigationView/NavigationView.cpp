@@ -1599,6 +1599,7 @@ void NavigationView::OpenPane()
         });
     m_isOpenPaneForInteraction = true;
     IsPaneOpen(true);
+    SetShadow();
 }
 
 // Call this when you want an uncancellable close
@@ -1610,7 +1611,8 @@ void NavigationView::ClosePane()
             m_isOpenPaneForInteraction = false;
         });
     m_isOpenPaneForInteraction = true;
-    IsPaneOpen(false); // the SplitView is two-way bound to this value 
+    IsPaneOpen(false); // the SplitView is two-way bound to this value
+    UnsetShadow();
 }
 
 // Call this when NavigationView itself is going to trigger a close
@@ -4704,60 +4706,103 @@ bool NavigationView::IsFullScreenOrTabletMode()
     return isFullScreenMode || isTabletMode;
 }
 
+void NavigationView::SetShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        const winrt::Canvas shadowCaster = GetTemplateChildT<winrt::Canvas>(L"ShadowCaster", *this);
+        const auto splitView = m_rootSplitView.get();
+
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        {
+
+            if (shadowCaster)
+            {
+                shadowCaster.Shadow(winrt::ThemeShadow{});
+            }
+                
+        }
+        else if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
+        {
+            if (splitView)
+            {
+                splitView.Shadow(winrt::ThemeShadow{});
+            }
+        }
+    }
+}
+
+void NavigationView::UnsetShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        const winrt::Canvas shadowCaster = GetTemplateChildT<winrt::Canvas>(L"ShadowCaster", *this);
+        const auto splitView = m_rootSplitView.get();
+
+        if (shadowCaster.Shadow())
+        {
+            shadowCaster.Shadow(nullptr);
+        }
+        if (splitView.Shadow())
+        {
+            splitView.Shadow(nullptr);
+        }
+    }
+}
+
 void NavigationView::UpdatePaneShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
-        if (!shadowReceiver)
-        {
-            shadowReceiver = winrt::Canvas();
-            shadowReceiver.Name(c_paneShadowReceiverCanvas);
+        //winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
+        //if (!shadowReceiver)
+        //{
+        //    shadowReceiver = winrt::Canvas();
+        //    shadowReceiver.Name(c_paneShadowReceiverCanvas);
 
-            if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
-            {
-                contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
-                contentGrid.SetRow(shadowReceiver, 0);
-                // Only register to columns if those are actually defined
-                if (contentGrid.ColumnDefinitions().Size() > 0) {
-                    contentGrid.SetColumn(shadowReceiver, 0);
-                    contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
-                }
-                contentGrid.Children().Append(shadowReceiver);
+        //    if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
+        //    {
+        //        contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+        //        contentGrid.SetRow(shadowReceiver, 0);
+        //        // Only register to columns if those are actually defined
+        //        if (contentGrid.ColumnDefinitions().Size() > 0) {
+        //            contentGrid.SetColumn(shadowReceiver, 0);
+        //            contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
+        //        }
+        //        contentGrid.Children().Append(shadowReceiver);
 
-                winrt::ThemeShadow shadow;
-                shadow.Receivers().Append(shadowReceiver);
-                if (auto splitView = m_rootSplitView.get())
-                {
-                    if (auto paneRoot = splitView.Pane())
-                    {
-                        if (auto paneRoot_uiElement10 = paneRoot.try_as<winrt::IUIElement10 >())
-                        {
-                            paneRoot_uiElement10.Shadow(shadow);
-                        }
-                    }
-                }
-            }
-        }
+        //        winrt::ThemeShadow shadow;
+        //        shadow.Receivers().Append(shadowReceiver);
+        //        if (auto splitView = m_rootSplitView.get())
+        //        {
+        //            if (auto paneRoot = splitView.Pane())
+        //            {
+        //                if (auto paneRoot_uiElement10 = paneRoot.try_as<winrt::IUIElement10 >())
+        //                {
+        //                    paneRoot_uiElement10.Shadow(shadow);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
+        //// Shadow will get clipped if casting on the splitView.Content directly
+        //// Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
+        //winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
 
-        // Shadow will get clipped if casting on the splitView.Content directly
-        // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        //// Ensuring shadow is aligned to the left
+        //shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
-        // Ensuring shadow is aligned to the left
-        shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
-
-        // Ensure shadow is as wide as the pane when it is open
-        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
-        {
-            shadowReceiver.Width(OpenPaneLength());
-        }
-        else
-        {
-            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
-        }
-        shadowReceiver.Margin(shadowReceiverMargin);
+        //// Ensure shadow is as wide as the pane when it is open
+        //if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        //{
+        //    shadowReceiver.Width(OpenPaneLength());
+        //}
+        //else
+        //{
+        //    shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+        //}
+        //shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
 
