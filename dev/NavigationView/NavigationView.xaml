@@ -463,10 +463,10 @@
                                         <!-- "Non header" content -->
                                         <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition x:Name="MenuItemsRow" Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
+                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
                                                 <RowDefinition Height="*" MinHeight="21"/> <!-- Fill spacing -->
                                                 <RowDefinition Height="Auto" /> <!-- PaneFooter -->
-                                                <RowDefinition x:Name="FooterItemsRow" Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- FooterItems -->
+                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- FooterItems -->
                                             </Grid.RowDefinitions>
 
                                             <!-- MenuItems -->

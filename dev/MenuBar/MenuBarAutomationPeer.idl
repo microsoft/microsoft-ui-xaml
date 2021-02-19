@@ -2,7 +2,7 @@ namespace MU_XAP_NAMESPACE
 {
 
 /* MenuBarAutomationPeer Content */
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass MenuBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
@@ -10,7 +10,7 @@ unsealed runtimeclass MenuBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.F
 }
 
 /* MenuBarItemAutomationPeer Content */
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass MenuBarItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
 Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider,

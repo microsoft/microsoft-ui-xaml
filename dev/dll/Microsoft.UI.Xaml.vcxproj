@@ -72,6 +72,7 @@
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
       <!-- Valid value: Latest, V2dot5 and Any, default is Any -->
       <UseVisualStyle>Any</UseVisualStyle>
+      <RequireInsiderSDK>false</RequireInsiderSDK>
     </Page>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
@@ -588,14 +589,14 @@
       <RS4StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
       <RS5StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
       <NineteenH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
-      <TwentyOneH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'DefaultStyle' And '$(UseInsiderSDK)' == 'true'" />
+      <TwentyOneH1StylePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'DefaultStyle' And ('%(RequireInsiderSDK)' == 'false' or '$(UseInsiderSDK)' == 'true')" />
       <RS1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
       <RS2ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
       <RS3ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
       <RS4ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />
       <RS5ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'ThemeResources'" />
       <NineteenH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'ThemeResources'" />
-      <TwentyOneH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'ThemeResources' And '$(UseInsiderSDK)' == 'true'" />
+      <TwentyOneH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '21H1' And '%(Type)' == 'ThemeResources' And ('%(RequireInsiderSDK)' == 'false' or '$(UseInsiderSDK)' == 'true')" />
     </ItemGroup>
   </Target>
   <PropertyGroup>

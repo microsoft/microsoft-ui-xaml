@@ -1,10 +1,8 @@
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IColorSpectrumAutomationPeer", 15d5ba03-010d-4ff7-9087-f4dd09f831b7)]
-[WUXC_CONSTRUCTOR_NAME("IColorSpectrumAutomationPeerFactory", 0ac400e1-b743-4496-837a-8889e6ac6497)]
 unsealed runtimeclass ColorSpectrumAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     [method_name("CreateInstanceWithOwner")] ColorSpectrumAutomationPeer(MU_XCP_NAMESPACE.ColorSpectrum owner);
