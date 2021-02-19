@@ -1,9 +1,4 @@
-﻿#define WUXC_VERSION_RS3_CONTRACT  5
-#define WUXC_VERSION_RS4_CONTRACT  6
-#define WUXC_VERSION_RS5_CONTRACT  7
-#define WUXC_VERSION_19H1_CONTRACT 8
-
-#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls
+﻿#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Primitives
 #define MU_XCAV_NAMESPACE Microsoft.UI.Xaml.Controls.AnimatedVisuals
 #define MU_XM_NAMESPACE Microsoft.UI.Xaml.Media
@@ -25,15 +20,6 @@ namespace features
 
 namespace Microsoft.UI.Xaml.CustomAttributes
 {
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate)]
-    [attributename("muxcontract")]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXContractPropertyAttribute
-    {
-        int version;
-    }
-
     [attributeusage(target_runtimeclass)]
     [attributename("muxhascustomactivationfactory")]
     [version(0x00000001)]
@@ -96,18 +82,12 @@ namespace Microsoft.UI.Xaml.CustomAttributes
     }
 }
 
+#define MUX_PUBLIC
 
-#define WUXC_VERSION_RS3 muxcontract(WUXC_VERSION_RS3_CONTRACT)
-#define WUXC_VERSION_RS4 muxcontract(WUXC_VERSION_RS4_CONTRACT)
-#define WUXC_VERSION_RS5 muxcontract(WUXC_VERSION_RS5_CONTRACT)
-#define WUXC_VERSION_19H1 muxcontract(WUXC_VERSION_19H1_CONTRACT)
-#define WUXC_VERSION_MUXONLY muxcontract(0)
-#define WUXC_VERSION_PREVIEW muxcontract(0), feature(Feature_Experimental)
-#define WUXC_VERSION_INTERNAL muxcontract(0), feature(Feature_Experimental)
-
-#define WUXC_INTERFACE_NAME(name, uuid)
-#define WUXC_STATIC_NAME(name, uuid) 
-#define WUXC_CONSTRUCTOR_NAME(name, uuid) 
+// Note: It's expected that these are the same version because we require internal be in a different namespace,
+// and we split out the public vs internal metadata by namespace as well as feature attributes.
+#define MUX_PREVIEW feature(Feature_Experimental)
+#define MUX_INTERNAL feature(Feature_Experimental)
 
 // If this is specified then codegen will not create or register a default activation factory.
 #define MUX_HAS_CUSTOM_FACTORY muxhascustomactivationfactory
@@ -139,7 +119,7 @@ namespace Microsoft.UI.Xaml.CustomAttributes
 
 namespace MU_X_XTI_NAMESPACE
 {
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     [webhosthidden]
     [default_interface]
     runtimeclass XamlControlsXamlMetaDataProvider
@@ -156,7 +136,7 @@ namespace MU_X_XTI_NAMESPACE
 
 namespace MU_XC_NAMESPACE
 {
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     [webhosthidden]
     enum ControlsResourceVersion
     {
@@ -164,7 +144,7 @@ namespace MU_XC_NAMESPACE
         Version2 = 2,
     };
 
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     [webhosthidden]
     [default_interface]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -174,7 +154,7 @@ namespace MU_XC_NAMESPACE
         XamlControlsResources();
         static void EnsureRevealLights(Windows.UI.Xaml.UIElement element);
 
-        [WUXC_VERSION_PREVIEW]
+        [MUX_PREVIEW]
         {
             [MUX_DEFAULT_VALUE("false")]
             Boolean UseCompactResources{ get; set; };
@@ -182,7 +162,7 @@ namespace MU_XC_NAMESPACE
             static Windows.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
         }
 
-        [WUXC_VERSION_PREVIEW]
+        [MUX_PREVIEW]
         {
             [MUX_DEFAULT_VALUE("winrt::ControlsResourceVersion::Version1")]
             ControlsResourceVersion ControlsResourceVersion{ get; set; };

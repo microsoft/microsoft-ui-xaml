@@ -65,7 +65,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     break;
 
-                case ButtonVisibilityMode.VisibleOnHover:
+                case ButtonVisibilityMode.VisibleOnPointerOver:
                     if (isHiddenOnEdge)
                     {
                         Verify.AreEqual(isVisibleState, ToggleState.Off);
@@ -171,7 +171,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public enum ButtonVisibilityMode
         {
             Visible,
-            VisibleOnHover,
+            VisibleOnPointerOver,
             Collapsed
         }
 

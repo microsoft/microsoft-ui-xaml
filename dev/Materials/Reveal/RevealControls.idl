@@ -1,7 +1,7 @@
 namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass RevealListViewItemPresenter : Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenter
 {
