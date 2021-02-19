@@ -36,7 +36,7 @@ public:
     void ReIndexVisibleElementsForAccessibility() const;
 
 private:
-    void OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+    void OnBreadcrumbItemsRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs&);
     void OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
     void OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs&);
@@ -67,9 +67,9 @@ private:
     winrt::IVector<winrt::IInspectable> GetHiddenElementsList(uint32_t firstShownElement) const;
     
     winrt::Control::Loaded_revoker m_itemsRepeaterLoadedRevoker{};
-    winrt::ItemsRepeater::ElementPrepared_revoker m_itemRepeaterElementPreparedRevoker{};
-    winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemRepeaterElementIndexChangedRevoker{};
-    winrt::ItemsRepeater::ElementClearing_revoker m_itemRepeaterElementClearingRevoker{};
+    winrt::ItemsRepeater::ElementPrepared_revoker m_itemsRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_itemsRepeaterElementIndexChangedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_itemsRepeaterElementClearingRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
     RoutedEventHandler_revoker m_breadcrumbKeyDownHandlerRevoker{};
     
@@ -97,4 +97,10 @@ private:
 
     // Index of the last focused item when breadcrumb lost focus
     int m_focusedIndex{ 1 };
+
+    // Template Parts
+    static constexpr std::wstring_view s_breadcrumbItemsRepeaterPartName{ L"PART_BreadcrumbItemsRepeater"sv };
+
+    // Automation Names
+    static constexpr std::wstring_view s_breadcrumbItemAutomationName{ L"BreadcrumbItem"sv };
 };
