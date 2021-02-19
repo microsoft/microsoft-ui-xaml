@@ -35,6 +35,12 @@
                     <Slider x:Name="WidthSlider" Minimum="100" Maximum="700" Value="700" AutomationProperties.Name="WidthSlider" ValueChanged="WidthSlider_ValueChanged"/>
 
                     <CheckBox x:Name="RTLCheckbox" AutomationProperties.Name="RightToLeftCheckbox" Content="Breadcrumb is RTL" Checked="RTL_Checked" Unchecked="RTL_Unchecked" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Last clicked element: " />
+                        <TextBlock x:Name="LastClickedItemIndex" Text="-1" />
+                    </StackPanel>
+
                 </StackPanel>
 
                 <controls:TwoPaneView x:Name="TwoPaneView"

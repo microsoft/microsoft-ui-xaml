@@ -24,6 +24,7 @@ public:
 
     // internal
     void SetEllipsisBreadcrumbItem(const winrt::BreadcrumbItem& ellipsisBreadcrumbItem);
+    void SetIndex(const uint32_t index);
     void OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     
 private:
@@ -48,6 +49,7 @@ private:
 
     bool m_isPressed{};
     bool m_isPointerOver{};
+    uint32_t m_index{};
 
     winrt::UIElement::PointerEntered_revoker m_breadcrumbItemPointerEnteredRevoker{};
     winrt::UIElement::PointerExited_revoker m_breadcrumbItemPointerExitedRevoker{};

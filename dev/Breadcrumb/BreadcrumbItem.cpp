@@ -128,22 +128,23 @@ void BreadcrumbItem::SetDropDownItemDataTemplate(const winrt::IInspectable& newD
     }
 }
 
-void BreadcrumbItem::RaiseItemClickedEvent(const winrt::IInspectable& content)
+void BreadcrumbItem::SetIndex(const uint32_t index)
+{
+    m_index = index;
+}
+
+void BreadcrumbItem::RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
         auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
-        breadcrumbImpl->RaiseItemClickedEvent(content);
+        breadcrumbImpl->RaiseItemClickedEvent(content, index);
     }
 }
 
 void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
-    {
-        auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
-        breadcrumbImpl->RaiseItemClickedEvent(Content());
-    }
+    RaiseItemClickedEvent(Content(), m_index - 1);
 }
 
 void BreadcrumbItem::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
@@ -153,67 +154,12 @@ void BreadcrumbItem::OnPointerEvent(const winrt::IInspectable& sender, const win
 
 void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
-    const auto& element = args.Element();
-
-    hstring name = L"EllipsisItem" + winrt::to_hstring(args.Index() + 1);
-    winrt::AutomationProperties::SetName(element, name);
-
-    if (auto const& itemsRepeater = m_ellipsisItemsRepeater.get())
-    {
-        if (auto const& itemSourceView = itemsRepeater.ItemsSourceView())
-        {
-            element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.Index() + 1));
-            element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(itemSourceView.Count()));
-        }
-    }
+    UpdateFlyoutIndex(args.Element(), args.Index());
 }
 
-void BreadcrumbItem::OnFlyoutElementKeyDownEvent(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void BreadcrumbItem::OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
-    if (args.Key() == winrt::VirtualKey::Enter)
-    {
-        this->OnFlyoutElementClickEvent(sender, nullptr);
-        args.Handled(true);
-    }
-    else
-    {
-        args.Handled(false);
-    }
-}
-
-void BreadcrumbItem::OnFlyoutElementClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
-{
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
-    {
-        const auto& breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
-        const auto& senderAsContentControl = sender.try_as<winrt::ContentControl>();
-
-        const auto& senderAsContentPresenter = sender.try_as<winrt::ContentPresenter>();
-
-        // Once an element has been clicked, close the flyout
-        CloseFlyout();
-
-        if (senderAsContentControl)
-        {
-            if (const auto& senderAsListViewItem = sender.try_as<winrt::ListViewItem>())
-            {
-                const auto& content = senderAsContentControl.Content();
-                if (const auto& contentAsTextBlock = content.try_as<winrt::TextBlock>())
-                {
-                    breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
-                }
-                else
-                {
-                    breadcrumbImpl->RaiseItemClickedEvent(senderAsContentControl.Content());
-                }
-            }
-        }
-        else if (senderAsContentPresenter)
-        {
-            breadcrumbImpl->RaiseItemClickedEvent(senderAsContentPresenter.Content());
-        }
-        
-    }
+    UpdateFlyoutIndex(args.Element(), args.NewIndex());
 }
 
 void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
@@ -234,6 +180,30 @@ void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, co
             OnBreadcrumbItemClick(nullptr, nullptr);
         }
         args.Handled(true);
+    }
+}
+
+void BreadcrumbItem::UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index)
+{
+    if (auto const& itemsRepeater = m_ellipsisItemsRepeater.get())
+    {
+        if (auto const& itemSourceView = itemsRepeater.ItemsSourceView())
+        {
+            const uint32_t itemCount = itemSourceView.Count();
+
+            if (const auto& dropDownItemImpl = element.try_as<BreadcrumbDropDownItem>())
+            {
+                dropDownItemImpl->SetEllipsisBreadcrumbItem(*this);
+                dropDownItemImpl->SetIndex(itemCount - index);
+            }
+
+            hstring name = L"EllipsisItem" + winrt::to_hstring(index + 1);
+            winrt::AutomationProperties::SetName(element, name);
+
+
+            element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(index + 1));
+            element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(itemCount));
+        }
     }
 }
 
@@ -426,7 +396,8 @@ void BreadcrumbItem::InstantiateFlyout()
         }
 
         m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
-       
+        m_ellipsisRepeaterElementIndexChangedRevoker = ellipsisItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementIndexChangedEvent });
+
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
         // Create the Flyout and add the ItemsRepeater as content

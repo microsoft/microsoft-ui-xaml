@@ -99,7 +99,7 @@ void BreadcrumbDropDownItem::OnClickEvent(const winrt::IInspectable&, const winr
         if (const auto& breadcrumbItemImpl = winrt::get_self<BreadcrumbItem>(breadcrumbItem))
         {
             breadcrumbItemImpl->CloseFlyout();
-            breadcrumbItemImpl->RaiseItemClickedEvent(Content());
+            breadcrumbItemImpl->RaiseItemClickedEvent(Content(), m_index - 1);
         }   
     }
 }
@@ -107,6 +107,11 @@ void BreadcrumbDropDownItem::OnClickEvent(const winrt::IInspectable&, const winr
 void BreadcrumbDropDownItem::SetEllipsisBreadcrumbItem(const winrt::BreadcrumbItem& ellipsisBreadcrumbItem)
 {
     m_ellipsisBreadcrumbItem.set(ellipsisBreadcrumbItem);
+}
+
+void BreadcrumbDropDownItem::SetIndex(const uint32_t index)
+{
+    m_index = index;
 }
 
 void BreadcrumbDropDownItem::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
