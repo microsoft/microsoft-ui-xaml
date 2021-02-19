@@ -71,7 +71,7 @@
       <IsPublic>true</IsPublic>
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
       <!-- Valid value: Version1, Version2 and Any, default is Any -->
-      <ControlsResourceVersion>Any</ControlsResourceVersion>
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <RequireInsiderSDK>false</RequireInsiderSDK>
     </Page>
   </ItemDefinitionGroup>
@@ -82,11 +82,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <MergeXamlConfig Include="Version2VisualPages">
-      <FilterAttribute>ControlsResourceVersion2</FilterAttribute>
+      <FilterAttribute>ControlsResourcesVersion2</FilterAttribute>
       <Postfix />
     </MergeXamlConfig>
     <MergeXamlConfig Include="Version1VisualPages">
-      <FilterAttribute>ControlsResourceVersion1</FilterAttribute>
+      <FilterAttribute>ControlsResourcesVersion1</FilterAttribute>
       <Postfix>_v1</Postfix>
     </MergeXamlConfig>
   </ItemGroup>
@@ -161,10 +161,10 @@
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
-    <!-- Deduce ControlsResourceVersion2 and ControlsResourceVersion1 flag from ControlsResourceVersion for MergeXaml -->
+    <!-- Deduce ControlsResourcesVersion2 and ControlsResourcesVersion1 flag from ControlsResourcesVersion for MergeXaml -->
     <SharedPage Update="@(Page)">
-      <ControlsResourceVersion2 Condition="'%(Page.ControlsResourceVersion)' != 'Version1'">true</ControlsResourceVersion2>
-      <ControlsResourceVersion1 Condition="'%(Page.ControlsResourceVersion)' != 'Version2'">true</ControlsResourceVersion1>
+      <ControlsResourcesVersion2 Condition="'%(Page.ControlsResourcesVersion)' != 'Version1'">true</ControlsResourcesVersion2>
+      <ControlsResourcesVersion1 Condition="'%(Page.ControlsResourcesVersion)' != 'Version2'">true</ControlsResourcesVersion1>
     </SharedPage>
   </ItemGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -491,8 +491,8 @@
     </PageRequiringCustomCompilation>
     <Page Include="@(PageRequiringCustomCompilation)" />
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
-      <ControlsResourceVersion2>true</ControlsResourceVersion2>
-      <ControlsResourceVersion1>true</ControlsResourceVersion1>
+      <ControlsResourcesVersion2>true</ControlsResourcesVersion2>
+      <ControlsResourcesVersion1>true</ControlsResourcesVersion1>
     </CompactPage>
   </ItemGroup>
   <ItemGroup>

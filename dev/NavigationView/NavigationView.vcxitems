@@ -74,54 +74,54 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView.xaml">
-      <ControlsResourceVersion>Version2</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_v1.xaml">
-      <ControlsResourceVersion>Version1</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources.xaml">
-      <ControlsResourceVersion>Version2</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources_v1.xaml">
-      <ControlsResourceVersion>Version1</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources.xaml">
-      <ControlsResourceVersion>Version2</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources_v1.xaml">
-      <ControlsResourceVersion>Version1</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS2</Version>
       <SubType>Designer</SubType>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
-      <ControlsResourceVersion>Version2</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_v1.xaml">
-      <ControlsResourceVersion>Version1</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources.xaml">
-      <ControlsResourceVersion>Version2</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources_v1.xaml">
-      <ControlsResourceVersion>Version1</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

@@ -138,7 +138,7 @@ namespace MU_XC_NAMESPACE
 {
     [MUX_PREVIEW]
     [webhosthidden]
-    enum ControlsResourceVersion
+    enum ControlsResourcesVersion
     {
         Version1 = 1,
         Version2 = 2,
@@ -164,10 +164,10 @@ namespace MU_XC_NAMESPACE
 
         [MUX_PREVIEW]
         {
-            [MUX_DEFAULT_VALUE("winrt::ControlsResourceVersion::Version1")]
-            ControlsResourceVersion ControlsResourceVersion{ get; set; };
+            [MUX_DEFAULT_VALUE("winrt::ControlsResourcesVersion::Version1")]
+            ControlsResourcesVersion ControlsResourcesVersion{ get; set; };
 
-            static Windows.UI.Xaml.DependencyProperty ControlsResourceVersionProperty{ get; };
+            static Windows.UI.Xaml.DependencyProperty ControlsResourcesVersionProperty{ get; };
         }
     }
 }

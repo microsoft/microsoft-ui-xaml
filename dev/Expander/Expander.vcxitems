@@ -30,12 +30,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Expander.xaml">
-      <ControlsResourceVersion>Any</ControlsResourceVersion>
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources.xaml">
-      <ControlsResourceVersion>Any</ControlsResourceVersion>
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

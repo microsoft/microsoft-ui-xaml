@@ -15,12 +15,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollBar_themeresources.xaml">
-      <ControlsResourceVersion>Version2</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollBar_themeresources_v1.xaml">
-      <ControlsResourceVersion>Version1</ControlsResourceVersion>
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
