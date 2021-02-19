@@ -14,6 +14,20 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:muxContract7Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
+    <Page.Resources>
+
+        <LinearGradientBrush x:Key="MyBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+            <LinearGradientBrush.RelativeTransform>
+                <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+            </LinearGradientBrush.RelativeTransform>
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Offset="0.5" Color="Red"/>
+                <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+            </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+
+    </Page.Resources>
+    
     <StackPanel Margin="12">
         <CheckBox x:Name="EnabledCheckBox" Content="Boxen Enabled" IsChecked="True"/>
 
@@ -29,8 +43,8 @@
             <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Margin="0,0,12,0">
                 <TextBlock Text="TextBox"/>
 
-                <TextBox Header="Normal" Text="Text" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
-                <TextBox PlaceholderText="Placeholder" Header="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" />
+                <TextBox Header="Normal" Text="Text" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}" BorderBrush="{StaticResource MyBrush}"/>
+                <TextBox PlaceholderText="Placeholder" Header="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
             </StackPanel>
 
             <StackPanel Orientation="Vertical" contract5Present:Spacing="12" Grid.Column="1" Margin="0,0,12,0">

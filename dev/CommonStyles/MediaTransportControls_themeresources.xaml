@@ -444,11 +444,7 @@
                                                         </VisualState>
                                                     </VisualStateGroup>
                                                     <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal">
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                                            </Storyboard>
-                                                        </VisualState>
+                                                        <VisualState x:Name="Normal" />
                                                         <VisualState x:Name="PointerOver">
                                                             <VisualState.Setters>
                                                                 <Setter Target="Root.(media:RevealBrush.State)" Value="PointerOver" />
@@ -458,9 +454,6 @@
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Pressed">
                                                             <VisualState.Setters>
@@ -471,9 +464,6 @@
                                                                 <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
@@ -485,11 +475,7 @@
                                                                 <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundDisabled}" />
                                                             </VisualState.Setters>
                                                         </VisualState>
-                                                        <VisualState x:Name="OverflowNormal">
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                                            </Storyboard>
-                                                        </VisualState>
+                                                        <VisualState x:Name="OverflowNormal" />
                                                         <VisualState x:Name="OverflowPointerOver">
                                                             <VisualState.Setters>
                                                                 <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundPointerOver}"/>
@@ -499,9 +485,6 @@
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                                                 <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                         <VisualState x:Name="OverflowPressed">
                                                             <VisualState.Setters>
@@ -512,9 +495,6 @@
                                                                 <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                                                 <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
                                                             </VisualState.Setters>
-                                                            <Storyboard>
-                                                                <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                                            </Storyboard>
                                                         </VisualState>
                                                     </VisualStateGroup>
                                                     <VisualStateGroup x:Name="InputModeStates">

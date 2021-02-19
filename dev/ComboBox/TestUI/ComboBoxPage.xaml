@@ -10,6 +10,17 @@
     mc:Ignorable="d"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
+    <Page.Resources>
+        <LinearGradientBrush x:Key="MyBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+            <LinearGradientBrush.RelativeTransform>
+                <ScaleTransform ScaleY="-1" CenterY="0.5"/>
+            </LinearGradientBrush.RelativeTransform>
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Offset="0.0" Color="{StaticResource ControlStrokeColorSecondary}"/>
+                <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}"/>
+            </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+    </Page.Resources>
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <TextBlock Text="Sample ComboBoxes" Style="{ThemeResource StandardGroupHeader}"/>
         <TextBlock Text="ComboBox:"/>
@@ -26,7 +37,8 @@
             <ComboBoxItem Content="Item 3"/>
         </contract7Present:ComboBox>
 
-        <ComboBox SelectedIndex="0" Header="Focus resource lookup test">
+        <Button Style="{StaticResource AccentButtonStyle}" Height="25" Width="100" Margin="10"/>
+        <ComboBox SelectedIndex="0" Header="Focus resource lookup test" BorderBrush="{StaticResource MyBrush}">
             <ComboBox.Resources>
                 <ResourceDictionary>
                     <SolidColorBrush x:Key="ComboBoxBackgroundFocused" Color="Green"/>
