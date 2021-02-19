@@ -929,7 +929,11 @@
                     <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.(local:RevealBrush.State)" Value="PointerOver" />
@@ -937,6 +941,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPointerOver}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ButtonForegroundPointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
@@ -945,6 +952,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPressed}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ButtonForegroundPressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
@@ -1058,7 +1068,11 @@
                     <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" >
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="RootGrid.(local:RevealBrush.State)" Value="PointerOver" />
@@ -1066,6 +1080,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushPointerOver}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundPointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
@@ -1074,6 +1091,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushPressed}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundPressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
@@ -1088,6 +1108,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushChecked}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundChecked}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPointerOver">
                                     <VisualState.Setters>
@@ -1096,6 +1119,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushCheckedPointerOver}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundCheckedPointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPressed">
                                     <VisualState.Setters>
@@ -1104,6 +1130,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushCheckedPressed}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundCheckedPressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedDisabled">
                                     <VisualState.Setters>
@@ -1118,6 +1147,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushIndeterminate}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundIndeterminate}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePointerOver">
                                     <VisualState.Setters>
@@ -1126,6 +1158,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushIndeterminatePointerOver}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundIndeterminatePointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePressed">
                                     <VisualState.Setters>
@@ -1134,6 +1169,9 @@
                                         <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ToggleButtonRevealBorderBrushIndeterminatePressed}"/>
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ToggleButtonForegroundIndeterminatePressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminateDisabled">
                                     <VisualState.Setters>
@@ -1280,7 +1318,11 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.(local:RevealBrush.State)" Value="PointerOver" />
@@ -1290,6 +1332,9 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
@@ -1300,6 +1345,9 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
@@ -1310,7 +1358,11 @@
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OverflowNormal" />
+                                <VisualState x:Name="OverflowNormal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonRevealBackgroundPointerOver}"/>
@@ -1319,6 +1371,9 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
@@ -1328,6 +1383,9 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="InputModeStates">
@@ -1507,7 +1565,11 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.(local:RevealBrush.State)" Value="PointerOver" />
@@ -1590,7 +1652,11 @@
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OverflowNormal" />
+                                <VisualState x:Name="OverflowNormal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.(local:RevealBrush.State)" Value="PointerOver" />
@@ -1601,6 +1667,9 @@
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundPointerOver}"/>
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundPointerOver}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
@@ -1612,6 +1681,9 @@
                                         <Setter Target="OverflowCheckGlyph.Foreground" Value="{ThemeResource AppBarToggleButtonCheckGlyphForegroundPressed}"/>
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarToggleButtonOverflowLabelForegroundPressed}"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowChecked">
                                     <VisualState.Setters>
@@ -1622,6 +1694,9 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1"/>
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPointerOver">
                                     <VisualState.Setters>
@@ -1636,6 +1711,9 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1"/>
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPressed">
                                     <VisualState.Setters>
@@ -1650,6 +1728,9 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1"/>
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
+                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="InputModeStates">
@@ -1773,9 +1854,14 @@
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="Root" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="Root" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarEllipsisButtonRevealBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -1792,6 +1878,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="Root" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarEllipsisButtonRevealBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -1922,7 +2009,11 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+                                    </Storyboard>
+                                </VisualState>
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
@@ -1934,6 +2025,10 @@
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundPointerOver}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
+
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Pressed">
@@ -1946,6 +2041,10 @@
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundPressed}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="Pressed"/>
                                     </VisualState.Setters>
+
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation TargetName="ContentPresenter"/>
+                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Selected">
@@ -1959,6 +2058,10 @@
                                         <Setter Target="MultiSelectSquare.Background" Value="{ThemeResource AccentAAFillColorDefaultBrush}"/>
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelected}"/>
                                     </VisualState.Setters>
+
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="PointerOverSelected">
@@ -1973,6 +2076,10 @@
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelectedPointerOver}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
+
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="PressedSelected">
@@ -1987,6 +2094,10 @@
                                         <Setter Target="ContentBorder.Background" Value="{ThemeResource GridViewItemRevealBackgroundSelectedPressed}"/>
                                         <Setter Target="ContentBorder.(local:RevealBrush.State)" Value="Pressed"/>
                                     </VisualState.Setters>
+
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation TargetName="ContentPresenter"/>
+                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
 
@@ -2246,7 +2357,11 @@
                         Control.IsTemplateFocusTarget="True">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.(local:RevealBrush.State)" Value="PointerOver"/>
@@ -2254,6 +2369,9 @@
                                         <Setter Target="LayoutRoot.BorderBrush" Value="{ThemeResource ComboBoxItemRevealBorderBrushPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ComboBoxItemForegroundPointerOver}" />
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
@@ -2269,6 +2387,9 @@
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ComboBoxItemForegroundPressed}" />
                                         <Setter Target="LayoutRoot.(local:RevealBrush.State)" Value="Pressed"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
@@ -2276,6 +2397,9 @@
                                         <Setter Target="LayoutRoot.BorderBrush" Value="{ThemeResource ComboBoxItemRevealBorderBrushSelected}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ComboBoxItemForegroundSelected}" />
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="SelectedUnfocused">
                                     <VisualState.Setters>
@@ -2298,6 +2422,9 @@
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource ComboBoxItemForegroundSelectedPointerOver}" />
                                         <Setter Target="LayoutRoot.(local:RevealBrush.State)" Value="PointerOver"/>
                                     </VisualState.Setters>
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="SelectedPressed">
                                     <VisualState.Setters>
@@ -2503,7 +2630,11 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                    </Storyboard>
+                                </VisualState>
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
@@ -2519,6 +2650,7 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -2536,6 +2668,8 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+
                                     </Storyboard>
                                 </VisualState>
 
@@ -2640,7 +2774,11 @@
 
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="Normal">
+                                                            <Storyboard>
+                                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                                            </Storyboard>
+                                                        </VisualState>
 
                                                         <VisualState x:Name="PointerOver">
                                                             <VisualState.Setters>
@@ -2649,6 +2787,9 @@
                                                                 <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPointerOver}"/>
                                                                 <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundPointerOver}"/>
                                                             </VisualState.Setters>
+                                                            <Storyboard>
+                                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                                            </Storyboard>
                                                         </VisualState>
 
                                                         <VisualState x:Name="Pressed">
@@ -2658,6 +2799,9 @@
                                                                 <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPressed}"/>
                                                                 <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
                                                             </VisualState.Setters>
+                                                            <Storyboard>
+                                                                <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                                            </Storyboard>
                                                         </VisualState>
 
                                                         <VisualState x:Name="Disabled">
