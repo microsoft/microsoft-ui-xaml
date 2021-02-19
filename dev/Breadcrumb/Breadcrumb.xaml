@@ -5,10 +5,6 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)">
 
-    <!-- see https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font -->
-    <x:String x:Key="SplitButtonSecondaryButtonContent">&#xE76C;</x:String>
-    <x:String x:Key="SplitButtonSecondaryButtonDefaultContent">&#xE70D;</x:String>
-
     <Style x:Key="BreadcrumbDropDownItemStyle" TargetType="local:BreadcrumbDropDownItem">
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
@@ -28,7 +24,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbDropDownItem">
-                    <Grid x:Name="LayoutRoot"
+                    <Grid x:Name="PART_LayoutRoot"
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -40,34 +36,32 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal">
                                     <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
+                                        <PointerUpThemeAnimation Storyboard.TargetName="PART_LayoutRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="LayoutRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="LayoutRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MenuFlyoutItemBackgroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">

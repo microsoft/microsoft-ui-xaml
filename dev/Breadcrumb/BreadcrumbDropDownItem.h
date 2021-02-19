@@ -5,7 +5,6 @@
 
 #include "pch.h"
 #include "common.h"
-
 #include "BreadcrumbDropDownItem.g.h"
 
 class BreadcrumbDropDownItem :
@@ -17,7 +16,6 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-    void RevokeListeners();
 
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -26,37 +24,42 @@ public:
     void SetEllipsisBreadcrumbItem(const winrt::BreadcrumbItem& ellipsisBreadcrumbItem);
     void SetIndex(const uint32_t index);
     void OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    
-private:
-    void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-    void OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPointerEnteredEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPointerPressedEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPointerReleasedEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnPointerExitedEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerMoved(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerPressed(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
-    void OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
-    void UpdateCommonVisualState();
-    
-    // BreadcrumbItem visual representation
-    tracker_ref<winrt::ContentPresenter> m_dropDownItemContentPresenter{ this };
+private:
+    void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
+    void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+
+    void HookListeners();
+    void RevokeListeners();
+    void ResetTrackedPointerId();
+    bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
+    void ProcessPointerOver(const winrt::PointerRoutedEventArgs& args);
+    void ProcessPointerCanceled(const winrt::PointerRoutedEventArgs& args);
+    void UpdateCommonVisualState(bool useTransitions);
 
     // BreadcrumbItem that owns the flyout
     tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem{ this };
     
-    winrt::ContentPresenter::Loaded_revoker m_dropDownItemContentPresenterLoadedRevoker{};
+    RoutedEventHandler_revoker m_keyDownRevoker{};
+    IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
 
-    bool m_isPressed{};
-    bool m_isPointerOver{};
     uint32_t m_index{};
 
-    winrt::UIElement::PointerEntered_revoker m_breadcrumbItemPointerEnteredRevoker{};
-    winrt::UIElement::PointerExited_revoker m_breadcrumbItemPointerExitedRevoker{};
-    winrt::UIElement::PointerPressed_revoker m_breadcrumbItemPointerPressedRevoker{};
-    winrt::UIElement::PointerReleased_revoker m_breadcrumbItemPointerReleasedRevoker{};
-    winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemPointerCanceledRevoker{};
-    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemPointerCaptureLostRevoker{};
+    // Visual State tracking
+    uint32_t m_trackedPointerId{ 0 };
+    bool m_isPressed{ false };
+    bool m_isPointerOver{ false };
 
-    RoutedEventHandler_revoker m_dropDownItemKeyDownRevoker{};
+    // Visual States
+    static constexpr std::wstring_view s_normalStateName{ L"Normal"sv };
+    static constexpr std::wstring_view s_pointerOverStateName{ L"PointerOver"sv };
+    static constexpr std::wstring_view s_pressedStateName{ L"Pressed"sv };
+    static constexpr std::wstring_view s_disabledStateName{ L"Disabled"sv };
 };

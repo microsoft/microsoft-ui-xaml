@@ -103,8 +103,6 @@ void Breadcrumb::OnBreadcrumbItemRepeaterLoaded(const winrt::IInspectable&, cons
     {
         OnBreadcrumbItemsSourceCollectionChanged(nullptr, nullptr);
     }
-
-    winrt::VisualStateManager::GoToState(*this, L"Rest", false);
 }
 
 void Breadcrumb::UpdateItemTemplate()
