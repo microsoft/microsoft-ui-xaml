@@ -1,0 +1,8 @@
+﻿namespace RuntimeComponentThatUsesMUX
+{
+    [default_interface]
+    runtimeclass TestUserControl1 : Windows.UI.Xaml.Controls.UserControl
+    {
+        TestUserControl1();
+    }
+}

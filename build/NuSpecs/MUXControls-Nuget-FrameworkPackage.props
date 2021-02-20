@@ -73,7 +73,14 @@
       <PackagingOutputs Include="@(XamlWinmd)" />
     </ItemGroup>
   </Target>
-  <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="_CreatePackageLayout">
-    <Copy SourceFiles="@(XamlWinmd)" DestinationFiles="@(XamlWinmd->'$(AppxLayoutDir)%(Filename)%(Extension)')" />
-  </Target>
+  <!-- WACK certification requires that types referenced by dependent packages exist in WinMD files in the root of the AppX.
+       However, the BuildNativePackage target requires that it *not* be in that location, or else that target will return an error.
+       In order to enable apps to pass WACK certification that reference packages that reference us, we'll add it to the package payload
+       after that target has completed. -->
+  <Target Name="_AddXamlWinmdToPackageLayoutRoot" AfterTargets="BuildNativePackage">
+    <ItemGroup>
+      <AppxPackagePayload Include="@(XamlWinmd)">
+        <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
+      </AppxPackagePayload>
+    </ItemGroup>
 </Project>
