@@ -80,7 +80,7 @@ void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float
     accumulatedWidths += elementSize.Width;
 }
 
-void BreadcrumbLayout::ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight)
+void BreadcrumbLayout::ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight)
 {
     const auto& element = GetElementAt(context, index);
     ArrangeItem(element, accumulatedWidths, maxElementHeight);

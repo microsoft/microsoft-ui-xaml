@@ -30,7 +30,7 @@ public:
 
 private:
     void ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float maxElementHeight);
-    void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight);
+    void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight);
     void HideItem(const winrt::UIElement& breadcrumbItem);
     void HideItem(const winrt::NonVirtualizingLayoutContext& context, int index);
     int GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
