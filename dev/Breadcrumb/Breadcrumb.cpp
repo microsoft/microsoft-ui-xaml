@@ -84,9 +84,6 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     else if (property == s_ItemTemplateProperty)
     {
         UpdateItemTemplate();
-    }
-    else if (property == s_DropDownItemTemplateProperty)
-    {
         UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
     }
 }
@@ -112,7 +109,7 @@ void Breadcrumb::UpdateItemTemplate()
 
 void Breadcrumb::UpdateEllipsisBreadcrumbItemDropDownItemTemplate()
 {
-    const winrt::IInspectable& newItemTemplate = DropDownItemTemplate();
+    const winrt::IInspectable& newItemTemplate = ItemTemplate();
 
     // Copy the item template to the ellipsis button too
     if (const auto& ellipsisBreadcrumbItem = m_ellipsisBreadcrumbItem.get())

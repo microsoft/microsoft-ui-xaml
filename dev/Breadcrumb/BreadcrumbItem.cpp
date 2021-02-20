@@ -55,12 +55,6 @@ void BreadcrumbItem::RevokePartsListeners()
 {
     m_breadcrumbItemButtonLoadedRevoker.revoke();
     m_breadcrumbItemButtonClickRevoker.revoke();
-    m_breadcrumbItemButtonPointerEnteredRevoker.revoke();
-    m_breadcrumbItemButtonPointerExitedRevoker.revoke();
-    m_breadcrumbItemButtonPointerPressedRevoker.revoke();
-    m_breadcrumbItemButtonPointerReleasedRevoker.revoke();
-    m_breadcrumbItemButtonPointerCanceledRevoker.revoke();
-    m_breadcrumbItemButtonPointerCaptureLostRevoker.revoke();
     m_ellipsisRepeaterElementPreparedRevoker.revoke();
     m_ellipsisRepeaterElementIndexChangedRevoker.revoke();
     m_isPressedButtonRevoker.revoke();
@@ -85,13 +79,6 @@ void BreadcrumbItem::OnApplyTemplate()
         m_isPressedButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
         m_isPointerOverButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
         m_isEnabledButtonRevoker = RegisterPropertyChanged(breadcrumbItemButton, winrt::Control::IsEnabledProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
-
-        m_breadcrumbItemButtonPointerEnteredRevoker = breadcrumbItemButton.PointerEntered(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemButtonPointerExitedRevoker = breadcrumbItemButton.PointerExited(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemButtonPointerPressedRevoker = breadcrumbItemButton.PointerPressed(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemButtonPointerReleasedRevoker = breadcrumbItemButton.PointerReleased(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemButtonPointerCanceledRevoker = breadcrumbItemButton.PointerCanceled(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
-        m_breadcrumbItemButtonPointerCaptureLostRevoker = breadcrumbItemButton.PointerCaptureLost(winrt::auto_revoke, { this, &BreadcrumbItem::OnPointerEvent });
     }
 
     UpdateCommonVisualState(false /*useTransitions*/);
@@ -161,11 +148,6 @@ void BreadcrumbItem::RaiseItemClickedEvent(const winrt::IInspectable& content, c
 void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     RaiseItemClickedEvent(Content(), m_index - 1);
-}
-
-void BreadcrumbItem::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
-{
-    UpdateCommonVisualState(true /*useTransitions*/);
 }
 
 void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)

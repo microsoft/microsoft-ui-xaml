@@ -44,7 +44,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsNull(breadcrumb.ItemsSource, "The default ItemsSource property value must be null");
                 Verify.IsNull(breadcrumb.ItemTemplate, "The default ItemTemplate property value must be null");
-                Verify.IsNull(breadcrumb.DropDownItemTemplate, "The default DropdownItemTemplate property value must be null");
             });
         }
 
@@ -268,7 +267,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             </controls:BreadcrumbDropDownItem>
                         </DataTemplate>");
 
-                breadcrumb.DropDownItemTemplate = itemTemplate;
+                breadcrumb.ItemTemplate = itemTemplate;
 
                 var stackPanel = new StackPanel();
                 stackPanel.Width = 60;
@@ -334,7 +333,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             <TextBlock Text='{Binding}'/>
                         </DataTemplate>");
 
-                breadcrumb.DropDownItemTemplate = itemTemplate;
+                breadcrumb.ItemTemplate = itemTemplate;
 
                 var stackPanel = new StackPanel();
                 stackPanel.Width = 60;

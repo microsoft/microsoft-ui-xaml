@@ -42,7 +42,6 @@ private:
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
-    void OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
 
     // Flyout events
     void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
@@ -88,14 +87,6 @@ private:
     PropertyChanged_revoker m_isPressedButtonRevoker{};
     PropertyChanged_revoker m_isPointerOverButtonRevoker{};
     PropertyChanged_revoker m_isEnabledButtonRevoker{};
-
-    // Revokers for events that change visual states
-    winrt::UIElement::PointerEntered_revoker m_breadcrumbItemButtonPointerEnteredRevoker{};
-    winrt::UIElement::PointerExited_revoker m_breadcrumbItemButtonPointerExitedRevoker{};
-    winrt::UIElement::PointerPressed_revoker m_breadcrumbItemButtonPointerPressedRevoker{};
-    winrt::UIElement::PointerReleased_revoker m_breadcrumbItemButtonPointerReleasedRevoker{};
-    winrt::UIElement::PointerCanceled_revoker m_breadcrumbItemButtonPointerCanceledRevoker{};
-    winrt::UIElement::PointerCaptureLost_revoker m_breadcrumbItemButtonPointerCaptureLostRevoker{};
 
     // Common Visual States
     static constexpr std::wstring_view s_normalStateName{ L"Normal"sv };
