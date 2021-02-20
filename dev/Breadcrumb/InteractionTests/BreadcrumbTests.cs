@@ -320,6 +320,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
 
+                // To be fixed, the FocusHelper.SetFocus is not setting focus to the correct item, so we have to move 
+                // once to the left to get the visual and real focus. This issue happens in the RightToLeft version of this
+                // method too. Originally the focus was gained tabbing from the RTL Checkbox but that approach doesn't work
+                // on RS2 or RS3 machines
+                KeyboardHelper.PressKey(Key.Left);
+
                 KeyboardHelper.PressKey(Key.Right);
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbItem should have focus");
 
@@ -327,10 +333,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbItem should have focus");
+                Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbItem should have focus back");
 
                 KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
+                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus back");
             }
         }
 
@@ -348,6 +354,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetFocusToFirstBreadcrumbItem(breadcrumb, true);
 
                 Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
+
+                KeyboardHelper.PressKey(Key.Right);
 
                 KeyboardHelper.PressKey(Key.Left);
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbItem should have focus");
@@ -515,7 +523,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void SetFocusToFirstBreadcrumbItem(UIObject breadcrumb, bool isEllipsisVisible = false)
         {
-            FocusHelper.SetFocus(breadcrumb.Children[isEllipsisVisible ? 0 : 1]);
+            int indexToFocus = 1;
+
+            if (isEllipsisVisible)
+            {
+                indexToFocus = 0;
+            }
+
+            FocusHelper.SetFocus(breadcrumb.Children[indexToFocus]);
         }
 
         private T ConvertTo<T>(UIObject uiObject)
