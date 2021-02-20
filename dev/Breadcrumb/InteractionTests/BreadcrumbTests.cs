@@ -266,7 +266,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var rtlCheckbox = RetrieveRTLCheckBox(true);
 
-                SetFocusToFirstBreadcrumbItem(breadcrumb, false);
+                SetFocusToFirstBreadcrumbItem(breadcrumb, false, true);
 
                 KeyboardHelper.PressKey(Key.Left);
                 Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbItem should have focus");
@@ -499,7 +499,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Thread.Sleep(1000);
         }
 
-        private void SetFocusToFirstBreadcrumbItem(UIObject breadcrumb, bool isEllipsisVisible = false)
+        private void SetFocusToFirstBreadcrumbItem(UIObject breadcrumb, bool isEllipsisVisible = false, bool isRightToLeft = false)
         {
             UIObject anchor = RetrieveRTLCheckBox();
             FocusHelper.SetFocus(anchor);
@@ -507,16 +507,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int indexToFocus = isEllipsisVisible ? 0 : 1;
 
             // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed 
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            
+            if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone3))
             {
-                int failsafe = 0;
-                while (!breadcrumb.Children[indexToFocus].HasKeyboardFocus && failsafe < 10)
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab);
+
+                if (!isEllipsisVisible)
+                {
+                    if (isRightToLeft)
+                    {
+                        KeyboardHelper.PressKey(Key.Left);
+                    }
+                    else
+                    {
+                        KeyboardHelper.PressKey(Key.Right);
+                    }
+                }
+            }
+            else if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone2))
+            {
+                // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab);
+
+                if (!isEllipsisVisible)
                 {
                     KeyboardHelper.PressKey(Key.Tab);
-                    failsafe++;
                 }
-
-                Log.Comment("Needed " + failsafe + " <Tab> presses before focusing the item");
             }
             else
             {
