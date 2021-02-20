@@ -220,9 +220,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var rtlCheckbox = RetrieveRTLCheckBox();
 
-                SetFocusToFirstBreadcrumbItem(breadcrumb);
-
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbItem should have focus");
+                SetFocusToFirstBreadcrumbItem(breadcrumb, false);
 
                 KeyboardHelper.PressKey(Key.Right);
                 Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbItem should have focus");
@@ -268,9 +266,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var rtlCheckbox = RetrieveRTLCheckBox(true);
 
-                SetFocusToFirstBreadcrumbItem(breadcrumb);
-
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbItem should have focus");
+                SetFocusToFirstBreadcrumbItem(breadcrumb, false);
 
                 KeyboardHelper.PressKey(Key.Left);
                 Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbItem should have focus");
@@ -318,14 +314,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetFocusToFirstBreadcrumbItem(breadcrumb, true);
 
-                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
-
-                // To be fixed, the FocusHelper.SetFocus is not setting focus to the correct item, so we have to move 
-                // once to the left to get the visual and real focus. This issue happens in the RightToLeft version of this
-                // method too. Originally the focus was gained tabbing from the RTL Checkbox but that approach doesn't work
-                // on RS2 or RS3 machines
-                KeyboardHelper.PressKey(Key.Left);
-
                 KeyboardHelper.PressKey(Key.Right);
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbItem should have focus");
 
@@ -353,10 +341,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetFocusToFirstBreadcrumbItem(breadcrumb, true);
 
-                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
-
-                KeyboardHelper.PressKey(Key.Right);
-
                 KeyboardHelper.PressKey(Key.Left);
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbItem should have focus");
 
@@ -383,8 +367,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var rtlCheckbox = RetrieveRTLCheckBox();
 
                 SetFocusToFirstBreadcrumbItem(breadcrumb, true);
-
-                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Enter);
                 Thread.Sleep(1000);
@@ -427,9 +409,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var rtlCheckbox = RetrieveRTLCheckBox();
 
-                SetFocusToFirstBreadcrumbItem(breadcrumb);
-
-                Verify.IsTrue(breadcrumbItems[1].HasKeyboardFocus, "'Root' BreadcrumbItem should have focus");
+                SetFocusToFirstBreadcrumbItem(breadcrumb, false);
 
                 KeyboardHelper.PressKey(Key.Right);
                 Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A' BreadcrumbItem should have focus");
@@ -463,8 +443,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var rtlCheckbox = RetrieveRTLCheckBox();
 
                 SetFocusToFirstBreadcrumbItem(breadcrumb, true);
-
-                Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Enter);
                 Thread.Sleep(1000);
@@ -523,14 +501,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void SetFocusToFirstBreadcrumbItem(UIObject breadcrumb, bool isEllipsisVisible = false)
         {
-            int indexToFocus = 1;
+            UIObject anchorButton = FindElement.ByName("AnchorButton");
+            FocusHelper.SetFocus(anchorButton);
+
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab);
+            }
+            else
+            {
+                KeyboardHelper.PressKey(Key.Tab);
+            }
 
             if (isEllipsisVisible)
             {
-                indexToFocus = 0;
+                Verify.IsTrue(breadcrumb.Children[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
             }
-
-            FocusHelper.SetFocus(breadcrumb.Children[indexToFocus]);
+            else
+            {
+                Verify.IsTrue(breadcrumb.Children[1].HasKeyboardFocus, "'Root' BreadcrumbItem should have focus");
+            }
         }
 
         private T ConvertTo<T>(UIObject uiObject)

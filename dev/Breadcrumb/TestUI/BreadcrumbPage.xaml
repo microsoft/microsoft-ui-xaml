@@ -59,11 +59,18 @@
                             <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderThickness="5" Padding="7">
                                 <Grid>
 
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button x:Name="AnchorButton" AutomationProperties.Name="AnchorButton" Content="A" Grid.Column="0" />
+
                                     <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
                                                          x:Name="BreadcrumbControl"
                                                          AutomationProperties.Name="BreadcrumbControl"
                                                          ItemClicked="BreadcrumbControl_ItemClicked"
-                                                         Grid.Column="0">
+                                                         Grid.Column="1">
 
                                         <controls:Breadcrumb.DropDownItemTemplate>
                                             <DataTemplate x:DataType="local2:TreeNode">
