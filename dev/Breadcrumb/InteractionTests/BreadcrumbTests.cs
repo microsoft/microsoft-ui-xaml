@@ -538,7 +538,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else
             {
-                KeyboardHelper.PressKey(Key.Tab);
+                int tabCount = 0;
+
+                while (breadcrumb.Children[indexToFocus].HasKeyboardFocus && tabCount < 10)
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    ++tabCount;
+                }
+
+                Log.Comment(tabCount + " times was pressed the <TAB> key before the control gained focus");
             }
 
             if (isEllipsisVisible)
