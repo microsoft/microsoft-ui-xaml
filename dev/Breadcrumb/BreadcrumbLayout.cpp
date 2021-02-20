@@ -153,7 +153,7 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     }
 
     float accumulatedWidths{};
-    float maxElementHeight = GetBreadcrumbItemsHeight(context, firstElementToRender);
+    const float maxElementHeight = GetBreadcrumbItemsHeight(context, firstElementToRender);
 
     // If there is at least one element, we may render the ellipsis item
     if (itemCount > 0)
