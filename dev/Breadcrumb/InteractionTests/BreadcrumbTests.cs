@@ -486,7 +486,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             var breadcrumb = SetUpTest();
 
             UIObject slider = RetrieveWidthSlider();
-            slider.Click(PointerButtons.Primary, slider.BoundingRectangle.Width / 3, slider.BoundingRectangle.Height / 2);
+            slider.Click(PointerButtons.Primary, (slider.BoundingRectangle.Width / 3) - 10, slider.BoundingRectangle.Height / 2);
 
             return breadcrumb;
         }
@@ -501,14 +501,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void SetFocusToFirstBreadcrumbItem(UIObject breadcrumb, bool isEllipsisVisible = false)
         {
-            UIObject anchorButton = FindElement.ByName("AnchorButton");
-            FocusHelper.SetFocus(anchorButton);
+            UIObject anchor = RetrieveRTLCheckBox();
+            FocusHelper.SetFocus(anchor);
 
+            int indexToFocus = isEllipsisVisible ? 0 : 1;
+
+            // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed 
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
-                KeyboardHelper.PressKey(Key.Tab);
-                KeyboardHelper.PressKey(Key.Tab);
-                KeyboardHelper.PressKey(Key.Tab);
+                int failsafe = 0;
+                while (!breadcrumb.Children[indexToFocus].HasKeyboardFocus && failsafe < 10)
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    failsafe++;
+                }
+
+                Log.Comment("Needed " + failsafe + " <Tab> presses before focusing the item");
             }
             else
             {
@@ -517,11 +525,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             if (isEllipsisVisible)
             {
-                Verify.IsTrue(breadcrumb.Children[0].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
+                Verify.IsTrue(breadcrumb.Children[indexToFocus].HasKeyboardFocus, "Ellipsis BreadcrumbItem should have focus");
             }
             else
             {
-                Verify.IsTrue(breadcrumb.Children[1].HasKeyboardFocus, "'Root' BreadcrumbItem should have focus");
+                Verify.IsTrue(breadcrumb.Children[indexToFocus].HasKeyboardFocus, "'Root' BreadcrumbItem should have focus");
             }
         }
 

@@ -25,6 +25,7 @@
             <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" x:Name="BreadcrumbContainerColumn"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -45,73 +46,42 @@
                         <TextBlock Text="Last clicked element index: " />
                         <TextBlock x:Name="LastClickedItemIndex" AutomationProperties.Name="LastClickedItemIndex" Text="-1" />
                     </StackPanel>
-
                 </StackPanel>
 
-                <controls:TwoPaneView x:Name="TwoPaneView"
-                                      AutomationProperties.Name="TwoPaneViewLarge"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      Grid.Column="1">
-                    <controls:TwoPaneView.Pane1>
-                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content">
+                <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
+                    x:Name="BreadcrumbControl"
+                    AutomationProperties.Name="BreadcrumbControl"
+                    ItemClicked="BreadcrumbControl_ItemClicked"
+                    Grid.Column="1">
 
-                            <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderThickness="5" Padding="7">
-                                <Grid>
+                    <controls:Breadcrumb.DropDownItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <controls:BreadcrumbDropDownItem Content="{Binding}">
+                                <controls:BreadcrumbDropDownItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </controls:BreadcrumbDropDownItem.ContentTemplate>
+                            </controls:BreadcrumbDropDownItem>
+                        </DataTemplate>
+                    </controls:Breadcrumb.DropDownItemTemplate>
 
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                    <controls:Breadcrumb.ItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <controls:BreadcrumbItem Content="{Binding}">
+                                <controls:BreadcrumbItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
+                        </DataTemplate>
+                    </controls:Breadcrumb.ItemTemplate>
 
-                                    <Button x:Name="AnchorButton" AutomationProperties.Name="AnchorButton" Content="A" Grid.Column="0" />
+                </controls:Breadcrumb>
 
-                                    <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
-                                                         x:Name="BreadcrumbControl"
-                                                         AutomationProperties.Name="BreadcrumbControl"
-                                                         ItemClicked="BreadcrumbControl_ItemClicked"
-                                                         Grid.Column="1">
+                <Grid Background="Gray" Grid.Column="2" />
 
-                                        <controls:Breadcrumb.DropDownItemTemplate>
-                                            <DataTemplate x:DataType="local2:TreeNode">
-                                                <controls:BreadcrumbDropDownItem Content="{Binding}">
-                                                    <controls:BreadcrumbDropDownItem.ContentTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </controls:BreadcrumbDropDownItem.ContentTemplate>
-                                                </controls:BreadcrumbDropDownItem>
-                                            </DataTemplate>
-                                        </controls:Breadcrumb.DropDownItemTemplate>
-
-                                        <controls:Breadcrumb.ItemTemplate>
-                                            <DataTemplate x:DataType="local2:TreeNode">
-                                                <controls:BreadcrumbItem Content="{Binding}">
-                                                    <controls:BreadcrumbItem.ContentTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </controls:BreadcrumbItem.ContentTemplate>
-                                                </controls:BreadcrumbItem>
-                                            </DataTemplate>
-                                        </controls:Breadcrumb.ItemTemplate>
-
-                                    </controls:Breadcrumb>
-                                </Grid>
-                            </Border>
-
-                        </Grid>
-                    </controls:TwoPaneView.Pane1>
-
-                    <controls:TwoPaneView.Pane2>
-                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="{ThemeResource SystemListAccentHighColor}">
-                            <Border x:Name="Content2Border" AutomationProperties.Name="Content2Border" BorderThickness="5" Padding="7">
-                                <Grid>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </controls:TwoPaneView.Pane2>
-                </controls:TwoPaneView>
             </Grid>
         </StackPanel>
 
