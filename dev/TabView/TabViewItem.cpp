@@ -97,6 +97,7 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
     if (IsSelected())
     {
         SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));
+        StartBringIntoView();
     }
     else
     {
