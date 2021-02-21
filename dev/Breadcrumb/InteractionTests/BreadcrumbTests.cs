@@ -539,8 +539,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             else
             {
                 int tabCount = 0;
-
-                while (breadcrumb.Children[indexToFocus].HasKeyboardFocus && tabCount < 10)
+                Log.Comment("Start setting focus for non RS2 or RS3 builds");
+                while (!breadcrumb.Children[indexToFocus].HasKeyboardFocus && tabCount < 10)
                 {
                     KeyboardHelper.PressKey(Key.Tab);
                     ++tabCount;
