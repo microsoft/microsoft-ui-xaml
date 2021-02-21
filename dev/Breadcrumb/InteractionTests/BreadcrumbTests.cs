@@ -507,9 +507,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int indexToFocus = isEllipsisVisible ? 0 : 1;
 
             // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed 
-            
-            if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone3))
+            if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone2))
             {
+                Log.Comment("Set focus for RS2 build");
+
+                // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab);
+
+                if (!isEllipsisVisible)
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                }
+            }
+            else if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone3))
+            {
+                Log.Comment("Set focus for RS3 build");
+
                 KeyboardHelper.PressKey(Key.Tab);
                 KeyboardHelper.PressKey(Key.Tab);
 
@@ -525,22 +539,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                 }
             }
-            else if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone2))
-            {
-                // For RS2 we need two Tab if the ellipsis is onscreen and 3 if it's not
-                KeyboardHelper.PressKey(Key.Tab);
-                KeyboardHelper.PressKey(Key.Tab);
-
-                if (!isEllipsisVisible)
-                {
-                    KeyboardHelper.PressKey(Key.Tab);
-                }
-            }
             else
             {
                 int tabCount = 0;
                 Log.Comment("Start setting focus for non RS2 or RS3 builds");
-                while (!breadcrumb.Children[indexToFocus].HasKeyboardFocus && tabCount < 10)
+                while ((!breadcrumb.Children[indexToFocus].HasKeyboardFocus) && tabCount < 10)
                 {
                     KeyboardHelper.PressKey(Key.Tab);
                     ++tabCount;
