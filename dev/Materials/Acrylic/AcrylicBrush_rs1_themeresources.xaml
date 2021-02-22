@@ -48,7 +48,9 @@
             <StaticResource x:Key="AcrylicBackgroundFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
             <StaticResource x:Key="AcrylicInAppFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#F2F2F2" />
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="#F2F2F2" />
             <StaticResource x:Key="AcrylicBackgroundFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
+            <StaticResource x:Key="AcrylicInAppFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -94,7 +96,9 @@
             <StaticResource x:Key="AcrylicBackgroundFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
             <StaticResource x:Key="AcrylicInAppFillColorDefaultBrush" ResourceKey="SystemChromeMediumLowColor" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#2B2B2B" />
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="#2B2B2B" />
             <StaticResource x:Key="AcrylicBackgroundFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
+            <StaticResource x:Key="AcrylicInAppFillColorBaseBrush" ResourceKey="SystemChromeMediumLowColor" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -140,7 +144,9 @@
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="AcrylicInAppFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
