@@ -75,7 +75,7 @@ unsealed runtimeclass PathIconSource : IconSource
     static Windows.UI.Xaml.DependencyProperty DataProperty { get; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ImageIconSource : IconSource
 {
