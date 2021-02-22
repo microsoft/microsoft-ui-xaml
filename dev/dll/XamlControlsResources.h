@@ -19,5 +19,5 @@ public:
     static void EnsureRevealLights(winrt::UIElement const& element);
 private:
     void UpdateSource();
-    bool ControlsResourcesVersion2();
+    bool IsControlsResourcesVersion2();
 };

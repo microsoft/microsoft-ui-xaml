@@ -17,7 +17,7 @@ static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcry
 // Controls knows nothing about XamlControlsResources, but we need a way to pass the new visual flag from XamlControlsResources to Controls
 // Assume XamlControlsResources is one per Application resource, and application is per thread, 
 // so it's OK to assume one instance of XamlControlsResources per thread.
-thread_local bool s_tlsControlsResourcesVersion2 = true;
+thread_local bool s_tlsIsControlsResourcesVersion2 = true;
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -27,7 +27,7 @@ XamlControlsResources::XamlControlsResources()
     UpdateSource();
 }
 
-bool XamlControlsResources::ControlsResourcesVersion2()
+bool XamlControlsResources::IsControlsResourcesVersion2()
 {
     return ControlsResourcesVersion() != winrt::ControlsResourcesVersion::Version1;
 }
@@ -46,7 +46,7 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
-    const bool useControlsResourcesVersion2 = ControlsResourcesVersion2();
+    const bool useControlsResourcesVersion2 = IsControlsResourcesVersion2();
 
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
@@ -124,7 +124,7 @@ void XamlControlsResources::UpdateSource()
         UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
     }
 
-    s_tlsControlsResourcesVersion2 = useControlsResourcesVersion2;
+    s_tlsIsControlsResourcesVersion2 = useControlsResourcesVersion2;
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
@@ -206,7 +206,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             const bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
             const bool isInCBSPackage = SharedHelpers::IsInCBSPackage();
             
-            std::wstring postfix = s_tlsControlsResourcesVersion2 ? L"generic.xaml" : L"generic_v1.xaml";
+            std::wstring postfix = s_tlsIsControlsResourcesVersion2 ? L"generic.xaml" : L"generic_v1.xaml";
             std::wstring releasePrefix = L"";
             
             if (isInFrameworkPackage)
