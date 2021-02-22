@@ -19,6 +19,7 @@ AnimatedIcon::AnimatedIcon()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_AnimatedIcon);
     m_progressPropertySet = winrt::Window::Current().Compositor().CreatePropertySet();
     m_progressPropertySet.InsertScalar(s_progressPropertyName, 0);
+    Loaded({ this, &AnimatedIcon::OnLoaded });
 
     RegisterPropertyChangedCallback(winrt::IconElement::ForegroundProperty(), { this, &AnimatedIcon::OnForegroundPropertyChanged});
 }
@@ -39,6 +40,23 @@ void AnimatedIcon::OnApplyTemplate()
         if (auto const visual = m_animatedVisual.get())
         {
             winrt::ElementCompositionPreview::SetElementChildVisual(panel, visual.RootVisual());
+        }
+        if (auto const source = Source())
+        {
+            TrySetForegroundProperty(source);
+        }
+    }
+}
+
+void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    auto const property = winrt::AnimatedIcon::StateProperty();
+    auto const stateValue = GetValue(property);
+    if (unbox_value<winrt::hstring>(stateValue).empty())
+    {
+        if (auto const parent = winrt::VisualTreeHelper::GetParent(this->try_as<winrt::DependencyObject>()))
+        {
+            SetValue(property, parent.GetValue(property));
         }
     }
 }
@@ -457,7 +475,7 @@ void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& se
     TrySetForegroundProperty(Source());
 }
 
-void AnimatedIcon::TrySetForegroundProperty(const winrt::IRichAnimatedVisualSource source)
+void AnimatedIcon::TrySetForegroundProperty(const winrt::IAnimatedVisualSource2 source)
 {
     if (source)
     {

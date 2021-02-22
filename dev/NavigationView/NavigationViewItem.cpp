@@ -27,6 +27,16 @@ static constexpr auto c_chevronHidden = L"ChevronHidden"sv;
 static constexpr auto c_chevronVisibleOpen = L"ChevronVisibleOpen"sv;
 static constexpr auto c_chevronVisibleClosed = L"ChevronVisibleClosed"sv;
 
+static constexpr auto c_normalChevronHidden = L"NormalChevronHidden"sv;
+static constexpr auto c_normalChevronVisibleOpen = L"NormalChevronVisibleOpen"sv;
+static constexpr auto c_normalChevronVisibleClosed = L"NormalChevronVisibleClosed"sv;
+static constexpr auto c_pointerOverChevronHidden = L"PointerOverChevronHidden"sv;
+static constexpr auto c_pointerOverChevronVisibleOpen = L"PointerOverChevronVisibleOpen"sv;
+static constexpr auto c_pointerOverChevronVisibleClosed = L"PointerOverChevronVisibleClosed"sv;
+static constexpr auto c_pressedChevronHidden = L"PressedChevronHidden"sv;
+static constexpr auto c_pressedChevronVisibleOpen = L"PressedChevronVisibleOpen"sv;
+static constexpr auto c_pressedChevronVisibleClosed = L"PressedChevronVisibleClosed"sv;
+
 NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
@@ -487,8 +497,96 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? ( IsExpanded() ? c_chevronVisibleOpen : c_chevronVisibleClosed) : c_chevronHidden;
-        winrt::VisualStateManager::GoToState(presenter, chevronState, true);
+        enum class PointerStateValue{ Normal, PointerOver, Pressed };
+        enum class ChevronStateValue { ChevronHidden, ChevronVisibleOpen, ChevronVisibleClosed };
+        const auto pointerStateValue = [this, isEnabled = IsEnabled(), isSelected = IsSelected()]()
+        {
+            if (isEnabled)
+            {
+                if (m_isPointerOver)
+                {
+                    if (m_isPressed)
+                    {
+                        return PointerStateValue::Pressed; //Pressed
+                    }
+                    else
+                    {
+                        return PointerStateValue::PointerOver; //PointerOver
+                    }
+                }
+                else if (m_isPressed)
+                {
+                    return PointerStateValue::Pressed; //Pressed
+                }
+            }
+            return PointerStateValue::Normal; //Normal
+        }();
+        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? (IsExpanded() ? ChevronStateValue::ChevronVisibleOpen : ChevronStateValue::ChevronVisibleClosed) : ChevronStateValue::ChevronHidden;
+
+        auto const pointerChevronState = [this, pointerStateValue, chevronState]() {
+            if (chevronState == ChevronStateValue::ChevronHidden)
+            {
+                if (pointerStateValue == PointerStateValue::Normal)
+                {
+                    return c_normalChevronHidden;
+                }
+                else if (pointerStateValue == PointerStateValue::PointerOver)
+                {
+                    return c_pointerOverChevronHidden;
+                }
+                else if (pointerStateValue == PointerStateValue::Pressed)
+                {
+                    return c_pressedChevronHidden;
+                }
+            }
+            else if (chevronState == ChevronStateValue::ChevronVisibleOpen)
+            {
+                if (pointerStateValue == PointerStateValue::Normal)
+                {
+                    return c_normalChevronVisibleOpen;
+                }
+                else if (pointerStateValue == PointerStateValue::PointerOver)
+                {
+                    return c_pointerOverChevronVisibleOpen;
+                }
+                else if (pointerStateValue == PointerStateValue::Pressed)
+                {
+                    return c_pressedChevronVisibleOpen;
+                }
+            }
+            else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
+            {
+                if (pointerStateValue == PointerStateValue::Normal)
+                {
+                    return c_normalChevronVisibleClosed;
+                }
+                else if (pointerStateValue == PointerStateValue::PointerOver)
+                {
+                    return c_pointerOverChevronVisibleClosed;
+                }
+                else if (pointerStateValue == PointerStateValue::Pressed)
+                {
+                    return c_pressedChevronVisibleClosed;
+                }
+            }
+            return c_normalChevronHidden;
+        }();
+        // Go to the appropriate pointerChevronState
+        winrt::VisualStateManager::GoToState(presenter, pointerChevronState, true);
+
+        // Go to the appropriate chevronState
+        if (chevronState == ChevronStateValue::ChevronHidden)
+        {
+            winrt::VisualStateManager::GoToState(presenter, c_chevronHidden, true);
+        }
+        else if (chevronState == ChevronStateValue::ChevronVisibleOpen)
+        {
+            winrt::VisualStateManager::GoToState(presenter, c_chevronVisibleOpen, true);
+        }
+        else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
+        {
+            winrt::VisualStateManager::GoToState(presenter, c_chevronVisibleClosed, true);
+        }
     }
 }
 

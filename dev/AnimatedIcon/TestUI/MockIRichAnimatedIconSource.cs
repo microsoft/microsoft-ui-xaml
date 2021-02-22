@@ -8,12 +8,12 @@ using Controls_02_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Control
 
 namespace MUXControlsTestApp
 {
-    class MockIRichAnimatedIconSource : IRichAnimatedVisualSource
+    class MockIAnimatedIconSource2 : IAnimatedVisualSource2
     {
         Dictionary<string, double> markers = new Dictionary<string, double>();
 
-        IRichAnimatedVisualSource visual = new Controls_02_Hamburger();
-        public MockIRichAnimatedIconSource()
+        IAnimatedVisualSource2 visual = new Controls_02_Hamburger();
+        public MockIAnimatedIconSource2()
         {
             markers.Add("aTob_Start", 0.12345);
             markers.Add("aTob_End", 0.12345);

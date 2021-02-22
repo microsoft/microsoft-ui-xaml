@@ -3,7 +3,7 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-interface IRichAnimatedVisualSource
+interface IAnimatedVisualSource2
 {
     IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Composition.Compositor compositor);
     Windows.Foundation.Collections.IMapView<String, Double> Markers { get; };
@@ -12,12 +12,13 @@ interface IRichAnimatedVisualSource
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[contentproperty("Source")]
 unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
 {
     AnimatedIcon();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    IRichAnimatedVisualSource Source{ get; set; };
+    IAnimatedVisualSource2 Source{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     IconSource FallbackIconSource{ get; set; };

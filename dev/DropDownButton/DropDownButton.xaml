@@ -99,7 +99,7 @@
 
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <ContentPresenter x:Name="ContentPresenter"
@@ -110,10 +110,8 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw" />
 
-                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="10,4,2,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal">
-                            <local:AnimatedIcon.Source>
-                                <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
-                            </local:AnimatedIcon.Source>
+                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12">
+                            <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource
                                     FontSize="8"
@@ -123,18 +121,6 @@
                                     IsTextScaleFactorEnabled="False"/>
                             </local:AnimatedIcon.FallbackIconSource>
                         </local:AnimatedIcon>
-                        <!--<TextBlock
-                            x:Name="ChevronTextBlock"
-                            Grid.Column="1"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="8"
-                            Foreground="{ThemeResource ButtonForegroundPressed}"
-                            Text="&#xE96E;"
-                            VerticalAlignment="Center"
-                            Padding="2,4,2,0"
-                            Margin="8,0,0,0"
-                            IsTextScaleFactorEnabled="False"
-                            AutomationProperties.AccessibilityView="Raw"/>-->
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

@@ -198,7 +198,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void AnimatedIconSourceTest()
         {
             AnimatedIconSource iconSource = null;
-            IRichAnimatedVisualSource source = null;
+            IAnimatedVisualSource2 source = null;
 
             RunOnUIThread.Execute(() =>
             {

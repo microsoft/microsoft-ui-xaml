@@ -523,7 +523,7 @@
                             <Slider.Header>
                                 <controls:AnimatedIcon x:Name="SliderIcon" Height="100" Width="100" Foreground="Red">
                                     <controls:AnimatedIcon.Source>
-                                        <local:MockIRichAnimatedIconSource/>
+                                        <local:MockIAnimatedIconSource2/>
                                     </controls:AnimatedIcon.Source>
                                 </controls:AnimatedIcon>
                             </Slider.Header>
