@@ -12,6 +12,11 @@ BreadcrumbItemAutomationPeer::BreadcrumbItemAutomationPeer(winrt::BreadcrumbItem
 {
 }
 
+BreadcrumbItemAutomationPeer::BreadcrumbItemAutomationPeer(winrt::BreadcrumbDropDownItem const& owner)
+    : ReferenceTracker(owner)
+{
+}
+
 // IAutomationPeerOverrides
 winrt::IInspectable BreadcrumbItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
@@ -45,10 +50,26 @@ com_ptr<BreadcrumbItem> BreadcrumbItemAutomationPeer::GetImpl()
     return impl;
 }
 
+com_ptr<BreadcrumbDropDownItem> BreadcrumbItemAutomationPeer::GetImpl2()
+{
+    com_ptr<BreadcrumbDropDownItem> impl = nullptr;
+
+    if (auto breadcrumbItem = Owner().try_as<winrt::BreadcrumbDropDownItem>())
+    {
+        impl = winrt::get_self<BreadcrumbDropDownItem>(breadcrumbItem)->get_strong();
+    }
+
+    return impl;
+}
+
 // IInvokeProvider
 void BreadcrumbItemAutomationPeer::Invoke()
 {
     if (auto breadcrumbItem = GetImpl())
+    {
+        breadcrumbItem->OnClickEvent(nullptr, nullptr);
+    }
+    else if(auto breadcrumbItem = GetImpl2())
     {
         breadcrumbItem->OnClickEvent(nullptr, nullptr);
     }

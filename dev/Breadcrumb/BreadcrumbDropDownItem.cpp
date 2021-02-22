@@ -6,7 +6,7 @@
 #include "BreadcrumbDropDownItem.h"
 #include "RuntimeProfiler.h"
 #include "BreadcrumbItem.h"
-#include "BreadcrumbDropDownItemAutomationPeer.h"
+#include "BreadcrumbItemAutomationPeer.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
@@ -270,5 +270,5 @@ void BreadcrumbDropDownItem::UpdateCommonVisualState(bool useTransitions)
 
 winrt::AutomationPeer BreadcrumbDropDownItem::OnCreateAutomationPeer()
 {
-    return winrt::make<BreadcrumbDropDownItemAutomationPeer>(*this);
+    return winrt::make<BreadcrumbItemAutomationPeer>(*this);
 }
