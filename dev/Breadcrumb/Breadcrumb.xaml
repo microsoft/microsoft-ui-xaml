@@ -3,42 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
-    <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="BreadcrumbDropDownItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-        </ResourceDictionary>
-
-        <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="BreadcrumbDropDownItemBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForeground" ResourceKey="SystemColorWindowTextColorBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-        </ResourceDictionary>
-
-        <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="BreadcrumbDropDownItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-            <StaticResource x:Key="BreadcrumbDropDownItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-        </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries>
-
-    <Thickness x:Key="BreadcrumbDropDownItemThemePadding">11,11,11,12</Thickness>
 
     <Style x:Key="BreadcrumbDropDownItemStyle" TargetType="local:BreadcrumbDropDownItem">
         <Setter Property="HorizontalContentAlignment" Value="Left" />
