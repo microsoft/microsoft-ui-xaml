@@ -1,0 +1,20 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass BreadcrumbItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+Windows.UI.Xaml.Automation.Provider.IInvokeProvider
+{
+    BreadcrumbItemAutomationPeer(MU_XC_NAMESPACE.BreadcrumbItem owner);
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass BreadcrumbDropDownItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+Windows.UI.Xaml.Automation.Provider.IInvokeProvider
+{
+    BreadcrumbDropDownItemAutomationPeer(MU_XC_NAMESPACE.BreadcrumbDropDownItem owner);
+}
+
+}

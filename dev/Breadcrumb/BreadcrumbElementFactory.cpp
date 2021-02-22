@@ -4,9 +4,6 @@
 #include "pch.h"
 #include "common.h"
 #include "ItemTemplateWrapper.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-#include "Utils.h"
 #include "BreadcrumbElementFactory.h"
 #include "BreadcrumbItem.h"
 #include "ElementFactoryRecycleArgs.h"
@@ -47,6 +44,9 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     // Element is already a BreadcrumbItem, so we just return it.
     if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbItem>())
     {
+        // When the list has not changed the returned item is still a BreadcrumbItem but the
+        // item is not reset, so we set the content here
+        breadcrumbItem.Content(args.Data());
         return breadcrumbItem;
     }
 
@@ -74,5 +74,8 @@ void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRec
         }
     }
 
-    m_itemTemplateWrapper.RecycleElement(args);
+    if (m_itemTemplateWrapper)
+    {
+        m_itemTemplateWrapper.RecycleElement(args);
+    }
 }
