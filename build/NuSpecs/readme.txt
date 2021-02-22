@@ -14,18 +14,16 @@ This works with the platform's resource system to allow overrides of the XamlCon
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"/>
 
-    ...
-
-    <Application.Resources>
-        <ResourceDictionary>
-            <controls:XamlControlsResources />
+    <Application>
+        <Application.Resources>
+            <controls:XamlControlsResources>
                 <controls:XamlControlsResources.MergedDictionaries>
                     <!-- Other app resources here -->
                 </controls:XamlControlsResources.MergedDictionaries>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Application.Resources>
+            </controls:XamlControlsResources>
+        </Application.Resources>
+    </Application>
 
 See http://aka.ms/winui for more information.
