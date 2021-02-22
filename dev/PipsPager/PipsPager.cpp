@@ -565,7 +565,10 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
 
 void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
 {
-    if ((Orientation() == winrt::Orientation::Vertical && isnan(args.VerticalAlignmentRatio())) || (Orientation() == winrt::Orientation::Horizontal && isnan(args.HorizontalAlignmentRatio())))
+    if (
+        (Orientation() == winrt::Orientation::Vertical && isnan(args.VerticalAlignmentRatio())) ||
+        (Orientation() == winrt::Orientation::Horizontal && isnan(args.HorizontalAlignmentRatio()))
+       )
     {
         args.Handled(true);
     }
