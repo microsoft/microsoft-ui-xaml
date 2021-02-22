@@ -54,7 +54,8 @@ foreach ($testRun in $testRuns.value)
             Write-Host "  Test $($testResult.testCaseTitle) was detected as unreliable. Updating..."
             
             # The errorMessage field contains a link to the JSON-encoded rerun result data.
-            $rerunResults = ConvertFrom-Json Download-StringWithRetries $testResult.errorMessage
+            $resultsJson = Download-StringWithRetries "Error results" $testResult.errorMessage
+            $rerunResults = ConvertFrom-Json $resultsJson
             [System.Collections.Generic.List[System.Collections.Hashtable]]$rerunDataList = @()
             $attemptCount = 0
             $passCount = 0
