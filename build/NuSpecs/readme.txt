@@ -8,15 +8,23 @@ Don't forget to set XamlControlsResources as your Application resources in App.x
         </Application.Resources>
     </Application>
 
-or if you have other resources then add XamlControlsResources at the top as a merged dictionary:
+If you have other resources then we recommend you add those to the XamlControlsResources' MergedDictionaries.
+This works with the platform's resource system to allow overrides of the XamlControlsResources resources.
+
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+
+    ...
 
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+            <controls:XamlControlsResources />
+                <controls:XamlControlsResources.MergedDictionaries>
+                    <!-- Other app resources here -->
+                </controls:XamlControlsResources.MergedDictionaries>
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
         </ResourceDictionary>
     </Application.Resources>
 
