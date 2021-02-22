@@ -438,7 +438,7 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
 {
     if (auto const iconSource = FallbackIconSource())
     {
-        auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
+        auto const iconElement = iconSource.CreateIconElement();
         if (auto const rootPanel = m_rootPanel.get())
         {
             rootPanel.Children().Clear();

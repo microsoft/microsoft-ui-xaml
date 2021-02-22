@@ -81,7 +81,7 @@ void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const w
 
     if (IconSource())
     {
-        appBarButton.Icon(SharedHelpers::MakeIconElementFrom(IconSource()));
+        appBarButton.Icon(IconSource().CreateIconElement());
     }
 
     appBarButton.Label(Text());

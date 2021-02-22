@@ -7,3 +7,13 @@
 #include "IconSource.h"
 #include "SymbolIconSource.h"
 
+winrt::IconElement SymbolIconSource::CreateIconElementCore()
+{
+    winrt::SymbolIcon symbolIcon;
+    symbolIcon.Symbol(Symbol());
+    if (const auto newForeground = Foreground())
+    {
+        symbolIcon.Foreground(newForeground);
+    }
+    return symbolIcon;
+}
