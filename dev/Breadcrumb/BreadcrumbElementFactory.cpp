@@ -44,6 +44,9 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     // Element is already a BreadcrumbItem, so we just return it.
     if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbItem>())
     {
+        // When the list has not changed the returned item is still a BreadcrumbItem but the
+        // item is not reset, so we set the content here
+        breadcrumbItem.Content(args.Data());
         return breadcrumbItem;
     }
 

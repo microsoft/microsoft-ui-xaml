@@ -65,7 +65,23 @@ void BreadcrumbDropDownItem::OnChildPreviewKeyDown(const winrt::IInspectable& se
     }
     else
     {
-        args.Handled(false);
+        if (SharedHelpers::IsRS2OrHigher() && !SharedHelpers::IsRS3OrHigher())
+        {
+            if (args.Key() == winrt::VirtualKey::Down)
+            {
+                winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next);
+                args.Handled(true);
+            }
+            else if (args.Key() == winrt::VirtualKey::Up)
+            {
+                winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous);
+                args.Handled(true);
+            }
+        }
+        else
+        {
+            args.Handled(false);
+        }
     }
 }
 

@@ -161,13 +161,12 @@ namespace MUXControlsTestApp
 
         private void WidthSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            if (TwoPaneView == null)
+            if (BreadcrumbContainerColumn == null)
             {
                 return;
             }
 
-            TwoPaneView.Pane1Length = new GridLength(e.NewValue, GridUnitType.Pixel);
-            TwoPaneView.Pane2Length = new GridLength(1, GridUnitType.Star);
+            BreadcrumbContainerColumn.Width = new GridLength(e.NewValue, GridUnitType.Pixel);
         }
 
         private void RTL_Checked(object sender, RoutedEventArgs e)
