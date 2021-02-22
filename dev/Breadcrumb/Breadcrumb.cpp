@@ -392,11 +392,7 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
                         m_focusedIndex = 1;
                     }
 
-                    if (m_itemsRepeaterLayout->EllipsisIsRendered() &&
-                        m_focusedIndex < static_cast<int>(m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis()))
-                    {
-                        FocusElementAt(0);
-                    }
+                    FocusElementAt(m_focusedIndex);
                 }
 
                 if (auto const& selectedItem = itemsRepeater.TryGetElement(m_focusedIndex))
@@ -408,7 +404,7 @@ void Breadcrumb::OnGettingFocus(const winrt::IInspectable&, const winrt::Getting
                             args.Handled(true);
                         }
                     }
-                }
+                }   
             }
 
             // Focus was already in the repeater: in RS3+ Selection follows focus unless control is held down.
