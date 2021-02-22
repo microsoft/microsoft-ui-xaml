@@ -39,7 +39,7 @@ void Breadcrumb::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(s_breadcrumbItemsRepeaterPartName, controlProtected));
+    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(s_itemsRepeaterPartName, controlProtected));
 
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {

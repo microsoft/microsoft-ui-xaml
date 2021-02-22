@@ -99,7 +99,7 @@ private:
     int m_focusedIndex{ 1 };
 
     // Template Parts
-    static constexpr std::wstring_view s_breadcrumbItemsRepeaterPartName{ L"PART_BreadcrumbItemsRepeater"sv };
+    static constexpr std::wstring_view s_itemsRepeaterPartName{ L"PART_ItemsRepeater"sv };
 
     // Automation Names
     static constexpr std::wstring_view s_breadcrumbItemAutomationName{ L"BreadcrumbItem"sv };

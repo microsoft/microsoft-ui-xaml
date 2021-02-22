@@ -102,9 +102,13 @@ private:
     static constexpr std::wstring_view s_defaultStateName{ L"Default"sv };
     static constexpr std::wstring_view s_defaultRTLStateName{ L"DefaultRTL"sv };
 
+    // DropDown Item Type Visual States
+    static constexpr std::wstring_view s_inlineStateName{ L"Inline"sv };
+    static constexpr std::wstring_view s_ellipsisDropDownStateName{ L"EllipsisDropDown"sv };
+
     // Template Parts
     static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
-    static constexpr std::wstring_view s_breadcrumbItemButtonPartName{ L"PART_BreadcrumbItemButton"sv };
+    static constexpr std::wstring_view s_breadcrumbItemButtonPartName{ L"PART_ItemButton"sv };
 
     // Automation Names
     static constexpr std::wstring_view s_ellipsisFlyoutAutomationName{ L"EllipsisFlyout"sv };
