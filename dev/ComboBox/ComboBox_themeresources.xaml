@@ -418,13 +418,13 @@
                             <Storyboard x:Key="OverlayOpeningAnimation">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.0" />
-                                    <SplineDoubleKeyFrame KeyTime="0:0:0.383" KeySpline="0.1,0.9 0.2,1.0" Value="1.0" />
+                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="1.0" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                             <Storyboard x:Key="OverlayClosingAnimation">
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                     <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1.0" />
-                                    <SplineDoubleKeyFrame KeyTime="0:0:0.216" KeySpline="0.1,0.9 0.2,1.0" Value="0.0" />
+                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" Value="0.0" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </Grid.Resources>
