@@ -659,7 +659,7 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Legacy(
 
 winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
     const winrt::IGraphicsEffectSource& blurredSource,
-    const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect& tintColorEffect,
+    const winrt::Microsoft::UI::Private::Composition::Effects::ColorSourceEffect& tintColorEffect,
     const winrt::Color initialLuminosityColor,
     std::vector<winrt::hstring>& animatedProperties
 )
@@ -669,12 +669,12 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
     // Apply luminosity:
 
     // Luminosity Color
-    auto luminosityColorEffect = winrt::make_self<Microsoft::UI::Composition::Effects::ColorSourceEffect>();
+    auto luminosityColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
     luminosityColorEffect->Name(L"LuminosityColor");
     luminosityColorEffect->Color(initialLuminosityColor);
 
     // Luminosity blend
-    auto luminosityBlendEffect = winrt::make_self<Microsoft::UI::Composition::Effects::BlendEffect>();
+    auto luminosityBlendEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::BlendEffect>();
     // NOTE: There is currently a bug where the names of BlendEffectMode::Luminosity and BlendEffectMode::Color are flipped.
     // This should be changed to Luminosity when/if the bug is fixed.
     luminosityBlendEffect->Mode(winrt::BlendEffectMode::Color);
@@ -684,7 +684,7 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
     // Apply tint:
 
     // Color blend
-    auto colorBlendEffect = winrt::make_self<Microsoft::UI::Composition::Effects::BlendEffect>();
+    auto colorBlendEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::BlendEffect>();
     // NOTE: There is currently a bug where the names of BlendEffectMode::Luminosity and BlendEffectMode::Color are flipped.
     // This should be changed to Color when/if the bug is fixed.
     colorBlendEffect->Mode(winrt::BlendEffectMode::Luminosity);
@@ -811,7 +811,7 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
     winrt::IGraphicsEffect tintOutput;
 
     // Tint Color - either used directly or in a Color blend over a blurred backdrop
-    auto tintColorEffect = winrt::make_self<Microsoft::UI::Composition::Effects::ColorSourceEffect>();
+    auto tintColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
     tintColorEffect->Name(L"TintColor");
     tintColorEffect->Color(initialTintColor);
 
@@ -837,7 +837,7 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
         else
         {
             // ...or we apply the blur ourselves
-            auto gaussianBlurEffect = winrt::make_self<Microsoft::UI::Composition::Effects::GaussianBlurEffect>();
+            auto gaussianBlurEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::GaussianBlurEffect>();
             gaussianBlurEffect->Name(L"Blur");
             gaussianBlurEffect->BorderMode(winrt::EffectBorderMode::Hard);
             gaussianBlurEffect->BlurAmount(sc_blurRadius);
@@ -852,19 +852,19 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
 
     // Create noise with alpha and wrap:
     // Noise image BorderEffect (infinitely tiles noise image)
-    auto noiseBorderEffect = winrt::make_self<Microsoft::UI::Composition::Effects::BorderEffect>();
+    auto noiseBorderEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::BorderEffect>();
     noiseBorderEffect->ExtendX(winrt::CanvasEdgeBehavior::Wrap);
     noiseBorderEffect->ExtendY(winrt::CanvasEdgeBehavior::Wrap);
     winrt::CompositionEffectSourceParameter noiseEffectSourceParameter{ L"Noise" };
     noiseBorderEffect->Source(noiseEffectSourceParameter);
     // OpacityEffect applied to wrapped noise
-    auto noiseOpacityEffect = winrt::make_self<Microsoft::UI::Composition::Effects::OpacityEffect>();
+    auto noiseOpacityEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::OpacityEffect>();
     noiseOpacityEffect->Name(L"NoiseOpacity");
     noiseOpacityEffect->Opacity(sc_noiseOpacity);
     noiseOpacityEffect->Source(*noiseBorderEffect);
 
     // Blend noise on top of tint
-    auto blendEffectOuter = winrt::make_self<Microsoft::UI::Composition::Effects::CompositeStepEffect>();
+    auto blendEffectOuter = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CompositeStepEffect>();
     blendEffectOuter->Mode(winrt::CanvasComposite::SourceOver);
     blendEffectOuter->Destination(tintOutput);
     blendEffectOuter->Source(*noiseOpacityEffect);
@@ -872,12 +872,12 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
     if (useCrossFadeEffect)
     {
         // Fallback color
-        auto fallbackColorEffect = winrt::make_self<Microsoft::UI::Composition::Effects::ColorSourceEffect>();
+        auto fallbackColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
         fallbackColorEffect->Name(L"FallbackColor");
         fallbackColorEffect->Color(initialFallbackColor);
 
         // CrossFade with the fallback color. Weight = 0 means full fallback, 1 means full acrylic.
-        auto fadeInOutEffect = winrt::make_self<Microsoft::UI::Composition::Effects::CrossFadeEffect>();
+        auto fadeInOutEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CrossFadeEffect>();
         fadeInOutEffect->Name(L"FadeInOut");
         fadeInOutEffect->Source1(*fallbackColorEffect);
         fadeInOutEffect->Source2(*blendEffectOuter);

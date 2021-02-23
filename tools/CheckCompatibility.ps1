@@ -81,7 +81,7 @@ foreach ($error in $apiInformationErrors)
 [System.Collections.Generic.List[Compatibility.Error]]$versionUsages = @()
 [System.Collections.Generic.List[Compatibility.Error]]$missingWebhosthiddenAttributes = @()
 
-$files = Get-ChildItem $PSScriptRoot\..\dev -Include "*.idl" -Exclude "Microsoft.UI.Xaml.idl","Microsoft.UI.Composition.Effects.idl" -Recurse
+$files = Get-ChildItem $PSScriptRoot\..\dev -Include "*.idl" -Exclude "Microsoft.UI.Xaml.idl","Microsoft.UI.Private.Composition.Effects.idl" -Recurse
 
 Write-Verbose ""
 Write-Verbose "Checking IDL files..."

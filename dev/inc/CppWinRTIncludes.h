@@ -182,7 +182,7 @@ namespace winrt
     }
 
 #ifdef EFFECTS_INCLUDED
-    using namespace ::winrt::Microsoft::UI::Composition::Effects;
+    using namespace ::winrt::Microsoft::UI::Private::Composition::Effects;
 #endif
 
     // using namespace ::winrt::Windows::UI::Xaml::Controls;
