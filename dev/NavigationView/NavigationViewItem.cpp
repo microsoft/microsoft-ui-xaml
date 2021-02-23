@@ -277,6 +277,7 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
                 winrt::ExpandCollapseState::Collapsed
         );
     }
+    UpdateVisualState(true);
 }
 
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -965,10 +966,30 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     }
 
     m_isPressed = false;
-    m_isPointerOver = false;
+    // m_isPointerOver Should be true before this event so this doesn't need to be set to true in the else block...
+    // What this flag tracks is complicated because of the NavigationView sub items and the m_capturedPointers that are being tracked..
+    // We do this check because PointerCaptureLost can sometimes take the place of PointerReleased events.
+    // In these cases we need to test if the pointer is over the item to maintain the propert state.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+    {
+        m_isPointerOver = false;
+    }
+
     m_capturedPointer = nullptr;
     ResetTrackedPointerId();
     UpdateVisualState(true);
+}
+
+bool NavigationViewItem::IsOutOfControlBounds(const winrt::Point& point) {
+    // This is a conservative check. It is okay to say we are
+    // out of the bounds when close to the edge to account for rounding.
+    const auto tolerance = 1.0;
+    const auto actualWidth = ActualWidth();
+    const auto actualHeight = ActualHeight();
+    return point.X < tolerance ||
+        point.X > actualWidth - tolerance ||
+        point.Y < tolerance ||
+        point.Y  > actualHeight - tolerance;
 }
 
 void NavigationViewItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)
