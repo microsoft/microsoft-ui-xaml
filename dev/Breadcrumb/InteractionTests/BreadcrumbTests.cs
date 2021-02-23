@@ -470,6 +470,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyMulticlickCrash()
+        {
+            using (var setup = new TestSetupHelper("Breadcrumb Tests"))
+            {
+                UIObject breadcrumb = RetrieveBreadcrumbControl();
+                ClickOnElements(new string[] { "Node A", "Node A_1" });
+
+                UIObject slider = RetrieveWidthSlider();
+                slider.Click(PointerButtons.Primary, 1, slider.BoundingRectangle.Height / 2);
+
+                InvokeEllipsisItem(breadcrumb);
+
+                var ellipsisItemNodeA = VerifyDropDownItemContainsText("EllipsisItem2", "Root");
+                ellipsisItemNodeA.Invoke();
+                Thread.Sleep(500);
+
+                for (int i = 0; i < 5; ++i)
+                {
+                    breadcrumb.Children[1].Click();
+
+                    VerifyLastClickedItemIndexIs(0);
+                    VerifyLastClickedItemIs("Root");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyFlyoutRecycleCrash()
+        {
+            using (var setup = new TestSetupHelper("Breadcrumb Tests"))
+            {
+                UIObject breadcrumb = SetUpCrumbledTest();
+
+                UIObject slider = RetrieveWidthSlider();
+                slider.Click(PointerButtons.Primary, 0, slider.BoundingRectangle.Height / 2);
+
+                InvokeEllipsisItem(breadcrumb);
+
+                var ellipsisItemNodeA_2_3 = VerifyDropDownItemContainsText("EllipsisItem1", "Node A_2_3");
+                ellipsisItemNodeA_2_3.Invoke();
+                Thread.Sleep(500);
+
+                InvokeEllipsisItem(breadcrumb);
+            }
+        }
+
         private UIObject SetUpTest()
         {
             UIObject breadcrumb = RetrieveBreadcrumbControl();
