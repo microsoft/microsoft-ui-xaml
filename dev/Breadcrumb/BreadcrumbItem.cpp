@@ -127,6 +127,8 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::Rout
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
+    m_buttonLoadedRevoker.revoke();
+
     if (auto button = m_button.get())
     {
         m_buttonClickRevoker.revoke();

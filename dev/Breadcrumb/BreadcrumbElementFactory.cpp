@@ -67,15 +67,20 @@ void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRec
 {
     if (auto element = args.Element())
     {
+        bool isEllipsisDropDownItem = false; // Use of isEllipsisDropDownItem is workaround for
+        // crashing bug when attempting to show ellipsis dropdown after clicking one of its items.
+
         if (auto breadcrumbItem = element.try_as<winrt::BreadcrumbItem>())
         {
             auto breadcrumbItemImpl = winrt::get_self<BreadcrumbItem>(breadcrumbItem);
             breadcrumbItemImpl->ResetVisualProperties();
-        }
-    }
 
-    if (m_itemTemplateWrapper)
-    {
-        m_itemTemplateWrapper.RecycleElement(args);
+            isEllipsisDropDownItem = breadcrumbItemImpl->IsEllipsisDropDownItem();
+        }
+
+        if (m_itemTemplateWrapper && isEllipsisDropDownItem)
+        {
+            m_itemTemplateWrapper.RecycleElement(args);
+        }
     }
 }

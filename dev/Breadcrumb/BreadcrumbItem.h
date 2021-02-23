@@ -22,6 +22,13 @@ public:
     void OnApplyTemplate();
 
     // internal
+
+    // Only used for bug workaround in BreadcrumbElementFactory::RecycleElementCore.
+    bool IsEllipsisDropDownItem() const
+    {
+        return m_isEllipsisDropDownItem;
+    }
+
     void ResetVisualProperties();
 
     void SetPropertiesForLastItem();
