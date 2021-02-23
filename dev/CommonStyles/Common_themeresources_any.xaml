@@ -83,8 +83,9 @@
             <Color x:Key="SmokeFillColorDefault">#4C000000</Color>
 
             <Color x:Key="LayerFillColorDefault">#09FFFFFF</Color>
-            <Color x:Key="LayerFillColorSecondary">#0DFFFFFF</Color>
-            <Color x:Key="LayerFillColorTertiary">#05FFFFFF</Color>
+            <Color x:Key="LayerFillColorAlt">#0DFFFFFF</Color>
+            <Color x:Key="LayerOnAcrylicFillColorDefault">#09FFFFFF</Color>
+            <Color x:Key="LayerOnAccentAcrylicFillColorDefault">#09FFFFFF</Color>
 
             <Color x:Key="SolidBackgroundFillColorBase">#202020</Color>
             <Color x:Key="SolidBackgroundFillColorSecondary">#1C1C1C</Color>
@@ -185,9 +186,9 @@
             <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{StaticResource SmokeFillColorDefault}" />
 
             <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
-            <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{StaticResource LayerFillColorSecondary}" />
-            <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{StaticResource LayerFillColorTertiary}" />
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Opacity="0.25" Color="{ThemeResource SystemAccentColorDark1}"/>
+            <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="{StaticResource LayerFillColorAlt}" />
+            <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAcrylicFillColorDefault}" />
+            <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAccentAcrylicFillColorDefault}" />
 
             <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
@@ -311,8 +312,9 @@
             <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
 
             <Color x:Key="LayerFillColorDefault">#80FFFFFF</Color>
-            <Color x:Key="LayerFillColorSecondary">#FFFFFF</Color>
-            <Color x:Key="LayerFillColorTertiary">#40FFFFFF</Color>
+            <Color x:Key="LayerFillColorAlt">#FFFFFF</Color>
+            <Color x:Key="LayerOnAcrylicFillColorDefault">#40FFFFFF</Color>
+            <Color x:Key="LayerOnAccentAcrylicFillColorDefault">#40FFFFFF</Color>
 
             <Color x:Key="SolidBackgroundFillColorBase">#F3F3F3</Color>
             <Color x:Key="SolidBackgroundFillColorSecondary">#EEEEEE</Color>
@@ -413,9 +415,9 @@
             <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{StaticResource SmokeFillColorDefault}" />
 
             <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
-            <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{StaticResource LayerFillColorSecondary}" />
-            <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{StaticResource LayerFillColorTertiary}" />
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Opacity="0.25" Color="{ThemeResource SystemAccentColorLight3}"/>
+            <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="{StaticResource LayerFillColorAlt}" />
+            <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAcrylicFillColorDefault}" />
+            <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAccentAcrylicFillColorDefault}" />
 
             <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
@@ -545,9 +547,9 @@
             <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
 
             <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="LayerFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="LayerFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="AccentLayerFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}"/>
 
             <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />

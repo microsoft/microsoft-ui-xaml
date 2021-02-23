@@ -29,6 +29,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private CheckBox NextPageButtonIsVisibleCheckBox;
         private CheckBox NextPageButtonIsEnabledCheckBox;
         private TextBlock CurrentPageTextBlock;
+        private TextBlock FocusedPageIndexTextBlock;
         private TextBlock CurrentNumberOfPagesTextBlock;
         private TextBlock CurrentMaxVisualIndicatorsTextBlock;
         private TextBlock CurrentOrientationTextBlock;
@@ -90,6 +91,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public TextBlock GetCurrentPageTextBlock()
         {
             return GetElement(ref CurrentPageTextBlock, "CurrentPageIndexTextBlock");
+        }
+
+        public TextBlock GetFocusedPageIndexTextBlock()
+        {
+            return GetElement(ref FocusedPageIndexTextBlock, "FocusedPageIndexTextBlock");
         }
 
         public TextBlock GetCurrentMaxVisualIndicatorsTextBlock()

@@ -10,6 +10,7 @@ using PipsPagerSelectedIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.PipsPa
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -18,10 +19,10 @@ namespace MUXControlsTestApp
     {
         Button previousPageButton;
         Button nextPageButton;
+        ItemsRepeater repeater;
 
         public List<string> Pictures = new List<string>()
         {
-
             "Assets/ingredient1.png",
             "Assets/ingredient2.png",
             "Assets/ingredient3.png",
@@ -43,6 +44,7 @@ namespace MUXControlsTestApp
             var rootPanel = VisualTreeHelper.GetChild(TestPipsPager, 0);
             previousPageButton = VisualTreeHelper.GetChild(rootPanel, 0) as Button;
             nextPageButton = VisualTreeHelper.GetChild(rootPanel, 2) as Button;
+            repeater = rootPanel.FindVisualChildByType<ItemsRepeater>();
 
             PreviousPageButtonVisibilityComboBox.SelectionChanged += OnPreviousPageButtonVisibilityChanged;
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextPageButtonVisibilityChanged;
@@ -53,6 +55,8 @@ namespace MUXControlsTestApp
             TestPipsPager.PointerExited += TestPipsPager_PointerExited;
             previousPageButton.IsEnabledChanged += OnButtonEnabledChanged; ;
             nextPageButton.IsEnabledChanged += OnButtonEnabledChanged;
+            repeater.GotFocus += OnRepeaterGotFocus;
+   
 
             PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
             NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
@@ -63,6 +67,11 @@ namespace MUXControlsTestApp
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
             CurrentMaxVisiblePipsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisiblePips}";
             CurrentOrientationTextBlock.Text = GetCurrentOrientation();
+        }
+
+        private void OnRepeaterGotFocus(object sender, RoutedEventArgs e)
+        {
+            FocusedPageIndexTextBlock.Text = $"Current focused page index: {repeater.GetElementIndex((UIElement)e.OriginalSource).ToString()}";
         }
 
         private void OnButtonEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

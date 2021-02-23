@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using Common;
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -42,34 +42,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
                 SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
 
-                VerifyPageChanged(0);
+                VerifySelectedPageIndex(0);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(1);
+                VerifySelectedPageIndex(1);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(2);
+                VerifySelectedPageIndex(2);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChanged(1);
+                VerifySelectedPageIndex(1);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChanged(0);
+                VerifySelectedPageIndex(0);
 
                 ChangeNumberOfPages(NumberOfPagesOptions.Five);
                 VerifyNumberOfPages("5");
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(1);
+                VerifySelectedPageIndex(1);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(2);
+                VerifySelectedPageIndex(2);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(3);
+                VerifySelectedPageIndex(3);
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChanged(2);
+                VerifySelectedPageIndex(2);
             }
         }
 
@@ -83,17 +83,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
                 SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
 
-                VerifyPageChanged(0);
+                VerifySelectedPageIndex(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChanged(0);
+                VerifySelectedPageIndex(0);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
                 InputHelper.LeftClick(elements.GetNextPageButton());
 
                 InputHelper.LeftClick(elements.GetPreviousPageButton());
-                VerifyPageChanged(1);
+                VerifySelectedPageIndex(1);
             }
         }
 
@@ -107,18 +107,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
                 SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
 
-                VerifyPageChanged(0);
+                VerifySelectedPageIndex(0);
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(1);
+                VerifySelectedPageIndex(1);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(2);
+                VerifySelectedPageIndex(2);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(3);
+                VerifySelectedPageIndex(3);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(4);
+                VerifySelectedPageIndex(4);
             }
         }
 
@@ -132,31 +132,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
                 SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
 
-                VerifyPageChanged(0);
+                VerifySelectedPageIndex(0);
 
                 ChangeNumberOfPages(NumberOfPagesOptions.Infinite);
                 VerifyNumberOfPages("Infinite");
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(1);
+                VerifySelectedPageIndex(1);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(2);
+                VerifySelectedPageIndex(2);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(3);
+                VerifySelectedPageIndex(3);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(4);
+                VerifySelectedPageIndex(4);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(5);
+                VerifySelectedPageIndex(5);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(6);
+                VerifySelectedPageIndex(6);
 
                 InputHelper.LeftClick(elements.GetNextPageButton());
-                VerifyPageChanged(7);
+                VerifySelectedPageIndex(7);
             }
         }
 
@@ -244,6 +244,75 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetOrientation(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
                 VerifyOrientationChanged(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
 
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "E")]
+        public void FirstFocusedPageTest()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+                {
+                    Log.Warning("This test is only designed to run on RS4 + machines due to difference in focus behaviour.");
+                    return;
+                }
+
+                elements = new PipsPagerElements();
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Shift);
+                VerifySelectedFocusedIndex(1);
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Shift);
+                VerifySelectedFocusedIndex(2);
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+                KeyboardHelper.PressKey(Key.Tab);
+                VerifySelectedFocusedIndex(1);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "E")]
+        public void KeyboardPageSelectTest()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+                {
+                    Log.Warning("This test is only designed to run on RS4+ machines due to difference in focus behaviour.");
+                    return;
+                }
+
+                elements = new PipsPagerElements();
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Shift);
+
+                KeyboardHelper.PressKey(Key.Right);
+                KeyboardHelper.PressKey(Key.Space);
+                VerifySelectedPageIndex(2);
+
+                KeyboardHelper.PressKey(Key.Right);
+                KeyboardHelper.PressKey(Key.Space);
+                VerifySelectedPageIndex(3);
+
+                KeyboardHelper.PressKey(Key.Left);
+                KeyboardHelper.PressKey(Key.Space);
+                VerifySelectedPageIndex(2);
             }
         }
     }
