@@ -23,7 +23,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)EllipsisItemsSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Breadcrumb.properties.cpp" />
@@ -35,7 +34,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)EllipsisItemsSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Breadcrumb.xaml">

@@ -6,7 +6,6 @@
 #include "pch.h"
 #include "common.h"
 #include "BreadcrumbElementFactory.h"
-#include "EllipsisItemsSource.h"
 
 #include "BreadcrumbItem.g.h"
 
@@ -44,7 +43,6 @@ public:
     void RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index);
     void CloseFlyout();
     void OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void ResetItemList();
 
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerMoved(winrt::PointerRoutedEventArgs const& args);
@@ -66,7 +64,6 @@ private:
     // Flyout events
     void OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args);
     void OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
-    void OnFlyoutElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs&);
 
     void HookListeners(bool forEllipsisDropDownItem);
     void RevokeListeners();
@@ -129,7 +126,6 @@ private:
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_ellipsisRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_ellipsisRepeaterElementIndexChangedRevoker{};
-    winrt::ItemsRepeater::ElementClearing_revoker m_ellipsisRepeaterElementClearingRevoker{};
 
     PropertyChanged_revoker m_isPressedButtonRevoker{};
     PropertyChanged_revoker m_isPointerOverButtonRevoker{};
@@ -138,10 +134,6 @@ private:
     // Ellipsis dropdown item revoker
 
     IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-
-    // Ellipsis dropdown ItemsSourceView
-    winrt::ItemsSourceView m_ellipsisItemsSourceView{ nullptr };
-    com_ptr<EllipsisItemsSource> m_ellipsisItemsSource{ nullptr };
 
     // Common Visual States
     static constexpr std::wstring_view s_normalStateName{ L"Normal"sv };
