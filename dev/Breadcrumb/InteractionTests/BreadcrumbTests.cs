@@ -507,7 +507,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject breadcrumb = SetUpCrumbledTest();
 
                 UIObject slider = RetrieveWidthSlider();
-                slider.Click(PointerButtons.Primary, 0, slider.BoundingRectangle.Height / 2);
+                slider.Click(PointerButtons.Primary, 1, slider.BoundingRectangle.Height / 2);
 
                 InvokeEllipsisItem(breadcrumb);
 
