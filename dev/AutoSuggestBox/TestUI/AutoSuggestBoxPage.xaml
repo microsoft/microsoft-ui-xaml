@@ -6,13 +6,21 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel Margin="12">
         <TextBlock Text="Sample AutoSuggestBoxes" Style="{ThemeResource StandardGroupHeader}"/>
-        <AutoSuggestBox/>
-        <AutoSuggestBox Header="AutoSuggestBox with header"/>
+        <AutoSuggestBox QueryIcon="Find"/>
+        <AutoSuggestBox Header="AutoSuggestBox with header">
+            <AutoSuggestBox.QueryIcon>
+                <controls:AnimatedIcon>
+                    <animatedvisuals:Controls_05_Search/>
+                </controls:AnimatedIcon>
+            </AutoSuggestBox.QueryIcon>
+        </AutoSuggestBox>
         <AutoSuggestBox Header="AutoSuggestBox with suggestions" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
     </StackPanel>
 

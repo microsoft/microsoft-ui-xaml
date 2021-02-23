@@ -34,7 +34,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,4</Thickness>
-    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">3,3,3,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">0,3</Thickness>
     <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
@@ -356,7 +356,7 @@
                             Grid.Column="1"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
-                            Width="30"
+                            Width="32"
                             AutomationProperties.AccessibilityView="Raw"
                             VerticalAlignment="Stretch" />
                         <Button x:Name="QueryButton"
