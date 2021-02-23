@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style x:Key="BreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
+    <Style x:Key="DefaultBreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
         <Setter Property="Foreground" Value="{ThemeResource BreadcrumbForegroundBrush}" />
         <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
@@ -299,5 +299,5 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource BreadcrumbItemStyle}"/>
+    <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource DefaultBreadcrumbItemStyle}"/>
 </ResourceDictionary>
