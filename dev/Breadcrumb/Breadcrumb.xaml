@@ -111,6 +111,7 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Button x:Name="PART_ItemButton"
+                            x:DeferLoadStrategy="Lazy"
                             AutomationProperties.Name="BreadcrumbItemButton"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -273,6 +274,7 @@
                             </Button.Content>
                         </Button>
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
+                            x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Margin="{ThemeResource BreadcrumbEllipsisDropDownItemMargin}"
                             Content="{TemplateBinding Content}"
