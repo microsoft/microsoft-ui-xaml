@@ -174,26 +174,16 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
@@ -202,34 +192,21 @@
                                         <Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OverflowNormal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="OverflowNormal" />
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListLowBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListMediumBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowSubMenuOpened">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListAccentLowBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="InputModeStates">
@@ -383,26 +360,16 @@
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
@@ -417,9 +384,6 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPointerOver">
                                     <VisualState.Setters>
@@ -427,9 +391,6 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPressed">
                                     <VisualState.Setters>
@@ -437,9 +398,6 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedDisabled">
                                     <VisualState.Setters>
@@ -452,35 +410,22 @@
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OverflowNormal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="OverflowNormal" />
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListLowBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource SystemControlBackgroundListMediumBrush}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowChecked">
                                     <VisualState.Setters>
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPointerOver">
                                     <VisualState.Setters>
@@ -488,9 +433,6 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowCheckedPressed">
                                     <VisualState.Setters>
@@ -498,9 +440,6 @@
                                         <Setter Target="CheckedHighlightBackground.Opacity" Value="1" />
                                         <Setter Target="OverflowCheckGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="InputModeStates">
