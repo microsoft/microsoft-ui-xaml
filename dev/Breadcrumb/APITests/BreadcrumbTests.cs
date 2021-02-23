@@ -258,13 +258,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                             xmlns:controls='using:Microsoft.UI.Xaml.Controls'
                             xmlns:local='using:Windows.UI.Xaml.Tests.MUXControls.ApiTests'>
-                            <controls:BreadcrumbDropDownItem Content='{Binding}'>
-                                <controls:BreadcrumbDropDownItem.ContentTemplate>
+                            <controls:BreadcrumbItem Content='{Binding}'>
+                                <controls:BreadcrumbItem.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text='{Binding MockProperty}'/>
                                     </DataTemplate>
-                                </controls:BreadcrumbDropDownItem.ContentTemplate>
-                            </controls:BreadcrumbDropDownItem>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
                         </DataTemplate>");
 
                 breadcrumb.ItemTemplate = itemTemplate;

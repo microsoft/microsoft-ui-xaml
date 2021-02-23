@@ -55,13 +55,13 @@
                     Grid.Column="1">
                     <controls:Breadcrumb.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
-                            <!--<controls:BreadcrumbItem Content="{Binding}">-->
-                              <!--<controls:BreadcrumbItem.ContentTemplate>-->
-                                <!--<DataTemplate>-->
-                                  <TextBlock Text="{Binding Name}" />
-                                <!--</DataTemplate>-->
-                              <!--</controls:BreadcrumbItem.ContentTemplate>-->
-                            <!--</controls:BreadcrumbItem>-->
+                            <controls:BreadcrumbItem Content="{Binding}">
+                                <controls:BreadcrumbItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
                         </DataTemplate>
                     </controls:Breadcrumb.ItemTemplate>
                 </controls:Breadcrumb>
@@ -103,13 +103,13 @@
                     Grid.Column="0">
                     <controls:Breadcrumb.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
-                            <!--<controls:BreadcrumbItem Content="{Binding}">-->
-                                <!--<controls:BreadcrumbItem.ContentTemplate>-->
-                                    <!--<DataTemplate>-->
+                            <controls:BreadcrumbItem Content="{Binding}">
+                                <controls:BreadcrumbItem.ContentTemplate>
+                                    <DataTemplate>
                                         <TextBlock Text="{Binding Name}" />
-                                    <!--</DataTemplate>-->
-                                <!--</controls:BreadcrumbItem.ContentTemplate>-->
-                            <!--</controls:BreadcrumbItem>-->
+                                    </DataTemplate>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
                         </DataTemplate>
                     </controls:Breadcrumb.ItemTemplate>
                 </controls:Breadcrumb>

@@ -111,12 +111,12 @@ void Breadcrumb::UpdateEllipsisBreadcrumbItemDropDownItemTemplate()
 {
     const winrt::IInspectable& newItemTemplate = ItemTemplate();
 
-    // Copy the item template to the ellipsis button too
+    // Copy the item template to the ellipsis item too
     if (const auto& ellipsisBreadcrumbItem = m_ellipsisBreadcrumbItem.get())
     {
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(ellipsisBreadcrumbItem))
         {
-            itemImpl->SetDropDownItemDataTemplate(newItemTemplate);
+            itemImpl->SetEllipsisDropDownItemDataTemplate(newItemTemplate);
         }
     }
 }
@@ -213,7 +213,7 @@ void Breadcrumb::UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrum
 
     if (const auto& newLastItemImpl = winrt::get_self<BreadcrumbItem>(newLastBreadcrumbItem))
     {
-        newLastItemImpl->SetPropertiesForLastNode();
+        newLastItemImpl->SetPropertiesForLastItem();
         m_lastBreadcrumbItem.set(newLastBreadcrumbItem);
     }
 }
@@ -224,6 +224,8 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
     {
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item))
         {
+            itemImpl->SetIsEllipsisDropDownItem(false /*isEllipsisDropDownItem*/);
+
             // Set the parent breadcrumb reference for raising click events
             itemImpl->SetParentBreadcrumb(*this);
 
@@ -234,7 +236,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
             // The first element is always the ellipsis item
             if (itemIndex == 0)
             {
-                itemImpl->SetPropertiesForEllipsisNode();
+                itemImpl->SetPropertiesForEllipsisItem();
                 m_ellipsisBreadcrumbItem.set(item);
                 UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
 

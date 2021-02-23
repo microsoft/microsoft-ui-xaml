@@ -16,8 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Breadcrumb.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbDropDownElementFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbDropDownItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItemAutomationPeer.h" />
@@ -29,8 +27,6 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Breadcrumb.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Breadcrumb.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbDropDownElementFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbDropDownItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemAutomationPeer.cpp" />
