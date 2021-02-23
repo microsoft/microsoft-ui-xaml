@@ -85,12 +85,19 @@ void PipsPager::OnApplyTemplate()
     }(GetTemplateChildT<winrt::Button>(c_nextPageButtonName, *this));
 
     m_pipsPagerElementPreparedRevoker.revoke();
+    m_pipsAreaGettingFocusRevoker.revoke();
+    m_pipsAreaBringIntoViewRequestedRevoker.revoke();
     [this](const winrt::ItemsRepeater repeater)
     {
         m_pipsPagerRepeater.set(repeater);
         if (repeater)
         {
             m_pipsPagerElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &PipsPager::OnElementPrepared });
+            m_pipsAreaGettingFocusRevoker = repeater.GettingFocus(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaGettingFocus });
+            if (SharedHelpers::IsRS4OrHigher())
+            {
+                m_pipsAreaBringIntoViewRequestedRevoker = repeater.BringIntoViewRequested(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaBringIntoViewRequested });
+            }
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
@@ -175,7 +182,7 @@ void PipsPager::OnPointerExited(const winrt::PointerRoutedEventArgs& args) {
     }
     else
     {
-    args.Handled(true);
+        args.Handled(true);
     }
     __super::OnPointerExited(args);
 }
@@ -265,16 +272,16 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const in
     else if (const auto scrollViewer = m_pipsPagerScrollViewer.get())
     {
         double pipSize;
-        std::function<void (const double&)> changeViewFunc;
+        std::function<void(const double&)> changeViewFunc;
         if (Orientation() == winrt::Orientation::Horizontal)
         {
             pipSize = m_defaultPipSize.Width;
-            changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(offset, nullptr, nullptr);};
+            changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(offset, nullptr, nullptr); };
         }
         else
         {
             pipSize = m_defaultPipSize.Height;
-            changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(nullptr, offset, nullptr);};
+            changeViewFunc = [&](const double& offset) {scrollViewer.ChangeView(nullptr, offset, nullptr); };
         }
         const int maxVisualIndicators = MaxVisiblePips();
         /* This line makes sure that while having even # of indicators the scrolling will be done correctly */
@@ -521,6 +528,52 @@ void PipsPager::OnNextButtonClicked(const IInspectable& sender, const winrt::Rou
     SelectedPageIndex(SelectedPageIndex() + 1);
 }
 
+void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args)
+{
+    if (const auto repeater = m_pipsPagerRepeater.get())
+    {
+        // Easiest way to check if focus change came from within:
+        // Check if element is child of repeater by getting index and checking for -1
+        // If it is -1, focus came from outside and we want to get to selected element.
+        if (const auto oldFocusedElement = args.OldFocusedElement().try_as<winrt::UIElement>())
+        {
+            if (repeater.GetElementIndex(oldFocusedElement) == -1)
+            {
+                if (const auto realizedElement = repeater.GetOrCreateElement(SelectedPageIndex()).try_as<winrt::UIElement>())
+                {
+                    if (const auto argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                    {
+                        if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(realizedElement))
+                        {
+                            args.Handled(true);
+                        }
+                    }
+                    else
+                    {
+                        // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
+                        m_dispatcherHelper.RunAsync([realizedElement]()
+                            {
+                                SetFocus(realizedElement, winrt::FocusState::Programmatic);
+                            });
+                        args.Handled(true);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void PipsPager::OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args)
+{
+    if (
+        (Orientation() == winrt::Orientation::Vertical && isnan(args.VerticalAlignmentRatio())) ||
+        (Orientation() == winrt::Orientation::Horizontal && isnan(args.HorizontalAlignmentRatio()))
+       )
+    {
+        args.Handled(true);
+    }
+}
+
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -570,7 +623,7 @@ winrt::AutomationPeer PipsPager::OnCreateAutomationPeer()
 }
 
 void PipsPager::UpdateSizeOfSetForElements(const int numberOfPages) {
-    if(auto const repeater = m_pipsPagerRepeater.get())
+    if (auto const repeater = m_pipsPagerRepeater.get())
     {
         for (int i = 0; i < numberOfPages; i++)
         {
