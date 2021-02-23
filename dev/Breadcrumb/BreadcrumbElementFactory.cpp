@@ -27,8 +27,8 @@ void BreadcrumbElementFactory::UserElementFactory(const winrt::IInspectable& new
 
 winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
-
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]()
+    {
         if (args.Data().try_as<winrt::BreadcrumbItem>())
         {
             return args.Data();

@@ -5,14 +5,10 @@
 
 #include "pch.h"
 #include "common.h"
-
 #include "Breadcrumb.g.h"
 #include "Breadcrumb.properties.h"
-
 #include "SplitButton.h"
 #include "BreadcrumbElementFactory.h"
-#include "BreadcrumbDropDownElementFactory.h"
-
 #include "Vector.h"
 #include "BreadcrumbIterable.h"
 #include "BreadcrumbLayout.h"

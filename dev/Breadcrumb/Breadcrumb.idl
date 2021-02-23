@@ -11,13 +11,6 @@ runtimeclass BreadcrumbItemClickedEventArgs
 
 [MUX_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass BreadcrumbDropDownItem : Windows.UI.Xaml.Controls.ContentControl
-{
-    BreadcrumbDropDownItem();
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
 unsealed runtimeclass BreadcrumbItem : Windows.UI.Xaml.Controls.ContentControl
 {
     BreadcrumbItem();

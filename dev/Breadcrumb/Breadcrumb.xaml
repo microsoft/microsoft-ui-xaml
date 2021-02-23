@@ -4,78 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style x:Key="BreadcrumbDropDownItemStyle" TargetType="local:BreadcrumbDropDownItem">
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="Background" Value="{ThemeResource BreadcrumbDropDownItemBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource BreadcrumbForegroundBrush}" />
-        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <Setter Property="FocusVisualMargin" Value="-3" />
-        <Setter Property="IsTabStop" Value="True"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:BreadcrumbDropDownItem">
-                    <Grid x:Name="PART_LayoutRoot"
-                        Padding="{TemplateBinding Padding}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}" >
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="PART_LayoutRoot" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="PointerOver">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemBackgroundPointerOver}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemForegroundPointerOver}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemBackgroundPressed}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemForegroundPressed}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemBackgroundDisabled}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemForegroundDisabled}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <ContentPresenter x:Name="PART_ContentPresenter"
-                            Margin="{ThemeResource BreadcrumbDropDownItemThemePadding}"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <Style x:Key="BreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
         <Setter Property="Foreground" Value="{ThemeResource BreadcrumbForegroundBrush}" />
         <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
@@ -104,36 +32,36 @@
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemBackgroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_EllipsisDropDownItemContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemForegroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemBackgroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_EllipsisDropDownItemContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemForegroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemBackgroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemBackgroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_EllipsisDropDownItemContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbDropDownItemForegroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="ItemTypeStates">
+                            <VisualStateGroup x:Name="InlineItemTypeStates">
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronLeftToRight}"/>
@@ -280,15 +208,15 @@
                                                     </VisualStateManager.VisualStateGroups>
 
                                                     <ContentPresenter x:Name="PART_ContentPresenter"
-                                                            AutomationProperties.Name="ContentPresenter"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                                            Content="{TemplateBinding Content}"
-                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                            Padding="{TemplateBinding Padding}"
-                                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                            AutomationProperties.AccessibilityView="Raw"/>
+                                                        AutomationProperties.Name="ContentPresenter"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        Content="{TemplateBinding Content}"
+                                                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                        Padding="{TemplateBinding Padding}"
+                                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                        AutomationProperties.AccessibilityView="Raw"/>
                                                 </Grid>
                                             </ControlTemplate>
                                         </Setter.Value>
@@ -346,7 +274,7 @@
                         </Button>
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
                             Visibility="Collapsed"
-                            Margin="{ThemeResource BreadcrumbEllipsisDropDownMargin}"
+                            Margin="{ThemeResource BreadcrumbEllipsisDropDownItemMargin}"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -369,7 +297,5 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:BreadcrumbDropDownItem" BasedOn="{StaticResource BreadcrumbDropDownItemStyle}"/>
     <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource BreadcrumbItemStyle}"/>
-
 </ResourceDictionary>
