@@ -18,11 +18,38 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationView">
                     <Grid x:Name="RootGrid">
+                        <Grid.Resources>
+                            <Storyboard x:Name="ShadowCasterEaseInStoryboard">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
+                                    <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.83" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                            <Storyboard x:Name="ShadowCasterSmallPaneEaseInStoryboard">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                    <DiscreteDoubleKeyFrame x:Name="ShadowCasterAutoMinimalModeEaseInAnimationKeyFrame" KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NegativeSplitViewWidthMinusCompactLength}" />
+                                    <SplineDoubleKeyFrame KeyTime="0:0:0.2" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.83" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                            <Storyboard x:Name="ShadowCasterEaseOutStoryboard">
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
+                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                        <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
+                                        <LinearDoubleKeyFrame KeyTime="0:0:0.83" Value="0" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            
+                        </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="DisplayModeGroup">
-                                <VisualStateGroup.Transitions>
-                                   
-                                </VisualStateGroup.Transitions>
                                 <VisualState x:Name="Compact" />
 
                                 <VisualState x:Name="Expanded">
@@ -71,38 +98,7 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="PaneStateGroup">
-                                <VisualStateGroup.Transitions>
-                                    <VisualTransition From="ClosedCompact" To="NotClosedCompact">
-                                        <Storyboard>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
-                                                <!--NegativeOpenPaneLengthMinusCompactLength-->
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="-272" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
-                                            </DoubleAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="1" />
-                                            </DoubleAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualTransition>
-                                    <VisualTransition From="NotClosedCompact" To="ClosedCompact">
-                                        <Storyboard>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCasterTransform" Storyboard.TargetProperty="TranslateX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
-                                                <!--NegativeOpenPaneLengthMinusCompactLength-->
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="-272" />
-                                            </DoubleAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
-                                            </DoubleAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualTransition>
-                                </VisualStateGroup.Transitions>
-
-                                <VisualState x:Name="NotClosedCompact">
-                                    <VisualState.Setters>
-                                        <Setter Target="ShadowCaster.Opacity" Value="1"/>
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="NotClosedCompact" />
                                 <VisualState x:Name="ClosedCompact">
                                     <VisualState.Setters>
                                         <Setter Target="PaneAutoSuggestBoxPresenter.Visibility" Value="Collapsed"/>
@@ -429,7 +425,7 @@
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
                                 Grid.Row="1">
-
+                               
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"

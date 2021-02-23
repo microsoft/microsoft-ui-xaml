@@ -66,10 +66,6 @@ public:
 
     bool IsFullScreenOrTabletMode();
 
-    void SetShadow();
-
-    void UnsetShadow();
-
     void OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
 
     int GetNavigationViewItemCountInPrimaryList();
@@ -334,6 +330,9 @@ private:
     void FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
+    void SetShadow();
+    void UnsetShadow();
+
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     // Visual components
@@ -359,6 +358,10 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_topNavRepeaterOverflowView{ this };
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
+    tracker_ref<winrt::Grid> m_shadowCaster{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterEaseInStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterSmallPaneEaseInStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_shadowCasterEaseOutStoryboard{ this };
 
     // Indicator animations
     tracker_ref<winrt::UIElement> m_prevIndicator{ this };

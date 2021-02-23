@@ -94,6 +94,12 @@ static constexpr float c_paneElevationTranslationZ = 32;
 static constexpr int c_mainMenuBlockIndex = 0;
 static constexpr int c_footerMenuBlockIndex = 1;
 
+// Shadows specific items
+static constexpr auto c_shadowCaster = L"ShadowCaster"sv;
+static constexpr auto c_shadowCasterEaseInStoryboard = L"ShadowCasterEaseInStoryboard"sv;
+static constexpr auto c_shadowCasterSmallPaneEaseInStoryboard = L"ShadowCasterSmallPaneEaseInStoryboard"sv;
+static constexpr auto c_shadowCasterEaseOutStoryboard = L"ShadowCasterEaseOutStoryboard"sv;
+
 constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
@@ -674,6 +680,11 @@ void NavigationView::OnApplyTemplate()
     }
 
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &NavigationView::OnAccessKeyInvoked });
+
+    m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
+    m_shadowCasterEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseInStoryboard, controlProtected));
+    m_shadowCasterSmallPaneEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterSmallPaneEaseInStoryboard, controlProtected));
+    m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
 
     UpdatePaneShadow();
 
@@ -1599,7 +1610,6 @@ void NavigationView::OpenPane()
         });
     m_isOpenPaneForInteraction = true;
     IsPaneOpen(true);
-    SetShadow();
 }
 
 // Call this when you want an uncancellable close
@@ -1612,7 +1622,6 @@ void NavigationView::ClosePane()
         });
     m_isOpenPaneForInteraction = true;
     IsPaneOpen(false); // the SplitView is two-way bound to this value
-    //UnsetShadow();
 }
 
 // Call this when NavigationView itself is going to trigger a close
@@ -1650,8 +1659,6 @@ void NavigationView::OnSplitViewClosedCompactChanged(const winrt::DependencyObje
 void NavigationView::OnSplitViewPaneClosed(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
     m_paneClosedEventSource(*this, nullptr);
-
-    UnsetShadow(); // Shadow is unset here only after the pane has closed
 }
 
 void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sender*/, const winrt::SplitViewPaneClosingEventArgs& args)
@@ -4059,6 +4066,15 @@ void NavigationView::OnIsPaneOpenChanged()
                 paneRoot.Translation(translation);
             }
         }
+
+        if (IsPaneOpen())
+        {
+            SetShadow();
+        }
+        else
+        {
+            UnsetShadow();
+        }
     }
     UpdatePaneButtonsWidths();
 }
@@ -4712,23 +4728,42 @@ void NavigationView::SetShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        const winrt::Grid shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", *this);
-        const auto splitView = m_rootSplitView.get();
+        const auto shadowCaster = m_shadowCaster.get();
+        const auto displayMode = DisplayMode();
 
-        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        if (displayMode == winrt::NavigationViewDisplayMode::Compact || displayMode == winrt::NavigationViewDisplayMode::Minimal)
         {
             if (shadowCaster)
             {
-                shadowCaster.Shadow(winrt::ThemeShadow{});
-            }
-                
-        }
-        else if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
-        {
-            if (splitView)
-            {
-                splitView.Shadow(winrt::ThemeShadow{});
-            }
+                const auto rootSplitView = m_rootSplitView.get();
+                const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
+
+                if (rootSplitViewActualWidth < rootSplitView.OpenPaneLength())
+                {
+                    shadowCaster.Width(rootSplitViewActualWidth);
+
+                    const auto negativeSplitViewWidthMinusCompactLength = (rootSplitViewActualWidth - rootSplitView.CompactPaneLength()) * -1;
+                    GetTemplateSettings()->NegativeSplitViewWidthMinusCompactLength(negativeSplitViewWidthMinusCompactLength);
+
+                    if (const auto shadowCasterSmallPaneEaseInStoryboard = m_shadowCasterSmallPaneEaseInStoryboard.get())
+                    {
+
+                        shadowCasterSmallPaneEaseInStoryboard.Begin();
+                    }
+                }
+                else
+                {
+                    if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
+                    {
+                        shadowCasterEaseInStoryboard.Begin();
+                    }
+                }
+
+                if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
+                {
+                    shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
+                }
+            }              
         }
     }
 }
@@ -4737,16 +4772,28 @@ void NavigationView::UnsetShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        const winrt::Grid shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", *this);
+        const auto shadowCaster = m_shadowCaster.get();
         const auto splitView = m_rootSplitView.get();
 
-        if (shadowCaster.Shadow())
+        if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
         {
-            shadowCaster.Shadow(nullptr);
+            shadowCasterEaseOutStoryboard.Begin();
         }
-        if (splitView.Shadow())
+
+        if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
         {
-            splitView.Shadow(nullptr);
+            if (shadowCaster_uiElement10.Shadow())
+            {
+                shadowCaster_uiElement10.Shadow(nullptr);
+            }
+        }
+        
+        if (winrt::IUIElement10 splitView_uiElement10 = splitView)
+        {
+            if (splitView_uiElement10.Shadow())
+            {
+                splitView_uiElement10.Shadow(nullptr);
+            }
         }
     }
 }
