@@ -223,6 +223,14 @@ void BreadcrumbItem::OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater
     UpdateFlyoutIndex(args.Element(), args.NewIndex());
 }
 
+void BreadcrumbItem::OnFlyoutElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args)
+{
+    if (const auto& item = args.Element().try_as<winrt::BreadcrumbItem>())
+    {
+        item.Content(nullptr);
+    }
+}
+
 void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
@@ -317,7 +325,7 @@ winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collect
 
     for (int i = itemsSourceSize - 1; i >= 0; --i)
     {
-        const auto& item = ellipsisItemsSource.GetAt(i);
+        const auto item = winrt::IInspectable(ellipsisItemsSource.GetAt(i));
         newItemsSource.Append(item);
     }
 
@@ -474,9 +482,14 @@ void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt
                 m_ellipsisElementFactory->UserElementFactory(dataTemplate);
             }
 
+            if (m_ellipsisItemsSource)
+            {
+                m_ellipsisItemsSource->SetNewList(hiddenElements.as<winrt::IVector<winrt::IInspectable>>());
+            }
+
             if (const auto& flyoutRepeater = m_ellipsisItemsRepeater.get())
             {
-                flyoutRepeater.ItemsSource(hiddenElements);
+                flyoutRepeater.ItemsSource(*m_ellipsisItemsSource);
             }
 
             OpenFlyout();
@@ -535,17 +548,19 @@ void BreadcrumbItem::InstantiateFlyout()
         m_ellipsisElementFactory = winrt::make_self<BreadcrumbElementFactory>();
         ellipsisItemsRepeater.ItemTemplate(*m_ellipsisElementFactory);
 
-        const auto& stackLayout = winrt::StackLayout();
-        stackLayout.Orientation(winrt::Controls::Orientation::Vertical);
-        ellipsisItemsRepeater.Layout(stackLayout);
-
         if (const auto& dataTemplate = m_ellipsisDropDownItemDataTemplate.get())
         {
             m_ellipsisElementFactory->UserElementFactory(dataTemplate);
         }
 
+        if (!m_ellipsisItemsSource)
+        {
+            m_ellipsisItemsSource = winrt::make_self<EllipsisItemsSource>();
+        }
+
         m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
         m_ellipsisRepeaterElementIndexChangedRevoker = ellipsisItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementIndexChangedEvent });
+        m_ellipsisRepeaterElementClearingRevoker = ellipsisItemsRepeater.ElementClearing(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementClearingEvent });
 
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
@@ -753,9 +768,10 @@ void BreadcrumbItem::OnClickEvent(const winrt::IInspectable& sender, const winrt
         {
             // Once an element has been clicked, close the flyout
             if (const auto& ellipsisItemImpl = winrt::get_self<BreadcrumbItem>(ellipsisItem))
-            {
-                ellipsisItemImpl->CloseFlyout();
+            {               
                 ellipsisItemImpl->RaiseItemClickedEvent(Content(), m_index - 1);
+                ellipsisItemImpl->ResetItemList();
+                ellipsisItemImpl->CloseFlyout();
             }
         }
     }
@@ -766,5 +782,13 @@ void BreadcrumbItem::OnClickEvent(const winrt::IInspectable& sender, const winrt
     else
     {
         OnBreadcrumbItemClick(nullptr, nullptr);
+    }
+}
+
+void BreadcrumbItem::ResetItemList()
+{
+    if (m_ellipsisItemsSource)
+    {
+        m_ellipsisItemsSource->ResetList();
     }
 }
