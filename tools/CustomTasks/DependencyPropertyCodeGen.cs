@@ -144,34 +144,30 @@ namespace CustomTasks
             // Go through the dependency property properties.
             foreach (var propInfo in propInfos)
             {
-                bool IsIgnored = GetPropertyIgnoredByCodeGen(type, propInfo);
-                if (!IsIgnored)
+                if (propInfo.PropertyType.Name == "DependencyProperty")
                 {
-                    if (propInfo.PropertyType.Name == "DependencyProperty")
+                    if (!propInfo.Name.EndsWith("Property"))
                     {
-                        if (!propInfo.Name.EndsWith("Property"))
-                        {
-                            throw new Exception(String.Format("Unexpected: {0}.{1} does not end with 'Property'", type.Name, propInfo.Name));
-                        }
-
-                        string baseName = propInfo.Name.Substring(0, propInfo.Name.Length - "Property".Length);
-                        var instanceProperty = propInfos.FirstOrDefault(x => x.Name == baseName);
-
-                        var propDefinition = CollectProperty(type, propInfo, baseName, instanceProperty);
-                        props.Add(propDefinition);
+                        throw new Exception(String.Format("Unexpected: {0}.{1} does not end with 'Property'", type.Name, propInfo.Name));
                     }
-                    else
-                    {
-                        // If it's not a dependency property but it has the "needs dependency property" attribute then generate the field anyway.
-                        string baseName = propInfo.Name;
 
-                        bool needsDependencyPropertyField = NeedsDependencyPropertyField(type, propInfo);
-                        if (needsDependencyPropertyField && !props.Any(x => x.Name == baseName))
-                        {
-                            PropertyDefinition propDefinition = CollectProperty(type, null, baseName, propInfo);
-                            propDefinition.NeedsDependencyPropertyField = true;
-                            props.Add(propDefinition);
-                        }
+                    string baseName = propInfo.Name.Substring(0, propInfo.Name.Length - "Property".Length);
+                    var instanceProperty = propInfos.FirstOrDefault(x => x.Name == baseName);
+
+                    var propDefinition = CollectProperty(type, propInfo, baseName, instanceProperty);
+                    props.Add(propDefinition);
+                }
+                else
+                {
+                    // If it's not a dependency property but it has the "needs dependency property" attribute then generate the field anyway.
+                    string baseName = propInfo.Name;
+
+                    bool needsDependencyPropertyField = NeedsDependencyPropertyField(type, propInfo);
+                    if (needsDependencyPropertyField && !props.Any(x => x.Name == baseName))
+                    {
+                        PropertyDefinition propDefinition = CollectProperty(type, null, baseName, propInfo);
+                        propDefinition.NeedsDependencyPropertyField = true;
+                        props.Add(propDefinition);
                     }
                 }
             }
@@ -470,11 +466,6 @@ namespace CustomTasks
         private string GetPropertyTypeOverride(params MemberInfo[] members)
         {
             return GetAttributeValue<string>("MUXPropertyTypeAttribute", members);
-        }
-
-        private string GetPropertyIgnoredByCodeGen(params MemberInfo[] members)
-        {
-            return GetAttributeValue<string>("MUXPropertyIgnoredByCodeGen", members);
         }
 
         private string WriteHeader(TypeDefinition typeDefinition)
