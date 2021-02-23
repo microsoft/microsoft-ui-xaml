@@ -93,7 +93,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectedIndexChangedEventArgs()
         {
             PipsPager pager = null;
-            var previousIndex = -2;
             var newIndex = -2;
             RunOnUIThread.Execute(() =>
             {
@@ -107,27 +106,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                VerifySelectionChanged(-1, 0);
+                VerifySelectionChanged(0);
 
                 pager.NumberOfPages = 10;
-                VerifySelectionChanged(-1, 0);
+                VerifySelectionChanged(0);
 
                 pager.SelectedPageIndex = 9;
-                VerifySelectionChanged(0, 9);
+                VerifySelectionChanged(9);
 
                 pager.SelectedPageIndex = 4;
-                VerifySelectionChanged(9, 4);
+                VerifySelectionChanged(4);
             });
 
             void Pager_SelectedIndexChanged(PipsPager sender, PipsPagerSelectedIndexChangedEventArgs args)
             {
-                previousIndex = args.PreviousPageIndex;
-                newIndex = args.NewPageIndex;
+                newIndex = sender.SelectedPageIndex;
             }
 
-            void VerifySelectionChanged(int expectedPreviousIndex, int expectedNewIndex)
+            void VerifySelectionChanged(int expectedNewIndex)
             {
-                Verify.AreEqual(expectedPreviousIndex, previousIndex, "Expected PreviousPageIndex:" + expectedPreviousIndex + ", actual: " + previousIndex);
                 Verify.AreEqual(expectedNewIndex, newIndex, "Expected PreviousPageIndex:" + expectedNewIndex + ", actual: " + newIndex);
             }
         }

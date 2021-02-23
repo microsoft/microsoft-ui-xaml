@@ -11,8 +11,8 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousPageButtonStyle}"/>
         <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextPageButtonStyle}"/>
-        <Setter Property="SelectedIndicatorButtonStyle" Value="{StaticResource PipsPagerSelectedPipButtonStyle}"/>
-        <Setter Property="DefaultIndicatorButtonStyle" Value="{StaticResource PipsPagerDefaultPipButtonStyle}"/>
+        <Setter Property="SelectedPipStyle" Value="{StaticResource PipsPagerSelectedPipButtonStyle}"/>
+        <Setter Property="NormalPipStyle" Value="{StaticResource PipsPagerNormalPipButtonStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="muxc:PipsPager">

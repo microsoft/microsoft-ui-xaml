@@ -1,14 +1,31 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.ContentControl
 {
     NavigationViewItemPresenter();
 
     Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
+    NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
+
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    NavigationViewItemPresenterTemplateSettings();
+
+    Double IconColumnWidth{ get; };
+    Double LatestIconColumnWidth{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty IconColumnWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LatestIconColumnWidthProperty{ get; };
+
 }
 
 }

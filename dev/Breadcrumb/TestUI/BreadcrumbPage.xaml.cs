@@ -16,6 +16,8 @@ using Breadcrumb_TestUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Security.Authentication.OnlineId;
+using Microsoft.UI.Xaml.Controls;
+using System.Linq;
 
 namespace MUXControlsTestApp
 {
@@ -159,23 +161,22 @@ namespace MUXControlsTestApp
 
         private void WidthSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            if (TwoPaneView == null)
+            if (BreadcrumbContainerColumn == null)
             {
                 return;
             }
 
-            TwoPaneView.Pane1Length = new GridLength(e.NewValue, GridUnitType.Pixel);
-            TwoPaneView.Pane2Length = new GridLength(1, GridUnitType.Star);
+            BreadcrumbContainerColumn.Width = new GridLength(e.NewValue, GridUnitType.Pixel);
         }
 
         private void RTL_Checked(object sender, RoutedEventArgs e)
         {
-            BreadCrumbControl.FlowDirection = FlowDirection.RightToLeft;
+            BreadcrumbControl.FlowDirection = FlowDirection.RightToLeft;
         }
 
         private void RTL_Unchecked(object sender, RoutedEventArgs e)
         {
-            BreadCrumbControl.FlowDirection = FlowDirection.LeftToRight;
+            BreadcrumbControl.FlowDirection = FlowDirection.LeftToRight;
         }
 
         private void ReplaceList(ObservableCollection<object> oldItemsList, List<object> newItemsList)
@@ -193,11 +194,24 @@ namespace MUXControlsTestApp
             ReplaceList(currentNodeChildrenList, node.Children);
         }
 
-        private void BreadCrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
+        private void BreadcrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
         {
-            TreeNode treeNode = (TreeNode)args.Item;
-            ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
-            UpdateChildrenList(treeNode);
+            LastClickedItem.Text = args.Item.ToString();
+            LastClickedItemIndex.Text = args.Index.ToString();
+
+            if (args.Item is TreeNode treeNode)
+            {
+                ReplaceList(breadCrumbList, treeNode.GetBreadCrumbPath());
+                UpdateChildrenList(treeNode);
+            }
+        }
+
+        private void Child_ElementPrepared(object sender, ItemsRepeaterElementPreparedEventArgs e)
+        {
+            Button button = e.Element as Button;
+            TreeNode node = (currentNodeChildrenList.ToArray<object>().GetValue(e.Index) as TreeNode);
+
+            button.Name = node.Name;
         }
     }
 }
