@@ -421,10 +421,6 @@
                                         <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" />
                                         </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0" />
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
@@ -454,10 +450,6 @@
                                         <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPointerOver}" />
                                         </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0" />
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPointerOver}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
@@ -487,10 +479,6 @@
                                         <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}" />
                                         </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0" />
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>
@@ -520,10 +508,6 @@
                                         <contract7NotPresent:ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownLevelCheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedDisabled}" />
                                         </contract7NotPresent:ObjectAnimationUsingKeyFrames>
-                                        <contract7NotPresent:DoubleAnimation Storyboard.TargetName="DownLevelCheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0" />
                                         <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedDisabled}" />
                                         </contract7Present:ObjectAnimationUsingKeyFrames>

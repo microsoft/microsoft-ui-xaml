@@ -50,11 +50,14 @@ void AnimatedIcon::OnApplyTemplate()
 
 void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
+    // AnimatedIcon might get added to a UI which has already set the State property on the parent.
+    // If this is the case and the animated icon being added doesn't have its own state property
+    // We copy the parent value when we load.
     auto const property = winrt::AnimatedIcon::StateProperty();
     auto const stateValue = GetValue(property);
     if (unbox_value<winrt::hstring>(stateValue).empty())
     {
-        if (auto const parent = winrt::VisualTreeHelper::GetParent(this->try_as<winrt::DependencyObject>()))
+        if (auto const parent = winrt::VisualTreeHelper::GetParent(*this))
         {
             SetValue(property, parent.GetValue(property));
         }
@@ -475,7 +478,7 @@ void AnimatedIcon::OnForegroundPropertyChanged(const winrt::DependencyObject& se
     TrySetForegroundProperty(Source());
 }
 
-void AnimatedIcon::TrySetForegroundProperty(const winrt::IAnimatedVisualSource2 source)
+void AnimatedIcon::TrySetForegroundProperty(winrt::IAnimatedVisualSource2 const& source)
 {
     if (source)
     {

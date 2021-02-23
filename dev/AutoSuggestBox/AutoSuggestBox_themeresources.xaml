@@ -35,6 +35,7 @@
 
     <Thickness x:Key="AutoSuggestBoxTopHeaderMargin">0,0,0,4</Thickness>
     <Thickness x:Key="AutoSuggestBoxInnerButtonMargin">3,3,3,3</Thickness>
+    <Thickness x:Key="AutoSuggestBoxQueryButtonPadding">3,2</Thickness>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
     <Style TargetType="TextBox" x:Key="AutoSuggestBoxTextBoxStyle">
@@ -363,11 +364,11 @@
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Style="{StaticResource QueryButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="5,3,5,3"
+                            Padding="{ThemeResource AutoSuggestBoxQueryButtonPadding}"
                             IsTabStop="False"
                             Grid.Column="2"
                             FontSize="{TemplateBinding FontSize}"
-                            Width="30"
+                            Width="32"
                             Height="28"
                             VerticalAlignment="Stretch"
                             AutomationProperties.AccessibilityView="Raw"/>

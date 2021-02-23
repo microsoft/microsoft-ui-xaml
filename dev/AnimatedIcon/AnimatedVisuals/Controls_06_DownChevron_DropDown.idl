@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------------
 namespace MU_XCAV_NAMESPACE
 {
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     [webhosthidden]
     runtimeclass Controls_06_DownChevron_DropDown
         : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2
