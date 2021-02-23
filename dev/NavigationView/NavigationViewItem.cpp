@@ -966,10 +966,10 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     }
 
     m_isPressed = false;
-    // m_isPointerOver Should be true before this event so this doesn't need to be set to true in the else block...
+    // m_isPointerOver should be true before this event so this doesn't need to be set to true in the else block...
     // What this flag tracks is complicated because of the NavigationView sub items and the m_capturedPointers that are being tracked..
     // We do this check because PointerCaptureLost can sometimes take the place of PointerReleased events.
-    // In these cases we need to test if the pointer is over the item to maintain the propert state.
+    // In these cases we need to test if the pointer is over the item to maintain the proper state.
     if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
     {
         m_isPointerOver = false;
