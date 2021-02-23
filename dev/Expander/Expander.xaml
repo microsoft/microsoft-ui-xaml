@@ -22,15 +22,15 @@
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Background" Value="{ThemeResource ExpanderBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
-        <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}"/>
-        <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}"/>
-        <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}"/>
-        <Setter Property="BorderThickness" Value="{ThemeResource ExpanderBorderThickness}"/>
-        <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}"/>
-        <Setter Property="Padding" Value="{StaticResource ExpanderPadding}"/>
+        <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
+        <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
+        <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ExpanderBorderThickness}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}" />
+        <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -38,20 +38,69 @@
                     <Grid MinWidth="{TemplateBinding MinWidth}" MaxWidth="{TemplateBinding MaxWidth}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ExpandStates">
-                                <VisualState x:Name="Expanded">
+                                <VisualState x:Name="ExpandUp">
+                                    <VisualState.Setters>
+                                        <contract7Present:Setter Target="ExpanderHeader.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                    </VisualState.Setters>
                                     <VisualState.Storyboard>
                                         <Storyboard>
-                                            <PopInThemeAnimation x:Name="PopIn" TargetName="ExpanderContent" FromVerticalOffset="-50" FromHorizontalOffset="0"/>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ExpanderContent" Storyboard.TargetProperty="Visibility">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ExpanderContent"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)">
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContentHeight}" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.333" Value="0" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                                            </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState.Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="Collapsed">
+                                <VisualState x:Name="CollapseDown">
                                     <VisualState.Storyboard>
                                         <Storyboard>
-                                            <PopOutThemeAnimation TargetName="ExpanderContent" />
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ExpanderContent" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="Collapsed" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ExpanderContent"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)">
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContentHeight}" KeySpline="1.0, 1.0, 0.0, 1.0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState.Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="ExpandDown">
+                                    <VisualState.Setters>
+                                        <contract7Present:Setter Target="ExpanderHeader.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                    </VisualState.Setters>
+                                    <VisualState.Storyboard>
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ExpanderContent" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ExpanderContent"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)">
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NegativeContentHeight}" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.333" Value="0" KeySpline="0.0, 0.0, 0.0, 1.0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState.Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="CollapseUp">
+                                    <VisualState.Storyboard>
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ExpanderContent" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0.167" Value="Collapsed" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ExpanderContent"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)">
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.167" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NegativeContentHeight}" KeySpline="1.0, 1.0, 0.0, 1.0" />
+                                            </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState.Storyboard>
                                 </VisualState>
@@ -60,12 +109,13 @@
                                 <VisualState x:Name="Down" />
                                 <VisualState x:Name="Up">
                                     <VisualState.Setters>
-                                        <Setter Target="ExpanderHeader.Style" Value="{StaticResource ExpanderHeaderUpStyle}"/>
+                                        <Setter Target="ExpanderHeader.Style" Value="{StaticResource ExpanderHeaderUpStyle}" />
+                                        <Setter Target="ExpanderContent.BorderThickness" Value="{StaticResource ExpanderDropdownUpBorderThickness}" />
+                                        <contract7Present:Setter Target="ExpanderContent.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                         <Setter Target="ExpanderHeader.(Grid.Row)" Value="1" />
-                                        <Setter Target="ExpanderContent.(Grid.Row)" Value="0" />
+                                        <Setter Target="ExpanderContentClip.(Grid.Row)" Value="0" />
                                         <Setter Target="Row0.Height" Value="*" />
                                         <Setter Target="Row1.Height" Value="Auto" />
-                                        <Setter Target="PopIn.FromVerticalOffset" Value="{ThemeResource ExpanderPopinVerticalOffset}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -75,6 +125,31 @@
                             <RowDefinition x:Name="Row0" Height="Auto" />
                             <RowDefinition x:Name="Row1" Height="*" />
                         </Grid.RowDefinitions>
+                        <!-- The clip is a composition clip applied in code -->
+                        <Border x:Name="ExpanderContentClip" Grid.Row="1">
+                            <Border
+                                x:Name="ExpanderContent"                         
+                                Visibility="Collapsed"
+                                Background="{ThemeResource ExpanderDropDownBackground}"
+                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                contract7Present:CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
+                                BorderBrush="{ThemeResource ExpanderDropDownBorderBrush}"
+                                BorderThickness="{StaticResource ExpanderDropdownDownBorderThickness}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MaxWidth="{TemplateBinding MaxWidth}"
+                                Padding="{StaticResource ExpanderContentPadding}">
+                                <ContentPresenter
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                <Border.RenderTransform>
+                                    <CompositeTransform />
+                                </Border.RenderTransform>
+                            </Border>
+                        </Border>
 
                         <ToggleButton
                             x:Name="ExpanderHeader"
@@ -88,37 +163,21 @@
                             MaxWidth="{TemplateBinding MaxWidth}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             IsEnabled="{TemplateBinding IsEnabled}"
+                            Padding="{TemplateBinding Padding}"
                             Style="{StaticResource ExpanderHeaderDownStyle}"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
                             ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
                             HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                            IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"/>
-
-                        <Border
-                            x:Name="ExpanderContent"
-                            Grid.Row="1"
-                            Visibility="Collapsed"
-                            Background="{ThemeResource ExpanderDropDownBackground}"
-                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                            BorderBrush="{ThemeResource ExpanderDropDownBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            MinHeight="{TemplateBinding MinHeight}"
-                            MinWidth="{TemplateBinding MinWidth}"
-                            MaxWidth="{TemplateBinding MaxWidth}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            Padding="{TemplateBinding Padding}">
-                            <ContentPresenter
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Border>
+                            IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="ExpanderHeaderUpStyle" TargetType="ToggleButton" BasedOn="{StaticResource ExpanderHeaderDownStyle}">
+        <Setter Property="Tag" Value="{StaticResource ExpanderChevronUpGlyph}" />
     </Style>
 
 </ResourceDictionary>

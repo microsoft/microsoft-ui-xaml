@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------------
 namespace MU_XCAV_NAMESPACE
 {
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     [webhosthidden]
     runtimeclass Controls_01_Checkmark
         : [default] Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2

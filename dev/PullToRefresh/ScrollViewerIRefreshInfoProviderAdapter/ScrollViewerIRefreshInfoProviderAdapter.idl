@@ -1,7 +1,7 @@
 namespace MU_PRIVATE_CONTROLS_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 interface IRefreshInfoProviderAdapter
 {
@@ -9,7 +9,7 @@ interface IRefreshInfoProviderAdapter
     void SetAnimations(Windows.UI.Xaml.UIElement refreshVisualizerAnimatableContainer);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 interface IAdapterAnimationHandler
 {
@@ -18,7 +18,7 @@ interface IAdapterAnimationHandler
     void RefreshCompletedAnimation(Windows.UI.Xaml.UIElement refreshVisualizer, Windows.UI.Xaml.UIElement infoProvider);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollViewerIRefreshInfoProviderAdapter : IRefreshInfoProviderAdapter
 {

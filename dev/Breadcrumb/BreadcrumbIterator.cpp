@@ -3,9 +3,6 @@
 
 #include "pch.h"
 #include "common.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-
 #include "BreadcrumbIterator.h"
 
 BreadcrumbIterator::BreadcrumbIterator(const winrt::IInspectable& itemsSource)

@@ -51,6 +51,7 @@ namespace RuntimeProfiler
         ProfId_Expander,
         ProfId_PagerControl,
         ProfId_Breadcrumb,
+        ProfId_BreadcrumbDropDownItem,
         ProfId_BreadcrumbItem,
         ProfId_PipsPager,
         ProfId_ImageIcon,
