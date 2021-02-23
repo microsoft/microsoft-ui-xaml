@@ -183,7 +183,7 @@ namespace MU_X_XTI_NAMESPACE
 
 namespace MU_XC_NAMESPACE
 {
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V2]
     [webhosthidden]
     enum ControlsResourcesVersion
     {
@@ -209,7 +209,7 @@ namespace MU_XC_NAMESPACE
             static Windows.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
         }
 
-        [MUX_PREVIEW]
+        [MUX_PUBLIC_V2]
         {
             [MUX_DEFAULT_VALUE("winrt::ControlsResourcesVersion::Version1")]
             ControlsResourcesVersion ControlsResourcesVersion{ get; set; };
