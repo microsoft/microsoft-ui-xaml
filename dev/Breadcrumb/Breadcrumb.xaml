@@ -23,7 +23,17 @@
                 <ControlTemplate TargetType="local:BreadcrumbItem">
                     <Grid x:Name="PART_LayoutRoot" CornerRadius="{TemplateBinding CornerRadius}" >
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
+                            <VisualStateGroup x:Name="ItemTypeStates">
+                                <VisualState x:Name="Inline"/>
+                                <VisualState x:Name="EllipsisDropDown">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="EllipsisDropDownItemCommonStates">
                                 <VisualState x:Name="Normal">
                                     <Storyboard>
                                         <PointerUpThemeAnimation Storyboard.TargetName="PART_LayoutRoot" />
@@ -95,16 +105,6 @@
                                         <Setter Target="PART_EllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_ItemContentPresenter.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronRightToLeft}"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-
-                            <VisualStateGroup x:Name="DropDownItemTypeStates">
-                                <VisualState x:Name="Inline"/>
-                                <VisualState x:Name="EllipsisDropDown">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
