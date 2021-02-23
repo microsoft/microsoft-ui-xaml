@@ -11,8 +11,8 @@
     <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="BreadcrumbNormalForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="BreadcrumbHoverForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="BreadcrumbNormalForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="BreadcrumbHoverForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="BreadcrumbPressedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="BreadcrumbDisabledForegroundBrush" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="BreadcrumbFocusForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
@@ -39,8 +39,8 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="BreadcrumbNormalForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
-            <StaticResource x:Key="BreadcrumbHoverForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="BreadcrumbNormalForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="BreadcrumbHoverForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="BreadcrumbPressedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
             <StaticResource x:Key="BreadcrumbDisabledForegroundBrush" ResourceKey="TextFillColorDisabledBrush" />
             <StaticResource x:Key="BreadcrumbFocusForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
@@ -68,8 +68,8 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="BreadcrumbNormalForegroundBrush" ResourceKey="SystemColorButtonTextColor" />
-            <StaticResource x:Key="BreadcrumbHoverForegroundBrush" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="BreadcrumbNormalForegroundBrush" ResourceKey="SystemColorHighlightColor" />
+            <StaticResource x:Key="BreadcrumbHoverForegroundBrush" ResourceKey="SystemColorButtonTextColor" />
             <StaticResource x:Key="BreadcrumbPressedForegroundBrush" ResourceKey="SystemColorHighlightColor" />
             <StaticResource x:Key="BreadcrumbDisabledForegroundBrush" ResourceKey="SystemColorGrayTextColor" />
             <StaticResource x:Key="BreadcrumbFocusForegroundBrush" ResourceKey="SystemColorHighlightColor" />
