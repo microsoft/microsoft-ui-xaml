@@ -4,7 +4,6 @@
 #pragma once
 
 #include "BreadcrumbItem.h"
-#include "BreadcrumbDropDownItem.h"
 #include "BreadcrumbItemAutomationPeer.g.h"
 
 class BreadcrumbItemAutomationPeer :
@@ -13,7 +12,6 @@ class BreadcrumbItemAutomationPeer :
 
 public:
     BreadcrumbItemAutomationPeer(winrt::BreadcrumbItem const& owner);
-    BreadcrumbItemAutomationPeer(winrt::BreadcrumbDropDownItem const& owner);
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
@@ -25,5 +23,4 @@ public:
 
 private:
     com_ptr<BreadcrumbItem> GetImpl();
-    com_ptr<BreadcrumbDropDownItem> GetImpl2();
 };
