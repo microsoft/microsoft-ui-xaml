@@ -16,10 +16,8 @@ winrt::IconElement BitmapIconSource::CreateIconElementCore()
         bitmapIcon.UriSource(UriSource());
     }
 
-    if (winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
-    {
-        bitmapIcon.ShowAsMonochrome(ShowAsMonochrome());
-    }
+    bitmapIcon.ShowAsMonochrome(ShowAsMonochrome());
+
     if (const auto newForeground = Foreground())
     {
         bitmapIcon.Foreground(newForeground);
