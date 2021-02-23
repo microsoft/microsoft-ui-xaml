@@ -72,8 +72,8 @@
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #endif
 
-#if __has_include("winrt\Microsoft.UI.Composition.Effects.h")
-#include <winrt\Microsoft.UI.Composition.Effects.h>
+#if __has_include("winrt\Microsoft.UI.Private.Composition.Effects.h")
+#include <winrt\Microsoft.UI.Private.Composition.Effects.h>
 #endif
 
 namespace winrt

@@ -85,7 +85,7 @@ private:
 
     static winrt::IGraphicsEffect CombineNoiseWithTintEffect_Legacy(
         const winrt::IGraphicsEffectSource& blurredSource,
-        const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect& tintColorEffect);
+        const winrt::Microsoft::UI::Private::Composition::Effects::ColorSourceEffect& tintColorEffect);
 
     static winrt::IGraphicsEffect CombineNoiseWithTintEffect_Luminosity(
         const winrt::IGraphicsEffectSource& blurredSource,

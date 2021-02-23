@@ -525,7 +525,7 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealHove
     // Note: Unlike the Win2D-based effects, SceneLightingEffect is a public Windows platform type, we can instatiate it directly via winrt.
     // No ambient coefficient. This SLE gets noise applied to it, and we don't want the ambient contribution to be affected by noise. The
     // ambient contribution will be added by a separate ColorSourceEffect.
-    winrt::Microsoft::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
+    winrt::Windows::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
     sceneLightingEffect.AmbientAmount(0);
     sceneLightingEffect.DiffuseAmount(sc_diffuseAmount);
     sceneLightingEffect.SpecularAmount(sc_specularAmount);
@@ -573,7 +573,7 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealBord
 {
     // (1) SceneLightingEffect
     // Note: Unlike the Win2D-based effects, SceneLightingEffect is a public Windows platform type, we can instatiate it directly via winrt.
-    winrt::Microsoft::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
+    winrt::Windows::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
     sceneLightingEffect.AmbientAmount(0.0f);
     sceneLightingEffect.DiffuseAmount(sc_diffuseAmountBorder);
     sceneLightingEffect.SpecularAmount(sc_specularAmountBorder);

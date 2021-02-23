@@ -102,7 +102,7 @@
     <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
     <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
     <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true' Or $(FeatureCommandBarFlyoutEnabled) == 'productOnly'" />
-    <Import Project="..\Effects\Microsoft.UI.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true' Or $(FeatureEffectsEnabled) == 'productOnly'" />
+    <Import Project="..\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true' Or $(FeatureEffectsEnabled) == 'productOnly'" />
     <Import Project="..\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true' Or $(FeaturePersonPictureEnabled) == 'productOnly'" />
     <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" Condition="$(FeatureResourceHelperEnabled) == 'true' Or $(FeatureResourceHelperEnabled) == 'productOnly'" />
     <Import Project="..\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
@@ -249,6 +249,7 @@
         $(GeneratedFilesDir)\Media;
         $(GeneratedFilesDir)\XamlTypeInfo;
         $(GeneratedFilesDir)\Microsoft\UI\Composition\Effects;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Composition\Effects;
         $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
         $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
         %(AdditionalIncludeDirectories);

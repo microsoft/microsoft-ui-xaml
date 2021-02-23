@@ -629,27 +629,27 @@ winrt::CompositionEffectBrush AcrylicBrush::CreateAcrylicBrushWorker(
 
 winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Legacy(
     const winrt::IGraphicsEffectSource& blurredSource,
-    const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect& tintColorEffect)
+    const winrt::Microsoft::UI::Private::Composition::Effects::ColorSourceEffect& tintColorEffect)
 {
     // Apply saturation
-    auto saturationEffect = winrt::make_self<Microsoft::UI::Composition::Effects::SaturationEffect>();
+    auto saturationEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::SaturationEffect>();
     saturationEffect->Name(L"Saturation");
     saturationEffect->Saturation(sc_saturation);
     saturationEffect->Source(blurredSource);
 
     // Apply exclusion:
     // Exclusion Color
-    auto exclusionColorEffect = winrt::make_self<Microsoft::UI::Composition::Effects::ColorSourceEffect>();
+    auto exclusionColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
     exclusionColorEffect->Name(L"ExclusionColor");
     exclusionColorEffect->Color(sc_exclusionColor);
     // Exclusion blend
-    auto blendEffectInner = winrt::make_self<Microsoft::UI::Composition::Effects::BlendEffect>();
+    auto blendEffectInner = winrt::make_self<Microsoft::UI::Private::Composition::Effects::BlendEffect>();
     blendEffectInner->Mode(winrt::BlendEffectMode::Exclusion);
     blendEffectInner->Foreground(*exclusionColorEffect);
     blendEffectInner->Background(*saturationEffect);
 
     // Apply tint
-    auto compositeEffect = winrt::make_self<Microsoft::UI::Composition::Effects::CompositeStepEffect>();
+    auto compositeEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CompositeStepEffect>();
     compositeEffect->Mode(winrt::CanvasComposite::SourceOver);
     compositeEffect->Destination(*blendEffectInner);
     compositeEffect->Source(tintColorEffect);
