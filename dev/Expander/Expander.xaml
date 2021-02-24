@@ -175,9 +175,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-    <Style x:Key="ExpanderHeaderUpStyle" TargetType="ToggleButton" BasedOn="{StaticResource ExpanderHeaderDownStyle}">
-        <Setter Property="Tag" Value="{StaticResource ExpanderChevronUpGlyph}" />
-    </Style>
-
 </ResourceDictionary>

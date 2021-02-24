@@ -330,10 +330,10 @@
                         <Border
                             x:Name="ExpandCollapseChevronBorder"
                             Grid.Column="1"
-                            Width="{ThemeResource ExpanderChevronSize}"
-                            Height="{ThemeResource ExpanderChevronSize}"
+                            Width="{ThemeResource ExpanderChevronButtonSize}"
+                            Height="{ThemeResource ExpanderChevronButtonSize}"
                             Margin="{ThemeResource ExpanderChevronMargin}"
-                            contract7Present:CornerRadius="{StaticResource ExpanderCornerRadius}"
+                            contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
                             BorderBrush="{ThemeResource ExpanderChevronBorderBrush}"
                             BorderThickness="{ThemeResource ExpanderChevronBorderThickness}"
                             Background="{ThemeResource ExpanderChevronBackground}">
@@ -368,13 +368,14 @@
     <Style x:Key="ExpanderHeaderUpStyle" TargetType="ToggleButton" BasedOn="{StaticResource ExpanderHeaderDownStyle}">
         <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
                     <Grid
                         x:Name="ToggleButtonGrid"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="OuterBorderEdge"
+                        contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         Background="{TemplateBinding Background}"
                         MinHeight="{TemplateBinding MinHeight}"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -603,7 +604,6 @@
                             Height="{ThemeResource ExpanderChevronButtonSize}"
                             Margin="{ThemeResource ExpanderChevronMargin}"
                             contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}"
-                            contract7Present:BackgroundSizing="InnerBorderEdge"
                             BorderBrush="{ThemeResource ExpanderChevronBorderBrush}"
                             BorderThickness="{ThemeResource ExpanderChevronBorderThickness}"
                             Background="{ThemeResource ExpanderChevronBackground}">
