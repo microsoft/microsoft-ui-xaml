@@ -112,20 +112,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual($"{orientation}", GetCurrentOrientation());
         }
 
-        protected void VerifyPageChanged(int expectedPage)
+        protected void VerifySelectedPageIndex(int expectedPage)
         {
             Verify.AreEqual(expectedPage, GetCurrentPageAsInt32());
-            Log.Comment($"Changing to page {expectedPage}");
+        }
+
+        protected void VerifyFocusedPageIndex(int index)
+        {
+            Verify.AreEqual(index, GetFocusedPageAsInt32());
+        }
+
+        protected void VerifySelectedFocusedIndex(int index)
+        {
+            VerifySelectedPageIndex(index);
+            VerifyFocusedPageIndex(index);
         }
 
         protected string GetCurrentOrientation()
         {
             return elements.GetCurrentOrientationTextBlock().GetText().Split(' ').Last();
         }
+
+        protected int GetFocusedPageAsInt32()
+        {
+            return Convert.ToInt32(GetFocusedPage());
+        }
+
         protected int GetCurrentPageAsInt32()
         {
             return Convert.ToInt32(GetCurrentPage());
         }
+
+        protected string GetFocusedPage()
+        {
+            string focusedPageTextBlockContent = elements.GetFocusedPageIndexTextBlock().GetText();
+            return new string(focusedPageTextBlockContent.Where(char.IsDigit).ToArray());
+        }
+
         protected string GetCurrentPage()
         {
             string currentPageTextBlockContent = elements.GetCurrentPageTextBlock().GetText();

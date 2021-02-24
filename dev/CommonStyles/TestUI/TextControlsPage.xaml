@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.TextBoxPage"
+    x:Class="MUXControlsTestApp.TextControlsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -15,7 +15,7 @@
     xmlns:muxContract7Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <StackPanel Margin="12">
-        <CheckBox x:Name="EnabledCheckBox" Content="Boxen Enabled" IsChecked="True"/>
+        <CheckBox x:Name="EnabledCheckBox" Content="Boxes Enabled" IsChecked="True"/>
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -61,6 +61,16 @@
                 <controls:NumberBox Header="Placeholder" PlaceholderText="Placeholder" IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
             </StackPanel>
         </Grid>
+
+        <TextBlock Text="TextBlock styles collection" FontSize="24" TextDecorations="Underline"/>
+        <TextBlock Style="{StaticResource BaseTextBlockStyle}" Text="BaseTextBlockStyle"/>
+        <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="CaptionTextBlockStyle"/>
+        <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="BodyTextBlockStyle"/>
+        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="BodyStrongTextBlockStyle"/>
+        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="SubtitleTextBlockStyle"/>
+        <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="TitleTextBlockStyle"/>
+        <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="TitleLargeTextBlockStyle"/>
+        <TextBlock Style="{StaticResource DisplayTextBlockStyle}" Text="DisplayTextBlockStyle"/>
     </StackPanel>
 
 </local:TestPage>

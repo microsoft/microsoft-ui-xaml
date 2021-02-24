@@ -50,5 +50,10 @@ namespace Breadcrumb_TestUI
                 node.UpdateParents(this);
             }
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

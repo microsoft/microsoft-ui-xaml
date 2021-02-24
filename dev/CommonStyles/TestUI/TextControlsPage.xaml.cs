@@ -6,10 +6,10 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "TextBox")]
-    public sealed partial class TextBoxPage : TestPage
+    [TopLevelTestPage(Name = "TextControls")]
+    public sealed partial class TextControlsPage : TestPage
     {
-        public TextBoxPage()
+        public TextControlsPage()
         {
             this.InitializeComponent();
         }

@@ -26,7 +26,7 @@
                         <TextBlock Text="This is the second line of text." Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                 </controls:Expander.Header>
-                <TextBlock AutomationProperties.AutomationId="ExpandedExpanderContent">Content</TextBlock>
+                <Button AutomationProperties.AutomationId="ExpandedExpanderContent">Content</Button>
             </controls:Expander>
 
             <controls:Expander AutomationProperties.AutomationId="CollapsedExpander" AutomationProperties.Name="Expander2" IsExpanded="False" Margin="12">
