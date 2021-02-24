@@ -13,7 +13,6 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "Breadcrumb.g.cpp"
 
-GlobalDependencyProperty BreadcrumbProperties::s_DropDownItemTemplateProperty{ nullptr };
 GlobalDependencyProperty BreadcrumbProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty BreadcrumbProperties::s_ItemTemplateProperty{ nullptr };
 
@@ -25,17 +24,6 @@ BreadcrumbProperties::BreadcrumbProperties()
 
 void BreadcrumbProperties::EnsureProperties()
 {
-    if (!s_DropDownItemTemplateProperty)
-    {
-        s_DropDownItemTemplateProperty =
-            InitializeDependencyProperty(
-                L"DropDownItemTemplate",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::Breadcrumb>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnDropDownItemTemplatePropertyChanged));
-    }
     if (!s_ItemsSourceProperty)
     {
         s_ItemsSourceProperty =
@@ -62,17 +50,8 @@ void BreadcrumbProperties::EnsureProperties()
 
 void BreadcrumbProperties::ClearProperties()
 {
-    s_DropDownItemTemplateProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_ItemTemplateProperty = nullptr;
-}
-
-void BreadcrumbProperties::OnDropDownItemTemplatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Breadcrumb>();
-    winrt::get_self<Breadcrumb>(owner)->OnPropertyChanged(args);
 }
 
 void BreadcrumbProperties::OnItemsSourcePropertyChanged(
@@ -89,19 +68,6 @@ void BreadcrumbProperties::OnItemTemplatePropertyChanged(
 {
     auto owner = sender.as<winrt::Breadcrumb>();
     winrt::get_self<Breadcrumb>(owner)->OnPropertyChanged(args);
-}
-
-void BreadcrumbProperties::DropDownItemTemplate(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<Breadcrumb*>(this)->SetValue(s_DropDownItemTemplateProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable BreadcrumbProperties::DropDownItemTemplate()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<Breadcrumb*>(this)->GetValue(s_DropDownItemTemplateProperty));
 }
 
 void BreadcrumbProperties::ItemsSource(winrt::IInspectable const& value)

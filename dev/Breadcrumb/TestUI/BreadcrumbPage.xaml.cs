@@ -1,21 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Markup;
-using Windows.UI;
-using System.Windows.Input;
 
-using TwoPaneView = Microsoft.UI.Xaml.Controls.TwoPaneView;
 using Breadcrumb = Microsoft.UI.Xaml.Controls.Breadcrumb;
 using Breadcrumb_TestUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Windows.Security.Authentication.OnlineId;
 using Microsoft.UI.Xaml.Controls;
 using System.Linq;
 

@@ -39,7 +39,7 @@ void Breadcrumb::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected{ *this };
 
-    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(s_breadcrumbItemsRepeaterPartName, controlProtected));
+    m_itemsRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(s_itemsRepeaterPartName, controlProtected));
 
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
@@ -84,9 +84,6 @@ void Breadcrumb::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     else if (property == s_ItemTemplateProperty)
     {
         UpdateItemTemplate();
-    }
-    else if (property == s_DropDownItemTemplateProperty)
-    {
         UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
     }
 }
@@ -112,14 +109,14 @@ void Breadcrumb::UpdateItemTemplate()
 
 void Breadcrumb::UpdateEllipsisBreadcrumbItemDropDownItemTemplate()
 {
-    const winrt::IInspectable& newItemTemplate = DropDownItemTemplate();
+    const winrt::IInspectable& newItemTemplate = ItemTemplate();
 
-    // Copy the item template to the ellipsis button too
+    // Copy the item template to the ellipsis item too
     if (const auto& ellipsisBreadcrumbItem = m_ellipsisBreadcrumbItem.get())
     {
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(ellipsisBreadcrumbItem))
         {
-            itemImpl->SetDropDownItemDataTemplate(newItemTemplate);
+            itemImpl->SetEllipsisDropDownItemDataTemplate(newItemTemplate);
         }
     }
 }
@@ -216,7 +213,7 @@ void Breadcrumb::UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrum
 
     if (const auto& newLastItemImpl = winrt::get_self<BreadcrumbItem>(newLastBreadcrumbItem))
     {
-        newLastItemImpl->SetPropertiesForLastNode();
+        newLastItemImpl->SetPropertiesForLastItem();
         m_lastBreadcrumbItem.set(newLastBreadcrumbItem);
     }
 }
@@ -227,6 +224,8 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
     {
         if (const auto& itemImpl = winrt::get_self<BreadcrumbItem>(item))
         {
+            itemImpl->SetIsEllipsisDropDownItem(false /*isEllipsisDropDownItem*/);
+
             // Set the parent breadcrumb reference for raising click events
             itemImpl->SetParentBreadcrumb(*this);
 
@@ -237,7 +236,7 @@ void Breadcrumb::OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt
             // The first element is always the ellipsis item
             if (itemIndex == 0)
             {
-                itemImpl->SetPropertiesForEllipsisNode();
+                itemImpl->SetPropertiesForEllipsisItem();
                 m_ellipsisBreadcrumbItem.set(item);
                 UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
 
