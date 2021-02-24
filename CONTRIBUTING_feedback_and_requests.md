@@ -1,6 +1,6 @@
 # Contributing ideas, feedback, and requests
 
-The WinUI team greatly values public feedback.  We combine this feedback with our own internal strategy goals, weighing it alongside our existing commitments, resources, and private partnerships, to deliver maximum value for you.
+The WinUI team greatly values public feedback. We combine this feedback with our own internal strategy goals, weighing it alongside our existing commitments, resources, and private partnerships, to deliver maximum value for you.
 
 The guide below outlines how you can formulate this feedback for maximum effect and influence on WinUI's direction.
 
@@ -45,14 +45,14 @@ Try this:
 
 - ### Prioritization within WinUI
   -  There is often trade-off required when adjusting priorities - please be clear in comparing what is more important vs. less important to you, and the reason why. 
-      - Ex: I think `<`specific area or feature set`>` should be prioritized before `<`other specific area or feature set`>` so that I can achieve `<`goal`>`. Without this, I have to `<`alternative`>`. "...  
+      - Ex: "I think `<`specific area or feature set`>` should be prioritized before `<`other specific area or feature set`>` so that I can achieve `<`goal`>`. Without this, I have to `<`alternative`>`. "  
 
 - ### Engagement
-  - Engagement includes feedback about learning materials and resources. It is always helpful to know where you prefer to be engaged and  how you prefer to learn. 
+  - Engagement includes feedback about learning materials and resources. It is always helpful to know where you prefer to be engaged and how you prefer to learn. 
     - "I would like to hear more about `<`specific topic`>` in `<`resource`>` so that I can achieve `<`goal`>`."
     - "`<`Resource`>` could be more inclusive and accessible if you considered `<`alternative`>` because `<`benefit`>`. Have you considered making these changes?"
    
-   Many of the resources we provide are also open source themselves! It can sometimes be more effective to leave feedback on the more specific repo.  This includes:
+   Many of the resources we provide are also open source themselves! It can sometimes be more effective to leave feedback on the more specific repo. This includes:
     - [documentation](https://github.com/MicrosoftDocs/windows-uwp)
     - [website (`gh-pages` branch of this repo)](https://github.com/microsoft/microsoft-ui-xaml/tree/gh-pages)
     - [Xaml Controls Gallery (sample app)](https://github.com/microsoft/Xaml-Controls-Gallery/tree/master)
