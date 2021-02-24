@@ -281,31 +281,31 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MonthView" Storyboard.TargetProperty="Opacity">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewScrollViewer" Storyboard.TargetProperty="Opacity">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MonthViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MonthViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundLayer" Storyboard.TargetProperty="Opacity">
                                                 <LinearDoubleKeyFrame KeyTime="0:0:0.000" Value="0" />
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.250" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.15,0.64,0.25,1" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.200" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
@@ -318,39 +318,39 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewScrollViewer" Storyboard.TargetProperty="Opacity">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MonthView" Storyboard.TargetProperty="Opacity">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MonthViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MonthViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundLayer" Storyboard.TargetProperty="Opacity">
                                                 <LinearDoubleKeyFrame KeyTime="0:0:0.000" Value="0" />
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.250" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.15,0.64,0.25,1" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.200" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
@@ -366,31 +366,31 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewScrollViewer" Storyboard.TargetProperty="Opacity">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecadeViewScrollViewer" Storyboard.TargetProperty="Opacity">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecadeViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecadeViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundLayer" Storyboard.TargetProperty="Opacity">
                                                 <LinearDoubleKeyFrame KeyTime="0:0:0.000" Value="0" />
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.250" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.15,0.64,0.25,1" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.200" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
@@ -409,39 +409,39 @@
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecadeViewScrollViewer" Storyboard.TargetProperty="Opacity">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="0" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="0" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewScrollViewer" Storyboard.TargetProperty="Opacity">
                                                 <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecadeViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DecadeViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.233" Value="1.29" KeySpline="0.1,0.9,0.2,1" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.150" Value="1.29" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="YearViewTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundTransform" Storyboard.TargetProperty="ScaleX">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundTransform" Storyboard.TargetProperty="ScaleY">
-                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.233" Value="0.84" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.1,0.9,0.2,1" />
+                                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.150" Value="0.84" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="BackgroundLayer" Storyboard.TargetProperty="Opacity">
                                                 <LinearDoubleKeyFrame KeyTime="0:0:0.000" Value="0" />
-                                                <LinearDoubleKeyFrame KeyTime="0:0:0.250" Value="0" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.733" Value="1" KeySpline="0.15,0.64,0.25,1" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.200" Value="0" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.500" Value="1" KeySpline="{StaticResource ControlFastOutSlowInKeySpline}" />
                                             </DoubleAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
