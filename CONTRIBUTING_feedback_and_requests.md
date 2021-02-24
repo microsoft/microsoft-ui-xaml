@@ -32,6 +32,7 @@ Try this:
   - It's very helpful to specify the "why" behind your request, even if it seems obvious. Comparisons can help, but shouldn't replace explanation. 
   - Ex: "I need `<`feature`>` so that I can achieve `<`goal`>`. Otherwise, I have to `<`alternative`>`."
 
+  There are also usually great opportunities to have feature-related impact in our [spec repo](https://github.com/microsoft/microsoft-ui-xaml-specs/tree/master). Here, you can give direct feedback and help shape the new features and APIs that we're currently building. 
 
 - ### Future/Roadmap
   - We strive to be transparent about our [product roadmap](https://aka.ms/winui3/feature-roadmap). Great examples of feedback to help us achieve this are:
