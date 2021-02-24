@@ -15,7 +15,7 @@ Your feedback is most effective when it is a constructive call to action on the 
 
 Instead of:
 
-  - The state of platform is disappointing. I am not going to consider WinUI until my trust has been earned.
+  - The state of the platform is disappointing. I am not going to consider WinUI until my trust has been earned.
 
 Try this:
   - Deprecation of past frameworks has left me burned. The following would go a long way in earning my trust because my company is trying to launch an app next year and will need it supported for at least 5 more: 
@@ -67,6 +67,6 @@ Try this:
 
 We strive to be respectful & empathetic toward each other, and we extend this to our fantastic community as well.
 
-Our conduct guidelines help to ensure that discourse and feedback follows this same pattern of respect & empathy, and they also make it clear that non-construcive or hostile feedback is unacceptable. By following these guidelines, we can all enjoy the mutual respect that each WinUI team member, and each community member, deserve.
+Our conduct guidelines help to ensure that discourse and feedback follows this same pattern of respect & empathy, and they also make it clear that non-constructive or hostile feedback is unacceptable. By following these guidelines, we can all enjoy the mutual respect that each WinUI team member, and each community member, deserve.
 
 Refer to our [conduct guidelines](https://github.com/microsoft/microsoft-ui-xaml/blob/master/CODE_OF_CONDUCT.md) for more guidance here. 
