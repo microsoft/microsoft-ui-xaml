@@ -330,8 +330,8 @@ private:
     void FocusNextUpItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
-    void SetShadow();
-    void UnsetShadow();
+    void SetDropShadow();
+    void UnsetDropShadow();
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 

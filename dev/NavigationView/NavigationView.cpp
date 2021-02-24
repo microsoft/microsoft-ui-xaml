@@ -681,12 +681,17 @@ void NavigationView::OnApplyTemplate()
 
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &NavigationView::OnAccessKeyInvoked });
 
-    m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
-    m_shadowCasterEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseInStoryboard, controlProtected));
-    m_shadowCasterSmallPaneEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterSmallPaneEaseInStoryboard, controlProtected));
-    m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
-
-    UpdatePaneShadow();
+    if (SharedHelpers::Is21H1OrHigher())
+    {
+        m_shadowCaster.set(GetTemplateChildT<winrt::Grid>(c_shadowCaster, controlProtected));
+        m_shadowCasterEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseInStoryboard, controlProtected));
+        m_shadowCasterSmallPaneEaseInStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterSmallPaneEaseInStoryboard, controlProtected));
+        m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
+    }
+    else
+    {
+        UpdatePaneShadow();
+    }
 
     m_appliedTemplate = true;
 
@@ -3950,8 +3955,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_CompactPaneLengthProperty)
     {
-        // Need to update receiver margins when CompactPaneLength changes
-        UpdatePaneShadow();
+        if (!SharedHelpers::Is21H1OrHigher())
+        {
+            // Need to update receiver margins when CompactPaneLength changes
+            UpdatePaneShadow();
+        }
 
         // Update pane-button-grid width when pane is closed and we are not in minimal
         UpdatePaneButtonsWidths();
@@ -4055,27 +4063,34 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        if (auto&& splitView = m_rootSplitView.get())
+        // Drop Shadows were only introduced in OS versions 21h1 or higher. Projected Shadows will be used for older versions.
+        if (SharedHelpers::Is21H1OrHigher())
         {
-            const auto displayMode = splitView.DisplayMode();
-            const auto isOverlay = displayMode == winrt::SplitViewDisplayMode::Overlay || displayMode == winrt::SplitViewDisplayMode::CompactOverlay;
-            if (const auto paneRoot = splitView.Pane())
+            if (IsPaneOpen())
             {
-                const auto currentTranslation = paneRoot.Translation();
-                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() && isOverlay ? c_paneElevationTranslationZ : 0.0f };
-                paneRoot.Translation(translation);
+                SetDropShadow();
             }
-        }
-
-        if (IsPaneOpen())
-        {
-            SetShadow();
+            else
+            {
+                UnsetDropShadow();
+            }
         }
         else
         {
-            UnsetShadow();
-        }
+            if (auto&& splitView = m_rootSplitView.get())
+            {
+                const auto displayMode = splitView.DisplayMode();
+                const auto isOverlay = displayMode == winrt::SplitViewDisplayMode::Overlay || displayMode == winrt::SplitViewDisplayMode::CompactOverlay;
+                if (const auto paneRoot = splitView.Pane())
+                {
+                    const auto currentTranslation = paneRoot.Translation();
+                    const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() && isOverlay ? c_paneElevationTranslationZ : 0.0f };
+                    paneRoot.Translation(translation);
+                }
+            }
+        }   
     }
+
     UpdatePaneButtonsWidths();
 }
 
@@ -4724,76 +4739,63 @@ bool NavigationView::IsFullScreenOrTabletMode()
     return isFullScreenMode || isTabletMode;
 }
 
-void NavigationView::SetShadow()
+void NavigationView::SetDropShadow()
 {
-    if (SharedHelpers::IsThemeShadowAvailable())
+    const auto shadowCaster = m_shadowCaster.get();
+    const auto displayMode = DisplayMode();
+
+    if (displayMode == winrt::NavigationViewDisplayMode::Compact || displayMode == winrt::NavigationViewDisplayMode::Minimal)
     {
-        const auto shadowCaster = m_shadowCaster.get();
-        const auto displayMode = DisplayMode();
-
-        if (displayMode == winrt::NavigationViewDisplayMode::Compact || displayMode == winrt::NavigationViewDisplayMode::Minimal)
+        if (shadowCaster)
         {
-            if (shadowCaster)
+            const auto rootSplitView = m_rootSplitView.get();
+            const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
+
+            // If the screen real estate is too small, the left pane of SplitView ends up being smaller than OpenPaneLength and takes the width of RootSplitView.
+            // There is no VisualState in xaml for this, so we need to manually set ShadowCaster's width to RootSplitView's width.
+            if (rootSplitViewActualWidth < rootSplitView.OpenPaneLength())
             {
-                const auto rootSplitView = m_rootSplitView.get();
-                const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
+                shadowCaster.Width(rootSplitViewActualWidth);
 
-                if (rootSplitViewActualWidth < rootSplitView.OpenPaneLength())
+                // Since the width of the NavigationView pane is now different than OpenPaneLength, we need to update its TranslateX animation value to a reflect that.
+                const auto negativeSplitViewWidthMinusCompactLength = (rootSplitViewActualWidth - rootSplitView.CompactPaneLength()) * -1;
+                GetTemplateSettings()->NegativeSplitViewWidthMinusCompactLength(negativeSplitViewWidthMinusCompactLength);
+
+                if (const auto shadowCasterSmallPaneEaseInStoryboard = m_shadowCasterSmallPaneEaseInStoryboard.get())
                 {
-                    shadowCaster.Width(rootSplitViewActualWidth);
-
-                    const auto negativeSplitViewWidthMinusCompactLength = (rootSplitViewActualWidth - rootSplitView.CompactPaneLength()) * -1;
-                    GetTemplateSettings()->NegativeSplitViewWidthMinusCompactLength(negativeSplitViewWidthMinusCompactLength);
-
-                    if (const auto shadowCasterSmallPaneEaseInStoryboard = m_shadowCasterSmallPaneEaseInStoryboard.get())
-                    {
-
-                        shadowCasterSmallPaneEaseInStoryboard.Begin();
-                    }
+                    shadowCasterSmallPaneEaseInStoryboard.Begin();
                 }
-                else
+            }
+            else
+            {
+                if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
                 {
-                    if (const auto shadowCasterEaseInStoryboard = m_shadowCasterEaseInStoryboard.get())
-                    {
-                        shadowCasterEaseInStoryboard.Begin();
-                    }
+                    shadowCasterEaseInStoryboard.Begin();
                 }
+            }
 
-                if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
-                {
-                    shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
-                }
-            }              
-        }
+            if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
+            {
+                shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
+            }
+        }              
     }
 }
 
-void NavigationView::UnsetShadow()
+void NavigationView::UnsetDropShadow()
 {
-    if (SharedHelpers::IsThemeShadowAvailable())
+    const auto shadowCaster = m_shadowCaster.get();
+
+    if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
     {
-        const auto shadowCaster = m_shadowCaster.get();
-        const auto splitView = m_rootSplitView.get();
+        shadowCasterEaseOutStoryboard.Begin();
+    }
 
-        if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
+    if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
+    {
+        if (shadowCaster_uiElement10.Shadow())
         {
-            shadowCasterEaseOutStoryboard.Begin();
-        }
-
-        if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
-        {
-            if (shadowCaster_uiElement10.Shadow())
-            {
-                shadowCaster_uiElement10.Shadow(nullptr);
-            }
-        }
-        
-        if (winrt::IUIElement10 splitView_uiElement10 = splitView)
-        {
-            if (splitView_uiElement10.Shadow())
-            {
-                splitView_uiElement10.Shadow(nullptr);
-            }
+            shadowCaster_uiElement10.Shadow(nullptr);
         }
     }
 }
@@ -4802,55 +4804,55 @@ void NavigationView::UpdatePaneShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-        //winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
-        //if (!shadowReceiver)
-        //{
-        //    shadowReceiver = winrt::Canvas();
-        //    shadowReceiver.Name(c_paneShadowReceiverCanvas);
+        winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
+        if (!shadowReceiver)
+        {
+            shadowReceiver = winrt::Canvas();
+            shadowReceiver.Name(c_paneShadowReceiverCanvas);
 
-        //    if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
-        //    {
-        //        contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
-        //        contentGrid.SetRow(shadowReceiver, 0);
-        //        // Only register to columns if those are actually defined
-        //        if (contentGrid.ColumnDefinitions().Size() > 0) {
-        //            contentGrid.SetColumn(shadowReceiver, 0);
-        //            contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
-        //        }
-        //        contentGrid.Children().Append(shadowReceiver);
+            if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
+            {
+                contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+                contentGrid.SetRow(shadowReceiver, 0);
+                // Only register to columns if those are actually defined
+                if (contentGrid.ColumnDefinitions().Size() > 0) {
+                    contentGrid.SetColumn(shadowReceiver, 0);
+                    contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
+                }
+                contentGrid.Children().Append(shadowReceiver);
 
-        //        winrt::ThemeShadow shadow;
-        //        shadow.Receivers().Append(shadowReceiver);
-        //        if (auto splitView = m_rootSplitView.get())
-        //        {
-        //            if (auto paneRoot = splitView.Pane())
-        //            {
-        //                if (auto paneRoot_uiElement10 = paneRoot.try_as<winrt::IUIElement10 >())
-        //                {
-        //                    paneRoot_uiElement10.Shadow(shadow);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(shadowReceiver);
+                if (auto splitView = m_rootSplitView.get())
+                {
+                    if (auto paneRoot = splitView.Pane())
+                    {
+                        if (auto paneRoot_uiElement10 = paneRoot.try_as<winrt::IUIElement10 >())
+                        {
+                            paneRoot_uiElement10.Shadow(shadow);
+                        }
+                    }
+                }
+            }
+        }
 
-        //// Shadow will get clipped if casting on the splitView.Content directly
-        //// Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        //winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        // Shadow will get clipped if casting on the splitView.Content directly
+        // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
+        winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
 
-        //// Ensuring shadow is aligned to the left
-        //shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
+        // Ensuring shadow is aligned to the left
+        shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
-        //// Ensure shadow is as wide as the pane when it is open
-        //if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
-        //{
-        //    shadowReceiver.Width(OpenPaneLength());
-        //}
-        //else
-        //{
-        //    shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
-        //}
-        //shadowReceiver.Margin(shadowReceiverMargin);
+        // Ensure shadow is as wide as the pane when it is open
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        {
+            shadowReceiver.Width(OpenPaneLength());
+        }
+        else
+        {
+            shadowReceiver.Width(OpenPaneLength() - shadowReceiverMargin.Right);
+        }
+        shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
 
