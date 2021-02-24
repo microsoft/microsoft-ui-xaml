@@ -244,12 +244,18 @@ winrt::Control CommandBarFlyout::CreatePresenter()
         presenterControl7.CornerRadius({ 0 });
     }
 
-    // We will provide our own shadow, not the one that FlyoutPresenter has by default.
-    // We need to specifically target the CommandBar for the shadow, not the default node far
-    // above that.
-    if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+    if (!SharedHelpers::Is21H1OrHigher())
     {
-        presenter2.IsDefaultShadowEnabled(false);
+        // This logic applies to projected shadows, which are the default on < 21H1.
+        // When on 21H1 or higher, drop shadows are the default and need to be applied higher up
+        // in the tree to avoid being clipped away.  The default shadow works great for this.
+        // For < 21H1, we will provide our own shadow, not the one that FlyoutPresenter has by default.
+        // We need to specifically target the CommandBar for the shadow, not the default node far
+        // above that.
+        if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+        {
+            presenter2.IsDefaultShadowEnabled(false);
+        }
     }
 
     commandBar->SetOwningFlyout(*this);
