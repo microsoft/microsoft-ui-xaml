@@ -60,7 +60,7 @@ Try this:
 
 - ### Team Process
   - Team process includes feedback about our repo and overall communication. Suggestions for improvement and proposed alternatives are very helpful here. 
-    - Ex: "`<`specific aspect of team process - e.g., response frequency, format`>`of the repo is making it hard for me to achieve `<`goal`>`. Please consider doing `<`alternative`>`instead because that would help..." 
+    - Ex: "`<`specific aspect of team process - e.g., response frequency, format`>` of the repo is making it hard for me to achieve `<`goal`>`. Please consider doing `<`alternative`>` instead because that would help `<`action`>`" 
 
 
 ## Mutual respect
