@@ -35,6 +35,10 @@
             <SolidColorBrush x:Key="BreadcrumbBackgroundBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="BreadcrumbBorderBrush" Color="Transparent"/>
 
+            <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
+            <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
+            <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,0</Thickness>
+
             <StaticResource x:Key="BreadcrumbItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
 
@@ -64,6 +68,10 @@
             <SolidColorBrush x:Key="BreadcrumbBackgroundBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="BreadcrumbBorderBrush" Color="Transparent"/>
 
+            <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
+            <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
+            <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,0</Thickness>
+
             <StaticResource x:Key="BreadcrumbItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
 
@@ -91,6 +99,10 @@
             <StaticResource x:Key="BreadcrumbForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="BreadcrumbBackgroundBrush" ResourceKey="SystemColorButtonFaceColor" />
             <StaticResource x:Key="BreadcrumbBorderBrush" ResourceKey="SystemColorButtonFaceColor" />
+
+            <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
+            <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
+            <Thickness x:Key="MenuFlyoutPresenterThemePadding">0,0</Thickness>
 
             <StaticResource x:Key="BreadcrumbItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>

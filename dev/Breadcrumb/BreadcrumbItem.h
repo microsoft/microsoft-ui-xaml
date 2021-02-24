@@ -95,6 +95,8 @@ private:
 
     // BreadcrumbItem visual representation
     tracker_ref<winrt::Button> m_button{ this };
+    tracker_ref<winrt::Grid> m_grid{ this };
+
     // Parent BreadcrumbItem to ask for hidden elements
     tracker_ref<winrt::Breadcrumb> m_parentBreadcrumb{ this };
 
@@ -155,6 +157,7 @@ private:
 
     // Template Parts
     static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
+    static constexpr std::wstring_view s_itemGridPartName{ L"PART_LayoutRoot"sv };
     static constexpr std::wstring_view s_itemButtonPartName{ L"PART_ItemButton"sv };
 
     // Automation Names
