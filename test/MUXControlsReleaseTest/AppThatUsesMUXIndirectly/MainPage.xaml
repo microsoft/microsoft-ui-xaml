@@ -12,6 +12,5 @@
 
     <StackPanel x:Name="layoutRoot">
       <muxlib:TestUserControl1 />
-      <muxrc:TestUserControl1 />
     </StackPanel>
 </Page>
