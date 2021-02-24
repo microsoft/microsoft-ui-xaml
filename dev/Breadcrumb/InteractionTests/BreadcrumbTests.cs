@@ -374,27 +374,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Here we should verify that the first element in the flyout has focus and we can move up/down
 
                 var dropDownItem = GetDropDownItemByName("EllipsisItem1");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Down);
 
                 dropDownItem = GetDropDownItemByName("EllipsisItem2");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Down);
 
                 dropDownItem = GetDropDownItemByName("EllipsisItem3");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem3 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem3 BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Up);
 
                 dropDownItem = GetDropDownItemByName("EllipsisItem2");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Up);
 
                 dropDownItem = GetDropDownItemByName("EllipsisItem1");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbItem should have focus");
             }
         }
 
@@ -449,12 +449,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Here we should verify that the first element in the flyout has focus and we can move up/down
                 var dropDownItem = GetDropDownItemByName("EllipsisItem1");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem1 BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Down);
 
                 dropDownItem = GetDropDownItemByName("EllipsisItem2");
-                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbDropDownItem should have focus");
+                Verify.IsTrue(dropDownItem.HasKeyboardFocus, "EllipsisItem2 BreadcrumbItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Enter);
 
@@ -467,6 +467,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(3, breadcrumb.Children.Count, "The breadcrumb should contain 3 items: 2 items and an ellipsis");
 
                 VerifyBreadcrumbItemsContain(breadcrumb.Children, new string[] { "Root", "Node A" });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyMulticlickCrash()
+        {
+            using (var setup = new TestSetupHelper("Breadcrumb Tests"))
+            {
+                UIObject breadcrumb = RetrieveBreadcrumbControl();
+                ClickOnElements(new string[] { "Node A", "Node A_1" });
+
+                UIObject slider = RetrieveWidthSlider();
+                slider.Click(PointerButtons.Primary, 1, slider.BoundingRectangle.Height / 2);
+
+                InvokeEllipsisItem(breadcrumb);
+
+                var ellipsisItemNodeA = VerifyDropDownItemContainsText("EllipsisItem2", "Root");
+                ellipsisItemNodeA.Invoke();
+                Thread.Sleep(500);
+
+                for (int i = 0; i < 5; ++i)
+                {
+                    breadcrumb.Children[1].Click();
+
+                    VerifyLastClickedItemIndexIs(0);
+                    VerifyLastClickedItemIs("Root");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyFlyoutRecycleCrash()
+        {
+            using (var setup = new TestSetupHelper("Breadcrumb Tests"))
+            {
+                UIObject breadcrumb = SetUpCrumbledTest();
+
+                UIObject slider = RetrieveWidthSlider();
+                slider.Click(PointerButtons.Primary, 1, slider.BoundingRectangle.Height / 2);
+
+                InvokeEllipsisItem(breadcrumb);
+
+                var ellipsisItemNodeA_2_3 = VerifyDropDownItemContainsText("EllipsisItem1", "Node A_2_3");
+                ellipsisItemNodeA_2_3.Invoke();
+                Thread.Sleep(500);
+
+                InvokeEllipsisItem(breadcrumb);
             }
         }
 

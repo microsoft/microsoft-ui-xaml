@@ -61,9 +61,6 @@
                                         <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForegroundPressed}" />
                                         <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Disabled">

@@ -44,7 +44,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsNull(breadcrumb.ItemsSource, "The default ItemsSource property value must be null");
                 Verify.IsNull(breadcrumb.ItemTemplate, "The default ItemTemplate property value must be null");
-                Verify.IsNull(breadcrumb.DropDownItemTemplate, "The default DropdownItemTemplate property value must be null");
             });
         }
 
@@ -66,7 +65,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
 
                 var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1);
@@ -118,8 +117,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
-                ItemsRepeater breadcrumbItemsRepeater2 = (ItemsRepeater)breadcrumb2.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater2 = (ItemsRepeater)breadcrumb2.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
                 Verify.IsNotNull(breadcrumbItemsRepeater2, "The underlying items repeater could not be retrieved");
 
@@ -170,10 +169,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
 
-                ItemsRepeater breadcrumbItemsRepeater2 = (ItemsRepeater)breadcrumb2.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater2 = (ItemsRepeater)breadcrumb2.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater2, "The underlying items repeater could not be retrieved");
 
                 var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbItem;
@@ -232,7 +231,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
 
                 var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbItem;
@@ -259,16 +258,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                             xmlns:controls='using:Microsoft.UI.Xaml.Controls'
                             xmlns:local='using:Windows.UI.Xaml.Tests.MUXControls.ApiTests'>
-                            <controls:BreadcrumbDropDownItem Content='{Binding}'>
-                                <controls:BreadcrumbDropDownItem.ContentTemplate>
+                            <controls:BreadcrumbItem Content='{Binding}'>
+                                <controls:BreadcrumbItem.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text='{Binding MockProperty}'/>
                                     </DataTemplate>
-                                </controls:BreadcrumbDropDownItem.ContentTemplate>
-                            </controls:BreadcrumbDropDownItem>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
                         </DataTemplate>");
 
-                breadcrumb.DropDownItemTemplate = itemTemplate;
+                breadcrumb.ItemTemplate = itemTemplate;
 
                 var stackPanel = new StackPanel();
                 stackPanel.Width = 60;
@@ -283,13 +282,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Button ellipsisButton = null;
             RunOnUIThread.Execute(() =>
             {
-                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater (1) could not be retrieved");
 
                 var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(0) as BreadcrumbItem;
                 Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbItem.");
 
-                ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_BreadcrumbItemButton");
+                ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_ItemButton");
                 Verify.IsNotNull(ellipsisButton, "The ellipsis item (1) could not be retrieved");
 
                 var automationPeer = new ButtonAutomationPeer(ellipsisButton);
@@ -334,7 +333,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             <TextBlock Text='{Binding}'/>
                         </DataTemplate>");
 
-                breadcrumb.DropDownItemTemplate = itemTemplate;
+                breadcrumb.ItemTemplate = itemTemplate;
 
                 var stackPanel = new StackPanel();
                 stackPanel.Width = 60;
@@ -349,13 +348,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Button ellipsisButton = null;
             RunOnUIThread.Execute(() =>
             {
-                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_BreadcrumbItemsRepeater");
+                ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater (1) could not be retrieved");
 
                 var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(0) as BreadcrumbItem;
                 Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbItem.");
 
-                ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_BreadcrumbItemButton");
+                ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_ItemButton");
                 Verify.IsNotNull(ellipsisButton, "The ellipsis item (1) could not be retrieved");
 
                 var automationPeer = new ButtonAutomationPeer(ellipsisButton);
