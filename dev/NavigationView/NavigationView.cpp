@@ -4752,11 +4752,9 @@ void NavigationView::SetDropShadow()
             const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
 
             // If the screen real estate is too small, the left pane of SplitView ends up being smaller than OpenPaneLength and takes the width of RootSplitView.
-            // There is no VisualState in xaml for this, so we need to manually set ShadowCaster's width to RootSplitView's width.
+            // This requires a different storyboard animation than default.
             if (rootSplitViewActualWidth < rootSplitView.OpenPaneLength())
             {
-                shadowCaster.Width(rootSplitViewActualWidth);
-
                 // Since the width of the NavigationView pane is now different than OpenPaneLength, we need to update its TranslateX animation value to a reflect that.
                 const auto negativeSplitViewWidthMinusCompactLength = (rootSplitViewActualWidth - rootSplitView.CompactPaneLength()) * -1;
                 GetTemplateSettings()->NegativeSplitViewWidthMinusCompactLength(negativeSplitViewWidthMinusCompactLength);
