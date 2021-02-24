@@ -13,23 +13,6 @@ Your feedback is most effective when it is a constructive call to action on the 
 
 **Examples of constructively phrased feedback:**
 
-Instead of: 
-  
-  - WinUI doesn't have nearly as many controls as other frameworks and platforms. Why is the team focusing on `<`some other area`>` instead of adding more controls?
-
-Try this:
-    
-  - XYZ Framework and ABC Framework have a lot of great charting controls that are easy to use and available. My Windows app needs these kinds of controls to display all kinds of data, such as:
-    - Showing data from multiple sources in one chart
-    - A gauge control that is hooked up to a live data source and is constantly updating
-    - A built-in C++ based DataGrid control that can handle processing and displaying large amounts of data.
-
-    Would it be possible to adopt these existing controls into WinUI, or provide new WinUI charting controls, so apps can have an easier time with data visualization? 
-
-    This feedback identifies specific areas in which WinUI can improve and expand, and clearly explains why this growth and change is needed. 
-
--------
-
 Instead of:
 
   - The state of platform is disappointing. I am not going to consider WinUI until my trust has been earned.
@@ -41,6 +24,8 @@ Try this:
     - Guaranteed support timeline
 
     This feedback provides clear actionable items that the WinUI team can take into consideration and address. 
+    
+    
 ## Sample areas where your feedback can have large impact
 
 - ### Features
