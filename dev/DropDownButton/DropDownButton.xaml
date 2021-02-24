@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
-    xmlns:AnimatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
@@ -111,7 +111,7 @@
                             AutomationProperties.AccessibilityView="Raw" />
 
                         <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12">
-                            <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
+                            <animatedvisuals:Controls_06_DownChevron_DropDown/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource
                                     FontSize="8"

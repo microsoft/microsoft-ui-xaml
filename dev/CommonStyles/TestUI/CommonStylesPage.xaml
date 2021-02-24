@@ -7,7 +7,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:AnimatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
     
     <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12"
@@ -245,7 +245,7 @@
                     <Button Margin="0,24,0,0">
                         <Button.Content>
                             <muxc:AnimatedIcon>
-                                <AnimatedVisuals:Controls_06_DownChevron_DropDown/>
+                                <animatedvisuals:Controls_06_DownChevron_DropDown/>
                             </muxc:AnimatedIcon>
                         </Button.Content>
                     </Button>
