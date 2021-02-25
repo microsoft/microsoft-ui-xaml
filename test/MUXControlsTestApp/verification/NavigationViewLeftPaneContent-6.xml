@@ -737,7 +737,7 @@
                             Visibility=Visible
                             RenderSize=273,33
                           [Windows.UI.Xaml.Controls.TextBox]
-                              Padding=10,6,6,5
+                              Padding=10,5,6,6
                               Foreground=#E4000000
                               BorderThickness=1,1,1,1
                               BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
@@ -780,7 +780,7 @@
                                   Visibility=Visible
                                   RenderSize=273,33
                               [Windows.UI.Xaml.Controls.ScrollViewer]
-                                  Padding=10,6,6,5
+                                  Padding=10,5,6,6
                                   Foreground=#E4000000
                                   BorderThickness=0,0,0,0
                                   BorderBrush=#00FFFFFF
@@ -828,7 +828,7 @@
                                         BorderBrush=[NULL]
                                         Background=[NULL]
                                         Name=ScrollContentPresenter
-                                        Margin=10,6,6,5
+                                        Margin=10,5,6,6
                                         FocusVisualSecondaryThickness=1,1,1,1
                                         FocusVisualSecondaryBrush=#99FFFFFF
                                         FocusVisualPrimaryThickness=2,2,2,2
@@ -903,7 +903,7 @@
                                         Visibility=Collapsed
                                         RenderSize=0,0
                               [Windows.UI.Xaml.Controls.ContentControl]
-                                  Padding=10,6,6,5
+                                  Padding=10,5,6,6
                                   Foreground=#93000000
                                   BorderThickness=0,0,0,0
                                   BorderBrush=[NULL]
@@ -923,7 +923,7 @@
                                     BorderThickness=0,0,0,0
                                     BorderBrush=[NULL]
                                     Background=[NULL]
-                                    Margin=10,6,6,5
+                                    Margin=10,5,6,6
                                     FocusVisualSecondaryThickness=1,1,1,1
                                     FocusVisualSecondaryBrush=#99FFFFFF
                                     FocusVisualPrimaryThickness=2,2,2,2
