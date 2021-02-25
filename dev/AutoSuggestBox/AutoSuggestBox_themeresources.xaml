@@ -364,7 +364,7 @@
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Style="{StaticResource QueryButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{ThemeResource AutoSuggestBoxQueryButtonPadding}"
+                            Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             Grid.Column="2"
                             FontSize="{TemplateBinding FontSize}"

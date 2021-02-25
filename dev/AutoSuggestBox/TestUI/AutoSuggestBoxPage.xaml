@@ -14,10 +14,13 @@
     <StackPanel Margin="12">
         <TextBlock Text="Sample AutoSuggestBoxes" Style="{ThemeResource StandardGroupHeader}"/>
         <AutoSuggestBox QueryIcon="Find"/>
-        <AutoSuggestBox Header="AutoSuggestBox with header">
+        <AutoSuggestBox Header="AutoSuggestBox with header" FontSize="12">
             <AutoSuggestBox.QueryIcon>
                 <controls:AnimatedIcon>
                     <animatedvisuals:AnimatedFindVisualSource/>
+                    <controls:AnimatedIcon.FallbackIconSource>
+                        <controls:FontIconSource Glyph="&#xE11A;" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                    </controls:AnimatedIcon.FallbackIconSource>
                 </controls:AnimatedIcon>
             </AutoSuggestBox.QueryIcon>
         </AutoSuggestBox>

@@ -34,8 +34,17 @@ void AnimatedIcon::OnApplyTemplate()
     if (panel)
     {
         // Animated icon implements IconElement through PathIcon. We don't need the Path that
-        // PathIcon creates, so get rid of it.
-        panel.Children().Clear();
+        // PathIcon creates, however when you set the foreground on AnimatedIcon, it assumes
+        // its grid's first child has a fill property which it sets by known index. So we
+        // keep this child around but collapse it so this behavior doesn't crash us when the
+        // fallback is used.
+        if (panel.Children().Size() > 0)
+        {
+            if (auto const path = panel.Children().GetAt(0))
+            {
+                path.Visibility(winrt::Visibility::Collapsed);
+            }
+        }
         OnFallbackIconSourcePropertyChanged(nullptr);
         if (auto const visual = m_animatedVisual.get())
         {
@@ -414,7 +423,8 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
             TrySetForegroundProperty(source);
 
             winrt::IInspectable diagnostics{};
-            auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
+            auto const visual = static_cast<winrt::IAnimatedVisual>(nullptr); //source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
+            //auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
             m_animatedVisual.set(visual);
             return visual ? visual.RootVisual() : nullptr;
         }
@@ -435,7 +445,12 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
         m_canDisplayPrimaryContent = true;
         if (auto const rootPanel = m_rootPanel.get())
         {
-            rootPanel.Children().Clear();
+            // Remove the second child, if it exists, as this is the fallback icon.
+            // Which we don't need because we have a visual now.
+            if (rootPanel.Children().Size() > 1)
+            {
+                rootPanel.Children().RemoveAt(1);
+            }
         }
         visual.Properties().InsertScalar(s_progressPropertyName, 0.0F);
 
@@ -468,7 +483,12 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
         auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
         if (auto const rootPanel = m_rootPanel.get())
         {
-            rootPanel.Children().Clear();
+            // Remove the second child, if it exists, as this is the previous
+            // fallback icon which we don't need because we have a visual now.
+            if (rootPanel.Children().Size() > 1)
+            {
+                rootPanel.Children().RemoveAt(1);
+            }
             rootPanel.Children().Append(iconElement);
         }
     }

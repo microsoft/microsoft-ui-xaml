@@ -38,6 +38,9 @@
                     <AutoSuggestBox.QueryIcon>
                         <muxc:AnimatedIcon>
                             <animatedvisuals:AnimatedFindVisualSource/>
+                            <muxc:AnimatedIcon.FallbackIconSource>
+                                <muxc:FontIconSource Glyph="&#xE11A;" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                            </muxc:AnimatedIcon.FallbackIconSource>
                         </muxc:AnimatedIcon>
                     </AutoSuggestBox.QueryIcon>
                 </AutoSuggestBox>

@@ -828,13 +828,6 @@
                                                 Margin="4"
                                                 contract7NotPresent:Visibility="Collapsed">
                                 <animatedvisuals:AnimatedAcceptVisualSource/>
-                                <local:AnimatedIcon.FallbackIconSource>
-                                    <local:FontIconSource
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"    
-                                        FontSize="16"
-                                        Glyph="&#xE001;"
-                                        IsTextScaleFactorEnabled="False"/>
-                                </local:AnimatedIcon.FallbackIconSource>
                             </local:AnimatedIcon>
 
                         </Grid>

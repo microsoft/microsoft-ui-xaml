@@ -275,7 +275,7 @@
 
     <!-- The resource below must be defined at the app level in order to affect the expand/collapse chevron font size
          used in the Top NavigationView's Overflow menu. -->
-    <x:Double x:Key="NavigationViewItemExpandedGlyphFontSize">12.0</x:Double>
+    <x:Double x:Key="NavigationViewItemExpandedGlyphFontSize">8</x:Double>
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">

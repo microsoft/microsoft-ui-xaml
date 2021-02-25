@@ -85,9 +85,8 @@
                                 <local:FontIconSource
                                     FontSize="{TemplateBinding FontSize}"
                                     FontFamily="{TemplateBinding FontFamily}"
-                                    Glyph="{TemplateBinding Content}"
-                                    MirroredWhenRightToLeft="True"
-                                    Foreground="{TemplateBinding Foreground}"/>
+                                    Glyph="&#xE72B;"
+                                    MirroredWhenRightToLeft="True"/>
                             </local:AnimatedIcon.FallbackIconSource>
                         </local:AnimatedIcon>
                     </Grid>

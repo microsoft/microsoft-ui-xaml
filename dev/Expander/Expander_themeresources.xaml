@@ -351,6 +351,7 @@
                                     <local:FontIconSource
                                         Glyph="{StaticResource ExpanderChevronDownGlyph}"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        FontSize="12"
                                         IsTextScaleFactorEnabled="False"/>
                                 </local:AnimatedIcon.FallbackIconSource>
                                 <local:AnimatedIcon.RenderTransform>
@@ -621,6 +622,7 @@
                                     <local:FontIconSource
                                         Glyph="{StaticResource ExpanderChevronUpGlyph}"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        FontSize="12"
                                         IsTextScaleFactorEnabled="False"/>
                                 </local:AnimatedIcon.FallbackIconSource>
                                 <local:AnimatedIcon.RenderTransform>
