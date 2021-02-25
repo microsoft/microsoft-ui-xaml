@@ -35,7 +35,7 @@
             <SolidColorBrush x:Key="BreadcrumbBackgroundBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="BreadcrumbBorderBrush" Color="Transparent"/>
 
-            <StaticResource x:Key="BreadcrumbItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -60,11 +60,11 @@
             <StaticResource x:Key="BreadcrumbEllipsisDropDownItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
 
             <StaticResource x:Key="BreadcrumbForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
-            <!-- TODO: should this be <StaticResource x:Key="BreadcrumbItemBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" /> instead?-->
+            <!-- TODO: should this be <StaticResource x:Key="BreadcrumbBarItemBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" /> instead?-->
             <SolidColorBrush x:Key="BreadcrumbBackgroundBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="BreadcrumbBorderBrush" Color="Transparent"/>
 
-            <StaticResource x:Key="BreadcrumbItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -92,7 +92,7 @@
             <StaticResource x:Key="BreadcrumbBackgroundBrush" ResourceKey="SystemColorButtonFaceColor" />
             <StaticResource x:Key="BreadcrumbBorderBrush" ResourceKey="SystemColorButtonFaceColor" />
 
-            <StaticResource x:Key="BreadcrumbItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
+            <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

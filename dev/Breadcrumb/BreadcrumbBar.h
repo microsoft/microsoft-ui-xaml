@@ -5,22 +5,22 @@
 
 #include "pch.h"
 #include "common.h"
-#include "Breadcrumb.g.h"
-#include "Breadcrumb.properties.h"
+#include "BreadcrumbBar.g.h"
+#include "BreadcrumbBar.properties.h"
 #include "SplitButton.h"
-#include "BreadcrumbElementFactory.h"
+#include "BreadcrumbBarElementFactory.h"
 #include "Vector.h"
 #include "BreadcrumbIterable.h"
 #include "BreadcrumbLayout.h"
 
-class Breadcrumb :
-    public ReferenceTracker<Breadcrumb, winrt::implementation::BreadcrumbT>,
-    public BreadcrumbProperties
+class BreadcrumbBar :
+    public ReferenceTracker<BreadcrumbBar, winrt::implementation::BreadcrumbBarT>,
+    public BreadcrumbBarProperties
 {
 
 public:
-    Breadcrumb();
-    ~Breadcrumb() {}
+    BreadcrumbBar();
+    ~BreadcrumbBar() {}
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -32,11 +32,11 @@ public:
     void ReIndexVisibleElementsForAccessibility() const;
 
 private:
-    void OnBreadcrumbItemsRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+    void OnBreadcrumbBarItemsRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnElementPreparedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs&);
     void OnElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs&);
     void OnElementClearingEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs&);
-    void OnBreadcrumbItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnBreadcrumbBarItemsSourceCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
 
     // Keyboard navigation
@@ -53,12 +53,12 @@ private:
 
     void UpdateItemsRepeaterItemsSource();
     void UpdateItemTemplate();
-    void UpdateEllipsisBreadcrumbItemDropDownItemTemplate();
-    void UpdateBreadcrumbItemsFlowDirection();
+    void UpdateEllipsisBreadcrumbBarItemDropDownItemTemplate();
+    void UpdateBreadcrumbBarItemsFlowDirection();
 
-    void ResetLastBreadcrumbItem();
+    void ResetLastBreadcrumbBarItem();
     void ForceUpdateLastElement();
-    void UpdateLastElement(const winrt::BreadcrumbItem& newLastBreadcrumbItem);
+    void UpdateLastElement(const winrt::BreadcrumbBarItem& newLastBreadcrumbBarItem);
 
     winrt::IVector<winrt::IInspectable> GetHiddenElementsList(uint32_t firstShownElement) const;
     
@@ -88,8 +88,8 @@ private:
     com_ptr<BreadcrumbLayout> m_itemsRepeaterLayout{ nullptr };
 
     // Pointers to first and last items to update visual states
-    tracker_ref<winrt::BreadcrumbItem> m_ellipsisBreadcrumbItem { this };
-    tracker_ref<winrt::BreadcrumbItem> m_lastBreadcrumbItem { this };
+    tracker_ref<winrt::BreadcrumbBarItem> m_ellipsisBreadcrumbBarItem { this };
+    tracker_ref<winrt::BreadcrumbBarItem> m_lastBreadcrumbBarItem { this };
 
     // Index of the last focused item when breadcrumb lost focus
     int m_focusedIndex{ 1 };
@@ -98,5 +98,5 @@ private:
     static constexpr std::wstring_view s_itemsRepeaterPartName{ L"PART_ItemsRepeater"sv };
 
     // Automation Names
-    static constexpr std::wstring_view s_breadcrumbItemAutomationName{ L"BreadcrumbItem"sv };
+    static constexpr std::wstring_view s_breadcrumbItemAutomationName{ L"BreadcrumbBarItem"sv };
 };

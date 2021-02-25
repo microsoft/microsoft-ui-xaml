@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style x:Key="DefaultBreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
+    <Style x:Key="DefaultBreadcrumbBarItemStyle" TargetType="local:BreadcrumbBarItem">
         <Setter Property="Foreground" Value="{ThemeResource BreadcrumbForegroundBrush}" />
         <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
@@ -14,13 +14,13 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}"/>
+        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:BreadcrumbItem">
+                <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot" CornerRadius="{TemplateBinding CornerRadius}" >
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
@@ -112,7 +112,7 @@
 
                         <Button x:Name="PART_ItemButton"
                             x:DeferLoadStrategy="Lazy"
-                            AutomationProperties.Name="BreadcrumbItemButton"
+                            AutomationProperties.Name="BreadcrumbBarItemButton"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -127,7 +127,7 @@
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                                     <Setter Property="FontWeight" Value="Normal" />
-                                    <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}" />
+                                    <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}" />
                                     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                     <Setter Property="FocusVisualMargin" Value="-3" />
                                     <Setter Property="Padding" Value="0,0,0,0" />
@@ -226,7 +226,7 @@
                             </Button.Style>
 
                             <Button.Content>
-                                <Grid AutomationProperties.Name="BreadcrumbItemGrid" AutomationProperties.AccessibilityView="Raw">
+                                <Grid AutomationProperties.Name="BreadcrumbBarItemGrid" AutomationProperties.AccessibilityView="Raw">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="0px" />
@@ -234,7 +234,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <ContentPresenter x:Name="PART_ItemContentPresenter"
-                                        AutomationProperties.Name="BreadcrumbItemContentPresenter"
+                                        AutomationProperties.Name="BreadcrumbBarItemContentPresenter"
                                         Grid.Column="0"
                                         Content="{TemplateBinding Content}"
                                         ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -288,16 +288,16 @@
         </Setter>
     </Style>
     
-    <Style TargetType="local:Breadcrumb">
+    <Style TargetType="local:BreadcrumbBar">
         <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:Breadcrumb">
+                <ControlTemplate TargetType="local:BreadcrumbBar">
                     <local:ItemsRepeater x:Name="PART_ItemsRepeater" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource DefaultBreadcrumbItemStyle}"/>
+    <Style TargetType="local:BreadcrumbBarItem" BasedOn="{StaticResource DefaultBreadcrumbBarItemStyle}"/>
 </ResourceDictionary>

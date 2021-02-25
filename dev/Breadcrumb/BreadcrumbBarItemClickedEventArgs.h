@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "BreadcrumbItemClickedEventArgs.g.h"
+#include "BreadcrumbBarItemClickedEventArgs.g.h"
 
-class BreadcrumbItemClickedEventArgs :
-    public winrt::implementation::BreadcrumbItemClickedEventArgsT<BreadcrumbItemClickedEventArgs>
+class BreadcrumbBarItemClickedEventArgs :
+    public winrt::implementation::BreadcrumbBarItemClickedEventArgsT<BreadcrumbBarItemClickedEventArgs>
 {
 public:
     winrt::IInspectable Item();

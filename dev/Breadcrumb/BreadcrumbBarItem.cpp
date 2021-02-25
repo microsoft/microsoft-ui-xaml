@@ -3,38 +3,38 @@
 
 #include "pch.h"
 #include "common.h"
-#include "BreadcrumbItem.h"
+#include "BreadcrumbBarItem.h"
 #include "RuntimeProfiler.h"
 #include "ItemTemplateWrapper.h"
-#include "Breadcrumb.h"
-#include "BreadcrumbItemAutomationPeer.h"
+#include "BreadcrumbBar.h"
+#include "BreadcrumbBarItemAutomationPeer.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
-    CppWinRTActivatableClassWithBasicFactory(BreadcrumbItem)
+    CppWinRTActivatableClassWithBasicFactory(BreadcrumbBarItem)
 }
 
-#include "BreadcrumbItem.g.cpp"
+#include "BreadcrumbBarItem.g.cpp"
 
-BreadcrumbItem::BreadcrumbItem()
+BreadcrumbBarItem::BreadcrumbBarItem()
 {
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_BreadcrumbItem);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_BreadcrumbBarItem);
 
     SetDefaultStyleKey(this);
 }
 
-BreadcrumbItem::~BreadcrumbItem()
+BreadcrumbBarItem::~BreadcrumbBarItem()
 {
     RevokeListeners();
 }
 
-void BreadcrumbItem::HookListeners(bool forEllipsisDropDownItem)
+void BreadcrumbBarItem::HookListeners(bool forEllipsisDropDownItem)
 {
     if (auto const& thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
         if (!m_childPreviewKeyDownToken.value)
         {
-            m_childPreviewKeyDownToken = thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbItem::OnChildPreviewKeyDown });
+            m_childPreviewKeyDownToken = thisAsIUIElement7.PreviewKeyDown({ this, &BreadcrumbBarItem::OnChildPreviewKeyDown });
         }
     }
     else if (auto const& thisAsUIElement = this->try_as<winrt::UIElement>())
@@ -42,7 +42,7 @@ void BreadcrumbItem::HookListeners(bool forEllipsisDropDownItem)
         if (!m_keyDownRevoker)
         {
             m_keyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(thisAsUIElement,
-                { this, &BreadcrumbItem::OnChildPreviewKeyDown },
+                { this, &BreadcrumbBarItem::OnChildPreviewKeyDown },
                 true /*handledEventsToo*/);
         }
     }
@@ -51,16 +51,16 @@ void BreadcrumbItem::HookListeners(bool forEllipsisDropDownItem)
     {
         if (!m_isEnabledChangedRevoker)
         {
-            m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &BreadcrumbItem::OnIsEnabledChanged });
+            m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &BreadcrumbBarItem::OnIsEnabledChanged });
         }
     }
     else if (!m_flowDirectionChangedToken.value)
     {
-        m_flowDirectionChangedToken.value = RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbItem::OnFlowDirectionChanged });
+        m_flowDirectionChangedToken.value = RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &BreadcrumbBarItem::OnFlowDirectionChanged });
     }
 }
 
-void BreadcrumbItem::RevokeListeners()
+void BreadcrumbBarItem::RevokeListeners()
 {
     if (m_flowDirectionChangedToken.value)
     {
@@ -80,7 +80,7 @@ void BreadcrumbItem::RevokeListeners()
     m_keyDownRevoker.revoke();
 }
 
-void BreadcrumbItem::RevokePartsListeners()
+void BreadcrumbBarItem::RevokePartsListeners()
 {
     m_buttonLoadedRevoker.revoke();
     m_buttonClickRevoker.revoke();
@@ -91,7 +91,7 @@ void BreadcrumbItem::RevokePartsListeners()
     m_isEnabledButtonRevoker.revoke();
 }
 
-void BreadcrumbItem::OnApplyTemplate()
+void BreadcrumbBarItem::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
 
@@ -109,11 +109,11 @@ void BreadcrumbItem::OnApplyTemplate()
 
         if (const auto& button = m_button.get())
         {
-            m_buttonLoadedRevoker = button.Loaded(winrt::auto_revoke, { this, &BreadcrumbItem::OnLoadedEvent });
+            m_buttonLoadedRevoker = button.Loaded(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnLoadedEvent });
 
-            m_isPressedButtonRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
-            m_isPointerOverButtonRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
-            m_isEnabledButtonRevoker = RegisterPropertyChanged(button, winrt::Control::IsEnabledProperty(), { this, &BreadcrumbItem::OnVisualPropertyChanged });
+            m_isPressedButtonRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPressedProperty(), { this, &BreadcrumbBarItem::OnVisualPropertyChanged });
+            m_isPointerOverButtonRevoker = RegisterPropertyChanged(button, winrt::ButtonBase::IsPointerOverProperty(), { this, &BreadcrumbBarItem::OnVisualPropertyChanged });
+            m_isEnabledButtonRevoker = RegisterPropertyChanged(button, winrt::Control::IsEnabledProperty(), { this, &BreadcrumbBarItem::OnVisualPropertyChanged });
         }
 
         UpdateButtonCommonVisualState(false /*useTransitions*/);
@@ -123,7 +123,7 @@ void BreadcrumbItem::OnApplyTemplate()
     UpdateItemTypeVisualState();
 }
 
-void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void BreadcrumbBarItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -134,11 +134,11 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::Rout
         m_buttonClickRevoker.revoke();
         if (m_isEllipsisItem)
         {
-            m_buttonClickRevoker = button.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnEllipsisItemClick });
+            m_buttonClickRevoker = button.Click(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnEllipsisItemClick });
         }
         else
         {
-            m_buttonClickRevoker = button.Click(winrt::auto_revoke, { this, &BreadcrumbItem::OnBreadcrumbItemClick });
+            m_buttonClickRevoker = button.Click(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnBreadcrumbBarItemClick });
         }
     }
 
@@ -156,14 +156,14 @@ void BreadcrumbItem::OnLoadedEvent(const winrt::IInspectable&, const winrt::Rout
     }
 }
 
-void BreadcrumbItem::SetParentBreadcrumb(const winrt::Breadcrumb& parent)
+void BreadcrumbBarItem::SetParentBreadcrumb(const winrt::BreadcrumbBar& parent)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
     m_parentBreadcrumb.set(parent);
 }
 
-void BreadcrumbItem::SetEllipsisDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate)
+void BreadcrumbBarItem::SetEllipsisDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate)
 {
     if (auto const& dataTemplate = newDataTemplate.try_as<winrt::DataTemplate>())
     {
@@ -175,12 +175,12 @@ void BreadcrumbItem::SetEllipsisDropDownItemDataTemplate(const winrt::IInspectab
     }
 }
 
-void BreadcrumbItem::SetIndex(const uint32_t index)
+void BreadcrumbBarItem::SetIndex(const uint32_t index)
 {
     m_index = index;
 }
 
-void BreadcrumbItem::SetIsEllipsisDropDownItem(bool isEllipsisDropDownItem)
+void BreadcrumbBarItem::SetIsEllipsisDropDownItem(bool isEllipsisDropDownItem)
 {
     m_isEllipsisDropDownItem = isEllipsisDropDownItem;
 
@@ -189,27 +189,27 @@ void BreadcrumbItem::SetIsEllipsisDropDownItem(bool isEllipsisDropDownItem)
     UpdateItemTypeVisualState();
 }
 
-void BreadcrumbItem::RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index)
+void BreadcrumbBarItem::RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index)
 {
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
-        auto breadcrumbImpl = winrt::get_self<Breadcrumb>(breadcrumb);
+        auto breadcrumbImpl = winrt::get_self<BreadcrumbBar>(breadcrumb);
         breadcrumbImpl->RaiseItemClickedEvent(content, index);
     }
 }
 
-void BreadcrumbItem::OnBreadcrumbItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void BreadcrumbBarItem::OnBreadcrumbBarItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     RaiseItemClickedEvent(Content(), m_index - 1);
 }
 
-void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
+void BreadcrumbBarItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
-    if (const auto& ellipsisDropDownItem = args.Element().try_as<winrt::BreadcrumbItem>())
+    if (const auto& ellipsisDropDownItem = args.Element().try_as<winrt::BreadcrumbBarItem>())
     {
-        if (const auto& ellipsisDropDownItemImpl = winrt::get_self<BreadcrumbItem>(ellipsisDropDownItem))
+        if (const auto& ellipsisDropDownItemImpl = winrt::get_self<BreadcrumbBarItem>(ellipsisDropDownItem))
         {
             ellipsisDropDownItemImpl->SetIsEllipsisDropDownItem(true /*isEllipsisDropDownItem*/);
         }
@@ -218,21 +218,21 @@ void BreadcrumbItem::OnFlyoutElementPreparedEvent(winrt::ItemsRepeater sender, w
     UpdateFlyoutIndex(args.Element(), args.Index());
 }
 
-void BreadcrumbItem::OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
+void BreadcrumbBarItem::OnFlyoutElementIndexChangedEvent(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
     UpdateFlyoutIndex(args.Element(), args.NewIndex());
 }
 
-void BreadcrumbItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
+void BreadcrumbBarItem::OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
     UpdateInlineItemTypeVisualState(true /*useTransitions*/);
 }
 
-void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void BreadcrumbBarItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
     if (m_isEllipsisDropDownItem)
     {
@@ -263,13 +263,13 @@ void BreadcrumbItem::OnChildPreviewKeyDown(const winrt::IInspectable& sender, co
         }
         else
         {
-            OnBreadcrumbItemClick(nullptr, nullptr);
+            OnBreadcrumbBarItemClick(nullptr, nullptr);
         }
         args.Handled(true);
     }
 }
 
-void BreadcrumbItem::OnIsEnabledChanged(
+void BreadcrumbBarItem::OnIsEnabledChanged(
     const winrt::IInspectable&,
     const winrt::DependencyPropertyChangedEventArgs&)
 {
@@ -278,7 +278,7 @@ void BreadcrumbItem::OnIsEnabledChanged(
     UpdateEllipsisDropDownItemCommonVisualState(true /*useTransitions*/);
 }
 
-void BreadcrumbItem::UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index)
+void BreadcrumbBarItem::UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -288,7 +288,7 @@ void BreadcrumbItem::UpdateFlyoutIndex(const winrt::UIElement& element, const ui
         {
             const uint32_t itemCount = itemSourceView.Count();
 
-            if (const auto& ellipsisDropDownItemImpl = element.try_as<BreadcrumbItem>())
+            if (const auto& ellipsisDropDownItemImpl = element.try_as<BreadcrumbBarItem>())
             {
                 ellipsisDropDownItemImpl->SetEllipsisItem(*this);
                 ellipsisDropDownItemImpl->SetIndex(itemCount - index);
@@ -303,7 +303,7 @@ void BreadcrumbItem::UpdateFlyoutIndex(const winrt::UIElement& element, const ui
     }
 }
 
-winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource)
+winrt::IInspectable BreadcrumbBarItem::CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -326,7 +326,7 @@ winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collect
     return newItemsSource;
 }
 
-void BreadcrumbItem::OpenFlyout()
+void BreadcrumbBarItem::OpenFlyout()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -344,7 +344,7 @@ void BreadcrumbItem::OpenFlyout()
     }
 }
 
-void BreadcrumbItem::CloseFlyout()
+void BreadcrumbBarItem::CloseFlyout()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -354,19 +354,19 @@ void BreadcrumbItem::CloseFlyout()
     }
 }
 
-void BreadcrumbItem::OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+void BreadcrumbBarItem::OnVisualPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
     UpdateButtonCommonVisualState(true /*useTransitions*/);
 }
 
-void BreadcrumbItem::UpdateItemTypeVisualState()
+void BreadcrumbBarItem::UpdateItemTypeVisualState()
 {
     winrt::VisualStateManager::GoToState(*this, m_isEllipsisDropDownItem ? s_ellipsisDropDownStateName : s_inlineStateName, false /*useTransitions*/);
 }
 
-void BreadcrumbItem::UpdateEllipsisDropDownItemCommonVisualState(bool useTransitions)
+void BreadcrumbBarItem::UpdateEllipsisDropDownItemCommonVisualState(bool useTransitions)
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
@@ -392,7 +392,7 @@ void BreadcrumbItem::UpdateEllipsisDropDownItemCommonVisualState(bool useTransit
     winrt::VisualStateManager::GoToState(*this, commonVisualStateName, useTransitions);
 }
 
-void BreadcrumbItem::UpdateInlineItemTypeVisualState(bool useTransitions)
+void BreadcrumbBarItem::UpdateInlineItemTypeVisualState(bool useTransitions)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -426,7 +426,7 @@ void BreadcrumbItem::UpdateInlineItemTypeVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, visualStateName, useTransitions);
 }
 
-void BreadcrumbItem::UpdateButtonCommonVisualState(bool useTransitions)
+void BreadcrumbBarItem::UpdateButtonCommonVisualState(bool useTransitions)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -461,13 +461,13 @@ void BreadcrumbItem::UpdateButtonCommonVisualState(bool useTransitions)
     }
 }
 
-void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void BreadcrumbBarItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
     if (const auto& breadcrumb = m_parentBreadcrumb.get())
     {
-        if (const auto& breadcrumbImpl = breadcrumb.try_as<Breadcrumb>())
+        if (const auto& breadcrumbImpl = breadcrumb.try_as<BreadcrumbBar>())
         {
             const auto& hiddenElements = CloneEllipsisItemSource(breadcrumbImpl->HiddenElements());
 
@@ -486,7 +486,7 @@ void BreadcrumbItem::OnEllipsisItemClick(const winrt::IInspectable&, const winrt
     }
 }
 
-void BreadcrumbItem::SetPropertiesForLastItem()
+void BreadcrumbBarItem::SetPropertiesForLastItem()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -497,7 +497,7 @@ void BreadcrumbItem::SetPropertiesForLastItem()
     UpdateInlineItemTypeVisualState(false /*useTransitions*/);
 }
 
-void BreadcrumbItem::ResetVisualProperties()
+void BreadcrumbBarItem::ResetVisualProperties()
 {
     if (m_isEllipsisDropDownItem)
     {
@@ -521,7 +521,7 @@ void BreadcrumbItem::ResetVisualProperties()
     }
 }
 
-void BreadcrumbItem::InstantiateFlyout()
+void BreadcrumbBarItem::InstantiateFlyout()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -546,8 +546,8 @@ void BreadcrumbItem::InstantiateFlyout()
             m_ellipsisElementFactory->UserElementFactory(dataTemplate);
         }
 
-        m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementPreparedEvent });
-        m_ellipsisRepeaterElementIndexChangedRevoker = ellipsisItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbItem::OnFlyoutElementIndexChangedEvent });
+        m_ellipsisRepeaterElementPreparedRevoker = ellipsisItemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnFlyoutElementPreparedEvent });
+        m_ellipsisRepeaterElementIndexChangedRevoker = ellipsisItemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbBarItem::OnFlyoutElementIndexChangedEvent });
         
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
@@ -564,7 +564,7 @@ void BreadcrumbItem::InstantiateFlyout()
     }
 }
 
-void BreadcrumbItem::SetPropertiesForEllipsisItem()
+void BreadcrumbBarItem::SetPropertiesForEllipsisItem()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
@@ -577,19 +577,19 @@ void BreadcrumbItem::SetPropertiesForEllipsisItem()
     UpdateInlineItemTypeVisualState(false /*useTransitions*/);
 }
 
-void BreadcrumbItem::SetEllipsisItem(const winrt::BreadcrumbItem& ellipsisItem)
+void BreadcrumbBarItem::SetEllipsisItem(const winrt::BreadcrumbBarItem& ellipsisItem)
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
     m_ellipsisItem.set(ellipsisItem);
 }
 
-winrt::AutomationPeer BreadcrumbItem::OnCreateAutomationPeer()
+winrt::AutomationPeer BreadcrumbBarItem::OnCreateAutomationPeer()
 {
-    return winrt::make<BreadcrumbItemAutomationPeer>(*this);
+    return winrt::make<BreadcrumbBarItemAutomationPeer>(*this);
 }
 
-void BreadcrumbItem::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerEntered(args);
 
@@ -599,7 +599,7 @@ void BreadcrumbItem::OnPointerEntered(const winrt::PointerRoutedEventArgs& args)
     }
 }
 
-void BreadcrumbItem::OnPointerMoved(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerMoved(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerMoved(args);
 
@@ -609,7 +609,7 @@ void BreadcrumbItem::OnPointerMoved(const winrt::PointerRoutedEventArgs& args)
     }
 }
 
-void BreadcrumbItem::OnPointerExited(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerExited(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerExited(args);
 
@@ -619,7 +619,7 @@ void BreadcrumbItem::OnPointerExited(const winrt::PointerRoutedEventArgs& args)
     }
 }
 
-void BreadcrumbItem::OnPointerPressed(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerPressed(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerPressed(args);
 
@@ -649,7 +649,7 @@ void BreadcrumbItem::OnPointerPressed(const winrt::PointerRoutedEventArgs& args)
     }
 }
 
-void BreadcrumbItem::OnPointerReleased(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerReleased(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerReleased(args);
 
@@ -669,7 +669,7 @@ void BreadcrumbItem::OnPointerReleased(const winrt::PointerRoutedEventArgs& args
     }
 }
 
-void BreadcrumbItem::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerCanceled(args);
 
@@ -679,7 +679,7 @@ void BreadcrumbItem::OnPointerCanceled(const winrt::PointerRoutedEventArgs& args
     }
 }
 
-void BreadcrumbItem::OnPointerCaptureLost(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::OnPointerCaptureLost(const winrt::PointerRoutedEventArgs& args)
 {
     __super::OnPointerCaptureLost(args);
 
@@ -689,7 +689,7 @@ void BreadcrumbItem::OnPointerCaptureLost(const winrt::PointerRoutedEventArgs& a
     }
 }
 
-void BreadcrumbItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
@@ -705,7 +705,7 @@ void BreadcrumbItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& arg
     }
 }
 
-void BreadcrumbItem::ProcessPointerCanceled(const winrt::PointerRoutedEventArgs& args)
+void BreadcrumbBarItem::ProcessPointerCanceled(const winrt::PointerRoutedEventArgs& args)
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
@@ -720,7 +720,7 @@ void BreadcrumbItem::ProcessPointerCanceled(const winrt::PointerRoutedEventArgs&
     UpdateEllipsisDropDownItemCommonVisualState(true /*useTransitions*/);
 }
 
-void BreadcrumbItem::ResetTrackedPointerId()
+void BreadcrumbBarItem::ResetTrackedPointerId()
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
@@ -730,7 +730,7 @@ void BreadcrumbItem::ResetTrackedPointerId()
 // Returns False when the provided pointer Id matches the currently tracked Id.
 // When there is no currently tracked Id, sets the tracked Id to the provided Id and returns False.
 // Returns True when the provided pointer Id does not match the currently tracked Id.
-bool BreadcrumbItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& args)
+bool BreadcrumbBarItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& args)
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
@@ -747,14 +747,14 @@ bool BreadcrumbItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& args)
     return false;
 }
 
-void BreadcrumbItem::OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void BreadcrumbBarItem::OnClickEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     if (m_isEllipsisDropDownItem)
     {
         if (const auto& ellipsisItem = m_ellipsisItem.get())
         {
             // Once an element has been clicked, close the flyout
-            if (const auto& ellipsisItemImpl = winrt::get_self<BreadcrumbItem>(ellipsisItem))
+            if (const auto& ellipsisItemImpl = winrt::get_self<BreadcrumbBarItem>(ellipsisItem))
             {
                 ellipsisItemImpl->CloseFlyout();
                 ellipsisItemImpl->RaiseItemClickedEvent(Content(), m_index - 1);
@@ -767,6 +767,6 @@ void BreadcrumbItem::OnClickEvent(const winrt::IInspectable& sender, const winrt
     }
     else
     {
-        OnBreadcrumbItemClick(nullptr, nullptr);
+        OnBreadcrumbBarItemClick(nullptr, nullptr);
     }
 }
