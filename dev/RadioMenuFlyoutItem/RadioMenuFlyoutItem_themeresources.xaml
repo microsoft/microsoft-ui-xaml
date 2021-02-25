@@ -90,28 +90,28 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="AnimationRoot">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon
-                                x:Name="CheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE915;"
-                                FontSize="12"
-                                Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
-                                Opacity="0"
-                                Margin="0,0,16,0" />
-                            <TextBlock
-                                x:Name="TextBlock"
-                                Grid.Column="1"
-                                Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
-                                Foreground="{TemplateBinding Foreground}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <FontIcon
+                            x:Name="CheckGlyph"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Glyph="&#xE915;"
+                            FontSize="12"
+                            Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
+                            Opacity="0"
+                            Margin="0,0,16,0" />
+                        <TextBlock
+                            x:Name="TextBlock"
+                            Grid.Column="1"
+                            Text="{TemplateBinding Text}"
+                            TextTrimming="Clip"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
