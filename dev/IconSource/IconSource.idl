@@ -92,7 +92,7 @@ unsealed runtimeclass AnimatedIconSource : IconSource
 {
     AnimatedIconSource();
 
-    IRichAnimatedVisualSource Source{ get; set; };
+    IAnimatedVisualSource2 Source{ get; set; };
     IconSource FallbackIconSource{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty SourceProperty { get; };

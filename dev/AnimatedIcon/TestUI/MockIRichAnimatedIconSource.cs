@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
-using Controls_09_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Controls_09_Hamburger;
+using Controls_02_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource;
 
 namespace MUXControlsTestApp
 {
-    class MockIRichAnimatedIconSource : IRichAnimatedVisualSource
+    class MockIAnimatedIconSource2 : IAnimatedVisualSource2
     {
         Dictionary<string, double> markers = new Dictionary<string, double>();
 
-        IRichAnimatedVisualSource visual = new Controls_09_Hamburger();
-        public MockIRichAnimatedIconSource()
+        IAnimatedVisualSource2 visual = new Controls_02_Hamburger();
+        public MockIAnimatedIconSource2()
         {
             markers.Add("aTob_Start", 0.12345);
             markers.Add("aTob_End", 0.12345);
@@ -22,9 +22,9 @@ namespace MUXControlsTestApp
             markers.Add("dToe", 0.12345);
             markers.Add("f", 0.12345);
         }
-        public IAnimatedVisual TryCreateAnimatedIconVisual(Compositor compositor)
+        public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {
-            return visual.TryCreateAnimatedIconVisual(Window.Current.Compositor);
+            return visual.TryCreateAnimatedVisual(Window.Current.Compositor, out diagnostics);
         }
 
         public void SetColorProperty(string propertyName, Color value)
