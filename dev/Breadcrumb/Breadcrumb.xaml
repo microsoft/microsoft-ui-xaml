@@ -26,6 +26,10 @@
                 <ControlTemplate TargetType="local:BreadcrumbItem">
                     <Grid x:Name="PART_LayoutRoot" contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
 
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
                         <Grid.Resources>
                             <Style TargetType="FlyoutPresenter" x:Key="DefaultFlyoutPresenterStyleasd">
                                 <Setter Property="Background" Value="{ThemeResource MenuFlyoutPresenterBackground}" />
@@ -83,6 +87,7 @@
                                         <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
                                         <Setter Target="PART_LayoutRoot.Padding" Value="11,9,11,10"/>
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="4,2,4,2"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -329,17 +334,17 @@
                                 </Grid>
                             </Button.Content>
                         </Button>
-                        <!-- Margin="{ThemeResource BreadcrumbEllipsisDropDownItemMargin}" -->
+                        
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
-                            
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            HorizontalContentAlignment="Stretch"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Grid.Column="0"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
