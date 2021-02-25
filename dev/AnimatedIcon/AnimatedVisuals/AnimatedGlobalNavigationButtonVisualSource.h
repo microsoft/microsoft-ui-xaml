@@ -7,10 +7,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_02_Hamburger.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           Controls_02_Hamburger.json (146400 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (146400 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -20,9 +20,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "AnimatedVisuals\Controls_02_Hamburger.g.h"
+#include "AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.g.h"
 
-// Name:        Controls_02_Hamburger
+// Name:        AnimatedGlobalNavigationButtonVisualSource
 // Frame rate:  60 fps
 // Frame count: 195
 // Duration:    3250.0 mS
@@ -71,8 +71,8 @@
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
-class Controls_02_Hamburger
-    : public winrt::implementation::Controls_02_HamburgerT<Controls_02_Hamburger>
+class AnimatedGlobalNavigationButtonVisualSource
+    : public winrt::implementation::AnimatedGlobalNavigationButtonVisualSourceT<AnimatedGlobalNavigationButtonVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };

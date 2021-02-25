@@ -156,9 +156,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                animatedIcon.Source = new Controls_06_DownChevron_DropDown();
+                animatedIcon.Source = new AnimatedChevronDownSmallVisualSource();
                 AnimatedIcon.SetState(parentGrid, "Normal");
-                animatedIcon.Source = new Controls_04_Settings();
+                animatedIcon.Source = new AnimatedSettingsVisualSource();
                 AnimatedIcon.SetState(parentGrid, "PointerOver");
                 animatedIcon.Source = null;
                 AnimatedIcon.SetState(parentGrid, "");

@@ -4,84 +4,84 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedAcceptVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_06_DownChevron_DropDown.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_DownChevron_NavView.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedBackVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_SideChevron_TreeView.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedSettingsVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_05_Search.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedFindVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_04_Settings.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronDownSmallVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_03_Back.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_Hamburger.cpp">
+    <ClCompile Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.cpp">
       <Filter>AnimatedVisuals</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedAcceptVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_06_DownChevron_DropDown.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_DownChevron_NavView.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedBackVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_SideChevron_TreeView.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedSettingsVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_05_Search.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedFindVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_04_Settings.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronDownSmallVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_03_Back.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_Hamburger.h">
+    <ClInclude Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.h">
       <Filter>AnimatedVisuals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_01_Checkmark.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedAcceptVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_06_DownChevron_DropDown.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_07_DownChevron_NavView.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedBackVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_08_SideChevron_TreeView.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedSettingsVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_05_Search.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedFindVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_04_Settings.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronDownSmallVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_03_Back.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
-    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Controls_02_Hamburger.idl">
+    <Midl Include="D:\microsoft-ui-xaml\dev\AnimatedIcon\AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.idl">
       <Filter>AnimatedVisuals</Filter>
     </Midl>
   </ItemGroup>

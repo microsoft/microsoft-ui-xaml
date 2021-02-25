@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_04_Settings.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedSettingsVisualSource.json
 //       
 //       Input file:
-//           Controls_04_Settings.json (31178 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedSettingsVisualSource.json (31178 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_04_Settings.h"
+#include "AnimatedVisuals\AnimatedSettingsVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_04_Settings)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedSettingsVisualSource)
 }
-#include "AnimatedVisuals\Controls_04_Settings.g.cpp"
+#include "AnimatedVisuals\AnimatedSettingsVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_04_Settings_AnimatedVisual : public winrt::implements<Controls_04_Settings_AnimatedVisual,
+class AnimatedSettingsVisualSource_AnimatedVisual : public winrt::implements<AnimatedSettingsVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -754,7 +754,7 @@ class Controls_04_Settings_AnimatedVisual : public winrt::implements<Controls_04
     }
 
 public:
-    Controls_04_Settings_AnimatedVisual(
+    AnimatedSettingsVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -794,12 +794,12 @@ public:
     }
 };
 
-winrt::float4 Controls_04_Settings::ColorAsVector4(Color color)
+winrt::float4 AnimatedSettingsVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_04_Settings::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedSettingsVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -810,12 +810,12 @@ CompositionPropertySet Controls_04_Settings::EnsureThemeProperties(Compositor co
     return _themeProperties;
 }
 
-Color Controls_04_Settings::Foreground()
+Color AnimatedSettingsVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_04_Settings::Foreground(Color value)
+void AnimatedSettingsVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -824,23 +824,23 @@ void Controls_04_Settings::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_04_Settings::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_04_Settings::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedSettingsVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_04_Settings_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedSettingsVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_04_Settings_AnimatedVisual>(
+        return winrt::make<AnimatedSettingsVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -848,27 +848,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_04_Settings::TryC
     return nullptr;
 }
 
-double Controls_04_Settings::FrameCount()
+double AnimatedSettingsVisualSource::FrameCount()
 {
     return 75.0;
 }
 
-double Controls_04_Settings::Framerate()
+double AnimatedSettingsVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_04_Settings::Duration()
+TimeSpan AnimatedSettingsVisualSource::Duration()
 {
     return TimeSpan{ 12500000L };
 }
 
-double Controls_04_Settings::FrameToProgress(double frameNumber)
+double AnimatedSettingsVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 75.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_04_Settings::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedSettingsVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -889,7 +889,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_04_S
     ).GetView();
 }
 
-void Controls_04_Settings::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedSettingsVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -906,6 +906,6 @@ void Controls_04_Settings::SetColorProperty(hstring const& propertyName, Color v
     }
 }
 
-void Controls_04_Settings::SetScalarProperty(hstring const&, double)
+void AnimatedSettingsVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

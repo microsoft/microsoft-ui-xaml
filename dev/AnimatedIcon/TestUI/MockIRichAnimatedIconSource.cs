@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
-using Controls_02_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Controls_02_Hamburger;
+using Controls_02_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedGlobalNavigationButtonVisualSource;
 
 namespace MUXControlsTestApp
 {
@@ -22,9 +22,9 @@ namespace MUXControlsTestApp
             markers.Add("dToe", 0.12345);
             markers.Add("f", 0.12345);
         }
-        public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor)
+        public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {
-            return visual.TryCreateAnimatedVisual(Window.Current.Compositor);
+            return visual.TryCreateAnimatedVisual(Window.Current.Compositor, out diagnostics);
         }
 
         public void SetColorProperty(string propertyName, Color value)

@@ -1,16 +1,15 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
-interface IAnimatedVisualSource2
+interface IAnimatedVisualSource2 requires IAnimatedVisualSource
 {
-    IAnimatedVisual TryCreateAnimatedVisual(Windows.UI.Composition.Compositor compositor);
     Windows.Foundation.Collections.IMapView<String, Double> Markers { get; };
     void SetColorProperty(String propertyName, Windows.UI.Color value);
 };
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("Source")]
 unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement

@@ -346,7 +346,7 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 local:AnimatedIcon.State="NormalOff">
-                                <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource
                                         Glyph="{StaticResource ExpanderChevronDownGlyph}"
@@ -616,7 +616,7 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 local:AnimatedIcon.State="NormalOn">
-                                <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource
                                         Glyph="{StaticResource ExpanderChevronUpGlyph}"

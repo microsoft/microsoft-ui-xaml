@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_07_DownChevron_NavView.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronUpDownSmallVisualSource.json
 //       
 //       Input file:
-//           Controls_07_DownChevron_NavView.json (30205 bytes created 10:34-08:00 Feb 18 2021)
+//           AnimatedChevronUpDownSmallVisualSource.json (30205 bytes created 10:34-08:00 Feb 18 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_07_DownChevron_NavView.h"
+#include "AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_07_DownChevron_NavView)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedChevronUpDownSmallVisualSource)
 }
-#include "AnimatedVisuals\Controls_07_DownChevron_NavView.g.cpp"
+#include "AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_07_DownChevron_NavView_AnimatedVisual : public winrt::implements<Controls_07_DownChevron_NavView_AnimatedVisual,
+class AnimatedChevronUpDownSmallVisualSource_AnimatedVisual : public winrt::implements<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -1623,7 +1623,7 @@ class Controls_07_DownChevron_NavView_AnimatedVisual : public winrt::implements<
     }
 
 public:
-    Controls_07_DownChevron_NavView_AnimatedVisual(
+    AnimatedChevronUpDownSmallVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -1663,12 +1663,12 @@ public:
     }
 };
 
-winrt::float4 Controls_07_DownChevron_NavView::ColorAsVector4(Color color)
+winrt::float4 AnimatedChevronUpDownSmallVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_07_DownChevron_NavView::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedChevronUpDownSmallVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -1679,12 +1679,12 @@ CompositionPropertySet Controls_07_DownChevron_NavView::EnsureThemeProperties(Co
     return _themeProperties;
 }
 
-Color Controls_07_DownChevron_NavView::Foreground()
+Color AnimatedChevronUpDownSmallVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_07_DownChevron_NavView::Foreground(Color value)
+void AnimatedChevronUpDownSmallVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -1693,23 +1693,23 @@ void Controls_07_DownChevron_NavView::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_07_DownChevron_NavView::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_07_DownChevron_NavView::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronUpDownSmallVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_07_DownChevron_NavView_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedChevronUpDownSmallVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_07_DownChevron_NavView_AnimatedVisual>(
+        return winrt::make<AnimatedChevronUpDownSmallVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -1717,27 +1717,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_07_DownChevron_Na
     return nullptr;
 }
 
-double Controls_07_DownChevron_NavView::FrameCount()
+double AnimatedChevronUpDownSmallVisualSource::FrameCount()
 {
     return 200.0;
 }
 
-double Controls_07_DownChevron_NavView::Framerate()
+double AnimatedChevronUpDownSmallVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_07_DownChevron_NavView::Duration()
+TimeSpan AnimatedChevronUpDownSmallVisualSource::Duration()
 {
     return TimeSpan{ 33333333L };
 }
 
-double Controls_07_DownChevron_NavView::FrameToProgress(double frameNumber)
+double AnimatedChevronUpDownSmallVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 200.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_07_DownChevron_NavView::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevronUpDownSmallVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -1782,7 +1782,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_07_D
     ).GetView();
 }
 
-void Controls_07_DownChevron_NavView::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedChevronUpDownSmallVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -1799,6 +1799,6 @@ void Controls_07_DownChevron_NavView::SetColorProperty(hstring const& propertyNa
     }
 }
 
-void Controls_07_DownChevron_NavView::SetScalarProperty(hstring const&, double)
+void AnimatedChevronUpDownSmallVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

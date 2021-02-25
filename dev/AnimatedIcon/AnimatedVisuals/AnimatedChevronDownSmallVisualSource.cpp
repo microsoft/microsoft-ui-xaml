@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_06_DownChevron_DropDown.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronDownSmallVisualSource.json
 //       
 //       Input file:
-//           Controls_06_DownChevron_DropDown.json (11219 bytes created 10:34-08:00 Feb 18 2021)
+//           AnimatedChevronDownSmallVisualSource.json (11219 bytes created 10:34-08:00 Feb 18 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_06_DownChevron_DropDown.h"
+#include "AnimatedVisuals\AnimatedChevronDownSmallVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_06_DownChevron_DropDown)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedChevronDownSmallVisualSource)
 }
-#include "AnimatedVisuals\Controls_06_DownChevron_DropDown.g.cpp"
+#include "AnimatedVisuals\AnimatedChevronDownSmallVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_06_DownChevron_DropDown_AnimatedVisual : public winrt::implements<Controls_06_DownChevron_DropDown_AnimatedVisual,
+class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implements<AnimatedChevronDownSmallVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -621,7 +621,7 @@ class Controls_06_DownChevron_DropDown_AnimatedVisual : public winrt::implements
     }
 
 public:
-    Controls_06_DownChevron_DropDown_AnimatedVisual(
+    AnimatedChevronDownSmallVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -661,12 +661,12 @@ public:
     }
 };
 
-winrt::float4 Controls_06_DownChevron_DropDown::ColorAsVector4(Color color)
+winrt::float4 AnimatedChevronDownSmallVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_06_DownChevron_DropDown::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedChevronDownSmallVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -677,12 +677,12 @@ CompositionPropertySet Controls_06_DownChevron_DropDown::EnsureThemeProperties(C
     return _themeProperties;
 }
 
-Color Controls_06_DownChevron_DropDown::Foreground()
+Color AnimatedChevronDownSmallVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_06_DownChevron_DropDown::Foreground(Color value)
+void AnimatedChevronDownSmallVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -691,23 +691,23 @@ void Controls_06_DownChevron_DropDown::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_06_DownChevron_DropDown::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronDownSmallVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_06_DownChevron_DropDown::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronDownSmallVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_06_DownChevron_DropDown_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedChevronDownSmallVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_06_DownChevron_DropDown_AnimatedVisual>(
+        return winrt::make<AnimatedChevronDownSmallVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -715,27 +715,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_06_DownChevron_Dr
     return nullptr;
 }
 
-double Controls_06_DownChevron_DropDown::FrameCount()
+double AnimatedChevronDownSmallVisualSource::FrameCount()
 {
     return 50.0;
 }
 
-double Controls_06_DownChevron_DropDown::Framerate()
+double AnimatedChevronDownSmallVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_06_DownChevron_DropDown::Duration()
+TimeSpan AnimatedChevronDownSmallVisualSource::Duration()
 {
     return TimeSpan{ 8333333L };
 }
 
-double Controls_06_DownChevron_DropDown::FrameToProgress(double frameNumber)
+double AnimatedChevronDownSmallVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 50.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_06_DownChevron_DropDown::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevronDownSmallVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -756,7 +756,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_06_D
     ).GetView();
 }
 
-void Controls_06_DownChevron_DropDown::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedChevronDownSmallVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -773,6 +773,6 @@ void Controls_06_DownChevron_DropDown::SetColorProperty(hstring const& propertyN
     }
 }
 
-void Controls_06_DownChevron_DropDown::SetScalarProperty(hstring const&, double)
+void AnimatedChevronDownSmallVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

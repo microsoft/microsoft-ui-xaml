@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_02_Hamburger.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           Controls_02_Hamburger.json (146400 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (146400 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_02_Hamburger.h"
+#include "AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_02_Hamburger)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedGlobalNavigationButtonVisualSource)
 }
-#include "AnimatedVisuals\Controls_02_Hamburger.g.cpp"
+#include "AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_02_Hamburger_AnimatedVisual : public winrt::implements<Controls_02_Hamburger_AnimatedVisual,
+class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::implements<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -5480,7 +5480,7 @@ class Controls_02_Hamburger_AnimatedVisual : public winrt::implements<Controls_0
     }
 
 public:
-    Controls_02_Hamburger_AnimatedVisual(
+    AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -5520,12 +5520,12 @@ public:
     }
 };
 
-winrt::float4 Controls_02_Hamburger::ColorAsVector4(Color color)
+winrt::float4 AnimatedGlobalNavigationButtonVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_02_Hamburger::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedGlobalNavigationButtonVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -5536,12 +5536,12 @@ CompositionPropertySet Controls_02_Hamburger::EnsureThemeProperties(Compositor c
     return _themeProperties;
 }
 
-Color Controls_02_Hamburger::Foreground()
+Color AnimatedGlobalNavigationButtonVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_02_Hamburger::Foreground(Color value)
+void AnimatedGlobalNavigationButtonVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -5550,23 +5550,23 @@ void Controls_02_Hamburger::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_02_Hamburger::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_02_Hamburger::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedGlobalNavigationButtonVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_02_Hamburger_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_02_Hamburger_AnimatedVisual>(
+        return winrt::make<AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -5574,27 +5574,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_02_Hamburger::Try
     return nullptr;
 }
 
-double Controls_02_Hamburger::FrameCount()
+double AnimatedGlobalNavigationButtonVisualSource::FrameCount()
 {
     return 195.0;
 }
 
-double Controls_02_Hamburger::Framerate()
+double AnimatedGlobalNavigationButtonVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_02_Hamburger::Duration()
+TimeSpan AnimatedGlobalNavigationButtonVisualSource::Duration()
 {
     return TimeSpan{ 32500000L };
 }
 
-double Controls_02_Hamburger::FrameToProgress(double frameNumber)
+double AnimatedGlobalNavigationButtonVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 195.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_02_Hamburger::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedGlobalNavigationButtonVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -5639,7 +5639,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_02_H
     ).GetView();
 }
 
-void Controls_02_Hamburger::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedGlobalNavigationButtonVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -5656,6 +5656,6 @@ void Controls_02_Hamburger::SetColorProperty(hstring const& propertyName, Color 
     }
 }
 
-void Controls_02_Hamburger::SetScalarProperty(hstring const&, double)
+void AnimatedGlobalNavigationButtonVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

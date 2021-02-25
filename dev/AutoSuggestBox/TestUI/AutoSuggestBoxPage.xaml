@@ -17,7 +17,7 @@
         <AutoSuggestBox Header="AutoSuggestBox with header">
             <AutoSuggestBox.QueryIcon>
                 <controls:AnimatedIcon>
-                    <animatedvisuals:Controls_05_Search/>
+                    <animatedvisuals:AnimatedFindVisualSource/>
                 </controls:AnimatedIcon>
             </AutoSuggestBox.QueryIcon>
         </AutoSuggestBox>

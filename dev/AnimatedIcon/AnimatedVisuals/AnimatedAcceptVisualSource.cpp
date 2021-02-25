@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_01_Checkmark.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
 //       
 //       Input file:
-//           Controls_01_Checkmark.json (32315 bytes created 16:32-08:00 Nov 23 2020)
+//           AnimatedAcceptVisualSource.json (32315 bytes created 16:32-08:00 Nov 23 2020)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_01_Checkmark.h"
+#include "AnimatedVisuals\AnimatedAcceptVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_01_Checkmark)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedAcceptVisualSource)
 }
-#include "AnimatedVisuals\Controls_01_Checkmark.g.cpp"
+#include "AnimatedVisuals\AnimatedAcceptVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_01_Checkmark_AnimatedVisual,
+class AnimatedAcceptVisualSource_AnimatedVisual : public winrt::implements<AnimatedAcceptVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -1437,7 +1437,7 @@ class Controls_01_Checkmark_AnimatedVisual : public winrt::implements<Controls_0
     }
 
 public:
-    Controls_01_Checkmark_AnimatedVisual(
+    AnimatedAcceptVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -1477,12 +1477,12 @@ public:
     }
 };
 
-winrt::float4 Controls_01_Checkmark::ColorAsVector4(Color color)
+winrt::float4 AnimatedAcceptVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_01_Checkmark::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedAcceptVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -1493,12 +1493,12 @@ CompositionPropertySet Controls_01_Checkmark::EnsureThemeProperties(Compositor c
     return _themeProperties;
 }
 
-Color Controls_01_Checkmark::Foreground()
+Color AnimatedAcceptVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_01_Checkmark::Foreground(Color value)
+void AnimatedAcceptVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -1507,23 +1507,23 @@ void Controls_01_Checkmark::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedAcceptVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_01_Checkmark_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedAcceptVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_01_Checkmark_AnimatedVisual>(
+        return winrt::make<AnimatedAcceptVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -1531,27 +1531,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_01_Checkmark::Try
     return nullptr;
 }
 
-double Controls_01_Checkmark::FrameCount()
+double AnimatedAcceptVisualSource::FrameCount()
 {
     return 175.0;
 }
 
-double Controls_01_Checkmark::Framerate()
+double AnimatedAcceptVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_01_Checkmark::Duration()
+TimeSpan AnimatedAcceptVisualSource::Duration()
 {
     return TimeSpan{ 29166666L };
 }
 
-double Controls_01_Checkmark::FrameToProgress(double frameNumber)
+double AnimatedAcceptVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 175.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_01_Checkmark::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedAcceptVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -1599,7 +1599,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_01_C
     ).GetView();
 }
 
-void Controls_01_Checkmark::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedAcceptVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -1616,6 +1616,6 @@ void Controls_01_Checkmark::SetColorProperty(hstring const& propertyName, Color 
     }
 }
 
-void Controls_01_Checkmark::SetScalarProperty(hstring const&, double)
+void AnimatedAcceptVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

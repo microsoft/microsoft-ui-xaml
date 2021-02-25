@@ -245,7 +245,7 @@
                     <Button Margin="0,24,0,0">
                         <Button.Content>
                             <muxc:AnimatedIcon>
-                                <animatedvisuals:Controls_06_DownChevron_DropDown/>
+                                <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                             </muxc:AnimatedIcon>
                         </Button.Content>
                     </Button>

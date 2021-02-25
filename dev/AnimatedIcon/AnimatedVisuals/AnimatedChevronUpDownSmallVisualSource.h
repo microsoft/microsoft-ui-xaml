@@ -7,10 +7,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_07_DownChevron_NavView.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronUpDownSmallVisualSource.json
 //       
 //       Input file:
-//           Controls_07_DownChevron_NavView.json (30205 bytes created 10:34-08:00 Feb 18 2021)
+//           AnimatedChevronUpDownSmallVisualSource.json (30205 bytes created 10:34-08:00 Feb 18 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -20,7 +20,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "AnimatedVisuals\Controls_07_DownChevron_NavView.g.h"
+#include "AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.g.h"
 
 // Name:        Controls_07_DownChevron_Expand+NavView
 // Frame rate:  60 fps
@@ -71,8 +71,8 @@
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
-class Controls_07_DownChevron_NavView
-    : public winrt::implementation::Controls_07_DownChevron_NavViewT<Controls_07_DownChevron_NavView>
+class AnimatedChevronUpDownSmallVisualSource
+    : public winrt::implementation::AnimatedChevronUpDownSmallVisualSourceT<AnimatedChevronUpDownSmallVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };

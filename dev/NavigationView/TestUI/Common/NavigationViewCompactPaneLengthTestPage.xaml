@@ -37,7 +37,7 @@
                 <AutoSuggestBox AutomationProperties.Name="PaneAutoSuggestBox">
                     <AutoSuggestBox.QueryIcon>
                         <muxc:AnimatedIcon>
-                            <animatedvisuals:Controls_05_Search/>
+                            <animatedvisuals:AnimatedFindVisualSource/>
                         </muxc:AnimatedIcon>
                     </AutoSuggestBox.QueryIcon>
                 </AutoSuggestBox>

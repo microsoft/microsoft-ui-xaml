@@ -10,7 +10,7 @@
 #include "AnimatedIcon.properties.h"
 
 class AnimatedIcon :
-    public ReferenceTracker<AnimatedIcon, DeriveFromPathIconHelper_base, winrt::AnimatedIcon>,
+    public ReferenceTracker<AnimatedIcon, DeriveFromFontIconHelper_base, winrt::AnimatedIcon>,
     public AnimatedIconProperties
 {
 

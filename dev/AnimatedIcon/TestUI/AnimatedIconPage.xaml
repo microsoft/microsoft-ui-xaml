@@ -14,6 +14,7 @@
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
     <Page.Resources>
+        <SolidColorBrush x:Key="TestIconForeground" Color="#80808080"/>
         <Style TargetType="local:AnimatedIconHost">
             <Setter Property="Template">
                 <Setter.Value>
@@ -151,11 +152,11 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_Cut" Title="Controls_06_DownChevron_DropDown" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_Cut" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_06_DownChevron_DropDown/>
+                                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -169,11 +170,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_Queue" Title="Controls_06_DownChevron_DropDown" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_Queue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_06_DownChevron_DropDown/>
+                                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -187,11 +188,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_SpeedUpQueue" Title="Controls_06_DownChevron_DropDown" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_SpeedUpQueue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_06_DownChevron_DropDown/>
+                                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -208,11 +209,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_Cut" Title="Controls_07_DownChevron_NavView" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_Cut" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                            <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -226,11 +227,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_Queue" Title="Controls_07_DownChevron_NavView" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_Queue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                            <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -244,11 +245,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="DropDownIconNavView_SpeedUpQueue" Title="Controls_07_DownChevron_NavView" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_SpeedUpQueue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                            <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -265,11 +266,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="SideChevron_Cut" Title="Controls_08_SideChevron_TreeView" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_Cut" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_08_SideChevron_TreeView/>
+                                            <animatedvisuals:AnimatedChevronRightDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -283,11 +284,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="SideChevron_Queue" Title="Controls_08_SideChevron_TreeView" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_Queue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_08_SideChevron_TreeView/>
+                                            <animatedvisuals:AnimatedChevronRightDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -301,11 +302,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="SideChevron_SpeedUpQueue" Title="Controls_08_SideChevron_TreeView" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_SpeedUpQueue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_08_SideChevron_TreeView/>
+                                            <animatedvisuals:AnimatedChevronRightDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -322,11 +323,11 @@
                     
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="HamburgerIcon_Cut" Title="Controls_02_Hamburger" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_02_Hamburger/>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE700;"/>
@@ -337,11 +338,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="HamburgerIcon_Queue" Title="Controls_02_Hamburger" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_02_Hamburger/>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE700;"/>
@@ -352,11 +353,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:ToggleAnimatedIconHost x:Name="HamburgerIcon_SpeedUpQueue" Title="Controls_02_Hamburger" Background="DarkSlateGray">
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
                                 <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_02_Hamburger/>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE700;"/>
@@ -370,11 +371,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_Cut" Title="Controls_04_Settings" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_Cut" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_04_Settings/>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Setting"/>
@@ -385,11 +386,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_Queue" Title="Controls_04_Settings" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_Queue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_04_Settings/>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Setting"/>
@@ -400,11 +401,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_SpeedUpQueue" Title="Controls_04_Settings" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_SpeedUpQueue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_04_Settings/>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Setting"/>
@@ -418,11 +419,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_Cut" Title="Controls_03_Back" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_Cut" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_03_Back/>
+                                            <animatedvisuals:AnimatedBackVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -435,11 +436,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_Queue" Title="Controls_03_Back" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_Queue" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_03_Back/>
+                                            <animatedvisuals:AnimatedBackVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -452,11 +453,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_SpeedUpQueue" Title="Controls_03_Back" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_SpeedUpQueue" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_03_Back/>
+                                            <animatedvisuals:AnimatedBackVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -472,11 +473,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_Cut" Title="Controls_05_Search" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SearchIcon_Cut" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_05_Search/>
+                                            <animatedvisuals:AnimatedFindVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -487,11 +488,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_Queue" Title="Controls_05_Search" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SearchIcon_Queue" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_05_Search/>
+                                            <animatedvisuals:AnimatedFindVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -502,11 +503,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_SpeedUpQueue" Title="Controls_05_Search" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="SearchIcon_SpeedUpQueue" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <animatedvisuals:Controls_05_Search/>
+                                            <animatedvisuals:AnimatedFindVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>

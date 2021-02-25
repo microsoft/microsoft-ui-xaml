@@ -361,7 +361,7 @@ struct __declspec(empty_bases)DeriveFromBitmapIconHelper_base : winrt::Windows::
 };
 
 template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases)DeriveFromPathIconHelper_base : winrt::Windows::UI::Xaml::Controls::PathIconT<D, winrt::default_interface<T>, winrt::composable, I...>
+struct __declspec(empty_bases)DeriveFromFontIconHelper_base : winrt::Windows::UI::Xaml::Controls::FontIconT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;

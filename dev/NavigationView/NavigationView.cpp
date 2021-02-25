@@ -1293,7 +1293,7 @@ void NavigationView::CreateAndHookEventsToSettings()
 
     auto const settingsItem = m_settingsItem.get();
     auto const settingsIcon = winrt::AnimatedIcon();
-    settingsIcon.Source(winrt::Controls_04_Settings());
+    settingsIcon.Source(winrt::AnimatedSettingsVisualSource());
     auto const settingsFallbackIcon = winrt::SymbolIconSource();
     settingsFallbackIcon.Symbol(winrt::Symbol::Setting);
     settingsIcon.FallbackIconSource(settingsFallbackIcon);

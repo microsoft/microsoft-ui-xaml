@@ -827,7 +827,7 @@
                                                 Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
                                                 Margin="4"
                                                 contract7NotPresent:Visibility="Collapsed">
-                                <animatedvisuals:Controls_01_Checkmark/>
+                                <animatedvisuals:AnimatedAcceptVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"    

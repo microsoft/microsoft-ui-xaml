@@ -7,10 +7,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_01_Checkmark.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedAcceptVisualSource.json
 //       
 //       Input file:
-//           Controls_01_Checkmark.json (32315 bytes created 16:32-08:00 Nov 23 2020)
+//           AnimatedAcceptVisualSource.json (32315 bytes created 16:32-08:00 Nov 23 2020)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -20,9 +20,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "AnimatedVisuals\Controls_01_Checkmark.g.h"
+#include "AnimatedVisuals\AnimatedAcceptVisualSource.g.h"
 
-// Name:        Controls_01_Checkmark
+// Name:        AnimatedAcceptVisualSource
 // Frame rate:  60 fps
 // Frame count: 175
 // Duration:    2916.7 mS
@@ -74,8 +74,8 @@
 // |________________|____________|_______|_________________|
 // | Foreground     | Foreground | Color | #FF000000 Black |
 // ---------------------------------------------------------
-class Controls_01_Checkmark
-    : public winrt::implementation::Controls_01_CheckmarkT<Controls_01_Checkmark>
+class AnimatedAcceptVisualSource
+    : public winrt::implementation::AnimatedAcceptVisualSourceT<AnimatedAcceptVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x00, 0x00, 0x00 };

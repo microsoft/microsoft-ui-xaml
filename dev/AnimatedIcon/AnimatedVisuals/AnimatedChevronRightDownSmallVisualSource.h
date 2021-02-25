@@ -7,10 +7,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_08_SideChevron_TreeView.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronRightDownSmallVisualSource.json
 //       
 //       Input file:
-//           Controls_08_SideChevron_TreeView.json (33994 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedChevronRightDownSmallVisualSource.json (33994 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -20,9 +20,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "AnimatedVisuals\Controls_08_SideChevron_TreeView.g.h"
+#include "AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.g.h"
 
-// Name:        Controls_08_SideChevron_TreeViewExpand
+// Name:        AnimatedChevronRightDownSmallVisualSourceExpand
 // Frame rate:  60 fps
 // Frame count: 200
 // Duration:    3333.3 mS
@@ -71,8 +71,8 @@
 // |________________|____________|_______|_______________|
 // | Foreground     | Foreground | Color |   #FF060808   |
 // -------------------------------------------------------
-class Controls_08_SideChevron_TreeView
-    : public winrt::implementation::Controls_08_SideChevron_TreeViewT<Controls_08_SideChevron_TreeView>
+class AnimatedChevronRightDownSmallVisualSource
+    : public winrt::implementation::AnimatedChevronRightDownSmallVisualSourceT<AnimatedChevronRightDownSmallVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x06, 0x08, 0x08 };

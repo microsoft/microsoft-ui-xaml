@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_05_Search.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedFindVisualSource.json
 //       
 //       Input file:
-//           Controls_05_Search.json (17313 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedFindVisualSource.json (17313 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_05_Search.h"
+#include "AnimatedVisuals\AnimatedFindVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_05_Search)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedFindVisualSource)
 }
-#include "AnimatedVisuals\Controls_05_Search.g.cpp"
+#include "AnimatedVisuals\AnimatedFindVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_05_Search_AnimatedVisual : public winrt::implements<Controls_05_Search_AnimatedVisual,
+class AnimatedFindVisualSource_AnimatedVisual : public winrt::implements<AnimatedFindVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -960,7 +960,7 @@ class Controls_05_Search_AnimatedVisual : public winrt::implements<Controls_05_S
     }
 
 public:
-    Controls_05_Search_AnimatedVisual(
+    AnimatedFindVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -1000,12 +1000,12 @@ public:
     }
 };
 
-winrt::float4 Controls_05_Search::ColorAsVector4(Color color)
+winrt::float4 AnimatedFindVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_05_Search::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedFindVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -1016,12 +1016,12 @@ CompositionPropertySet Controls_05_Search::EnsureThemeProperties(Compositor comp
     return _themeProperties;
 }
 
-Color Controls_05_Search::Foreground()
+Color AnimatedFindVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_05_Search::Foreground(Color value)
+void AnimatedFindVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -1030,23 +1030,23 @@ void Controls_05_Search::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_05_Search::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_05_Search::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedFindVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_05_Search_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedFindVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_05_Search_AnimatedVisual>(
+        return winrt::make<AnimatedFindVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -1054,27 +1054,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_05_Search::TryCre
     return nullptr;
 }
 
-double Controls_05_Search::FrameCount()
+double AnimatedFindVisualSource::FrameCount()
 {
     return 50.0;
 }
 
-double Controls_05_Search::Framerate()
+double AnimatedFindVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_05_Search::Duration()
+TimeSpan AnimatedFindVisualSource::Duration()
 {
     return TimeSpan{ 8333333L };
 }
 
-double Controls_05_Search::FrameToProgress(double frameNumber)
+double AnimatedFindVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 50.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_05_Search::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedFindVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -1095,7 +1095,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_05_S
     ).GetView();
 }
 
-void Controls_05_Search::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedFindVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -1112,6 +1112,6 @@ void Controls_05_Search::SetColorProperty(hstring const& propertyName, Color val
     }
 }
 
-void Controls_05_Search::SetScalarProperty(hstring const&, double)
+void AnimatedFindVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

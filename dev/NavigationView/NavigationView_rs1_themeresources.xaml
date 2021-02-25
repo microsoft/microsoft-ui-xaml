@@ -375,7 +375,7 @@
                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                 AutomationProperties.AccessibilityView="Raw"
                                                 local:AnimatedIcon.State="NormalOff">
-                                <animatedvisuals:Controls_02_Hamburger/>
+                                <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                 <local:AnimatedIcon.FallbackIconSource>
                                     <local:FontIconSource Glyph="&#xE700;" FontSize="{TemplateBinding FontSize}"/>
                                 </local:AnimatedIcon.FallbackIconSource>
@@ -760,7 +760,7 @@
                                         VerticalAlignment="Center"
                                         AutomationProperties.AccessibilityView="Raw"
                                         local:AnimatedIcon.State="NormalOff">
-                                        <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                        <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                         <local:AnimatedIcon.FallbackIconSource>
                                             <local:FontIconSource
                                                 Foreground="{ThemeResource NavigationViewItemForeground}"
@@ -1095,7 +1095,7 @@
                                         VerticalAlignment="Center"
                                         AutomationProperties.AccessibilityView="Raw"
                                         local:AnimatedIcon.State="NormalOff">
-                                    <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                    <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                     <local:AnimatedIcon.FallbackIconSource>
                                         <local:FontIconSource
                                                 Foreground="{ThemeResource NavigationViewItemForeground}"
@@ -1344,7 +1344,7 @@
                                         VerticalAlignment="Center"
                                         AutomationProperties.AccessibilityView="Raw"
                                         local:AnimatedIcon.State="NormalOff">
-                                        <animatedvisuals:Controls_07_DownChevron_NavView/>
+                                        <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
                                         <local:AnimatedIcon.FallbackIconSource>
                                             <local:FontIconSource
                                                 Foreground="{ThemeResource NavigationViewItemForeground}"

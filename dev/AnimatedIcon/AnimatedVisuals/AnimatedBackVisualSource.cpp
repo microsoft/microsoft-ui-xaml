@@ -6,10 +6,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_03_Back.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedBackVisualSource.json
 //       
 //       Input file:
-//           Controls_03_Back.json (19124 bytes created 12:28-08:00 Feb 8 2021)
+//           AnimatedBackVisualSource.json (19124 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -44,7 +44,7 @@
 // | CompositionVisualSurface |     - |
 // ------------------------------------
 #include "pch.h"
-#include "AnimatedVisuals\Controls_03_Back.h"
+#include "AnimatedVisuals\AnimatedBackVisualSource.h"
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Composition.h>
@@ -64,9 +64,9 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 namespace winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals
 {
-    CppWinRTActivatableClassWithBasicFactory(Controls_03_Back)
+    CppWinRTActivatableClassWithBasicFactory(AnimatedBackVisualSource)
 }
-#include "AnimatedVisuals\Controls_03_Back.g.cpp"
+#include "AnimatedVisuals\AnimatedBackVisualSource.g.cpp"
 
 class CanvasGeometry : public winrt::implements<CanvasGeometry,
     IGeometrySource2D,
@@ -95,7 +95,7 @@ public:
         return E_NOTIMPL;
     }
 };
-class Controls_03_Back_AnimatedVisual : public winrt::implements<Controls_03_Back_AnimatedVisual,
+class AnimatedBackVisualSource_AnimatedVisual : public winrt::implements<AnimatedBackVisualSource_AnimatedVisual,
         winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual,
         IClosable>
 {
@@ -760,7 +760,7 @@ class Controls_03_Back_AnimatedVisual : public winrt::implements<Controls_03_Bac
     }
 
 public:
-    Controls_03_Back_AnimatedVisual(
+    AnimatedBackVisualSource_AnimatedVisual(
         Compositor compositor,
         CompositionPropertySet themeProperties)
         : _c{compositor}
@@ -800,12 +800,12 @@ public:
     }
 };
 
-winrt::float4 Controls_03_Back::ColorAsVector4(Color color)
+winrt::float4 AnimatedBackVisualSource::ColorAsVector4(Color color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
 
-CompositionPropertySet Controls_03_Back::EnsureThemeProperties(Compositor compositor)
+CompositionPropertySet AnimatedBackVisualSource::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -816,12 +816,12 @@ CompositionPropertySet Controls_03_Back::EnsureThemeProperties(Compositor compos
     return _themeProperties;
 }
 
-Color Controls_03_Back::Foreground()
+Color AnimatedBackVisualSource::Foreground()
 {
     return _themeForeground;
 }
 
-void Controls_03_Back::Foreground(Color value)
+void AnimatedBackVisualSource::Foreground(Color value)
 {
     _themeForeground = value;
     if (_themeProperties != nullptr)
@@ -830,23 +830,23 @@ void Controls_03_Back::Foreground(Color value)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_03_Back::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedBackVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor)
 {
     IInspectable diagnostics = nullptr;
     return TryCreateAnimatedVisual(compositor, diagnostics);
 }
 
-winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_03_Back::TryCreateAnimatedVisual(
+winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedBackVisualSource::TryCreateAnimatedVisual(
     Compositor const& compositor,
     IInspectable& diagnostics)
 {
     const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (Controls_03_Back_AnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedBackVisualSource_AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<Controls_03_Back_AnimatedVisual>(
+        return winrt::make<AnimatedBackVisualSource_AnimatedVisual>(
             compositor,
             _themeProperties);
     }
@@ -854,27 +854,27 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual Controls_03_Back::TryCreat
     return nullptr;
 }
 
-double Controls_03_Back::FrameCount()
+double AnimatedBackVisualSource::FrameCount()
 {
     return 50.0;
 }
 
-double Controls_03_Back::Framerate()
+double AnimatedBackVisualSource::Framerate()
 {
     return 60.0;
 }
 
-TimeSpan Controls_03_Back::Duration()
+TimeSpan AnimatedBackVisualSource::Duration()
 {
     return TimeSpan{ 8333333L };
 }
 
-double Controls_03_Back::FrameToProgress(double frameNumber)
+double AnimatedBackVisualSource::FrameToProgress(double frameNumber)
 {
     return frameNumber / 50.0;
 }
 
-winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_03_Back::Markers()
+winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedBackVisualSource::Markers()
 {
     return winrt::single_threaded_map<winrt::hstring, double>(
         std::map<winrt::hstring, double>
@@ -895,7 +895,7 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> Controls_03_B
     ).GetView();
 }
 
-void Controls_03_Back::SetColorProperty(hstring const& propertyName, Color value)
+void AnimatedBackVisualSource::SetColorProperty(hstring const& propertyName, Color value)
 {
     if (propertyName == L"Foreground")
     {
@@ -912,6 +912,6 @@ void Controls_03_Back::SetColorProperty(hstring const& propertyName, Color value
     }
 }
 
-void Controls_03_Back::SetScalarProperty(hstring const&, double)
+void AnimatedBackVisualSource::SetScalarProperty(hstring const&, double)
 {
 }

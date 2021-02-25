@@ -7,10 +7,10 @@
 //           7.0.0-build.101+g12769c43d3
 //       
 //       Command:
-//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile Controls_06_DownChevron_DropDown.json
+//           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedBackVisualSource.json
 //       
 //       Input file:
-//           Controls_06_DownChevron_DropDown.json (11219 bytes created 10:34-08:00 Feb 18 2021)
+//           AnimatedBackVisualSource.json (19124 bytes created 12:28-08:00 Feb 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -20,9 +20,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "common.h"
-#include "AnimatedVisuals\Controls_06_DownChevron_DropDown.g.h"
+#include "AnimatedVisuals\AnimatedBackVisualSource.g.h"
 
-// Name:        Controls_06_DownChevron_DropDown+SplitBtn
+// Name:        AnimatedBackVisualSource
 // Frame rate:  60 fps
 // Frame count: 50
 // Duration:    833.3 mS
@@ -47,8 +47,8 @@
 // |________________|____________|_______|_______________|
 // | Foreground     | Foreground | Color |   #FF060808   |
 // -------------------------------------------------------
-class Controls_06_DownChevron_DropDown
-    : public winrt::implementation::Controls_06_DownChevron_DropDownT<Controls_06_DownChevron_DropDown>
+class AnimatedBackVisualSource
+    : public winrt::implementation::AnimatedBackVisualSourceT<AnimatedBackVisualSource>
 {
     winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
     winrt::Windows::UI::Color _themeForeground{ 0xFF, 0x06, 0x08, 0x08 };
