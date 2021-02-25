@@ -4,8 +4,8 @@
 #include "pch.h"
 #include "common.h"
 #include "ItemTemplateWrapper.h"
-#include "BreadcrumbElementFactory.h"
-#include "BreadcrumbItem.h"
+#include "BreadcrumbBarElementFactory.h"
+#include "BreadcrumbBarItem.h"
 #include "ElementFactoryRecycleArgs.h"
 
 BreadcrumbElementFactory::BreadcrumbElementFactory()
@@ -29,7 +29,7 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
 {
     auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]()
     {
-        if (args.Data().try_as<winrt::BreadcrumbItem>())
+        if (args.Data().try_as<winrt::BreadcrumbBarItem>())
         {
             return args.Data();
         }
@@ -41,26 +41,26 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
         return args.Data();
     }();
   
-    // Element is already a BreadcrumbItem, so we just return it.
-    if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbItem>())
+    // Element is already a BreadcrumbBarItem, so we just return it.
+    if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbBarItem>())
     {
-        // When the list has not changed the returned item is still a BreadcrumbItem but the
+        // When the list has not changed the returned item is still a BreadcrumbBarItem but the
         // item is not reset, so we set the content here
         breadcrumbItem.Content(args.Data());
         return breadcrumbItem;
     }
 
-    auto const newBreadcrumbItem = winrt::BreadcrumbItem{};
-    newBreadcrumbItem.Content(args.Data());
+    auto const newBreadcrumbBarItem = winrt::BreadcrumbBarItem{};
+    newBreadcrumbBarItem.Content(args.Data());
 
     // If a user provided item template exists, we pass the template down
-    // to the ContentPresenter of the BreadcrumbItem.
+    // to the ContentPresenter of the BreadcrumbBarItem.
     if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
     {
-        newBreadcrumbItem.ContentTemplate(itemTemplateWrapper->Template());
+        newBreadcrumbBarItem.ContentTemplate(itemTemplateWrapper->Template());
     }
     
-    return newBreadcrumbItem;
+    return newBreadcrumbBarItem;
 }
 
 void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args)
@@ -70,9 +70,9 @@ void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRec
         bool isEllipsisDropDownItem = false; // Use of isEllipsisDropDownItem is workaround for
         // crashing bug when attempting to show ellipsis dropdown after clicking one of its items.
 
-        if (auto breadcrumbItem = element.try_as<winrt::BreadcrumbItem>())
+        if (auto breadcrumbItem = element.try_as<winrt::BreadcrumbBarItem>())
         {
-            auto breadcrumbItemImpl = winrt::get_self<BreadcrumbItem>(breadcrumbItem);
+            auto breadcrumbItemImpl = winrt::get_self<BreadcrumbBarItem>(breadcrumbItem);
             breadcrumbItemImpl->ResetVisualProperties();
 
             isEllipsisDropDownItem = breadcrumbItemImpl->IsEllipsisDropDownItem();

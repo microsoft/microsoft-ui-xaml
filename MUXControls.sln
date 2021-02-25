@@ -685,15 +685,15 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_TestUI", "dev\InfoB
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "InfoBar_InteractionTests", "dev\InfoBar\InteractionTests\InfoBar_InteractionTests.shproj", "{F470A64E-780E-45AA-ABB7-73A8734E51D7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Breadcrumb", "Breadcrumb", "{7E2FC35C-7484-4986-B6DA-F77254101A8F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BreadcrumbBar", "BreadcrumbBar", "{7E2FC35C-7484-4986-B6DA-F77254101A8F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Breadcrumb", "dev\Breadcrumb\Breadcrumb.vcxitems", "{563FE343-C6B0-447B-831A-B0CE3AA7A688}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BreadcrumbBar", "dev\Breadcrumb\Breadcrumb.vcxitems", "{563FE343-C6B0-447B-831A-B0CE3AA7A688}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Breadcrumb_APITests", "dev\Breadcrumb\APITests\Breadcrumb_APITests.shproj", "{48DF0143-C6A7-4184-BCC4-E59EAC5D49F1}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BreadcrumbBar_APITests", "dev\Breadcrumb\APITests\BreadcrumbBar_APITests.shproj", "{48DF0143-C6A7-4184-BCC4-E59EAC5D49F1}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Breadcrumb_TestUI", "dev\Breadcrumb\TestUI\Breadcrumb_TestUI.shproj", "{657121B7-3E4F-4C76-ABE2-0221A7997929}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BreadcrumbBar_TestUI", "dev\Breadcrumb\TestUI\BreadcrumbBar_TestUI.shproj", "{657121B7-3E4F-4C76-ABE2-0221A7997929}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Breadcrumb_InteractionTests", "dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.shproj", "{C1477378-4A7A-43E5-8499-98A23544CC8A}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BreadcrumbBar_InteractionTests", "dev\Breadcrumb\InteractionTests\BreadcrumbBar_InteractionTests.shproj", "{C1477378-4A7A-43E5-8499-98A23544CC8A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PipsPager", "PipsPager", "{CE0523BB-5799-4BA0-A461-0ABC6E19F969}"
 EndProject

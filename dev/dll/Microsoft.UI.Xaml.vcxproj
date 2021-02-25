@@ -157,7 +157,7 @@
     <Import Project="..\Breadcrumb\Breadcrumb.vcxitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true' Or $(FeatureBreadcrumbEnabled) == 'productOnly'" />
     <Import Project="..\PipsPager\PipsPager.vcxitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true' Or $(FeaturePipsPagerEnabled) == 'productOnly'" />
     <Import Project="..\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
-    <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'"/>
+    <Import Project="..\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -519,6 +519,12 @@
     <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
       <FileType>Document</FileType>
     </Page>
+    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar.xaml">
+      <FileType>Document</FileType>
+    </Page>
+    <Page Update="T:\repos\microsoft-ui-xaml\dev\Breadcrumb\BreadcrumbBar_themeresources.xaml">
+      <FileType>Document</FileType>
+    </Page>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
@@ -539,7 +545,7 @@
       <PRIResource Remove="@(PRIResource)" />
     </ItemGroup>
     <!-- Use CreateItem to expand all the ** to individual full paths -->
-    <CreateItem Include="@(PRIResourceExpanded -&gt; '%(Replaced)')">
+    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
       <Output TaskParameter="Include" ItemName="PRIResource" />
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />
@@ -573,7 +579,7 @@
     <ItemGroup>
       <UndefinedPage Include="@(SharedPage)" Condition="'%(Version)' == 'Undefined' Or '%(Type)' == 'Undefined'" />
     </ItemGroup>
-    <Error File="@(UndefinedPage -&gt; '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
+    <Error File="@(UndefinedPage -> '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
     <ItemGroup>
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '1'" />
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '2'" />
@@ -603,29 +609,11 @@
   <PropertyGroup>
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
-
   <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multiple times. 
         https://docs.microsoft.com/en-us/visualstudio/msbuild/item-metadata-in-task-batching?view=vs-2019 -->
-  <Target
-    Name="GenerateGenericResourceFile"
-    DependsOnTargets="CategorizeSharedPages"
-    BeforeTargets="$(GenerateXamlFileBeforeTargets)"
-    Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage);@(TwentyOneH1StylePage)"
-    Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)21h1_generic.xaml;$(OutDir)rs1_generic_v1.xaml;$(OutDir)rs2_generic_v1.xaml;$(OutDir)rs3_generic_v1.xaml;$(OutDir)rs4_generic_v1.xaml;$(OutDir)rs5_generic_v1.xaml;$(OutDir)19h1_generic_v1.xaml;$(OutDir)21h1_generic_v1.xaml;">
+  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage);@(TwentyOneH1StylePage)" Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;$(OutDir)21h1_generic.xaml;$(OutDir)rs1_generic_v1.xaml;$(OutDir)rs2_generic_v1.xaml;$(OutDir)rs3_generic_v1.xaml;$(OutDir)rs4_generic_v1.xaml;$(OutDir)rs5_generic_v1.xaml;$(OutDir)19h1_generic_v1.xaml;$(OutDir)21h1_generic_v1.xaml;">
     <Message Text="Generating generic resources XAML file " />
-    <BatchMergeXaml
-      RS1Pages="@(RS1StylePage)"
-      RS2Pages="@(RS2StylePage)"
-      RS3Pages="@(RS3StylePage)"
-      RS4Pages="@(RS4StylePage)"
-      RS5Pages="@(RS5StylePage)"
-      N19H1Pages="@(NineteenH1StylePage)"
-      T21H1Pages="@(TwentyOneH1StylePage)"
-      PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
-      PostfixForGeneratedFile="generic%(MergeXamlConfig.Postfix)"
-      OutputDirectory="$(OutDir)"
-      TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog"
-      TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" N19H1Pages="@(NineteenH1StylePage)" T21H1Pages="@(TwentyOneH1StylePage)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" PostfixForGeneratedFile="generic%(MergeXamlConfig.Postfix)" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
     <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
       PropertyGroup values are always evaluated even when their enclosing target is skipped,
@@ -635,26 +623,9 @@
       <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />
     </CreateProperty>
   </Target>
-  <Target
-    Name="GenerateThemeResourceFile"
-    DependsOnTargets="CategorizeSharedPages"
-    BeforeTargets="$(GenerateXamlFileBeforeTargets)"
-    Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage)"
-    Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)21h1_themeresources.xaml;$(OutDir)rs1_themeresources_v1.xaml;$(OutDir)rs2_themeresources_v1.xaml;$(OutDir)rs3_themeresources_v1.xaml;$(OutDir)rs4_themeresources_v1.xaml;$(OutDir)rs5_themeresources_v1.xaml;$(OutDir)19h1_themeresources_v1.xaml;$(OutDir)21h1_themeresources_v1.xaml;">
+  <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage)" Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;$(OutDir)21h1_themeresources.xaml;$(OutDir)rs1_themeresources_v1.xaml;$(OutDir)rs2_themeresources_v1.xaml;$(OutDir)rs3_themeresources_v1.xaml;$(OutDir)rs4_themeresources_v1.xaml;$(OutDir)rs5_themeresources_v1.xaml;$(OutDir)19h1_themeresources_v1.xaml;$(OutDir)21h1_themeresources_v1.xaml;">
     <Message Text="Generating theme resources XAML file  %(MergeXamlConfig.Message)" />
-    <BatchMergeXaml
-      RS1Pages="@(RS1ThemeResourcePage)"
-      RS2Pages="@(RS2ThemeResourcePage)"
-      RS3Pages="@(RS3ThemeResourcePage)"
-      RS4Pages="@(RS4ThemeResourcePage)"
-      RS5Pages="@(RS5ThemeResourcePage)"
-      N19H1Pages="@(NineteenH1ThemeResourcePage)"
-      T21H1Pages="@(TwentyOneH1ThemeResourcePage)"
-      PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
-      PostfixForGeneratedFile="themeresources%(MergeXamlConfig.Postfix)"
-      OutputDirectory="$(OutDir)"
-      TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog"
-      TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)" RS3Pages="@(RS3ThemeResourcePage)" RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)" N19H1Pages="@(NineteenH1ThemeResourcePage)" T21H1Pages="@(TwentyOneH1ThemeResourcePage)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" PostfixForGeneratedFile="themeresources%(MergeXamlConfig.Postfix)" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
       PropertyGroup values are always evaluated even when their enclosing target is skipped,
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -663,26 +634,9 @@
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
     </CreateProperty>
   </Target>
-  <Target
-    Name="GenerateCompactThemeResourceFile"
-    DependsOnTargets="CategorizeSharedPages"
-    BeforeTargets="$(GenerateXamlFileBeforeTargets)"
-    Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage);@(CompactPage)"
-    Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)21h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_v1.xaml;$(OutDir)rs2_compact_themeresources_v1.xaml;$(OutDir)rs3_compact_themeresources_v1.xaml;$(OutDir)rs4_compact_themeresources_v1.xaml;$(OutDir)rs5_compact_themeresources_v1.xaml;$(OutDir)19h1_compact_themeresources_v1.xaml;$(OutDir)21h1_compact_themeresources_v1.xaml;">
+  <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(TwentyOneH1ThemeResourcePage);@(CompactPage)" Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;$(OutDir)21h1_compact_themeresources.xaml;$(OutDir)rs1_compact_themeresources_v1.xaml;$(OutDir)rs2_compact_themeresources_v1.xaml;$(OutDir)rs3_compact_themeresources_v1.xaml;$(OutDir)rs4_compact_themeresources_v1.xaml;$(OutDir)rs5_compact_themeresources_v1.xaml;$(OutDir)19h1_compact_themeresources_v1.xaml;$(OutDir)21h1_compact_themeresources_v1.xaml;">
     <Message Text="Generating theme resources XAML file " />
-    <BatchMergeXaml
-      RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)"
-      RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)"
-      RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)"
-      RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)"
-      RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)"
-      N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)"
-      T21H1Pages="@(TwentyOneH1ThemeResourcePage);@(CompactPage)"
-      PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)"
-      PostfixForGeneratedFile="compact_themeresources%(MergeXamlConfig.Postfix)"
-      OutputDirectory="$(OutDir)"
-      TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog"
-      TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)" RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)" N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" T21H1Pages="@(TwentyOneH1ThemeResourcePage);@(CompactPage)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" PostfixForGeneratedFile="compact_themeresources%(MergeXamlConfig.Postfix)" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
       PropertyGroup values are always evaluated even when their enclosing target is skipped,
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -714,7 +668,7 @@
     <!-- The Name of the Local Assembly in Managed and Native -->
     <PropertyGroup>
       <LocalAssembly Condition="'$(LocalAssembly)' == '' and Exists(@(XamlIntermediateAssembly))">
-        @(XamlIntermediateAssembly-&gt;'%(Identity)')
+        @(XamlIntermediateAssembly->'%(Identity)')
       </LocalAssembly>
     </PropertyGroup>
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
@@ -767,41 +721,7 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '21h1_compact_themeresources_v1' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)\Themes\21h1_compact_themeresources_v1.xbf'))" />
     </ItemGroup>
     <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
-    <CompileXaml
-      Condition="'@(PageToBeCompiled)' != ''"
-      LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
-      Language="$(Language)"
-      RootNamespace="$(RootNamespace)"
-      XamlPages="@(PageToBeCompiled)"
-      XamlApplications="@(ApplicationDefinition)"
-      SdkXamlPages="@(SdkXamlItems)"
-      PriIndexName="$(PriIndexName)"
-      ProjectName="$(XamlProjectName)"
-      IsPass1="False"
-      DisableXbfGeneration="False"
-      CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)"
-      ClIncludeFiles="@(ClInclude)"
-      CIncludeDirectories="$(XamlCppIncludeDirectories)"
-      LocalAssembly="$(LocalAssembly)"
-      ProjectPath="$(MSBuildProjectFullPath)"
-      OutputPath="$(XamlGeneratedOutputPath)"
-      OutputType="$(OutputType)"
-      ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-      ReferenceAssemblies="@(XamlReferencesToCompile)"
-      ForceSharedStateShutdown="False"
-      CompileMode="RealBuildPass2"
-      XAMLFingerprint="$(XAMLFingerprint)"
-      FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)"
-      VCInstallDir="$(VCInstallDir)"
-      WindowsSdkPath="$(WindowsSdkPath)"
-      GenXbf32Path="$(GenXbfPath)"
-      SavedStateFile="$(XamlSavedStateFilePath)"
-      RootsLog="$(XamlRootsLog)"
-      SuppressWarnings="$(SuppressXamlWarnings)"
-      XamlResourceMapName="$(XamlResourceMapName)"
-      XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
-      TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)"
-      PlatformXmlDir="$(PlatformXmlDir)">
+    <CompileXaml Condition="'@(PageToBeCompiled)' != ''" LanguageSourceExtension="$(DefaultLanguageSourceExtension)" Language="$(Language)" RootNamespace="$(RootNamespace)" XamlPages="@(PageToBeCompiled)" XamlApplications="@(ApplicationDefinition)" SdkXamlPages="@(SdkXamlItems)" PriIndexName="$(PriIndexName)" ProjectName="$(XamlProjectName)" IsPass1="False" DisableXbfGeneration="False" CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)" ClIncludeFiles="@(ClInclude)" CIncludeDirectories="$(XamlCppIncludeDirectories)" LocalAssembly="$(LocalAssembly)" ProjectPath="$(MSBuildProjectFullPath)" OutputPath="$(XamlGeneratedOutputPath)" OutputType="$(OutputType)" ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)" ReferenceAssemblies="@(XamlReferencesToCompile)" ForceSharedStateShutdown="False" CompileMode="RealBuildPass2" XAMLFingerprint="$(XAMLFingerprint)" FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)" VCInstallDir="$(VCInstallDir)" WindowsSdkPath="$(WindowsSdkPath)" GenXbf32Path="$(GenXbfPath)" SavedStateFile="$(XamlSavedStateFilePath)" RootsLog="$(XamlRootsLog)" SuppressWarnings="$(SuppressXamlWarnings)" XamlResourceMapName="$(XamlResourceMapName)" XamlComponentResourceLocation="$(XamlComponentResourceLocation)" TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)" PlatformXmlDir="$(PlatformXmlDir)">
       <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
       <Output Condition=" '$(ManagedAssembly)'=='false' " ItemName="XamlGFiles" TaskParameter="GeneratedCodeFiles" />
       <!-- FileWrites is used in Microsoft.Common.Targets for "Clean" build -->
@@ -838,7 +758,7 @@
   <!-- Merge all idl files into one -->
   <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
     <PropertyGroup>
-      <MidlLines>@(Midl-&gt;'#include &lt;%(FullPath)&gt;', '
+      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
 ')</MidlLines>
     </PropertyGroup>
     <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
@@ -859,8 +779,8 @@
   <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(IntDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories-&gt;'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
-      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs-&gt;'-i "%(Identity)"', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs->'-i "%(Identity)"', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
     </PropertyGroup>
     <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
   </Target>
