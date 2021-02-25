@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 interface IRichAnimatedVisualSource
 {
@@ -10,7 +10,7 @@ interface IRichAnimatedVisualSource
     void SetColorProperty(String propertyName, Windows.UI.Color value);
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
 {

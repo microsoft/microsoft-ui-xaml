@@ -301,7 +301,7 @@
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="PaneToggleButtonIconWidthColumn" Width="{ThemeResource PaneToggleButtonWidth}"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -358,22 +358,22 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Viewbox
-                            x:Name="IconHost"
-                            Width="16"
-                            Height="16"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw">
+                        <Border Width="{TemplateBinding MinWidth}">
+                            <Viewbox
+                                x:Name="IconHost"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AutomationProperties.AccessibilityView="Raw">
+                                <TextBlock
+                                    x:Name="Icon"
+                                    Text="&#xE700;"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    AutomationProperties.AccessibilityView="Raw"/>
+                            </Viewbox>
+                        </Border>
 
-                            <TextBlock
-                                x:Name="Icon"
-                                Text="&#xE700;"
-                                FontSize="{TemplateBinding FontSize}"
-                                AutomationProperties.AccessibilityView="Raw"/>
-
-                        </Viewbox>
-                        
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             VerticalContentAlignment="Center"
@@ -691,18 +691,20 @@
                                 x:Name="ContentGrid"
                                 MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewCompactPaneLength}" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Viewbox x:Name="IconBox"
-                                Height="16"
-                                Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
-                                    <ContentPresenter 
-                                    x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}" />
-                                </Viewbox>
+                                <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconColumnWidth}">
+                                    <Viewbox x:Name="IconBox"
+                                        Height="16"
+                                        Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
+                                        <ContentPresenter 
+                                            x:Name="Icon" 
+                                            Content="{TemplateBinding Icon}" />
+                                    </Viewbox>
+                                </Border>
 
                                 <ContentPresenter
                                     x:Name="ContentPresenter"

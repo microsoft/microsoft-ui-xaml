@@ -25,80 +25,56 @@
             <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" x:Name="BreadcrumbContainerColumn"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Vertical" Padding="12"
-                            Background="{ThemeResource SystemChromeLowColor}"
-                            MinWidth="250" Grid.Column="0">
+                    Background="{ThemeResource SystemChromeLowColor}"
+                    MinWidth="250" Grid.Column="0">
                     <TextBlock Text="Breadcrumb control width" Style="{ThemeResource StandardGroupHeader}"/>
                     <Slider x:Name="WidthSlider" Minimum="100" Maximum="700" Value="700" AutomationProperties.Name="WidthSlider" ValueChanged="WidthSlider_ValueChanged"/>
 
                     <CheckBox x:Name="RTLCheckbox" AutomationProperties.Name="RightToLeftCheckbox" Content="Breadcrumb is RTL" Checked="RTL_Checked" Unchecked="RTL_Unchecked" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Last clicked element: " />
+                        <TextBlock x:Name="LastClickedItem" AutomationProperties.Name="LastClickedItem" Text="" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Last clicked element index: " />
+                        <TextBlock x:Name="LastClickedItemIndex" AutomationProperties.Name="LastClickedItemIndex" Text="-1" />
+                    </StackPanel>
                 </StackPanel>
 
-                <controls:TwoPaneView x:Name="TwoPaneView"
-                                      AutomationProperties.Name="TwoPaneViewLarge"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      Grid.Column="1">
-                    <controls:TwoPaneView.Pane1>
-                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="{ThemeResource SystemChromeDisabledHighColor}">
+                <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
+                    x:Name="BreadcrumbControl"
+                    AutomationProperties.Name="BreadcrumbControl"
+                    ItemClicked="BreadcrumbControl_ItemClicked"
+                    Grid.Column="1">
+                    <controls:Breadcrumb.ItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <controls:BreadcrumbItem Content="{Binding}">
+                                <controls:BreadcrumbItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </controls:BreadcrumbItem.ContentTemplate>
+                            </controls:BreadcrumbItem>
+                        </DataTemplate>
+                    </controls:Breadcrumb.ItemTemplate>
+                </controls:Breadcrumb>
 
-                            <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderThickness="5" Padding="7">
-                                <Grid>
-
-                                    <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
-                                                         x:Name="BreadCrumbControl"
-                                                         ItemClicked="BreadCrumbControl_ItemClicked"
-                                                         Grid.Column="0">
-                                        <controls:Breadcrumb.ItemTemplate>
-                                            <DataTemplate x:DataType="local2:TreeNode">
-                                                <controls:BreadcrumbItem Content="{Binding}">
-                                                    <controls:BreadcrumbItem.ContentTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </controls:BreadcrumbItem.ContentTemplate>
-                                                </controls:BreadcrumbItem>
-                                            </DataTemplate>
-                                        </controls:Breadcrumb.ItemTemplate>
-
-                                        <controls:Breadcrumb.DropdownItemTemplate>
-                                            <DataTemplate x:DataType="local2:TreeNode">
-                                                <Button Content="{Binding}" Background="Transparent"
-                                                        HorizontalAlignment="Stretch" >
-                                                    <Button.ContentTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" />
-                                                        </DataTemplate>
-                                                    </Button.ContentTemplate>
-                                                </Button>
-                                            </DataTemplate>
-                                        </controls:Breadcrumb.DropdownItemTemplate>
-
-                                    </controls:Breadcrumb>
-                                </Grid>
-                            </Border>
-
-                        </Grid>
-                    </controls:TwoPaneView.Pane1>
-
-                    <controls:TwoPaneView.Pane2>
-                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="{ThemeResource SystemListAccentHighColor}">
-                            <Border x:Name="Content2Border" AutomationProperties.Name="Content2Border" BorderThickness="5" Padding="7">
-                                <Grid>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </controls:TwoPaneView.Pane2>
-                </controls:TwoPaneView>
+                <Grid Background="Gray" Grid.Column="2" />
             </Grid>
         </StackPanel>
 
         <StackPanel Grid.Row="1">
             <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1" >
-                <controls:ItemsRepeater x:Name="ChildrenView" ItemsSource="{x:Bind currentNodeChildrenList}">
+                <controls:ItemsRepeater x:Name="ChildrenItemsRepeater"
+                    ItemsSource="{x:Bind currentNodeChildrenList}"
+                    ElementPrepared="Child_ElementPrepared">
                     <controls:ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
                             <Button Content="{Binding}" Click="ItemsRepeater_ButtonClick">
@@ -122,9 +98,9 @@
                 </Grid.ColumnDefinitions>
 
                 <controls:Breadcrumb ItemsSource="{x:Bind breadCrumbList}"
-                                                         x:Name="BreadCrumbControl2"
-                                                         ItemClicked="BreadCrumbControl_ItemClicked"
-                                                         Grid.Column="0">
+                    x:Name="BreadcrumbControl2"
+                    ItemClicked="BreadcrumbControl_ItemClicked"
+                    Grid.Column="0">
                     <controls:Breadcrumb.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
                             <controls:BreadcrumbItem Content="{Binding}">
@@ -136,19 +112,6 @@
                             </controls:BreadcrumbItem>
                         </DataTemplate>
                     </controls:Breadcrumb.ItemTemplate>
-
-                    <controls:Breadcrumb.DropdownItemTemplate>
-                        <DataTemplate x:DataType="local2:TreeNode">
-                            <Button Content="{Binding}" Background="Transparent"
-                                                        HorizontalAlignment="Stretch" >
-                                <Button.ContentTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
-                                    </DataTemplate>
-                                </Button.ContentTemplate>
-                            </Button>
-                        </DataTemplate>
-                    </controls:Breadcrumb.DropdownItemTemplate>
                 </controls:Breadcrumb>
             </Grid>
         </StackPanel>

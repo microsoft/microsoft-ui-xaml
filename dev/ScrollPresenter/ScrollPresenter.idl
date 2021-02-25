@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingContentOrientation
 {
@@ -11,7 +11,7 @@ enum ScrollingContentOrientation
     Both = 3,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingInteractionState
 {
@@ -21,7 +21,7 @@ enum ScrollingInteractionState
     Animation = 3,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingScrollMode
 {
@@ -32,7 +32,7 @@ enum ScrollingScrollMode
 #endif
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingZoomMode
 {
@@ -40,7 +40,7 @@ enum ScrollingZoomMode
     Disabled = 1,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingChainMode
 {
@@ -49,7 +49,7 @@ enum ScrollingChainMode
     Never = 2,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingRailMode
 {
@@ -57,7 +57,7 @@ enum ScrollingRailMode
     Disabled = 1,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [flags]
 enum ScrollingInputKinds
@@ -71,7 +71,7 @@ enum ScrollingInputKinds
     All = 255,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingAnimationMode
 { 
@@ -80,7 +80,7 @@ enum ScrollingAnimationMode
    Auto = 2,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum ScrollingSnapPointsMode
 {
@@ -88,7 +88,7 @@ enum ScrollingSnapPointsMode
     Ignore = 1,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -101,7 +101,7 @@ unsealed runtimeclass ScrollingScrollOptions
     ScrollingSnapPointsMode SnapPointsMode { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -114,7 +114,7 @@ unsealed runtimeclass ScrollingZoomOptions
     ScrollingSnapPointsMode SnapPointsMode { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingScrollAnimationStartingEventArgs
 {
@@ -124,7 +124,7 @@ runtimeclass ScrollingScrollAnimationStartingEventArgs
     Int32 CorrelationId { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingZoomAnimationStartingEventArgs
 {
@@ -135,21 +135,21 @@ runtimeclass ScrollingZoomAnimationStartingEventArgs
     Int32 CorrelationId { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingScrollCompletedEventArgs
 {
     Int32 CorrelationId { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingZoomCompletedEventArgs
 {
     Int32 CorrelationId { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingBringingIntoViewEventArgs
 {
@@ -161,7 +161,7 @@ runtimeclass ScrollingBringingIntoViewEventArgs
     Boolean Cancel { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollingAnchorRequestedEventArgs
 {

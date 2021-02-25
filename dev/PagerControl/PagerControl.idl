@@ -1,6 +1,6 @@
 ﻿namespace MU_XC_NAMESPACE
 {
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum PagerControlDisplayMode
 {
@@ -10,7 +10,7 @@ enum PagerControlDisplayMode
     ButtonPanel,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum PagerControlButtonVisibility
 {
@@ -19,7 +19,7 @@ enum PagerControlButtonVisibility
     Hidden,
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass PagerControlSelectedIndexChangedEventArgs
 {
@@ -27,7 +27,7 @@ runtimeclass PagerControlSelectedIndexChangedEventArgs
     Int32 PreviousPageIndex{get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 unsealed runtimeclass PagerControlTemplateSettings : Windows.UI.Xaml.DependencyObject
@@ -38,7 +38,7 @@ unsealed runtimeclass PagerControlTemplateSettings : Windows.UI.Xaml.DependencyO
     Windows.Foundation.Collections.IVector<Object> NumberPanelItems { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]

@@ -4,9 +4,6 @@
 #include "pch.h"
 #include "common.h"
 #include "ItemTemplateWrapper.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-#include "Utils.h"
 #include "BreadcrumbElementFactory.h"
 #include "BreadcrumbItem.h"
 #include "ElementFactoryRecycleArgs.h"
@@ -30,8 +27,8 @@ void BreadcrumbElementFactory::UserElementFactory(const winrt::IInspectable& new
 
 winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFactoryGetArgs& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
-
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]()
+    {
         if (args.Data().try_as<winrt::BreadcrumbItem>())
         {
             return args.Data();
@@ -47,6 +44,9 @@ winrt::UIElement BreadcrumbElementFactory::GetElementCore(const winrt::ElementFa
     // Element is already a BreadcrumbItem, so we just return it.
     if (auto const breadcrumbItem = newContent.try_as<winrt::BreadcrumbItem>())
     {
+        // When the list has not changed the returned item is still a BreadcrumbItem but the
+        // item is not reset, so we set the content here
+        breadcrumbItem.Content(args.Data());
         return breadcrumbItem;
     }
 
@@ -67,12 +67,20 @@ void BreadcrumbElementFactory::RecycleElementCore(const winrt::ElementFactoryRec
 {
     if (auto element = args.Element())
     {
+        bool isEllipsisDropDownItem = false; // Use of isEllipsisDropDownItem is workaround for
+        // crashing bug when attempting to show ellipsis dropdown after clicking one of its items.
+
         if (auto breadcrumbItem = element.try_as<winrt::BreadcrumbItem>())
         {
             auto breadcrumbItemImpl = winrt::get_self<BreadcrumbItem>(breadcrumbItem);
             breadcrumbItemImpl->ResetVisualProperties();
+
+            isEllipsisDropDownItem = breadcrumbItemImpl->IsEllipsisDropDownItem();
+        }
+
+        if (m_itemTemplateWrapper && isEllipsisDropDownItem)
+        {
+            m_itemTemplateWrapper.RecycleElement(args);
         }
     }
-
-    m_itemTemplateWrapper.RecycleElement(args);
 }
