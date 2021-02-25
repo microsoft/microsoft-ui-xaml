@@ -48,6 +48,11 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)InkToolbar_themeresources.xaml" >
+	  <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+	</Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
@@ -168,7 +173,7 @@
     <Page Include="$(MSBuildThisFileDirectory)TextBox_themeresources.xaml">
       <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
-      <Type>ThemeResources</Type> 
+      <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TextBox_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
