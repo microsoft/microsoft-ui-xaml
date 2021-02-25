@@ -423,8 +423,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
             TrySetForegroundProperty(source);
 
             winrt::IInspectable diagnostics{};
-            auto const visual = static_cast<winrt::IAnimatedVisual>(nullptr); //source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
-            //auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
+            auto const visual = source.TryCreateAnimatedVisual(winrt::Window::Current().Compositor(), diagnostics);
             m_animatedVisual.set(visual);
             return visual ? visual.RootVisual() : nullptr;
         }

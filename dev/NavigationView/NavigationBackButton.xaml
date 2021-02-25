@@ -83,7 +83,7 @@
                             <animatedvisuals:AnimatedBackVisualSource/>
                             <local:AnimatedIcon.FallbackIconSource>
                                 <local:FontIconSource
-                                    FontSize="{TemplateBinding FontSize}"
+                                    FontSize="16"
                                     FontFamily="{TemplateBinding FontFamily}"
                                     Glyph="&#xE72B;"
                                     MirroredWhenRightToLeft="True"/>
