@@ -18,6 +18,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Breadcrumb.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItemAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.h" />
@@ -28,10 +29,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Breadcrumb.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbElementFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbItemClickedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Breadcrumb.xaml">
@@ -45,5 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)Breadcrumb.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)BreadcrumbAutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum InfoBarCloseReason
 {
@@ -9,7 +9,7 @@ enum InfoBarCloseReason
     Programmatic = 1
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum InfoBarSeverity
 {
@@ -19,14 +19,14 @@ enum InfoBarSeverity
     Error = 3,
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBarClosedEventArgs
 {
     InfoBarCloseReason Reason { get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBarClosingEventArgs
 {
@@ -34,7 +34,7 @@ unsealed runtimeclass InfoBarClosingEventArgs
     Boolean Cancel { get; set; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBarTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -45,7 +45,7 @@ unsealed runtimeclass InfoBarTemplateSettings : Windows.UI.Xaml.DependencyObject
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("Content")]
 unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
@@ -111,7 +111,7 @@ unsealed runtimeclass InfoBar : Windows.UI.Xaml.Controls.Control
 namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBarPanel : Windows.UI.Xaml.Controls.Panel
 {
@@ -138,7 +138,7 @@ unsealed runtimeclass InfoBarPanel : Windows.UI.Xaml.Controls.Panel
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {

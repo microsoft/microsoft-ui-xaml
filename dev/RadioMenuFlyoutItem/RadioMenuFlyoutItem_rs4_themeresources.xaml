@@ -26,12 +26,7 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
 
                                 <VisualState x:Name="PointerOver">
 
@@ -48,7 +43,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="KeyboardAcceleratorTextBlock" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -67,7 +61,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="KeyboardAcceleratorTextBlock" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="AnimationRoot" />
                                     </Storyboard>
                                 </VisualState>
 

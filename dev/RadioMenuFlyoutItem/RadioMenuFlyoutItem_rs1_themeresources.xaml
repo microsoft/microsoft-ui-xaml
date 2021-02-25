@@ -25,11 +25,7 @@
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Background">
@@ -41,7 +37,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="AnimationRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -55,7 +50,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="AnimationRoot" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">

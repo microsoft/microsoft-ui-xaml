@@ -114,7 +114,7 @@ inline winrt::IPropertyValue& to_winrt(abi::IPropertyValue*& instance)
 }
 
 
-namespace Microsoft { namespace UI { namespace Composition { namespace Effects
+namespace Microsoft { namespace UI { namespace Private { namespace Composition { namespace Effects
 {
     // Base class for Win2D-like effect descriptions
     class EffectBase : 
@@ -279,7 +279,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class AlphaMaskEffect : 
-        public winrt::Microsoft::UI::Composition::Effects::implementation::AlphaMaskEffectT<AlphaMaskEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::AlphaMaskEffectT<AlphaMaskEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1AlphaMask);
@@ -289,7 +289,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class ArithmeticCompositeEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::ArithmeticCompositeEffectT<ArithmeticCompositeEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ArithmeticCompositeEffectT<ArithmeticCompositeEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1ArithmeticComposite);
@@ -332,7 +332,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class BlendEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::BlendEffectT<BlendEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::BlendEffectT<BlendEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Blend);
@@ -360,7 +360,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class BorderEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::BorderEffectT<BorderEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::BorderEffectT<BorderEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Border);
@@ -391,7 +391,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class ColorMatrixEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::ColorMatrixEffectT<ColorMatrixEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ColorMatrixEffectT<ColorMatrixEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1ColorMatrix);
@@ -435,7 +435,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class ColorSourceEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::ColorSourceEffectT<ColorSourceEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ColorSourceEffectT<ColorSourceEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Flood);
@@ -465,7 +465,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     // We declare a simplified single-step composite effect between two sources.
 
     class CompositeStepEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::CompositeStepEffectT<CompositeStepEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::CompositeStepEffectT<CompositeStepEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Composite);
@@ -493,7 +493,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class ContrastEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::ContrastEffectT<ContrastEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ContrastEffectT<ContrastEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Contrast);
@@ -524,7 +524,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class CrossFadeEffect : 
-        public winrt::Microsoft::UI::Composition::Effects::implementation::CrossFadeEffectT<CrossFadeEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::CrossFadeEffectT<CrossFadeEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1CrossFade);
@@ -552,7 +552,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class DistantDiffuseEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::DistantDiffuseEffectT<DistantDiffuseEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::DistantDiffuseEffectT<DistantDiffuseEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1DistantDiffuse);
@@ -600,7 +600,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class DistantSpecularEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::DistantSpecularEffectT<DistantSpecularEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::DistantSpecularEffectT<DistantSpecularEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1DistantSpecular);
@@ -651,7 +651,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class ExposureEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::ExposureEffectT<ExposureEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::ExposureEffectT<ExposureEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Exposure);
@@ -679,7 +679,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class GammaTransferEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::GammaTransferEffectT<GammaTransferEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GammaTransferEffectT<GammaTransferEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1GammaTransfer);
@@ -754,7 +754,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 
     //-----------------------------------------------------------------------------------------------------------------
     class GaussianBlurEffect : 
-        public winrt::Microsoft::UI::Composition::Effects::implementation::GaussianBlurEffectT<GaussianBlurEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GaussianBlurEffectT<GaussianBlurEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1GaussianBlur);
@@ -788,7 +788,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class GrayscaleEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::GrayscaleEffectT<GrayscaleEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::GrayscaleEffectT<GrayscaleEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Grayscale);
@@ -798,7 +798,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class HueRotationEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::HueRotationEffectT<HueRotationEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::HueRotationEffectT<HueRotationEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1HueRotation);
@@ -827,7 +827,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class InvertEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::InvertEffectT<InvertEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::InvertEffectT<InvertEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Invert);
@@ -837,7 +837,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class LinearTransferEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::LinearTransferEffectT<LinearTransferEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::LinearTransferEffectT<LinearTransferEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1LinearTransfer);
@@ -901,7 +901,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class LuminanceToAlphaEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::LuminanceToAlphaEffectT<LuminanceToAlphaEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::LuminanceToAlphaEffectT<LuminanceToAlphaEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1LuminanceToAlpha);
@@ -911,7 +911,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class OpacityEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::OpacityEffectT<OpacityEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::OpacityEffectT<OpacityEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Opacity);
@@ -939,7 +939,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class PointDiffuseEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::PointDiffuseEffectT<PointDiffuseEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PointDiffuseEffectT<PointDiffuseEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1PointDiffuse);
@@ -985,7 +985,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class PointSpecularEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::PointSpecularEffectT<PointSpecularEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PointSpecularEffectT<PointSpecularEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1PointSpecular);
@@ -1034,7 +1034,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class PosterizeEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::PosterizeEffectT<PosterizeEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PosterizeEffectT<PosterizeEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Posterize);
@@ -1068,7 +1068,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class PremultiplyEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::PremultiplyEffectT<PremultiplyEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::PremultiplyEffectT<PremultiplyEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Premultiply);
@@ -1078,7 +1078,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class SaturationEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::SaturationEffectT<SaturationEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SaturationEffectT<SaturationEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Saturation);
@@ -1106,7 +1106,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class SepiaEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::SepiaEffectT<SepiaEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SepiaEffectT<SepiaEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Sepia);
@@ -1147,7 +1147,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class SpotDiffuseEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::SpotDiffuseEffectT<SpotDiffuseEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SpotDiffuseEffectT<SpotDiffuseEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1SpotDiffuse);
@@ -1204,7 +1204,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class SpotSpecularEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::SpotSpecularEffectT<SpotSpecularEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::SpotSpecularEffectT<SpotSpecularEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1SpotSpecular);
@@ -1264,7 +1264,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class TemperatureAndTintEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::TemperatureAndTintEffectT<TemperatureAndTintEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::TemperatureAndTintEffectT<TemperatureAndTintEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1TemperatureTint);
@@ -1295,7 +1295,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class TintEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::TintEffectT<TintEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::TintEffectT<TintEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Tint);
@@ -1326,7 +1326,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class Transform2DEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::Transform2DEffectT<Transform2DEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::Transform2DEffectT<Transform2DEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D12DAffineTransform);
@@ -1364,7 +1364,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     //-----------------------------------------------------------------------------------------------------------------
 
     class UnPremultiplyEffect :
-        public winrt::Microsoft::UI::Composition::Effects::implementation::UnPremultiplyEffectT<UnPremultiplyEffect, EffectBase>
+        public winrt::Microsoft::UI::Private::Composition::Effects::implementation::UnPremultiplyEffectT<UnPremultiplyEffect, EffectBase>
     {
     public:
         DECLARE_D2D_GUID(CLSID_D2D1UnPremultiply);
@@ -1383,5 +1383,5 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 #    pragma pop_macro("DECLARE_NAMED_PROPERTY_MAPPING")
 #endif
 
-}}}}
+}}}}}
 #pragma warning(pop)

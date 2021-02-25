@@ -4,19 +4,16 @@
 #include "pch.h"
 #include "common.h"
 #include "BreadcrumbLayout.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
+#include "Breadcrumb.h"
 #include "BreadcrumbItem.h"
-
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithBasicFactory(BreadcrumbLayout)
-}
-
-#include "BreadcrumbLayout.g.cpp"
 
 BreadcrumbLayout::BreadcrumbLayout()
 {
+}
+
+BreadcrumbLayout::BreadcrumbLayout(const winrt::Breadcrumb& breadcrumb)
+{
+    m_breadcrumb = breadcrumb;
 }
 
 BreadcrumbLayout::~BreadcrumbLayout()
@@ -58,7 +55,7 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
     {
         if (const auto& ellipsisButton = GetElementAt(context, 0).try_as<winrt::BreadcrumbItem>())
         {
-            m_ellipsisButton.set(ellipsisButton);
+            m_ellipsisButton = ellipsisButton;
         }
     }
 
@@ -74,17 +71,16 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
     return accumulatedCrumbsSize;
 }
 
-void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float& maxElementHeight)
+void BreadcrumbLayout::ArrangeItem(const winrt::UIElement& breadcrumbItem, float& accumulatedWidths, float maxElementHeight)
 {
     const winrt::Size elementSize = breadcrumbItem.DesiredSize();
-    const winrt::Rect arrangeRect(accumulatedWidths, 0, elementSize.Width, elementSize.Height);
+    const winrt::Rect arrangeRect(accumulatedWidths, 0, elementSize.Width, maxElementHeight);
     breadcrumbItem.Arrange(arrangeRect);
 
-    maxElementHeight = std::max(maxElementHeight, elementSize.Height);
     accumulatedWidths += elementSize.Width;
 }
 
-void BreadcrumbLayout::ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float& maxElementHeight)
+void BreadcrumbLayout::ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight)
 {
     const auto& element = GetElementAt(context, index);
     ArrangeItem(element, accumulatedWidths, maxElementHeight);
@@ -106,7 +102,7 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayo
 {
     const int itemCount = GetItemCount(context);
     float accumLength = GetElementAt(context, itemCount - 1).DesiredSize().Width +
-        m_ellipsisButton.get().DesiredSize().Width;
+        m_ellipsisButton.DesiredSize().Width;
 
     for (int i = itemCount - 2; i >= 0; --i)
     {
@@ -121,6 +117,23 @@ int BreadcrumbLayout::GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayo
     return 0;
 }
 
+float BreadcrumbLayout::GetBreadcrumbItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender)
+{
+    float maxElementHeight{};
+
+    if (m_ellipsisIsRendered)
+    {
+        maxElementHeight = m_ellipsisButton.DesiredSize().Height;
+    }
+
+    for (uint32_t i = firstItemToRender; i < GetItemCount(context); ++i)
+    {
+        maxElementHeight = std::max(maxElementHeight, GetElementAt(context, i).DesiredSize().Height);
+    }
+
+    return maxElementHeight;
+}
+
 // Arranging is performed in a single step, as many elements are tried to be drawn going from the last element
 // towards the first one, if there's not enough space, then the ellipsis button is drawn
 winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize)
@@ -128,6 +141,7 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     const int itemCount = GetItemCount(context);
     int firstElementToRender{};
     m_firstRenderedItemIndexAfterEllipsis = itemCount - 1;
+    m_visibleItemsCount = 0;
 
     // If the ellipsis must be drawn, then we find the index (x) of the first element to be rendered, any element with
     // a lower index than x will be hidden (except for the ellipsis button) and every element after x (including x) will
@@ -139,12 +153,12 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
     }
 
     float accumulatedWidths{};
-    float maxElementHeight{};
+    const float maxElementHeight = GetBreadcrumbItemsHeight(context, firstElementToRender);
 
     // If there is at least one element, we may render the ellipsis item
     if (itemCount > 0)
     {
-        const auto& ellipsisButton = m_ellipsisButton.get();
+        const auto& ellipsisButton = m_ellipsisButton;
 
         if (m_ellipsisIsRendered)
         {
@@ -167,7 +181,13 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
         else
         {
             ArrangeItem(context, i, accumulatedWidths, maxElementHeight);
+            ++m_visibleItemsCount;
         }
+    }
+
+    if (const auto& breadcrumb = m_breadcrumb.try_as<Breadcrumb>())
+    {
+        breadcrumb->ReIndexVisibleElementsForAccessibility();
     }
 
     return finalSize;
@@ -181,4 +201,9 @@ bool BreadcrumbLayout::EllipsisIsRendered()
 uint32_t BreadcrumbLayout::FirstRenderedItemIndexAfterEllipsis()
 {
     return m_firstRenderedItemIndexAfterEllipsis;
+}
+
+uint32_t BreadcrumbLayout::GetVisibleItemsCount()
+{
+    return m_visibleItemsCount;
 }

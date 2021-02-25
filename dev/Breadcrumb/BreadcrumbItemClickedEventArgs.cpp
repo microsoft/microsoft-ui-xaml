@@ -14,3 +14,13 @@ void BreadcrumbItemClickedEventArgs::Item(const winrt::IInspectable& item)
 {
     m_item = item;
 }
+
+int BreadcrumbItemClickedEventArgs::Index()
+{
+    return m_index;
+}
+
+void BreadcrumbItemClickedEventArgs::Index(const int& index)
+{
+    m_index = index;
+}

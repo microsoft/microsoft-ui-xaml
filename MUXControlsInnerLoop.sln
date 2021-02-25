@@ -118,7 +118,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RevealBrush", "dev\Material
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Effects", "Effects", "{73E823BC-5485-4F26-9B09-8B83C133EE6B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.UI.Composition.Effects", "dev\Effects\Microsoft.UI.Composition.Effects.vcxitems", "{1522A856-17CE-4178-A6B3-0692F90D7C55}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.UI.Private.Composition.Effects", "dev\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems", "{1522A856-17CE-4178-A6B3-0692F90D7C55}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TreeView", "TreeView", "{0A38E3C5-3CFA-42EB-860C-395A861B6791}"
 EndProject
@@ -552,7 +552,7 @@ Global
 		dev\TwoPaneView\InteractionTests\TwoPaneView_InteractionTests.projitems*{1294409d-9bad-40cc-a74d-9ab29b343071}*SharedItemsImports = 13
 		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{13da8235-d04f-46d4-b5b4-f5ae774eeede}*SharedItemsImports = 13
 		dev\MenuBar\MenuBar_InteractionTests\MenuBar_InteractionTests.projitems*{1440a7b7-d3ca-4390-8c85-e1e9a7df8542}*SharedItemsImports = 13
-		dev\Effects\Microsoft.UI.Composition.Effects.vcxitems*{1522a856-17ce-4178-a6b3-0692f90d7c55}*SharedItemsImports = 9
+		dev\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems*{1522a856-17ce-4178-a6b3-0692f90d7c55}*SharedItemsImports = 9
 		dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems*{16f32f80-a8b6-44e0-9d99-0e1c2c8e0579}*SharedItemsImports = 13
 		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{18f1db69-7457-461c-9d19-7f42bffc0803}*SharedItemsImports = 13
 		dev\IconSource\IconSource.vcxitems*{19ffff77-4814-4ad6-acd7-42c6a50ab0d8}*SharedItemsImports = 9
@@ -667,7 +667,7 @@ Global
 		dev\CommonStyles\CommonStyles.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Common\Common.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\DropDownButton\DropDownButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\Effects\Microsoft.UI.Composition.Effects.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\IconSource\IconSource.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Lights\Lights.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
