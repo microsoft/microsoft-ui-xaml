@@ -81,6 +81,7 @@ private:
     void UpdateButtonCommonVisualState(bool useTransitions);
     void UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index);
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
+    winrt::Style RetrieveFlyoutStyle();
 
     // Common item fields
 
@@ -95,6 +96,7 @@ private:
 
     // BreadcrumbBarItem visual representation
     tracker_ref<winrt::Button> m_button{ this };
+    tracker_ref<winrt::Grid> m_grid{ this };
     // Parent BreadcrumbBarItem to ask for hidden elements
     tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ this };
 
@@ -155,6 +157,7 @@ private:
 
     // Template Parts
     static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
+    static constexpr std::wstring_view s_itemGridPartName{ L"PART_LayoutRoot"sv };
     static constexpr std::wstring_view s_itemButtonPartName{ L"PART_ItemButton"sv };
 
     // Automation Names
