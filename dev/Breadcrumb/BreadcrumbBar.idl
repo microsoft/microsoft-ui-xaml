@@ -1,6 +1,6 @@
 ﻿namespace MU_XC_NAMESPACE
 {
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [default_interface]
 [webhosthidden]
 runtimeclass BreadcrumbBarItemClickedEventArgs
@@ -9,14 +9,14 @@ runtimeclass BreadcrumbBarItemClickedEventArgs
     Object Item { get; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass BreadcrumbBarItem : Windows.UI.Xaml.Controls.ContentControl
 {
     BreadcrumbBarItem();
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]

@@ -1,7 +1,7 @@
 ﻿namespace MU_XAP_NAMESPACE
 {
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass BreadcrumbBarItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
 Windows.UI.Xaml.Automation.Provider.IInvokeProvider
