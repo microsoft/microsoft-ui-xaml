@@ -30,6 +30,11 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)InkToolbarPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)TextBoxPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -53,6 +58,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml.cs">
       <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)InkToolbarPage.xaml.cs">
+      <DependentUpon>InkToolbarPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TextBoxPage.xaml.cs">
       <DependentUpon>TextBoxPage.xaml</DependentUpon>
