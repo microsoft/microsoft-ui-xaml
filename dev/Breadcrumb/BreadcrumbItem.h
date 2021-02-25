@@ -81,6 +81,7 @@ private:
     void UpdateButtonCommonVisualState(bool useTransitions);
     void UpdateFlyoutIndex(const winrt::UIElement& element, const uint32_t index);
     winrt::IInspectable CloneEllipsisItemSource(const winrt::Collections::IVector<winrt::IInspectable>& ellipsisItemsSource);
+    winrt::Style RetrieveFlyoutStyle();
 
     // Common item fields
 

@@ -24,11 +24,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbItem">
-                    <Grid x:Name="PART_LayoutRoot" contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <Grid x:Name="PART_LayoutRoot"
+                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         
                         <Grid.Resources>
                             <Style TargetType="FlyoutPresenter" x:Key="DefaultFlyoutPresenterStyleasd">
@@ -50,27 +47,25 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="FlyoutPresenter">
-                                            <Grid
-                        Background="{TemplateBinding Background}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7Present:BackgroundSizing="InnerBorderEdge">
+                                            <Grid Background="{TemplateBinding Background}"
+                                                  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                  contract7Present:BackgroundSizing="InnerBorderEdge">
                                                 <ScrollViewer x:Name="FlyoutPresenterScrollViewer"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                            ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                              Margin="{TemplateBinding Padding}"
+                                                              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                              IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                                              IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                                              ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                                                               Content="{TemplateBinding Content}"
-                            AutomationProperties.AccessibilityView="Raw">
+                                                              AutomationProperties.AccessibilityView="Raw">
                                                 </ScrollViewer>
-                                                <Border
-                            x:Name="FlyoutPresenterBorder"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
+                                                <Border x:Name="FlyoutPresenterBorder"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
                                             </Grid>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -345,51 +340,6 @@
                             HorizontalContentAlignment="Stretch"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             Grid.Column="0"/>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="DefaultDropDownFlyoutPresenterStyle" TargetType="FlyoutPresenter">
-        <Setter Property="Background" Value="{ThemeResource MenuFlyoutPresenterBackground}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource MenuFlyoutPresenterBorderBrush}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource MenuFlyoutPresenterBorderThemeThickness}" />
-        <Setter Property="Padding" Value="{ThemeResource MenuFlyoutPresenterThemePadding}" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
-        <Setter Property="MinHeight" Value="{ThemeResource MenuFlyoutThemeMinHeight}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="MenuFlyoutPresenter">
-                    <Grid Background="{TemplateBinding Background}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
-                        <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                            ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                            AutomationProperties.AccessibilityView="Raw">
-                            <ItemsPresenter Margin="{ThemeResource MenuFlyoutScrollerMargin}" />
-                        </ScrollViewer>
-                        <Border
-                            x:Name="MenuFlyoutPresenterBorder"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

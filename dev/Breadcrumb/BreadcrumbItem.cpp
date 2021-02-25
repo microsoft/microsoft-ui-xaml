@@ -327,6 +327,26 @@ winrt::IInspectable BreadcrumbItem::CloneEllipsisItemSource(const winrt::Collect
     return newItemsSource;
 }
 
+winrt::Style BreadcrumbItem::RetrieveFlyoutStyle()
+{
+    if (const auto& grid = m_grid.get())
+    {
+        const auto& resources = grid.Resources();
+        for (const auto& themeDictionaryEntry : resources)
+        {
+            winrt::hstring entryKey = winrt::unbox_value_or<winrt::hstring>(themeDictionaryEntry.Key(), L"");
+            if (const auto& entryValue = themeDictionaryEntry.Value().try_as<winrt::Style>())
+            {
+                const auto& targetType = entryValue.TargetType();
+                const auto& name = targetType.Name;
+                return entryValue;
+            }
+        }
+    }
+
+    return winrt::Style();
+}
+
 void BreadcrumbItem::OpenFlyout()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
@@ -554,36 +574,10 @@ void BreadcrumbItem::InstantiateFlyout()
 
         // Create the Flyout and add the ItemsRepeater as content
         const auto& ellipsisFlyout = winrt::Flyout();
-        winrt::AutomationProperties::SetName(ellipsisFlyout, s_ellipsisFlyoutAutomationName);
-
-        /*
-        const auto& resources = Resources();
-        for (const auto& themeDictionaryEntry : resources)
-        {
-            winrt::hstring entryKey = winrt::unbox_value_or<winrt::hstring>(themeDictionaryEntry.Key(), L"");
-            const auto entryValue = themeDictionaryEntry.Value();
-        }
-
-        const auto& ellipsisFlyoutStyle = resources.Lookup(box_value(L"DefaultDropDownFlyoutPresenterStyle"));
-        const auto& ellipsisFlyoutStyleAsStyle = ellipsisFlyoutStyle.try_as<winrt::Style>();
-        */
-        if (const auto& grid = m_grid.get())
-        {
-            const auto& resources = grid.Resources();
-            for (const auto& themeDictionaryEntry : resources)
-            {
-                winrt::hstring entryKey = winrt::unbox_value_or<winrt::hstring>(themeDictionaryEntry.Key(), L"");
-                if (const auto& entryValue = themeDictionaryEntry.Value().try_as<winrt::Style>())
-                {
-                    const auto& targetType = entryValue.TargetType();
-                    const auto& name = targetType.Name;
-                    ellipsisFlyout.FlyoutPresenterStyle(entryValue);
-                }
-            }
-        }
-        
+        winrt::AutomationProperties::SetName(ellipsisFlyout, s_ellipsisFlyoutAutomationName);     
         ellipsisFlyout.Content(ellipsisItemsRepeater);
         ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
+        ellipsisFlyout.FlyoutPresenterStyle(RetrieveFlyoutStyle());
 
         m_ellipsisFlyout.set(ellipsisFlyout);
 
