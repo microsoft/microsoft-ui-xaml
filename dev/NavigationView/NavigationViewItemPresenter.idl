@@ -20,11 +20,11 @@ unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.X
 {
     NavigationViewItemPresenterTemplateSettings();
 
-    Double IconColumnWidth{ get; };
-    Double LatestIconColumnWidth{ get; };
+    Double IconWidth{ get; };
+    Double SmallerIconWidth{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty IconColumnWidthProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty LatestIconColumnWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IconWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SmallerIconWidthProperty{ get; };
 
 }
 

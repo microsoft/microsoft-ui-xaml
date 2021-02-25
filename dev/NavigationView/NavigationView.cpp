@@ -1744,8 +1744,8 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
  
-    templateSettings->PaneButtonWidth(newButtonWidths);
-    templateSettings->LatestPaneButtonWidth(newButtonWidths - 8);
+    templateSettings->PaneToggleButtonWidth(newButtonWidths);
+    templateSettings->SmallerPaneToggleButtonWidth(newButtonWidths - 8);
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -4274,7 +4274,7 @@ void NavigationView::UpdatePaneToggleSize()
     {
         if (auto splitView = m_rootSplitView.get())
         {
-            double width = GetTemplateSettings()->PaneButtonWidth();
+            double width = GetTemplateSettings()->PaneToggleButtonWidth();
             double togglePaneButtonWidth = width;
 
             if (ShouldShowBackButton() && splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
