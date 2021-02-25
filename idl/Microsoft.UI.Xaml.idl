@@ -80,14 +80,6 @@ namespace Microsoft.UI.Xaml.CustomAttributes
     {
         String value;
     }
-
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
-    [attributename("muxignoredbycodegen")]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXIgnoredByCodeGenAttribute
-    {
-    }
 }
 
 namespace Microsoft.UI.Xaml
@@ -171,9 +163,6 @@ namespace Microsoft.UI.Xaml
 
 // Instance method on the owning type that can be used to validate or coerce the value.
 #define MUX_PROPERTY_VALIDATION_CALLBACK(value) muxpropertyvalidationcallback(value)
-
-// If CodeGen should ignore the specified element.
-#define MUX_IGNORED_BY_CODE_GEN muxignoredbycodegen
 
 namespace MU_X_XTI_NAMESPACE
 {
