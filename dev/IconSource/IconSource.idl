@@ -5,10 +5,7 @@
 [webhosthidden]
 unsealed runtimeclass IconSource : Windows.UI.Xaml.DependencyObject
 {
-    [MUX_PREVIEW]
-    {
-        Windows.UI.Xaml.Controls.IconElement CreateIconElement();
-    }
+    Windows.UI.Xaml.Controls.IconElement CreateIconElement();
 
     Windows.UI.Xaml.Media.Brush Foreground { get; set; };
 
