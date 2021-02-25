@@ -66,7 +66,10 @@ void TabViewItem::OnApplyTemplate()
             if (internalTabView)
             {
                 winrt::ThemeShadow shadow;
-                shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                if (!SharedHelpers::Is21H1OrHigher())
+                {
+                    shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                }
                 m_shadow = shadow;
 
                 double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));

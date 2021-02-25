@@ -44,9 +44,6 @@
                                 Content="{TemplateBinding TabStripHeader}"
                                 ContentTemplate="{TemplateBinding TabStripHeaderTemplate}"/>
 
-                            <Grid x:Name="ShadowReceiver"
-                                Grid.ColumnSpan="4"/>
-
                             <primitives:TabViewListView
                                 Grid.Column="1"
                                 x:Name="TabListView"
@@ -77,14 +74,6 @@
                                 ContentTemplate="{TemplateBinding TabStripFooterTemplate}"/>
 
                         </Grid>
-
-                        <!-- We don't want this to take space on the second row in case the user isn't using tab content. -->
-                        <Grid x:Name="ShadowCaster"
-                            Grid.Row="0"
-                            Height="10"
-                            Margin="0,0,0,-10"
-                            VerticalAlignment="Bottom"
-                            Background="Transparent"/>
 
                         <ContentPresenter x:Name="TabContentPresenter"
                             Grid.Row="1"
