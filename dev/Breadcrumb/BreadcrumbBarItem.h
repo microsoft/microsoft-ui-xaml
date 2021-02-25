@@ -5,16 +5,16 @@
 
 #include "pch.h"
 #include "common.h"
-#include "BreadcrumbElementFactory.h"
+#include "BreadcrumbBarElementFactory.h"
 
-#include "BreadcrumbItem.g.h"
+#include "BreadcrumbBarItem.g.h"
 
-class BreadcrumbItem :
-    public ReferenceTracker<BreadcrumbItem, winrt::implementation::BreadcrumbItemT>
+class BreadcrumbBarItem :
+    public ReferenceTracker<BreadcrumbBarItem, winrt::implementation::BreadcrumbBarItemT>
 {
 public:
-    BreadcrumbItem();
-    ~BreadcrumbItem();
+    BreadcrumbBarItem();
+    ~BreadcrumbBarItem();
 
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -34,8 +34,8 @@ public:
 
     void SetPropertiesForLastItem();
     void SetPropertiesForEllipsisItem();
-    void SetParentBreadcrumb(const winrt::Breadcrumb& parent);
-    void SetEllipsisItem(const winrt::BreadcrumbItem& ellipsisItem);
+    void SetParentBreadcrumb(const winrt::BreadcrumbBar& parent);
+    void SetEllipsisItem(const winrt::BreadcrumbBarItem& ellipsisItem);
     void SetEllipsisDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate);
     void SetIndex(const uint32_t index);
     void SetIsEllipsisDropDownItem(bool isEllipsisDropDownItem);
@@ -55,7 +55,7 @@ public:
 private:
     void OnLoadedEvent(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnEllipsisItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnBreadcrumbItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
+    void OnBreadcrumbBarItemClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & args);
     void OnFlowDirectionChanged(winrt::DependencyObject const&, winrt::DependencyProperty const&);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
@@ -93,10 +93,10 @@ private:
     bool m_isEllipsisItem{};
     bool m_isLastItem{};
 
-    // BreadcrumbItem visual representation
+    // BreadcrumbBarItem visual representation
     tracker_ref<winrt::Button> m_button{ this };
-    // Parent BreadcrumbItem to ask for hidden elements
-    tracker_ref<winrt::Breadcrumb> m_parentBreadcrumb{ this };
+    // Parent BreadcrumbBarItem to ask for hidden elements
+    tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ this };
 
     // Flyout content for ellipsis item
     tracker_ref<winrt::FlyoutBase> m_ellipsisFlyout{ this };
@@ -106,8 +106,8 @@ private:
 
     // Ellipsis dropdown item fields
 
-    // BreadcrumbItem that owns the flyout
-    tracker_ref<winrt::BreadcrumbItem> m_ellipsisItem{ this };
+    // BreadcrumbBarItem that owns the flyout
+    tracker_ref<winrt::BreadcrumbBarItem> m_ellipsisItem{ this };
 
     // Visual State tracking
     uint32_t m_trackedPointerId{ 0 };

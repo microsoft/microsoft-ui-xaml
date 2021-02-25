@@ -5,7 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-using Breadcrumb = Microsoft.UI.Xaml.Controls.Breadcrumb;
+using BreadcrumbBar = Microsoft.UI.Xaml.Controls.BreadcrumbBar;
 using Breadcrumb_TestUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,8 +14,8 @@ using System.Linq;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "Breadcrumb")]
-    public sealed partial class BreadcrumbPage : TestPage
+    [TopLevelTestPage(Name = "BreadcrumbBar")]
+    public sealed partial class BreadcrumbBarPage : TestPage
     {
         private TreeStructure Tree = new TreeStructure();
         public ObservableCollection<object> breadCrumbList { get; } = new ObservableCollection<object>();
@@ -24,7 +24,7 @@ namespace MUXControlsTestApp
 
         private const int maxDepth = 7;
 
-        public BreadcrumbPage()
+        public BreadcrumbBarPage()
         {
             this.InitializeComponent();
             InitializeBreadcrumbAndChildren();
@@ -187,7 +187,7 @@ namespace MUXControlsTestApp
             ReplaceList(currentNodeChildrenList, node.Children);
         }
 
-        private void BreadcrumbControl_ItemClicked(Breadcrumb sender, Microsoft.UI.Xaml.Controls.BreadcrumbItemClickedEventArgs args)
+        private void BreadcrumbControl_ItemClicked(BreadcrumbBar sender, Microsoft.UI.Xaml.Controls.BreadcrumbBarItemClickedEventArgs args)
         {
             LastClickedItem.Text = args.Item.ToString();
             LastClickedItemIndex.Text = args.Index.ToString();

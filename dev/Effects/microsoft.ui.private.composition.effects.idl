@@ -20,7 +20,7 @@
     [MUXCONTROLS_VERSION_ATTRIBUTE] \
 
 
-namespace Microsoft.UI.Composition.Effects
+namespace Microsoft.UI.Private.Composition.Effects
 {
     //----------------------------------------------------------------------------------------------
     // Common enums
@@ -237,11 +237,11 @@ namespace Microsoft.UI.Composition.Effects
     [uuid(31602441-15db-5b4a-98dd-ba4247548b40), exclusiveto(BorderEffect)]
     interface IBorderEffect : IInspectable
     {
-        [propget] HRESULT ExtendX([out, retval] Microsoft.UI.Composition.Effects.CanvasEdgeBehavior* value);
-        [propput] HRESULT ExtendX([in] Microsoft.UI.Composition.Effects.CanvasEdgeBehavior value);
+        [propget] HRESULT ExtendX([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior* value);
+        [propput] HRESULT ExtendX([in] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior value);
 
-        [propget] HRESULT ExtendY([out, retval] Microsoft.UI.Composition.Effects.CanvasEdgeBehavior* value);
-        [propput] HRESULT ExtendY([in] Microsoft.UI.Composition.Effects.CanvasEdgeBehavior value);
+        [propget] HRESULT ExtendY([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior* value);
+        [propput] HRESULT ExtendY([in] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -264,8 +264,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT ColorMatrix([out, retval] Matrix5x4* value);
         [propput] HRESULT ColorMatrix([in] Matrix5x4 value);
 
-        [propget] HRESULT AlphaMode([out, retval] Microsoft.UI.Composition.Effects.CanvasAlphaMode* value);
-        [propput] HRESULT AlphaMode([in] Microsoft.UI.Composition.Effects.CanvasAlphaMode value);
+        [propget] HRESULT AlphaMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode* value);
+        [propput] HRESULT AlphaMode([in] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode value);
 
         [propget] HRESULT ClampOutput([out, retval] boolean* value);
         [propput] HRESULT ClampOutput([in] boolean value);
@@ -307,8 +307,8 @@ namespace Microsoft.UI.Composition.Effects
     [uuid(58360908-1b6b-4302-8ecd-cc24b26f27b0), exclusiveto(CompositeStepEffect)]
     interface ICompositeStepEffect : IInspectable
     {
-        [propget] HRESULT Mode([out, retval] Microsoft.UI.Composition.Effects.CanvasComposite* value);
-        [propput] HRESULT Mode([in] Microsoft.UI.Composition.Effects.CanvasComposite value);
+        [propget] HRESULT Mode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasComposite* value);
+        [propput] HRESULT Mode([in] Microsoft.UI.Private.Composition.Effects.CanvasComposite value);
 
         [propget] HRESULT Destination([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Destination([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -397,8 +397,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
         [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
 
-        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -439,8 +439,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
         [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
 
-        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -745,8 +745,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
         [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
 
-        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -784,8 +784,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
         [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
 
-        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -874,8 +874,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT Intensity([out, retval] float* value);
         [propput] HRESULT Intensity([in] float value);
 
-        [propget] HRESULT AlphaMode([out, retval] Microsoft.UI.Composition.Effects.CanvasAlphaMode* value);
-        [propput] HRESULT AlphaMode([in] Microsoft.UI.Composition.Effects.CanvasAlphaMode value);
+        [propget] HRESULT AlphaMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode* value);
+        [propput] HRESULT AlphaMode([in] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode value);
         
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -919,8 +919,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
         [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
 
-        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -967,8 +967,8 @@ namespace Microsoft.UI.Composition.Effects
         [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
         [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
 
-        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
         [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
@@ -1036,8 +1036,8 @@ namespace Microsoft.UI.Composition.Effects
     [uuid(4467d118-33e7-5b1a-87c2-0f1f0497353c), exclusiveto(Transform2DEffect)]
     interface ITransform2DEffect : IInspectable
     {
-        [propget] HRESULT InterpolationMode([out, retval] Microsoft.UI.Composition.Effects.CanvasImageInterpolation* value);
-        [propput] HRESULT InterpolationMode([in] Microsoft.UI.Composition.Effects.CanvasImageInterpolation value);
+        [propget] HRESULT InterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT InterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
 
         [propget] HRESULT BorderMode([out, retval] EffectBorderMode* value);
         [propput] HRESULT BorderMode([in] EffectBorderMode value);

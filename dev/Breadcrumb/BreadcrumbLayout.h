@@ -13,7 +13,7 @@ class BreadcrumbLayout :
 {
 public:
     BreadcrumbLayout();
-    BreadcrumbLayout(const winrt::Breadcrumb& breadcrumb);
+    BreadcrumbLayout(const winrt::BreadcrumbBar& breadcrumb);
 
     ~BreadcrumbLayout();
 
@@ -33,15 +33,15 @@ private:
     void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight);
     void HideItem(const winrt::UIElement& breadcrumbItem);
     void HideItem(const winrt::NonVirtualizingLayoutContext& context, int index);
-    int GetFirstBreadcrumbItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
-    float GetBreadcrumbItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender);
+    int GetFirstBreadcrumbBarItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
+    float GetBreadcrumbBarItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender);
 
     uint32_t GetItemCount(winrt::NonVirtualizingLayoutContext const& context);
     winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
 
     winrt::Size m_availableSize{};
-    winrt::BreadcrumbItem m_ellipsisButton{nullptr};
-    winrt::Breadcrumb m_breadcrumb{ nullptr };
+    winrt::BreadcrumbBarItem m_ellipsisButton{nullptr};
+    winrt::BreadcrumbBar m_breadcrumb{ nullptr };
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};

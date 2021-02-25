@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "BreadcrumbItem.h"
-#include "BreadcrumbItemAutomationPeer.g.h"
+#include "BreadcrumbBarItem.h"
+#include "BreadcrumbBarItemAutomationPeer.g.h"
 
-class BreadcrumbItemAutomationPeer :
-    public ReferenceTracker<BreadcrumbItemAutomationPeer, winrt::implementation::BreadcrumbItemAutomationPeerT>
+class BreadcrumbBarItemAutomationPeer :
+    public ReferenceTracker<BreadcrumbBarItemAutomationPeer, winrt::implementation::BreadcrumbBarItemAutomationPeerT>
 {
 
 public:
-    BreadcrumbItemAutomationPeer(winrt::BreadcrumbItem const& owner);
+    BreadcrumbBarItemAutomationPeer(winrt::BreadcrumbBarItem const& owner);
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
@@ -22,5 +22,5 @@ public:
     void Invoke();
 
 private:
-    com_ptr<BreadcrumbItem> GetImpl();
+    com_ptr<BreadcrumbBarItem> GetImpl();
 };

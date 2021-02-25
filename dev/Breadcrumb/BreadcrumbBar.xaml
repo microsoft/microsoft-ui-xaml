@@ -4,23 +4,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style x:Key="DefaultBreadcrumbItemStyle" TargetType="local:BreadcrumbItem">
-        <Setter Property="Foreground" Value="{ThemeResource BreadcrumbForegroundBrush}" />
-        <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
+    <Style x:Key="DefaultBreadcrumbBarItemStyle" TargetType="local:BreadcrumbBarItem">
+        <Setter Property="Foreground" Value="{ThemeResource BreadcrumbBarForegroundBrush}" />
+        <Setter Property="Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}"/>
+        <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:BreadcrumbItem">
+                <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot" CornerRadius="{TemplateBinding CornerRadius}" >
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
@@ -42,30 +42,30 @@
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemBackgroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbBarEllipsisDropDownItemBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_EllipsisDropDownItemContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemForegroundPointerOver}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbBarEllipsisDropDownItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemBackgroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbBarEllipsisDropDownItemBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_EllipsisDropDownItemContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemForegroundPressed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbBarEllipsisDropDownItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_LayoutRoot" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemBackgroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbBarEllipsisDropDownItemBackgroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_EllipsisDropDownItemContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbEllipsisDropDownItemForegroundDisabled}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource BreadcrumbBarEllipsisDropDownItemForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -74,13 +74,13 @@
                             <VisualStateGroup x:Name="InlineItemTypeStates">
                                 <VisualState x:Name="Default">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronLeftToRight}"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbBarChevronLeftToRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="DefaultRTL">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronRightToLeft}"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbBarChevronRightToLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -94,7 +94,7 @@
 
                                 <VisualState x:Name="Ellipsis">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronLeftToRight}"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbBarChevronLeftToRight}"/>
                                         <Setter Target="PART_EllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_ItemContentPresenter.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
@@ -104,7 +104,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_EllipsisTextBlock.Visibility" Value="Visible"/>
                                         <Setter Target="PART_ItemContentPresenter.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbChevronRightToLeft}"/>
+                                        <Setter Target="PART_ChevronTextBlock.Text" Value="{ThemeResource BreadcrumbBarChevronRightToLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -112,7 +112,7 @@
 
                         <Button x:Name="PART_ItemButton"
                             x:DeferLoadStrategy="Lazy"
-                            AutomationProperties.Name="BreadcrumbItemButton"
+                            AutomationProperties.Name="BreadcrumbBarItemButton"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -120,14 +120,14 @@
                             IsTabStop="False">
                             <Button.Style>
                                 <Style TargetType="Button">
-                                    <Setter Property="Foreground" Value="{ThemeResource BreadcrumbNormalForegroundBrush}" />
-                                    <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}" />
-                                    <Setter Property="Background" Value="{ThemeResource BreadcrumbBackgroundBrush}" />
+                                    <Setter Property="Foreground" Value="{ThemeResource BreadcrumbBarNormalForegroundBrush}" />
+                                    <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}" />
+                                    <Setter Property="Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}" />
                                     <Setter Property="HorizontalAlignment" Value="Left" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                                     <Setter Property="FontWeight" Value="Normal" />
-                                    <Setter Property="FontSize" Value="{ThemeResource BreadcrumbItemThemeFontSize}" />
+                                    <Setter Property="FontSize" Value="{ThemeResource BreadcrumbBarItemThemeFontSize}" />
                                     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                     <Setter Property="FocusVisualMargin" Value="-3" />
                                     <Setter Property="Padding" Value="0,0,0,0" />
@@ -139,44 +139,44 @@
                                                         <VisualStateGroup x:Name="CommonStates">
                                                             <VisualState x:Name="Normal">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbNormalForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarNormalForegroundBrush}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <!-- Current refers to the last item -->
                                                             <VisualState x:Name="CurrentNormal">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentNormalForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarCurrentNormalForegroundBrush}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="PointerOver">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbHoverForegroundBrush}" />
-                                                                    <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
-                                                                    <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarHoverForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}"/>
+                                                                    <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}"/>
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="CurrentPointerOver">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentHoverForegroundBrush}" />
-                                                                    <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
-                                                                    <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarCurrentHoverForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}"/>
+                                                                    <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}"/>
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="Pressed">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbPressedForegroundBrush}" />
-                                                                    <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBackgroundBrush}"/>
-                                                                    <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBorderBrush}"/>
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarPressedForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Background" Value="{ThemeResource BreadcrumbBarBackgroundBrush}"/>
+                                                                    <Setter Target="PART_ContentPresenter.BorderBrush" Value="{ThemeResource BreadcrumbBarBorderBrush}"/>
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="CurrentPressed">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentPressedForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarCurrentPressedForegroundBrush}" />
                                                                     <Setter Target="PART_ContentPresenter.Background" Value="Transparent"/>
                                                                     <Setter Target="PART_ContentPresenter.BorderBrush" Value="Transparent"/>
                                                                 </VisualState.Setters>
@@ -184,25 +184,25 @@
 
                                                             <VisualState x:Name="Disabled">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbDisabledForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarDisabledForegroundBrush}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="CurrentDisabled">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentDisabledForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarCurrentDisabledForegroundBrush}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="Focus">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbFocusForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarFocusForegroundBrush}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState x:Name="CurrentFocus">
                                                                 <VisualState.Setters>
-                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbCurrentFocusForegroundBrush}" />
+                                                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource BreadcrumbBarCurrentFocusForegroundBrush}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
                                                         </VisualStateGroup>
@@ -226,7 +226,7 @@
                             </Button.Style>
 
                             <Button.Content>
-                                <Grid AutomationProperties.Name="BreadcrumbItemGrid" AutomationProperties.AccessibilityView="Raw">
+                                <Grid AutomationProperties.Name="BreadcrumbBarItemGrid" AutomationProperties.AccessibilityView="Raw">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="0px" />
@@ -234,7 +234,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <ContentPresenter x:Name="PART_ItemContentPresenter"
-                                        AutomationProperties.Name="BreadcrumbItemContentPresenter"
+                                        AutomationProperties.Name="BreadcrumbBarItemContentPresenter"
                                         Grid.Column="0"
                                         Content="{TemplateBinding Content}"
                                         ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -248,7 +248,7 @@
                                         AutomationProperties.AccessibilityView="Raw"/>
 
                                     <TextBlock x:Name="PART_EllipsisTextBlock"
-                                        AutomationProperties.Name="BreadcrumbEllipsisTextBlock"
+                                        AutomationProperties.Name="BreadcrumbBarEllipsisTextBlock"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Text="&#xE712;"
                                         Visibility="Collapsed"
@@ -261,7 +261,7 @@
                                     <TextBlock x:Name="PART_ChevronTextBlock"
                                         AutomationProperties.Name="ChevronTextBlock"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                        Foreground="{ThemeResource BreadcrumbNormalForegroundBrush}"
+                                        Foreground="{ThemeResource BreadcrumbBarNormalForegroundBrush}"
                                         Text="&#xE76C;"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
@@ -276,7 +276,7 @@
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
-                            Margin="{ThemeResource BreadcrumbEllipsisDropDownItemMargin}"
+                            Margin="{ThemeResource BreadcrumbBarEllipsisDropDownItemMargin}"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -288,16 +288,16 @@
         </Setter>
     </Style>
     
-    <Style TargetType="local:Breadcrumb">
+    <Style TargetType="local:BreadcrumbBar">
         <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:Breadcrumb">
+                <ControlTemplate TargetType="local:BreadcrumbBar">
                     <local:ItemsRepeater x:Name="PART_ItemsRepeater" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style TargetType="local:BreadcrumbItem" BasedOn="{StaticResource DefaultBreadcrumbItemStyle}"/>
+    <Style TargetType="local:BreadcrumbBarItem" BasedOn="{StaticResource DefaultBreadcrumbBarItemStyle}"/>
 </ResourceDictionary>

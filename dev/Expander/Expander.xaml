@@ -125,6 +125,25 @@
                             <RowDefinition x:Name="Row0" Height="Auto" />
                             <RowDefinition x:Name="Row1" Height="*" />
                         </Grid.RowDefinitions>
+                        <ToggleButton
+                            x:Name="ExpanderHeader"
+                            AutomationProperties.AutomationId="ExpanderToggleButton"
+                            Background="{TemplateBinding Background}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            MaxWidth="{TemplateBinding MaxWidth}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsEnabled="{TemplateBinding IsEnabled}"
+                            Padding="{TemplateBinding Padding}"
+                            Style="{StaticResource ExpanderHeaderDownStyle}"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
                         <!-- The clip is a composition clip applied in code -->
                         <Border x:Name="ExpanderContentClip" Grid.Row="1">
                             <Border
@@ -150,26 +169,6 @@
                                 </Border.RenderTransform>
                             </Border>
                         </Border>
-
-                        <ToggleButton
-                            x:Name="ExpanderHeader"
-                            AutomationProperties.AutomationId="ExpanderToggleButton"
-                            Background="{TemplateBinding Background}"
-                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            MinHeight="{TemplateBinding MinHeight}"
-                            MinWidth="{TemplateBinding MinWidth}"
-                            MaxWidth="{TemplateBinding MaxWidth}"
-                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            IsEnabled="{TemplateBinding IsEnabled}"
-                            Padding="{TemplateBinding Padding}"
-                            Style="{StaticResource ExpanderHeaderDownStyle}"
-                            Content="{TemplateBinding Header}"
-                            ContentTemplate="{TemplateBinding HeaderTemplate}"
-                            ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
-                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                            IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
