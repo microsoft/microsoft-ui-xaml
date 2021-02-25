@@ -259,7 +259,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PipsPagerSelectionIndicatorForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="FontSize">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PipsPagerSelectedGlyphFontSize}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PipsPagerDefaultGlyphFontSize}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
