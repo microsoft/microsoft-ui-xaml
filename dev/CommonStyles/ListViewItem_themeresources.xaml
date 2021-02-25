@@ -835,9 +835,9 @@
                         </Border.RenderTransform>
                         <Grid x:Name="ReorderHintContent" Background="Transparent">
                             <Border x:Name="CheckboxOuterContainer"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Margin="{ThemeResource ListPickerFlyoutPresenterMultiselectCheckBoxMargin}">
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Margin="{ThemeResource ListPickerFlyoutPresenterMultiselectCheckBoxMargin}">
                                 <Border.Clip>
                                     <RectangleGeometry Rect="0,0,25.5,25.5" />
                                 </Border.Clip>
@@ -868,9 +868,9 @@
                             </Border>
                             <Border x:Name="ContentContainer">
                                 <Border x:Name="ContentBorder"
-                                        Background="{TemplateBinding Background}"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
                                     <Border.RenderTransform>
                                         <TranslateTransform x:Name="ContentBorderTranslateTransform" />
                                     </Border.RenderTransform>
