@@ -27,7 +27,7 @@ runtimeclass SelectionModelSelectionChangedEventArgs;
 runtimeclass SelectionModelChildrenRequestedEventArgs;
 runtimeclass SelectionModel;
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [flags]
 enum AnimationContext
@@ -39,7 +39,7 @@ enum AnimationContext
     LayoutTransition = 8,
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [flags]
 enum ElementRealizationOptions
@@ -49,7 +49,7 @@ enum ElementRealizationOptions
     SuppressAutoRecycle = 2
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 enum FlowLayoutLineAlignment
 {
@@ -61,7 +61,7 @@ enum FlowLayoutLineAlignment
     SpaceEvenly = 5
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum UniformGridLayoutItemsJustification
 {
@@ -73,7 +73,7 @@ enum UniformGridLayoutItemsJustification
     SpaceEvenly = 5
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum UniformGridLayoutItemsStretch
 {
@@ -82,11 +82,11 @@ enum UniformGridLayoutItemsStretch
     Uniform = 2
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 delegate void ElementAnimationCompleted(ElementAnimator sender, Windows.UI.Xaml.UIElement element);
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 interface IKeyIndexMapping
 {
@@ -94,7 +94,7 @@ interface IKeyIndexMapping
     Int32 IndexFromKey(String key);
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ItemsSourceView: Windows.UI.Xaml.Interop.INotifyCollectionChanged
 {
@@ -109,7 +109,7 @@ unsealed runtimeclass ItemsSourceView: Windows.UI.Xaml.Interop.INotifyCollection
     Int32 IndexOf(IInspectable item);
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("ItemTemplate")]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -128,7 +128,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
     Layout Layout { get; set; };
 
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         ElementAnimator Animator{ get; set; };
@@ -153,7 +153,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty { get; };
     static Windows.UI.Xaml.DependencyProperty LayoutProperty { get; };
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
     }
@@ -162,7 +162,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass ElementFactoryGetArgs
 {
@@ -171,7 +171,7 @@ runtimeclass ElementFactoryGetArgs
     Windows.UI.Xaml.UIElement Parent;
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass ElementFactoryRecycleArgs
 {
@@ -180,7 +180,7 @@ runtimeclass ElementFactoryRecycleArgs
     Windows.UI.Xaml.UIElement Parent;
 };
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 interface IElementFactoryShim
 {
@@ -188,7 +188,7 @@ interface IElementFactoryShim
     void RecycleElement(ElementFactoryRecycleArgs args);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject, IElementFactoryShim
 {
@@ -198,7 +198,7 @@ unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject, IElemen
     overridable void RecycleElementCore(ElementFactoryRecycleArgs args);
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass LayoutContext : Windows.UI.Xaml.DependencyObject
 {
@@ -207,7 +207,7 @@ unsealed runtimeclass LayoutContext : Windows.UI.Xaml.DependencyObject
 }
 
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NonVirtualizingLayoutContext : LayoutContext
 {
@@ -218,7 +218,7 @@ unsealed runtimeclass NonVirtualizingLayoutContext : LayoutContext
 }
 
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass VirtualizingLayoutContext : LayoutContext
 {
@@ -250,7 +250,7 @@ unsealed runtimeclass VirtualizingLayoutContext : LayoutContext
     overridable Windows.Foundation.Point LayoutOriginCore{ get; set; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass Layout : Windows.UI.Xaml.DependencyObject
 {
@@ -266,7 +266,7 @@ unsealed runtimeclass Layout : Windows.UI.Xaml.DependencyObject
     protected void InvalidateArrange();
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NonVirtualizingLayout : Layout
 {
@@ -278,7 +278,7 @@ unsealed runtimeclass NonVirtualizingLayout : Layout
     overridable Windows.Foundation.Size ArrangeOverride(NonVirtualizingLayoutContext context, Windows.Foundation.Size finalSize);
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass VirtualizingLayout : Layout
 {
@@ -292,7 +292,7 @@ unsealed runtimeclass VirtualizingLayout : Layout
     overridable void OnItemsChangedCore(VirtualizingLayoutContext context, IInspectable source, Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs args);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ElementAnimator
 {
@@ -324,7 +324,7 @@ unsealed runtimeclass ElementAnimator
     protected void OnBoundsChangeAnimationCompleted(Windows.UI.Xaml.UIElement element);
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("ScrollViewer")]
 runtimeclass ItemsRepeaterScrollHost : Windows.UI.Xaml.FrameworkElement
@@ -339,7 +339,7 @@ runtimeclass ItemsRepeaterScrollHost : Windows.UI.Xaml.FrameworkElement
     Double VerticalAnchorRatio { get; set; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass ItemsRepeaterElementPreparedEventArgs
 {
@@ -347,14 +347,14 @@ runtimeclass ItemsRepeaterElementPreparedEventArgs
     Int32 Index { get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass ItemsRepeaterElementClearingEventArgs
 {
     Windows.UI.Xaml.UIElement Element { get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass ItemsRepeaterElementIndexChangedEventArgs
 {
@@ -363,7 +363,7 @@ runtimeclass ItemsRepeaterElementIndexChangedEventArgs
     Int32 NewIndex { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 struct FlowLayoutAnchorInfo
 {
@@ -371,14 +371,14 @@ struct FlowLayoutAnchorInfo
     Double Offset;
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass UniformGridLayoutState
 {
     UniformGridLayoutState();
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -413,14 +413,14 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty MaximumRowsOrColumnsProperty{ get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass StackLayoutState
 {
     StackLayoutState();
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -436,7 +436,7 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SpacingProperty { get; };
 
-    [WUXC_VERSION_PREVIEW]
+    [MUX_PREVIEW]
     {
         Boolean DisableVirtualization{ get; set; };
         static Windows.UI.Xaml.DependencyProperty DisableVirtualizationProperty{ get; };
@@ -448,14 +448,14 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
    // overridable void OnElementMeasured(Windows.UI.Xaml.UIElement element, Int32 index, Windows.Foundation.Size availableSize, Windows.Foundation.Size measureSize, Windows.Foundation.Size desiredSize, Windows.Foundation.Size provisionalArrangeSize, VirtualizingLayoutContext context);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass FlowLayoutState
 {
     FlowLayoutState();
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -487,7 +487,7 @@ unsealed runtimeclass FlowLayout : VirtualizingLayout
     overridable void OnLineArranged(Int32 startIndex, Int32 countInLine, Double lineSize, VirtualizingLayoutContext context);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass RecyclePool
 {
@@ -510,7 +510,7 @@ unsealed runtimeclass RecyclePool
     overridable Windows.UI.Xaml.UIElement TryGetElementCore(String key, Windows.UI.Xaml.UIElement owner);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass SelectTemplateEventArgs
 {
@@ -519,7 +519,7 @@ runtimeclass SelectTemplateEventArgs
     Windows.UI.Xaml.UIElement Owner { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [contentproperty("Templates")]
 unsealed runtimeclass RecyclingElementFactory : ElementFactory
@@ -533,7 +533,7 @@ unsealed runtimeclass RecyclingElementFactory : ElementFactory
     overridable String OnSelectTemplateKeyCore(Object dataContext, Windows.UI.Xaml.UIElement owner);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass IndexPath : Windows.Foundation.IStringable
 {
@@ -548,14 +548,14 @@ runtimeclass IndexPath : Windows.Foundation.IStringable
     static IndexPath CreateFromIndices(Windows.Foundation.Collections.IVector<Int32> indices);
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 [default_interface]
 runtimeclass SelectionModelSelectionChangedEventArgs
 {
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 runtimeclass SelectionModelChildrenRequestedEventArgs
 {
@@ -564,7 +564,7 @@ runtimeclass SelectionModelChildrenRequestedEventArgs
     Object Children { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChanged
 {

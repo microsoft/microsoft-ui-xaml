@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{563FE343-C6B0-447B-831A-B0CE3AA7A688}</ItemsProjectGuid>
+    <ItemsProjectName>BreadcrumbBar</ItemsProjectName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);BREADCRUMB_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbBarItem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbBarElementFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbBarItemAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbBarItemClickedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\BreadcrumbBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbBarItem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbBarElementFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbBarItemAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbBarItemClickedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterable.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbIterator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)BreadcrumbLayout.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)BreadcrumbBar.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)BreadcrumbBar_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)BreadcrumbBar.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)BreadcrumbBarAutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

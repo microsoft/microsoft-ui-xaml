@@ -1,7 +1,7 @@
 ﻿namespace MU_XM_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum AcrylicBackgroundSource
 {
@@ -9,11 +9,8 @@ enum AcrylicBackgroundSource
     Backdrop = 1,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IAcrylicBrush", 79bbcf4e-cd66-4f1b-a8b6-cd6d2977c18d)]
-[WUXC_STATIC_NAME("IAcrylicBrushStatics", 2787fd79-a3da-423f-b81a-599147971523)]
-[WUXC_CONSTRUCTOR_NAME("IAcrylicBrushFactory", 81a32568-f6cc-4013-8363-928ae23b7a61)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 [MUX_HAS_CUSTOM_FACTORY]
@@ -36,7 +33,7 @@ unsealed runtimeclass AcrylicBrush : Windows.UI.Xaml.Media.XamlCompositionBrushB
 
     Boolean AlwaysUseFallback { get; set; };
 
-    [WUXC_VERSION_19H1]
+    [MUX_PUBLIC]
     {
         [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToZeroOneRange_Nullable")]
         Windows.Foundation.IReference<Double> TintLuminosityOpacity{ get; set; };
@@ -48,7 +45,7 @@ unsealed runtimeclass AcrylicBrush : Windows.UI.Xaml.Media.XamlCompositionBrushB
     static Windows.UI.Xaml.DependencyProperty TintTransitionDurationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty AlwaysUseFallbackProperty { get; };
 
-    [WUXC_VERSION_19H1]
+    [MUX_PUBLIC]
     {
         static Windows.UI.Xaml.DependencyProperty TintLuminosityOpacityProperty { get; };
     }

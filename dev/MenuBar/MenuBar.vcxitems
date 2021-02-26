@@ -32,14 +32,32 @@
   </ItemGroup>
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)MenuBar.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBar_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)MenuBarItem.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBarItem_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

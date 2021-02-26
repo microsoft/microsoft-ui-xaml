@@ -5,51 +5,50 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="InfoBarErrorSeverityBackgroundBrush" Color="#FDE7E9"/>
-            <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush" Color="#FFF4CE"/>
-            <SolidColorBrush x:Key="InfoBarSuccessSeverityBackgroundBrush" Color="#DFF6DD"/>
-            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#F2F2F2"/>
+            <StaticResource x:Key="InfoBarErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+            <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+            <StaticResource x:Key="InfoBarSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+            <StaticResource x:Key="InfoBarInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
 
-            <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <Thickness x:Key="InfoBarBorderThickness">0</Thickness>
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <Thickness x:Key="InfoBarBorderThickness">1</Thickness>
         </ResourceDictionary>
         
         <ResourceDictionary x:Key="Dark">
-            <SolidColorBrush x:Key="InfoBarErrorSeverityBackgroundBrush" Color="#442726"/>
-            <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush" Color="#433519"/>
-            <SolidColorBrush x:Key="InfoBarSuccessSeverityBackgroundBrush" Color="#393D1B"/>
-            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#2B2B2B"/>
+            <StaticResource x:Key="InfoBarErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+            <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+            <StaticResource x:Key="InfoBarSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+            <StaticResource x:Key="InfoBarInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
 
-            <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarSuccessSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarInformationalSeverityIconForeground" ResourceKey="TextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+            <StaticResource x:Key="InfoBarTitleForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="InfoBarHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
 
-            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <Thickness x:Key="InfoBarBorderThickness">0</Thickness>
+            <StaticResource x:Key="InfoBarBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <Thickness x:Key="InfoBarBorderThickness">1</Thickness>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="InfoBarErrorSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="InfoBarSuccessSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="InfoBarErrorSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InfoBarSuccessSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
 
             <StaticResource x:Key="InfoBarErrorSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="InfoBarWarningSeverityIconForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -87,25 +86,25 @@
     <x:Double x:Key="InfoBarIconFontSize">20</x:Double>
 
     <Thickness x:Key="InfoBarPanelMargin">0,0,12,0</Thickness>
-    <Thickness x:Key="InfoBarPanelHorizontalLayoutMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="InfoBarPanelVerticalLayoutMargin">0,10,0,10</Thickness>
-    
-    <Thickness x:Key="InfoBarTitleHorizontalLayoutMargin">0,10,0,0</Thickness>
-    <Thickness x:Key="InfoBarTitleVerticalLayoutMargin">0,10,0,0</Thickness>
+    <Thickness x:Key="InfoBarPanelHorizontalOrientationPadding">0,0,0,0</Thickness>
+    <Thickness x:Key="InfoBarPanelVerticalOrientationPadding">0,10,0,10</Thickness>
 
-    <Thickness x:Key="InfoBarMessageHorizontalLayoutMargin">8,10,0,0</Thickness>
-    <Thickness x:Key="InfoBarMessageVerticalLayoutMargin">0,4,0,0</Thickness>
+    <Thickness x:Key="InfoBarTitleHorizontalOrientationMargin">0,10,0,0</Thickness>
+    <Thickness x:Key="InfoBarTitleVerticalOrientationMargin">0,10,0,0</Thickness>
 
-    <Thickness x:Key="InfoBarActionHorizontalLayoutMargin">12,8,0,0</Thickness>
-    <Thickness x:Key="InfoBarActionVerticalLayoutMargin">0,12,0,0</Thickness>
+    <Thickness x:Key="InfoBarMessageHorizontalOrientationMargin">8,10,0,0</Thickness>
+    <Thickness x:Key="InfoBarMessageVerticalOrientationMargin">0,4,0,0</Thickness>
+
+    <Thickness x:Key="InfoBarActionHorizontalOrientationMargin">12,8,0,0</Thickness>
+    <Thickness x:Key="InfoBarActionVerticalOrientationMargin">0,12,0,0</Thickness>
 
     <x:Double x:Key="InfoBarActionButtonMinWidth">96</x:Double>
-    <x:Double x:Key="InfoBarActionButtonHeight">24</x:Double>
+    <x:Double x:Key="InfoBarActionButtonMinHeight">24</x:Double>
     <Thickness x:Key="InfoBarActionButtonPadding">8,0,8,1</Thickness>
-    <CornerRadius x:Key="InfoBarActionButtonCornerRadius">2</CornerRadius>
+    <StaticResource x:Key="InfoBarActionButtonCornerRadius" ResourceKey="ControlCornerRadius"/>
 
     <x:Double x:Key="InfoBarHyperlinkButtonFontSize">14</x:Double>
-    <x:Double x:Key="InfoBarHyperlinkButtonHeight">24</x:Double>
+    <x:Double x:Key="InfoBarHyperlinkButtonMinHeight">24</x:Double>
     <Thickness x:Key="InfoBarHyperlinkButtonPadding">0,0,0,1</Thickness>
 
     <Symbol x:Key="InfoBarCloseButtonSymbol">Cancel</Symbol>
@@ -116,6 +115,7 @@
             <Setter Property="Height" Value="{StaticResource InfoBarCloseButtonSize}"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Margin" Value="4"/>
             <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         </Style.Setters>

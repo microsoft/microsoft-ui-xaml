@@ -13,6 +13,7 @@
         <Setter Property="PaneToggleButtonStyle" Value="{StaticResource PaneToggleButtonStyle}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="CompactPaneLength" Value="{ThemeResource NavigationViewCompactPaneLength}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationView">
@@ -146,10 +147,11 @@
                             <Grid x:Name="TogglePaneTopPadding"
                                   Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
-                            <Grid x:Name="ButtonHolderGrid" Grid.Row="1">
+                            <Grid x:Name="ButtonHolderGrid" Margin="0,4" Grid.Row="1">
                                 <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                    Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}"
                                     VerticalAlignment="Top"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}"
                                     IsEnabled="{TemplateBinding IsBackEnabled}">
@@ -168,9 +170,11 @@
                                 <Button
                                     x:Name="TogglePaneButton"
                                     Style="{TemplateBinding PaneToggleButtonStyle}"
-                                    AutomationProperties.LandmarkType="Navigation" HorizontalAlignment="Center"
+                                    AutomationProperties.LandmarkType="Navigation"
+                                    HorizontalAlignment="Center"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonVisibility}"
-                                    VerticalAlignment="Top">
+                                    VerticalAlignment="Top"
+                                    MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}">
                                     <TextBlock
                                         x:Name="PaneTitleTextBlock" 
                                         Grid.Column="0"
@@ -215,7 +219,9 @@
 
                                 <Grid x:Name="TopNavGrid" 
                                       Height="{ThemeResource NavigationViewTopPaneHeight}"
-                                      Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}">
+                                      Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPaneVisibility}"
+                                      BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                      BorderThickness="0,0,0,1">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition x:Name="BackButtonPlaceholderOnTopNav" Width="{ThemeResource NavigationBackButtonWidth}"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -285,6 +291,40 @@
                                                         <Setter Property="Padding" Value="{ThemeResource TopNavigationViewOverflowMenuPadding}" />
                                                         <!-- Set negative top margin to make the flyout align exactly with the button -->
                                                         <Setter Property="Margin" Value="0,-4,0,0" />
+                                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                                                        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+                                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="FlyoutPresenter">
+                                                                    <ScrollViewer
+                                                                        x:Name="ScrollViewer"
+                                                                        ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                                        HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                                        VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                                        AutomationProperties.AccessibilityView="Raw">
+                                                                        <ContentPresenter
+                                                                            x:Name="ContentPresenter"
+                                                                            Background="{TemplateBinding Background}"
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            Content="{TemplateBinding Content}"
+                                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                                            Padding="{TemplateBinding Padding}"
+                                                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
+                                                                    </ScrollViewer>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
                                                     </Style>
                                                 </Flyout.FlyoutPresenterStyle>
                                                 <local:ItemsRepeaterScrollHost>
@@ -352,14 +392,15 @@
                                 IsTabStop="False"
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
-                            
                                 Grid.Row="1">
 
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
                                         HorizontalAlignment="Left"
-                                        Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
+                                        Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"
+                                        BorderBrush="{ThemeResource NavigationViewItemSeparatorForeground}"
+                                        BorderThickness="0,0,1,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="0"/> <!-- above button margin + back button space -->
@@ -367,7 +408,7 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
-                                            <RowDefinition Height="*"/>
+                                            <RowDefinition x:Name="ItemsContainerRow" Height="*"/>
                                         </Grid.RowDefinitions>
 
                                         <Grid x:Name="ContentPaneTopPadding"
@@ -419,45 +460,51 @@
                                             HorizontalContentAlignment="Stretch"
                                             Grid.Row="4" />
 
-                                        <local:ItemsRepeaterScrollHost
-                                            Grid.Row="6"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch">
-                                            <ScrollViewer
-                                                TabNavigation="Local"
-                                                VerticalScrollBarVisibility="Auto">
-                                                <Grid x:Name="ScrollingContentGrid">
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="*"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="8"/>
-                                                    </Grid.RowDefinitions>
+                                        <!-- "Non header" content -->
+                                        <Grid x:Name="ItemsContainerGrid" Grid.Row="6" Margin="0,0,0,8">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- MenuItems -->
+                                                <RowDefinition Height="*" MinHeight="21"/> <!-- Fill spacing -->
+                                                <RowDefinition Height="Auto" /> <!-- PaneFooter -->
+                                                <RowDefinition Height="Auto" MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"/> <!-- FooterItems -->
+                                            </Grid.RowDefinitions>
 
+                                            <!-- MenuItems -->
+                                            <local:ItemsRepeaterScrollHost
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch">
+                                                <ScrollViewer x:Name="MenuItemsScrollViewer"
+                                                    TabNavigation="Local"
+                                                    VerticalScrollBarVisibility="Auto">
                                                     <!-- Left nav ItemsRepeater -->
                                                     <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
-                                                        Margin="0,0,0,20"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                         AutomationProperties.AccessibilityView = "Content"/>
+                                                </ScrollViewer>
+                                            </local:ItemsRepeaterScrollHost>
 
+                                            <local:NavigationViewItemSeparator x:Name="VisualItemsSeparator"
+                                                Grid.Row="1" VerticalAlignment="Center"
+                                                Visibility="Collapsed" HorizontalAlignment="Stretch"/>
 
-                                                    <ContentControl
-                                                        x:Name="FooterContentBorder"
+                                            <!-- PaneFooter -->
+                                            <ContentControl x:Name="FooterContentBorder"
                                                         IsTabStop="False"
                                                         VerticalContentAlignment="Stretch"
                                                         HorizontalContentAlignment="Stretch"
                                                         Grid.Row="2" />
-                                                    <!-- Left footer menu ItemsRepeater -->
+
+                                            <!-- FooterItems -->
+                                            <local:ItemsRepeaterScrollHost Grid.Row="3">
+                                                <ScrollViewer x:Name="FooterItemsScrollViewer"
+                                                        contract7Present:VerticalAnchorRatio="1">
                                                     <local:ItemsRepeater
                                                         x:Name="FooterMenuItemsHost"
-                                                        AutomationProperties.AccessibilityView = "Content"
-                                                        Grid.Row="3"/>
-                                                </Grid>
-                                            </ScrollViewer>
-                                        </local:ItemsRepeaterScrollHost>
-
+                                                        AutomationProperties.AccessibilityView = "Content"/>
+                                                </ScrollViewer>
+                                            </local:ItemsRepeaterScrollHost>
+                                        </Grid>
                                     </Grid>
                                 </SplitView.Pane>
 
@@ -537,23 +584,11 @@
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OnLeftNavigationReveal">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
-                                    </VisualState.Setters>
-                                </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimary">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Margin" Value="{ThemeResource TopNavigationViewItemMargin}"/>
+                                        <Setter Target="NavigationViewItemPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForeground}" />
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
-                                        <contract7NotPresent:Setter Target="ChildrenFlyout.Placement" Value="Bottom"/>
-                                        <contract7Present:Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OnTopNavigationPrimaryReveal">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Margin" Value="{ThemeResource TopNavigationViewItemMargin}"/>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
                                         <contract7NotPresent:Setter Target="ChildrenFlyout.Placement" Value="Bottom"/>
                                         <contract7Present:Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
                                     </VisualState.Setters>
@@ -566,13 +601,11 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-
                         <primitives:NavigationViewItemPresenter
                             x:Name="NavigationViewItemPresenter"
                             Icon="{TemplateBinding Icon}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Margin="{TemplateBinding Margin}"
                             Padding="{TemplateBinding Padding}"
                             Foreground="{TemplateBinding Foreground}"
                             Background="{TemplateBinding Background}"
@@ -606,6 +639,40 @@
                                         <Setter Property="Padding" Value="{ThemeResource NavigationViewItemChildrenMenuFlyoutPadding}" />
                                         <!-- Set negative top margin to make the flyout align exactly with the button -->
                                         <Setter Property="Margin" Value="0,-4,0,0" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                                        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="FlyoutPresenter">
+                                                    <ScrollViewer
+                                                        x:Name="ScrollViewer"
+                                                        ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                        HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                        VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                        AutomationProperties.AccessibilityView="Raw">
+                                                        <ContentPresenter
+                                                            x:Name="ContentPresenter"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            Content="{TemplateBinding Content}"
+                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                            Padding="{TemplateBinding Padding}"
+                                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
+                                                    </ScrollViewer>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
                                     </Style>
                                 </Flyout.FlyoutPresenterStyle>
                                 <Grid x:Name="FlyoutRootGrid">
@@ -719,7 +786,7 @@
                                 </VisualState>
                                 <VisualState x:Name="VerticalLine">
                                     <VisualState.Setters>
-                                        <Setter Target="SeparatorLine.Height" Value="20" />
+                                        <Setter Target="SeparatorLine.Height" Value="24" />
                                         <Setter Target="SeparatorLine.Width" Value="{ThemeResource TopNavigationViewItemSeparatorWidth}" />
                                         <Setter Target="SeparatorLine.Margin" Value="{ThemeResource TopNavigationViewItemSeparatorMargin}" />
                                         <Setter Target="SeparatorLine.VerticalAlignment" Value="Center" />

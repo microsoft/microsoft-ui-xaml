@@ -40,4 +40,6 @@
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
+  <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
+  <Import Project="..\..\dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
 </Project>

@@ -7,7 +7,7 @@ parameters:
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
   primaryBuildArch: x86
   buildFlavor: Release
-  signConfig: ''
+  signOutput: false
   useReleaseTag: 'false'
   prereleaseVersionTag: 'prerelease'
 
@@ -16,19 +16,10 @@ jobs:
   dependsOn:
     - ${{ parameters.dependsOn }}
 
-  # XES tasks need to be on PackageES machines.
-  ${{if parameters.signConfig }}:
-    pool:
-      name: Package ES Lab E
+  pool:
+    vmImage: 'windows-2019'
 
   steps:
-  - ${{if parameters.signConfig }}:
-    - task: PkgESSetupBuild@10
-      displayName: 'XESSetupBuild'
-      inputs:
-        productName: dep.controls
-        branchVersion: false
-        nugetVer: true
 
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
 
@@ -60,6 +51,13 @@ jobs:
         sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
         Contents: '**\Microsoft.UI.Xaml*.appx'
 
+    # Copy the CBS packages into the same location in the artifact drop to be republished at the end of the job.
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '${{ parameters.nupkgdir }}'
+        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
+        Contents: '**\CBS*'
+        
   - powershell: |
       $prereleaseTag = "${{ parameters.prereleaseVersionTag }}"
       if ("${{ parameters.useReleaseTag}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
@@ -75,15 +73,33 @@ jobs:
 
     displayName: 'build-nupkg.ps1'
 
-  - ${{if parameters.signConfig }}:
-    - task: PkgESCodeSign@10
-      env:
-        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
-      displayName: CodeSign
+  - ${{ if eq( parameters.signOutput, true) }}:
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+      displayName: 'CodeSign (nupkg)'
       inputs:
-        signConfigXml: ${{ parameters.signConfig }}
-        inPathRoot: '${{ parameters.nupkgdir }}'
-        outPathRoot: '${{ parameters.nupkgdir }}\signed'
+        ConnectedServiceName: WinUISigning
+        FolderPath: '${{ parameters.nupkgdir }}'
+        Pattern: |
+          **/Microsoft.UI.Xaml*.nupkg
+        UseMinimatch: true
+        signConfigType: inlineSignParams
+        inlineOperation: | 
+          [
+            {
+                "KeyCode" : "CP-401405",
+                "OperationCode" : "NuGetSign",
+                "Parameters" : {},
+                "ToolName" : "sign",
+                "ToolVersion" : "1.0"
+            },
+            {
+                "KeyCode" : "CP-401405",
+                "OperationCode" : "NuGetVerify",
+                "Parameters" : {},
+                "ToolName" : "sign",
+                "ToolVersion" : "1.0"
+            }
+          ]
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: nupkg'

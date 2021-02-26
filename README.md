@@ -19,13 +19,13 @@ You can watch them online here on YouTube at the [Windows Developer channel](htt
 
 Add the event to your calendar: [ICS calendar file](https://aka.ms/winuicommunitycall)
 
-## WinUI 3.0 Preview 2 (July 2020)
+## WinUI 3.0 Preview 4 (February 2021)
 
 As outlined in the [roadmap](docs/roadmap.md) we're currently working on WinUI 3.0, which will greatly expand the scope of WinUI to include the full native Windows UI platform.
 
-You can now [download an early build of WinUI 3.0 Preview 2](https://docs.microsoft.com/uwp/toolkits/winui3/) to try out - we'd love your feedback!
+You can now [download WinUI 3.0 Preview 4](https://aka.ms/winui3/preview4) to try out - we'd love your feedback!
 
-For more info see the [discussion issue #2917](https://github.com/microsoft/microsoft-ui-xaml/issues/2917).
+For more info see the [discussion issue #2917](https://aka.ms/winui3/preview4-announcement).
 
 ## Using WinUI
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.
@@ -34,7 +34,7 @@ You can download and use WinUI packages in your app using the NuGet package mana
 
 | NuGet Package | Build Status | Latest Versions | Documentation |
 | --- | --- | --- | --- |
-| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) | [2.4 release](https://docs.microsoft.com/windows/apps/winui/winui2/release-notes/winui-2.4) |
+| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) | [2.5 release](https://docs.microsoft.com/windows/apps/winui/winui2/release-notes/winui-2.5) |
 | [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) | [2.0 prerelease](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) |
 
 You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.

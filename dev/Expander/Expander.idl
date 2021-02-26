@@ -1,0 +1,66 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ExpanderTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    Double ContentHeight{ get; };
+    Double NegativeContentHeight{ get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
+{
+    Expander();
+
+    Object Header{ get; set; };
+    Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
+    Windows.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsExpanded{ get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::ExpandDirection::Down")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    ExpandDirection ExpandDirection{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<Expander, ExpanderExpandingEventArgs> Expanding;
+    event Windows.Foundation.TypedEventHandler<Expander, ExpanderCollapsedEventArgs> Collapsed;
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    ExpanderTemplateSettings TemplateSettings{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ExpandDirectionProperty{ get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+enum ExpandDirection
+{
+    Down = 0,
+    Up = 1
+};
+
+[MUX_PUBLIC]
+[default_interface]
+[webhosthidden]
+runtimeclass ExpanderExpandingEventArgs
+{
+}
+
+[MUX_PUBLIC]
+[default_interface]
+[webhosthidden]
+runtimeclass ExpanderCollapsedEventArgs
+{
+}
+
+}
