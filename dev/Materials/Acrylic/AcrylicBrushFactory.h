@@ -20,7 +20,7 @@ public:
     winrt::CompositionEffectBrush CreateBackdropAcrylicEffectBrushWithLuminosity(
         winrt::Compositor const& compositor,
         winrt::Color const& initialTintColor,
-        winrt::Color const& initialLuminosityColor,
+        winrt::IReference<double> const& luminosityOpacity,
         winrt::Color const& initialFallbackColor,
         bool willTintColorAlwaysBeOpaque);
 };
