@@ -60,6 +60,10 @@
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
 #endif
 
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h")
+#include <winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h>
+#endif
+
 #if __has_include("winrt\Microsoft.UI.Xaml.Media.h")
 #include <winrt\Microsoft.UI.Xaml.Media.h>
 #endif
@@ -68,8 +72,8 @@
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #endif
 
-#if __has_include("winrt\Microsoft.UI.Composition.Effects.h")
-#include <winrt\Microsoft.UI.Composition.Effects.h>
+#if __has_include("winrt\Microsoft.UI.Private.Composition.Effects.h")
+#include <winrt\Microsoft.UI.Private.Composition.Effects.h>
 #endif
 
 namespace winrt
@@ -127,6 +131,8 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
     namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals {}
+    using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals;
     namespace Microsoft::UI::Xaml::Media {}
     using namespace ::winrt::Microsoft::UI::Xaml::Media;
     namespace Microsoft::UI::Xaml::Automation::Peers {}
@@ -141,6 +147,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::Primitives::implementation {}
     namespace Microsoft::UI::Xaml::Media::implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation {}
     namespace implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::implementation;
@@ -148,8 +155,10 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::implementation;
+
     }
 
     namespace Microsoft::UI::Private::Controls::factory_implementation {}
@@ -157,6 +166,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::factory_implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::factory_implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
     namespace Microsoft::UI::Xaml::Media::factory_implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::factory_implementation {}
     namespace factory_implementation
@@ -166,12 +176,13 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::factory_implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
     }
 
 #ifdef EFFECTS_INCLUDED
-    using namespace ::winrt::Microsoft::UI::Composition::Effects;
+    using namespace ::winrt::Microsoft::UI::Private::Composition::Effects;
 #endif
 
     // using namespace ::winrt::Windows::UI::Xaml::Controls;
@@ -198,6 +209,7 @@ namespace winrt
     using DragItemsCompletedEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs;
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
+    using Flyout = winrt::Windows::UI::Xaml::Controls::Flyout;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
     using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;

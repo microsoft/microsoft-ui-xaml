@@ -10,6 +10,8 @@ Param(
     [Parameter(Position=1,Mandatory=$true)]
     [string]$inputAppxDirectory,
     [switch]$pushAndQueueBuild)
+
+$ErrorActionPreference = "Stop"
     
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::OpenRead($nugetPackage)
@@ -56,7 +58,10 @@ Write-Verbose "Output path = $inputPath"
 # Remove things that are zip file metadata
 Remove-Item -Force -Recurse "$nugetUnpacked\_rels"
 Remove-Item -Force -Recurse "$nugetUnpacked\package"
-Remove-Item -Force "$nugetUnpacked\.signature.p7s"
+if(Test-Path "$nugetUnpacked\.signature.p7s")
+{
+    Remove-Item -Force "$nugetUnpacked\.signature.p7s"
+}
 Remove-Item -Force "$nugetUnpacked\*Content_Types*"
 
 foreach ($flavor in $flavors)
@@ -73,9 +78,14 @@ $nuspecContent = $nuspecContent.Replace("<licenseUrl>https://aka.ms/deprecateLic
 # Write-Verbose "Rewriting '$nuspec'"
 Set-Content -Path $nuspec -Value $nuspecContent -Encoding UTF8
 
+[xml]$nuspecContentXml = $nuspecContent
+$version = $nuspecContentXml.GetElementsByTagName("version").'#text'
+Write-Verbose "Nuget package version: $version"
+
 Write-Host "Repacking nuget package..."
 
 & "$PSScriptRoot\..\..\tools\NugetWrapper.cmd" pack "$nuspec" -BasePath "$nugetUnpacked" -OutputDirectory $nugetUnpacked
+if ($LastExitCode -ne 0){ Throw "Failed to run nuget pack. Error Code: $LastExitCode" }
 
 $outputFile = Get-ChildItem $nugetUnpacked -Filter "Microsoft.UI.Xaml.*.nupkg"
 $outputFilePath = $outputFile.FullName
@@ -88,20 +98,16 @@ Write-Host "Repacked to: $nugetRewritten"
 
 if ($pushAndQueueBuild)
 {    
-    $NugetUNCPath = "\\redmond\osg\threshold\testcontent\CORE\DEP\XAML\winui\NugetSigningInput"
-
-    $nugetFileName = (Split-Path -Leaf $nugetRewritten).Replace(".updated", "")
-    $NugetUNCFile = Join-Path $NugetUNCPath $nugetFileName
-
-    Write-Verbose "Copying '$nugetRewritten' -> '$NugetUNCFile'"
-    Copy-Item $nugetRewritten $NugetUNCFile
+    & "$PSScriptRoot\..\..\tools\NugetWrapper.cmd" push -Source https://microsoft.pkgs.visualstudio.com/WinUI/_packaging/WinUI.SigningInput/nuget/v3/index.json -ApiKey az $nugetRewritten
+    if ($LastExitCode -ne 0){ Throw "Failed to push updated package. Error Code: $LastExitCode" }
+    
 
     Import-Module -Name $PSScriptRoot\..\..\tools\BuildMachineUtils.psm1 -DisableNameChecking
 
     function Queue-NugetSigningBuild
     {
         Param(
-            [string]$NupkgPath)
+            [string]$version)
 
         $token = Get-AccessToken
 
@@ -116,7 +122,8 @@ if ($pushAndQueueBuild)
             };
             "parameters" = 
                 ConvertTo-JSon (@{
-                    "NupkgPath" = $NupkgPath
+                    "NameOfPackage" = "Microsoft.UI.Xaml"
+                    "PackageVersion" = $version
                 })
         };
 
@@ -131,7 +138,11 @@ if ($pushAndQueueBuild)
     
     Write-Host "Queueing signing build"
 
-    $result = Queue-NugetSigningBuild -NupkgPath $NugetUNCFile
+    $result = Queue-NugetSigningBuild -version $version
 
-    $result._links.web.href
+    $buildUrl = $result._links.web.href
+
+    Write-Host "Build queued at $buildUrl"
+    Write-Host "Launching browser window."
+    Start $buildUrl
 }

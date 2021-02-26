@@ -15,10 +15,10 @@
     RenderSize=400,400
   [Windows.UI.Xaml.Controls.Slider]
       Padding=0,0,0,0
-      Foreground=#FF0078D7
+      Foreground=#FF005A9E
       BorderThickness=0,0,0,0
-      BorderBrush=[NULL]
-      Background=#66000000
+      BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+      Background=#72000000
       CornerRadius=2,2,2,2
       Margin=0,0,0,0
       FocusVisualSecondaryThickness=1,1,1,1
@@ -73,13 +73,13 @@
               StrokeThickness=1
               Name=HorizontalTrackRect
               Margin=0,0,0,0
-              Height=2
+              Height=4
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=400,2
+              RenderSize=400,4
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
               Width=0
@@ -90,7 +90,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=0,2
+              RenderSize=0,4
           [Windows.UI.Xaml.Controls.Primitives.TickBar]
               Name=TopTickBar
               Margin=0,0,0,4
@@ -104,7 +104,7 @@
           [Windows.UI.Xaml.Controls.Primitives.TickBar]
               Name=HorizontalInlineTickBar
               Margin=0,0,0,0
-              Height=2
+              Height=4
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -123,10 +123,10 @@
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.Primitives.Thumb]
               Padding=0,0,0,0
-              Foreground=#FF0078D7
-              BorderThickness=0,0,0,0
+              Foreground=#FF005A9E
+              BorderThickness=1,1,1,1
               BorderBrush=#00FFFFFF
-              Background=#FF0078D7
+              Background=#FF005A9E
               CornerRadius=0,0,0,0
               Width=20
               Name=HorizontalThumb
@@ -141,16 +141,28 @@
             [Windows.UI.Xaml.Controls.Border]
                 Padding=0,0,0,0
                 CornerRadius=10,10,10,10
-                BorderThickness=0,0,0,0
-                BorderBrush=#00FFFFFF
-                Background=#FF0078D7
-                Margin=0,0,0,0
+                BorderThickness=1,1,1,1
+                BorderBrush=Windows.UI.Xaml.Media.LinearGradientBrush
+                Background=#FFFFFFFF
+                Margin=-1,-1,-1,-1
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=20,20
+                RenderSize=22,22
+              [Windows.UI.Xaml.Shapes.Ellipse]
+                  StrokeThickness=1
+                  Width=12
+                  Name=SliderInnerThumb
+                  Margin=0,0,0,0
+                  Height=12
+                  FocusVisualSecondaryThickness=1,1,1,1
+                  FocusVisualSecondaryBrush=#99FFFFFF
+                  FocusVisualPrimaryThickness=2,2,2,2
+                  FocusVisualPrimaryBrush=#FF000000
+                  Visibility=Visible
+                  RenderSize=12,12
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
             CornerRadius=0,0,0,0
@@ -168,7 +180,7 @@
             RenderSize=0,0
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
-              Width=2
+              Width=4
               Name=VerticalTrackRect
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
@@ -198,7 +210,7 @@
               Visibility=Collapsed
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.Primitives.TickBar]
-              Width=2
+              Width=4
               Name=VerticalInlineTickBar
               Margin=0,0,0,0
               FocusVisualSecondaryThickness=1,1,1,1
@@ -219,10 +231,10 @@
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.Primitives.Thumb]
               Padding=0,0,0,0
-              Foreground=#FF0078D7
-              BorderThickness=0,0,0,0
+              Foreground=#FF005A9E
+              BorderThickness=1,1,1,1
               BorderBrush=#00FFFFFF
-              Background=#FF0078D7
+              Background=#FF005A9E
               CornerRadius=0,0,0,0
               Width=20
               Name=VerticalThumb

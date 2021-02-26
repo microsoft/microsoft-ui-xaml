@@ -10,6 +10,9 @@
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
     <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
   <!-- We need to define NuGet references using this newer style for running tests locally in VS to work.
        However, for some reason, specifially in lab builds, using the below to resolve NuGet references

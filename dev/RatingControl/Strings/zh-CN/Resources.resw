@@ -130,7 +130,7 @@
     <comment>This text is used to show the number of stars none are selected.</comment>
   </data>
   <data name="RatingLocalizedControlType" xml:space="preserve">
-    <value>为滑块评分</value>
+    <value>评分滑块</value>
     <comment>A simple description of the control for UIA</comment>
   </data>
 </root>
