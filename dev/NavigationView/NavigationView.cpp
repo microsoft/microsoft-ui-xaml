@@ -1063,6 +1063,11 @@ winrt::ItemsRepeater NavigationView::GetParentRootItemsRepeaterForContainer(cons
     while (!IsRootItemsRepeater(parentIR))
     {
         currentNvib = GetParentNavigationViewItemForContainer(currentNvib);
+        if (!currentNvib)
+        {
+            return nullptr;
+        }
+
         parentIR = GetParentItemsRepeaterForContainer(currentNvib);
     }
     return parentIR;
@@ -1286,8 +1291,12 @@ void NavigationView::CreateAndHookEventsToSettings()
         return;
     }
 
-    auto settingsItem = m_settingsItem.get();
-    auto settingsIcon = winrt::SymbolIcon(winrt::Symbol::Setting);
+    auto const settingsItem = m_settingsItem.get();
+    auto const settingsIcon = winrt::AnimatedIcon();
+    settingsIcon.Source(winrt::AnimatedSettingsVisualSource());
+    auto const settingsFallbackIcon = winrt::SymbolIconSource();
+    settingsFallbackIcon.Symbol(winrt::Symbol::Setting);
+    settingsIcon.FallbackIconSource(settingsFallbackIcon);
     settingsItem.Icon(settingsIcon);
 
     // Do localization for settings item label and Automation Name
@@ -1728,6 +1737,8 @@ void NavigationView::UpdateIsClosedCompact()
 
 void NavigationView::UpdatePaneButtonsWidths()
 {
+    const auto templateSettings = GetTemplateSettings();
+
     const auto newButtonWidths = [this]()
     {
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
@@ -1736,24 +1747,9 @@ void NavigationView::UpdatePaneButtonsWidths()
         }
         return CompactPaneLength();
     }();
-
-    if (auto&& backButton = m_backButton.get())
-    {
-        backButton.Width(newButtonWidths);
-    }
-    if (auto&& paneToggleButton = m_paneToggleButton.get())
-    {
-        paneToggleButton.MinWidth(newButtonWidths);
-        if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
-        {
-            if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
-            {
-                auto width = paneToggleButtonIconColumn.Width();
-                width.Value = newButtonWidths;
-                paneToggleButtonIconColumn.Width(width);
-            }
-        }
-    }
+ 
+    templateSettings->PaneToggleButtonWidth(newButtonWidths);
+    templateSettings->SmallerPaneToggleButtonWidth(newButtonWidths - 8);
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -4282,7 +4278,7 @@ void NavigationView::UpdatePaneToggleSize()
     {
         if (auto splitView = m_rootSplitView.get())
         {
-            double width = GetPaneToggleButtonWidth();
+            double width = GetTemplateSettings()->PaneToggleButtonWidth();
             double togglePaneButtonWidth = width;
 
             if (ShouldShowBackButton() && splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)

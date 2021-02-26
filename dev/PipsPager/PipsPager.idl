@@ -1,0 +1,76 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+enum PipsPagerButtonVisibility
+{
+    Visible,
+    VisibleOnPointerOver,
+    Collapsed
+};
+
+[MUX_PUBLIC]
+[default_interface]
+[webhosthidden]
+runtimeclass PipsPagerSelectedIndexChangedEventArgs
+{
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass PipsPagerTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    Windows.Foundation.Collections.IVector<Int32> PipsPagerItems { get; };
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass PipsPager : Windows.UI.Xaml.Controls.Control
+{
+    PipsPager();
+
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 NumberOfPages;
+
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 SelectedPageIndex;
+
+    [MUX_DEFAULT_VALUE("5")]
+    Int32 MaxVisiblePips;
+
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
+    Windows.UI.Xaml.Controls.Orientation Orientation;
+
+    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::Collapsed")]
+    PipsPagerButtonVisibility PreviousButtonVisibility;
+    [MUX_DEFAULT_VALUE("winrt::PipsPagerButtonVisibility::Collapsed")]
+    PipsPagerButtonVisibility NextButtonVisibility;
+
+    Windows.UI.Xaml.Style PreviousButtonStyle;
+    Windows.UI.Xaml.Style NextButtonStyle;
+
+    Windows.UI.Xaml.Style SelectedPipStyle;
+    Windows.UI.Xaml.Style NormalPipStyle;
+
+    event Windows.Foundation.TypedEventHandler<PipsPager, PipsPagerSelectedIndexChangedEventArgs> SelectedIndexChanged;
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    PipsPagerTemplateSettings TemplateSettings{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty NumberOfPagesProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedPageIndexProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaxVisiblePipsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonVisibilityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonVisibilityProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreviousButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedPipStyleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NormalPipStyleProperty{ get; };
+};
+
+}

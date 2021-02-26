@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{D1EB61D8-C689-4AD1-BD61-FDAA50362563}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);PipsPager_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)PipsPager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PipsPagerAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PipsPagerSelectedIndexChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PipsPagerTemplateSettings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PipsPager.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PipsPagerTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PipsPager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PipsPagerAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PipsPagerTemplateSettings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)PipsPager.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PipsPager_themeresources.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PipsPager_21h1_themeresources.xaml">
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
+      <Version>21H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)PipsPager.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PipsPagerAutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>
