@@ -354,9 +354,9 @@
                         <StackPanel>
                             <TextBlock Text='GridView - SelectionMode=Single:' Margin='2'/>
                             <GridView x:Name='gridView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
-                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60'/>
-                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60'/>
-                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' IsSelected='true'/>
+                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}'/>
+                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}'/>
+                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}' IsSelected='true'/>
                             </GridView>
                         </StackPanel>
                     </StackPanel>
