@@ -36,9 +36,9 @@
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonSelectedForegroundThemeBrush" />
             <!-- Reveal themes for InkToolbar-->
             <!-- Background -->
-            <StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+            <!--<StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="InkToolbarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
+            <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />-->
             <StaticResource x:Key="InkToolbarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <!-- Foreground -->
             <StaticResource x:Key="InkToolbarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -47,12 +47,12 @@
             <StaticResource x:Key="InkToolbarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <!-- BorderBrush -->
             <Thickness x:Key="InkToolbarButtonBorderThemeThickness">1</Thickness>
-            <StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
+            <!--<StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="InkToolbarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
-            <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
+            <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />-->
             <StaticResource x:Key="InkToolbarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">            
+        <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
@@ -83,9 +83,9 @@
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonHoverForegroundThemeBrush" />
             <!-- Reveal themes for InkToolbar-->
             <!-- Background -->
-            <StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+            <!--<StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="InkToolbarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
+            <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />-->
             <StaticResource x:Key="InkToolbarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <!-- Foreground -->
             <StaticResource x:Key="InkToolbarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -94,9 +94,9 @@
             <StaticResource x:Key="InkToolbarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <!-- BorderBrush -->
             <Thickness x:Key="InkToolbarButtonBorderThemeThickness">1</Thickness>
-            <StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
+            <!--<StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="InkToolbarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
-            <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
+            <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />-->
             <StaticResource x:Key="InkToolbarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
@@ -130,9 +130,9 @@
             <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonSelectedForegroundThemeBrush" />
             <!-- Reveal themes for InkToolbar-->
             <!-- Background -->
-            <StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+            <!--<StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="InkToolbarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
-            <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />
+            <StaticResource x:Key="InkToolbarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealListLowBackgroundBrush" />-->
             <StaticResource x:Key="InkToolbarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <!-- Foreground -->
             <StaticResource x:Key="InkToolbarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -140,10 +140,10 @@
             <StaticResource x:Key="InkToolbarButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="InkToolbarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <!-- BorderBrush -->
-            <Thickness x:Key="InkToolbarButtonBorderThemeThickness">1</Thickness>
+            <!--<Thickness x:Key="InkToolbarButtonBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="InkToolbarButtonBorderBrush" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
             <StaticResource x:Key="InkToolbarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
-            <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
+            <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />-->
             <StaticResource x:Key="InkToolbarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
 
@@ -237,7 +237,8 @@
                         <Grid x:Name="RootElement"
               Background="{TemplateBinding Background}"
               Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+              Height="{ThemeResource InkToolbarButtonHeight}"
+              CornerRadius="{TemplateBinding CornerRadius}">
 
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -245,7 +246,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -256,7 +257,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -377,7 +378,7 @@
 
                             </VisualStateManager.VisualStateGroups>
 
-                        <ContentPresenter x:Name="ContentPresenter"
+                        <!--<ContentPresenter x:Name="ContentPresenter"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -388,7 +389,7 @@
                             Padding="0"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw" />
+                            AutomationProperties.AccessibilityView="Raw" />-->
 
                         <Rectangle x:Name="ContentBackground" Fill="Transparent" />
                             <TextBlock
@@ -459,7 +460,8 @@
                         <Grid x:Name="RootElement"
               Background="{TemplateBinding Background}"
               Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+              Height="{ThemeResource InkToolbarButtonHeight}"
+              CornerRadius="{TemplateBinding CornerRadius}">
 
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -467,7 +469,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -478,7 +480,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -666,7 +668,8 @@
                         <Grid x:Name="RootElement"
               Background="{TemplateBinding Background}"
               Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+              Height="{ThemeResource InkToolbarButtonHeight}"
+              CornerRadius="{TemplateBinding CornerRadius}">
 
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -674,7 +677,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -685,7 +688,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -880,7 +883,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -890,7 +893,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -1210,7 +1213,8 @@
                         <Grid x:Name="RootElement"
               Background="{TemplateBinding Background}"
               Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+              Height="{ThemeResource InkToolbarButtonHeight}"
+              CornerRadius="{TemplateBinding CornerRadius}">
 
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -1218,7 +1222,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -1229,7 +1233,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -1411,7 +1415,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -1421,7 +1425,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -1580,7 +1584,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -1590,7 +1594,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -1694,7 +1698,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -1703,7 +1707,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -1839,7 +1843,8 @@
                         <Grid x:Name="RootElement"
               Background="{TemplateBinding Background}"
               Width="{ThemeResource InkToolbarButtonWidth}"
-              Height="{ThemeResource InkToolbarButtonHeight}">
+              Height="{ThemeResource InkToolbarButtonHeight}"
+              CornerRadius="{TemplateBinding CornerRadius}">
 
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
@@ -1847,7 +1852,7 @@
 
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -1858,7 +1863,7 @@
 
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="Pressed" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPressed}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
@@ -1891,7 +1896,7 @@
                                     </VisualState>
                                     <VisualState x:Name="CheckedPointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
@@ -1902,7 +1907,7 @@
                                     </VisualState>
                                     <VisualState x:Name="IndeterminatePointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />
+                                            <!--<Setter Target="RootElement.(RevealBrush.State)" Value="PointerOver" />-->
                                             <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonBackgroundPointerOver}" />
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPointerOver}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPointerOver}" />
