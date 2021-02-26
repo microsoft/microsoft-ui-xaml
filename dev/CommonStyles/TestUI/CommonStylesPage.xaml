@@ -354,17 +354,17 @@
                         <StackPanel>
                             <TextBlock Text='ListView - SelectionMode=Single:' Margin='2'/>
                             <ListView x:Name='listView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
-                                <ListViewItem x:Name='listViewItem7' Content='List Item 7'/>
-                                <ListViewItem x:Name='listViewItem8' Content='List Item 8'/>
-                                <ListViewItem x:Name='listViewItem9' Content='List Item 9' IsSelected='true'/>
+                                <ListViewItem x:Name='listViewItem7' Content='List Item 7' Style='{ThemeResource DefaultListViewItemStyle}'/>
+                                <ListViewItem x:Name='listViewItem8' Content='List Item 8' Style='{ThemeResource DefaultListViewItemStyle}'/>
+                                <ListViewItem x:Name='listViewItem9' Content='List Item 9' Style='{ThemeResource DefaultListViewItemStyle}' IsSelected='true'/>
                             </ListView>
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text='GridView - SelectionMode=Single:' Margin='2'/>
                             <GridView x:Name='gridView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
-                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60'/>
-                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60'/>
-                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' IsSelected='true'/>
+                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}'/>
+                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}'/>
+                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}' IsSelected='true'/>
                             </GridView>
                         </StackPanel>
                     </StackPanel>
