@@ -12,7 +12,10 @@
     <StackPanel Margin="12">
         <TextBlock Text="Sample CheckBoxes" Style="{ThemeResource StandardGroupHeader}"/>
         <CheckBox Content="Two-state CheckBox"/>
-        <CheckBox Content="Three-state CheckBox" IsThreeState="True"/>
+        <StackPanel Orientation="Horizontal">
+            <CheckBox x:Name="ThreeStateCheckbox" Content="Three-state CheckBox" IsThreeState="True"/>
+            <Button Content="Reverse Order" Click="OnReverseButtonClicked" Margin="10,0,10,0"/>
+        </StackPanel>
         <CheckBox Content="Disabled CheckBox Unchecked" IsEnabled="False"/>
         <CheckBox Content="Disabled CheckBox Indetermintate" IsThreeState="True" IsChecked="{x:Null}" IsEnabled="False"/>
         <CheckBox Content="Disabled CheckBox Checked" IsThreeState="True" IsChecked="True" IsEnabled="False"/>

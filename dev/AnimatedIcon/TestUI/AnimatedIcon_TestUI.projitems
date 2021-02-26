@@ -22,5 +22,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)DoubleToStringConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockIRichAnimatedIconSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToggleAnimatedIconHost.cs" />
   </ItemGroup>
 </Project>
