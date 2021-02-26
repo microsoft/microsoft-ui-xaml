@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>InternalWindowsSDK-part2</id>
+    <version>1.0.2</version>
+    <title>InternalWindowsSDK-part2</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Internal Windows SDK install files - part2.</description>
+    <releaseNotes>For Microsoft internal use only.</releaseNotes>
+    <copyright>Copyright 2021</copyright>
+  </metadata>
+  <files>
+    <file target="windowssdk-21307.1000.210201-1505-part2" src="..\windowssdk-21307.1000.210201-1505-part2\**\*.*"/>
+  </files>
+</package>

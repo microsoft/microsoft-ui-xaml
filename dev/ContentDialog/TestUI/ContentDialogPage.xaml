@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <Button Content="Click to open simple ContentDialog" Click="ShowDialog_Click"/>
+        <Button Content="Click to open simple ContentDialog" Click="ShowDialog_Click" Margin="0,12,0,24"/>
         <Button Content="Border thickness test dialog" Click="ShowBorderThickness_Click"/>
     </StackPanel>
 </local:TestPage>

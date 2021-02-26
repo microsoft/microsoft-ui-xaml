@@ -492,7 +492,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 int height = FindElement.ById("AppsItem").BoundingRectangle.Height;
-                Verify.AreEqual(height, 40);
+                Verify.AreEqual(height, 36);
             }
         }
 
@@ -622,6 +622,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabling test as Reveal style is being deprecated
         public void LeftNavigationFocusKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -1447,7 +1448,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                         }
 
                         Button navButton = new Button(FindElement.ById("TogglePaneButton"));
-                        Verify.AreEqual(320, navButton.BoundingRectangle.Width);
+                        Verify.AreEqual(312, navButton.BoundingRectangle.Width);
                     }
                 }
             }
@@ -1715,7 +1716,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Wait.ForIdle();
 
                 getChildContentPresenterMarginButton.InvokeAndWait();
-                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+                Verify.AreEqual("4,0,20,0", contentPresenterMarginTextBlock.DocumentText);
 
                 // Close opened flyout
                 InputHelper.LeftClick(hasChildItem);
@@ -1733,7 +1734,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                 // Verify that top-level items use the correct content margin
                 getTopLevelContentPresenterMarginButton.InvokeAndWait();
-                Verify.AreEqual("0,0,20,0", contentPresenterMarginTextBlock.DocumentText);
+                Verify.AreEqual("4,0,20,0", contentPresenterMarginTextBlock.DocumentText);
             }
         }
 
@@ -1776,9 +1777,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Get CornerRadius of Menu Item 1's children menu flyout.");
                     FindElement.ByName<Button>("GetMenuItem1ChildrenFlyoutCornerRadiusButton").Invoke();
 
-                    // A CornerRadius of (4,4,4,4) is the current default value for flyouts.
+                    // A CornerRadius of (8,8,8,8) is the current default value for flyouts.
                     TextBlock menuItem1ChildrenFlyoutCornerRadiusTextBlock = new TextBlock(FindElement.ByName("MenuItem1ChildrenFlyoutCornerRadiusTextBlock"));
-                    Verify.AreEqual("4,4,4,4", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
+                    Verify.AreEqual("8,8,8,8", menuItem1ChildrenFlyoutCornerRadiusTextBlock.DocumentText);
 
                     // Close flyout
                     InputHelper.LeftClick(item);

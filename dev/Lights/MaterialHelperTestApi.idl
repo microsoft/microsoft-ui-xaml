@@ -1,7 +1,7 @@
 namespace MU_PRIVATE_MEDIA_NAMESPACE
 {
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 [default_interface]
 runtimeclass MaterialHelperTestApi : Windows.UI.Xaml.DependencyObject

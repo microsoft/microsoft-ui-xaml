@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum ParallaxSourceOffsetKind
 {
@@ -9,12 +9,9 @@ enum ParallaxSourceOffsetKind
     Relative = 1,
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("Child")]
-[WUXC_INTERFACE_NAME("IParallaxView", 6b84fcd4-4083-5b4b-bc40-d9204e19b41a)]
-[WUXC_STATIC_NAME("IParallaxViewStatics", 8836e49c-0e0e-57d8-9395-f0a9a0d1bb28)]
-[WUXC_CONSTRUCTOR_NAME("IParallaxViewFactory", e4eb9642-3e8e-5a26-94f2-9121d121b916)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ParallaxView : Windows.UI.Xaml.FrameworkElement
