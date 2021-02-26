@@ -8,7 +8,7 @@ Don't forget to set XamlControlsResources as your Application resources in App.x
         </Application.Resources>
     </Application>
 
-If you have other resources then we recommend you add those to the XamlControlsResources' MergedDictionaries.
+If you have other resources, then we recommend you add those to the XamlControlsResources' MergedDictionaries.
 This works with the platform's resource system to allow overrides of the XamlControlsResources resources.
 
 <Application
