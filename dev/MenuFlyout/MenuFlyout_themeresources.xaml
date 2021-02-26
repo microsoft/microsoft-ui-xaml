@@ -534,28 +534,28 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="AnimationRoot">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon
-                                x:Name="CheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
-                                FontSize="12"
-                                Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
-                                Opacity="0"
-                                Margin="0,0,16,0" />
-                            <TextBlock
-                                x:Name="TextBlock"
-                                Grid.Column="1"
-                                Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
-                                Foreground="{TemplateBinding Foreground}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Grid>
+                        
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <FontIcon
+                            x:Name="CheckGlyph"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Glyph="&#xE001;"
+                            FontSize="12"
+                            Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
+                            Opacity="0"
+                            Margin="0,0,16,0" />
+                        <TextBlock
+                            x:Name="TextBlock"
+                            Grid.Column="1"
+                            Text="{TemplateBinding Text}"
+                            TextTrimming="Clip"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -887,11 +887,9 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}" >
-
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="PointerOver" />
@@ -903,7 +901,6 @@
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
-
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="Pressed" />
@@ -915,7 +912,6 @@
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
-
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource ToggleMenuFlyoutItemRevealBackgroundDisabled}" />
@@ -951,7 +947,6 @@
                             <VisualStateGroup x:Name="PaddingSizeStates">
                                 <VisualState x:Name="DefaultPadding" />
                                 <VisualState x:Name="NarrowPadding">
-
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot" Storyboard.TargetProperty="Padding">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource MenuFlyoutItemThemePaddingNarrow}" />
@@ -967,52 +962,48 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </contract6Present:VisualStateGroup>
-
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="AnimationRoot">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <FontIcon x:Name="CheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
-                                FontSize="12"
-                                Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
-                                Opacity="0"
-                                Margin="0,0,12,0" />
-                            <Viewbox x:Name="IconRoot" 
-                                Grid.Column="1"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Width="16" 
-                                Height="16"
-                                Visibility="Collapsed">
-                                <ContentPresenter x:Name="IconContent"
-                                Content="{TemplateBinding Icon}"/>
-                            </Viewbox>
-                            <TextBlock x:Name="TextBlock"
-                                Grid.Column="1"
-                                Text="{TemplateBinding Text}"
-                                TextTrimming="Clip"
-                                Foreground="{TemplateBinding Foreground}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            <contract6Present:TextBlock x:Name="KeyboardAcceleratorTextBlock"
-                                Grid.Column="2"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
-                                MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
-                                Margin="24,0,0,0"
-                                Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Visibility="Collapsed"
-                                AutomationProperties.AccessibilityView="Raw" />
+                        
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                        </Grid>
-
+                        <FontIcon x:Name="CheckGlyph"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Glyph="&#xE001;"
+                            FontSize="12"
+                            Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
+                            Opacity="0"
+                            Margin="0,0,12,0" />
+                        <Viewbox x:Name="IconRoot" 
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Width="16" 
+                            Height="16"
+                            Visibility="Collapsed">
+                            <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}"/>
+                        </Viewbox>
+                        <TextBlock x:Name="TextBlock"
+                            Grid.Column="1"
+                            Text="{TemplateBinding Text}"
+                            TextTrimming="Clip"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <contract6Present:TextBlock x:Name="KeyboardAcceleratorTextBlock"
+                            Grid.Column="2"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{TemplateBinding KeyboardAcceleratorTextOverride}"
+                            MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}"
+                            Margin="24,0,0,0"
+                            Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Visibility="Collapsed"
+                            AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
