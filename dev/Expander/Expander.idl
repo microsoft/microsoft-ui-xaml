@@ -1,7 +1,16 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ExpanderTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    Double ContentHeight{ get; };
+    Double NegativeContentHeight{ get; };
+}
+
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
 {
@@ -21,6 +30,9 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     event Windows.Foundation.TypedEventHandler<Expander, ExpanderExpandingEventArgs> Expanding;
     event Windows.Foundation.TypedEventHandler<Expander, ExpanderCollapsedEventArgs> Collapsed;
 
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    ExpanderTemplateSettings TemplateSettings{ get; };
+
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty{ get; };
@@ -29,7 +41,7 @@ unsealed runtimeclass Expander : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty ExpandDirectionProperty{ get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 enum ExpandDirection
 {
@@ -37,14 +49,14 @@ enum ExpandDirection
     Up = 1
 };
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PUBLIC]
 [default_interface]
 [webhosthidden]
 runtimeclass ExpanderExpandingEventArgs
 {
 }
 
-[WUXC_VERSION_PREVIEW]
+[MUX_PUBLIC]
 [default_interface]
 [webhosthidden]
 runtimeclass ExpanderCollapsedEventArgs

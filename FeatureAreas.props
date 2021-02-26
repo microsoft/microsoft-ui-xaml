@@ -15,6 +15,8 @@
     <FeatureDropDownButtonEnabled>productOnly</FeatureDropDownButtonEnabled>
     <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
     <FeatureIconSourceEnabled>productOnly</FeatureIconSourceEnabled>
+    <FeatureAnimatedIconEnabled>productOnly</FeatureAnimatedIconEnabled>
+    <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
     <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
     <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
     <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
@@ -111,6 +113,8 @@
   <!-- Dependencies for NavigationView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureNavigationViewEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+    <!-- The RadioButtons control is used in the test UI. -->
+    <FeatureRadioButtonsEnabled>productOnly</FeatureRadioButtonsEnabled>
   </PropertyGroup>
   <!-- Dependencies for PagerControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerControlEnabled) == 'true'">
@@ -210,6 +214,17 @@
   <!-- Dependencies for RadialGradientBrush -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureRadialGradientBrushEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for PipsPager -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePipsPagerEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
+  <!-- Dependencies for ImageIcon -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureImageIconEnabled) == 'true'">
+  </PropertyGroup>
+    <!-- Dependencies for AnimatedIcon -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnimatedIconEnabled) == 'true'">
+    <FeatureAnimatedVisualPlayerEnabled>productOnly</FeatureAnimatedVisualPlayerEnabled>
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -268,6 +283,10 @@
     <FeatureInfoBarEnabled>true</FeatureInfoBarEnabled>
     <FeatureExpanderEnabled>true</FeatureExpanderEnabled>
     <FeaturePagerControlEnabled>true</FeaturePagerControlEnabled>
+    <FeatureBreadcrumbEnabled>true</FeatureBreadcrumbEnabled>
+    <FeaturePipsPagerEnabled>true</FeaturePipsPagerEnabled>
+    <FeatureImageIconEnabled>true</FeatureImageIconEnabled>
+    <FeatureAnimatedIconEnabled>true</FeatureAnimatedIconEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

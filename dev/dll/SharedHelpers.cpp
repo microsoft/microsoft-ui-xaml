@@ -38,6 +38,11 @@ bool SharedHelpers::IsInDesignModeV2()
 }
 
 // logical helpers
+bool SharedHelpers::Is21H1OrHigher()
+{
+    return IsAPIContractV13Available();
+}
+
 bool SharedHelpers::IsVanadiumOrHigher()
 {
     return IsAPIContractV9Available();
@@ -138,6 +143,14 @@ bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailab
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
 }
 
+bool SharedHelpers::IsBringIntoViewOptionsVerticalAlignmentRatioAvailable()
+{
+    static bool s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable =
+        IsRS4OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.BringIntoViewOptions", L"VerticalAlignmentRatio");
+    return s_isBringIntoViewOptionsVerticalAlignmentRatioAvailable;
+}
+
 bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
 {
     static bool s_isFrameworkElementInvalidateViewportAvailable = IsRS5OrHigher();
@@ -186,7 +199,7 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =
-         IsVanadiumOrHigher() ||
+        IsVanadiumOrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
     return s_isThemeShadowAvailable;
 }
@@ -201,8 +214,16 @@ bool SharedHelpers::IsIsLoadedAvailable()
 
 bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
 {
-    static bool s_isAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
+    static bool s_isAvailable =
+        Is21H1OrHigher() ||
+        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
     return s_isAvailable;
+}
+
+bool SharedHelpers::IsSelectionIndicatorModeAvailable()
+{
+    static bool s_isSelectionIndicatorModeAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenterSelectionIndicatorMode");
+    return s_isSelectionIndicatorModeAvailable;
 }
 
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
@@ -219,6 +240,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 }
 
 // base helpers
+bool SharedHelpers::IsAPIContractV13Available()
+{
+    return IsAPIContractVxAvailable<13>();
+}
+
 bool SharedHelpers::IsAPIContractV9Available()
 {
     return IsAPIContractVxAvailable<9>();
@@ -508,82 +534,6 @@ bool SharedHelpers::IsAncestor(
 
     return false;
 }
-
-#ifdef ICONSOURCE_INCLUDED
-
-winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
-{
-    if (auto fontIconSource = iconSource.try_as<winrt::FontIconSource>())
-    {
-        winrt::FontIcon fontIcon;
-
-        fontIcon.Glyph(fontIconSource.Glyph());
-        fontIcon.FontSize(fontIconSource.FontSize());
-        if (const auto newForeground = fontIconSource.Foreground())
-        {
-            fontIcon.Foreground(newForeground);
-        }
-
-        if (fontIconSource.FontFamily())
-        {
-            fontIcon.FontFamily(fontIconSource.FontFamily());
-        }
-
-        fontIcon.FontWeight(fontIconSource.FontWeight());
-        fontIcon.FontStyle(fontIconSource.FontStyle());
-        fontIcon.IsTextScaleFactorEnabled(fontIconSource.IsTextScaleFactorEnabled());
-        fontIcon.MirroredWhenRightToLeft(fontIconSource.MirroredWhenRightToLeft());
-
-        return fontIcon;
-    }
-    else if (auto symbolIconSource = iconSource.try_as<winrt::SymbolIconSource>())
-    {
-        winrt::SymbolIcon symbolIcon;
-        symbolIcon.Symbol(symbolIconSource.Symbol());
-        if (const auto newForeground = symbolIconSource.Foreground())
-        {
-            symbolIcon.Foreground(newForeground);
-        }
-        return symbolIcon;
-    }
-    else if (auto bitmapIconSource = iconSource.try_as<winrt::BitmapIconSource>())
-    {
-        winrt::BitmapIcon bitmapIcon;
-
-        if (bitmapIconSource.UriSource())
-        {
-            bitmapIcon.UriSource(bitmapIconSource.UriSource());
-        }
-
-        if (winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
-        {
-            bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
-        }
-        if (const auto newForeground = bitmapIconSource.Foreground())
-        {
-            bitmapIcon.Foreground(newForeground);
-        }
-        return bitmapIcon;
-    }
-    else if (auto pathIconSource = iconSource.try_as<winrt::PathIconSource>())
-    {
-        winrt::PathIcon pathIcon;
-
-        if (pathIconSource.Data())
-        {
-            pathIcon.Data(pathIconSource.Data());
-        }
-        if (const auto newForeground = pathIconSource.Foreground())
-        {
-            pathIcon.Foreground(newForeground);
-        }
-        return pathIcon;
-    }
-
-    return nullptr;
-}
-
-#endif
 
 void SharedHelpers::SetBinding(
     std::wstring_view const& pathString,
