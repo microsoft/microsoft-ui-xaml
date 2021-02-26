@@ -72,5 +72,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             TestCleanupHelper.Cleanup();
         }
+
+        [TestMethod]
+        public void InsertAtStartBehavior()
+        {
+            using (var setup = new TestSetupHelper(new[] { "ItemsRepeater Tests" }))
+            {
+                FindElement.ByName("Basic Demo").Click();
+                var addItemButton = FindElement.ByName("InsertAtStartButton");
+                var itemCountLabel = FindElement.ByName("InsertAtStartChildCountLabel");
+
+                for (int i = 0; i < 10; i++)
+                {
+                    // For performance reasons, invoking the button also reevaluates the children count.
+                    // Technically there are i+1 children, but the button is one item behind.
+                    // Since i starts at 0, everything lines up correctly in here and we don't have to invoke two buttons.
+                    addItemButton.Click();
+                    Wait.ForIdle();
+                    Verify.AreEqual(i.ToString(), itemCountLabel.GetText());
+                }
+            }
+        }
     }
 }

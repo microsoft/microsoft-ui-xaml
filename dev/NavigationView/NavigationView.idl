@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NavigationViewDisplayMode
 {
@@ -10,7 +10,7 @@ enum NavigationViewDisplayMode
     Expanded = 2,
 };
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NavigationViewBackButtonVisible
 {
@@ -19,7 +19,7 @@ enum NavigationViewBackButtonVisible
     Auto = 2,
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NavigationViewPaneDisplayMode
 {
@@ -30,7 +30,7 @@ enum NavigationViewPaneDisplayMode
     LeftMinimal = 4
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NavigationViewSelectionFollowsFocus
 {
@@ -38,7 +38,7 @@ enum NavigationViewSelectionFollowsFocus
     Enabled = 1
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NavigationViewShoulderNavigationEnabled
 {
@@ -47,7 +47,7 @@ enum NavigationViewShoulderNavigationEnabled
     Never = 2
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 enum NavigationViewOverflowLabelMode
 {
@@ -55,32 +55,29 @@ enum NavigationViewOverflowLabelMode
     NoLabel = 1
 };
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewDisplayModeChangedEventArgs", b7c1ad35-5544-40c1-9b33-acfe1d6c8094)]
 runtimeclass NavigationViewDisplayModeChangedEventArgs
 {
     NavigationViewDisplayMode DisplayMode { get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewSelectionChangedEventArgs", 5aa509a0-3a5e-4f54-896c-98b85f819508)]
 runtimeclass NavigationViewSelectionChangedEventArgs
 {
     Object SelectedItem { get; };
     Boolean IsSettingsSelected { get; };
 
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         NavigationViewItemBase SelectedItemContainer { get; };
         Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo RecommendedNavigationTransitionInfo { get; };
     }
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewItemInvokedEventArgs", 29496822-55d2-49fa-964b-f1dbafef85c4)]
 runtimeclass NavigationViewItemInvokedEventArgs
 {
     NavigationViewItemInvokedEventArgs();
@@ -88,30 +85,28 @@ runtimeclass NavigationViewItemInvokedEventArgs
     Object InvokedItem { get; };
     Boolean IsSettingsInvoked { get; };
 
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         NavigationViewItemBase InvokedItemContainer { get; };
         Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo RecommendedNavigationTransitionInfo { get; };
     }
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewPaneClosingEventArgs", 955575ba-75f5-432d-b49b-60e47552d5ee)]
 runtimeclass NavigationViewPaneClosingEventArgs
 {
     Boolean Cancel { get; set; };
 }
 
-[WUXC_VERSION_RS4]
+[MUX_PUBLIC]
 [webhosthidden]
 [default_interface]
-[WUXC_INTERFACE_NAME("INavigationViewBackRequestedEventArgs", 446700e1-9a9d-4500-a71d-25c15809b879)]
 runtimeclass NavigationViewBackRequestedEventArgs
 {
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass NavigationViewItemExpandingEventArgs
 {
@@ -119,7 +114,7 @@ runtimeclass NavigationViewItemExpandingEventArgs
     Object ExpandingItem{ get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 runtimeclass NavigationViewItemCollapsedEventArgs
 {
@@ -127,7 +122,7 @@ runtimeclass NavigationViewItemCollapsedEventArgs
     Object CollapsedItem{ get; };
 }
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -146,6 +141,8 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
     Windows.UI.Xaml.Visibility LeftPaneVisibility { get; };
     Boolean SingleSelectionFollowsFocus { get; };
+    Double PaneToggleButtonWidth{ get; };
+    Double SmallerPaneToggleButtonWidth{ get; };   
 
     static Windows.UI.Xaml.DependencyProperty TopPaddingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty OverflowButtonVisibilityProperty { get; };
@@ -154,13 +151,12 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty TopPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty LeftPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PaneToggleButtonWidthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SmallerPaneToggleButtonWidthProperty{ get; };
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationView", f209ce15-391a-42ca-9fc6-f79da65aca32)]
-[WUXC_STATIC_NAME("INavigationViewStatics", 363a86c7-72da-4420-b871-15d9d0d45756)]
-[WUXC_CONSTRUCTOR_NAME("INavigationViewFactory", e50687c1-b7c2-4975-ad7a-5f4fe6a514c9)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
@@ -235,10 +231,8 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty MenuItemContainerStyleProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MenuItemContainerStyleSelectorProperty { get; };
 
-    [WUXC_VERSION_RS4]
-    [WUXC_INTERFACE_NAME("INavigationView2", 2be49737-7c13-4c44-86c3-8b25e697a80e)]
-    [WUXC_STATIC_NAME("INavigationViewStatics2", 8cc50d74-1a42-4852-ab5a-6dc82f28a4ba)]
-    {
+    [MUX_PUBLIC]
+            {
     [MUX_DEFAULT_VALUE("winrt::NavigationViewBackButtonVisible::Auto")]
     NavigationViewBackButtonVisible IsBackButtonVisible { get; set; };
     Boolean IsBackEnabled { get; set; };
@@ -254,7 +248,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty PaneTitleProperty { get; };
     }
 
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         [MUX_DEFAULT_VALUE("winrt::NavigationViewPaneDisplayMode::Auto")]
         NavigationViewPaneDisplayMode PaneDisplayMode { get; set; };
@@ -291,7 +285,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
 
     static Windows.UI.Xaml.DependencyProperty IsTitleBarAutoPaddingEnabledProperty { get; };
     
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     {
         event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemExpandingEventArgs> Expanding;
         event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemCollapsedEventArgs> Collapsed;
@@ -301,15 +295,13 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     }
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewItemBase", edf04eb1-37d1-471f-8570-3829ee5b2bc6)]
-[WUXC_CONSTRUCTOR_NAME("INavigationViewItemBaseFactory", eb014cef-7890-4ebb-8245-02e8510f321d)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 [default_interface]
 unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ContentControl
 {
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Boolean IsSelected{ get; set; };
@@ -318,11 +310,8 @@ unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ContentC
     }
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewItem", 8614be0f-b7b6-4851-960a-f5e3f69f624a)]
-[WUXC_STATIC_NAME("INavigationViewItemStatics", 803c0081-fda5-4b90-aace-3f2306dbe5c4)]
-[WUXC_CONSTRUCTOR_NAME("INavigationViewItemFactory", 973bdb4a-7e08-4f76-923c-f12bd685e86e)]
 unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
 {
     NavigationViewItem();
@@ -335,7 +324,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
     static Windows.UI.Xaml.DependencyProperty CompactPaneLengthProperty { get; };
 
-    [WUXC_VERSION_RS5]
+    [MUX_PUBLIC]
     {
         [MUX_DEFAULT_VALUE("true")]
         Boolean SelectsOnInvoked { get; set; };
@@ -343,7 +332,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         static Windows.UI.Xaml.DependencyProperty SelectsOnInvokedProperty { get; };
     }
 
-    [WUXC_VERSION_MUXONLY]
+    [MUX_PUBLIC]
     {
         [MUX_DEFAULT_VALUE("false")]
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -367,19 +356,15 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
     }
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewItemSeparator", de62c951-bb9b-471e-83e3-af4791e7096a)]
-[WUXC_CONSTRUCTOR_NAME("INavigationViewItemSeparatorFactory", 71cf3a66-db86-49e0-8154-5fd356aedec0)]
 unsealed runtimeclass NavigationViewItemSeparator : NavigationViewItemBase
 {
     NavigationViewItemSeparator();
 }
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("INavigationViewItemHeader", e21df22c-da4a-4e74-9ffc-b163bd7adacd)]
-[WUXC_CONSTRUCTOR_NAME("INavigationViewItemHeaderFactory", f3105988-7768-45d3-8bb0-6ded9e43a98b)]
 unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
 {
     NavigationViewItemHeader();

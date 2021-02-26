@@ -78,31 +78,38 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressBar::UpdateStates()
 {
-    if (ShowError() && IsIndeterminate())
+    if (IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminateErrorStateName, true);
-    }
-    else if (ShowError())
-    {
-        winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
-    }
-    else if (ShowPaused() && IsIndeterminate())
-    {
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminatePausedStateName, true);
-    }
-    else if (ShowPaused())
-    {
-        winrt::VisualStateManager::GoToState(*this, s_PausedStateName, true);
-    }
-    else if (IsIndeterminate())
-    {
+        if (ShowError())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminateErrorStateName, true);
+        }
+        else if (ShowPaused())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminatePausedStateName, true);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+        }
         UpdateWidthBasedTemplateSettings();
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
     }
-    else if (!IsIndeterminate())
+    else
     {
-        winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+        if (ShowError())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
+        }
+        else if(ShowPaused())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_PausedStateName, true);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+        }
     }
+
 }
 
 void ProgressBar::SetProgressBarIndicatorWidth()
@@ -121,7 +128,14 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition
             // in ProgressBar.xaml when reverting back to previous state
-            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
+            if (ShowError())
+            {
+                winrt::VisualStateManager::GoToState(*this, s_UpdatingWithErrorStateName, true);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
+            }
 
             if (IsIndeterminate())
             {

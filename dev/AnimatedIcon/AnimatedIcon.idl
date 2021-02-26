@@ -1,0 +1,34 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+interface IAnimatedVisualSource2 requires IAnimatedVisualSource
+{
+    Windows.Foundation.Collections.IMapView<String, Double> Markers { get; };
+    void SetColorProperty(String propertyName, Windows.UI.Color value);
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+[contentproperty("Source")]
+unsealed runtimeclass AnimatedIcon : Windows.UI.Xaml.Controls.IconElement
+{
+    AnimatedIcon();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IAnimatedVisualSource2 Source{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IconSource FallbackIconSource{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnAnimatedIconStatePropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty StateProperty{ get; };
+    static void SetState(Windows.UI.Xaml.DependencyObject object, String value);
+    static String GetState(Windows.UI.Xaml.DependencyObject object);
+
+    static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty FallbackIconSourceProperty{ get; };
+}
+
+}
