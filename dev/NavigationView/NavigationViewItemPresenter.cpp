@@ -134,8 +134,8 @@ void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLeng
         const auto templateSettings = winrt::get_self<NavigationViewItemPresenterTemplateSettings>(TemplateSettings());
         const auto gridLength = compactPaneLength;
 
-        templateSettings->IconColumnWidth(gridLength);
-        templateSettings->LatestIconColumnWidth(gridLength - 8);
+        templateSettings->IconWidth(gridLength);
+        templateSettings->SmallerIconWidth(gridLength - 8);
     }
 }
 

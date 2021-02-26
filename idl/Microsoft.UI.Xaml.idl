@@ -82,12 +82,59 @@ namespace Microsoft.UI.Xaml.CustomAttributes
     }
 }
 
-#define MUX_PUBLIC
+namespace Microsoft.UI.Xaml
+{
+    [contractversion(2)]
+    apicontract XamlContract
+    {
+    }
+}
+
+// These attributes are used to indicate the state of an API from a consumer's perspective:
+// * Public (MUX_PUBLIC): Stable and ready to use, API will never change shape
+// * Preview (MUX_PREVIEW): Ready for experimentation and feedback, API may change
+// * Internal (MUX_INTERNAL): Only for internal testing purposes (like test hooks)
+//
+// Under the umbrella of Public we have versions as well. These versions are similar to
+// what you find for the versions of an API in the Windows SDK. Once we've shipped a version
+// of the library then the ABI (Application Binary Interface) of the things that were previously
+// public can never change. This includes the low-level WinRT interfaces that you don't see while
+// you're authoring or consuming the APIs but are under the covers. These interfaces are generated
+// by MIDL and have UUIDs calculated based on the names and layout of members of the interface.
+// This means that if we were to even add members to a MUX_PUBLIC class that has already shipped,
+// then its interface UUID would change and help signal that as an ABI breaking change.
+//
+// To maintain ABI compatibility what we do is: once we've shipped a version of the library and
+// go to add new members to a class that has already shipped as MUX_PUBLIC, the new members must
+// be tagged with a higher version (e.g. MUX_PUBLIC_V2 for now and then MUX_PUBLIC_V3 after that, etc).
+// For example:
+//
+//     [MUX_PUBLIC]
+//     runtimeclass Example
+//     {
+//         int SomeProp;
+//        
+//         [MUX_PUBLIC_V2]
+//         {
+//             double SomethingAddedLater;
+//         }
+//
+//         [MUX_PREVIEW]
+//         string SomethingInPreview;
+//     }
+//
+// New APIs that are being developed can still be MUX_PREVIEW (with no explicit version) for
+// as long as we want.
+//
+
+#define MUX_PUBLIC contract(Microsoft.UI.Xaml.XamlContract, 1)
+
+#define MUX_PUBLIC_V2 contract(Microsoft.UI.Xaml.XamlContract, 2)
 
 // Note: It's expected that these are the same version because we require internal be in a different namespace,
 // and we split out the public vs internal metadata by namespace as well as feature attributes.
-#define MUX_PREVIEW feature(Feature_Experimental)
-#define MUX_INTERNAL feature(Feature_Experimental)
+#define MUX_PREVIEW contract(Microsoft.UI.Xaml.XamlContract, 1), feature(Feature_Experimental)
+#define MUX_INTERNAL contract(Microsoft.UI.Xaml.XamlContract, 1), feature(Feature_Experimental)
 
 // If this is specified then codegen will not create or register a default activation factory.
 #define MUX_HAS_CUSTOM_FACTORY muxhascustomactivationfactory
@@ -136,12 +183,21 @@ namespace MU_X_XTI_NAMESPACE
 
 namespace MU_XC_NAMESPACE
 {
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V2]
     [webhosthidden]
     enum ControlsResourcesVersion
     {
         Version1 = 1,
         Version2 = 2,
+    };
+
+    // To be removed
+    [MUX_PREVIEW]
+    [webhosthidden]
+    enum StylesVersion
+    {
+        Latest = 0,
+        WinUI_2dot5 = 1,
     };
 
     [MUX_PUBLIC]
@@ -162,12 +218,21 @@ namespace MU_XC_NAMESPACE
             static Windows.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
         }
 
-        [MUX_PREVIEW]
+        [MUX_PUBLIC_V2]
         {
             [MUX_DEFAULT_VALUE("winrt::ControlsResourcesVersion::Version1")]
             ControlsResourcesVersion ControlsResourcesVersion{ get; set; };
 
             static Windows.UI.Xaml.DependencyProperty ControlsResourcesVersionProperty{ get; };
+        }
+
+        // To be removed
+        [MUX_PREVIEW]
+        {
+            [MUX_DEFAULT_VALUE("winrt::StylesVersion::WinUI_2dot5")]
+            StylesVersion Version{ get; set; };
+
+            static Windows.UI.Xaml.DependencyProperty VersionProperty{ get; };
         }
     }
 }

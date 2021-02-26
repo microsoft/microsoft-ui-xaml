@@ -20,22 +20,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadioMenuFlyoutItem.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.cpp" />
   </ItemGroup>
-  <ItemGroup >
-    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs1_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <IsPublic>false</IsPublic>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs1_themeresources_v1.xaml">
+  <ItemGroup>
+   <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs1_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <IsPublic>false</IsPublic>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs2_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>RS2</Version>
       <Type>ThemeResources</Type>
       <IsPublic>false</IsPublic>
     </Page>
@@ -45,27 +33,21 @@
       <Type>ThemeResources</Type>
       <IsPublic>false</IsPublic>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs4_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
-      <Version>RS4</Version>
-      <Type>ThemeResources</Type>
-      <IsPublic>false</IsPublic>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs4_themeresources_v1.xaml">
       <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
       <IsPublic>false</IsPublic>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs5_themeresources.xaml">
-      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs5_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
       <IsPublic>false</IsPublic>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs5_themeresources_v1.xaml">
-      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
-      <Version>RS5</Version>
+    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <IsPublic>false</IsPublic>
     </Page>

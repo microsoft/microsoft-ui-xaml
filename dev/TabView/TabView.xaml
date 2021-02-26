@@ -194,7 +194,6 @@
                                 Delay="50"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Interval="100"
-                                Style="{StaticResource RepeatButtonRevealStyle}"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 HighContrastAdjustment="None"
                                 Content="&#xE76B;"/>
@@ -217,7 +216,6 @@
                                 Delay="50"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Interval="100"
-                                Style="{StaticResource RepeatButtonRevealStyle}"
                                 HighContrastAdjustment="None"
                                 Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 Content="&#xE76C;"/>

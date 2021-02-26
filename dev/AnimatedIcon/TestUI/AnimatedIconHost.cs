@@ -39,6 +39,19 @@ namespace MUXControlsTestApp
             ((AnimatedIconHost)d).IconSourceChanged();
         }
 
+        public String Title
+        {
+            get { return (String)GetValue(TitleProperty); }
+            set { SetValue(TitleProperty, value); }
+        }
+
+        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
+          "Title",
+          typeof(String),
+          typeof(AnimatedIconHost),
+          null
+        );
+
         public AnimatedIconHost()
         {
             this.DefaultStyleKey = typeof(AnimatedIconHost);

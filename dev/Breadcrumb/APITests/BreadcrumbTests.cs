@@ -35,7 +35,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                Breadcrumb breadcrumb = new Breadcrumb();
+                BreadcrumbBar breadcrumb = new BreadcrumbBar();
                 var stackPanel = new StackPanel();
                 stackPanel.Children.Add(breadcrumb);
 
@@ -50,10 +50,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDefaultBreadcrumb()
         {
-            Breadcrumb breadcrumb = null;
+            BreadcrumbBar breadcrumb = null;
             RunOnUIThread.Execute(() =>
             {
-                breadcrumb = new Breadcrumb();
+                breadcrumb = new BreadcrumbBar();
                 var stackPanel = new StackPanel();
                 stackPanel.Children.Add(breadcrumb);
 
@@ -76,14 +76,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyCustomItemTemplate()
         {
-            Breadcrumb breadcrumb = null;
-            Breadcrumb breadcrumb2 = null;
+            BreadcrumbBar breadcrumb = null;
+            BreadcrumbBar breadcrumb2 = null;
             RunOnUIThread.Execute(() =>
             {
-                breadcrumb = new Breadcrumb();
+                breadcrumb = new BreadcrumbBar();
                 breadcrumb.ItemsSource = new List<string>() { "Node 1", "Node 2" };
 
-                // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
+                // Set a custom ItemTemplate to be wrapped in a BreadcrumbBarItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                             <TextBlock Text='{Binding}'/>
@@ -91,16 +91,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 breadcrumb.ItemTemplate = itemTemplate;
 
-                breadcrumb2 = new Breadcrumb();
+                breadcrumb2 = new BreadcrumbBar();
                 breadcrumb2.ItemsSource = new List<string>() { "Node 1", "Node 2" };
 
-                // Set a custom ItemTemplate which is already a BreadcrumbItem. No wrapping should be performed.
+                // Set a custom ItemTemplate which is already a BreadcrumbBarItem. No wrapping should be performed.
                 var itemTemplate2 = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                             xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                            <controls:BreadcrumbItem Foreground='Blue'>
+                            <controls:BreadcrumbBarItem Foreground='Blue'>
                               <TextBlock Text = '{Binding}'/>
-                            </controls:BreadcrumbItem>
+                            </controls:BreadcrumbBarItem>
                         </DataTemplate>");       
 
                 breadcrumb2.ItemTemplate = itemTemplate2;
@@ -122,38 +122,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
                 Verify.IsNotNull(breadcrumbItemsRepeater2, "The underlying items repeater could not be retrieved");
 
-                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbItem;
-                var breadcrumbNode2 = breadcrumbItemsRepeater2.TryGetElement(1) as BreadcrumbItem;
-                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
-                Verify.IsNotNull(breadcrumbNode2, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
+                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbBarItem;
+                var breadcrumbNode2 = breadcrumbItemsRepeater2.TryGetElement(1) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbBarItem.");
+                Verify.IsNotNull(breadcrumbNode2, "Our custom ItemTemplate should have been wrapped in a BreadcrumbBarItem.");
 
                 // change this conditions
                 bool testCondition = !(breadcrumbNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
-                Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbItem should not have been [blue].");
+                Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
 
                 testCondition = breadcrumbNode2.Foreground is SolidColorBrush brush2 && brush2.Color == Colors.Blue;
-                Verify.IsTrue(testCondition, "The foreground color of the BreadcrumbItem should have been [blue].");
+                Verify.IsTrue(testCondition, "The foreground color of the BreadcrumbBarItem should have been [blue].");
             });
         }
 
         [TestMethod]
         public void VerifyNumericItemsSource()
         {
-            Breadcrumb breadcrumb = null;
-            Breadcrumb breadcrumb2 = null;
+            BreadcrumbBar breadcrumb = null;
+            BreadcrumbBar breadcrumb2 = null;
             RunOnUIThread.Execute(() =>
             {
-                // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
+                // Set a custom ItemTemplate to be wrapped in a BreadcrumbBarItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                             <TextBlock Text='{Binding}'/>
                         </DataTemplate>");
 
-                breadcrumb = new Breadcrumb();
+                breadcrumb = new BreadcrumbBar();
                 breadcrumb.ItemsSource = new List<int>() { 1, 2 };
                 breadcrumb.ItemTemplate = itemTemplate;
 
-                breadcrumb2 = new Breadcrumb();
+                breadcrumb2 = new BreadcrumbBar();
                 breadcrumb2.ItemsSource = new List<float>() { 1.4f, 4.5f };
                 breadcrumb2.ItemTemplate = itemTemplate;
 
@@ -175,10 +175,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 ItemsRepeater breadcrumbItemsRepeater2 = (ItemsRepeater)breadcrumb2.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater2, "The underlying items repeater could not be retrieved");
 
-                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbItem;
-                var breadcrumbNode2 = breadcrumbItemsRepeater2.TryGetElement(1) as BreadcrumbItem;
-                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
-                Verify.IsNotNull(breadcrumbNode2, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
+                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbBarItem;
+                var breadcrumbNode2 = breadcrumbItemsRepeater2.TryGetElement(1) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbBarItem.");
+                Verify.IsNotNull(breadcrumbNode2, "Our custom ItemTemplate should have been wrapped in a BreadcrumbBarItem.");
             });
         }
 
@@ -194,26 +194,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyObjectItemsSource()
         {
-            Breadcrumb breadcrumb = null;
+            BreadcrumbBar breadcrumb = null;
             RunOnUIThread.Execute(() =>
             {
-                // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
+                // Set a custom ItemTemplate to be wrapped in a BreadcrumbBarItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                             xmlns:controls='using:Microsoft.UI.Xaml.Controls'
                             xmlns:local='using:Windows.UI.Xaml.Tests.MUXControls.ApiTests'>
-                            <controls:BreadcrumbItem Content='{Binding}'>
-                                <controls:BreadcrumbItem.ContentTemplate>
+                            <controls:BreadcrumbBarItem Content='{Binding}'>
+                                <controls:BreadcrumbBarItem.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text='{Binding MockProperty}'/>
                                     </DataTemplate>
-                                </controls:BreadcrumbItem.ContentTemplate>
-                            </controls:BreadcrumbItem>
+                                </controls:BreadcrumbBarItem.ContentTemplate>
+                            </controls:BreadcrumbBarItem>
                         </DataTemplate>");
               
 
-                breadcrumb = new Breadcrumb();
+                breadcrumb = new BreadcrumbBar();
                 breadcrumb.ItemsSource = new List<MockClass>() { 
                     new MockClass { MockProperty = "Node 1" }, 
                     new MockClass { MockProperty = "Node 2" },
@@ -234,37 +234,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
 
-                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbItem;
-                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbItem.");
+                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate should have been wrapped in a BreadcrumbBarItem.");
             });
         }
 
         [TestMethod]
         public void VerifyDropdownItemTemplate()
         {
-            Breadcrumb breadcrumb = null;
+            BreadcrumbBar breadcrumb = null;
 
             RunOnUIThread.Execute(() =>
             {
-                breadcrumb = new Breadcrumb();
+                breadcrumb = new BreadcrumbBar();
                 breadcrumb.ItemsSource = new List<MockClass>() {
                     new MockClass { MockProperty = "Node 1" },
                     new MockClass { MockProperty = "Node 2" },
                 };
 
-                // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
+                // Set a custom ItemTemplate to be wrapped in a BreadcrumbBarItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
                     @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                             xmlns:controls='using:Microsoft.UI.Xaml.Controls'
                             xmlns:local='using:Windows.UI.Xaml.Tests.MUXControls.ApiTests'>
-                            <controls:BreadcrumbItem Content='{Binding}'>
-                                <controls:BreadcrumbItem.ContentTemplate>
+                            <controls:BreadcrumbBarItem Content='{Binding}'>
+                                <controls:BreadcrumbBarItem.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text='{Binding MockProperty}'/>
                                     </DataTemplate>
-                                </controls:BreadcrumbItem.ContentTemplate>
-                            </controls:BreadcrumbItem>
+                                </controls:BreadcrumbBarItem.ContentTemplate>
+                            </controls:BreadcrumbBarItem>
                         </DataTemplate>");
 
                 breadcrumb.ItemTemplate = itemTemplate;
@@ -285,8 +285,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater (1) could not be retrieved");
 
-                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(0) as BreadcrumbItem;
-                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbItem.");
+                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(0) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbBarItem.");
 
                 ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_ItemButton");
                 Verify.IsNotNull(ellipsisButton, "The ellipsis item (1) could not be retrieved");
@@ -312,7 +312,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     // change this conditions
                     bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
-                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbItem should not have been [blue].");
+                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
                 };
             });
         }
@@ -320,14 +320,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDropdownItemTemplateWithNoControl()
         {
-            Breadcrumb breadcrumb = null;
+            BreadcrumbBar breadcrumb = null;
 
             RunOnUIThread.Execute(() =>
             {
-                breadcrumb = new Breadcrumb();
+                breadcrumb = new BreadcrumbBar();
                 breadcrumb.ItemsSource = new List<string>() { "Node 1", "Node 2" };
 
-                // Set a custom ItemTemplate to be wrapped in a BreadcrumbItem.
+                // Set a custom ItemTemplate to be wrapped in a BreadcrumbBarItem.
                 var itemTemplate = (DataTemplate)XamlReader.Load(
                     @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                             <TextBlock Text='{Binding}'/>
@@ -351,8 +351,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 ItemsRepeater breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
                 Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater (1) could not be retrieved");
 
-                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(0) as BreadcrumbItem;
-                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbItem.");
+                var breadcrumbNode1 = breadcrumbItemsRepeater.TryGetElement(0) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode1, "Our custom ItemTemplate (1) should have been wrapped in a BreadcrumbBarItem.");
 
                 ellipsisButton = (Button)breadcrumbNode1.FindVisualChildByName("PART_ItemButton");
                 Verify.IsNotNull(ellipsisButton, "The ellipsis item (1) could not be retrieved");
@@ -378,7 +378,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     // change this conditions
                     bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
-                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbItem should not have been [blue].");
+                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
                 };
             });
         }
