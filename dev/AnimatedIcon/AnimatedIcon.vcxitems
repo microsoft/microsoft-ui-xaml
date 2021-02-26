@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{F1C8A5A1-B1B0-4095-8849-E550FCF2EBF6}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);ANIMATEDICON_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AnimatedIconDevDesign.md" />
+    <None Include="$(MSBuildThisFileDirectory)Docs\MultiStateSegmentLookupProposal.md" />
+    <None Include="$(MSBuildThisFileDirectory)Docs\SingleStateSegmentLookup.md" />
+  </ItemGroup>
+</Project>

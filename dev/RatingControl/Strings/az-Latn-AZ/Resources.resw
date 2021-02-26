@@ -126,7 +126,7 @@
     <comment>English example: Community Rating, 3.3 of 6.</comment>
   </data>
   <data name="RatingUnset" xml:space="preserve">
-    <value>Reytinq Təyin olunmayıb</value>
+    <value>Reytinq Təyin Olunmayıb</value>
     <comment>This text is used to show the number of stars none are selected.</comment>
   </data>
   <data name="RatingLocalizedControlType" xml:space="preserve">
