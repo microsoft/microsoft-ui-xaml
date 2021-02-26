@@ -12,6 +12,7 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:myAnimatedvisuals="using:AnimatedVisuals"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="TestIconForeground" Color="#80808080"/>
@@ -524,7 +525,7 @@
                             <Slider.Header>
                                 <controls:AnimatedIcon x:Name="SliderIcon" Height="100" Width="100" Foreground="Red">
                                     <controls:AnimatedIcon.Source>
-                                        <local:MockIAnimatedIconSource2/>
+                                        <myAnimatedvisuals:BrightnessSun/>
                                     </controls:AnimatedIcon.Source>
                                 </controls:AnimatedIcon>
                             </Slider.Header>
