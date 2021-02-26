@@ -17,24 +17,30 @@
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
             <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
-            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentMediumLowBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentVeryHighBrush" />
-            <StaticResource x:Key="ListViewItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemFocusVisualPrimaryBrush" ResourceKey="SystemControlFocusVisualPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="SystemControlFocusVisualSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="SystemControlForegroundAltHighBrush" />
-            <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
+            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
+            <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
+            <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="FocusStrokeColorOuterBrush" />
+            <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />   
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentAAFillColorDefaultBrush" />        
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             <SolidColorBrush x:Key="ListViewItemCheckHintThemeBrush" Color="#FFFFFFFF" />
@@ -54,6 +60,7 @@
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="#FF5F37BE" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SystemControlHighlightListAccentLowBrush" />
             <StaticResource x:Key="ListViewItemBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
@@ -62,7 +69,10 @@
             <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentVeryHighBrush" />
             <StaticResource x:Key="ListViewItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ListViewItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ListViewItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ListViewItemFocusVisualPrimaryBrush" ResourceKey="SystemControlFocusVisualPrimaryBrush" />
             <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="SystemControlFocusVisualSecondaryBrush" />
             <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="SystemControlForegroundAltHighBrush" />
@@ -72,6 +82,8 @@
             <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
             <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="SystemControlBackgroundChromeWhiteBrush" /> 
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="SystemControlBackgroundAccentBrush" />  
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             <x:Double x:Key="ListViewItemContentOffsetX">-40.5</x:Double>
@@ -113,24 +125,30 @@
             <x:Double x:Key="ListViewItemMinWidth">88</x:Double>
             <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
             <Thickness x:Key="ListViewItemCompactSelectedBorderThemeThickness">4</Thickness>
-            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentMediumLowBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
-            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentVeryHighBrush" />
-            <StaticResource x:Key="ListViewItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemFocusVisualPrimaryBrush" ResourceKey="SystemControlFocusVisualPrimaryBrush" />
-            <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="SystemControlFocusVisualSecondaryBrush" />
-            <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="SystemControlForegroundAltHighBrush" />
-            <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
+            <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="AccentAAFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+             <StaticResource x:Key="ListViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+             <StaticResource x:Key="ListViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemFocusVisualPrimaryBrush" ResourceKey="FocusStrokeColorOuterBrush" />
+            <StaticResource x:Key="ListViewItemFocusVisualSecondaryBrush" ResourceKey="FocusStrokeColorInnerBrush" />
+            <StaticResource x:Key="ListViewItemFocusBorderBrush" ResourceKey="FocusStrokeColorOuterBrush" />
+            <StaticResource x:Key="ListViewItemFocusSecondaryBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemCheckBoxBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="ListViewItemDragBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="ListViewItemDragForeground" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" />
+            <StaticResource x:Key="ListViewItemPlaceholderBackground" ResourceKey="ControlAAFillColorDisabledBrush" />
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBorder" ResourceKey="TextOnAccentAAFillColorPrimaryBrush" /> 
+            <StaticResource x:Key="ListViewItemMultiArrangeOverlayTextBackground" ResourceKey="AccentAAFillColorDefaultBrush" />  
             <x:Boolean x:Key="ListViewItemSelectionCheckMarkVisualEnabled">True</x:Boolean>
             <ListViewItemPresenterCheckMode x:Key="ListViewItemCheckMode">Inline</ListViewItemPresenterCheckMode>
             <SolidColorBrush x:Key="ListViewItemCheckHintThemeBrush" Color="#FF4617B4" />
@@ -161,7 +179,7 @@
         <Setter Property="TabNavigation" Value="Local" />
         <Setter Property="IsHoldingEnabled" Value="True" />
         <Setter Property="Padding" Value="12,0,12,0" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}" />
@@ -215,11 +233,11 @@
         <Setter Property="BorderBrush" Value="{x:Null}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource ListViewItemForeground}" />
         <Setter Property="TabNavigation" Value="Local" />
         <Setter Property="IsHoldingEnabled" Value="True" />
         <Setter Property="Padding" Value="12,0,12,0" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}" />
@@ -244,12 +262,7 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
 
                                 <VisualState x:Name="PointerOver">
 
@@ -259,18 +272,17 @@
                                             Duration="0"
                                             To="1" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheck" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -282,18 +294,17 @@
                                             Duration="0"
                                             To="1" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheck" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -309,18 +320,17 @@
                                             Duration="0"
                                             To="1" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListAccentLowBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemBackgroundSelected}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelected}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelected}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheck" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelected}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -336,18 +346,17 @@
                                             Duration="0"
                                             To="1" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListAccentMediumBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelectedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelectedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheck" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelectedPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -363,18 +372,17 @@
                                             Duration="0"
                                             To="1" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListAccentHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemBackgroundSelectedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelectedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelectedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheck" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ListViewItemForegroundSelectedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -633,7 +641,7 @@
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="BorderBackground"
                             IsHitTestVisible="False"
-                            Fill="{ThemeResource SystemControlHighlightListAccentLowBrush}"
+                            Fill="{ThemeResource ListViewItemBorderBackground}"
                             Opacity="0"
                             Control.IsTemplateFocusTarget="True" />
                         <Grid x:Name="ContentPresenterGrid" Background="Transparent" Margin="0,0,0,0">
@@ -661,7 +669,7 @@
                             AutomationProperties.AccessibilityView="Raw" />
                         <Rectangle x:Name="PlaceholderRect" Visibility="Collapsed" Fill="{ThemeResource ListViewItemPlaceholderBackground}" />
                         <Border x:Name="MultiSelectSquare"
-                            BorderBrush="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
+                            BorderBrush="{ThemeResource ListViewItemCheckBrush}"
                             BorderThickness="2"
                             Width="20"
                             Height="20"
@@ -683,7 +691,7 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Glyph="&#xE73E;"
                                 FontSize="16"
-                                Foreground="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
+                                Foreground="{ThemeResource ListViewItemCheckBrush}"
                                 Visibility="Collapsed"
                                 Opacity="0" />
                         </Border>
@@ -695,9 +703,9 @@
                             Height="20"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Left"
-                            Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                            Background="{ThemeResource ListViewItemMultiArrangeOverlayTextBackground}"
                             BorderThickness="2"
-                            BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}">
+                            BorderBrush="{ThemeResource ListViewItemMultiArrangeOverlayTextBorder}">
                             <TextBlock x:Name="MultiArrangeOverlayText"
                                 Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DragItemsCount}"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
@@ -730,21 +738,9 @@
                     <Border x:Name="OuterContainer" RenderTransformOrigin="0.5,0.5">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="TiltContainer" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="TiltContainer" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="CheckboxPressed">
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="CheckboxTiltContainer" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Pressed" />
+                                <VisualState x:Name="CheckboxPressed" />
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="contentPresenter"
@@ -838,74 +834,70 @@
                             <ScaleTransform x:Name="ContentScaleTransform" />
                         </Border.RenderTransform>
                         <Grid x:Name="ReorderHintContent" Background="Transparent">
-                            <Border x:Name="CheckboxTiltContainer"
+                            <Border x:Name="CheckboxOuterContainer"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Margin="{ThemeResource ListPickerFlyoutPresenterMultiselectCheckBoxMargin}">
-                                <Border x:Name="CheckboxOuterContainer">
-                                    <Border.Clip>
-                                        <RectangleGeometry Rect="0,0,25.5,25.5" />
-                                    </Border.Clip>
-                                    <Grid x:Name="CheckboxContainer">
-                                        <Grid.RenderTransform>
-                                            <TranslateTransform x:Name="CheckboxContainerTranslateTransform" X="{ThemeResource ListViewItemContentOffsetX}" />
-                                        </Grid.RenderTransform>
-                                        <Rectangle x:Name="NormalRectangle"
-                                            Fill="{ThemeResource CheckBoxBackgroundThemeBrush}"
-                                            Stroke="{ThemeResource CheckBoxBorderThemeBrush}"
-                                            StrokeThickness="{ThemeResource CheckBoxBorderThemeThickness}"
-                                            Height="25.5"
-                                            Width="25.5" />
-                                        <Path x:Name="CheckGlyph"
-                                            IsHitTestVisible="False"
-                                            Width="18.5"
-                                            Height="17"
-                                            Stretch="Fill"
-                                            Opacity="0"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Fill="{ThemeResource CheckBoxForegroundThemeBrush}"
-                                            Data="M0,123 L39,93 L124,164 L256,18 L295,49 L124,240 z"
-                                            StrokeLineJoin="Round"
-                                            StrokeThickness="2.5"
-                                            FlowDirection="LeftToRight" />
-                                    </Grid>
-                                </Border>
+                                <Border.Clip>
+                                    <RectangleGeometry Rect="0,0,25.5,25.5" />
+                                </Border.Clip>
+                                <Grid x:Name="CheckboxContainer">
+                                    <Grid.RenderTransform>
+                                        <TranslateTransform x:Name="CheckboxContainerTranslateTransform" X="{ThemeResource ListViewItemContentOffsetX}" />
+                                    </Grid.RenderTransform>
+                                    <Rectangle x:Name="NormalRectangle"
+                                        Fill="{ThemeResource CheckBoxBackgroundThemeBrush}"
+                                        Stroke="{ThemeResource CheckBoxBorderThemeBrush}"
+                                        StrokeThickness="{ThemeResource CheckBoxBorderThemeThickness}"
+                                        Height="25.5"
+                                        Width="25.5" />
+                                    <Path x:Name="CheckGlyph"
+                                        IsHitTestVisible="False"
+                                        Width="18.5"
+                                        Height="17"
+                                        Stretch="Fill"
+                                        Opacity="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Fill="{ThemeResource CheckBoxForegroundThemeBrush}"
+                                        Data="M0,123 L39,93 L124,164 L256,18 L295,49 L124,240 z"
+                                        StrokeLineJoin="Round"
+                                        StrokeThickness="2.5"
+                                        FlowDirection="LeftToRight" />
+                                </Grid>
                             </Border>
                             <Border x:Name="ContentContainer">
-                                <Border x:Name="TiltContainer">
-                                    <Border x:Name="ContentBorder"
-                                        Background="{TemplateBinding Background}"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}">
-                                        <Border.RenderTransform>
-                                            <TranslateTransform x:Name="ContentBorderTranslateTransform" />
-                                        </Border.RenderTransform>
-                                        <Grid>
-                                            <ContentPresenter x:Name="contentPresenter"
-                                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                Content="{TemplateBinding Content}"
-                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                Margin="{TemplateBinding Padding}"
-                                                Style="{ThemeResource FlyoutPickerListViewItemContentPresenterStyle}" />
-                                            <!-- The 'Xg' text simulates the amount of space one line of text will occupy.
+                                <Border x:Name="ContentBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="ContentBorderTranslateTransform" />
+                                    </Border.RenderTransform>
+                                    <Grid>
+                                        <ContentPresenter x:Name="contentPresenter"
+                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            Content="{TemplateBinding Content}"
+                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            Margin="{TemplateBinding Padding}"
+                                            Style="{ThemeResource FlyoutPickerListViewItemContentPresenterStyle}" />
+                                        <!-- The 'Xg' text simulates the amount of space one line of text will occupy.
                                                  In the DataPlaceholder state, the Content is not loaded yet so we
                                                  approximate the size of the item using placeholder text. -->
-                                            <TextBlock x:Name="PlaceholderTextBlock"
-                                                Opacity="0"
-                                                Text="Xg"
-                                                Foreground="{x:Null}"
-                                                Margin="{TemplateBinding Padding}"
-                                                IsHitTestVisible="False"
-                                                AutomationProperties.AccessibilityView="Raw" />
-                                            <Rectangle x:Name="PlaceholderRect"
-                                                Visibility="Collapsed"
-                                                Fill="{ThemeResource FlyoutBackgroundThemeBrush}"
-                                                IsHitTestVisible="False" />
-                                        </Grid>
-                                    </Border>
+                                        <TextBlock x:Name="PlaceholderTextBlock"
+                                            Opacity="0"
+                                            Text="Xg"
+                                            Foreground="{x:Null}"
+                                            Margin="{TemplateBinding Padding}"
+                                            IsHitTestVisible="False"
+                                            AutomationProperties.AccessibilityView="Raw" />
+                                        <Rectangle x:Name="PlaceholderRect"
+                                            Visibility="Collapsed"
+                                            Fill="{ThemeResource FlyoutBackgroundThemeBrush}"
+                                            IsHitTestVisible="False" />
+                                    </Grid>
                                 </Border>
                             </Border>
                             <Border x:Name="SelectedBorder"

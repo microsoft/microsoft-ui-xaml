@@ -1,3 +1,6 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 #include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
@@ -953,7 +956,7 @@ void TeachingTip::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
+        templateSettings->IconElement(source.CreateIconElement());
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else

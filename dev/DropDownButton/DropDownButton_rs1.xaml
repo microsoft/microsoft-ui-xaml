@@ -30,11 +30,7 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
 
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
@@ -47,7 +43,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -62,7 +57,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
                                     </Storyboard>
                                 </VisualState>
 
@@ -104,7 +98,7 @@
                             <TextBlock
                                 x:Name="ChevronTextBlock"
                                 Grid.Column="1"
-                                FontFamily="Segoe MDL2 Assets"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 Text="&#xE70D;"
                                 VerticalAlignment="Center"

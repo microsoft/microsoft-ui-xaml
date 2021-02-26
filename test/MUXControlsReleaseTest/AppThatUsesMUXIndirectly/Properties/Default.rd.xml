@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     This file contains Runtime Directives used by .NET Native. The defaults here are suitable for most
     developers. However, you can modify these parameters to modify the behavior of the .NET Native
     optimizer.
@@ -22,7 +22,8 @@
       the application package. The asterisks are not wildcards.
     -->
     <Assembly Name="*Application*" Dynamic="Required All" />
-    
+
+    <Namespace Name="Microsoft.UI.Xaml.Controls.AnimatedVisuals" Dynamic="Excluded"/>
     
     <!-- Add your application specific runtime directives here. -->
 
