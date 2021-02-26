@@ -5,8 +5,7 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary.ThemeDictionaries>
-    <ResourceDictionary x:Key="Default">
-            <CornerRadius x:Key="ControlCornerRadius">4,4,4,4</CornerRadius>
+    <ResourceDictionary x:Key="Default">            
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
@@ -53,8 +52,7 @@
             <StaticResource x:Key="InkToolbarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentRevealListLowBorderBrush" />
             <StaticResource x:Key="InkToolbarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">
-            <CornerRadius x:Key="ControlCornerRadius">4,4,4,4</CornerRadius>
+        <ResourceDictionary x:Key="Light">            
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
@@ -102,7 +100,6 @@
             <StaticResource x:Key="InkToolbarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <CornerRadius x:Key="ControlCornerRadius">4,4,4,4</CornerRadius>
             <StaticResource x:Key="InkToolbarButtonWidth" ResourceKey="AppBarThemeCompactHeight" />
             <StaticResource x:Key="InkToolbarButtonHeight" ResourceKey="AppBarThemeCompactHeight" />
             <x:Double x:Key="InkToolbarButtonContentSize">16</x:Double>
@@ -184,7 +181,7 @@
         </Style>
         
         <Style x:Key="InkToolbarCommonButtonStyle" TargetType="ToggleButton">
-            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="MinWidth" Value="{ThemeResource InkToolbarButtonWidth}" />
             <Setter Property="MinHeight" Value="{ThemeResource InkToolbarButtonHeight}" />
             <Setter Property="MaxWidth" Value="{ThemeResource InkToolbarButtonWidth}" />
@@ -380,21 +377,20 @@
 
                             </VisualStateManager.VisualStateGroups>
 
-                            <Border x:Name="AppBarButtonInnerBorder"                                       
-                                Margin="{StaticResource AppBarButtonInnerBorderMargin}"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                                Control.IsTemplateFocusTarget="True">
+                        <ContentPresenter x:Name="ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{StaticResource AppBarEllipsisButtonInnerBorderMargin}"
+                            Padding="0"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw" />
 
-                                <contract7Present:Border.BackgroundTransition>
-                                    <contract7Present:BrushTransition Duration="0:0:0.083" />
-                                </contract7Present:Border.BackgroundTransition>
-                            </Border>
-
-                            <Rectangle x:Name="ContentBackground" Fill="Transparent" />
+                        <Rectangle x:Name="ContentBackground" Fill="Transparent" />
                             <TextBlock
                 x:Name="ExtensionGlyph"
                 Style="{StaticResource InkToolbarExtensionGlyphStyle}"

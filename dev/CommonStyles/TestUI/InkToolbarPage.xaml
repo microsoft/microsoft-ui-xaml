@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="CommonStyles_TestUI.InkToolbarPage"
+    x:Class="MUXControlsTestApp.InkToolbarPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:CommonStyles_TestUI"
@@ -13,56 +13,10 @@
 
     <Grid>
         <StackPanel Orientation="Vertical">
-
-            <CommandBar>
-                <AppBarButton Icon="Add" Label="Add"/>
-                <AppBarButton Icon="Remove" Label="Remove"/>
-                <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
-                <AppBarToggleButton Icon="Add" Label="Toggle"/>
-            </CommandBar>
-
-            <CommandBar>
-                <AppBarButton Icon="Add" Label="Add"/>
-                <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
-                <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
-                <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add"/>
-                    <AppBarButton Icon="Remove" Label="Remove"/>
-                    <AppBarSeparator/>
-                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                </CommandBar.SecondaryCommands>
-            </CommandBar>
-
-            <CommandBar DefaultLabelPosition="Right">
-                <AppBarButton Icon="Add" Label="Add"/>
-                <AppBarButton Icon="Remove" Label="Remove"/>
-                <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
-                <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add"/>
-                    <AppBarButton Icon="Remove" Label="Remove"/>
-                    <AppBarSeparator/>
-                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                </CommandBar.SecondaryCommands>
-            </CommandBar>
-
-            <CommandBar DefaultLabelPosition="Collapsed">
-                <AppBarButton Icon="Add" Label="Add"/>
-                <AppBarButton Icon="Remove" Label="Remove"/>
-                <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
-                <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add"/>
-                    <AppBarButton Icon="Remove" Label="Remove"/>
-                    <AppBarSeparator/>
-                    <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                </CommandBar.SecondaryCommands>
-            </CommandBar>
+            
+            <InkToolbar>
+               
+            </InkToolbar>
 
         </StackPanel>
 
