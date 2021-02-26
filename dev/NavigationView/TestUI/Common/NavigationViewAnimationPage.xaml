@@ -11,6 +11,10 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         <controls:NavigationView x:Name="NavView"
                                  Header="Welcome"
                                  ItemInvoked="NavView_OnItemInvoked">
@@ -27,6 +31,8 @@
 
             <Frame x:Name="ContentFrame" />
         </controls:NavigationView>
-        <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
+        <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton"
+            Grid.Row="1" Margin="5"
+            Content="Flip Orientation" Click="FlipOrientation_Click"/>
     </Grid>
 </local:TestPage>

@@ -42,45 +42,47 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Vertical" contract5Present:Spacing="6" HorizontalAlignment="Left">
-                    <ComboBox x:Name="SeverityComboBox" AutomationProperties.Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
-                        <x:String>Error</x:String>
-                        <x:String>Warning</x:String>
-                        <x:String>Success</x:String>
-                        <x:String>Informational</x:String>
-                    </ComboBox>
+                <ScrollViewer>
+                    <StackPanel Orientation="Vertical" contract5Present:Spacing="6" HorizontalAlignment="Left">
+                        <ComboBox x:Name="SeverityComboBox" AutomationProperties.Name="SeverityComboBox" Header="Severity" SelectionChanged="SeverityComboBox_SelectionChanged">
+                            <x:String>Error</x:String>
+                            <x:String>Warning</x:String>
+                            <x:String>Success</x:String>
+                            <x:String>Informational</x:String>
+                        </ComboBox>
 
-                    <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" Header="Icon" SelectionChanged="IconComboBox_SelectionChanged" SelectedIndex="0">
-                        <x:String>Default Icon</x:String>
-                        <x:String>Custom Icon</x:String>
-                    </ComboBox>
+                        <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" Header="Icon" SelectionChanged="IconComboBox_SelectionChanged" SelectedIndex="0">
+                            <x:String>Default Icon</x:String>
+                            <x:String>Custom Icon</x:String>
+                        </ComboBox>
 
-                    <TextBox x:Name="TitleTextBox" AutomationProperties.Name="TitleTextBox" Header="Title" Width="250" Text="Title" HorizontalAlignment="Left"/>
+                        <TextBox x:Name="TitleTextBox" AutomationProperties.Name="TitleTextBox" Header="Title" Width="250" Text="Title" HorizontalAlignment="Left"/>
 
-                    <TextBox x:Name="MessageTextBox" AutomationProperties.Name="MessageTextBox" Header="Message" Width="250" Text="Message" HorizontalAlignment="Left"/>
+                        <TextBox x:Name="MessageTextBox" AutomationProperties.Name="MessageTextBox" Header="Message" Width="250" Text="Message" HorizontalAlignment="Left"/>
 
-                    <ComboBox x:Name="ActionButtonComboBox" AutomationProperties.Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
-                        <ComboBoxItem Content="None" />
-                        <ComboBoxItem Content="Button" />
-                        <ComboBoxItem Content="Hyperlink" />
-                    </ComboBox>
+                        <ComboBox x:Name="ActionButtonComboBox" AutomationProperties.Name="ActionButtonComboBox" Header="Action Button" SelectionChanged="ActionButtonComboBox_SelectionChanged" SelectedIndex="0">
+                            <ComboBoxItem Content="None" />
+                            <ComboBoxItem Content="Button" />
+                            <ComboBoxItem Content="Hyperlink" />
+                        </ComboBox>
 
-                    <Button Content="Set Foreground" Click="SetForegroundClick"/>
+                        <Button Content="Set Foreground" Click="SetForegroundClick"/>
 
-                    <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
+                        <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Content="IsOpen" IsChecked="{x:Bind TestInfoBar.IsOpen, Mode=TwoWay}"/>
 
-                    <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />
+                        <CheckBox x:Name="CancelCheckBox" AutomationProperties.Name="CancelCheckBox" Content="Cancel Close" />
 
-                    <CheckBox x:Name="IsIconVisibleCheckBox" AutomationProperties.Name="IsIconVisibleCheckBox" Content="IsIconVisible" IsChecked="True"/>
+                        <CheckBox x:Name="IsIconVisibleCheckBox" AutomationProperties.Name="IsIconVisibleCheckBox" Content="IsIconVisible" IsChecked="True"/>
 
-                    <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Content="IsClosable" IsChecked="True"/>
+                        <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Content="IsClosable" IsChecked="True"/>
 
-                    <CheckBox x:Name="HasCustomContentCheckBox" AutomationProperties.Name="HasCustomContentCheckBox" Content="Has Custom Content" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
+                        <CheckBox x:Name="HasCustomContentCheckBox" AutomationProperties.Name="HasCustomContentCheckBox" Content="Has Custom Content" Checked="HasCustomContentChanged" Unchecked="HasCustomContentChanged"/>
 
-                    <CheckBox x:Name="CustomBackgroundCheckBox" AutomationProperties.Name="CustomBackgroundCheckBox" Content="Custom Background Color" Checked="CustomBackgroundChanged" Unchecked="CustomBackgroundChanged"/>
-                    
-                    <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
-                </StackPanel>
+                        <CheckBox x:Name="CustomBackgroundCheckBox" AutomationProperties.Name="CustomBackgroundCheckBox" Content="Custom Background Color" Checked="CustomBackgroundChanged" Unchecked="CustomBackgroundChanged"/>
+
+                        <CheckBox x:Name="CloseButtonStyleCheckBox" AutomationProperties.Name="CloseButtonStyleCheckBox" Content="Custom Close Button Style" Checked="CloseStyleChanged" Unchecked="CloseStyleChanged"/>
+                    </StackPanel>
+                </ScrollViewer>
 
                 <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" Margin="20,0,0,0">
                     <TextBlock>Events:</TextBlock>
