@@ -1291,8 +1291,12 @@ void NavigationView::CreateAndHookEventsToSettings()
         return;
     }
 
-    auto settingsItem = m_settingsItem.get();
-    auto settingsIcon = winrt::SymbolIcon(winrt::Symbol::Setting);
+    auto const settingsItem = m_settingsItem.get();
+    auto const settingsIcon = winrt::AnimatedIcon();
+    settingsIcon.Source(winrt::AnimatedSettingsVisualSource());
+    auto const settingsFallbackIcon = winrt::SymbolIconSource();
+    settingsFallbackIcon.Symbol(winrt::Symbol::Setting);
+    settingsIcon.FallbackIconSource(settingsFallbackIcon);
     settingsItem.Icon(settingsIcon);
 
     // Do localization for settings item label and Automation Name

@@ -14,4 +14,6 @@ class ImageIconSource :
 public:
     using ImageIconSourceProperties::EnsureProperties;
     using ImageIconSourceProperties::ClearProperties;
+
+    winrt::IconElement CreateIconElementCore();
 };
