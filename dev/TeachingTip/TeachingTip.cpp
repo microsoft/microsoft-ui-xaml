@@ -956,7 +956,7 @@ void TeachingTip::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
+        templateSettings->IconElement(source.CreateIconElement());
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else

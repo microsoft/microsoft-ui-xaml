@@ -11,8 +11,6 @@ class IconSource :
     public IconSourceProperties
 {
 public:
-    static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource)
-    {
-        return SharedHelpers::MakeIconElementFrom(iconSource);
-    }
+    winrt::IconElement CreateIconElement();
+    virtual winrt::IconElement CreateIconElementCore() = 0;
 };

@@ -9,17 +9,17 @@ class PipsPagerProperties
 public:
     PipsPagerProperties();
 
-    void DefaultIndicatorButtonStyle(winrt::Style const& value);
-    winrt::Style DefaultIndicatorButtonStyle();
-
-    void MaxVisualIndicators(int value);
-    int MaxVisualIndicators();
+    void MaxVisiblePips(int value);
+    int MaxVisiblePips();
 
     void NextButtonStyle(winrt::Style const& value);
     winrt::Style NextButtonStyle();
 
     void NextButtonVisibility(winrt::PipsPagerButtonVisibility const& value);
     winrt::PipsPagerButtonVisibility NextButtonVisibility();
+
+    void NormalPipStyle(winrt::Style const& value);
+    winrt::Style NormalPipStyle();
 
     void NumberOfPages(int value);
     int NumberOfPages();
@@ -33,37 +33,37 @@ public:
     void PreviousButtonVisibility(winrt::PipsPagerButtonVisibility const& value);
     winrt::PipsPagerButtonVisibility PreviousButtonVisibility();
 
-    void SelectedIndicatorButtonStyle(winrt::Style const& value);
-    winrt::Style SelectedIndicatorButtonStyle();
-
     void SelectedPageIndex(int value);
     int SelectedPageIndex();
+
+    void SelectedPipStyle(winrt::Style const& value);
+    winrt::Style SelectedPipStyle();
 
     void TemplateSettings(winrt::PipsPagerTemplateSettings const& value);
     winrt::PipsPagerTemplateSettings TemplateSettings();
 
-    static winrt::DependencyProperty DefaultIndicatorButtonStyleProperty() { return s_DefaultIndicatorButtonStyleProperty; }
-    static winrt::DependencyProperty MaxVisualIndicatorsProperty() { return s_MaxVisualIndicatorsProperty; }
+    static winrt::DependencyProperty MaxVisiblePipsProperty() { return s_MaxVisiblePipsProperty; }
     static winrt::DependencyProperty NextButtonStyleProperty() { return s_NextButtonStyleProperty; }
     static winrt::DependencyProperty NextButtonVisibilityProperty() { return s_NextButtonVisibilityProperty; }
+    static winrt::DependencyProperty NormalPipStyleProperty() { return s_NormalPipStyleProperty; }
     static winrt::DependencyProperty NumberOfPagesProperty() { return s_NumberOfPagesProperty; }
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
     static winrt::DependencyProperty PreviousButtonStyleProperty() { return s_PreviousButtonStyleProperty; }
     static winrt::DependencyProperty PreviousButtonVisibilityProperty() { return s_PreviousButtonVisibilityProperty; }
-    static winrt::DependencyProperty SelectedIndicatorButtonStyleProperty() { return s_SelectedIndicatorButtonStyleProperty; }
     static winrt::DependencyProperty SelectedPageIndexProperty() { return s_SelectedPageIndexProperty; }
+    static winrt::DependencyProperty SelectedPipStyleProperty() { return s_SelectedPipStyleProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
-    static GlobalDependencyProperty s_DefaultIndicatorButtonStyleProperty;
-    static GlobalDependencyProperty s_MaxVisualIndicatorsProperty;
+    static GlobalDependencyProperty s_MaxVisiblePipsProperty;
     static GlobalDependencyProperty s_NextButtonStyleProperty;
     static GlobalDependencyProperty s_NextButtonVisibilityProperty;
+    static GlobalDependencyProperty s_NormalPipStyleProperty;
     static GlobalDependencyProperty s_NumberOfPagesProperty;
     static GlobalDependencyProperty s_OrientationProperty;
     static GlobalDependencyProperty s_PreviousButtonStyleProperty;
     static GlobalDependencyProperty s_PreviousButtonVisibilityProperty;
-    static GlobalDependencyProperty s_SelectedIndicatorButtonStyleProperty;
     static GlobalDependencyProperty s_SelectedPageIndexProperty;
+    static GlobalDependencyProperty s_SelectedPipStyleProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     winrt::event_token SelectedIndexChanged(winrt::TypedEventHandler<winrt::PipsPager, winrt::PipsPagerSelectedIndexChangedEventArgs> const& value);
@@ -74,11 +74,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnDefaultIndicatorButtonStylePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnMaxVisualIndicatorsPropertyChanged(
+    static void OnMaxVisiblePipsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -87,6 +83,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnNextButtonVisibilityPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnNormalPipStylePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -106,11 +106,11 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnSelectedIndicatorButtonStylePropertyChanged(
+    static void OnSelectedPageIndexPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnSelectedPageIndexPropertyChanged(
+    static void OnSelectedPipStylePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

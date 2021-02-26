@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_19H1]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TwoPaneViewPriority
 {
@@ -9,7 +9,7 @@ enum TwoPaneViewPriority
     Pane2 = 1,
 };
 
-[WUXC_VERSION_19H1]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TwoPaneViewMode
 {
@@ -18,7 +18,7 @@ enum TwoPaneViewMode
     Tall = 2,
 };
 
-[WUXC_VERSION_19H1]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TwoPaneViewWideModeConfiguration
 {
@@ -27,7 +27,7 @@ enum TwoPaneViewWideModeConfiguration
     RightLeft = 2,
 };
 
-[WUXC_VERSION_19H1]
+[MUX_PUBLIC]
 [webhosthidden]
 enum TwoPaneViewTallModeConfiguration
 {
@@ -36,7 +36,7 @@ enum TwoPaneViewTallModeConfiguration
     BottomTop = 2,
 };
 
-[WUXC_VERSION_19H1]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -78,7 +78,7 @@ unsealed runtimeclass TwoPaneView : Windows.UI.Xaml.Controls.Control
 }
 
 // TODO: Once IApplicationViewSpanningRects is available in the official SDK, remove this.
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 [uuid(645737E4-A882-4E16-B289-FD860560106A)]
 interface IApplicationViewSpanningRects : IInspectable
