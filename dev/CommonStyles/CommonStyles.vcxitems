@@ -43,7 +43,7 @@
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)InkToolbar_themeresources.xaml" >
-	    <UseVisualStyle>Latest</UseVisualStyle>
+	    <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
 	  </Page>
