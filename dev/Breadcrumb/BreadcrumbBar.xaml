@@ -27,51 +27,6 @@
                     <Grid x:Name="PART_LayoutRoot"
                           contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
 
-                        <Grid.Resources>
-                            <Style TargetType="FlyoutPresenter" x:Key="DefaultBreadcrumbBarItemFlyoutPresenterStyle">
-                                <Setter Property="Background" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBackground}" />
-                                <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderBrush}" />
-                                <Setter Property="BorderThickness" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness}" />
-                                <Setter Property="Padding" Value="{StaticResource BreadcrumbBarEllipsisFlyoutPresenterThemePadding}" />
-                                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
-                                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-                                <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
-                                <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
-                                <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-                                <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
-                                <Setter Property="MinHeight" Value="{StaticResource BreadcrumbBarEllipsisFlyoutThemeMinHeight}" />
-                                <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
-
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="FlyoutPresenter">
-                                            <Grid Background="{TemplateBinding Background}"
-                                                  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                  contract7Present:BackgroundSizing="InnerBorderEdge">
-                                                <ScrollViewer x:Name="FlyoutPresenterScrollViewer"
-                                                              Margin="{TemplateBinding Padding}"
-                                                              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                                                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                                              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                                                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                                                              IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                                                              IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                                                              ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                                                              Content="{TemplateBinding Content}"
-                                                              AutomationProperties.AccessibilityView="Raw" />
-                                                <Border x:Name="FlyoutPresenterBorder"
-                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-
-                            </Style>
-                        </Grid.Resources>
-
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
                                 <VisualState x:Name="Inline"/>
@@ -324,6 +279,56 @@
                                         Grid.Column="2"/>
                                 </Grid>
                             </Button.Content>
+
+                            <Button.Flyout>
+                                <Flyout>
+                                    <Flyout.FlyoutPresenterStyle>
+                                        <Style TargetType="FlyoutPresenter">
+                                            <Setter Property="Background" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBackground}" />
+                                            <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderBrush}" />
+                                            <Setter Property="BorderThickness" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness}" />
+                                            <Setter Property="Padding" Value="{StaticResource BreadcrumbBarEllipsisFlyoutPresenterThemePadding}" />
+                                            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                                            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                                            <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
+                                            <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
+                                            <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+                                            <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
+                                            <Setter Property="MinHeight" Value="{StaticResource BreadcrumbBarEllipsisFlyoutThemeMinHeight}" />
+                                            <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="FlyoutPresenter">
+                                                        <Grid Background="{TemplateBinding Background}"
+                                                  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                  contract7Present:BackgroundSizing="InnerBorderEdge">
+                                                            <ScrollViewer x:Name="FlyoutPresenterScrollViewer"
+                                                              Margin="{TemplateBinding Padding}"
+                                                              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                              IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                                              IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                                              ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                              Content="{TemplateBinding Content}"
+                                                              AutomationProperties.AccessibilityView="Raw" />
+                                                            <Border x:Name="FlyoutPresenterBorder"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+
+                                        </Style>
+                                    </Flyout.FlyoutPresenterStyle>
+                                </Flyout>
+                            </Button.Flyout>
+                            
                         </Button>
                         <ContentPresenter x:Name="PART_EllipsisDropDownItemContentPresenter"
                             x:DeferLoadStrategy="Lazy"

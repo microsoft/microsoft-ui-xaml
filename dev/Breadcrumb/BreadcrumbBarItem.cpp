@@ -106,7 +106,6 @@ void BreadcrumbBarItem::OnApplyTemplate()
         winrt::IControlProtected controlProtected{ *this };
 
         m_button.set(GetTemplateChildT<winrt::Button>(s_itemButtonPartName, controlProtected));
-        m_grid.set(GetTemplateChildT<winrt::Grid>(s_itemGridPartName, controlProtected));
 
         if (const auto& button = m_button.get())
         {
@@ -345,35 +344,6 @@ void BreadcrumbBarItem::OpenFlyout()
     }
 }
 
-winrt::Style BreadcrumbBarItem::RetrieveFlyoutStyle()
-{
-    if (const auto& grid = m_grid.get())
-    {
-        const auto& resources = grid.Resources();
-
-        /*
-        if (resources.HasKey(box_value(L"DefaultBreadcrumbBarItemFlyoutPresenterStyle")))
-        {
-            const auto& value = resources.Lookup(box_value(L"DefaultBreadcrumbBarItemFlyoutPresenterStyle"));
-            return value.try_as<winrt::Style>();
-        }
-        */
-
-        for (const auto& themeDictionaryEntry : resources)
-        {
-            winrt::hstring entryKey = winrt::unbox_value_or<winrt::hstring>(themeDictionaryEntry.Key(), L"");
-            if (const auto& entryValue = themeDictionaryEntry.Value().try_as<winrt::Style>())
-            {
-                const auto& targetType = entryValue.TargetType();
-                const auto& name = targetType.Name;
-                return entryValue;
-            }
-        }
-    }
-
-    return winrt::Style();
-}
-
 void BreadcrumbBarItem::CloseFlyout()
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
@@ -582,16 +552,14 @@ void BreadcrumbBarItem::InstantiateFlyout()
         m_ellipsisItemsRepeater.set(ellipsisItemsRepeater);
 
         // Create the Flyout and add the ItemsRepeater as content
-        const auto& ellipsisFlyout = winrt::Flyout();
-        winrt::AutomationProperties::SetName(ellipsisFlyout, s_ellipsisFlyoutAutomationName);
-        ellipsisFlyout.Content(ellipsisItemsRepeater);
-        ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
-        ellipsisFlyout.FlyoutPresenterStyle(RetrieveFlyoutStyle());
+        if (const auto& ellipsisFlyout = button.Flyout().try_as<winrt::Flyout>())
+        {
+            winrt::AutomationProperties::SetName(ellipsisFlyout, s_ellipsisFlyoutAutomationName);
+            ellipsisFlyout.Content(ellipsisItemsRepeater);
+            ellipsisFlyout.Placement(winrt::FlyoutPlacementMode::Bottom);
 
-        m_ellipsisFlyout.set(ellipsisFlyout);
-
-        // Set the Flyout to the ellipsis button
-        button.Flyout(ellipsisFlyout);
+            m_ellipsisFlyout.set(ellipsisFlyout);
+        }
     }
 }
 
