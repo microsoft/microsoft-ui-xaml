@@ -7,6 +7,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
     
     <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12"
@@ -142,11 +143,14 @@
                             </CommandBar.SecondaryCommands>
                         </CommandBar>
                         <RichEditBox x:Name="RichEditBox" Grid.Row="6" Header="RichEditBox" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Row="7">
-                            <Run>Pre-hyperlink</Run>
-                            <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
-                            <Run>Post-hyperlink</Run>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Grid.Row="7">
+                            <TextBlock Margin="2,0,2,0">
+                                <Run>Pre-hyperlink</Run>
+                                <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
+                                <Run>Post-hyperlink</Run>
+                            </TextBlock>
+                            <HyperlinkButton Margin="2,0,2,0" Content="Microsoft.com HyperlinkButton" NavigateUri="http://www.microsoft.com"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
@@ -221,11 +225,14 @@
                             </CommandBar.SecondaryCommands>
                         </CommandBar>
                         <RichEditBox Grid.Row="6" Header="RichEditBox" VerticalAlignment="Top" />
-                        <TextBlock Grid.Row="7">
-                            <Run>Pre-hyperlink</Run>
-                            <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
-                            <Run>Post-hyperlink</Run>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Grid.Row="7">
+                            <TextBlock Margin="2,0,2,0">
+                                <Run>Pre-hyperlink</Run>
+                                <Hyperlink NavigateUri="http://www.bing.com">Bing</Hyperlink>
+                                <Run>Post-hyperlink</Run>
+                            </TextBlock>
+                            <HyperlinkButton Margin="2,0,2,0" Content="Microsoft.com HyperlinkButton" NavigateUri="http://www.microsoft.com"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
@@ -235,6 +242,13 @@
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
 
+                    <Button Margin="0,24,0,0">
+                        <Button.Content>
+                            <muxc:AnimatedIcon>
+                                <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
+                            </muxc:AnimatedIcon>
+                        </Button.Content>
+                    </Button>
                     <Button Content="Test flyout with text and button" Margin="0,24,0,0">
                         <Button.Flyout>
                             <Flyout>
@@ -340,17 +354,17 @@
                         <StackPanel>
                             <TextBlock Text='ListView - SelectionMode=Single:' Margin='2'/>
                             <ListView x:Name='listView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
-                                <ListViewItem x:Name='listViewItem7' Content='List Item 7'/>
-                                <ListViewItem x:Name='listViewItem8' Content='List Item 8'/>
-                                <ListViewItem x:Name='listViewItem9' Content='List Item 9' IsSelected='true'/>
+                                <ListViewItem x:Name='listViewItem7' Content='List Item 7' Style='{ThemeResource DefaultListViewItemStyle}'/>
+                                <ListViewItem x:Name='listViewItem8' Content='List Item 8' Style='{ThemeResource DefaultListViewItemStyle}'/>
+                                <ListViewItem x:Name='listViewItem9' Content='List Item 9' Style='{ThemeResource DefaultListViewItemStyle}' IsSelected='true'/>
                             </ListView>
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text='GridView - SelectionMode=Single:' Margin='2'/>
                             <GridView x:Name='gridView3' CanReorderItems='True' AllowDrop='True' SelectionMode='Single' Width='300' HorizontalAlignment='Left' Margin='2'>
-                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60'/>
-                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60'/>
-                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' IsSelected='true'/>
+                                <GridViewItem x:Name='gridViewItem7' Content='Item 7' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}'/>
+                                <GridViewItem x:Name='gridViewItem8' Content='Item 8' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}'/>
+                                <GridViewItem x:Name='gridViewItem9' Content='Item 9' MinWidth='120' MinHeight='60' Style='{ThemeResource DefaultGridViewItemStyle}' IsSelected='true'/>
                             </GridView>
                         </StackPanel>
                     </StackPanel>

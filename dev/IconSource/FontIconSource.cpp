@@ -6,3 +6,27 @@
 
 #include "IconSource.h"
 #include "FontIconSource.h"
+
+winrt::IconElement FontIconSource::CreateIconElementCore()
+{
+    winrt::FontIcon fontIcon;
+
+    fontIcon.Glyph(Glyph());
+    fontIcon.FontSize(FontSize());
+    if (const auto newForeground = Foreground())
+    {
+        fontIcon.Foreground(newForeground);
+    }
+
+    if (FontFamily())
+    {
+        fontIcon.FontFamily(FontFamily());
+    }
+
+    fontIcon.FontWeight(FontWeight());
+    fontIcon.FontStyle(FontStyle());
+    fontIcon.IsTextScaleFactorEnabled(IsTextScaleFactorEnabled());
+    fontIcon.MirroredWhenRightToLeft(MirroredWhenRightToLeft());
+
+    return fontIcon;
+}

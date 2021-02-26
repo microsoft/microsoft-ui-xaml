@@ -6,13 +6,6 @@
 #include "common.h"
 #include "PipsPagerTemplateSettings.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    CppWinRTActivatableClassWithDPFactory(PipsPagerTemplateSettings)
-}
-
-#include "PipsPagerTemplateSettings.g.cpp"
-
 GlobalDependencyProperty PipsPagerTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
 GlobalDependencyProperty PipsPagerTemplateSettingsProperties::s_PipsPagerItemsProperty{ nullptr };
 
@@ -39,10 +32,10 @@ void PipsPagerTemplateSettingsProperties::EnsureProperties()
         s_PipsPagerItemsProperty =
             InitializeDependencyProperty(
                 L"PipsPagerItems",
-                winrt::name_of<winrt::IVector<winrt::IInspectable>>(),
+                winrt::name_of<winrt::IVector<int>>(),
                 winrt::name_of<winrt::PipsPagerTemplateSettings>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
+                ValueHelper<winrt::IVector<int>>::BoxedDefaultValue(),
                 nullptr);
     }
 }
@@ -66,15 +59,15 @@ winrt::CoreDispatcher PipsPagerTemplateSettingsProperties::Dispatcher()
     return ValueHelper<winrt::CoreDispatcher>::CastOrUnbox(static_cast<PipsPagerTemplateSettings*>(this)->GetValue(s_DispatcherProperty));
 }
 
-void PipsPagerTemplateSettingsProperties::PipsPagerItems(winrt::IVector<winrt::IInspectable> const& value)
+void PipsPagerTemplateSettingsProperties::PipsPagerItems(winrt::IVector<int> const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<PipsPagerTemplateSettings*>(this)->SetValue(s_PipsPagerItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    static_cast<PipsPagerTemplateSettings*>(this)->SetValue(s_PipsPagerItemsProperty, ValueHelper<winrt::IVector<int>>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::IVector<winrt::IInspectable> PipsPagerTemplateSettingsProperties::PipsPagerItems()
+winrt::IVector<int> PipsPagerTemplateSettingsProperties::PipsPagerItems()
 {
-    return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<PipsPagerTemplateSettings*>(this)->GetValue(s_PipsPagerItemsProperty));
+    return ValueHelper<winrt::IVector<int>>::CastOrUnbox(static_cast<PipsPagerTemplateSettings*>(this)->GetValue(s_PipsPagerItemsProperty));
 }

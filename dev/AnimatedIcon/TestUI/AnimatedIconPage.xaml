@@ -11,14 +11,16 @@
     xmlns:Windows10FallCreatorsUpdate="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:AnimatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:myAnimatedvisuals="using:AnimatedVisuals"
     mc:Ignorable="d">
     <Page.Resources>
+        <SolidColorBrush x:Key="TestIconForeground" Color="#80808080"/>
         <Style TargetType="local:AnimatedIconHost">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:AnimatedIconHost">
-                        <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}">
+                        <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}" MinWidth="300" MaxWidth="300">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal">
@@ -29,8 +31,8 @@
                                     </VisualState>
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="Hover"/>
-                                            <Setter Target="StateTextBlock.Text" Value="Hover"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PointerOver"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PointerOver"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
@@ -47,6 +49,7 @@
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
+                            <TextBlock Text="{TemplateBinding Title}"/>
                             <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
                                 <Border x:Name="Icon" controls:AnimatedIcon.State="Normal"/>
                             </ContentPresenter>
@@ -57,453 +60,77 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
-        <Style TargetType="CheckBox" BasedOn="{StaticResource OverrideCheckBoxStyle}" />
-        <Style x:Key="OverrideCheckBoxStyle" TargetType="CheckBox">
-            <Setter Property="Background" Value="{ThemeResource CheckBoxBackgroundUnchecked}" />
-            <Setter Property="Foreground" Value="{ThemeResource CheckBoxForegroundUnchecked}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource CheckBoxBorderBrushUnchecked}" />
-            <Setter Property="Padding" Value="8,5,0,0" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="VerticalContentAlignment" Value="Top" />
-            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-            <Setter Property="MinWidth" Value="120" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-            <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
-            <!--<contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />-->
+        <Style TargetType="local:ToggleAnimatedIconHost">
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="CheckBox">
-                        <Grid x:Name="RootGrid"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
-
+                    <ControlTemplate TargetType="local:ToggleAnimatedIconHost">
+                        <StackPanel x:Name="RootGrid" Background="{TemplateBinding Background}" MinWidth="300" MaxWidth="300">
                             <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CombinedStates">
-                                    <VisualState x:Name="UncheckedNormal">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundUnchecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundUnchecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushUnchecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeUnchecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" />
-                                        </ObjectAnimationUsingKeyFrames>-->
-                                        </Storyboard>
-                                        <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOff"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="UncheckedPointerOver">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundUncheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundUncheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushUncheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeUncheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPointerOver}" />
-                                        </ObjectAnimationUsingKeyFrames>-->
-                                        </Storyboard>
-                                        <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="HoverOff"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="UncheckedPressed">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundUncheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundUncheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushUncheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeUncheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}" />
-                                        </ObjectAnimationUsingKeyFrames>-->
-                                        </Storyboard>
-                                        <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedOff"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="UncheckedDisabled">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundUncheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundUncheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushUncheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeUncheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUncheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedDisabled}" />
-                                        </ObjectAnimationUsingKeyFrames>-->
-                                        </Storyboard>
-                                        <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="DisabledOff"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
+                                <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="CheckedNormal">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundChecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundChecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushChecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeChecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillChecked}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundChecked}" />
-                                        </ObjectAnimationUsingKeyFrames>-->
-                                            <DoubleAnimation Storyboard.TargetName="NormalRectangle"
-                                            Storyboard.TargetProperty="StrokeThickness"
-                                            To="{ThemeResource CheckBoxCheckedStrokeThickness}"
-                                            Duration="0" />
-                                            <!--<DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalOn"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="NormalOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="NormalOn"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="CheckedPointerOver">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundCheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundCheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushCheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeCheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillCheckedPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedPointerOver}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="HoverOn"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PointerOverOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PointerOverOn"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="CheckedPressed">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundCheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundCheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushCheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeCheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillCheckedPressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedPressed}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedOn"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PressedOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PressedOn"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="CheckedDisabled">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundCheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundCheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushCheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeCheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillCheckedDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundCheckedDisabled}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="DisabledOn"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="DisabledOn"/>
+                                            <Setter Target="StateTextBlock.Text" Value="DisabledOn"/>
                                         </VisualState.Setters>
                                     </VisualState>
-                                    <VisualState x:Name="IndeterminateNormal">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundIndeterminate}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundIndeterminate}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushIndeterminate}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeIndeterminate}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminate}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminate}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Glyph">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="&#xE73C;" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
+                                    <VisualState x:Name="UncheckedNormal">
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="NormalIndeterminate"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="NormalOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="NormalOff"/>
                                         </VisualState.Setters>
                                     </VisualState>
-                                    <VisualState x:Name="IndeterminatePointerOver">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundIndeterminatePointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundIndeterminatePointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushIndeterminatePointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeIndeterminatePointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminatePointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminatePointerOver}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Glyph">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="&#xE73C;" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
+                                    <VisualState x:Name="UncheckedPointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="HoverIndeterminate"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PointerOverOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PointerOverOff"/>
                                         </VisualState.Setters>
                                     </VisualState>
-                                    <VisualState x:Name="IndeterminatePressed">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundIndeterminatePressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundIndeterminatePressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushIndeterminatePressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeIndeterminatePressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminatePressed}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminatePressed}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Glyph">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="&#xE73C;" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
+                                    <VisualState x:Name="UncheckedPressed">
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="PressedIndeterminate"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="PressedOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="PressedOff"/>
                                         </VisualState.Setters>
                                     </VisualState>
-                                    <VisualState x:Name="IndeterminateDisabled">
-
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundIndeterminateDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundIndeterminateDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushIndeterminateDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeIndeterminateDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillIndeterminateDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundIndeterminateDisabled}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Glyph">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="&#xE73C;" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Storyboard.TargetName="CheckGlyph"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="1"
-                                            Duration="0" />-->
-                                        </Storyboard>
+                                    <VisualState x:Name="UncheckedDisabled">
                                         <VisualState.Setters>
-                                            <Setter Target="CheckGlyph.(AnimatedIcon.State)" Value="DisabledIndeterminate"/>
+                                            <Setter Target="Icon.(controls:AnimatedIcon.State)" Value="DisabledOff"/>
+                                            <Setter Target="StateTextBlock.Text" Value="DisabledOff"/>
                                         </VisualState.Setters>
                                     </VisualState>
-
                                 </VisualStateGroup>
-
                             </VisualStateManager.VisualStateGroups>
-
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Grid VerticalAlignment="Top" Height="32">
-                                <Rectangle x:Name="NormalRectangle"
-                                Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
-                                Stroke="{ThemeResource CheckBoxCheckBackgroundStrokeUnchecked}"
-                                StrokeThickness="{ThemeResource CheckBoxBorderThemeThickness}"
-                                UseLayoutRounding="False"
-                                Height="20"
-                                Width="20"
-                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
-                                <!--<FontIcon x:Name="CheckGlyph"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
-                                FontSize="16"
-                                Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
-                                Opacity="0" />-->
-                                <controls:AnimatedIcon x:Name="CheckGlyph" Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}">
-                                    <controls:AnimatedIcon.Source>
-                                        <AnimatedVisuals:Controls_01_Checkmark/>
-                                    </controls:AnimatedIcon.Source>
-                                    <controls:AnimatedIcon.FallbackIconSource>
-                                        <controls:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"    
-                                                                 FontSize="16"
-                                                                 Glyph="&#xE001;"
-                                                                 IsTextScaleFactorEnabled="False"/>
-                                    </controls:AnimatedIcon.FallbackIconSource>
-                                </controls:AnimatedIcon>
-
-                            </Grid>
-                            <ContentPresenter x:Name="ContentPresenter"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                            Content="{TemplateBinding Content}"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Grid.Column="1"
-                            AutomationProperties.AccessibilityView="Raw"
-                            TextWrapping="Wrap" />
-
-                        </Grid>
+                            <CheckBox HorizontalAlignment="Right" IsChecked="{TemplateBinding IsChecked}" IsEnabled="False"/>
+                            <TextBlock Text="{TemplateBinding Title}"/>
+                            <ContentPresenter Height="200" Width="200" x:Name="IconPresenter" Foreground="{TemplateBinding Foreground}">
+                                <Border x:Name="Icon" controls:AnimatedIcon.State="NormalOff"/>
+                            </ContentPresenter>
+                            <TextBlock x:Name="StateTextBlock" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TransitionTextBlock" HorizontalAlignment="Center"/>
+                        </StackPanel>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        <local:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
+        
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
@@ -526,11 +153,11 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_Cut" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_Cut" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -544,11 +171,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_Queue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -562,11 +189,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="DropDownIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIcon_SpeedUpQueue" Title="AnimatedChevronDownSmallVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_02_UpDown_Dropdown/>
+                                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
@@ -583,14 +210,176 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="HamburgerIcon_Cut" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_Cut" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_09_Hamburger/>
+                                            <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_Queue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="DropDownIconNavView_SpeedUpQueue" Title="AnimatedChevronUpDownSmallVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedChevronUpDownSmallVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_Cut" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedChevronRightDownSmallVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_Queue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedChevronRightDownSmallVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SideChevron_SpeedUpQueue" Title="AnimatedChevronRightDownSmallVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedChevronRightDownSmallVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource FontFamily="Segoe MDL2 Assets"
+                                                                     FontSize="12"
+                                                                     Glyph="&#xE70D;"
+                                                                     IsTextScaleFactorEnabled="False"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Cut" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_Queue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <local:ToggleAnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="HamburgerIcon_SpeedUpQueue" Title="AnimatedGlobalNavigationButtonVisualSource" Background="DarkSlateGray">
+                                <local:ToggleAnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                        </controls:AnimatedIconSource.FallbackIconSource>
+                                    </controls:AnimatedIconSource>
+                                </local:ToggleAnimatedIconHost.IconSource>
+                            </local:ToggleAnimatedIconHost>
+                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
+                        <StackPanel>
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_Cut" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
+                                <local:AnimatedIconHost.IconSource>
+                                    <controls:AnimatedIconSource>
+                                        <controls:AnimatedIconSource.Source>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                                        </controls:AnimatedIconSource.Source>
+                                        <controls:AnimatedIconSource.FallbackIconSource>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -598,14 +387,14 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="HamburgerIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_Queue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_09_Hamburger/>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -613,14 +402,14 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="HamburgerIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SettingsIcon_SpeedUpQueue" Title="AnimatedSettingsVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_09_Hamburger/>
+                                            <animatedvisuals:AnimatedSettingsVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:FontIconSource Glyph="&#xE700;"/>
+                                            <controls:SymbolIconSource Symbol="Setting"/>
                                         </controls:AnimatedIconSource.FallbackIconSource>
                                     </controls:AnimatedIconSource>
                                 </local:AnimatedIconHost.IconSource>
@@ -631,59 +420,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_Cut" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_Cut" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_07_Settings/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:AnimatedIconHost.IconSource>
-                            </local:AnimatedIconHost>
-                            <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_Queue" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_07_Settings/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:AnimatedIconHost.IconSource>
-                            </local:AnimatedIconHost>
-                            <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <local:AnimatedIconHost x:Name="SettingsIcon_SpeedUpQueue" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_07_Settings/>
-                                        </controls:AnimatedIconSource.Source>
-                                        <controls:AnimatedIconSource.FallbackIconSource>
-                                            <controls:SymbolIconSource Symbol="Setting"/>
-                                        </controls:AnimatedIconSource.FallbackIconSource>
-                                    </controls:AnimatedIconSource>
-                                </local:AnimatedIconHost.IconSource>
-                            </local:AnimatedIconHost>
-                            <TextBlock Text="Speed Up Queue Behavior" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
-                        <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_Cut" Background="DarkSlateGray">
-                                <local:AnimatedIconHost.IconSource>
-                                    <controls:AnimatedIconSource>
-                                        <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_08_Back/>
+                                            <animatedvisuals:AnimatedBackVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -696,11 +437,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_Queue" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_08_Back/>
+                                            <animatedvisuals:AnimatedBackVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -713,11 +454,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="BackIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="BackIcon_SpeedUpQueue" Title="AnimatedBackVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_08_Back/>
+                                            <animatedvisuals:AnimatedBackVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:FontIconSource Glyph="&#xE72B;"
@@ -733,11 +474,11 @@
 
                     <StackPanel Orientation="Horizontal" Windows10FallCreatorsUpdate:Spacing="5">
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_Cut" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SearchIcon_Cut" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_10_Search/>
+                                            <animatedvisuals:AnimatedFindVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -748,11 +489,11 @@
                             <TextBlock Text="Cut Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_Queue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}" x:Name="SearchIcon_Queue" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_10_Search/>
+                                            <animatedvisuals:AnimatedFindVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -763,11 +504,11 @@
                             <TextBlock Text="Queue Behavior" HorizontalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel>
-                            <local:AnimatedIconHost x:Name="SearchIcon_SpeedUpQueue" Background="DarkSlateGray">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="SearchIcon_SpeedUpQueue" Title="AnimatedFindVisualSource" Background="DarkSlateGray">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource>
                                         <controls:AnimatedIconSource.Source>
-                                            <AnimatedVisuals:Controls_10_Search/>
+                                            <animatedvisuals:AnimatedFindVisualSource/>
                                         </controls:AnimatedIconSource.Source>
                                         <controls:AnimatedIconSource.FallbackIconSource>
                                             <controls:SymbolIconSource Symbol="Find"/>
@@ -784,7 +525,7 @@
                             <Slider.Header>
                                 <controls:AnimatedIcon x:Name="SliderIcon" Height="100" Width="100" Foreground="Red">
                                     <controls:AnimatedIcon.Source>
-                                        <local:MockIRichAnimatedIconSource/>
+                                        <myAnimatedvisuals:BrightnessSun/>
                                     </controls:AnimatedIcon.Source>
                                 </controls:AnimatedIcon>
                             </Slider.Header>

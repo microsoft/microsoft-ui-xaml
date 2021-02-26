@@ -19,13 +19,13 @@ You can watch them online here on YouTube at the [Windows Developer channel](htt
 
 Add the event to your calendar: [ICS calendar file](https://aka.ms/winuicommunitycall)
 
-## WinUI 3.0 Preview 3 (November 2020)
+## WinUI 3.0 Preview 4 (February 2021)
 
 As outlined in the [roadmap](docs/roadmap.md) we're currently working on WinUI 3.0, which will greatly expand the scope of WinUI to include the full native Windows UI platform.
 
-You can now [download an early build of WinUI 3.0 Preview 3](https://docs.microsoft.com/uwp/toolkits/winui3/) to try out - we'd love your feedback!
+You can now [download WinUI 3.0 Preview 4](https://aka.ms/winui3/preview4) to try out - we'd love your feedback!
 
-For more info see the [discussion issue #2917](https://github.com/microsoft/microsoft-ui-xaml/issues/3620).
+For more info see the [discussion issue #2917](https://aka.ms/winui3/preview4-announcement).
 
 ## Using WinUI
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.

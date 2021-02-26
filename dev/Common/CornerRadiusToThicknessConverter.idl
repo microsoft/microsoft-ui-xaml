@@ -1,7 +1,7 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [default_interface]
 runtimeclass CornerRadiusToThicknessConverter : Windows.UI.Xaml.DependencyObject, Windows.UI.Xaml.Data.IValueConverter
@@ -17,7 +17,7 @@ runtimeclass CornerRadiusToThicknessConverter : Windows.UI.Xaml.DependencyObject
     static Windows.UI.Xaml.DependencyProperty MultiplierProperty{ get; };
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum CornerRadiusToThicknessConverterKind
 {

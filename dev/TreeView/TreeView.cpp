@@ -182,7 +182,6 @@ void TreeView::OnNodeExpanding(const winrt::TreeViewNode& sender, const winrt::I
             {
                 expandingTVI.IsExpanded(true);
             }
-
             //Update TemplateSettings properties
             const auto templateSettings = winrt::get_self<TreeViewItemTemplateSettings>(expandingTVI.TreeViewItemTemplateSettings());
             templateSettings->ExpandedGlyphVisibility(winrt::Visibility::Visible);
