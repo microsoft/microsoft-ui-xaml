@@ -479,7 +479,7 @@ void AnimatedIcon::SetRootPanelChildToFallbackIcon()
 {
     if (auto const iconSource = FallbackIconSource())
     {
-        auto const iconElement = SharedHelpers::MakeIconElementFrom(iconSource);
+        auto const iconElement = iconSource.CreateIconElement();
         if (auto const rootPanel = m_rootPanel.get())
         {
             // Remove the second child, if it exists, as this is the previous
