@@ -155,7 +155,6 @@ private:
 
     // Template Parts
     static constexpr std::wstring_view s_ellipsisItemsRepeaterPartName{ L"PART_EllipsisItemsRepeater"sv };
-    static constexpr std::wstring_view s_itemGridPartName{ L"PART_LayoutRoot"sv };
     static constexpr std::wstring_view s_itemButtonPartName{ L"PART_ItemButton"sv };
 
     // Automation Names
