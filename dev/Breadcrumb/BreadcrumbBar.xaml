@@ -25,7 +25,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot"
-                          Margin="2,2,2,2"
+                          Margin="{StaticResource BreadcrumbBarItemDefaultMargin}"
                           contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
 
                         <VisualStateManager.VisualStateGroups>
@@ -97,6 +97,7 @@
                                         <Setter Target="PART_ChevronTextBlock.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_SeparatorColumnDefinition.Width" Value="0px"/>
                                         <Setter Target="PART_ChevronColumnDefinition.Width" Value="0px" />
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarItemCurrentMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -276,7 +277,7 @@
                                         IsTextScaleFactorEnabled="False"
                                         FontSize="12"
                                         AutomationProperties.AccessibilityView="Raw"
-                                        Padding="2,2,2,2"
+                                        Padding="2,0,0,0"
                                         Grid.Column="2"/>
                                 </Grid>
                             </Button.Content>
