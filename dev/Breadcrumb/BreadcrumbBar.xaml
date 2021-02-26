@@ -29,10 +29,10 @@
 
                         <Grid.Resources>
                             <Style TargetType="FlyoutPresenter" x:Key="DefaultBreadcrumbBarItemFlyoutPresenterStyle">
-                                <Setter Property="Background" Value="{ThemeResource MenuFlyoutPresenterBackground}" />
-                                <Setter Property="BorderBrush" Value="{ThemeResource MenuFlyoutPresenterBorderBrush}" />
-                                <Setter Property="BorderThickness" Value="{ThemeResource MenuFlyoutPresenterBorderThemeThickness}" />
-                                <Setter Property="Padding" Value="{StaticResource MenuFlyoutPresenterThemePadding}" />
+                                <Setter Property="Background" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBackground}" />
+                                <Setter Property="BorderBrush" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderBrush}" />
+                                <Setter Property="BorderThickness" Value="{ThemeResource BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness}" />
+                                <Setter Property="Padding" Value="{StaticResource BreadcrumbBarEllipsisFlyoutPresenterThemePadding}" />
                                 <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
                                 <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
                                 <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -40,7 +40,7 @@
                                 <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
                                 <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
                                 <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
-                                <Setter Property="MinHeight" Value="{StaticResource MenuFlyoutThemeMinHeight}" />
+                                <Setter Property="MinHeight" Value="{StaticResource BreadcrumbBarEllipsisFlyoutThemeMinHeight}" />
                                 <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
 
                                 <Setter Property="Template">
@@ -79,8 +79,8 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_ItemButton.Visibility" Value="Collapsed"/>
                                         <Setter Target="PART_EllipsisDropDownItemContentPresenter.Visibility" Value="Visible"/>
-                                        <Setter Target="PART_LayoutRoot.Padding" Value="11,9,11,10"/>
-                                        <Setter Target="PART_LayoutRoot.Margin" Value="4,2,4,2"/>
+                                        <Setter Target="PART_LayoutRoot.Padding" Value="{StaticResource BreadcrumbBarEllipsisDropDownItemPadding}"/>
+                                        <Setter Target="PART_LayoutRoot.Margin" Value="{StaticResource BreadcrumbBarEllipsisDropDownItemMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

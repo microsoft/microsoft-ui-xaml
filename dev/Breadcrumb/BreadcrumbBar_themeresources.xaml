@@ -6,8 +6,11 @@
     <x:String x:Key="BreadcrumbBarChevronLeftToRight">&#xE76C;</x:String>
     <x:String x:Key="BreadcrumbBarChevronRightToLeft">&#xE76B;</x:String>
 
-    <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemMargin">11,11,11,12</Thickness>
-    
+    <x:Double x:Key="BreadcrumbBarEllipsisFlyoutThemeMinHeight">40</x:Double>
+    <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemMargin">5,3,5,3</Thickness>
+    <Thickness x:Key="BreadcrumbBarEllipsisDropDownItemPadding">11,7,11,9</Thickness>
+    <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterThemePadding">0,2,0,2</Thickness>
+
     <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Default">
@@ -34,6 +37,10 @@
             <StaticResource x:Key="BreadcrumbBarForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
             <SolidColorBrush x:Key="BreadcrumbBarBackgroundBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="BreadcrumbBarBorderBrush" Color="Transparent"/>
+
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
@@ -64,6 +71,10 @@
             <SolidColorBrush x:Key="BreadcrumbBarBackgroundBrush" Color="Transparent"/>
             <SolidColorBrush x:Key="BreadcrumbBarBorderBrush" Color="Transparent"/>
 
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorDefaultBrush" />
+            <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">1</Thickness>
+
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
 
@@ -91,6 +102,10 @@
             <StaticResource x:Key="BreadcrumbBarForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="BreadcrumbBarBackgroundBrush" ResourceKey="SystemColorButtonFaceColor" />
             <StaticResource x:Key="BreadcrumbBarBorderBrush" ResourceKey="SystemColorButtonFaceColor" />
+
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBackground" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <Thickness x:Key="BreadcrumbBarEllipsisFlyoutPresenterBorderThemeThickness">2</Thickness>
 
             <StaticResource x:Key="BreadcrumbBarItemThemeFontSize" ResourceKey="ControlContentThemeFontSize" />
         </ResourceDictionary>
