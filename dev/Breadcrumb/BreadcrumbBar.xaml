@@ -25,7 +25,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:BreadcrumbBarItem">
                     <Grid x:Name="PART_LayoutRoot"
-                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
+                          contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                          contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemTypeStates">
@@ -232,15 +233,16 @@
                                 </Style>
                             </Button.Style>
 
-                            <Button.Content>
-                                <Grid AutomationProperties.Name="BreadcrumbBarItemGrid" AutomationProperties.AccessibilityView="Raw">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="0px" />
-                                        <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                            <!-- This is the Button Content -->
+                            <Grid AutomationProperties.Name="BreadcrumbBarItemGrid"
+                                  AutomationProperties.AccessibilityView="Raw">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition x:Name="PART_SeparatorColumnDefinition" Width="0px" />
+                                    <ColumnDefinition x:Name="PART_ChevronColumnDefinition" Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                                    <ContentPresenter x:Name="PART_ItemContentPresenter"
+                                <ContentPresenter x:Name="PART_ItemContentPresenter"
                                         AutomationProperties.Name="BreadcrumbBarItemContentPresenter"
                                         Grid.Column="0"
                                         Content="{TemplateBinding Content}"
@@ -254,7 +256,7 @@
                                         LineHeight="20"
                                         AutomationProperties.AccessibilityView="Raw"/>
 
-                                    <TextBlock x:Name="PART_EllipsisTextBlock"
+                                <TextBlock x:Name="PART_EllipsisTextBlock"
                                         AutomationProperties.Name="BreadcrumbBarEllipsisTextBlock"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Text="&#xE712;"
@@ -265,7 +267,7 @@
                                         AutomationProperties.AccessibilityView="Raw"
                                         Grid.Column="0"/>
 
-                                    <TextBlock x:Name="PART_ChevronTextBlock"
+                                <TextBlock x:Name="PART_ChevronTextBlock"
                                         AutomationProperties.Name="ChevronTextBlock"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Foreground="{ThemeResource BreadcrumbBarNormalForegroundBrush}"
@@ -277,8 +279,7 @@
                                         AutomationProperties.AccessibilityView="Raw"
                                         Padding="2,2,2,2"
                                         Grid.Column="2"/>
-                                </Grid>
-                            </Button.Content>
+                            </Grid>
 
                             <Button.Flyout>
                                 <Flyout>
@@ -302,23 +303,25 @@
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="FlyoutPresenter">
                                                         <Grid Background="{TemplateBinding Background}"
-                                                  contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                  contract7Present:BackgroundSizing="InnerBorderEdge">
+                                                              contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                              contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
+                                                              contract7Present:BackgroundSizing="InnerBorderEdge">
                                                             <ScrollViewer x:Name="FlyoutPresenterScrollViewer"
-                                                              Margin="{TemplateBinding Padding}"
-                                                              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                                                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                                              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                                                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                                                              IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                                                              IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                                                              ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                                                              Content="{TemplateBinding Content}"
-                                                              AutomationProperties.AccessibilityView="Raw" />
+                                                                          Margin="{TemplateBinding Padding}"
+                                                                          HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                                                          HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                                                          VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                                                          VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                                                          IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                                                          IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                                                          ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                                                          Content="{TemplateBinding Content}"
+                                                                          AutomationProperties.AccessibilityView="Raw" />
                                                             <Border x:Name="FlyoutPresenterBorder"
-                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" />
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                                    contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                                                         </Grid>
                                                     </ControlTemplate>
                                                 </Setter.Value>
@@ -337,7 +340,7 @@
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Stretch"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Grid>
                 </ControlTemplate>
