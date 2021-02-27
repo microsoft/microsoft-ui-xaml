@@ -4741,12 +4741,11 @@ bool NavigationView::IsFullScreenOrTabletMode()
 
 void NavigationView::SetDropShadow()
 {
-    const auto shadowCaster = m_shadowCaster.get();
     const auto displayMode = DisplayMode();
 
     if (displayMode == winrt::NavigationViewDisplayMode::Compact || displayMode == winrt::NavigationViewDisplayMode::Minimal)
     {
-        if (shadowCaster)
+        if (const auto shadowCaster = m_shadowCaster.get())
         {
             const auto rootSplitView = m_rootSplitView.get();
             const auto rootSplitViewActualWidth = rootSplitView.ActualWidth();
@@ -4787,8 +4786,15 @@ void NavigationView::UnsetDropShadow()
     if (const auto shadowCasterEaseOutStoryboard = m_shadowCasterEaseOutStoryboard.get())
     {
         shadowCasterEaseOutStoryboard.Begin();
+        shadowCasterEaseOutStoryboard.Completed(winrt::auto_revoke,
+            {
+                [this, shadowCaster](auto const&, auto const&) {ShadowCasterEaseOutStoryboard_Completed(shadowCaster); }
+            });
     }
+}
 
+void NavigationView::ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster)
+{
     if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
     {
         if (shadowCaster_uiElement10.Shadow())

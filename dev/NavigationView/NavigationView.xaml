@@ -25,7 +25,7 @@
                                     <SplineDoubleKeyFrame KeyTime="0:0:0.35" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                    <LinearDoubleKeyFrame KeyTime="0:0:0.83" Value="1" />
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
                                     <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
@@ -37,7 +37,7 @@
                                     <SplineDoubleKeyFrame KeyTime="0:0:0.2" KeySpline="0.1,0.9 0.2,1.0" Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                    <LinearDoubleKeyFrame KeyTime="0:0:0.83" Value="1" />
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.35" Value="1" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Width">
                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ElementName=RootSplitView, Path=Width}"/>
@@ -52,7 +52,7 @@
                                     <SplineDoubleKeyFrame KeyTime="0:0:0.12" KeySpline="0.1,0.9 0.2,1.0" Value="{Binding ElementName=RootSplitView, Path=TemplateSettings.NegativeOpenPaneLengthMinusCompactLength}" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="Opacity">
-                                    <LinearDoubleKeyFrame KeyTime="0:0:0.83" Value="0" />
+                                    <LinearDoubleKeyFrame KeyTime="0:0:0.12" Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ShadowCaster" Storyboard.TargetProperty="HorizontalAlignment">
                                     <DiscreteObjectKeyFrame KeyTime="0" Value="Left"/>
