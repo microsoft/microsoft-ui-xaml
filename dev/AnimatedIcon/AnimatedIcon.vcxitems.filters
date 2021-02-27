@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.cpp">
+      <Filter>AnimatedVisuals</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.h">
+      <Filter>AnimatedVisuals</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIcon.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronDownSmallVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronRightDownSmallVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedChevronUpDownSmallVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedFindVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedSettingsVisualSource.idl">
+      <Filter>AnimatedVisuals</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Docs">
+      <UniqueIdentifier>{ab333f5f-ead0-4ff7-ac54-6fe103e3002b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AnimatedVisuals">
+      <UniqueIdentifier>{1843091a-2efc-483d-aebb-0166cf2e040f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AnimatedIconDevDesign.md">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Docs\MultiStateSegmentLookupProposal.md">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Docs\SingleStateSegmentLookup.md">
+      <Filter>Docs</Filter>
+    </None>
+  </ItemGroup>
+</Project>

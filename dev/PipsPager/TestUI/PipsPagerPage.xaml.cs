@@ -9,6 +9,8 @@ using PipsPagerButtonVisibility = Microsoft.UI.Xaml.Controls.PipsPagerButtonVisi
 using PipsPagerSelectedIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.PipsPagerSelectedIndexChangedEventArgs;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -17,10 +19,10 @@ namespace MUXControlsTestApp
     {
         Button previousPageButton;
         Button nextPageButton;
+        ItemsRepeater repeater;
 
         public List<string> Pictures = new List<string>()
         {
-
             "Assets/ingredient1.png",
             "Assets/ingredient2.png",
             "Assets/ingredient3.png",
@@ -42,16 +44,19 @@ namespace MUXControlsTestApp
             var rootPanel = VisualTreeHelper.GetChild(TestPipsPager, 0);
             previousPageButton = VisualTreeHelper.GetChild(rootPanel, 0) as Button;
             nextPageButton = VisualTreeHelper.GetChild(rootPanel, 2) as Button;
+            repeater = rootPanel.FindVisualChildByType<ItemsRepeater>();
 
             PreviousPageButtonVisibilityComboBox.SelectionChanged += OnPreviousPageButtonVisibilityChanged;
             NextPageButtonVisibilityComboBox.SelectionChanged += OnNextPageButtonVisibilityChanged;
             TestPipsPagerNumberOfPagesComboBox.SelectionChanged += OnNumberOfPagesChanged;
-            TestPipsPagerMaxVisualIndicatorsComboBox.SelectionChanged += OnMaxVisualIndicatorsChanged;
+            TestPipsPagerMaxVisiblePipsComboBox.SelectionChanged += OnMaxVisiblePipsChanged;
             TestPipsPagerOrientationComboBox.SelectionChanged += OnOrientationChanged;
             TestPipsPager.PointerEntered += TestPipsPager_PointerEntered;
             TestPipsPager.PointerExited += TestPipsPager_PointerExited;
             previousPageButton.IsEnabledChanged += OnButtonEnabledChanged; ;
             nextPageButton.IsEnabledChanged += OnButtonEnabledChanged;
+            repeater.GotFocus += OnRepeaterGotFocus;
+   
 
             PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
             NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
@@ -60,8 +65,13 @@ namespace MUXControlsTestApp
             NextPageButtonIsEnabledCheckBox.IsChecked = nextPageButton?.IsEnabled;
 
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
-            CurrentMaxVisualIndicatorsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisualIndicators}";
+            CurrentMaxVisiblePipsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisiblePips}";
             CurrentOrientationTextBlock.Text = GetCurrentOrientation();
+        }
+
+        private void OnRepeaterGotFocus(object sender, RoutedEventArgs e)
+        {
+            FocusedPageIndexTextBlock.Text = $"Current focused page index: {repeater.GetElementIndex((UIElement)e.OriginalSource).ToString()}";
         }
 
         private void OnButtonEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -119,13 +129,13 @@ namespace MUXControlsTestApp
             TestPipsPager.NumberOfPages = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
             CurrentNumberOfPagesTextBlock.Text = GetNumberOfPages();
         }
-        public void OnMaxVisualIndicatorsChanged(object sender, SelectionChangedEventArgs e)
+        public void OnMaxVisiblePipsChanged(object sender, SelectionChangedEventArgs e)
         {
-            TestPipsPager.MaxVisualIndicators = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
-            CurrentMaxVisualIndicatorsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisualIndicators}";
+            TestPipsPager.MaxVisiblePips = ConvertComboBoxItemToNumberOfPages((sender as ComboBox).SelectedItem as ComboBoxItem);
+            CurrentMaxVisiblePipsTextBlock.Text = $"Current max visual indicators: {TestPipsPager.MaxVisiblePips}";
         }
 
-        public void OnSelectedIndexChanged(object sender, PipsPagerSelectedIndexChangedEventArgs args)
+        public void OnSelectedIndexChanged(PipsPager sender, PipsPagerSelectedIndexChangedEventArgs args)
         {
             PreviousPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(previousPageButton);
             NextPageButtonIsVisibleCheckBox.IsChecked = IsButtonVisible(nextPageButton);
@@ -133,7 +143,7 @@ namespace MUXControlsTestApp
             PreviousPageButtonIsEnabledCheckBox.IsChecked = previousPageButton?.IsEnabled;
             NextPageButtonIsEnabledCheckBox.IsChecked = nextPageButton?.IsEnabled;
 
-            CurrentPageIndexTextBlock.Text = $"Current index is: {args.NewPageIndex}";
+            CurrentPageIndexTextBlock.Text = $"Current index is: {sender.SelectedPageIndex}";
         }
 
         public void OnOrientationChanged(object sender, SelectionChangedEventArgs e)
@@ -168,6 +178,11 @@ namespace MUXControlsTestApp
                 Int32.TryParse(digitsOnlyString, out numberOfPages);
             }
             return numberOfPages;
+        }
+
+        private void GoToExamplesPage(object sender, RoutedEventArgs args)
+        {
+            Frame.NavigateWithoutAnimation(typeof(PipsPagerExamples));
         }
     }
 }
