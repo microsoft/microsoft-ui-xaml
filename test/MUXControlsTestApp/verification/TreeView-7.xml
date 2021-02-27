@@ -143,9 +143,9 @@
                       MinHeight=32
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
-                      FocusVisualSecondaryBrush=#99FFFFFF
+                      FocusVisualSecondaryBrush=#B3FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
-                      FocusVisualPrimaryBrush=#FF000000
+                      FocusVisualPrimaryBrush=#E4000000
                       Visibility=Visible
                       RenderSize=400,32
                     [Windows.UI.Xaml.Controls.Grid]
@@ -286,7 +286,7 @@
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualPrimaryBrush=#FF000000
                             Visibility=Visible
-                            RenderSize=42,19
+                            RenderSize=362,19
                           [Windows.UI.Xaml.Controls.TextBlock]
                               Padding=0,0,0,0
                               Foreground=#E4000000
@@ -332,9 +332,9 @@
                 Background=#00FFFFFF
                 CornerRadius=3,3,3,3
                 Name=VerticalScrollBar
-                MinWidth=16
-                MinHeight=16
-                Margin=0,0,0,0
+                MinWidth=12
+                MinHeight=12
+                Margin=1,1,1,1
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -349,9 +349,9 @@
                 Background=#00FFFFFF
                 CornerRadius=3,3,3,3
                 Name=HorizontalScrollBar
-                MinWidth=16
-                MinHeight=16
-                Margin=0,0,0,0
+                MinWidth=12
+                MinHeight=12
+                Margin=1,1,1,1
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2

@@ -3,20 +3,19 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SDKVersionRS2>10.0.15063.0</SDKVersionRS2>
-	<SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
-	<SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
-	<SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
-	<SDKVersion19H1>10.0.18362.0</SDKVersion19H1>
-	<SDKVersionInsider>10.0.18362.0</SDKVersionInsider>
+    <SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
+    <SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
+    <SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
+    <SDKVersion19H1>10.0.18362.0</SDKVersion19H1>
+    <SDKVersionInsider>10.0.21307.0</SDKVersionInsider>
   </PropertyGroup>
   <PropertyGroup>
-    <UseInsiderSDK>true</UseInsiderSDK>
     <!-- By default we use the publicly shipped SDK version which is 19H1 now -->
     <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersion19H1)</MuxSdkVersion>
 
     <!-- Setting UseInsiderSDK will allow the code to build to the newest insider SDK 
          In order to get this from a cmd prompt run 
-         set UseInsiderSDK=true and then launch muxcontrols.sln from that cmd prompt-->
-    <MuxSdkVersion Condition="$(UseInsiderSDK)=='true'">$(SDKVersionInsider)</MuxSdkVersion>
+         set UseInsiderSDK=true and then launch muxcontrols.sln from that cmd prompt -->
+    <MuxSdkVersion Condition="$(UseInsiderSDK) == 'true'">$(SDKVersionInsider)</MuxSdkVersion>
   </PropertyGroup>
 </Project>

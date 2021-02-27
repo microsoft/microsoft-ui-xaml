@@ -1,11 +1,8 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IPersonPicture", 6c230b6d-0d75-4059-91bc-7b174d1d7315)]
-[WUXC_STATIC_NAME("IPersonPictureStatics", dbec0982-3c10-4639-9614-aa5b7cdc32ca)]
-[WUXC_CONSTRUCTOR_NAME("IPersonPictureFactory", 4f18330d-0416-4b92-bfd3-bf5780b46ab2)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
@@ -38,7 +35,7 @@ unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ProfilePictureProperty { get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass PersonPictureTemplateSettings : Windows.UI.Xaml.DependencyObject

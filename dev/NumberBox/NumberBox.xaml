@@ -275,7 +275,7 @@
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
-                                                    FontSize="12"
+                                                    FontSize="{ThemeResource TextBoxIconFontSize}"
                                                     Text="&#xE10A;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />

@@ -1103,8 +1103,10 @@ void CommandBarFlyoutCommandBar::UpdateShadow()
 
 void CommandBarFlyoutCommandBar::AddShadow()
 {
-    if (SharedHelpers::IsThemeShadowAvailable())
+    if (SharedHelpers::IsThemeShadowAvailable() && !SharedHelpers::Is21H1OrHigher())
     {
+        //This logic applies to projected shadows, which are the default on < 21H1.
+        //See additional notes in CommandBarFlyout::CreatePresenter().
         //Apply Shadow on the Grid named "ContentRoot", this is the first element below
         //the clip animation of the commandBar. This guarantees that shadow respects the 
         //animation
@@ -1127,8 +1129,10 @@ void CommandBarFlyoutCommandBar::AddShadow()
 
 void CommandBarFlyoutCommandBar::ClearShadow()
 {
-    if (SharedHelpers::IsThemeShadowAvailable())
+    if (SharedHelpers::IsThemeShadowAvailable() && !SharedHelpers::Is21H1OrHigher())
     {
+        // This logic applies to projected shadows, which are the default on < 21H1.
+        // See additional notes in CommandBarFlyout::CreatePresenter().
         winrt::IControlProtected thisAsControlProtected = *this;
         auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
         if (winrt::IUIElement10 grid_uiElement10 = grid)
