@@ -30,8 +30,10 @@
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_v1.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources_v1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

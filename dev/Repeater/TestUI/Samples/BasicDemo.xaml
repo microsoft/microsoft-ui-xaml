@@ -27,10 +27,13 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel>
             <Button x:Name="goBackButton">Back</Button>
+            <Button Click="OnAddRecipeButton_Click" AutomationProperties.Name="InsertAtStartButton">Insert item at start</Button>
+            <TextBlock x:Name="InsertAtStartChildCountLabel" AutomationProperties.Name="InsertAtStartChildCountLabel" Text="0"/>
         </StackPanel>
 
         <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1">
@@ -42,7 +45,25 @@
                 </controls:ItemsRepeater>
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
-
+        
+        <controls:ItemsRepeaterScrollHost Grid.Row="2">
+            <ScrollViewer>
+                <controls:ItemsRepeater Grid.Row="2" MinHeight="100"
+                    x:Name="insertStartTestRepeater"
+                    ItemsSource="{x:Bind simpleStringsList}">
+                    <controls:ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </controls:ItemsRepeater.ItemTemplate>
+                </controls:ItemsRepeater>
+            </ScrollViewer>
+        </controls:ItemsRepeaterScrollHost>
         <!-- No ItemsRepeaterScrollHost for RS5+. ScrollViewer can do the anchoring itself-->
         <!--controls:ScrollViewer x:Name="scrollViewer" Height="500">
             <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" />

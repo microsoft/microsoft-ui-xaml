@@ -119,7 +119,7 @@
   </resheader>
   <data name="PipsPagerNameText" xml:space="preserve">
     <value>Pager</value>
-    <comment>The name of the control itself that will be announced when it receives focus</comment>
+    <comment>It's a control that is used with a window that does not have enough display area to show all of its content. The pager allows the user to navigate to content that is not currently in view.</comment>
   </data>
   <data name="PipsPagerNextPageButtonText" xml:space="preserve">
     <value>Next Page</value>

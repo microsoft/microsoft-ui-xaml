@@ -10,6 +10,14 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <ScrollBar/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="300"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <ScrollBar Orientation="Horizontal" Visibility="Visible" VerticalAlignment="Bottom" IndicatorMode="MouseIndicator"/>
+        <ScrollBar Orientation="Vertical" Visibility="Visible" IndicatorMode="MouseIndicator" Grid.Column="1"/>
     </Grid>
 </local:TestPage>

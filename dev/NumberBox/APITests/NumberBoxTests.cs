@@ -11,6 +11,9 @@ using MUXControlsTestApp;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using MUXControls.TestAppUtils;
+using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Xaml.Automation;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -49,7 +52,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyNumberBoxCornerRadius()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (Common.PlatformConfiguration.IsOSVersionLessThan(Common.OSVersion.Redstone5))
             {
                 Log.Warning("NumberBox CornerRadius property is not available pre-rs5");
                 return;
@@ -169,6 +172,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
             });
+        }
+
+        [TestMethod]
+        public void VerifyUIANameBehavior()
+        {
+            NumberBox numberBox = null;
+            TextBox textBox = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                numberBox = new NumberBox();
+                Content = numberBox;
+                Content.UpdateLayout();
+
+                textBox = TestPage.FindVisualChildrenByType<TextBox>(numberBox)[0];
+                Verify.IsNotNull(textBox);
+                numberBox.Header = "Some header";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyUIAName("Some header");
+                numberBox.Header = new Button();
+                AutomationProperties.SetName(numberBox, "Some UIA name");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyUIAName("Some UIA name");
+                numberBox.Header = new Button();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyUIAName("Some UIA name");
+            });
+
+            void VerifyUIAName(string value)
+            {
+                Verify.AreEqual(value, FrameworkElementAutomationPeer.CreatePeerForElement(textBox).GetName());
+            }
         }
 
         private NumberBox SetupNumberBox()

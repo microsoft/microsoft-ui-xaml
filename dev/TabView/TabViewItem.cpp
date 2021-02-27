@@ -97,6 +97,7 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
     if (IsSelected())
     {
         SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));
+        StartBringIntoView();
     }
     else
     {
@@ -376,7 +377,7 @@ void TabViewItem::OnIconSourceChanged()
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
     if (auto const source = IconSource())
     {
-        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
+        templateSettings->IconElement(source.CreateIconElement());
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
     }
     else
