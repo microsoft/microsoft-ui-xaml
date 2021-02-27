@@ -16,6 +16,7 @@ static constexpr auto c_iconBoxColumnDefinitionName = L"IconColumn"sv;
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
+    SetValue(s_TemplateSettingsProperty, winrt::make<::NavigationViewItemPresenterTemplateSettings>());
     SetDefaultStyleKey(this);
 }
 
@@ -127,14 +128,14 @@ void NavigationViewItemPresenter::UpdateMargin()
 void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLength, bool shouldUpdate)
 {
     m_compactPaneLengthValue = compactPaneLength;
+
     if (shouldUpdate)
     {
-        if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
-        {
-            auto gridLength = iconGridColumn.Width();
-            gridLength.Value = compactPaneLength;
-            iconGridColumn.Width(gridLength);
-        }
+        const auto templateSettings = winrt::get_self<NavigationViewItemPresenterTemplateSettings>(TemplateSettings());
+        const auto gridLength = compactPaneLength;
+
+        templateSettings->IconWidth(gridLength);
+        templateSettings->SmallerIconWidth(gridLength - 8);
     }
 }
 

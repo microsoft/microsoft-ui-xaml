@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
@@ -33,6 +34,10 @@
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                         contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}">
 
+                        <contract7Present:Grid.BackgroundTransition>
+                            <contract7Present:BrushTransition Duration="0:0:0.083" />
+                        </contract7Present:Grid.BackgroundTransition>
+
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal"/>
@@ -48,6 +53,9 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="PointerOver"/>
+                                    </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Pressed">
@@ -61,10 +69,13 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ChevronTextBlock" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ChevronIcon" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource DropDownButtonForegroundSecondaryPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="Pressed"/>
+                                    </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="Disabled">
@@ -78,10 +89,14 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ChevronTextBlock" Storyboard.TargetProperty="Foreground">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ChevronIcon" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
+                                    <VisualState.Setters>
+                                        <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
+                                        <Setter Target="ChevronIcon.(AnimatedIcon.State)" Value="Normal"/>
+                                    </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
@@ -99,18 +114,17 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw" />
 
-                        <TextBlock
-                            x:Name="ChevronTextBlock"
-                            Grid.Column="1"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="8"
-                            Foreground="{ThemeResource ButtonForegroundPressed}"
-                            Text="&#xE96E;"
-                            VerticalAlignment="Center"
-                            Padding="2,4,2,0"
-                            Margin="8,0,0,0"
-                            IsTextScaleFactorEnabled="False"
-                            AutomationProperties.AccessibilityView="Raw"/>
+                        <local:AnimatedIcon x:Name="ChevronIcon" Grid.Column="1" Margin="8,0,0,0" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" Width="12" Height="12">
+                            <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
+                            <local:AnimatedIcon.FallbackIconSource>
+                                <local:FontIconSource
+                                    FontSize="8"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    Foreground="{ThemeResource ButtonForegroundPressed}"
+                                    Glyph="&#xE96E;"
+                                    IsTextScaleFactorEnabled="False"/>
+                            </local:AnimatedIcon.FallbackIconSource>
+                        </local:AnimatedIcon>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

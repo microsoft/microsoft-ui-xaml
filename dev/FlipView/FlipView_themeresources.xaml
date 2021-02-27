@@ -18,7 +18,7 @@
             <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <SolidColorBrush x:Key="FlipViewButtonBackgroundThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonBorderThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonForegroundThemeBrush" Color="#99000000" />
@@ -64,7 +64,7 @@
             <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
             <StaticResource x:Key="FlipViewNextPreviousButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="GhostFillColorTransparentBrush" />
+            <StaticResource x:Key="FlipViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <SolidColorBrush x:Key="FlipViewButtonBackgroundThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonBorderThemeBrush" Color="#59D5D5D5" />
             <SolidColorBrush x:Key="FlipViewButtonForegroundThemeBrush" Color="#99000000" />
@@ -153,7 +153,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E3;"
+                                        Glyph="{ThemeResource FlipViewCaretRight}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         MirroredWhenRightToLeft="True"
@@ -202,7 +202,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E2;"
+                                        Glyph="{ThemeResource FlipViewCaretLeft}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         MirroredWhenRightToLeft="True"
@@ -251,7 +251,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E5;"
+                                        Glyph="{ThemeResource FlipViewCaretDown}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         UseLayoutRounding="False" />
@@ -299,7 +299,7 @@
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         FontSize="12"
                                         Foreground="{ThemeResource FlipViewNextPreviousArrowForeground}"
-                                        Glyph="&#xE0E4;"
+                                        Glyph="{ThemeResource FlipViewCaretUp}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         UseLayoutRounding="False" />

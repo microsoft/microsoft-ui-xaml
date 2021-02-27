@@ -12,8 +12,8 @@ public:
     void Dispatcher(winrt::CoreDispatcher const& value);
     winrt::CoreDispatcher Dispatcher();
 
-    void PipsPagerItems(winrt::IVector<winrt::IInspectable> const& value);
-    winrt::IVector<winrt::IInspectable> PipsPagerItems();
+    void PipsPagerItems(winrt::IVector<int> const& value);
+    winrt::IVector<int> PipsPagerItems();
 
     static winrt::DependencyProperty DispatcherProperty() { return s_DispatcherProperty; }
     static winrt::DependencyProperty PipsPagerItemsProperty() { return s_PipsPagerItemsProperty; }

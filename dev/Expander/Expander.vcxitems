@@ -15,27 +15,27 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\Expander.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ExpanderTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Expander.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ExpanderTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Expander.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ExpanderTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Expander.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExpanderTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Expander.xaml">
-      <UseVisualStyle>Any</UseVisualStyle>
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources.xaml">
-      <UseVisualStyle>Latest</UseVisualStyle>
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources_v2.5.xaml">
-      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

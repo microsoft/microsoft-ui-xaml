@@ -6,3 +6,21 @@
 
 #include "IconSource.h"
 #include "BitmapIconSource.h"
+
+winrt::IconElement BitmapIconSource::CreateIconElementCore()
+{
+    winrt::BitmapIcon bitmapIcon;
+
+    if (UriSource())
+    {
+        bitmapIcon.UriSource(UriSource());
+    }
+
+    bitmapIcon.ShowAsMonochrome(ShowAsMonochrome());
+
+    if (const auto newForeground = Foreground())
+    {
+        bitmapIcon.Foreground(newForeground);
+    }
+    return bitmapIcon;
+}

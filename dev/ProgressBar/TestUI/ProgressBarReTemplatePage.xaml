@@ -386,6 +386,9 @@
                     Style="{ThemeResource StandardGroupingStackPanel}">
             <TextBlock Text="Properties" Style="{ThemeResource StandardGroupHeader}"/>
 
+            <TextBlock Text="Value" Margin="0, 20, 0, 0"/>
+            <TextBlock x:Name="ROValueText" AutomationProperties.Name="ROValueText" Margin="0, 0, 0, 20"/>
+
             <TextBlock Text="Indicator Width" Margin="0, 20, 0, 0"/>
             <TextBlock x:Name="IndicatorWidthText" AutomationProperties.Name="IndicatorWidthText" Margin="0, 0, 0, 20"/>
 

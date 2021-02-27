@@ -262,11 +262,19 @@ namespace RuntimeProfiler {
         
         //  Since MUX doesn't piggyback the WUX Extension suspend handler,
         //  we sign up for suspension notifications.
-        winrt::Application::Current().Suspending(([](auto &, auto &)
-            {
-                FireEvent(true);
-            }
-        ));
+        try
+        {
+            winrt::Application::Current().Suspending(([](auto&, auto&)
+                {
+                    FireEvent(true);
+                }
+            ));
+        }
+        catch (winrt::hresult_error e)
+        {
+            // We might not have an Application instance object in XamlPresenter scenarios
+            // because we don't need it.
+        }
 
         return ((nullptr != g_pTimer)?TRUE:FALSE);
     }

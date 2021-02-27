@@ -78,13 +78,13 @@ $azureDevOpsRestApiHeaders = @{
 $queryUri = GetQueryTestRunsUri -CollectionUri $CollectionUri -TeamProject $TeamProject -BuildUri $BuildUri -IncludeRunDetails
 Write-Host "queryUri = $queryUri"
 
-$testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
+$testRuns = Invoke-RestMethodWithRetries $queryUri -Headers $azureDevOpsRestApiHeaders
 $webClient = New-Object System.Net.WebClient
 [System.Collections.Generic.List[string]]$workItems = @()
 
 foreach ($testRun in $testRuns.value)
 {
-    $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
+    $testResults = Invoke-RestMethodWithRetries "$($testRun.url)/results?api-version=5.0" -Headers $azureDevOpsRestApiHeaders
     $isTestRunNameShown = $false
 
     foreach ($testResult in $testResults.value)
@@ -99,7 +99,7 @@ foreach ($testRun in $testRuns.value)
         {
             $workItems.Add($workItem)
             $filesQueryUri = "https://helix.dot.net/api/2019-06-17/jobs/$helixJobId/workitems/$helixWorkItemName/files?access_token=$HelixAccessToken"
-            $files = Invoke-RestMethod -Uri $filesQueryUri -Method Get
+            $files = Invoke-RestMethodWithRetries $filesQueryUri
 
             $screenShots = $files | where { $_.Name.EndsWith(".jpg") }
             $dumps = $files | where { $_.Name.EndsWith(".dmp") }
@@ -130,7 +130,7 @@ foreach ($testRun in $testRuns.value)
                     $fileurl = Append-HelixAccessTokenToUrl $verificationFile.Link  $HelixAccessToken
                     try
                     {
-                        $webClient.DownloadFile($fileurl, $destination)
+                        Download-FileWithRetries $fileurl $destination
                     }
                     catch
                     {
@@ -154,7 +154,7 @@ foreach ($testRun in $testRuns.value)
                     }
 
                     $fileurl = Append-HelixAccessTokenToUrl $pgcFile.Link $HelixAccessToken
-                    $webClient.DownloadFile($fileurl, $destination)
+                    Download-FileWithRetries $fileurl $destination
                 }
             }
         }
