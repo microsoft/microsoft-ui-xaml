@@ -285,7 +285,7 @@
                                         <VisualState.Setters>
                                             <Setter Target="Content.Opacity" Value="0" />
                                             <Setter Target="CheckedContent.Opacity" Value="1" />
-                                            <Setter Target="SelectionAccent.Opacity" Value="1" />
+                                            <!--<Setter Target="SelectionAccent.Opacity" Value="1" />-->
                                         </VisualState.Setters>
                                     </VisualState>
 
