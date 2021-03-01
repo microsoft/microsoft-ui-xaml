@@ -171,7 +171,8 @@
             <Setter Property="HighContrastAdjustment" Value="None" />
         </Style>
         
-        <Style x:Key="InkToolbarFlyoutStyle" TargetType="FlyoutPresenter">
+        <Style x:Key="InkToolbarFlyoutStyle" TargetType="FlyoutPresenter" >
+            <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="Padding" Value="0,0,0,0" />
             <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" />
             <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundChromeHighBrush}" />
@@ -262,8 +263,8 @@
                                             <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonBorderBrushPressed}" />
                                             <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonForegroundPressed}" />
                                             <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonPressedForegroundThemeBrush}" />
-                                            <!--<Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarButtonPressedForegroundThemeBrush}" />-->
-                                        </VisualState.Setters>
+                                            <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarButtonPressedForegroundThemeBrush}" />
+                                    </VisualState.Setters>
                                     </VisualState>
 
                                     <VisualState x:Name="Disabled">
@@ -2044,7 +2045,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style TargetType="InkToolbarPenConfigurationControl">
+        <Style TargetType="InkToolbarPenConfigurationControl" >
             <Setter Property="IsTabStop" Value="false" />
             <Setter Property="Template">
                 <Setter.Value>
