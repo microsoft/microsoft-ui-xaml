@@ -46,4 +46,82 @@
 
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
+
+    <x:String x:Key="LoopingSelectorUpButtonCaretUp">&#xEDDB;</x:String>
+    <x:String x:Key="LoopingSelectorDownButtonCaretDown">&#xEDDC;</x:String>
+
+    <Style TargetType="LoopingSelector">
+        <Setter Property="ShouldLoop" Value="True" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PrimaryText}" FontFamily="{ThemeResource ContentControlThemeFontFamily}" />
+                    </StackPanel>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Control">
+                    <Grid>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="PointerOver">
+
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="UpButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+                        <ScrollViewer x:Name="ScrollViewer"
+                VerticalSnapPointsType="Mandatory"
+                VerticalSnapPointsAlignment="Near"
+                VerticalScrollBarVisibility="Hidden"
+                HorizontalScrollMode="Disabled"
+                ZoomMode="Disabled"
+                Template="{StaticResource ScrollViewerScrollBarlessTemplate}" />
+                        <RepeatButton x:Name="UpButton"
+                Content="{ThemeResource LoopingSelectorUpButtonCaretUp}"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="8"
+                Height="22"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                Visibility="Collapsed"
+                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                IsTabStop="False" />
+                        <RepeatButton x:Name="DownButton"
+                Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                FontSize="8"
+                Height="22"
+                Padding="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Visibility="Collapsed"
+                Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                Background="{ThemeResource LoopingSelectorButtonBackground}"
+                IsTabStop="False" />
+
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>
