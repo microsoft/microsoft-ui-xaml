@@ -59,6 +59,8 @@ The WinUI team welcomes feedback and contributions!
 
 For information on how to contribute please see [Contributing to the Windows UI Library](CONTRIBUTING.md).
 
+For guidelines on making an impact on WinUI through non-code contributions, please see [Contributing ideas, feedback, and requests](CONTRIBUTING_feedback_and_requests.md)
+
 ## WinUI features
 
 ### Benefits
