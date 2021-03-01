@@ -105,16 +105,16 @@
     <x:String x:Key="PipsPagerSelectedGlyph">&#xEA3B;</x:String>
     <x:String x:Key="PipsPagerNormalGlyph">&#xEA3B;</x:String>
 
-    <x:String x:Key="PipsPagerPreviousPageButtonGlyph">&#xE70E;</x:String>
-    <x:String x:Key="PipsPagerNextPageButtonGlyph">&#xE70D;</x:String>
+    <x:String x:Key="PipsPagerPreviousPageButtonGlyph">&#xEDDB;</x:String>
+    <x:String x:Key="PipsPagerNextPageButtonGlyph">&#xEDDC;</x:String>
 
     <x:Double x:Key="PipsPagerNavigationButtonHeight">20</x:Double>
     <x:Double x:Key="PipsPagerNavigationButtonWidth">20</x:Double>
 
-    <x:Double x:Key="PipsPagerNavigationButtonFontSize">9</x:Double>
+    <x:Double x:Key="PipsPagerNavigationButtonFontSize">8</x:Double>
 
-    <x:String x:Key="PipsPagerSelectedGlyphFontSize">5</x:String>
-    <x:String x:Key="PipsPagerNormalGlyphFontSize">3</x:String>
+    <x:String x:Key="PipsPagerSelectedGlyphFontSize">6</x:String>
+    <x:String x:Key="PipsPagerNormalGlyphFontSize">4</x:String>
 
     <Style x:Key="PipsPagerNavigationButtonBaseStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource PipsPagerNavigationButtonBackground}"/>
