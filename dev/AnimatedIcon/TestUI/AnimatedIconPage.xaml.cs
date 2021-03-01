@@ -42,6 +42,12 @@ namespace MUXControlsTestApp
             AnimatedIconTestHooks.SetAnimationQueueBehavior(this.DropDownIcon_Cut.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.Cut);
             AnimatedIconTestHooks.SetAnimationQueueBehavior(this.DropDownIcon_Queue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.QueueOne);
             AnimatedIconTestHooks.SetAnimationQueueBehavior(this.DropDownIcon_SpeedUpQueue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.SpeedUpQueueOne);
+            AnimatedIconTestHooks.SetAnimationQueueBehavior(this.DropDownIconNavView_Cut.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.Cut);
+            AnimatedIconTestHooks.SetAnimationQueueBehavior(this.DropDownIconNavView_Queue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.QueueOne);
+            AnimatedIconTestHooks.SetAnimationQueueBehavior(this.DropDownIconNavView_SpeedUpQueue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.SpeedUpQueueOne);
+            AnimatedIconTestHooks.SetAnimationQueueBehavior(this.SideChevron_Cut.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.Cut);
+            AnimatedIconTestHooks.SetAnimationQueueBehavior(this.SideChevron_Queue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.QueueOne);
+            AnimatedIconTestHooks.SetAnimationQueueBehavior(this.SideChevron_SpeedUpQueue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.SpeedUpQueueOne);
             AnimatedIconTestHooks.SetAnimationQueueBehavior(this.HamburgerIcon_Cut.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.Cut);
             AnimatedIconTestHooks.SetAnimationQueueBehavior(this.HamburgerIcon_Queue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.QueueOne);
             AnimatedIconTestHooks.SetAnimationQueueBehavior(this.HamburgerIcon_SpeedUpQueue.GetAnimatedIcon(), AnimatedIconAnimationQueueBehavior.SpeedUpQueueOne);
@@ -69,6 +75,30 @@ namespace MUXControlsTestApp
             if (this.DropDownIcon_SpeedUpQueue != null)
             {
                 AnimatedIconTestHooks.SetDurationMultiplier(this.DropDownIcon_SpeedUpQueue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.DropDownIconNavView_Cut != null)
+            {
+                AnimatedIconTestHooks.SetDurationMultiplier(this.DropDownIconNavView_Cut.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.DropDownIconNavView_Queue != null)
+            {
+                AnimatedIconTestHooks.SetDurationMultiplier(this.DropDownIconNavView_Queue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.DropDownIconNavView_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetDurationMultiplier(this.DropDownIconNavView_SpeedUpQueue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.SideChevron_Cut != null)
+            {
+                AnimatedIconTestHooks.SetDurationMultiplier(this.SideChevron_Cut.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.SideChevron_Queue != null)
+            {
+                AnimatedIconTestHooks.SetDurationMultiplier(this.SideChevron_Queue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.SideChevron_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetDurationMultiplier(this.SideChevron_SpeedUpQueue.GetAnimatedIcon(), (float)e.NewValue);
             }
             if (this.HamburgerIcon_Cut != null)
             {
@@ -149,6 +179,30 @@ namespace MUXControlsTestApp
             if (this.DropDownIcon_SpeedUpQueue != null)
             {
                 AnimatedIconTestHooks.SetSpeedUpMultiplier(this.DropDownIcon_SpeedUpQueue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.DropDownIconNavView_Cut != null)
+            {
+                AnimatedIconTestHooks.SetSpeedUpMultiplier(this.DropDownIconNavView_Cut.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.DropDownIconNavView_Queue != null)
+            {
+                AnimatedIconTestHooks.SetSpeedUpMultiplier(this.DropDownIconNavView_Queue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.DropDownIconNavView_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetSpeedUpMultiplier(this.DropDownIconNavView_SpeedUpQueue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.SideChevron_Cut != null)
+            {
+                AnimatedIconTestHooks.SetSpeedUpMultiplier(this.SideChevron_Cut.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.SideChevron_Queue != null)
+            {
+                AnimatedIconTestHooks.SetSpeedUpMultiplier(this.SideChevron_Queue.GetAnimatedIcon(), (float)e.NewValue);
+            }
+            if (this.SideChevron_SpeedUpQueue != null)
+            {
+                AnimatedIconTestHooks.SetSpeedUpMultiplier(this.SideChevron_SpeedUpQueue.GetAnimatedIcon(), (float)e.NewValue);
             }
             if (this.HamburgerIcon_Cut != null)
             {

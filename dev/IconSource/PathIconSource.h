@@ -14,4 +14,6 @@ class PathIconSource :
 public:
     using PathIconSourceProperties::EnsureProperties;
     using PathIconSourceProperties::ClearProperties;
+
+    winrt::IconElement CreateIconElementCore();
 };
