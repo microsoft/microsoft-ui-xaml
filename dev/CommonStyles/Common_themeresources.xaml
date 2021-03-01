@@ -47,9 +47,6 @@
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 
-    <x:String x:Key="LoopingSelectorUpButtonCaretUp">&#xEDDB;</x:String>
-    <x:String x:Key="LoopingSelectorDownButtonCaretDown">&#xEDDC;</x:String>
-
     <Style TargetType="LoopingSelector">
         <Setter Property="ShouldLoop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -89,7 +86,7 @@
                             ZoomMode="Disabled"
                             Template="{StaticResource ScrollViewerScrollBarlessTemplate}" />
                         <RepeatButton x:Name="UpButton"
-                            Content="{ThemeResource LoopingSelectorUpButtonCaretUp}"
+                            Content="&#xEDDB;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
                             Height="22"
@@ -101,7 +98,7 @@
                             Background="{ThemeResource LoopingSelectorButtonBackground}"
                             IsTabStop="False" />
                         <RepeatButton x:Name="DownButton"
-                            Content="{ThemeResource LoopingSelectorDownButtonCaretDown}"
+                            Content="&#xEDDC;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="8"
                             Height="22"
