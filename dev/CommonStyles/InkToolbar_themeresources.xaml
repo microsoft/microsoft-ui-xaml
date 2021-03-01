@@ -2056,9 +2056,9 @@
                             </Grid.ChildrenTransitions>
 
                             <Grid.Resources>
-                                <Style x:Key="FlyoutStrokeWidthSelectorStyle" TargetType="Slider">
+                                <!--<Style x:Key="FlyoutStrokeWidthSelectorStyle" TargetType="Slider">
                                     <Setter Property="IsThumbToolTipEnabled" Value="true" />
-                                </Style>
+                                </Style>-->
                             </Grid.Resources>
 
                             <Grid.RowDefinitions>
@@ -2179,7 +2179,7 @@
         Minimum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MinStrokeWidth}"
         Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MaxStrokeWidth}"
         Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.SelectedStrokeWidth, Mode=TwoWay}"
-        Style="{StaticResource FlyoutStrokeWidthSelectorStyle}" />
+        />
 
                         </Grid>
 
