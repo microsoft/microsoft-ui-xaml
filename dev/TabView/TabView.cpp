@@ -324,10 +324,7 @@ void TabView::UnhookEventsAndClearFields()
     m_addButtonColumn.set(nullptr);
     m_rightContentColumn.set(nullptr);
     m_tabContainerGrid.set(nullptr);
-    if (!SharedHelpers::Is21H1OrHigher())
-    {
-        m_shadowReceiver.set(nullptr);
-    }
+    m_shadowReceiver.set(nullptr);
     m_listView.set(nullptr);
     m_addButton.set(nullptr);
     m_itemsPresenter.set(nullptr);
