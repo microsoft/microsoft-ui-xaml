@@ -437,7 +437,7 @@
                                 OpenPaneLength="{TemplateBinding OpenPaneLength}"
                                 PaneBackground="{ThemeResource NavigationViewDefaultPaneBackground}"
                                 Grid.Row="1">
-                               
+                                
                                 <SplitView.Pane>
                                     <Grid 
                                         x:Name="PaneContentGrid"
@@ -447,13 +447,11 @@
                                         BorderThickness="0,0,1,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="0"/>
-                                            <!-- above button margin + back button space -->
+                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->
                                             <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="8"/>
-                                            <!-- above list margin -->
+                                            <RowDefinition Height="8"/> <!-- above list margin -->
                                             <RowDefinition x:Name="ItemsContainerRow" Height="*"/>
                                         </Grid.RowDefinitions>
 
