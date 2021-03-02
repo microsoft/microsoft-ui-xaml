@@ -23,14 +23,13 @@
         <Setter Property="Background" Value="{ThemeResource ExpanderBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
-        <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{StaticResource ExpanderMinHeight}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ExpanderBorderThickness}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}" />
         <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -147,7 +146,7 @@
                         <!-- The clip is a composition clip applied in code -->
                         <Border x:Name="ExpanderContentClip" Grid.Row="1">
                             <Border
-                                x:Name="ExpanderContent"                         
+                                x:Name="ExpanderContent"
                                 Visibility="Collapsed"
                                 Background="{ThemeResource ExpanderDropDownBackground}"
                                 contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
