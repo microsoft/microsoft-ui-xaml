@@ -28,6 +28,7 @@
         <Setter Property="BorderBrush" Value="{ThemeResource ExpanderBorderBrush}" />
         <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
