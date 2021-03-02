@@ -8,7 +8,7 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
-            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="CardBackgroundFillColorDefault" />
+            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
@@ -24,7 +24,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
-            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="CardBackgroundFillColorDefault" />
+            <StaticResource x:Key="MediaTransportControlsPanelBackground" ResourceKey="ControlOnImageFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFlyoutBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsThumbBorderBackground" ResourceKey="ControlAAFillColorDefaultBrush" />
             <StaticResource x:Key="MediaTransportControlsFillTimeElapsedText" ResourceKey="TextFillColorSecondaryBrush" />
