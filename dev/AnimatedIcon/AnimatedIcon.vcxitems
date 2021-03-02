@@ -56,7 +56,7 @@
     <None Include="$(MSBuildThisFileDirectory)Docs\MultiStateSegmentLookupProposal.md" />
     <None Include="$(MSBuildThisFileDirectory)Docs\SingleStateSegmentLookup.md" />
   </ItemGroup>
-  <ItemGroup>
+  <!-- <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)AnimatedVisuals\Default.rd.xml" />
-  </ItemGroup>
+  </ItemGroup> -->
 </Project>
