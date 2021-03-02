@@ -382,37 +382,73 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources.xaml;$(OutDir)21h1_compact_themeresources.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
@@ -454,37 +490,73 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources_v1.xaml;$(OutDir)rs2_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources_v1.xaml;$(OutDir)rs3_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources_v1.xaml;$(OutDir)rs4_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources_v1.xaml;$(OutDir)rs5_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources_v1.xaml;$(OutDir)19h1_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources_v1.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_v1.xaml;$(OutDir)21h1_compact_themeresources_v1.xaml">
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_themeresources_v1.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor21H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs2_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs3_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs4_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)rs5_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)19h1_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)21h1_compact_themeresources_v1.xaml" Condition="$(MUXFinalRelease) != 'true'">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
